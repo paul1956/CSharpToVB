@@ -601,48 +601,6 @@ Namespace IVisualBasicCode.CodeConverter.Util
             Return Token.With(NewLeadingTrivia, NewTrailingTrivia)
         End Function
 
-        ''' <summary>
-        ''' Move internal trivia to end
-        ''' </summary>
-        ''' <param name="node"></param>
-        ''' <returns></returns>
-        <Extension>
-        Public Function RestructureCommentTrivia(Of T As SyntaxNode)(node As T) As T
-            Dim CurrentToken As SyntaxToken = node.GetFirstToken
-            Dim CommentTrailingTrivia As New List(Of SyntaxTrivia)
-            While CurrentToken <> Nothing
-                If CurrentToken.LeadingTrivia.ContainsCommentOrDirectiveTrivia Then
-                    Dim NewLeadingTrivia As New SyntaxTriviaList
-                    For Each trivia As SyntaxTrivia In CurrentToken.LeadingTrivia
-                        If trivia.IsKind(VB.SyntaxKind.CommentTrivia) Then
-                            CommentTrailingTrivia.Add(trivia)
-                        Else
-                            If Not trivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                                NewLeadingTrivia = NewLeadingTrivia.Add(trivia)
-                            End If
-                        End If
-                    Next
-                    node = node.ReplaceToken(CurrentToken, CurrentToken.WithLeadingTrivia(NewLeadingTrivia))
-                End If
-                If CurrentToken.TrailingTrivia.ContainsCommentOrDirectiveTrivia Then
-                    Dim NewTrailingTrivia As New SyntaxTriviaList
-                    For Each trivia As SyntaxTrivia In CurrentToken.TrailingTrivia
-                        If trivia.IsKind(VB.SyntaxKind.CommentTrivia) Then
-                            CommentTrailingTrivia.Add(trivia)
-                        Else
-                            If Not trivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                                NewTrailingTrivia = NewTrailingTrivia.Add(trivia)
-                            End If
-                        End If
-                    Next
-                    node = node.ReplaceToken(CurrentToken, CurrentToken.WithTrailingTrivia(NewTrailingTrivia))
-                End If
-                CurrentToken = CurrentToken.GetNextToken
-            End While
-
-            Return node.WithTrailingTrivia(CommentTrailingTrivia)
-        End Function
-
         <ExcludeFromCodeCoverage>
         <Extension>
         Public Function ToSyntaxTriviaList(l As IEnumerable(Of SyntaxTrivia)) As SyntaxTriviaList
