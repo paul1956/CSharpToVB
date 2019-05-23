@@ -1,0 +1,87 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace></RootNamespace>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <OptionStrict>On</OptionStrict>
+    <OptionInfer>Off</OptionInfer>
+    <AssemblyName>VB.CodeConverter</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup>
+	<LangVersion>16</LangVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <NoWarn />
+    <WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <NoWarn />
+    <WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <DefineConstants>VB_TO_CSharp="False"</DefineConstants>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Utils\obj\**" />
+    <Compile Remove="VBToCSharp\**" />
+    <EmbeddedResource Remove="Utils\obj\**" />
+    <EmbeddedResource Remove="VBToCSharp\**" />
+    <None Remove="Utils\obj\**" />
+    <None Remove="VBToCSharp\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Extensions\DefaultExtension.vb" />
+    <Compile Remove="Extensions\DetermineTypeExtensions.vb" />
+    <Compile Remove="Extensions\EnumerableExtensions_cs.vb" />
+    <Compile Remove="Extensions\ExpressionSyntaxExtensions.vb" />
+    <Compile Remove="Extensions\IAssemblySymbolExtensions.vb" />
+    <Compile Remove="Extensions\INamespaceOrTypeSymbolExtensions.vb" />
+    <Compile Remove="Extensions\ITypeParameterSymbolExtensions.vb" />
+    <Compile Remove="Extensions\SynbolExtension.vb" />
+    <Compile Remove="Extensions\TypeExtensions.vb" />
+    <Compile Remove="Utils\AnnotationTable.vb" />
+    <Compile Remove="Utils\CSharpUtils.vb" />
+    <Compile Remove="Utils\FindTokenHelper.vb" />
+    <Compile Remove="Utils\Matcher.vb" />
+    <Compile Remove="Utils\RegexNode.vb" />
+    <Compile Remove="Utils\RegexOptions.vb" />
+    <Compile Remove="Utils\RegExParser.vb" />
+    <Compile Remove="Utils\SpecializedCollections.vb" />
+    <Compile Remove="Utils\SpecializedCollectionsReadOnly.vb" />
+    <Compile Remove="Utils\SpecializedCollectionsSingleton.vb" />
+    <Compile Remove="Utils\StringExtensions.vb" />
+    <Compile Remove="Utils\SymbolEquivalenceComparer.AssemblyComparers.vb" />
+    <Compile Remove="Utils\SymbolEquivalenceComparer.EquivalenceVisitor.vb" />
+    <Compile Remove="Utils\SymbolEquivalenceComparer.GetHashCodeVisitor.vb" />
+    <Compile Remove="Utils\SymbolEquivalenceComparer.ParameterSymbolEqualityComparer.vb" />
+    <Compile Remove="Utils\SymbolEquivalenceComparer.SignatureTypeSymbolEquivalenceComparer.vb" />
+    <Compile Remove="Utils\SymbolEquivalenceComparer.vb" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis" Version="3.1.0-beta3-final" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="2.9.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.1.0-beta3-final" />
+    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="3.1.0-beta3-final" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="3.1.0-beta3-final" />
+    <PackageReference Include="System.Memory" Version="4.5.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HashLibrary\HashLibrary.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.VisualBasic">
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\Microsoft.VisualBasic.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
