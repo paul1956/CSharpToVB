@@ -29,7 +29,16 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 For i As Integer = 0 To SeparatorCount
                     Dim e As CSS.ArgumentSyntax = CS_VisitorArguments(i)
                     Dim ArgumentSyntaxNode As VBS.ArgumentSyntax = DirectCast(e.Accept(Me), VBS.ArgumentSyntax)
-                    NodeList.Add(ArgumentSyntaxNode.WithConvertedTriviaFrom(e))
+                    Dim NewLeadingTrivia As New List(Of SyntaxTrivia)
+                    Dim OldLeadingTrivia As IEnumerable(Of SyntaxTrivia) = ConvertTrivia(e.GetLeadingTrivia)
+                    NewLeadingTrivia.AddRange(OldLeadingTrivia)
+                    For Each t As SyntaxTrivia In OldLeadingTrivia
+                        If Not t.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                            Exit For
+                        End If
+                        NewLeadingTrivia.RemoveAt(0)
+                    Next
+                    NodeList.Add(ArgumentSyntaxNode.With(NewLeadingTrivia, ConvertTrivia(e.GetTrailingTrivia)))
                     If SeparatorCount > i Then
                         Separators.Add(CommaToken.WithConvertedTrailingTriviaFrom(CS_Separators(i)))
                     End If

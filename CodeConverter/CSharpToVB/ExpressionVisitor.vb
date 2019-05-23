@@ -706,7 +706,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                         Dim TypeNames() As String = NamedTypes.Substring(1, NamedTypes.Length - 2).Split(","c)
                                         For i As Integer = 0 To TypeNames.Count - 1
                                             ' Need to convert Types !!!!!!!
-                                            TupleList.Add(ConvertNamedTypeToTypeString(TypeNames(i)))
+                                            TupleList.Add(ConvertNamedTypeToTypeString(TypeNames(i).Trim))
                                         Next
                                     Else
                                         TupleList.AddRange(ConvertTupleToTypeStrings(Type.ToString))
@@ -1703,14 +1703,14 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     Dim Declarators As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(
                             node:=VBFactory.VariableDeclarator(VBFactory.SingletonSeparatedList(
                             VariableName),
-                            asClause:=Nothing, initializer:=VBFactory.EqualsValue(VBExpression))
+                            asClause:=Nothing, initializer:=VBFactory.EqualsValue(VBExpression)).WithTrailingEOL
                              )
 
                     Dim LeadingTrivia As SyntaxTriviaList = CheckCorrectnessLeadingTrivia(StatementWithIssue, "VB has no direct equivalent To C# var pattern expressions")
                     Dim DeclarationToBeAdded As VBS.LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(DimModifier,
                         Declarators).WithAdditionalAnnotations(Simplifier.Annotation)
                     If ReportCheckCorrectness Then
-                        DeclarationToBeAdded = DeclarationToBeAdded.WithPrependedLeadingTrivia(CheckCorrectnessLeadingTrivia(StatementWithIssue, "VB has no direct equivalent To C# var pattern expressions"))
+                        DeclarationToBeAdded = DeclarationToBeAdded.WithPrependedLeadingTrivia(CheckCorrectnessLeadingTrivia(StatementWithIssue, "VB has no direct equivalent To C# var pattern expressions")).WithTrailingEOL
                     End If
 
                     StatementWithIssue.AddMarker(Statement:=DeclarationToBeAdded,
@@ -2086,9 +2086,9 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     End If
                 End If
 
-                If Expression.ContainsCommentOrDirectiveTrivia Then
-                    Expression = Expression.RestructureCommentTrivia
-                End If
+                'If Expression.ContainsCommentOrDirectiveTrivia Then
+                '    Expression = Expression.RestructureCommentTrivia
+                'End If
                 Dim TrailingTrivia As New List(Of SyntaxTrivia)
                 TrailingTrivia.AddRange(Expression.GetTrailingTrivia)
                 Dim parenthesizedExpressionSyntax1 As VBS.ParenthesizedExpressionSyntax = VBFactory.ParenthesizedExpression(Expression.WithoutTrailingTrivia).WithTrailingTrivia(TrailingTrivia)

@@ -102,6 +102,8 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         Return PredefinedTypeDecimal
                     Case "datetime"
                         Return PredefinedTypeDate
+                    Case "?"
+                        Return PredefinedTypeObject
                     Case Else
                         Return VBFactory.ParseTypeName(AddBracketsIfRequired(TypeString))
                 End Select

@@ -462,7 +462,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                     Dim ModifiedIdentifier As VBS.ModifiedIdentifierSyntax = VBFactory.ModifiedIdentifier(Identifier.WithTrailingTrivia(SpaceTrivia))
                                     Dim Variable As VBS.VariableDeclaratorSyntax = VBFactory.VariableDeclarator(VBFactory.SingletonSeparatedList(ModifiedIdentifier), AsClause, Initializer)
                                     Dim Declarators As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(Variable)
-                                    NewDimStatements.Add(VBFactory.LocalDeclarationStatement(DimModifier, Declarators))
+                                    NewDimStatements.Add(VBFactory.LocalDeclarationStatement(DimModifier, Declarators).WithTrailingEOL)
                                     CaseLabelExpression = VBFactory.IdentifierName("Else")
                                 Else
                                     CaseLabelExpression = Nothing
