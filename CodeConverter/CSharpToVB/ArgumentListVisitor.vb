@@ -34,7 +34,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     Dim LeadingEol As Boolean = True
                     For j As Integer = 0 To OldLeadingTrivia.Count - 1
                         Dim Trivia As SyntaxTrivia = OldLeadingTrivia(j)
-                        Dim NextTrivia As SyntaxTrivia = If(i < OldLeadingTrivia.Count - 1, OldLeadingTrivia(j + 1), Nothing)
+                        Dim NextTrivia As SyntaxTrivia = If(j < OldLeadingTrivia.Count - 1, OldLeadingTrivia(j + 1), Nothing)
                         If Trivia.IsKind(VB.SyntaxKind.WhitespaceTrivia) AndAlso NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
                             Continue For
                         End If

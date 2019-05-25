@@ -239,8 +239,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             End Function
 
             Private Function IsStringExpression(Node As SyntaxNode) As Boolean
-                Dim Kind As VB.SyntaxKind = CType(Node.RawKind, VB.SyntaxKind)
-                If {VB.SyntaxKind.StringLiteralExpression, VB.SyntaxKind.CharacterLiteralExpression, VB.SyntaxKind.InterpolatedStringExpression}.Contains(Kind) Then
+                If Node.IsKind(CS.SyntaxKind.StringLiteralExpression, CS.SyntaxKind.CharacterLiteralExpression, CS.SyntaxKind.InterpolatedStringExpression) Then
                     Return True
                 End If
                 Dim _Typeinfo As TypeInfo = ModelExtensions.GetTypeInfo(Me.mSemanticModel, Node)
@@ -326,24 +325,30 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Dim InitialTriviaList As New List(Of SyntaxTrivia)
                 InitialTriviaList.AddRange(ConvertTrivia(NodesOrTokens(Index).GetLeadingTrivia))
                 Dim TriviaListUBound As Integer = InitialTriviaList.Count - 1
+                Dim FirstTrivia As Boolean = True
                 For i As Integer = 0 To TriviaListUBound
                     Dim Trivia As SyntaxTrivia = InitialTriviaList(i)
                     Select Case Trivia.RawKind
                         Case VB.SyntaxKind.WhitespaceTrivia
                             AfterLineContinuation = False
                             AfterWhiteSpace = True
+                            FirstTrivia = False
                             FinalLeadingTriviaList.Add(Trivia)
                         Case VB.SyntaxKind.EndOfLineTrivia
-                            FinalLeadingTriviaList.Add(Trivia)
-                            AfterLineContinuation = False
-                            AfterWhiteSpace = False
-                            If Index < NodesOrTokens.Count - 1 Then
-                                If FinalLeadingTriviaList.Count = 0 Then
-                                    FinalLeadingTriviaList.Add(SpaceTrivia)
-                                    FinalLeadingTriviaList.Add(LineContinuation)
+                            ' we want to skip any leading trivia
+                            If Not FirstTrivia Then
+                                FinalLeadingTriviaList.Add(Trivia)
+                                AfterLineContinuation = False
+                                AfterWhiteSpace = False
+                                If Index < NodesOrTokens.Count - 1 Then
+                                    If FinalLeadingTriviaList.Count = 0 Then
+                                        FinalLeadingTriviaList.Add(SpaceTrivia)
+                                        FinalLeadingTriviaList.Add(LineContinuation)
+                                    End If
                                 End If
                             End If
                         Case VB.SyntaxKind.CommentTrivia
+                            FirstTrivia = False
                             If Not AfterWhiteSpace Then
                                 FinalLeadingTriviaList.Add(SpaceTrivia)
                             End If
@@ -353,6 +358,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                 FinalLeadingTriviaList.Add(VB_EOLTrivia)
                             End If
                         Case VB.SyntaxKind.DisableWarningDirectiveTrivia, VB.SyntaxKind.EnableWarningDirectiveTrivia
+                            FirstTrivia = False
                             Stop
                             'GetStatementwithIssues(CS_Node).AddMarker(VBFactory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
                         Case Else
@@ -530,7 +536,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         GetStatementwithIssues(node).AddMarker(Statement, StatementHandlingOption.AppendEmptyStatement, AllowDuplicates:=True)
                         Initializer = Initializer.WithoutLeadingTrivia
                     End If
-                    Dim Field As VBS.FieldInitializerSyntax = DirectCast(Initializer.Accept(Me), VBS.FieldInitializerSyntax)
+                    Dim Field As VBS.FieldInitializerSyntax = DirectCast(Initializer.Accept(Me), VBS.FieldInitializerSyntax).NormalizeWhitespaceEx(useDefaultCasing:=True, PreserveCRLF:=True)
                     Dim NewFieldLeadingTrivia As New List(Of SyntaxTrivia)
                     Dim FirstTrivia As Boolean = True
                     Dim FoundComment As Boolean = False
@@ -1422,7 +1428,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     Dim e As CSS.ExpressionSyntax = node.Initializer.Expressions(i)
                     Dim ItemWithTrivia As VB.VisualBasicSyntaxNode
                     Try
-                        ItemWithTrivia = e.Accept(Me).WithConvertedTriviaFrom(e).RemoveLeadingEOL
+                        ItemWithTrivia = e.Accept(Me).WithConvertedTriviaFrom(e).RemoveLeadingEOL.NormalizeWhitespaceEx(useDefaultCasing:=True, indentation:="    ")
                         If TypeOf ItemWithTrivia Is VBS.NamedFieldInitializerSyntax Then
                             NamedFieldItems.Add(DirectCast(ItemWithTrivia, VBS.NamedFieldInitializerSyntax))
                         ElseIf TypeOf ItemWithTrivia Is VBS.AssignmentStatementSyntax Then

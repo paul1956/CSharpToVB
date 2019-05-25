@@ -1504,7 +1504,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 If node.Expression Is Nothing Then
                     stmt = VBFactory.ReturnStatement()
                 Else
-                    stmt = VBFactory.YieldStatement(expression:=DirectCast(node.Expression.Accept(Me.mNodesVisitor), VBS.ExpressionSyntax))
+                    stmt = VBFactory.YieldStatement(expression:=DirectCast(node.Expression.Accept(Me.mNodesVisitor), VBS.ExpressionSyntax)).WithTrailingEOL
                 End If
                 Return ReplaceStatementsWithMarkedStatements(node, VBFactory.SingletonList(stmt.WithConvertedTriviaFrom(node)))
             End Function
