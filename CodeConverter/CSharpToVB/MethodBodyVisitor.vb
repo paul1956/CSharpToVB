@@ -507,8 +507,12 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                             Stop
                     End Select
                 Next
-                Dim LabelComment As SyntaxTrivia = If(CommentString.Length > 0, VBFactory.CommentTrivia($" ' {CommentString.ToString}"), Nothing)
-                Dim CaseStatement As VBS.CaseStatementSyntax = VBFactory.CaseStatement(VBFactory.SeparatedList(LabelList)).With(NewLeadingTrivia, {LabelComment}).WithTrailingEOL
+                Dim TrailingTrivia As New List(Of SyntaxTrivia)
+                If CommentString.Length > 0 Then
+                    TrailingTrivia.Add(VBFactory.CommentTrivia($" ' {CommentString.ToString}"))
+                    TrailingTrivia.Add(VB_EOLTrivia)
+                End If
+                Dim CaseStatement As VBS.CaseStatementSyntax = VBFactory.CaseStatement(VBFactory.SeparatedList(LabelList)).With(NewLeadingTrivia, TrailingTrivia).WithTrailingEOL
                 Return VBFactory.CaseBlock(CaseStatement, Me.ConvertSwitchSectionBlock(section, NewDimStatements))
             End Function
 
@@ -1044,7 +1048,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     label = VBFactory.Label(VB.SyntaxKind.IdentifierLabel, GenerateSafeVBToken((DirectCast(node.Expression, CSS.IdentifierNameSyntax)).Identifier, IsQualifiedName:=False))
                 End If
 
-                Return VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.GoToStatement(label).WithConvertedTriviaFrom(node))
+                Return VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.GoToStatement(label).WithConvertedTriviaFrom(node).WithTrailingEOL)
             End Function
 
             Public Overrides Function VisitIfStatement(node As CSS.IfStatementSyntax) As SyntaxList(Of VBS.StatementSyntax)

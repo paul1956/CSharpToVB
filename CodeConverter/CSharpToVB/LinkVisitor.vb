@@ -115,7 +115,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return VBFactory.QueryExpression(VBFactory.SingletonList(FromClause).AddRange(BodyClauses).AddRange(Body)).WithConvertedTriviaFrom(node)
             End Function
             Public Overrides Function VisitSelectClause(node As CSS.SelectClauseSyntax) As VB.VisualBasicSyntaxNode
-                Dim expression As VBS.ExpressionSyntax = DirectCast(node.Expression.Accept(Me), VBS.ExpressionSyntax)
+                Dim expression As VBS.ExpressionSyntax = DirectCast(node.Expression.Accept(Me), VBS.ExpressionSyntax).NormalizeWhitespace
                 Return VBFactory.SelectClause(VBFactory.ExpressionRangeVariable(expression)).WithConvertedTriviaFrom(node)
             End Function
 

@@ -283,12 +283,28 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     Dim e As CSS.ParameterSyntax = node.Parameters(i)
                     Dim ItemWithTrivia As VBS.ParameterSyntax = DirectCast(e.Accept(Me), VBS.ParameterSyntax)
                     ItemWithTrivia = ItemWithTrivia.RemoveModifier(VB.SyntaxKind.ByValKeyword)
-                    Items.Add(ItemWithTrivia)
-                    If SeparatorCount > i Then
-                        Separators.Add(CommaToken.WithConvertedTrailingTriviaFrom(CS_Separators(i)))
-                    End If
-                Next
-                RestructureNodesAndSeparators(OpenParenTokenWithTrivia, Items, Separators, CloseParenTokenWithTrivia)
+                    Dim OldLeadingTrivia As IEnumerable(Of SyntaxTrivia) = ItemWithTrivia.GetLeadingTrivia
+                    Dim NewLeadingTrivia As New List(Of SyntaxTrivia)
+                    Dim LeadingEol As Boolean = True
+                    For j As Integer = 0 To OldLeadingTrivia.Count - 1
+                        Dim Trivia As SyntaxTrivia = OldLeadingTrivia(j)
+                        Dim NextTrivia As SyntaxTrivia = If(i < OldLeadingTrivia.Count - 1, OldLeadingTrivia(j + 1), Nothing)
+                        If Trivia.IsKind(VB.SyntaxKind.WhitespaceTrivia) AndAlso NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                            Continue For
+                        End If
+
+                        If Trivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) AndAlso (NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) OrElse LeadingEol) Then
+                            Continue For
+                        End If
+                        LeadingEol = False
+                        NewLeadingTrivia.Add(Trivia)
+                    Next
+                    Items.Add(ItemWithTrivia.With(NewLeadingTrivia, ConvertTrivia(e.GetTrailingTrivia)))
+                        If SeparatorCount > i Then
+                            Separators.Add(CommaToken.WithConvertedTrailingTriviaFrom(CS_Separators(i)))
+                        End If
+                    Next
+                    RestructureNodesAndSeparators(OpenParenTokenWithTrivia, Items, Separators, CloseParenTokenWithTrivia)
                 Return VB.SyntaxFactory.ParameterList(OpenParenTokenWithTrivia, VB.SyntaxFactory.SeparatedList(Items, Separators), CloseParenTokenWithTrivia)
             End Function
 

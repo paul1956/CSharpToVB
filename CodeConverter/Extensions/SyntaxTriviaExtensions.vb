@@ -220,12 +220,31 @@ Namespace IVisualBasicCode.CodeConverter.Util
             Return False
         End Function
 
-        Public Function DirectiveNotAllowedHere(Trivia As SyntaxTrivia, TriviaList As List(Of SyntaxTrivia), Optional DontRepeatMsg As Boolean = True) As List(Of SyntaxTrivia)
-            Dim Msg As String = " ' TODO VB does not allow directives here, original directive: "
-            If DontRepeatMsg AndAlso TriviaList.Count > 0 AndAlso TriviaList.Contains(Function(t As SyntaxTrivia) t.ToString.StartsWith(Msg)) Then
-                Msg = ""
-            End If
+        Public Function DirectiveNotAllowedHere(Trivia As SyntaxTrivia) As List(Of SyntaxTrivia)
+            Dim NewTriviaList As New List(Of SyntaxTrivia)
+            Dim LeadingTriviaList As New List(Of SyntaxTrivia) From {
+                SpaceTrivia,
+                LineContinuation,
+                SpaceTrivia
+            }
             Dim TriviaAsString As String = ""
+
+            If Trivia.IsKind(VB.SyntaxKind.DisabledTextTrivia) Then
+                NewTriviaList.AddRange(LeadingTriviaList)
+                NewTriviaList.Add(VBFactory.CommentTrivia($" ' TODO VB does not allow Disabled Text here, original text:"))
+                NewTriviaList.Add(VB_EOLTrivia)
+                Dim TextStrings() As String = Trivia.ToFullString.Split({vbCrLf}, StringSplitOptions.RemoveEmptyEntries)
+                For Each TriviaAsString In TextStrings
+                    NewTriviaList.AddRange(LeadingTriviaList)
+                    NewTriviaList.Add(VBFactory.CommentTrivia($" ' {TriviaAsString}".Replace("  ", " ").TrimEnd))
+                    NewTriviaList.Add(VB_EOLTrivia)
+                Next
+                If NewTriviaList.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                    NewTriviaList.RemoveAt(NewTriviaList.Count - 1)
+                End If
+                Return NewTriviaList
+            End If
+
             Select Case Trivia.RawKind
                 Case VB.SyntaxKind.IfDirectiveTrivia
                     TriviaAsString = $"#If {Trivia.ToFullString.Substring("#if".Length).Trim.WithoutNewLines(" "c)}"
@@ -235,17 +254,19 @@ Namespace IVisualBasicCode.CodeConverter.Util
                     TriviaAsString = $"#ElseIf {Trivia.ToFullString.Substring("#Else If".Length).Trim.WithoutNewLines(" "c)}"
                 Case VB.SyntaxKind.EndIfDirectiveTrivia
                     TriviaAsString = $"#EndIf {Trivia.ToFullString.Substring("#End if".Length).Trim.WithoutNewLines(" "c)}"
-                Case VB.SyntaxKind.DisabledTextTrivia
-                    TriviaAsString = $"Disabled Text {Trivia.ToFullString.Trim.WithoutNewLines(" "c)}"
                 Case Else
                     Stop
             End Select
-            Dim NewTriviaList As New List(Of SyntaxTrivia) From {
+            Dim Msg As String = " ' TODO VB does not allow directives here, original directive: "
+            NewTriviaList = New List(Of SyntaxTrivia) From {
+                SpaceTrivia,
+                LineContinuation,
+                VB_EOLTrivia,
                 SpaceTrivia,
                 LineContinuation,
                 SpaceTrivia,
                 VBFactory.CommentTrivia($"{Msg}{TriviaAsString}".Replace("  ", " ").TrimEnd)
-            }
+                }
             Return NewTriviaList
         End Function
 

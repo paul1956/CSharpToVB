@@ -312,7 +312,8 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Dim AttributeLists As New List(Of VBS.AttributeListSyntax)
                 Dim ReturnAttributes As SyntaxList(Of VBS.AttributeListSyntax) = Nothing
                 Me.ConvertAndSplitAttributes(node.AttributeLists, AttributeLists, ReturnAttributes)
-                Dim parameterList As VBS.ParameterListSyntax = DirectCast(node.ParameterList?.Accept(Me), VBS.ParameterListSyntax).WithRemovedTrailingEOLTrivia
+                Dim parameterList As VBS.ParameterListSyntax = DirectCast(node.ParameterList?.Accept(Me), VBS.ParameterListSyntax).
+                                                                    WithRestructuredingEOLTrivia
                 Dim Modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, Me.IsModule, TokenContext.Member)
                 Dim visitor As New MethodBodyVisitor(Me.mSemanticModel, Me)
                 Modifiers.Add(If(node.ImplicitOrExplicitKeyword.ValueText = "explicit", NarrowingKeyword, WideningKeyword))
@@ -781,7 +782,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     TypeParameterList = TypeParameterList.WithTrailingTrivia(SpaceTrivia)
                 End If
                 If ReturnVoid Then
-                    EndSubOrFunctionStatement = VBFactory.EndSubStatement()
+                    EndSubOrFunctionStatement = VBFactory.EndSubStatement
                     If node.Body IsNot Nothing Then
                         EndSubOrFunctionStatement = EndSubOrFunctionStatement.WithConvertedTriviaFrom(node.Body.CloseBraceToken)
                     ElseIf node.ExpressionBody IsNot Nothing Then
@@ -821,6 +822,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                                                     ImplementsClause)
                     SubOrFunctionStatement = DirectCast(MethodStatement.
                         With(FunctionStatementLeadingTrivia, FunctionStatementTrailingTrivia).
+                        WithTrailingEOL.
                         RestructureAttributesAndModifiers(Attributes.Count > 0, Modifiers.Count > 0), VBS.MethodStatementSyntax)
                     SyncLock UsedIdentifierStack
                         If UsedIdentifierStack.Count > 0 Then

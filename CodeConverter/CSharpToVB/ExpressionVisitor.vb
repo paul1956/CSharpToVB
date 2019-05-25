@@ -255,9 +255,15 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Dim LeftNode As VBS.ExpressionSyntax = DirectCast(node.Left.Accept(Me), VBS.ExpressionSyntax)
                 If CS.CSharpExtensions.Kind(node) = CS.SyntaxKind.CoalesceAssignmentExpression Then
                     Dim PossibleNullNode As VBS.ExpressionSyntax = DirectCast(node.Right.Accept(Me).WithLeadingTrivia(SpaceTrivia), VBS.ExpressionSyntax)
-                    Dim IsNothingCondition As VBS.ExpressionSyntax = VBFactory.IsExpression(LeftNode, NothingExpression)
-                    Dim AssignmentStatement As SyntaxList(Of VBS.StatementSyntax) = VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.SimpleAssignmentStatement(LeftNode, PossibleNullNode))
-                    Return VBFactory.SingleLineIfStatement(IsNothingCondition, AssignmentStatement, elseClause:=Nothing).WithConvertedTriviaFrom(node)
+                    Dim IsNothingCondition As VBS.ExpressionSyntax = VBFactory.IsExpression(LeftNode, NothingExpression).With({SpaceTrivia}, {SpaceTrivia})
+                    Dim AssignmentStatement As VBS.AssignmentStatementSyntax = VBFactory.SimpleAssignmentStatement(LeftNode, PossibleNullNode)
+                    Dim LeadingTrivia As New List(Of SyntaxTrivia)
+                    If AssignmentStatement.HasLeadingTrivia Then
+                        LeadingTrivia.AddRange(AssignmentStatement.GetLeadingTrivia)
+                        AssignmentStatement = AssignmentStatement.WithLeadingTrivia(SpaceTrivia)
+                    End If
+                    Dim AssignmentStatements As SyntaxList(Of VBS.StatementSyntax) = VBFactory.SingletonList(Of VBS.StatementSyntax)(AssignmentStatement)
+                    Return VBFactory.SingleLineIfStatement(IsNothingCondition, AssignmentStatements, elseClause:=Nothing).With(LeadingTrivia, ConvertTrivia(node.GetTrailingTrivia))
                 End If
                 Dim kind As VB.SyntaxKind = ConvertCSExpressionsKindToVBKind(CS.CSharpExtensions.Kind(node))
                 Dim OperatorToken As SyntaxToken = ExpressionKindToOperatorToken(kind)
@@ -921,7 +927,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                                                                                Condition,
                                                                                                ThenKeyword,
                                                                                                Statements,
-                                                                                               elseClause:=Nothing)
+                                                                                               elseClause:=Nothing).WithTrailingEOL
                                 GetStatementwithIssues(node).AddMarker(IfBlock, StatementHandlingOption.PrependStatement, AllowDuplicates:=False)
                                 Return LeftVBNode
                             Else
@@ -1325,7 +1331,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             End Function
 
             Public Overrides Function VisitDefaultExpression(node As CSS.DefaultExpressionSyntax) As VB.VisualBasicSyntaxNode
-                Return VBFactory.ParseExpression($"CType(Nothing, {node.Type.Accept(Me)})").WithConvertedTriviaFrom(node)
+                Return VBFactory.ParseExpression($"CType(Nothing, {node.Type.Accept(Me).WithoutLeadingTrivia})").WithConvertedTriviaFrom(node)
             End Function
 
             Public Overrides Function VisitDiscardDesignation(node As CSS.DiscardDesignationSyntax) As VB.VisualBasicSyntaxNode
@@ -1771,7 +1777,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                 If LocalDecStmt.Declaration.Type IsNot Nothing Then
                                     Return VBFactory.CTypeExpression(
                                                         NothingExpression,
-                                                        CType(LocalDecStmt.Declaration.Type.Accept(Me), VBS.TypeSyntax)
+                                                        CType(LocalDecStmt.Declaration.Type.Accept(Me).WithoutLeadingTrivia, VBS.TypeSyntax)
                                                         )
                                 End If
                             End If
@@ -1834,6 +1840,9 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                             ' TODO Handle better
                             Return NothingExpression
                         Case CS.SyntaxKind.EqualsExpression, CS.SyntaxKind.NotEqualsExpression
+                            ' TODO Handle better
+                            Return NothingExpression
+                        Case CS.SyntaxKind.ArrowExpressionClause
                             ' TODO Handle better
                             Return NothingExpression
                         Case Else
@@ -2242,7 +2251,44 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Dim lArgumentSyntax As New List(Of VBS.SimpleArgumentSyntax)
                 If TypeOf node.Arguments(0).Expression IsNot CSS.DeclarationExpressionSyntax Then
                     For Each a As CSS.ArgumentSyntax In node.Arguments
-                        lArgumentSyntax.Add(DirectCast(a.Accept(Me), VBS.SimpleArgumentSyntax))
+                        Dim Argument As VBS.SimpleArgumentSyntax = DirectCast(a.Accept(Me), VBS.SimpleArgumentSyntax)
+                        Dim FinalLeadingTriviaList As New List(Of SyntaxTrivia)
+                        Dim AfterWhiteSpace As Boolean = False
+                        Dim InitialTriviaList As New List(Of SyntaxTrivia)
+                        InitialTriviaList.AddRange(Argument.GetLeadingTrivia)
+                        Dim TriviaListUBound As Integer = InitialTriviaList.Count - 1
+                        For i As Integer = 0 To TriviaListUBound
+                            Dim Trivia As SyntaxTrivia = InitialTriviaList(i)
+                            Select Case Trivia.RawKind
+                                Case VB.SyntaxKind.WhitespaceTrivia
+                                    AfterWhiteSpace = True
+                                    FinalLeadingTriviaList.Add(Trivia)
+                                Case VB.SyntaxKind.EndOfLineTrivia
+                                    FinalLeadingTriviaList.Add(Trivia)
+                                    AfterWhiteSpace = False
+                                    If i < TriviaListUBound Then
+                                        If FinalLeadingTriviaList.Count = 0 Then
+                                            FinalLeadingTriviaList.Add(SpaceTrivia)
+                                            FinalLeadingTriviaList.Add(LineContinuation)
+                                        End If
+                                    End If
+                                Case VB.SyntaxKind.CommentTrivia
+                                    If Not AfterWhiteSpace Then
+                                        FinalLeadingTriviaList.Add(SpaceTrivia)
+                                    End If
+                                    FinalLeadingTriviaList.Add(LineContinuation)
+                                    FinalLeadingTriviaList.Add(Trivia)
+                                    If i < TriviaListUBound AndAlso Not InitialTriviaList(i + 1).IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                                        FinalLeadingTriviaList.Add(VB_EOLTrivia)
+                                    End If
+                                Case VB.SyntaxKind.DisableWarningDirectiveTrivia, VB.SyntaxKind.EnableWarningDirectiveTrivia
+                                    Stop
+                                    'GetStatementwithIssues(CS_Node).AddMarker(VBFactory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
+                                Case Else
+                                    Stop
+                            End Select
+                        Next
+                        lArgumentSyntax.Add(Argument.WithLeadingTrivia(FinalLeadingTriviaList))
                     Next
                     Return VBFactory.TupleExpression(VBFactory.SeparatedList(lArgumentSyntax))
                 End If

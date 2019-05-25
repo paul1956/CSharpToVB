@@ -31,12 +31,19 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     Dim ArgumentSyntaxNode As VBS.ArgumentSyntax = DirectCast(e.Accept(Me), VBS.ArgumentSyntax)
                     Dim NewLeadingTrivia As New List(Of SyntaxTrivia)
                     Dim OldLeadingTrivia As IEnumerable(Of SyntaxTrivia) = ConvertTrivia(e.GetLeadingTrivia)
-                    NewLeadingTrivia.AddRange(OldLeadingTrivia)
-                    For Each t As SyntaxTrivia In OldLeadingTrivia
-                        If Not t.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                            Exit For
+                    Dim LeadingEol As Boolean = True
+                    For j As Integer = 0 To OldLeadingTrivia.Count - 1
+                        Dim Trivia As SyntaxTrivia = OldLeadingTrivia(j)
+                        Dim NextTrivia As SyntaxTrivia = If(i < OldLeadingTrivia.Count - 1, OldLeadingTrivia(j + 1), Nothing)
+                        If Trivia.IsKind(VB.SyntaxKind.WhitespaceTrivia) AndAlso NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                            Continue For
                         End If
-                        NewLeadingTrivia.RemoveAt(0)
+
+                        If Trivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) AndAlso (NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) OrElse LeadingEol) Then
+                            Continue For
+                        End If
+                        LeadingEol = False
+                        NewLeadingTrivia.Add(Trivia)
                     Next
                     NodeList.Add(ArgumentSyntaxNode.With(NewLeadingTrivia, ConvertTrivia(e.GetTrailingTrivia)))
                     If SeparatorCount > i Then

@@ -19,13 +19,13 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
     Partial Public Class CSharpConverter
 
         Partial Protected Friend Class NodesVisitor
-            Inherits CS.CSharpSyntaxVisitor(Of VB.VisualBasicSyntaxNode)
+            Inherits CS.CSharpSyntaxVisitor(Of VisualBasicSyntaxNode)
 
             ' This file contains all the stuff accessed by multiple Visitor functions in Class NodeVisitor and Visitors that
             ' had no better home.
 
             ReadOnly allImports As List(Of VBS.ImportsStatementSyntax) = New List(Of VBS.ImportsStatementSyntax)()
-            ReadOnly inlineAssignHelperMarkers As List(Of CSS.BaseTypeDeclarationSyntax) = New List(Of CSS.BaseTypeDeclarationSyntax)()
+            ReadOnly inlineAssignHelperMarkers As List(Of BaseTypeDeclarationSyntax) = New List(Of BaseTypeDeclarationSyntax)()
             Private ReadOnly IsModuleStack As New Stack(Of Boolean)
             Private ReadOnly mSemanticModel As SemanticModel
             Private placeholder As Integer = 1
@@ -43,18 +43,18 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 End Get
             End Property
 
-            Public Overrides Function DefaultVisit(node As SyntaxNode) As VB.VisualBasicSyntaxNode
+            Public Overrides Function DefaultVisit(node As SyntaxNode) As VisualBasicSyntaxNode
                 Throw New NotImplementedException(node.[GetType]().ToString & " not implemented!")
             End Function
 
-            Public Overrides Function VisitCompilationUnit(node As CSS.CompilationUnitSyntax) As VB.VisualBasicSyntaxNode
+            Public Overrides Function VisitCompilationUnit(node As CompilationUnitSyntax) As VisualBasicSyntaxNode
 
-                For Each [using] As CSS.UsingDirectiveSyntax In node.Usings
+                For Each [using] As UsingDirectiveSyntax In node.Usings
                     [using].Accept(Me)
                 Next
-                Dim externList As New List(Of VB.VisualBasicSyntaxNode)
+                Dim externList As New List(Of VisualBasicSyntaxNode)
                 ' externlist is potentially a list of empty lines with trivia
-                For Each extern As CSS.ExternAliasDirectiveSyntax In node.Externs
+                For Each extern As ExternAliasDirectiveSyntax In node.Externs
                     externList.Add(extern.Accept(Me))
                 Next
 
@@ -63,8 +63,8 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Options = Options.Add(VBFactory.OptionStatement(InferToken, OnToken))
                 Options = Options.Add(VBFactory.OptionStatement(StrictToken, OffToken))
 
-                Dim ListOfAttributes As SyntaxList(Of VBS.AttributesStatementSyntax) = VBFactory.List(node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) VBFactory.AttributesStatement(VBFactory.SingletonList(DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))))
-                Dim Members As SyntaxList(Of VBS.StatementSyntax) = VBFactory.List(node.Members.Select(Function(m As CSS.MemberDeclarationSyntax) DirectCast(m.Accept(Me), VBS.StatementSyntax)))
+                Dim ListOfAttributes As SyntaxList(Of VBS.AttributesStatementSyntax) = VBFactory.List(node.AttributeLists.Select(Function(a As AttributeListSyntax) VBFactory.AttributesStatement(VBFactory.SingletonList(DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))))
+                Dim Members As SyntaxList(Of VBS.StatementSyntax) = VBFactory.List(node.Members.Select(Function(m As MemberDeclarationSyntax) DirectCast(m.Accept(Me), VBS.StatementSyntax)))
                 Dim compilationUnitSyntax1 As VBS.CompilationUnitSyntax
                 Dim EndOfFIleTokenWithTrivia As SyntaxToken = EndOfFileToken.WithConvertedTriviaFrom(node.EndOfFileToken)
 
@@ -120,10 +120,10 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return compilationUnitSyntax1
             End Function
 
-            Public Overrides Function VisitDeclarationPattern(node As CSS.DeclarationPatternSyntax) As VB.VisualBasicSyntaxNode
+            Public Overrides Function VisitDeclarationPattern(node As DeclarationPatternSyntax) As VisualBasicSyntaxNode
                 Dim StatementWithIssue As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
                 Dim LeadingTrivia As SyntaxTriviaList = CheckCorrectnessLeadingTrivia(StatementWithIssue, "VB has no direct equivalent To C# pattern variables 'is' expressions")
-                Dim Designation As CSS.SingleVariableDesignationSyntax = DirectCast(node.Designation, CSS.SingleVariableDesignationSyntax)
+                Dim Designation As SingleVariableDesignationSyntax = DirectCast(node.Designation, SingleVariableDesignationSyntax)
 
                 Dim value As VBS.ExpressionSyntax = VBFactory.ParseExpression($"TryCast({node.Designation.Accept(Me).NormalizeWhitespace.ToFullString}, {node.Type.Accept(Me).NormalizeWhitespace.ToFullString})")
 
@@ -151,18 +151,18 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return value
             End Function
 
-            Public Overrides Function VisitImplicitElementAccess(node As CSS.ImplicitElementAccessSyntax) As VB.VisualBasicSyntaxNode
+            Public Overrides Function VisitImplicitElementAccess(node As ImplicitElementAccessSyntax) As VisualBasicSyntaxNode
                 If node.ArgumentList.Arguments.Count > 1 Then
                     Throw New NotSupportedException("ImplicitElementAccess can only have one argument!")
                 End If
                 Return node.ArgumentList.Arguments(0).Expression.Accept(Me).WithConvertedTriviaFrom(node.ArgumentList.Arguments(0).Expression)
             End Function
 
-            Public Overrides Function VisitLocalFunctionStatement(node As CSS.LocalFunctionStatementSyntax) As VB.VisualBasicSyntaxNode
+            Public Overrides Function VisitLocalFunctionStatement(node As LocalFunctionStatementSyntax) As VisualBasicSyntaxNode
                 Return MyBase.VisitLocalFunctionStatement(node)
             End Function
 
-            Public Overrides Function VisitMakeRefExpression(node As CSS.MakeRefExpressionSyntax) As VB.VisualBasicSyntaxNode
+            Public Overrides Function VisitMakeRefExpression(node As MakeRefExpressionSyntax) As VisualBasicSyntaxNode
 
                 Dim StatementwithIssue As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
                 StatementwithIssue.AddMarker(FlagUnsupportedStatements(StatementwithIssue, "MakeRef Expressions", CommentOutOriginalStatements:=False), StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
@@ -170,23 +170,23 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return VBFactory.InvocationExpression(Expression)
             End Function
 
-            Public Overrides Function VisitOmittedArraySizeExpression(node As CSS.OmittedArraySizeExpressionSyntax) As VB.VisualBasicSyntaxNode
+            Public Overrides Function VisitOmittedArraySizeExpression(node As OmittedArraySizeExpressionSyntax) As VisualBasicSyntaxNode
                 Return VBFactory.OmittedArgument()
             End Function
 
-            Public Overrides Function VisitRefExpression(node As CSS.RefExpressionSyntax) As VB.VisualBasicSyntaxNode
+            Public Overrides Function VisitRefExpression(node As RefExpressionSyntax) As VisualBasicSyntaxNode
                 Dim StatementwithIssue As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
                 StatementwithIssue.AddMarker(FlagUnsupportedStatements(StatementwithIssue, "ref expression", CommentOutOriginalStatements:=True), StatementHandlingOption.ReplaceStatement, AllowDuplicates:=False)
                 Return NothingExpression
             End Function
 
-            Public Overrides Function VisitRefType(node As CSS.RefTypeSyntax) As VB.VisualBasicSyntaxNode
+            Public Overrides Function VisitRefType(node As RefTypeSyntax) As VisualBasicSyntaxNode
                 Dim StatementwithIssue As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
                 StatementwithIssue.AddMarker(FlagUnsupportedStatements(StatementwithIssue, "ref type", CommentOutOriginalStatements:=True), StatementHandlingOption.ReplaceStatement, AllowDuplicates:=False)
                 Return Handle_RefType
             End Function
 
-            Public Overrides Function VisitRefTypeExpression(node As CSS.RefTypeExpressionSyntax) As VB.VisualBasicSyntaxNode
+            Public Overrides Function VisitRefTypeExpression(node As RefTypeExpressionSyntax) As VisualBasicSyntaxNode
                 Dim StatementwithIssue As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
                 StatementwithIssue.AddMarker(FlagUnsupportedStatements(StatementwithIssue, "ref type expression", CommentOutOriginalStatements:=True), StatementHandlingOption.ReplaceStatement, AllowDuplicates:=False)
                 Return Nothing
@@ -198,7 +198,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             ''' <param name="Node"></param>
             ''' <returns></returns>
             ''' <remarks>Added by PC</remarks>
-            Public Overrides Function VisitSingleVariableDesignation(Node As CSS.SingleVariableDesignationSyntax) As VB.VisualBasicSyntaxNode
+            Public Overrides Function VisitSingleVariableDesignation(Node As SingleVariableDesignationSyntax) As VisualBasicSyntaxNode
                 Dim Identifier As SyntaxToken = GenerateSafeVBToken(Node.Identifier, IsQualifiedName:=False)
                 Dim IdentifierExpression As VBS.IdentifierNameSyntax = VBFactory.IdentifierName(Identifier)
                 Dim ModifiedIdentifier As VBS.ModifiedIdentifierSyntax = VBFactory.ModifiedIdentifier(Identifier).WithTrailingTrivia(SpaceTrivia)
@@ -208,7 +208,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         )
 
                 If Node.Parent.IsKind(CS.SyntaxKind.DeclarationExpression) Then
-                    Dim Parent As CSS.DeclarationExpressionSyntax = DirectCast(Node.Parent, CSS.DeclarationExpressionSyntax)
+                    Dim Parent As DeclarationExpressionSyntax = DirectCast(Node.Parent, DeclarationExpressionSyntax)
                     Dim TypeName As VBS.TypeSyntax = CType(Parent.Type.Accept(Me), VBS.TypeSyntax)
 
                     Dim SeparatedListOfvariableDeclarations As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) =
@@ -227,10 +227,10 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
 
                     GetStatementwithIssues(Node).AddMarker(DeclarationToBeAdded, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
                 ElseIf Node.Parent.IsKind(CS.SyntaxKind.DeclarationPattern) Then
-                    Dim DeclarationPattern As CSS.DeclarationPatternSyntax = DirectCast(Node.Parent, CSS.DeclarationPatternSyntax)
-                    Dim CasePatternSwitchLabel As CSS.SwitchLabelSyntax = DirectCast(DeclarationPattern.Parent, CSS.SwitchLabelSyntax)
-                    Dim SwitchSection As CSS.SwitchSectionSyntax = DirectCast(CasePatternSwitchLabel.Parent, CSS.SwitchSectionSyntax)
-                    Dim SwitchStatement As CSS.SwitchStatementSyntax = DirectCast(SwitchSection.Parent, CSS.SwitchStatementSyntax)
+                    Dim DeclarationPattern As DeclarationPatternSyntax = DirectCast(Node.Parent, DeclarationPatternSyntax)
+                    Dim CasePatternSwitchLabel As SwitchLabelSyntax = DirectCast(DeclarationPattern.Parent, SwitchLabelSyntax)
+                    Dim SwitchSection As SwitchSectionSyntax = DirectCast(CasePatternSwitchLabel.Parent, SwitchSectionSyntax)
+                    Dim SwitchStatement As SwitchStatementSyntax = DirectCast(SwitchSection.Parent, SwitchStatementSyntax)
                     Dim SwitchExpression As VBS.ExpressionSyntax = DirectCast(SwitchStatement.Expression.Accept(Me), VBS.ExpressionSyntax)
 
                     Dim TypeName As VBS.TypeSyntax = DirectCast(DeclarationPattern.Type.Accept(Me), VBS.TypeSyntax)
@@ -241,8 +241,8 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return IdentifierExpression
             End Function
 
-            Public Overrides Function VisitStackAllocArrayCreationExpression(node As CSS.StackAllocArrayCreationExpressionSyntax) As VB.VisualBasicSyntaxNode
-                node.FirstAncestorOrSelf(Of CSS.StatementSyntax).AddMarker(FlagUnsupportedStatements(node.FirstAncestorOrSelf(Of CSS.StatementSyntax), "StackAlloc", CommentOutOriginalStatements:=True), StatementHandlingOption.ReplaceStatement, AllowDuplicates:=True)
+            Public Overrides Function VisitStackAllocArrayCreationExpression(node As StackAllocArrayCreationExpressionSyntax) As VisualBasicSyntaxNode
+                node.FirstAncestorOrSelf(Of StatementSyntax).AddMarker(FlagUnsupportedStatements(node.FirstAncestorOrSelf(Of StatementSyntax), "StackAlloc", CommentOutOriginalStatements:=True), StatementHandlingOption.ReplaceStatement, AllowDuplicates:=True)
                 Return PredefinedTypeObject
             End Function
 
@@ -260,28 +260,57 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 End If
                 Variable = VBFactory.VariableDeclarator(VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(TempVariableName)), AsClause, initializer:=Nothing)
                 Dim Blocks As New SyntaxList(Of VBS.CaseBlockSyntax)
-                For Each arm As CSS.SwitchExpressionArmSyntax In node.Arms
-                    If TypeOf arm.Pattern Is CSS.ConstantPatternSyntax Then
+                For Each arm As SwitchExpressionArmSyntax In node.Arms
+                    If TypeOf arm.Pattern Is ConstantPatternSyntax Then
                         Dim ConstatntPattern As ConstantPatternSyntax = CType(arm.Pattern, ConstantPatternSyntax)
                         Dim RelationalCaseClause As VBS.RelationalCaseClauseSyntax = VBFactory.CaseEqualsClause(CType(ConstatntPattern.Expression.Accept(Me), VBS.ExpressionSyntax))
                         Dim CaseStatement As VBS.CaseStatementSyntax = VBFactory.CaseStatement(RelationalCaseClause)
-                        Dim Statements As SyntaxList(Of VBS.StatementSyntax) = VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.SimpleAssignmentStatement(TempIdentifier, CType(arm.Expression.Accept(Me), VBS.ExpressionSyntax)))
-                        Blocks = Blocks.Add(VBFactory.CaseBlock(CaseStatement, Statements))
-                    ElseIf TypeOf arm.Pattern Is CSS.DiscardPatternSyntax Then
+                        Dim Statements As SyntaxList(Of VBS.StatementSyntax) = VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.SimpleAssignmentStatement(TempIdentifier, CType(arm.Expression.Accept(Me), VBS.ExpressionSyntax).WithTrailingEOL))
+                        Blocks = Blocks.Add(VBFactory.CaseBlock(CaseStatement.WithTrailingEOL, Statements))
+                    ElseIf TypeOf arm.Pattern Is DiscardPatternSyntax Then
                         Dim ExpressionOrThrow As VisualBasicSyntaxNode = arm.Expression.Accept(Me)
                         Dim Statements As SyntaxList(Of VBS.StatementSyntax)
                         If TypeOf ExpressionOrThrow Is VBS.ExpressionSyntax Then
-                            Statements = VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.SimpleAssignmentStatement(TempIdentifier, CType(ExpressionOrThrow, VBS.ExpressionSyntax)))
+                            Statements = VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.SimpleAssignmentStatement(TempIdentifier, CType(ExpressionOrThrow, VBS.ExpressionSyntax).WithTrailingEOL))
                         Else
-                            Statements = VBFactory.SingletonList(Of VBS.StatementSyntax)(CType(ExpressionOrThrow, VBS.ThrowStatementSyntax))
+                            Statements = VBFactory.SingletonList(Of VBS.StatementSyntax)(CType(ExpressionOrThrow, VBS.ThrowStatementSyntax).WithTrailingEOL)
                         End If
-                        Blocks = Blocks.Add(VBFactory.CaseElseBlock(VBFactory.CaseElseStatement(VBFactory.ElseCaseClause), Statements))
-                    ElseIf TypeOf arm.Pattern Is CSS.RecursivePatternSyntax Then
+                        Blocks = Blocks.Add(VBFactory.CaseElseBlock(VBFactory.CaseElseStatement(VBFactory.ElseCaseClause).WithTrailingEOL, Statements))
+                    ElseIf TypeOf arm.Pattern Is RecursivePatternSyntax Then
                         StatementWithIssue.AddMarker(FlagUnsupportedStatements(node, "Swith Expression with Recursive Pattern Syntax", CommentOutOriginalStatements:=True), StatementHandlingOption.ReplaceStatement, AllowDuplicates:=True)
                         Return TempIdentifier
-                    ElseIf TypeOf arm.Pattern Is CSS.DeclarationPatternSyntax Then
+                    ElseIf TypeOf arm.Pattern Is DeclarationPatternSyntax Then
                         StatementWithIssue.AddMarker(FlagUnsupportedStatements(node, "Swith Expression with Declaration Pattern Syntax", CommentOutOriginalStatements:=True), StatementHandlingOption.ReplaceStatement, AllowDuplicates:=True)
                         Return TempIdentifier
+                    ElseIf TypeOf arm.Pattern Is VarPatternSyntax Then
+                        Dim VarPattern As VarPatternSyntax = DirectCast(arm.Pattern, VarPatternSyntax)
+                        Dim Statements As SyntaxList(Of VBS.StatementSyntax)
+                        Dim SingleVariableDesignation As SingleVariableDesignationSyntax = DirectCast(VarPattern.Designation, SingleVariableDesignationSyntax)
+                        Dim Identifier As SyntaxToken = GenerateSafeVBToken(id:=SingleVariableDesignation.Identifier, IsQualifiedName:=False, IsTypeName:=False)
+                        Dim Name As VBS.IdentifierNameSyntax = VBFactory.IdentifierName(Identifier.ToString)
+
+                        Dim VariableName As VBS.ModifiedIdentifierSyntax = VBFactory.ModifiedIdentifier(Identifier.WithTrailingTrivia(SpaceTrivia))
+                        Dim ExpressionOrThrow As VisualBasicSyntaxNode = arm.Expression.Accept(Me)
+
+                        If TypeOf ExpressionOrThrow Is VBS.ExpressionSyntax Then
+                            Dim Declarators As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(
+                            node:=VBFactory.VariableDeclarator(VBFactory.SingletonSeparatedList(
+                            VariableName),
+                            asClause:=Nothing, initializer:=VBFactory.EqualsValue(CType(ExpressionOrThrow, VBS.ExpressionSyntax))).WithTrailingEOL
+                             )
+                            Statements = VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.SimpleAssignmentStatement(TempIdentifier, CType(ExpressionOrThrow, VBS.ExpressionSyntax).WithTrailingEOL))
+                        Else
+                            Dim Declarators As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(
+                                    node:=VBFactory.VariableDeclarator(
+                                                        VBFactory.SingletonSeparatedList(VariableName),
+                                                        asClause:=Nothing,
+                                                        initializer:=Nothing).WithTrailingEOL
+                                                )
+                            Statements = New SyntaxList(Of VBS.StatementSyntax)
+                            Statements = Statements.Add(VBFactory.LocalDeclarationStatement(DimModifier, Declarators).WithTrailingEOL)
+                            Statements = Statements.Add(CType(ExpressionOrThrow.WithTrailingEOL, VBS.StatementSyntax))
+                        End If
+                        Blocks = Blocks.Add(VBFactory.CaseElseBlock(VBFactory.CaseElseStatement(VBFactory.ElseCaseClause).WithTrailingEOL, Statements))
                     Else
                         Stop
                     End If
@@ -297,8 +326,8 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                                                         )
                 Dim localDeclarationStatement As VBS.LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(
                                                                                 DimModifier,
-                                                                                VBFactory.SingletonSeparatedList(Of VBS.VariableDeclaratorSyntax)(Variable))
-                StatementWithIssue.AddMarker(localDeclarationStatement, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
+                                                                                VBFactory.SingletonSeparatedList(Variable))
+                StatementWithIssue.AddMarker(localDeclarationStatement.WithTrailingEOL, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
                 StatementWithIssue.AddMarker(stmt, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
                 Return TempIdentifier
             End Function
@@ -309,7 +338,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return MyBase.VisitVariableDeclaration(node)
             End Function
 
-            Public Overrides Function VisitVariableDeclarator(node As CSS.VariableDeclaratorSyntax) As VB.VisualBasicSyntaxNode
+            Public Overrides Function VisitVariableDeclarator(node As VariableDeclaratorSyntax) As VisualBasicSyntaxNode
                 Dim Identifier As SyntaxToken = GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False)
                 Dim ArgumentList As New List(Of VBS.ArgumentSyntax)
                 If node.ArgumentList IsNot Nothing Then

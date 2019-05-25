@@ -74,8 +74,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
                             AfterLineContinuation = False
                             AfterWhiteSpace = False
                         Case VB.SyntaxKind.IfDirectiveTrivia, VB.SyntaxKind.DisabledTextTrivia, VB.SyntaxKind.EndIfDirectiveTrivia
-                            '                            xxx
-                            FinalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(Trivia, FinalLeadingTriviaList, DontRepeatMsg:=False))
+                            FinalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(Trivia))
                             Select Case NextTrivia.RawKind
                                 Case VB.SyntaxKind.None
                                     FinalLeadingTriviaList.Add(VB_EOLTrivia)
