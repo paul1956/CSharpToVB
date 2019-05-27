@@ -128,7 +128,11 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Dim IsFunction As Boolean = Not (symbol.ReturnsVoid OrElse TypeOf node.Body Is CSS.AssignmentExpressionSyntax)
                 Dim Braces As (SyntaxToken, SyntaxToken) = node.Body.GetBraces
                 If IsFunction Then
-                    Dim AsClause As VBS.SimpleAsClauseSyntax = If(symbol.ReturnType.IsErrorType, Nothing, VBFactory.SimpleAsClause(Me.ConvertToType(symbol.ReturnType)))
+                    Dim AddAsClause As Boolean = symbol.ReturnType.IsErrorType OrElse symbol.ReturnType.ToString.Contains("?")
+                    Dim AsClause As VBS.SimpleAsClauseSyntax = If(AddAsClause,
+                                                                  Nothing,
+                                                                  VBFactory.SimpleAsClause(Me.ConvertToType(symbol.ReturnType))
+                                                                  )
                     header = VBFactory.FunctionLambdaHeader(VBFactory.List(Of VBS.AttributeListSyntax)(), VBFactory.TokenList(Modifiers), parameterList, asClause:=AsClause)
                     EndSubOrFunctionStatement = VBFactory.EndFunctionStatement().WithConvertedTriviaFrom(Braces.Item2)
                 Else
@@ -561,7 +565,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     Next
                     Return VBFactory.TupleType(SSList.ToArray)
                 Else
-                    Return ConvertToType(AddBracketsIfRequired(PossibleTupleType.ToString.Trim.Replace("<", "(Of ").Replace(">", ")")))
+                    Return ConvertToType(PossibleTupleType.ToString.Trim.Replace("<", "(Of ").Replace(">", ")"))
                 End If
             End Function
 

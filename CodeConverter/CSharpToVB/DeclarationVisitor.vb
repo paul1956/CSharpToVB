@@ -194,22 +194,6 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return NodeLeadingTrivia
             End Function
 
-            Private Function ProcessNode(currentNode As SyntaxNode, statementLeadingTrivia As List(Of SyntaxTrivia), statementTrailingTrivia As List(Of SyntaxTrivia)) As SyntaxNode
-#If Testing Then
-                For ChildTokensCount As Integer = 0 To currentNode.DescendantNodesAndTokens.Count - 1
-                    Dim CurrentNodeOrToken As SyntaxNodeOrToken = currentNode.DescendantNodesAndTokens()(ChildTokensCount)
-                    If CurrentNodeOrToken.IsNode Then
-                        Dim NewNode As SyntaxNode = Me.ProcessNode(CType(CurrentNodeOrToken, SyntaxNode), statementLeadingTrivia, statementTrailingTrivia)
-                        currentNode = currentNode.ReplaceNode(CType(currentNode.DescendantNodesAndTokens()(ChildTokensCount), SyntaxNode), NewNode)
-                    Else
-                        Dim NewToken As SyntaxToken = ProcessVBToken(CType(CurrentNodeOrToken, SyntaxToken), statementLeadingTrivia, statementTrailingTrivia)
-                        currentNode = currentNode.ReplaceToken(CType(currentNode.DescendantNodesAndTokens()(ChildTokensCount), SyntaxToken), NewToken)
-                    End If
-                Next
-#End If
-                Return currentNode
-            End Function
-
             Public Overrides Function VisitAnonymousObjectMemberDeclarator(node As CSS.AnonymousObjectMemberDeclaratorSyntax) As VB.VisualBasicSyntaxNode
                 If node.NameEquals Is Nothing Then
                     Return VBFactory.InferredFieldInitializer(DirectCast(node.Expression.Accept(Me), VBS.ExpressionSyntax)).WithConvertedTriviaFrom(node)
@@ -667,17 +651,6 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                             End If
                             Dim StatementLeadingTrivia As New List(Of SyntaxTrivia)
                             Dim StatementTrailingTrivia As New List(Of SyntaxTrivia)
-
-                            For ChildTokensCount As Integer = 0 To ReturnExpression.DescendantNodesAndTokens.Count
-                                Dim CurrentNodeOrToken As SyntaxNodeOrToken = ReturnExpression.DescendantNodesAndTokens()(ChildTokensCount)
-                                If CurrentNodeOrToken.IsNode Then
-                                    Dim CurrentNode As SyntaxNode = Me.ProcessNode(CType(CurrentNodeOrToken, SyntaxNode), StatementLeadingTrivia, StatementTrailingTrivia)
-                                    ReturnExpression = ReturnExpression.ReplaceNode(CType(ReturnExpression.DescendantNodesAndTokens()(ChildTokensCount), SyntaxNode), CurrentNode)
-                                Else
-                                    Dim CurrentToken As SyntaxToken = ProcessVBToken(CType(CurrentNodeOrToken, SyntaxToken), StatementLeadingTrivia, StatementTrailingTrivia)
-                                    ReturnExpression = ReturnExpression.ReplaceToken(CType(ReturnExpression.DescendantNodesAndTokens()(ChildTokensCount), SyntaxToken), CurrentToken)
-                                End If
-                            Next
                             If node.ExpressionBody.Expression.IsKind(CS.SyntaxKind.DefaultLiteralExpression) Then
                                 StatementLeadingTrivia.InsertRange(0, CheckCorrectnessLeadingTrivia(DirectCast(Nothing, CS.CSharpSyntaxNode), "VB Does not support ""Default"""))
                                 Dim ReturnStatement As VBS.ReturnStatementSyntax = VBFactory.ReturnStatement(ReturnExpression.WithLeadingTrivia(SpaceTrivia))

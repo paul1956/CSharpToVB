@@ -9,8 +9,8 @@ Imports Microsoft.CodeAnalysis
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
-Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
+Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace IVisualBasicCode.CodeConverter.Visual_Basic
 
@@ -105,7 +105,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     Case "?"
                         Return PredefinedTypeObject
                     Case Else
-                        Return VBFactory.ParseTypeName(AddBracketsIfRequired(TypeString))
+                        Return VBFactory.ParseTypeName(AddBracketsIfRequired(TypeString.Replace("[", "(").Replace("]", ")")))
                 End Select
             End Function
 

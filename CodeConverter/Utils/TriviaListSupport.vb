@@ -3,7 +3,6 @@ Option Infer Off
 Option Strict On
 
 Imports IVisualBasicCode.CodeConverter.Util
-Imports IVisualBasicCode.CodeConverter.Visual_Basic.CSharpConverter
 
 Imports Microsoft.CodeAnalysis
 
@@ -57,91 +56,6 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 End If
             Next
             Return NewTrailingTrivia
-        End Function
-
-        Public Function ProcessVBToken(CurrentToken As SyntaxToken, StatementLeadingTrivia As List(Of SyntaxTrivia), StatementTrailingTrivia As List(Of SyntaxTrivia), Optional RemoveEOL As Boolean = False) As SyntaxToken
-            Dim CurrentTokenLeadingTrivia As New List(Of SyntaxTrivia)
-            Dim CurrentTokenTrailingTrivia As New List(Of SyntaxTrivia)
-
-            For i As Integer = 0 To CurrentToken.LeadingTrivia.Count - 1
-                Dim Trivia As SyntaxTrivia = CurrentToken.LeadingTrivia(i)
-                Dim Nextrivia As SyntaxTrivia = If(i < CurrentToken.LeadingTrivia.Count - 1, CurrentToken.LeadingTrivia(i + 1), Nothing)
-                Select Case Trivia.RawKind
-                    Case VB.SyntaxKind.WhitespaceTrivia
-                        If Nextrivia.IsNone OrElse Nextrivia.IsComment Then
-                            StatementLeadingTrivia.Add(Trivia)
-                        Else
-                            CurrentTokenLeadingTrivia.Add(SpaceTrivia)
-                        End If
-                    Case VB.SyntaxKind.EndOfLineTrivia
-                        If RemoveEOL Then
-                            Continue For
-                        End If
-                        If i > 0 Then
-                            If CurrentToken.LeadingTrivia(i - 1).IsComment Then
-                                StatementLeadingTrivia.Add(Trivia)
-                            Else
-                                CurrentTokenLeadingTrivia.Add(Trivia)
-                            End If
-                        Else
-                            CurrentTokenLeadingTrivia.Add(Trivia)
-                        End If
-                    Case VB.SyntaxKind.CommentTrivia
-                        StatementLeadingTrivia.Add(Trivia)
-                    Case VB.SyntaxKind.LineContinuationTrivia
-                        Stop
-                    Case VB.SyntaxKind.DisabledTextTrivia, VB.SyntaxKind.ConstDirectiveTrivia, VB.SyntaxKind.IfDirectiveTrivia,
-                         VB.SyntaxKind.ElseIfDirectiveTrivia, VB.SyntaxKind.ElseDirectiveTrivia, VB.SyntaxKind.EndIfDirectiveTrivia,
-                        VB.SyntaxKind.RegionDirectiveTrivia, VB.SyntaxKind.EndRegionDirectiveTrivia,
-                         VB.SyntaxKind.DisableWarningDirectiveTrivia, VB.SyntaxKind.EnableWarningDirectiveTrivia
-                        StatementLeadingTrivia.Add(Trivia)
-                    Case Else
-                        Debug.WriteLine($"Unexpected Kind ={Trivia.RawKind.ToString} ")
-                        Stop
-                End Select
-            Next
-            For i As Integer = 0 To CurrentToken.TrailingTrivia.Count - 1
-                Dim t As SyntaxTrivia = CurrentToken.TrailingTrivia(i)
-                Select Case t.RawKind
-                    Case VB.SyntaxKind.WhitespaceTrivia
-                        If i + 1 < CurrentToken.TrailingTrivia.Count Then
-                            If CurrentToken.TrailingTrivia(i + 1).IsComment Then
-                                StatementTrailingTrivia.Add(t)
-                            Else
-                                CurrentTokenTrailingTrivia.Add(SpaceTrivia)
-                            End If
-                        Else
-                            CurrentTokenTrailingTrivia.Add(t)
-                        End If
-                    Case VB.SyntaxKind.EndOfLineTrivia
-                        If RemoveEOL Then
-                            Continue For
-                        End If
-                        If i > 0 Then
-                            If CurrentToken.TrailingTrivia(i - 1).IsComment Then
-                                StatementTrailingTrivia.Add(t)
-                            Else
-                                CurrentTokenTrailingTrivia.Add(t)
-                            End If
-                        Else
-                            CurrentTokenTrailingTrivia.Add(t)
-                        End If
-                    Case VB.SyntaxKind.CommentTrivia
-                        StatementTrailingTrivia.Add(t)
-                    Case VB.SyntaxKind.SkippedTokensTrivia
-                        CurrentToken = VB.SyntaxFactory.ParseToken($"[{CurrentToken.TrailingTrivia(0)}]")
-                    Case VB.SyntaxKind.IfDirectiveTrivia, VB.SyntaxKind.DisabledTextTrivia, VB.SyntaxKind.ElseDirectiveTrivia
-                        StatementLeadingTrivia.Add(t)
-                    Case VB.SyntaxKind.EndIfDirectiveTrivia
-                        StatementTrailingTrivia.Add(t)
-                    Case VB.SyntaxKind.LineContinuationTrivia
-                        CurrentTokenTrailingTrivia.Add(t)
-                    Case Else
-                        Debug.WriteLine(t.RawKind.ToString)
-                        Stop
-                End Select
-            Next
-            Return CurrentToken.With(CurrentTokenLeadingTrivia, CurrentTokenTrailingTrivia)
         End Function
 
         Public Sub RelocateAttributeDirectiveDisabledTrivia(TriviaList As SyntaxTriviaList, FoundDirective As Boolean, IsTheory As Boolean, ByRef StatementLeadingTrivia As List(Of SyntaxTrivia), ByRef StatementTrailingTrivia As List(Of SyntaxTrivia))
