@@ -64,17 +64,14 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             Dim CurrentTokenTrailingTrivia As New List(Of SyntaxTrivia)
 
             For i As Integer = 0 To CurrentToken.LeadingTrivia.Count - 1
-                Dim t As SyntaxTrivia = CurrentToken.LeadingTrivia(i)
-                Select Case t.RawKind
+                Dim Trivia As SyntaxTrivia = CurrentToken.LeadingTrivia(i)
+                Dim Nextrivia As SyntaxTrivia = If(i < CurrentToken.LeadingTrivia.Count - 1, CurrentToken.LeadingTrivia(i + 1), Nothing)
+                Select Case Trivia.RawKind
                     Case VB.SyntaxKind.WhitespaceTrivia
-                        If i + 1 < CurrentToken.LeadingTrivia.Count Then
-                            If CurrentToken.LeadingTrivia(i + 1).IsComment Then
-                                StatementLeadingTrivia.Add(t)
-                            Else
-                                CurrentTokenLeadingTrivia.Add(SpaceTrivia)
-                            End If
+                        If Nextrivia.IsNone OrElse Nextrivia.IsComment Then
+                            StatementLeadingTrivia.Add(Trivia)
                         Else
-                            CurrentTokenLeadingTrivia.Add(t)
+                            CurrentTokenLeadingTrivia.Add(SpaceTrivia)
                         End If
                     Case VB.SyntaxKind.EndOfLineTrivia
                         If RemoveEOL Then
@@ -82,24 +79,24 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         End If
                         If i > 0 Then
                             If CurrentToken.LeadingTrivia(i - 1).IsComment Then
-                                StatementLeadingTrivia.Add(t)
+                                StatementLeadingTrivia.Add(Trivia)
                             Else
-                                CurrentTokenLeadingTrivia.Add(t)
+                                CurrentTokenLeadingTrivia.Add(Trivia)
                             End If
                         Else
-                            CurrentTokenLeadingTrivia.Add(t)
+                            CurrentTokenLeadingTrivia.Add(Trivia)
                         End If
                     Case VB.SyntaxKind.CommentTrivia
-                        StatementLeadingTrivia.Add(t)
+                        StatementLeadingTrivia.Add(Trivia)
                     Case VB.SyntaxKind.LineContinuationTrivia
                         Stop
                     Case VB.SyntaxKind.DisabledTextTrivia, VB.SyntaxKind.ConstDirectiveTrivia, VB.SyntaxKind.IfDirectiveTrivia,
                          VB.SyntaxKind.ElseIfDirectiveTrivia, VB.SyntaxKind.ElseDirectiveTrivia, VB.SyntaxKind.EndIfDirectiveTrivia,
                         VB.SyntaxKind.RegionDirectiveTrivia, VB.SyntaxKind.EndRegionDirectiveTrivia,
                          VB.SyntaxKind.DisableWarningDirectiveTrivia, VB.SyntaxKind.EnableWarningDirectiveTrivia
-                        StatementLeadingTrivia.Add(t)
+                        StatementLeadingTrivia.Add(Trivia)
                     Case Else
-                        Debug.WriteLine($"Unexpected Kind ={t.RawKind.ToString} ")
+                        Debug.WriteLine($"Unexpected Kind ={Trivia.RawKind.ToString} ")
                         Stop
                 End Select
             Next

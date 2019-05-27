@@ -119,7 +119,10 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     If TypeOf VBNode Is VBS.AssignmentStatementSyntax OrElse TypeOf VBNode Is VBS.ThrowStatementSyntax Then
                         body = VBFactory.SingletonList(DirectCast(VBNode, VBS.StatementSyntax))
                     Else
-                        body = VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.ReturnStatement(DirectCast(VBNode, VBS.ExpressionSyntax)))
+                        body = VBFactory.SingletonList(Of VBS.StatementSyntax)(
+                                                    VBFactory.ReturnStatement(DirectCast(VBNode, VBS.ExpressionSyntax)).
+                                                                    WithTrailingEOL
+                                                                              )
                     End If
                 End If
                 Dim Attributes As SyntaxList(Of VBS.AttributeListSyntax) = VBFactory.List(node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))
@@ -134,20 +137,20 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         endStmt = VBFactory.EndGetStatement()
                     Case CS.SyntaxKind.SetAccessorDeclaration
                         blockKind = VB.SyntaxKind.SetAccessorBlock
-                        ValueParam = VBFactory.Parameter(ModifiedIdentifier_Value).
+                        ValueParam = VBFactory.Parameter(Value_ModifiedIdentifier).
                             WithAsClause(VBFactory.SimpleAsClause(DirectCast(Parent.Type.Accept(Me), VBS.TypeSyntax).
                             WithLeadingTrivia(SpaceTrivia)))
                         stmt = VBFactory.SetAccessorStatement(Attributes, VBFactory.TokenList(Modifiers), VBFactory.ParameterList(VBFactory.SingletonSeparatedList(ValueParam)))
                         endStmt = VBFactory.EndSetStatement()
                     Case CS.SyntaxKind.AddAccessorDeclaration
                         blockKind = VB.SyntaxKind.AddHandlerAccessorBlock
-                        ValueParam = VBFactory.Parameter(ModifiedIdentifier_Value).
+                        ValueParam = VBFactory.Parameter(Value_ModifiedIdentifier).
                             WithAsClause(VBFactory.SimpleAsClause(DirectCast(Parent.Type.Accept(Me), VBS.TypeSyntax)))
                         stmt = VBFactory.AddHandlerAccessorStatement(Attributes, VBFactory.TokenList(Modifiers), VBFactory.ParameterList(VBFactory.SingletonSeparatedList(ValueParam)))
                         endStmt = VBFactory.EndAddHandlerStatement()
                     Case CS.SyntaxKind.RemoveAccessorDeclaration
                         blockKind = VB.SyntaxKind.RemoveHandlerAccessorBlock
-                        ValueParam = VBFactory.Parameter(ModifiedIdentifier_Value).
+                        ValueParam = VBFactory.Parameter(Value_ModifiedIdentifier).
                             WithAsClause(VBFactory.SimpleAsClause(DirectCast(Parent.Type.Accept(Me), VBS.TypeSyntax)))
                         stmt = VBFactory.RemoveHandlerAccessorStatement(Attributes, VBFactory.TokenList(Modifiers), VBFactory.ParameterList(VBFactory.SingletonSeparatedList(ValueParam)))
                         endStmt = VBFactory.EndRemoveHandlerStatement()
@@ -192,6 +195,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             End Function
 
             Private Function ProcessNode(currentNode As SyntaxNode, statementLeadingTrivia As List(Of SyntaxTrivia), statementTrailingTrivia As List(Of SyntaxTrivia)) As SyntaxNode
+#If Testing Then
                 For ChildTokensCount As Integer = 0 To currentNode.DescendantNodesAndTokens.Count - 1
                     Dim CurrentNodeOrToken As SyntaxNodeOrToken = currentNode.DescendantNodesAndTokens()(ChildTokensCount)
                     If CurrentNodeOrToken.IsNode Then
@@ -202,6 +206,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         currentNode = currentNode.ReplaceToken(CType(currentNode.DescendantNodesAndTokens()(ChildTokensCount), SyntaxToken), NewToken)
                     End If
                 Next
+#End If
                 Return currentNode
             End Function
 
@@ -325,7 +330,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 If node.Body IsNot Nothing Then
                     Statements = VBFactory.List(node.Body.Statements.SelectMany(Function(s As CSS.StatementSyntax) s.Accept(visitor)))
                 ElseIf node.ExpressionBody IsNot Nothing Then
-                    Statements = VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.ReturnStatement(DirectCast(node.ExpressionBody.Accept(Me), VBS.ExpressionSyntax)))
+                    Statements = VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.ReturnStatement(DirectCast(node.ExpressionBody.Accept(Me), VBS.ExpressionSyntax)).WithTrailingEOL)
                 Else
                     Stop
                 End If
@@ -491,8 +496,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         Dim VBSyntaxNode As VB.VisualBasicSyntaxNode = node.ExpressionBody.Accept(Me)
                         Dim Body As SyntaxList(Of VBS.StatementSyntax)
                         If TypeOf VBSyntaxNode Is VBS.ExpressionSyntax Then
-                            Dim Expression As VBS.ExpressionSyntax = DirectCast(VBSyntaxNode, VBS.ExpressionSyntax)
-                            Body = VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.ReturnStatement(Expression))
+                            Body = VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.ReturnStatement(DirectCast(VBSyntaxNode, VBS.ExpressionSyntax)).WithTrailingEOL)
                         ElseIf TypeOf VBSyntaxNode Is VBS.ThrowStatementSyntax Then
                             Dim Statement As VBS.ThrowStatementSyntax = DirectCast(VBSyntaxNode, VBS.ThrowStatementSyntax)
                             Body = VBFactory.SingletonList(Of VBS.StatementSyntax)(Statement)
@@ -679,11 +683,15 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                 Dim ReturnStatement As VBS.ReturnStatementSyntax = VBFactory.ReturnStatement(ReturnExpression.WithLeadingTrivia(SpaceTrivia))
                                 Dim ReturnStartementWithTrivia As VBS.ReturnStatementSyntax = ReturnStatement.
                                                 With(StatementLeadingTrivia, ConvertTrivia(node.ExpressionBody.Expression.GetTrailingTrivia)).
-                                                WithAppendedTrailingTrivia(ConvertTrivia(node.SemicolonToken.TrailingTrivia))
+                                                WithAppendedTrailingTrivia(ConvertTrivia(node.SemicolonToken.TrailingTrivia)).
+                                                WithTrailingEOL
                                 StatementList.Add(ReturnStartementWithTrivia)
                             Else
-                                StatementList.Add(VBFactory.ReturnStatement(ReturnExpression).With(StatementLeadingTrivia, ConvertTrivia(node.ExpressionBody.Expression.GetTrailingTrivia)).
-                                                WithAppendedTrailingTrivia(ConvertTrivia(node.SemicolonToken.TrailingTrivia)))
+                                StatementList.Add(VBFactory.ReturnStatement(ReturnExpression).
+                                                      With(StatementLeadingTrivia, ConvertTrivia(node.ExpressionBody.Expression.GetTrailingTrivia)).
+                                                      WithAppendedTrailingTrivia(ConvertTrivia(node.SemicolonToken.TrailingTrivia)).
+                                                      WithTrailingEOL
+                                                  )
                             End If
                             Statements = VBFactory.List(StatementList)
                         End If
@@ -907,9 +915,9 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 ElseIf node.ExpressionBody IsNot Nothing Then
                     Dim VBSyntaxNode As VB.VisualBasicSyntaxNode = node.ExpressionBody.Accept(Me)
                     If TypeOf VBSyntaxNode Is VBS.ExpressionSyntax Then
-                        body = VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.ReturnStatement(DirectCast(VBSyntaxNode, VBS.ExpressionSyntax)))
+                        body = VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.ReturnStatement(DirectCast(VBSyntaxNode, VBS.ExpressionSyntax)).WithTrailingEOL)
                     Else
-                        body = VBFactory.SingletonList(Of VBS.StatementSyntax)(CType(VBSyntaxNode, VBS.StatementSyntax))
+                        body = VBFactory.SingletonList(CType(VBSyntaxNode, VBS.StatementSyntax).WithTrailingEOL)
                     End If
                 Else
                     Stop
@@ -995,10 +1003,13 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         Else
                             ReturnedExpression = ReturnedExpression.WithConvertedTriviaFrom(node.ExpressionBody)
                         End If
-                        Dim NewTrailingTrivia As New List(Of SyntaxTrivia)
+
+                        Dim ReturnStatement As VBS.ReturnStatementSyntax = VBFactory.ReturnStatement(ReturnedExpression.WithLeadingTrivia(SpaceTrivia)).
+                                                WithLeadingTrivia(ReturnedExpression.GetLeadingTrivia)
+
                         Dim NewLeadingTrivia As New List(Of SyntaxTrivia)
-                        Dim ReturnStatement As VBS.ReturnStatementSyntax = VBFactory.ReturnStatement(ReturnedExpression.WithLeadingTrivia(SpaceTrivia)).WithLeadingTrivia(ReturnedExpression.GetLeadingTrivia)
                         NewLeadingTrivia.AddRange(ReturnStatement.GetLeadingTrivia)
+                        Dim NewTrailingTrivia As New List(Of SyntaxTrivia)
                         For Each t As SyntaxTrivia In ReturnStatement.GetTrailingTrivia
                             Select Case t.RawKind
                                 Case VB.SyntaxKind.WhitespaceTrivia, VB.SyntaxKind.EndOfLineTrivia, VB.SyntaxKind.CommentTrivia
@@ -1009,7 +1020,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                     Stop
                             End Select
                         Next
-                        ReturnStatement = ReturnStatement.With(NewLeadingTrivia, NewTrailingTrivia)
+                        ReturnStatement = ReturnStatement.With(NewLeadingTrivia, NewTrailingTrivia).WithTrailingEOL
                         Statements = ReplaceStatementsWithMarkedStatements(node, VBFactory.SingletonList(Of VBS.StatementSyntax)(ReturnStatement))
                     End If
                     accessors.Add(VBFactory.AccessorBlock(VB.SyntaxKind.GetAccessorBlock, VBFactory.GetAccessorStatement.WithTrailingEOL, Statements, VBFactory.EndGetStatement()))

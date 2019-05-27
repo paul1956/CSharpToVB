@@ -65,7 +65,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
                 If t.IsWhitespaceOrEndOfLine Then
                     Continue For
                 End If
-                If t.RawKind = VB.SyntaxKind.None Then
+                If t.IsNone Then
                     Continue For
                 End If
                 If t.IsCommentOrDirectiveTrivia Then
@@ -142,7 +142,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
                 If t.IsWhitespaceOrEndOfLine Then
                     Continue For
                 End If
-                If t.RawKind = VB.SyntaxKind.None Then
+                If t.IsNone Then
                     Continue For
                 End If
                 If t.IsComment Then
@@ -254,6 +254,10 @@ Namespace IVisualBasicCode.CodeConverter.Util
                     TriviaAsString = $"#ElseIf {Trivia.ToFullString.Substring("#Else If".Length).Trim.WithoutNewLines(" "c)}"
                 Case VB.SyntaxKind.EndIfDirectiveTrivia
                     TriviaAsString = $"#EndIf {Trivia.ToFullString.Substring("#End if".Length).Trim.WithoutNewLines(" "c)}"
+                Case VB.SyntaxKind.DisableWarningDirectiveTrivia
+                    TriviaAsString = $"#Disable Warning Directive {Trivia.ToFullString.Substring("#Disable Warning".Length).Trim.WithoutNewLines(" "c)}"
+                Case VB.SyntaxKind.EnableWarningDirectiveTrivia
+                    TriviaAsString = $"#Enable Warning Directive {Trivia.ToFullString.Substring("#Enable Warning".Length).Trim.WithoutNewLines(" "c)}"
                 Case Else
                     Stop
             End Select
@@ -415,6 +419,11 @@ Namespace IVisualBasicCode.CodeConverter.Util
         <Extension>
         Public Function IsMultiLineDocComment(trivia As SyntaxTrivia) As Boolean
             Return trivia.IsKind(CS.SyntaxKind.MultiLineDocumentationCommentTrivia)
+        End Function
+
+        <Extension>
+        Public Function IsNone(trivia As SyntaxTrivia) As Boolean
+            Return trivia.RawKind = 0
         End Function
 
         <Extension>

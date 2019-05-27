@@ -86,12 +86,12 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                                                                                               elseClause:=Nothing)
                             Dim StatementWithIssues As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
                             StatementWithIssues.AddMarker(IfBlock, StatementHandlingOption.PrependStatement, AllowDuplicates:=False)
-                            ArgumentWithTrivia = DirectCast(CS_BinaryExpression.Left.Accept(Me).WithConvertedTriviaFrom(CS_BinaryExpression.Left), VBS.ExpressionSyntax)
+                            ArgumentWithTrivia = DirectCast(CS_BinaryExpression.Left.Accept(Me).WithConvertedTriviaFrom(CS_BinaryExpression.Left).WithModifiedNodeTrivia(True), VBS.ExpressionSyntax)
                         Else
-                            ArgumentWithTrivia = DirectCast(NodeExpression.Accept(Me), VBS.ExpressionSyntax)
+                            ArgumentWithTrivia = DirectCast(NodeExpression.Accept(Me).WithModifiedNodeTrivia(True), VBS.ExpressionSyntax)
                         End If
                     Else
-                        ArgumentWithTrivia = DirectCast(NodeExpression.Accept(Me), VBS.ExpressionSyntax)
+                        ArgumentWithTrivia = DirectCast(NodeExpression.Accept(Me).WithModifiedNodeTrivia(True), VBS.ExpressionSyntax)
                     End If
 
                     If TypeOf node.Parent Is CSS.BracketedArgumentListSyntax Then
@@ -137,7 +137,10 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                 Case VB.SyntaxKind.EnableWarningDirectiveTrivia
                                     GetStatementwithIssues(node).AddMarker(VB.SyntaxFactory.EmptyStatement.WithLeadingTrivia(trivia), StatementHandlingOption.AppendEmptyStatement, AllowDuplicates:=True)
                                 Case VB.SyntaxKind.LineContinuationTrivia
-                                    NewLeadingTrivia.Add(trivia)
+                                    If NewLeadingTrivia.Last.IsKind(VB.SyntaxKind.LineContinuationTrivia) Then
+                                        Continue For
+                                    End If
+                                    NewLeadingTrivia.Add(LineContinuation)
                                 Case Else
                                     Stop
                             End Select

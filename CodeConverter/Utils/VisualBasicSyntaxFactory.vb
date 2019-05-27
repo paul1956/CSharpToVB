@@ -208,7 +208,7 @@ Public Module VisualBasicSyntaxFactory
 #End Region
 
     Public ReadOnly DimModifier As SyntaxTokenList = SyntaxFactory.TokenList(DimKeyword)
-    Public ReadOnly ModifiedIdentifier_Value As Syntax.ModifiedIdentifierSyntax = SyntaxFactory.ModifiedIdentifier("Value")
+    Public ReadOnly Value_ModifiedIdentifier As Syntax.ModifiedIdentifierSyntax = SyntaxFactory.ModifiedIdentifier("Value")
     Public ReadOnly PublicModifier As SyntaxTokenList = SyntaxFactory.TokenList(PublicKeyword)
 
 #End If

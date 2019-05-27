@@ -1232,7 +1232,9 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Dim MovedLeadingTrivia As New List(Of SyntaxTrivia)
                 Dim Expression As VBS.ExpressionSyntax
                 If node.Expression Is Nothing Then
-                    stmt = VBFactory.ReturnStatement().WithConvertedTriviaFrom(node)
+                    stmt = VBFactory.ReturnStatement.
+                                        WithConvertedTriviaFrom(node).
+                                        WithTrailingEOL
                 Else
                     Expression = DirectCast(node.Expression.Accept(Me.mNodesVisitor), VBS.ExpressionSyntax)
                     ' TODO Handle ref expressions
@@ -1245,7 +1247,10 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         End If
                         Expression = Expression?.WithLeadingTrivia(SpaceTrivia)
                     End If
-                    stmt = VBFactory.ReturnStatement(Expression?.WithLeadingTrivia(SpaceTrivia)).WithLeadingTrivia(MovedLeadingTrivia).WithTrailingTrivia(ConvertTrivia(node.SemicolonToken.TrailingTrivia))
+                    stmt = VBFactory.ReturnStatement(Expression?.WithLeadingTrivia(SpaceTrivia)).
+                                            WithLeadingTrivia(MovedLeadingTrivia).
+                                            WithTrailingTrivia(ConvertTrivia(node.SemicolonToken.TrailingTrivia)).
+                                            WithTrailingEOL
                 End If
                 Return ReplaceStatementsWithMarkedStatements(node, VBFactory.SingletonList(stmt))
             End Function
@@ -1382,10 +1387,10 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         Dim CS_ConditionalAccessExpression As CSS.ConditionalAccessExpressionSyntax = DirectCast(node.Expression, CSS.ConditionalAccessExpressionSyntax)
                         Dim VB_ConditionalAccessExpression As VB.VisualBasicSyntaxNode = CS_ConditionalAccessExpression.Expression.Accept(Me.mNodesVisitor)
                         Dim Condition As VBS.BinaryExpressionSyntax = VBFactory.IsNotExpression(left:=CType(VB_ConditionalAccessExpression, VBS.ExpressionSyntax),
-                                                                                                         right:=NothingExpression)
+                                                                                                right:=NothingExpression)
                         Dim IfStatement As VBS.IfStatementSyntax = VBFactory.IfStatement(Condition)
                         UsingStatement = VBFactory.UsingStatement(VBFactory.ParseExpression($"{VB_ConditionalAccessExpression.ToString}{CS_ConditionalAccessExpression.WhenNotNull.Accept(Me.mNodesVisitor)}"), VBFactory.SeparatedList(Of VBS.VariableDeclaratorSyntax)())
-                        UsingBlock = VBFactory.UsingBlock(UsingStatement, Me.ConvertBlock(node.Statement, OpenBraceTrailingTrivia, ClosingBraceLeadingTrivia)).WithLeadingTrivia(LeadingTrivia)
+                        UsingBlock = VBFactory.UsingBlock(UsingStatement.WithTrailingEOL, Me.ConvertBlock(node.Statement, OpenBraceTrailingTrivia, ClosingBraceLeadingTrivia)).WithLeadingTrivia(LeadingTrivia)
                         Dim IfStatementBlock As VBS.MultiLineIfBlockSyntax = VBFactory.MultiLineIfBlock(IfStatement, VBFactory.SingletonList(Of VBS.StatementSyntax)(UsingBlock), elseIfBlocks:=Nothing, elseBlock:=Nothing).WithLeadingTrivia(LeadingTrivia)
                         Stmt = VBFactory.SingletonList(Of VBS.StatementSyntax)(IfStatementBlock)
                         Return ReplaceStatementsWithMarkedStatements(node, Stmt)
@@ -1502,9 +1507,9 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Me.IsInterator = True
                 Dim stmt As VBS.StatementSyntax
                 If node.Expression Is Nothing Then
-                    stmt = VBFactory.ReturnStatement()
+                    stmt = VBFactory.ReturnStatement.WithTrailingEOL
                 Else
-                    stmt = VBFactory.YieldStatement(expression:=DirectCast(node.Expression.Accept(Me.mNodesVisitor), VBS.ExpressionSyntax)).WithTrailingEOL
+                    stmt = VBFactory.YieldStatement(DirectCast(node.Expression.Accept(Me.mNodesVisitor), VBS.ExpressionSyntax)).WithTrailingEOL
                 End If
                 Return ReplaceStatementsWithMarkedStatements(node, VBFactory.SingletonList(stmt.WithConvertedTriviaFrom(node)))
             End Function

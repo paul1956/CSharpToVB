@@ -187,7 +187,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
 
         Private Function GetNextRelevantToken(token As SyntaxToken) As SyntaxToken
             Dim nextToken As SyntaxToken = token.GetNextToken(Function(t As SyntaxToken)
-                                                                  Return t.Kind <> SyntaxKind.None
+                                                                  Return Not t.IsKind(SyntaxKind.None)
                                                               End Function, Function(t As SyntaxTrivia) False)
 
             If Me._consideredSpan.Contains(nextToken.FullSpan) Then

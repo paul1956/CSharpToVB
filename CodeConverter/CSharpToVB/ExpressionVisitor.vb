@@ -22,13 +22,14 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
         Partial Protected Friend Class NodesVisitor
             Inherits CS.CSharpSyntaxVisitor(Of VB.VisualBasicSyntaxNode)
 
-            Private Shared Function Convert_ToObject(Type As String) As String
-                Return If(Type = "_", "Object", Type)
-            End Function
 
             Private Shared Function ConvertToInterpolatedStringTextToken(CSharpToken As SyntaxToken) As SyntaxToken
                 Dim TokenString As String = ConvertCSharpEscapes(CSharpToken.ValueText)
                 Return VBFactory.InterpolatedStringTextToken(TokenString, TokenString)
+            End Function
+
+            Private Shared Function ConvertTuplePartToString(Type As String) As String
+                Return If(Type = "_", "Object", ConvertToType(Type).ToString)
             End Function
 
             Private Shared Sub RestructureCloseTokenTrivia(CS_Token As SyntaxToken, ByRef CloseToken As SyntaxToken)
@@ -99,6 +100,10 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return expression IsNot Nothing
             End Function
 
+            Private Shared Function ValidatePunctuation(Part As SymbolDisplayPart, DesiredKind As SymbolDisplayPartKind, ParamArray Str() As String) As Boolean
+                Return Part.Kind = DesiredKind AndAlso (Str.Length = 0 OrElse Str.Contains(Part.ToString))
+            End Function
+
             Private Function ConvertLambdaExpression(node As CSS.AnonymousFunctionExpressionSyntax, block As Object, parameters As SeparatedSyntaxList(Of CSS.ParameterSyntax), CS_Modifiers As SyntaxTokenList) As VBS.LambdaExpressionSyntax
                 Dim NodesList As New List(Of VBS.ParameterSyntax)
                 Dim Separators As New List(Of SyntaxToken)
@@ -123,7 +128,8 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Dim IsFunction As Boolean = Not (symbol.ReturnsVoid OrElse TypeOf node.Body Is CSS.AssignmentExpressionSyntax)
                 Dim Braces As (SyntaxToken, SyntaxToken) = node.Body.GetBraces
                 If IsFunction Then
-                    header = VBFactory.FunctionLambdaHeader(VBFactory.List(Of VBS.AttributeListSyntax)(), VBFactory.TokenList(Modifiers), parameterList, asClause:=Nothing)
+                    Dim AsClause As VBS.SimpleAsClauseSyntax = If(symbol.ReturnType.IsErrorType, Nothing, VBFactory.SimpleAsClause(Me.ConvertToType(symbol.ReturnType)))
+                    header = VBFactory.FunctionLambdaHeader(VBFactory.List(Of VBS.AttributeListSyntax)(), VBFactory.TokenList(Modifiers), parameterList, asClause:=AsClause)
                     EndSubOrFunctionStatement = VBFactory.EndFunctionStatement().WithConvertedTriviaFrom(Braces.Item2)
                 Else
                     header = VBFactory.SubLambdaHeader(VBFactory.List(Of VBS.AttributeListSyntax)(), VBFactory.TokenList(Modifiers), parameterList, asClause:=Nothing)
@@ -138,21 +144,22 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 If TypeOf block Is CS.CSharpSyntaxNode Then
                     Dim body As VB.VisualBasicSyntaxNode = DirectCast(block, CS.CSharpSyntaxNode).Accept(Me)
                     If TypeOf block Is CSS.ThrowExpressionSyntax Then
-                        Statements = VBFactory.SingletonList(DirectCast(body, VBS.StatementSyntax))
+                        Statements = VBFactory.SingletonList(DirectCast(body, VBS.StatementSyntax).WithTrailingEOL)
                         If IsFunction Then
-                            Return VBFactory.MultiLineLambdaExpression(VB.SyntaxKind.MultiLineFunctionLambdaExpression, header, Statements, EndSubOrFunctionStatement).WithConvertedTriviaFrom(node)
+                            Return VBFactory.MultiLineLambdaExpression(VB.SyntaxKind.MultiLineFunctionLambdaExpression, header.WithTrailingEOL, Statements, EndSubOrFunctionStatement).WithConvertedTriviaFrom(node)
                         End If
-                        Return VBFactory.MultiLineLambdaExpression(VB.SyntaxKind.MultiLineSubLambdaExpression, header, Statements, EndSubOrFunctionStatement).WithConvertedTriviaFrom(node)
+                        Return VBFactory.MultiLineLambdaExpression(VB.SyntaxKind.MultiLineSubLambdaExpression, header.WithTrailingEOL, Statements, EndSubOrFunctionStatement).WithConvertedTriviaFrom(node)
                     End If
                     If TypeOf block Is CSS.ObjectCreationExpressionSyntax Then
+                        If IsFunction Then
+                            Statements = VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.ReturnStatement(DirectCast(body, VBS.NewExpressionSyntax)).WithTrailingEOL)
+                            Return VBFactory.MultiLineLambdaExpression(VB.SyntaxKind.MultiLineFunctionLambdaExpression, header.WithTrailingEOL, Statements, EndSubOrFunctionStatement).WithConvertedTriviaFrom(node)
+                        End If
                         Dim Names As SeparatedSyntaxList(Of VBS.ModifiedIdentifierSyntax) = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier("DoNotCare"))
                         Dim AsClause As VBS.AsClauseSyntax = VBFactory.AsNewClause(DirectCast(body, VBS.NewExpressionSyntax))
                         Dim Declarators As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(Names, AsClause, initializer:=Nothing))
                         Statements = VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.LocalDeclarationStatement(DimModifier, Declarators))
-                        If IsFunction Then
-                            Return VBFactory.MultiLineLambdaExpression(VB.SyntaxKind.MultiLineFunctionLambdaExpression, header, Statements, EndSubOrFunctionStatement).WithConvertedTriviaFrom(node)
-                        End If
-                        Return VBFactory.MultiLineLambdaExpression(VB.SyntaxKind.MultiLineSubLambdaExpression, header, Statements, EndSubOrFunctionStatement).WithConvertedTriviaFrom(node)
+                        Return VBFactory.MultiLineLambdaExpression(VB.SyntaxKind.MultiLineSubLambdaExpression, header.WithTrailingEOL, Statements, EndSubOrFunctionStatement).WithConvertedTriviaFrom(node)
                     End If
                     If body.IsKind(VB.SyntaxKind.SimpleAssignmentStatement) Then
                         Dim SimpleAssignment As VBS.AssignmentStatementSyntax = DirectCast(body, VBS.AssignmentStatementSyntax)
@@ -182,8 +189,8 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                         Exit Select
                                     End If
                                     Statements = Statements.Add(DimStatement)
-                                    Statements = Statements.Add(VBFactory.SimpleAssignmentStatement(VBFactory.QualifiedName(UniqueIdentifier, MemberAccessExpression.Name), SimpleAssignment.Right))
-                                    Return VBFactory.MultiLineLambdaExpression(VB.SyntaxKind.MultiLineSubLambdaExpression, header.With({VB_EOLTrivia}, {VB_EOLTrivia}), Statements, EndBlock).WithConvertedTriviaFrom(node)
+                                    Statements = Statements.Add(VBFactory.SimpleAssignmentStatement(VBFactory.QualifiedName(UniqueIdentifier, MemberAccessExpression.Name), SimpleAssignment.Right).WithTrailingEOL)
+                                    Return VBFactory.MultiLineLambdaExpression(VB.SyntaxKind.MultiLineSubLambdaExpression, header.WithTrailingEOL, Statements, EndBlock).WithConvertedTriviaFrom(node)
                                 Case VB.SyntaxKind.IdentifierName, VB.SyntaxKind.InvocationExpression, VB.SyntaxKind.MeExpression
                                     ' handled below
                                 Case Else
@@ -192,17 +199,17 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         End If
                     End If
                     If IsFunction Then
-                        Return VBFactory.SingleLineLambdaExpression(VB.SyntaxKind.SingleLineFunctionLambdaExpression, header, body).WithConvertedTriviaFrom(node)
+                        Return VBFactory.SingleLineLambdaExpression(VB.SyntaxKind.SingleLineFunctionLambdaExpression, header.WithAsClause(Nothing), body).WithConvertedTriviaFrom(node)
                     End If
-                    Return VBFactory.SingleLineLambdaExpression(VB.SyntaxKind.SingleLineSubLambdaExpression, header, body).WithConvertedTriviaFrom(node)
+                    Return VBFactory.SingleLineLambdaExpression(VB.SyntaxKind.SingleLineSubLambdaExpression, header.WithAsClause(Nothing), body).WithConvertedTriviaFrom(node)
                 End If
 
                 ' TypeOf block Is SyntaxList(Of CSS.StatementSyntax)
                 Statements = Statements.AddRange(VBFactory.List(DirectCast(block, SyntaxList(Of CSS.StatementSyntax)).SelectMany(Function(s As CSS.StatementSyntax) s.Accept(New MethodBodyVisitor(Me.mSemanticModel, Me)))))
                 Dim expression As VBS.ExpressionSyntax = Nothing
-                If Statements.Count = 1 AndAlso UnpackExpressionFromStatement(statementSyntax:=Statements(0), expression:=expression) Then
+                If Statements.Count = 1 AndAlso UnpackExpressionFromStatement(Statements(0), expression) Then
                     Dim lSyntaxKind As VB.SyntaxKind = If(IsFunction, VB.SyntaxKind.SingleLineFunctionLambdaExpression, VB.SyntaxKind.SingleLineSubLambdaExpression)
-                    Return VBFactory.SingleLineLambdaExpression(lSyntaxKind, header, expression).WithConvertedTriviaFrom(node)
+                    Return VBFactory.SingleLineLambdaExpression(lSyntaxKind, header.WithAsClause(Nothing), expression).WithConvertedTriviaFrom(node).WithPrependedLeadingTrivia(Statements(0).GetLeadingTrivia)
                 End If
 
                 Dim ExpressionKind As VB.SyntaxKind
@@ -214,9 +221,9 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     ExpressionKind = VB.SyntaxKind.MultiLineSubLambdaExpression
                 End If
                 Return VBFactory.MultiLineLambdaExpression(kind:=ExpressionKind,
-                                                               subOrFunctionHeader:=header,
-                                                               statements:=Statements,
-                                                               endSubOrFunctionStatement:=EndBlock)
+                                                               header.WithTrailingEOL,
+                                                               Statements,
+                                                               EndBlock)
             End Function
 
             Private Function IsConcatenateStringsExpression(node As CSS.BinaryExpressionSyntax) As Boolean
@@ -515,6 +522,49 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return Token.With(FinalLeadingTriviaList, FinalTrailingTriviaList)
             End Function
 
+            Public Function ConvertToType(PossibleTupleType As ITypeSymbol) As VBS.TypeSyntax
+                If PossibleTupleType.IsTupleType Then
+                    Dim SSList As New List(Of VBS.TupleElementSyntax)
+                    Dim TupleComponents As List(Of SymbolDisplayPart) = PossibleTupleType.ToDisplayParts.ToList
+                    For i As Integer = 1 To TupleComponents.Count - 2
+                        Dim TuplePartString As String = ""
+                        If TupleComponents(i).ToString = "?" Then
+                            SSList.Add(VBFactory.TypedTupleElement(PredefinedTypeObject))
+                            i += 1
+                            If ValidatePunctuation(TupleComponents(i), SymbolDisplayPartKind.Space) Then
+                                i += 1
+                            End If
+                        Else
+                            While TupleComponents(i).Kind <> SymbolDisplayPartKind.Space AndAlso Not ValidatePunctuation(TupleComponents(i), SymbolDisplayPartKind.Punctuation, ")", ",")
+                                TuplePartString &= TupleComponents(i).ToString
+                                i += 1
+                            End While
+                            TuplePartString = TuplePartString.Replace("<", "(").Replace(">", ")")
+                            SSList.Add(VBFactory.TypedTupleElement(ConvertToType(TuplePartString.ToString.Trim.Replace("<", "(Of ").Replace(">", ")"))))
+
+                            If ValidatePunctuation(TupleComponents(i), SymbolDisplayPartKind.Space) Then
+                                i += 1
+                            End If
+                        End If
+                        If TupleComponents(i).Kind = SymbolDisplayPartKind.FieldName Then
+                            i += 1
+                        End If
+                        ' Skip ", "
+                        If ValidatePunctuation(TupleComponents(i), SymbolDisplayPartKind.Punctuation, ",") Then
+                            i += 1
+                        ElseIf ValidatePunctuation(TupleComponents(i), SymbolDisplayPartKind.Punctuation, ")") Then
+                            ' skip ")"
+                            i += 1
+                        Else
+                            Stop
+                        End If
+                    Next
+                    Return VBFactory.TupleType(SSList.ToArray)
+                Else
+                    Return ConvertToType(AddBracketsIfRequired(PossibleTupleType.ToString.Trim.Replace("<", "(Of ").Replace(">", ")")))
+                End If
+            End Function
+
             Public Overrides Function VisitAnonymousMethodExpression(node As CSS.AnonymousMethodExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Dim Parameters As New SeparatedSyntaxList(Of CSS.ParameterSyntax)
                 If node.ParameterList IsNot Nothing Then
@@ -734,12 +784,10 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                             Dim builder As New System.Text.StringBuilder()
                             builder.Append("(")
                             For i As Integer = 0 To TupleList.Count - 2
-                                builder.Append(Convert_ToObject(TupleList(i)) & ", ")
+                                builder.Append(ConvertTuplePartToString(TupleList(i)) & ", ")
                             Next
-                            builder.Append(Convert_ToObject(TupleList.Last) & ")")
+                            builder.Append(ConvertTuplePartToString(TupleList.Last) & ")")
                             Dim TupleType As String = builder.ToString
-
-                            Dim FieldSymbol As String = TupleList(TupleList.Count - 1)
 
                             Dim SimpleAs As VBS.SimpleAsClauseSyntax = VBFactory.SimpleAsClause(AsKeyword.WithTrailingTrivia(SpaceTrivia), attributeLists:=Nothing, type:=VBFactory.ParseTypeName(TupleType).WithLeadingTrivia(SpaceTrivia)).WithLeadingTrivia(SpaceTrivia)
                             Dim Names As SeparatedSyntaxList(Of VBS.ModifiedIdentifierSyntax) = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(TupleName))
@@ -1613,7 +1661,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     Throw UnreachableException
                 End If
                 Dim Expression As VBS.ExpressionSyntax = DirectCast(node.Expression.Accept(Me), VBS.ExpressionSyntax).WithoutTrailingTrivia
-                ' Remove Trailing trivia to force ( on same line
+
                 Dim ArgumentList1 As VBS.ArgumentListSyntax = DirectCast(node.ArgumentList.Accept(Me), VBS.ArgumentListSyntax)
                 Dim NewTrailingTrivia As New List(Of SyntaxTrivia)
                 NewTrailingTrivia.AddRange(ArgumentList1.GetTrailingTrivia)
@@ -1742,7 +1790,6 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 End If
                 Throw UnreachableException
             End Function
-
             Public Overrides Function VisitLiteralExpression(node As CSS.LiteralExpressionSyntax) As VB.VisualBasicSyntaxNode
                 ' now this looks somehow like a hack... is there a better way?
                 If node.IsKind(CS.SyntaxKind.StringLiteralExpression) Then
@@ -1838,9 +1885,10 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                             If LeftNodeTypeInfo.Type Is Nothing OrElse LeftNodeTypeInfo.Type.IsErrorType Then
                                 Return NothingExpression
                             End If
+                            Dim _Type As VBS.TypeSyntax = If(LeftNodeTypeInfo.Type.IsTupleType, Me.ConvertToType(LeftNodeTypeInfo.Type), ConvertToType(LeftNodeTypeInfo.Type.Name))
                             Return VBFactory.CTypeExpression(
                                                       NothingExpression,
-                                                      ConvertToType(LeftNodeTypeInfo.Type.Name)
+                                                      _Type
                                                       )
                         Case CS.SyntaxKind.CoalesceExpression
                             ' TODO Handle better
@@ -1860,7 +1908,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
 
                 If node.IsKind(CS.SyntaxKind.CharacterLiteralExpression) Then
                     If node.Token.Text.Replace("'", "").Length <= 2 Then
-                                Return GetLiteralExpression(node.Token.Value, node.Token, Me).WithConvertedTriviaFrom(node.Token)
+                        Return GetLiteralExpression(node.Token.Value, node.Token, Me).WithConvertedTriviaFrom(node.Token)
                     End If
                 End If
                 If node.Token.ValueText.Contains("\") Then
@@ -2093,7 +2141,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         DeclarationToBeAdded = VBFactory.LocalDeclarationStatement(
                                             DimModifier,
                                             VBFactory.SingletonSeparatedList(VariableDeclaration)
-                                            ).WithConvertedTriviaFrom(node)
+                                            ).WithConvertedTriviaFrom(node).WithTrailingEOL
 
                         ' Statement with issues points to "Statement" Probably an Expression Statement. If this is part of a single Line If we need to go higher
                         StatementWithIssue.AddMarker(DeclarationToBeAdded, StatementHandlingOption.PrependStatement, AllowDuplicates:=False)
@@ -2279,10 +2327,13 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                         End If
                                     End If
                                 Case VB.SyntaxKind.CommentTrivia
-                                    If Not AfterWhiteSpace Then
-                                        FinalLeadingTriviaList.Add(SpaceTrivia)
+                                    If Not FinalLeadingTriviaList.Last.IsKind(VB.SyntaxKind.LineContinuationTrivia) Then
+                                        If Not AfterWhiteSpace Then
+                                            FinalLeadingTriviaList.Add(SpaceTrivia)
+                                        End If
+                                        FinalLeadingTriviaList.Add(LineContinuation)
                                     End If
-                                    FinalLeadingTriviaList.Add(LineContinuation)
+
                                     FinalLeadingTriviaList.Add(Trivia)
                                     If i < TriviaListUBound AndAlso Not InitialTriviaList(i + 1).IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
                                         FinalLeadingTriviaList.Add(VB_EOLTrivia)
@@ -2290,6 +2341,12 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                 Case VB.SyntaxKind.DisableWarningDirectiveTrivia, VB.SyntaxKind.EnableWarningDirectiveTrivia
                                     Stop
                                     'GetStatementwithIssues(CS_Node).AddMarker(VBFactory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
+                                Case VB.SyntaxKind.LineContinuationTrivia
+                                    If FinalLeadingTriviaList.Last.IsKind(VB.SyntaxKind.LineContinuationTrivia) Then
+                                        Continue For
+                                    End If
+                                    AfterWhiteSpace = False
+                                    FinalLeadingTriviaList.Add(LineContinuation)
                                 Case Else
                                     Stop
                             End Select

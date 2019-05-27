@@ -94,7 +94,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
             InitialTriviaList.AddRange(Token.TrailingTrivia)
             TriviaListUBound = InitialTriviaList.Count - 1
             AfterWhiteSpace = False
-            AfterLineContinuation = LeadingToken
+            AfterLineContinuation = False
 
             Dim FinalTrailingTriviaList As New List(Of SyntaxTrivia)
             If LeadingToken Then
@@ -122,12 +122,14 @@ Namespace IVisualBasicCode.CodeConverter.Util
                                 Next
                             End If
                             If j = 0 OrElse j < TriviaListUBound AndAlso InitialTriviaList(j).IsKind(VB.SyntaxKind.CommentTrivia) Then
-                                If Not NewWhiteSpaceString = "" Then
-                                    FinalTrailingTriviaList.Add(VBFactory.WhitespaceTrivia(NewWhiteSpaceString))
-                                Else
-                                    FinalTrailingTriviaList.Add(SpaceTrivia)
+                                If Not AfterLineContinuation Then
+                                    If Not NewWhiteSpaceString = "" Then
+                                        FinalTrailingTriviaList.Add(VBFactory.WhitespaceTrivia(NewWhiteSpaceString))
+                                    Else
+                                        FinalTrailingTriviaList.Add(SpaceTrivia)
                                 End If
-                                FinalTrailingTriviaList.Add(LineContinuation)
+                                    FinalTrailingTriviaList.Add(LineContinuation)
+                                End If
                                 FinalTrailingTriviaList.Add(Trivia)
                                 AfterLineContinuation = True
                             Else
@@ -147,6 +149,13 @@ Namespace IVisualBasicCode.CodeConverter.Util
                             FinalTrailingTriviaList.Add(Trivia)
                             AfterLineContinuation = False
                             AfterWhiteSpace = False
+                        Case VB.SyntaxKind.LineContinuationTrivia
+                            If FinalTrailingTriviaList.Last.IsKind(VB.SyntaxKind.LineContinuationTrivia) Then
+                                Continue For
+                            End If
+                            AfterWhiteSpace = False
+                            AfterLineContinuation = True
+                            FinalTrailingTriviaList.Add(LineContinuation)
                         Case Else
                             Stop
                     End Select
