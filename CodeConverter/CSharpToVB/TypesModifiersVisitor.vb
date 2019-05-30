@@ -41,8 +41,8 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         RetList.Add(ConvertToType(ConvertToType(t).ToString).ToString)
                     Next
                 ElseIf TypeString.EndsWith("DictionaryEntry") Then
-                    RetList.Add(ConvertToType(ConvertToType("Key").ToString).ToString)
-                    RetList.Add(ConvertToType(ConvertToType("Value").ToString).ToString)
+                    RetList.Add(ConvertToType("Key").ToString)
+                    RetList.Add(ConvertToType("Value").ToString)
                 Else
                     Stop
                 End If

@@ -225,8 +225,8 @@ End Function
                 Dim methodInfo As INamedTypeSymbol = TryCast(ModelExtensions.GetDeclaredSymbol(Me.mSemanticModel, node), INamedTypeSymbol)
                 Dim AttributeLists As SyntaxList(Of VBS.AttributeListSyntax) = VB.SyntaxFactory.List(node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))
                 Dim Modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, Me.IsModule)
-                Dim TypeParameterList As VBS.TypeParameterListSyntax = DirectCast(node.TypeParameterList?.Accept(Me), VBS.TypeParameterListSyntax)
-                Dim ParameterList As VBS.ParameterListSyntax = DirectCast(node.ParameterList?.Accept(Me), VBS.ParameterListSyntax).WithoutTrailingTrivia
+                Dim TypeParameterList As VBS.TypeParameterListSyntax = DirectCast(node.TypeParameterList?.Accept(Me), VBS.TypeParameterListSyntax)?.WithoutTrailingTrivia
+                Dim ParameterList As VBS.ParameterListSyntax = DirectCast(node.ParameterList?.Accept(Me), VBS.ParameterListSyntax)?.WithoutTrailingTrivia
                 If methodInfo.DelegateInvokeMethod.GetReturnType()?.SpecialType = SpecialType.System_Void Then
                     Return VB.SyntaxFactory.DelegateSubStatement(AttributeLists, VB.SyntaxFactory.TokenList(Modifiers), Identifier, TypeParameterList, ParameterList, asClause:=Nothing).WithConvertedTriviaFrom(node)
                 Else
@@ -317,9 +317,6 @@ End Function
                     Else
                         members.Add(DirectCast(CS_Members.Last.Accept(Me), VBS.StatementSyntax).WithAppendedTrailingTrivia(ConvertTrivia(CS_SeparatorTrailingTrivia)))
                     End If
-                    'If CS_Separators.Count > 0 AndAlso CS_Separators.Count = CS_Members.Count Then
-                    '    members(CS_Members.Count - 1) = members.Last.WithAppendedTrailingTrivia(ConvertTrivia(CS_Separators.Last.TrailingTrivia))
-                    'End If
                 End If
 
                 Dim BaseType As VBS.TypeSyntax = DirectCast(node.BaseList?.Types.Single().Accept(Me), VBS.TypeSyntax)
@@ -334,7 +331,7 @@ End Function
                                                                                        RestructureAttributesAndModifiers(ListOfAttributes.Count > 0, Modifiers.Count > 0), VBS.EnumStatementSyntax)
 
                 Dim EndBlockStatement As VBS.EndBlockStatementSyntax = VB.SyntaxFactory.EndEnumStatement().WithConvertedTriviaFrom(node.CloseBraceToken)
-                Dim EnumBlock As VBS.EnumBlockSyntax = VB.SyntaxFactory.EnumBlock(EnumStatement,
+                Dim EnumBlock As VBS.EnumBlockSyntax = VB.SyntaxFactory.EnumBlock(EnumStatement.WithTrailingEOL,
                                                                            VB.SyntaxFactory.List(members),
                                                                            EndBlockStatement
                                                                            )

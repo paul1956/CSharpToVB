@@ -751,7 +751,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
                         End If
                     Case VB.SyntaxKind.DisableWarningDirectiveTrivia, VB.SyntaxKind.EnableWarningDirectiveTrivia,
                          VB.SyntaxKind.IfDirectiveTrivia, VB.SyntaxKind.DisabledTextTrivia,
-                         VB.SyntaxKind.EndIfDirectiveTrivia
+                       VB.SyntaxKind.ElseDirectiveTrivia, VB.SyntaxKind.EndIfDirectiveTrivia
                         FinalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(Trivia))
                         If NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) OrElse NextTrivia.IsNone Then
                             Continue For

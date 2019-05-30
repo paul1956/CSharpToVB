@@ -83,7 +83,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Dim SeparatorCount As Integer = node.Attributes.Count - 1
                 For i As Integer = 0 To SeparatorCount
                     Dim e As CSS.AttributeSyntax = node.Attributes(i)
-                    AttributeList.Add(DirectCast(e.Accept(Me), VBS.AttributeSyntax))
+                    AttributeList.Add(DirectCast(e.Accept(Me), VBS.AttributeSyntax).RemoveLeadingEOL)
                     If SeparatorCount > i Then
                         Separators.Add(CommaToken.WithConvertedTrailingTriviaFrom(CS_Separators(i)))
                     End If

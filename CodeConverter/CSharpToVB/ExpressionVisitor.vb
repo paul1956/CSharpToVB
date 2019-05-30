@@ -8,11 +8,13 @@ Imports IVisualBasicCode.CodeConverter.Util
 
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Simplification
+Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
+
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace IVisualBasicCode.CodeConverter.Visual_Basic
@@ -21,88 +23,6 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
 
         Partial Protected Friend Class NodesVisitor
             Inherits CS.CSharpSyntaxVisitor(Of VB.VisualBasicSyntaxNode)
-
-
-            Private Shared Function ConvertToInterpolatedStringTextToken(CSharpToken As SyntaxToken) As SyntaxToken
-                Dim TokenString As String = ConvertCSharpEscapes(CSharpToken.ValueText)
-                Return VBFactory.InterpolatedStringTextToken(TokenString, TokenString)
-            End Function
-
-            Private Shared Function ConvertTuplePartToString(Type As String) As String
-                Return If(Type = "_", "Object", ConvertToType(Type).ToString)
-            End Function
-
-            Private Shared Sub RestructureCloseTokenTrivia(CS_Token As SyntaxToken, ByRef CloseToken As SyntaxToken)
-                Dim TrailingTrivia As New List(Of SyntaxTrivia)
-                If CS_Token.HasLeadingTrivia Then
-                    For Each T As SyntaxTrivia In ConvertTrivia(CS_Token.LeadingTrivia)
-                        Select Case T.RawKind
-                            Case VB.SyntaxKind.CommentTrivia
-                                TrailingTrivia.Add(T)
-                            Case VB.SyntaxKind.WhitespaceTrivia
-                                TrailingTrivia.Add(GetWhitespaceTrivia(T))
-                            Case VB.SyntaxKind.EndOfLineTrivia
-                                ' ignore
-                            Case VB.SyntaxKind.None
-                                ' ignore
-                            Case Else
-                                Stop
-                        End Select
-                    Next
-                End If
-                For Each T As SyntaxTrivia In ConvertTrivia(CS_Token.TrailingTrivia)
-                    Select Case T.RawKind
-                        Case VB.SyntaxKind.CommentTrivia
-                            TrailingTrivia.Add(T)
-                        Case VB.SyntaxKind.WhitespaceTrivia
-                            TrailingTrivia.Add(GetWhitespaceTrivia(T))
-                        Case VB.SyntaxKind.EndOfLineTrivia
-                            ' ignore
-                        Case VB.SyntaxKind.None
-                            ' ignore
-                        Case Else
-                            Stop
-                    End Select
-                Next
-                TrailingTrivia.AddRange(CloseToken.TrailingTrivia)
-                CloseToken = CloseToken.WithTrailingTrivia(TrailingTrivia)
-            End Sub
-
-            Private Shared Function RestructureTrivia(TriviaList As SyntaxTriviaList, FoundEOL As Boolean, ByRef OperatorTrailingTrivia As List(Of SyntaxTrivia)) As Boolean
-                For Each t As SyntaxTrivia In TriviaList
-                    Select Case t.RawKind
-                        Case VB.SyntaxKind.CommentTrivia
-                            OperatorTrailingTrivia.Add(t)
-                            FoundEOL = True
-                        Case VB.SyntaxKind.EndOfLineTrivia
-                            FoundEOL = True
-                        Case VB.SyntaxKind.WhitespaceTrivia
-                            OperatorTrailingTrivia.Add(SpaceTrivia)
-                        Case VB.SyntaxKind.DisableWarningDirectiveTrivia, VB.SyntaxKind.EnableWarningDirectiveTrivia
-                            ' Ignore
-                        Case Else
-                            Stop
-                    End Select
-                Next
-
-                Return FoundEOL
-            End Function
-
-            Private Shared Function UnpackExpressionFromStatement(statementSyntax As VBS.StatementSyntax, <Out> ByRef expression As VBS.ExpressionSyntax) As Boolean
-                If TypeOf statementSyntax Is VBS.ReturnStatementSyntax Then
-                    expression = (DirectCast(statementSyntax, VBS.ReturnStatementSyntax)).Expression
-                ElseIf TypeOf statementSyntax Is VBS.YieldStatementSyntax Then
-                    expression = (DirectCast(statementSyntax, VBS.YieldStatementSyntax)).Expression
-                Else
-                    expression = Nothing
-                End If
-
-                Return expression IsNot Nothing
-            End Function
-
-            Private Shared Function ValidatePunctuation(Part As SymbolDisplayPart, DesiredKind As SymbolDisplayPartKind, ParamArray Str() As String) As Boolean
-                Return Part.Kind = DesiredKind AndAlso (Str.Length = 0 OrElse Str.Contains(Part.ToString))
-            End Function
 
             Private Function ConvertLambdaExpression(node As CSS.AnonymousFunctionExpressionSyntax, block As Object, parameters As SeparatedSyntaxList(Of CSS.ParameterSyntax), CS_Modifiers As SyntaxTokenList) As VBS.LambdaExpressionSyntax
                 Dim NodesList As New List(Of VBS.ParameterSyntax)
@@ -211,7 +131,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 ' TypeOf block Is SyntaxList(Of CSS.StatementSyntax)
                 Statements = Statements.AddRange(VBFactory.List(DirectCast(block, SyntaxList(Of CSS.StatementSyntax)).SelectMany(Function(s As CSS.StatementSyntax) s.Accept(New MethodBodyVisitor(Me.mSemanticModel, Me)))))
                 Dim expression As VBS.ExpressionSyntax = Nothing
-                If Statements.Count = 1 AndAlso UnpackExpressionFromStatement(Statements(0), expression) Then
+                If Statements.Count = 1 AndAlso Me.UnpackExpressionFromStatement(Statements(0), expression) Then
                     Dim lSyntaxKind As VB.SyntaxKind = If(IsFunction, VB.SyntaxKind.SingleLineFunctionLambdaExpression, VB.SyntaxKind.SingleLineSubLambdaExpression)
                     Return VBFactory.SingleLineLambdaExpression(lSyntaxKind, header.WithAsClause(Nothing), expression).WithConvertedTriviaFrom(node).WithPrependedLeadingTrivia(Statements(0).GetLeadingTrivia)
                 End If
@@ -228,6 +148,31 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                                                header.WithTrailingEOL,
                                                                Statements,
                                                                EndBlock)
+            End Function
+
+            Private Function ConvertToInterpolatedStringTextToken(CSharpToken As SyntaxToken) As SyntaxToken
+                Dim TokenString As String = ConvertCSharpEscapes(CSharpToken.ValueText)
+                Return VBFactory.InterpolatedStringTextToken(TokenString, TokenString)
+            End Function
+
+            Private Function ConvertTupleTypePartToString(Type As String) As String
+                Return If(Type = "_", "Object", ConvertToType(Type).ToString)
+            End Function
+
+            Private Function CovertStringToTupleType(TupleString As String) As TypeSyntax
+                Dim TupleElements As New List(Of VBS.TupleElementSyntax)
+                For Each t As String In TupleString.Substring(1, TupleString.Length - 2).Split(","c)
+                    Dim TuplePart() As String = t.Trim.Split(" "c)
+                    If TuplePart.Count = 1 Then
+                        Dim typedTupleElementSyntax1 As VBS.TypedTupleElementSyntax = VBFactory.TypedTupleElement(ConvertToType(TuplePart(0)))
+                        TupleElements.Add(typedTupleElementSyntax1)
+                    Else
+                        Dim Identifier As SyntaxToken = CSharp.SyntaxFactory.Identifier(TuplePart(1))
+                        Dim namedTupleElementSyntax1 As VBS.NamedTupleElementSyntax = VBFactory.NamedTupleElement(GenerateSafeVBToken(Identifier, IsQualifiedName:=False), VBFactory.SimpleAsClause(ConvertToType(TuplePart(0))))
+                        TupleElements.Add(namedTupleElementSyntax1)
+                    End If
+                Next
+                Return VBFactory.TupleType(TupleElements.ToArray)
             End Function
 
             Private Function IsConcatenateStringsExpression(node As CSS.BinaryExpressionSyntax) As Boolean
@@ -329,6 +274,78 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return VBFactory.BinaryExpression(kind:=VB.SyntaxKind.SubtractExpression, left:=DirectCast(expr.Accept(Me), VBS.ExpressionSyntax), operatorToken:=MinusToken, right:=VBFactory.NumericLiteralExpression(VBFactory.Literal(1)))
             End Function
 
+            Private Sub RestructureCloseTokenTrivia(CS_Token As SyntaxToken, ByRef CloseToken As SyntaxToken)
+                Dim TrailingTrivia As New List(Of SyntaxTrivia)
+                If CS_Token.HasLeadingTrivia Then
+                    For Each T As SyntaxTrivia In ConvertTrivia(CS_Token.LeadingTrivia)
+                        Select Case T.RawKind
+                            Case VB.SyntaxKind.CommentTrivia
+                                TrailingTrivia.Add(T)
+                            Case VB.SyntaxKind.WhitespaceTrivia
+                                TrailingTrivia.Add(GetWhitespaceTrivia(T))
+                            Case VB.SyntaxKind.EndOfLineTrivia
+                                ' ignore
+                            Case VB.SyntaxKind.None
+                                ' ignore
+                            Case Else
+                                Stop
+                        End Select
+                    Next
+                End If
+                For Each T As SyntaxTrivia In ConvertTrivia(CS_Token.TrailingTrivia)
+                    Select Case T.RawKind
+                        Case VB.SyntaxKind.CommentTrivia
+                            TrailingTrivia.Add(T)
+                        Case VB.SyntaxKind.WhitespaceTrivia
+                            TrailingTrivia.Add(GetWhitespaceTrivia(T))
+                        Case VB.SyntaxKind.EndOfLineTrivia
+                            ' ignore
+                        Case VB.SyntaxKind.None
+                            ' ignore
+                        Case Else
+                            Stop
+                    End Select
+                Next
+                TrailingTrivia.AddRange(CloseToken.TrailingTrivia)
+                CloseToken = CloseToken.WithTrailingTrivia(TrailingTrivia)
+            End Sub
+
+            Private Function RestructureTrivia(TriviaList As SyntaxTriviaList, FoundEOL As Boolean, ByRef OperatorTrailingTrivia As List(Of SyntaxTrivia)) As Boolean
+                For Each t As SyntaxTrivia In TriviaList
+                    Select Case t.RawKind
+                        Case VB.SyntaxKind.CommentTrivia
+                            OperatorTrailingTrivia.Add(t)
+                            FoundEOL = True
+                        Case VB.SyntaxKind.EndOfLineTrivia
+                            FoundEOL = True
+                        Case VB.SyntaxKind.WhitespaceTrivia
+                            OperatorTrailingTrivia.Add(SpaceTrivia)
+                        Case VB.SyntaxKind.DisableWarningDirectiveTrivia, VB.SyntaxKind.EnableWarningDirectiveTrivia
+                            ' Ignore
+                        Case Else
+                            Stop
+                    End Select
+                Next
+
+                Return FoundEOL
+            End Function
+
+            Private Function UnpackExpressionFromStatement(statementSyntax As VBS.StatementSyntax, <Out> ByRef expression As VBS.ExpressionSyntax) As Boolean
+                If TypeOf statementSyntax Is VBS.ReturnStatementSyntax Then
+                    expression = (DirectCast(statementSyntax, VBS.ReturnStatementSyntax)).Expression
+                ElseIf TypeOf statementSyntax Is VBS.YieldStatementSyntax Then
+                    expression = (DirectCast(statementSyntax, VBS.YieldStatementSyntax)).Expression
+                Else
+                    expression = Nothing
+                End If
+
+                Return expression IsNot Nothing
+            End Function
+
+            Private Function ValidatePunctuation(Part As SymbolDisplayPart, DesiredKind As SymbolDisplayPartKind, ParamArray Str() As String) As Boolean
+                Return Part.Kind = DesiredKind AndAlso (Str.Length = 0 OrElse Str.Contains(Part.ToString))
+            End Function
+
             Public Function ConvertAndModifyNodeTrivia(Node As VB.VisualBasicSyntaxNode, NodesOrTokens As List(Of SyntaxNodeOrToken), Index As Integer) As VB.VisualBasicSyntaxNode
                 Dim FinalLeadingTriviaList As New List(Of SyntaxTrivia)
                 Dim AfterWhiteSpace As Boolean = False
@@ -372,6 +389,18 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                             FirstTrivia = False
                             Stop
                             'GetStatementwithIssues(CS_Node).AddMarker(VBFactory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
+                        Case VB.SyntaxKind.IfDirectiveTrivia
+                            FirstTrivia = False
+                            FinalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(Trivia))
+                        Case VB.SyntaxKind.DisabledTextTrivia
+                            FirstTrivia = False
+                            FinalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(Trivia))
+                        Case VB.SyntaxKind.ElseDirectiveTrivia
+                            FirstTrivia = False
+                            FinalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(Trivia))
+                        Case VB.SyntaxKind.EndIfDirectiveTrivia
+                            FirstTrivia = False
+                            FinalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(Trivia))
                         Case Else
                             Stop
                     End Select
@@ -494,6 +523,11 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                             FinalLeadingTriviaList.Add(Trivia)
                             AfterLineContinuation = False
                             AfterWhiteSpace = False
+                        Case VB.SyntaxKind.EndIfDirectiveTrivia
+                            FinalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(Trivia))
+                            FinalLeadingTriviaList.Add(VB_EOLTrivia)
+                            AfterLineContinuation = False
+                            AfterWhiteSpace = False
                         Case Else
                             Stop
                     End Select
@@ -527,36 +561,41 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             End Function
 
             Public Function ConvertToType(PossibleTupleType As ITypeSymbol) As VBS.TypeSyntax
+                Dim TupleComponents As List(Of SymbolDisplayPart) = PossibleTupleType.ToDisplayParts.ToList
                 If PossibleTupleType.IsTupleType Then
                     Dim SSList As New List(Of VBS.TupleElementSyntax)
-                    Dim TupleComponents As List(Of SymbolDisplayPart) = PossibleTupleType.ToDisplayParts.ToList
                     For i As Integer = 1 To TupleComponents.Count - 2
-                        Dim TuplePartString As String = ""
+                        Dim TupleTypePartString As String = ""
                         If TupleComponents(i).ToString = "?" Then
                             SSList.Add(VBFactory.TypedTupleElement(PredefinedTypeObject))
                             i += 1
-                            If ValidatePunctuation(TupleComponents(i), SymbolDisplayPartKind.Space) Then
+                            If Me.ValidatePunctuation(TupleComponents(i), SymbolDisplayPartKind.Space) Then
                                 i += 1
                             End If
                         Else
-                            While TupleComponents(i).Kind <> SymbolDisplayPartKind.Space AndAlso Not ValidatePunctuation(TupleComponents(i), SymbolDisplayPartKind.Punctuation, ")", ",")
-                                TuplePartString &= TupleComponents(i).ToString
+                            While TupleComponents(i).Kind <> SymbolDisplayPartKind.Space AndAlso Not Me.ValidatePunctuation(TupleComponents(i), SymbolDisplayPartKind.Punctuation, ")", ",")
+                                TupleTypePartString &= TupleComponents(i).ToString
                                 i += 1
                             End While
-                            TuplePartString = TuplePartString.Replace("<", "(").Replace(">", ")")
-                            SSList.Add(VBFactory.TypedTupleElement(ConvertToType(TuplePartString.ToString.Trim.Replace("<", "(Of ").Replace(">", ")"))))
+                            TupleTypePartString = TupleTypePartString.Replace("<", "(").Replace(">", ")")
 
-                            If ValidatePunctuation(TupleComponents(i), SymbolDisplayPartKind.Space) Then
+                            If Me.ValidatePunctuation(TupleComponents(i), SymbolDisplayPartKind.Space) Then
                                 i += 1
                             End If
                         End If
+                        Dim TupleNamePartString As String
                         If TupleComponents(i).Kind = SymbolDisplayPartKind.FieldName Then
+                            TupleNamePartString = TupleComponents(i).ToString
+                            SSList.Add(VBFactory.NamedTupleElement(VBFactory.Identifier(TupleNamePartString), VBFactory.SimpleAsClause(ConvertToType(TupleTypePartString.ToString.Trim.Replace("<", "(Of ").Replace(">", ")")))))
                             i += 1
+                        Else
+                            SSList.Add(VBFactory.TypedTupleElement(ConvertToType(TupleTypePartString.ToString.Trim.Replace("<", "(Of ").Replace(">", ")"))))
                         End If
+
                         ' Skip ", "
-                        If ValidatePunctuation(TupleComponents(i), SymbolDisplayPartKind.Punctuation, ",") Then
+                        If Me.ValidatePunctuation(TupleComponents(i), SymbolDisplayPartKind.Punctuation, ",") Then
                             i += 1
-                        ElseIf ValidatePunctuation(TupleComponents(i), SymbolDisplayPartKind.Punctuation, ")") Then
+                        ElseIf Me.ValidatePunctuation(TupleComponents(i), SymbolDisplayPartKind.Punctuation, ")") Then
                             ' skip ")"
                             i += 1
                         Else
@@ -564,9 +603,44 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         End If
                     Next
                     Return VBFactory.TupleType(SSList.ToArray)
-                Else
-                    Return ConvertToType(PossibleTupleType.ToString.Trim.Replace("<", "(Of ").Replace(">", ")"))
                 End If
+                ' Cound be dictionary
+                Dim PossibleDictionary As String = PossibleTupleType.ToString.Trim
+                If TypeOf PossibleTupleType Is INamedTypeSymbol AndAlso PossibleDictionary.Contains(",") Then
+                    Dim StartIndex As Integer = PossibleDictionary.IndexOf("<")
+                    Dim IndexOfGreaterThan As Integer = PossibleDictionary.LastIndexOf(">")
+                    Dim DictionaryTypeElement As New List(Of VBS.TypeSyntax)
+                    Dim Name As String
+                    If StartIndex > 0 Then
+                        Name = PossibleDictionary.Substring(0, StartIndex)
+                        PossibleDictionary = PossibleDictionary.Substring(StartIndex + 1, IndexOfGreaterThan - StartIndex - 1)
+                        While PossibleDictionary.Length > 0
+                            Dim EndIndex As Integer
+                            If PossibleDictionary.StartsWith("(") Then
+                                ' Tuple
+                                EndIndex = PossibleDictionary.IndexOf(")")
+                                DictionaryTypeElement.Add(Me.CovertStringToTupleType(PossibleDictionary.Substring(0, EndIndex + 1).Trim))
+                                EndIndex += 1
+                            Else
+                                EndIndex = PossibleDictionary.IndexOf(",")
+                                EndIndex = If(EndIndex = -1, PossibleDictionary.Length, EndIndex)
+                                DictionaryTypeElement.Add(ConvertToType(PossibleDictionary.Substring(0, EndIndex).Replace("<", "(Of ").Replace(">", ")").Trim))
+                            End If
+                            If EndIndex + 1 < PossibleDictionary.Length Then
+                                PossibleDictionary = PossibleDictionary.Substring(EndIndex + 1).Trim
+                            Else
+                                Exit While
+                            End If
+                        End While
+                        Return VBFactory.GenericName(Name, VBFactory.TypeArgumentList(OpenParenToken,
+                                                                                      OfKeyword.WithTrailingTrivia(SpaceTrivia),
+                                                                                      VBFactory.SeparatedList(DictionaryTypeElement),
+                                                                                      CloseParenToken
+                                                                                      )
+                                                    )
+                    End If
+                End If
+                Return ConvertToType(PossibleDictionary.Replace("<", "(Of ").Replace(">", ")"))
             End Function
 
             Public Overrides Function VisitAnonymousMethodExpression(node As CSS.AnonymousMethodExpressionSyntax) As VB.VisualBasicSyntaxNode
@@ -788,9 +862,9 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                             Dim builder As New System.Text.StringBuilder()
                             builder.Append("(")
                             For i As Integer = 0 To TupleList.Count - 2
-                                builder.Append(ConvertTuplePartToString(TupleList(i)) & ", ")
+                                builder.Append(Me.ConvertTupleTypePartToString(TupleList(i)) & ", ")
                             Next
-                            builder.Append(ConvertTuplePartToString(TupleList.Last) & ")")
+                            builder.Append(Me.ConvertTupleTypePartToString(TupleList.Last) & ")")
                             Dim TupleType As String = builder.ToString
 
                             Dim SimpleAs As VBS.SimpleAsClauseSyntax = VBFactory.SimpleAsClause(AsKeyword.WithTrailingTrivia(SpaceTrivia), attributeLists:=Nothing, type:=VBFactory.ParseTypeName(TupleType).WithLeadingTrivia(SpaceTrivia)).WithLeadingTrivia(SpaceTrivia)
@@ -1623,7 +1697,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     If node.IsKind(CS.SyntaxKind.ArrayInitializerExpression) OrElse node.IsKind(CS.SyntaxKind.CollectionInitializerExpression) Then
                         Dim initializers As SeparatedSyntaxList(Of VBS.ExpressionSyntax) = VBFactory.SeparatedList(Expressions, Separators)
                         If FinalSeparator Then
-                            RestructureCloseTokenTrivia(CS_Separators.Last, CloseBraceTokenWithTrivia)
+                            Me.RestructureCloseTokenTrivia(CS_Separators.Last, CloseBraceTokenWithTrivia)
                         End If
 
                         Dim CollectionInitializer As VBS.CollectionInitializerSyntax = VBFactory.CollectionInitializer(OpenBraceTokenWithTrivia, initializers, CloseBraceTokenWithTrivia)
@@ -1642,7 +1716,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
 
             Public Overrides Function VisitInterpolatedStringText(node As CSS.InterpolatedStringTextSyntax) As VB.VisualBasicSyntaxNode
                 Dim CSharpToken As SyntaxToken = node.TextToken
-                Dim TextToken As SyntaxToken = ConvertToInterpolatedStringTextToken(CSharpToken)
+                Dim TextToken As SyntaxToken = Me.ConvertToInterpolatedStringTextToken(CSharpToken)
                 Return VBFactory.InterpolatedStringText(TextToken).WithConvertedTriviaFrom(node)
             End Function
 
@@ -1718,14 +1792,14 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     Dim DeclarationPattern As CSS.DeclarationPatternSyntax = DirectCast(Pattern, CSS.DeclarationPatternSyntax)
                     Dim Designation As CSS.SingleVariableDesignationSyntax = DirectCast(DeclarationPattern.Designation, CSS.SingleVariableDesignationSyntax)
 
-                    Dim value As VBS.ExpressionSyntax = VBFactory.ParseExpression(text:=$"TryCast({VBExpression.NormalizeWhitespace.ToFullString}, {DeclarationPattern.Type.Accept(Me).NormalizeWhitespace.ToFullString})")
+                    Dim VariableType As VBS.TypeSyntax = CType(DeclarationPattern.Type.Accept(Me), VBS.TypeSyntax)
+                    Dim value As VBS.ExpressionSyntax = VBFactory.TryCastExpression(VBExpression, VariableType)
 
                     Dim Identifier As SyntaxToken = GenerateSafeVBToken(id:=Designation.Identifier, IsQualifiedName:=False, IsTypeName:=False)
                     Dim VariableName As VBS.ModifiedIdentifierSyntax = VBFactory.ModifiedIdentifier(Identifier.WithTrailingTrivia(SpaceTrivia))
                     Dim SeparatedSyntaxListOfModifiedIdentifier As SeparatedSyntaxList(Of VBS.ModifiedIdentifierSyntax) =
                         VBFactory.SingletonSeparatedList(
                             VariableName)
-                    Dim VariableType As VBS.TypeSyntax = DirectCast(DeclarationPattern.Type.Accept(Me), VBS.TypeSyntax)
 
                     Dim SeparatedListOfvariableDeclarations As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) =
                         VBFactory.SingletonSeparatedList(
@@ -1794,6 +1868,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 End If
                 Throw UnreachableException
             End Function
+
             Public Overrides Function VisitLiteralExpression(node As CSS.LiteralExpressionSyntax) As VB.VisualBasicSyntaxNode
                 ' now this looks somehow like a hack... is there a better way?
                 If node.IsKind(CS.SyntaxKind.StringLiteralExpression) Then
@@ -1812,7 +1887,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     If DirectCast(node.Token.Value, String) <> node.Token.ValueText Then
                         Return VBFactory.InterpolatedStringExpression(
                                             VBFactory.InterpolatedStringText(
-                                                                ConvertToInterpolatedStringTextToken(node.Token.WithoutTrivia))
+                                                                Me.ConvertToInterpolatedStringTextToken(node.Token.WithoutTrivia))
                                                                             )
                     End If
                     Return GetLiteralExpression(node.Token.Value, node.Token, Me).WithConvertedTriviaFrom(node.Token)
@@ -1872,7 +1947,6 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                 Next
                                 Return VBFactory.CTypeExpression(NothingExpression,
                                                                  VBFactory.ParseTypeName($"({String.Join(", ", TypeList)})"))
-
                             Else
                                 If Not LeftNodeTypeInfo.Type.IsErrorType Then
                                     Return If(LeftNodeTypeInfo.Type.Name Is "",
@@ -1882,25 +1956,24 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                     Return NothingExpression
                                 End If
                             End If
-                        Case CS.SyntaxKind.Argument, CS.SyntaxKind.SimpleLambdaExpression
-                            Return NothingExpression
                         Case CS.SyntaxKind.ConditionalExpression
                             Dim LeftNodeTypeInfo As TypeInfo = ModelExtensions.GetTypeInfo(Me.mSemanticModel, DirectCast(node.Parent, CSS.ConditionalExpressionSyntax).WhenTrue)
                             If LeftNodeTypeInfo.Type Is Nothing OrElse LeftNodeTypeInfo.Type.IsErrorType Then
                                 Return NothingExpression
                             End If
-                            Dim _Type As VBS.TypeSyntax = If(LeftNodeTypeInfo.Type.IsTupleType, Me.ConvertToType(LeftNodeTypeInfo.Type), ConvertToType(LeftNodeTypeInfo.Type.Name))
+                            Dim _Type As VBS.TypeSyntax = If(LeftNodeTypeInfo.Type.IsTupleType, Me.CovertStringToTupleType(LeftNodeTypeInfo.Type.ToString), ConvertToType(LeftNodeTypeInfo.Type.Name))
                             Return VBFactory.CTypeExpression(
                                                       NothingExpression,
                                                       _Type
                                                       )
-                        Case CS.SyntaxKind.CoalesceExpression
-                            ' TODO Handle better
-                            Return NothingExpression
                         Case CS.SyntaxKind.EqualsExpression, CS.SyntaxKind.NotEqualsExpression
-                            ' TODO Handle better
+                            Return VBFactory.CTypeExpression(
+                                                      NothingExpression,
+                                                      ConvertToType("bool")
+                                                      )
+                        Case CS.SyntaxKind.Argument, CS.SyntaxKind.SimpleLambdaExpression
                             Return NothingExpression
-                        Case CS.SyntaxKind.ArrowExpressionClause
+                        Case CS.SyntaxKind.ArrowExpressionClause, CS.SyntaxKind.CoalesceExpression, CS.SyntaxKind.ParenthesizedLambdaExpression
                             ' TODO Handle better
                             Return NothingExpression
                         Case Else
@@ -1992,8 +2065,8 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
 
                 If Expression.GetLastToken.ContainsEOLTrivia Then
                     Dim FoundEOL As Boolean = False
-                    FoundEOL = RestructureTrivia(TriviaList:=Expression.GetTrailingTrivia, FoundEOL, OperatorTrailingTrivia)
-                    FoundEOL = RestructureTrivia(TriviaList:=OperatorToken.LeadingTrivia, FoundEOL, OperatorTrailingTrivia)
+                    FoundEOL = Me.RestructureTrivia(TriviaList:=Expression.GetTrailingTrivia, FoundEOL, OperatorTrailingTrivia)
+                    FoundEOL = Me.RestructureTrivia(TriviaList:=OperatorToken.LeadingTrivia, FoundEOL, OperatorTrailingTrivia)
 
                     If FoundEOL Then
                         OperatorTrailingTrivia.Add(VB_EOLTrivia)
@@ -2281,9 +2354,9 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
 
             Public Overrides Function VisitThrowExpression(node As CSS.ThrowExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Dim Expression As VBS.ExpressionSyntax = DirectCast(node.Expression.Accept(Me), VBS.ExpressionSyntax)
-                Dim ThrowStatement As VBS.ThrowStatementSyntax = VBFactory.ThrowStatement(Expression)
+                Dim ThrowStatement As VBS.ThrowStatementSyntax = VBFactory.ThrowStatement(Expression).WithTrailingEOL
                 Dim ParentNode As SyntaxNode = node.Parent
-                Return ThrowStatement
+                Return ThrowStatement.WithTrailingEOL
             End Function
 
             Public Overrides Function VisitTupleElement(node As CSS.TupleElementSyntax) As VB.VisualBasicSyntaxNode

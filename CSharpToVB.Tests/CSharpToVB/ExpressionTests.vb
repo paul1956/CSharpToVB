@@ -434,7 +434,7 @@ Class TestClass
 
     Private Sub TestMethod()
         Dim test = Function(a) a * 2
-        Dim test2 = Function(a, b)
+        Dim test2 = Function(a, b) As Integer
                         If b > 0 Then
                             Return a / b
                         End If
