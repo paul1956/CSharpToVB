@@ -757,6 +757,8 @@ Namespace IVisualBasicCode.CodeConverter.Util
                             Continue For
                         End If
                         FinalLeadingTriviaList.Add(VB_EOLTrivia)
+                    Case VB.SyntaxKind.LineContinuationTrivia
+                        ' ignore handled elsewhere
                     Case Else
                         Stop
                 End Select
@@ -926,14 +928,27 @@ Namespace IVisualBasicCode.CodeConverter.Util
                     TrailingTrivia = TrailingTrivia.Add(VB_EOLTrivia)
                     Return node.WithTrailingTrivia(TrailingTrivia)
                 Case Else
-                    If TrailingTrivia.First.IsKind(VB.SyntaxKind.WhitespaceTrivia) AndAlso
-                        (TrailingTrivia(1).IsKind(VB.SyntaxKind.EndOfLineTrivia) OrElse TrailingTrivia(1).IsKind(VB.SyntaxKind.WhitespaceTrivia)) Then
-                        TrailingTrivia = TrailingTrivia.RemoveAt(0)
-                        Return node.WithTrailingTrivia(TrailingTrivia).WithTrailingEOL
-                    End If
+                    Count -= 1
+                    Select Case TrailingTrivia.Last.RawKind
+                        Case VB.SyntaxKind.EndOfLineTrivia
+                            Return node.WithTrailingTrivia(TrailingTrivia).WithTrailingEOL
+                        Case VB.SyntaxKind.WhitespaceTrivia
+                            If TrailingTrivia(Count - 1).IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
+                                TrailingTrivia = TrailingTrivia.RemoveAt(0)
+                                Return node.WithTrailingTrivia(TrailingTrivia).WithTrailingEOL
+                            ElseIf TrailingTrivia(Count - 1).IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                                Return node.WithTrailingTrivia(TrailingTrivia)
+                            ElseIf TrailingTrivia(Count - 1).IsCommentOrDirectiveTrivia Then
+                                TrailingTrivia = TrailingTrivia.Insert(Count, VB_EOLTrivia)
+                                Return node.WithTrailingTrivia(TrailingTrivia)
+                            End If
+                            Return node.WithTrailingTrivia(TrailingTrivia)
+                        Case Else
+                            Stop
+                    End Select
                     Stop
             End Select
-            Return node
+                    Return node
         End Function
 
 #Region "WithConvertedTriviaFrom"

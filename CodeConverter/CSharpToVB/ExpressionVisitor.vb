@@ -155,10 +155,6 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return VBFactory.InterpolatedStringTextToken(TokenString, TokenString)
             End Function
 
-            Private Function ConvertTupleTypePartToString(Type As String) As String
-                Return If(Type = "_", "Object", ConvertToType(Type).ToString)
-            End Function
-
             Private Function CovertStringToTupleType(TupleString As String) As TypeSyntax
                 Dim TupleElements As New List(Of VBS.TupleElementSyntax)
                 For Each t As String In TupleString.Substring(1, TupleString.Length - 2).Split(","c)
@@ -586,7 +582,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         Dim TupleNamePartString As String
                         If TupleComponents(i).Kind = SymbolDisplayPartKind.FieldName Then
                             TupleNamePartString = TupleComponents(i).ToString
-                            SSList.Add(VBFactory.NamedTupleElement(VBFactory.Identifier(TupleNamePartString), VBFactory.SimpleAsClause(ConvertToType(TupleTypePartString.ToString.Trim.Replace("<", "(Of ").Replace(">", ")")))))
+                            SSList.Add(VBFactory.NamedTupleElement(VBFactory.Identifier(TupleNamePartString), VBFactory.SimpleAsClause(ConvertToType(TupleTypePartString.Trim.Replace("<", "(Of ").Replace(">", ")")))))
                             i += 1
                         Else
                             SSList.Add(VBFactory.TypedTupleElement(ConvertToType(TupleTypePartString.ToString.Trim.Replace("<", "(Of ").Replace(">", ")"))))
@@ -847,6 +843,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                         For i As Integer = 0 To TypeNames.Count - 1
                                             ' Need to convert Types !!!!!!!
                                             TupleList.Add(ConvertNamedTypeToTypeString(TypeNames(i).Trim))
+
                                         Next
                                     Else
                                         TupleList.AddRange(ConvertTupleToTypeStrings(Type.ToString))
@@ -862,9 +859,9 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                             Dim builder As New System.Text.StringBuilder()
                             builder.Append("(")
                             For i As Integer = 0 To TupleList.Count - 2
-                                builder.Append(Me.ConvertTupleTypePartToString(TupleList(i)) & ", ")
+                                builder.Append(ConvertToType(TupleList(i)).ToString & ", ")
                             Next
-                            builder.Append(Me.ConvertTupleTypePartToString(TupleList.Last) & ")")
+                            builder.Append(ConvertToType(TupleList.Last).ToString & ")")
                             Dim TupleType As String = builder.ToString
 
                             Dim SimpleAs As VBS.SimpleAsClauseSyntax = VBFactory.SimpleAsClause(AsKeyword.WithTrailingTrivia(SpaceTrivia), attributeLists:=Nothing, type:=VBFactory.ParseTypeName(TupleType).WithLeadingTrivia(SpaceTrivia)).WithLeadingTrivia(SpaceTrivia)
