@@ -904,10 +904,11 @@ Namespace IVisualBasicCode.CodeConverter.Util
                         Case VB.SyntaxKind.WhitespaceTrivia
                             Select Case TrailingTrivia.Last.RawKind
                                 Case VB.SyntaxKind.WhitespaceTrivia
-                                ' Ignore both whitespaces
+                                    ' Ignore both whitespaces
+                                    TrailingTrivia = New SyntaxTriviaList
+                                    ' EOL added below
                                 Case VB.SyntaxKind.CommentTrivia
-                                    TrailingTrivia = TrailingTrivia.Add(TrailingTrivia.First)
-                                    TrailingTrivia = TrailingTrivia.Add(TrailingTrivia.Last)
+                                    ' nothing to do EOL added below
                                 Case Else
                                     Stop
                             End Select
@@ -919,6 +920,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
                         Case VB.SyntaxKind.CommentTrivia
                             If TrailingTrivia.Last.IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
                                 TrailingTrivia = TrailingTrivia.RemoveAt(1)
+                                TrailingTrivia = TrailingTrivia.Insert(0, SpaceTrivia)
                             Else
                                 Stop
                             End If
@@ -937,7 +939,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
                                 TrailingTrivia = TrailingTrivia.RemoveAt(0)
                                 Return node.WithTrailingTrivia(TrailingTrivia).WithTrailingEOL
                             ElseIf TrailingTrivia(Count - 1).IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                                Return node.WithTrailingTrivia(TrailingTrivia)
+                                Return node
                             ElseIf TrailingTrivia(Count - 1).IsCommentOrDirectiveTrivia Then
                                 TrailingTrivia = TrailingTrivia.Insert(Count, VB_EOLTrivia)
                                 Return node.WithTrailingTrivia(TrailingTrivia)

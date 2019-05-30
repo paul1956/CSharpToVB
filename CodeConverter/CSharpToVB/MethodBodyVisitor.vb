@@ -63,28 +63,6 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     TypeOf statement Is CSS.ThrowStatementSyntax
             End Function
 
-            ''' <summary>
-            ''' Used for moving comment Trivia to end of statement
-            ''' </summary>
-            ''' <param name="OriginalTrailingTrivia"></param>
-            ''' <param name="FoundEOL"></param>
-            ''' <param name="NewTrailingTrivia"></param>
-            ''' <returns></returns>
-            Private Shared Function RestructureTrailingTrivia(OriginalTrailingTrivia As IEnumerable(Of SyntaxTrivia), FoundEOL As Boolean, ByRef NewTrailingTrivia As List(Of SyntaxTrivia)) As Boolean
-                For Each t As SyntaxTrivia In OriginalTrailingTrivia
-                    Select Case t.RawKind
-                        Case VB.SyntaxKind.CommentTrivia
-                            NewTrailingTrivia.Add(t)
-                        Case VB.SyntaxKind.EndOfLineTrivia
-                            FoundEOL = True
-                        Case VB.SyntaxKind.WhitespaceTrivia
-                            NewTrailingTrivia.Add(t)
-                    End Select
-                Next
-
-                Return FoundEOL
-            End Function
-
             Private Iterator Function AddLabels(blocks As VBS.CaseBlockSyntax(), gotoLabels As List(Of VB.VisualBasicSyntaxNode)) As IEnumerable(Of VBS.CaseBlockSyntax)
                 For Each _block As VBS.CaseBlockSyntax In blocks
                     Dim block As VBS.CaseBlockSyntax = _block
@@ -956,14 +934,8 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 If Statement Is Nothing Then
                     Statement = Me.ConvertSingleExpression(CS_Expression)
                 End If
-                Dim FoundEOL As Boolean = False
-                FoundEOL = RestructureTrailingTrivia(OriginalTrailingTrivia:=Statement.GetTrailingTrivia, FoundEOL, TrailingTrivia)
-                FoundEOL = RestructureTrailingTrivia(ConvertTrivia(TriviaToConvert:=node.GetTrailingTrivia), FoundEOL, TrailingTrivia)
 
-                If FoundEOL Then
-                    TrailingTrivia.Add(VB_EOLTrivia)
-                End If
-                Dim syntaxList1 As SyntaxList(Of VBS.StatementSyntax) = VBFactory.SingletonList(Statement.WithTrailingTrivia(TrailingTrivia))
+                Dim syntaxList1 As SyntaxList(Of VBS.StatementSyntax) = VBFactory.SingletonList(Statement.WithAppendedTrailingTrivia(ConvertTrivia(node.GetTrailingTrivia)).WithTrailingEOL)
                 Return ReplaceStatementsWithMarkedStatements(node, syntaxList1)
             End Function
 
