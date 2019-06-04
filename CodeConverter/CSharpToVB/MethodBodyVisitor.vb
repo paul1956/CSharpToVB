@@ -4,7 +4,6 @@ Option Strict On
 
 Imports System.Runtime.InteropServices
 Imports System.Text
-Imports System.Threading
 
 Imports IVisualBasicCode.CodeConverter.Util
 
@@ -13,10 +12,13 @@ Imports Microsoft.CodeAnalysis.CSharp
 Imports Microsoft.CodeAnalysis.VisualBasic
 
 Imports CS = Microsoft.CodeAnalysis.CSharp
+
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
+
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
-Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
+
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
+Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace IVisualBasicCode.CodeConverter.Visual_Basic
 
@@ -116,9 +118,9 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Dim OpenBrace As SyntaxToken = If(Braces.OpenBrace = Nothing, New SyntaxToken, Braces.OpenBrace)
                 Dim OpenBraceLeadingTrivia As New List(Of SyntaxTrivia)
                 OpenBraceLeadingTrivia.AddRange(ConvertTrivia(OpenBrace.LeadingTrivia))
-                OpenBraceTrailiningTrivia.AddRange(ExtractComments(ConvertTrivia(OpenBrace.TrailingTrivia), Leading:=False))
+                OpenBraceTrailiningTrivia.AddRange(ConvertTrivia(OpenBrace.TrailingTrivia))
                 Dim CloseBrace As SyntaxToken = If(Braces.CloseBrace = Nothing, New SyntaxToken, Braces.CloseBrace)
-                CloseBraceLeadingTrivia.AddRange(ExtractComments(ConvertTrivia(CloseBrace.LeadingTrivia), Leading:=True))
+                CloseBraceLeadingTrivia.AddRange(ConvertTrivia(CloseBrace.LeadingTrivia))
                 Select Case True
                     Case TypeOf node Is CSS.BlockSyntax
                         Dim NodeBlock As CSS.BlockSyntax = DirectCast(node, CSS.BlockSyntax)
@@ -960,7 +962,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Dim stmt As SyntaxList(Of VBS.StatementSyntax) = Me.ConvertBlock(node.Statement, OpenBraceTrailingTrivia, ClosingBraceLeadingTrivia)
                 Dim NextStatement As VBS.NextStatementSyntax = VBFactory.NextStatement().WithLeadingTrivia(ClosingBraceLeadingTrivia)
                 Dim ForEachStatementSyntax As VBS.ForEachStatementSyntax = VBFactory.ForEachStatement(variable, expression).WithTrailingEOL
-                Dim block As VBS.ForEachBlockSyntax = VBFactory.ForEachBlock(ForEachStatementSyntax.WithConvertedleadingTriviaFrom(node.ForEachKeyword),
+                Dim block As VBS.ForEachBlockSyntax = VBFactory.ForEachBlock(ForEachStatementSyntax.WithConvertedLeadingTriviaFrom(node.ForEachKeyword),
                                                                              stmt,
                                                                              NextStatement)
                 Return ReplaceStatementsWithMarkedStatements(node, VBFactory.SingletonList(Of VBS.StatementSyntax)(block))
@@ -1005,7 +1007,6 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     End If
                     Return ReplaceStatementsWithMarkedStatements(node, Statements)
                 End If
-
 
             End Function
 
@@ -1059,8 +1060,6 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     StatementTrailingTrivia.Insert(0, VB_EOLTrivia)
                 End If
                 Dim ConditionWithTrivia As VBS.ExpressionSyntax = DirectCast(node.Condition.Accept(Me.mNodesVisitor).WithAppendedTrailingTrivia(ConvertTrivia(node.Condition.GetTrailingTrivia)).WithModifiedNodeTrivia(True), VBS.ExpressionSyntax)
-
-
 
                 If node.Statement.IsKind(CS.SyntaxKind.EmptyStatement) Then
                     StatementTrailingTrivia.InsertRange(0, ConvertTrivia(DirectCast(node.Statement, CSS.EmptyStatementSyntax).SemicolonToken.TrailingTrivia))

@@ -8,7 +8,7 @@ Namespace CSharpToVB.Tests
         Dim LastFileProcessed As String
         ReadOnly ListOfFiles As New List(Of String)
         Dim MaxPathLength As Integer = 0
-        Public Function GetMaxPathLength(PathWithFileName As String, TargetDirectory As String, LanguageExtension As String, TotalFilesToProcess As Long, DontCare() As MetadataReference) As Boolean
+        Public Function GetMaxPathLength(PathWithFileName As String, TargetDirectory As String, LanguageExtension As String, DontCare() As MetadataReference) As Boolean
             ' Do not delete the next line of the parameter
             Me.LastFileProcessed = PathWithFileName
             Me.ListOfFiles.Add(Me.LastFileProcessed)
@@ -28,7 +28,7 @@ Namespace CSharpToVB.Tests
         Public Sub VB_MaxPathLength()
             Dim FilesProcessed As Long = 0
             Dim LastFileNameWithPath As String = ""
-            Dim Condition As Boolean = ProcessDirectory(RoslynRootDirectory, TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, LastFileNameWithPath:=LastFileNameWithPath, SourceLanguageExtension:="cs", FilesProcessed, 0, ProcessFile:=AddressOf Me.GetMaxPathLength)
+            Dim Condition As Boolean = ProcessDirectory(GetRoslynRootDirectory(), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, LastFileNameWithPath:=LastFileNameWithPath, SourceLanguageExtension:="cs", FilesProcessed, 0, ProcessFile:=AddressOf Me.GetMaxPathLength)
             Assert.True(Me.MaxPathLength = 210, $"MaxPathLength of 210 <> {Me.MaxPathLength}")
         End Sub
 

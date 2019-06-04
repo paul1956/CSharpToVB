@@ -1,11 +1,9 @@
 ﻿' Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-Imports System
-Imports System.Collections
-Imports System.Collections.Generic
-
 Partial Module SpecializedCollections
+
     Partial Friend NotInheritable Class Singleton
+
         Friend NotInheritable Class List(Of T)
             Implements IList(Of T), IReadOnlyCollection(Of T)
 
@@ -84,6 +82,9 @@ Partial Module SpecializedCollections
             Public Sub RemoveAt(index As Integer) Implements IList(Of T).RemoveAt
                 Throw New NotSupportedException()
             End Sub
+
         End Class
+
     End Class
+
 End Module

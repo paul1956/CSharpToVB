@@ -224,8 +224,8 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 For i As Integer = 0 To node.Parameters.Count - 2
                     Dim p As CSS.TypeParameterSyntax = node.Parameters(i)
                     Dim ItemWithTrivia As VBS.TypeParameterSyntax = DirectCast(p.Accept(Me), VBS.TypeParameterSyntax)
-                    FinalTrailingTrivia.AddRange(ExtractComments(ItemWithTrivia.GetLeadingTrivia, Leading:=True))
-                    FinalTrailingTrivia.AddRange(ExtractComments(ItemWithTrivia.GetTrailingTrivia, Leading:=False))
+                    FinalTrailingTrivia.AddRange(ItemWithTrivia.GetLeadingTrivia)
+                    FinalTrailingTrivia.AddRange(ItemWithTrivia.GetTrailingTrivia)
                     Nodes.Add(ItemWithTrivia.WithLeadingTrivia(SpaceTrivia).WithTrailingTrivia(SpaceTrivia))
                     Separators.Add(CommaToken.WithConvertedTriviaFrom(CS_Separators(i)))
                 Next

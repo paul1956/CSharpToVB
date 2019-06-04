@@ -1,11 +1,12 @@
 ﻿' Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
-Imports System.Collections.Generic
 Imports System.Threading
-Imports System.Threading.Tasks
+
 Imports Microsoft.CodeAnalysis.Formatting
 Imports Microsoft.CodeAnalysis.Options
 Imports Microsoft.CodeAnalysis.Text
+
 Imports Roslyn.Test.Utilities
+
 Imports Xunit
 
 Namespace Microsoft.CodeAnalysis.UnitTests.Formatting
@@ -80,5 +81,7 @@ Namespace Microsoft.CodeAnalysis.UnitTests.Formatting
             Dim actual As String = sourceText_Renamed.WithChanges(result).ToString()
             AssertEx.EqualOrDiff(expected, actual)
         End Sub
+
     End Class
+
 End Namespace

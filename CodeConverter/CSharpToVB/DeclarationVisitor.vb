@@ -81,10 +81,10 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             Private Shared Function GetSemicolonTrivia(_SemicolonToken As SyntaxToken) As List(Of SyntaxTrivia)
                 Dim NewTrailingTrivia As New List(Of SyntaxTrivia)
                 If _SemicolonToken.HasLeadingTrivia Then
-                    NewTrailingTrivia.AddRange(ExtractComments(ConvertTrivia(_SemicolonToken.LeadingTrivia), Leading:=True))
+                    NewTrailingTrivia.AddRange(ConvertTrivia(_SemicolonToken.LeadingTrivia))
                 End If
                 If _SemicolonToken.HasTrailingTrivia Then
-                    NewTrailingTrivia.AddRange(ExtractComments(ConvertTrivia(_SemicolonToken.TrailingTrivia), Leading:=False))
+                    NewTrailingTrivia.AddRange(ConvertTrivia(_SemicolonToken.TrailingTrivia))
                 End If
                 Return NewTrailingTrivia
             End Function
@@ -451,7 +451,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 FieldDeclaration = VBFactory.FieldDeclaration(Attributes, modifiers, declarators).WithLeadingTrivia(LeadingTrivia)
                 FieldDeclaration = AddSpecialCommentToField(node, FieldDeclaration)
                 Return FieldDeclaration.RestructureAttributesAndModifiers(Attributes.Count > 0, modifiers.Count > 0).
-                    WithMergedTrailingTrivia(GetSemicolonTrivia(node.SemicolonToken))
+                    WithMergedTrailingTrivia(GetSemicolonTrivia(node.SemicolonToken)).WithTrailingEOL
             End Function
 
             Public Overrides Function VisitIndexerDeclaration(node As CSS.IndexerDeclarationSyntax) As VB.VisualBasicSyntaxNode

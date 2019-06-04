@@ -1,10 +1,9 @@
 ﻿' Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-Imports System.Collections
-Imports System.Collections.Generic
-
 Partial Module SpecializedCollections
+
     Partial Friend NotInheritable Class Singleton
+
         Friend Class Enumerator(Of T)
             Implements IEnumerator(Of T)
 
@@ -37,6 +36,7 @@ Partial Module SpecializedCollections
             End Sub
 
 #Region "IDisposable Support"
+
             Private disposedValue As Boolean ' To detect redundant calls
 
             ' IDisposable
@@ -66,8 +66,11 @@ Partial Module SpecializedCollections
                 ' TODO: uncomment the following line if Finalize() is overridden above.
                 ' GC.SuppressFinalize(Me)
             End Sub
-#End Region
-        End Class
-    End Class
-End Module
 
+#End Region
+
+        End Class
+
+    End Class
+
+End Module

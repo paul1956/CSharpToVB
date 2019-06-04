@@ -35,43 +35,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="Extensions\DefaultExtension.vb" />
-    <Compile Remove="Extensions\DetermineTypeExtensions.vb" />
-    <Compile Remove="Extensions\EnumerableExtensions_cs.vb" />
-    <Compile Remove="Extensions\ExpressionSyntaxExtensions.vb" />
-    <Compile Remove="Extensions\IAssemblySymbolExtensions.vb" />
-    <Compile Remove="Extensions\INamespaceOrTypeSymbolExtensions.vb" />
-    <Compile Remove="Extensions\ITypeParameterSymbolExtensions.vb" />
-    <Compile Remove="Extensions\SynbolExtension.vb" />
-    <Compile Remove="Extensions\TypeExtensions.vb" />
-    <Compile Remove="Utils\AnnotationTable.vb" />
-    <Compile Remove="Utils\CSharpUtils.vb" />
-    <Compile Remove="Utils\FindTokenHelper.vb" />
-    <Compile Remove="Utils\Matcher.vb" />
-    <Compile Remove="Utils\RegexNode.vb" />
-    <Compile Remove="Utils\RegexOptions.vb" />
-    <Compile Remove="Utils\RegExParser.vb" />
-    <Compile Remove="Utils\SpecializedCollections.vb" />
-    <Compile Remove="Utils\SpecializedCollectionsReadOnly.vb" />
-    <Compile Remove="Utils\SpecializedCollectionsSingleton.vb" />
-    <Compile Remove="Utils\StringExtensions.vb" />
-    <Compile Remove="Utils\SymbolEquivalenceComparer.AssemblyComparers.vb" />
-    <Compile Remove="Utils\SymbolEquivalenceComparer.EquivalenceVisitor.vb" />
-    <Compile Remove="Utils\SymbolEquivalenceComparer.GetHashCodeVisitor.vb" />
-    <Compile Remove="Utils\SymbolEquivalenceComparer.ParameterSymbolEqualityComparer.vb" />
-    <Compile Remove="Utils\SymbolEquivalenceComparer.SignatureTypeSymbolEquivalenceComparer.vb" />
-    <Compile Remove="Utils\SymbolEquivalenceComparer.vb" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis" Version="3.1.0-beta3-final" />
+    <PackageReference Include="Microsoft.CodeAnalysis" Version="3.1.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="2.9.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.1.0-beta3-final" />
-    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="3.1.0-beta3-final" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="3.1.0-beta3-final" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.1.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="3.1.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="3.1.0" />
     <PackageReference Include="System.Memory" Version="4.5.3" />
   </ItemGroup>
 

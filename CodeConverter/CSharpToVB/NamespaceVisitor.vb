@@ -118,7 +118,7 @@ End Function
                         Statement.IsKind(VB.SyntaxKind.StructureBlock) OrElse
                         Statement.IsKind(VB.SyntaxKind.SubBlock) OrElse
                         Statement.IsKind(VB.SyntaxKind.SubStatement) Then
-                        members.Add(Statement)
+                        members.Add(Statement.WithTrailingEOL)
                         ' Cases below are handled in-line
                     ElseIf Statement.IsKind(VB.SyntaxKind.ConstructorBlock) OrElse
                         Statement.IsKind(VB.SyntaxKind.DelegateFunctionStatement) OrElse
@@ -127,9 +127,9 @@ End Function
                         Statement.IsKind(VB.SyntaxKind.EventStatement) OrElse
                         Statement.IsKind(VB.SyntaxKind.OperatorBlock) OrElse
                         Statement.IsKind(VB.SyntaxKind.PropertyStatement) Then
-                        members.Add(Statement.WithConvertedTriviaFrom(m))
+                        members.Add(Statement.WithConvertedTriviaFrom(m).WithTrailingEOL)
                     Else
-                        members.Add(Statement.WithConvertedTriviaFrom(m))
+                        members.Add(Statement.WithConvertedTriviaFrom(m).WithTrailingEOL)
                     End If
                     If i = 0 Then
                         members(0) = members(0).WithPrependedLeadingTrivia(ConvertOpenBraceTrivia(node.OpenBraceToken))

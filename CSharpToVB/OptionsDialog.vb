@@ -2,8 +2,6 @@
 Option Infer Off
 Option Strict On
 
-Imports System.Windows.Forms
-
 Public Class OptionsDialog
     Private SelectedColor As Color
     Private SelectedColorName As String = "default"

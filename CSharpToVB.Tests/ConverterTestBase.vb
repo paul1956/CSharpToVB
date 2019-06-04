@@ -4,22 +4,21 @@ Option Strict On
 
 Imports System.Collections.Immutable
 
-#If VB_TO_CSharp Then
-Imports IVisualBasicCode.CodeConverter.CSharp
-#End If
+Imports IVisualBasicCode.CodeConverter.Util
 Imports IVisualBasicCode.CodeConverter.Visual_Basic
+
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.CSharp
 Imports Microsoft.CodeAnalysis.CSharp.Formatting
+Imports Microsoft.CodeAnalysis.Formatting
+Imports Microsoft.CodeAnalysis.Options
 Imports Microsoft.CodeAnalysis.Text
 Imports Microsoft.CodeAnalysis.VisualBasic
-Imports IVisualBasicCode.CodeConverter.Util
-Imports Roslyn.Test.Utilities
-Imports Microsoft.CodeAnalysis.Options
-Imports Microsoft.CodeAnalysis.Formatting
 
 Namespace CodeConverter.Tests
+
     Public Class ConverterTestBase
+
         ' Do not remove Version
         Public Property Version As Integer = 1
 
@@ -110,10 +109,6 @@ Namespace CodeConverter.Tests
                                             metadataReferences:=SharedReferences.References))
             doc = workspace.CurrentSolution.GetProject(ProjectId).GetDocument(DocumentID)
         End Sub
-        ' Converts C# to VB
-        Public Shared Function Convert(SourceTree As CSharpSyntaxNode, _SemanticModel As SemanticModel) As VisualBasicSyntaxNode
-            Return CSharpConverter.Convert(SourceTree, _SemanticModel)
-        End Function
 
         Public Shared Sub TestConversionCSharpToVisualBasic(csharpCode As String, DesiredResult As String, Optional csharpOptions As CSharpParseOptions = Nothing, Optional vbOptions As VisualBasicParseOptions = Nothing)
             Dim csharpWorkspace As TestWorkspace = Nothing
@@ -126,8 +121,7 @@ Namespace CodeConverter.Tests
 
             Dim InputNode As SyntaxNode = inputDocument.GetSyntaxRootAsync().GetAwaiter().GetResult()
             Dim lSemanticModel As SemanticModel = inputDocument.GetSemanticModelAsync().GetAwaiter().GetResult()
-            Dim outputNode As SyntaxNode = Convert(CType(InputNode, CSharpSyntaxNode), lSemanticModel)
-
+            Dim outputNode As SyntaxNode = CSharpConverter.Convert(CType(InputNode, CSharpSyntaxNode), True, lSemanticModel)
 
             Dim ActualResult As String = outputDocument.WithSyntaxRoot(
                 root:=outputNode.NormalizeWhitespaceEx(useDefaultCasing:=True,
@@ -249,6 +243,7 @@ Namespace CodeConverter.Tests
             Return VisualBasicConverter.Convert(input, semanticModel, targetDocument)
         End Function
 #End If
+
         Private Shared Function FindFirstDifferenceColumn(DesiredLine As String, ActualLine As String) As (ColumnIndex As Integer, Character As String)
             Dim minLength As Integer = Math.Min(DesiredLine.Length, ActualLine.Length) - 1
             For i As Integer = 0 To minLength
@@ -278,10 +273,12 @@ Namespace CodeConverter.Tests
             Next
             Return "Files identical"
         End Function
+
         Protected Shared Function WorkspaceFormat(workspace As Workspace, root As SyntaxNode, spans As IEnumerable(Of TextSpan), _OptionSet As OptionSet, _SourceText As SourceText) As String
             Dim result As IList(Of TextChange) = Formatter.GetFormattedTextChanges(root, spans, workspace, _OptionSet)
             Return _SourceText.WithChanges(result).ToString()
         End Function
 
     End Class
+
 End Namespace

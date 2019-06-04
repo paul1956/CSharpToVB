@@ -274,51 +274,6 @@ Namespace IVisualBasicCode.CodeConverter.Util
             Return NewTriviaList
         End Function
 
-        Public Function ExtractComments(ListOfTrivia As IEnumerable(Of SyntaxTrivia), Leading As Boolean) As IEnumerable(Of SyntaxTrivia)
-            Dim CommentTrivia As New List(Of SyntaxTrivia)
-            Dim NeedEOL As Boolean = Leading
-            For Each t As SyntaxTrivia In ListOfTrivia
-                Select Case t.RawKind
-                    Case VB.SyntaxKind.CommentTrivia,
-                            VB.SyntaxKind.DocumentationCommentExteriorTrivia,
-                            VB.SyntaxKind.EmptyStatement,
-                            VB.SyntaxKind.BadDirectiveTrivia,
-                            VB.SyntaxKind.ConstDirectiveTrivia,
-                            VB.SyntaxKind.DisabledTextTrivia,
-                            VB.SyntaxKind.DisableWarningDirectiveTrivia,
-                            VB.SyntaxKind.ElseDirectiveTrivia,
-                            VB.SyntaxKind.ElseIfDirectiveTrivia,
-                            VB.SyntaxKind.EnableWarningDirectiveTrivia,
-                            VB.SyntaxKind.EndExternalSourceDirectiveTrivia,
-                            VB.SyntaxKind.EndIfDirectiveTrivia,
-                            VB.SyntaxKind.EndRegionDirectiveTrivia,
-                            VB.SyntaxKind.ExternalChecksumDirectiveTrivia,
-                            VB.SyntaxKind.ExternalSourceDirectiveTrivia,
-                            VB.SyntaxKind.IfDirectiveTrivia,
-                            VB.SyntaxKind.ReferenceDirectiveTrivia,
-                            VB.SyntaxKind.RegionDirectiveTrivia
-                        If NeedEOL Then
-                            CommentTrivia.Add(VB_EOLTrivia)
-                        End If
-                        CommentTrivia.Add(t)
-                        NeedEOL = True
-                    Case VB.SyntaxKind.EndOfLineTrivia
-                        NeedEOL = True
-                    Case VB.SyntaxKind.WhitespaceTrivia
-                        'ignore
-                    Case Else
-                        Stop
-                End Select
-            Next
-            If NeedEOL Then
-                CommentTrivia.Add(VB_EOLTrivia)
-            End If
-            If Leading AndAlso CommentTrivia.Count = 1 Then
-                CommentTrivia.Clear()
-            End If
-            Return CommentTrivia
-        End Function
-
         <Extension>
         Public Function FullWidth(trivia As SyntaxTrivia) As Integer
             Return trivia.FullSpan.Length

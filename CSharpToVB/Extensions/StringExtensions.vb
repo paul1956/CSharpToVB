@@ -3,9 +3,7 @@ Option Explicit On
 Option Infer Off
 Option Strict On
 
-Imports System.Collections.Immutable
 Imports System.Runtime.CompilerServices
-Imports System.Text
 
 Imports Microsoft.CodeAnalysis
 

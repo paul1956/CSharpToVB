@@ -2,7 +2,6 @@
 Option Infer Off
 Option Strict On
 
-Imports System.IO
 Imports System.Runtime.InteropServices
 
 Public Class OpenFolderDialog
@@ -12,6 +11,7 @@ Public Class OpenFolderDialog
     ''' Gets of Sets the descriptive text displayed above the tree view control in the dialog box
     ''' </summary>
     Public Description As String
+
     ''' <summary>
     ''' Gets/sets directory in which dialog will be open if there is no recent directory available.
     ''' </summary>
@@ -28,6 +28,7 @@ Public Class OpenFolderDialog
     ''' Gets selected folder.
     ''' </summary>
     Public Property SelectedPath As String
+
     ''' <summary>
     ''' Gets of sets a value indicating whether the New Folder button appears in the folder browser dialog box.
     ''' </summary>
@@ -83,4 +84,5 @@ Public Class OpenFolderDialog
         End If
         Return DialogResult.Cancel
     End Function
+
 End Class

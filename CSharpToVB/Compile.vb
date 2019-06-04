@@ -4,17 +4,20 @@ Option Strict On
 
 Imports System.Collections.Immutable
 Imports System.IO
-Imports System.Text.RegularExpressions
+
 Imports IVisualBasicCode.CodeConverter
+Imports IVisualBasicCode.CodeConverter.ConversionResult
+
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Emit
 Imports Microsoft.CodeAnalysis.VisualBasic
 
 Public Module Compile
+
     Public Function CompileVisualBasicString(StringToBeCompiled As String, ErrorsToBeIgnored() As String, SeverityToReport As DiagnosticSeverity, ByRef ResultOfConversion As ConversionResult) As EmitResult
         If StringToBeCompiled.IsEmptyNullOrWhitespace Then
             ResultOfConversion.FilteredListOfFailures = New List(Of Diagnostic)
-            ResultOfConversion.Success = True
+            ResultOfConversion.ResultStatus = ResultTriState.Success
             Return Nothing
         End If
 

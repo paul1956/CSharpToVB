@@ -364,7 +364,6 @@ Namespace IVisualBasicCode.CodeConverter.Util
                             Next
                         Case CS.SyntaxKind.MultiLineDocumentationCommentTrivia
                             Dim sld As CSS.StructuredTriviaSyntax = DirectCast(t.GetStructure, CSS.StructuredTriviaSyntax)
-                            'riviaList.Add()
                             For Each t1 As SyntaxNode In sld.ChildNodes
                                 Dim Lines() As String = t1.ToFullString.Split(CType(vbLf, Char))
                                 For Each line As String In Lines
@@ -642,75 +641,72 @@ Namespace IVisualBasicCode.CodeConverter.Util
         End Function
 
         <Extension()>
-        Public Function WithMergedTrailingTrivia(Of T As SyntaxNode)(node As T, trivia As IEnumerable(Of SyntaxTrivia)) As T
+        Public Function WithMergedTrailingTrivia(Of T As SyntaxNode)(node As T, TriviaListToMerge As IEnumerable(Of SyntaxTrivia)) As T
             If node Is Nothing Then
                 Return Nothing
             End If
-            If trivia.Count = 0 Then
+            If TriviaListToMerge.Count = 0 Then
                 Return node
             End If
             Dim NodeTrailingTrivia As List(Of SyntaxTrivia) = node.GetTrailingTrivia.ToList
             If NodeTrailingTrivia.Count = 0 Then
-                Return node.WithTrailingTrivia(trivia)
+                Return node.WithTrailingTrivia(TriviaListToMerge)
             End If
             ' Both nodes have trivia
             Dim NewTrailingTrivia As New List(Of SyntaxTrivia)
-            Dim FoundCommentIndex As Integer = -1
-            Dim FoundEOL As Boolean = False
             Dim FoundWhiteSpace As Boolean = False
             For i As Integer = 0 To NodeTrailingTrivia.Count - 1
-                Dim NodeT As SyntaxTrivia = NodeTrailingTrivia(i)
-                Select Case NodeT.RawKind
+                Dim Trivia As SyntaxTrivia = NodeTrailingTrivia(i)
+                Dim NextTrivia As SyntaxTrivia = If(i < NodeTrailingTrivia.Count - 2, NodeTrailingTrivia(i + 1), Nothing)
+                Select Case Trivia.RawKind
                     Case VB.SyntaxKind.WhitespaceTrivia
-                        If Not FoundWhiteSpace Then
-                            NewTrailingTrivia.Add(GetWhitespaceTrivia(NodeT))
+                        If Not FoundWhiteSpace AndAlso Not NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                            NewTrailingTrivia.Add(GetWhitespaceTrivia(Trivia))
                             FoundWhiteSpace = True
                         End If
                     Case VB.SyntaxKind.EndOfLineTrivia
-                        FoundEOL = True
+                        NewTrailingTrivia.Add(Trivia)
                     Case VB.SyntaxKind.CommentTrivia
-                        If FoundCommentIndex >= 0 Then
-                            NewTrailingTrivia(FoundCommentIndex) = VBFactory.CommentTrivia(NewTrailingTrivia(FoundCommentIndex).ToFullString.Trim & " " & NodeT.ToFullString.Trim)
-                        Else
-                            NewTrailingTrivia.Add(NodeT)
-                            FoundCommentIndex = NewTrailingTrivia.Count - 1
+                        NewTrailingTrivia.Add(Trivia)
+                        If Not NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                            NewTrailingTrivia.Add(VB_EOLTrivia)
                         End If
                     Case VB.SyntaxKind.EnableWarningDirectiveTrivia
                         NewTrailingTrivia.Add(VB_EOLTrivia)
-                        NewTrailingTrivia.Add(NodeT)
+                        NewTrailingTrivia.Add(Trivia)
                     Case Else
                         Stop
                 End Select
             Next
-            For i As Integer = 0 To trivia.Count - 1
-                Dim NodeT As SyntaxTrivia = trivia(i)
-                Select Case NodeT.RawKind
+            Dim FoundEOL As Boolean = False
+            For i As Integer = 0 To TriviaListToMerge.Count - 1
+                Dim Trivia As SyntaxTrivia = TriviaListToMerge(i)
+                Dim NextTrivia As SyntaxTrivia = If(i < TriviaListToMerge.Count - 2, TriviaListToMerge(i + 1), Nothing)
+                Select Case Trivia.RawKind
                     Case VB.SyntaxKind.WhitespaceTrivia
-                        If Not FoundWhiteSpace Then
-                            NewTrailingTrivia.Add(GetWhitespaceTrivia(NodeT))
+                        If Not FoundWhiteSpace AndAlso Not NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                            NewTrailingTrivia.Add(GetWhitespaceTrivia(Trivia))
                             FoundWhiteSpace = True
                         End If
                     Case VB.SyntaxKind.EndOfLineTrivia
+                        NewTrailingTrivia.Add(Trivia)
                         FoundEOL = True
                     Case VB.SyntaxKind.CommentTrivia
-                        If FoundCommentIndex >= 0 Then
-                            NewTrailingTrivia(FoundCommentIndex) = VBFactory.CommentTrivia(NewTrailingTrivia(FoundCommentIndex).ToFullString.Trim & " " & NodeT.ToFullString.Trim)
-                        Else
-                            NewTrailingTrivia.Add(NodeT)
-                            FoundCommentIndex = NewTrailingTrivia.Count - 1
+                        NewTrailingTrivia.Add(Trivia)
+                        If Not NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                            NewTrailingTrivia.Add(VB_EOLTrivia)
+                            FoundEOL = True
                         End If
                     Case VB.SyntaxKind.EndRegionDirectiveTrivia
+
                         If FoundEOL Then
                             NewTrailingTrivia.Add(VB_EOLTrivia)
                         End If
-                        NewTrailingTrivia.Add(NodeT)
+                        NewTrailingTrivia.Add(Trivia)
                     Case Else
                         Stop
                 End Select
             Next
-            If FoundEOL Then
-                NewTrailingTrivia.Add(VB_EOLTrivia)
-            End If
             Return node.WithTrailingTrivia(NewTrailingTrivia)
         End Function
 
@@ -882,13 +878,10 @@ Namespace IVisualBasicCode.CodeConverter.Util
 
         <Extension()>
         Public Function WithTrailingEOL(Of T As SyntaxNode)(node As T) As T
-            Dim TrailingTrivia As SyntaxTriviaList = node.GetTrailingTrivia
+            Dim TrailingTrivia As List(Of SyntaxTrivia) = node.GetTrailingTrivia.ToList
             Dim Count As Integer = TrailingTrivia.Count
             If Count = 0 Then
                 Return node.WithTrailingTrivia(VB_EOLTrivia)
-            End If
-            If TrailingTrivia.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                Return node
             End If
             Select Case Count
                 Case 1
@@ -903,9 +896,9 @@ Namespace IVisualBasicCode.CodeConverter.Util
                     Select Case TrailingTrivia.First.RawKind
                         Case VB.SyntaxKind.WhitespaceTrivia
                             Select Case TrailingTrivia.Last.RawKind
-                                Case VB.SyntaxKind.WhitespaceTrivia
-                                    ' Ignore both whitespaces
-                                    TrailingTrivia = New SyntaxTriviaList
+                                Case VB.SyntaxKind.WhitespaceTrivia, VB.SyntaxKind.EndOfLineTrivia
+                                    ' Replace Whitespaces, Whitespaces and Whitespaces, EOL with just EOL
+                                    TrailingTrivia = New List(Of SyntaxTrivia)
                                     ' EOL added below
                                 Case VB.SyntaxKind.CommentTrivia
                                     ' nothing to do EOL added below
@@ -915,33 +908,39 @@ Namespace IVisualBasicCode.CodeConverter.Util
                         Case VB.SyntaxKind.EndOfLineTrivia
                             If TrailingTrivia.Last.IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
                                 Return node
+                            ElseIf TrailingTrivia.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                                Return node.WithTrailingTrivia(VB_EOLTrivia)
                             End If
                             Stop
                         Case VB.SyntaxKind.CommentTrivia
                             If TrailingTrivia.Last.IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
-                                TrailingTrivia = TrailingTrivia.RemoveAt(1)
-                                TrailingTrivia = TrailingTrivia.Insert(0, SpaceTrivia)
-                            Else
+                                TrailingTrivia.RemoveAt(1)
+                                TrailingTrivia.Insert(0, SpaceTrivia)
+                                ' EOL added below
                                 Stop
                             End If
                         Case Else
                             Stop
                     End Select
-                    TrailingTrivia = TrailingTrivia.Add(VB_EOLTrivia)
+                    TrailingTrivia.Add(VB_EOLTrivia)
                     Return node.WithTrailingTrivia(TrailingTrivia)
                 Case Else
-                    Count -= 1
+                    Count -= 1 ' Last index
                     Select Case TrailingTrivia.Last.RawKind
                         Case VB.SyntaxKind.EndOfLineTrivia
-                            Return node.WithTrailingTrivia(TrailingTrivia).WithTrailingEOL
+                            If TrailingTrivia(Count - 1).IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                                TrailingTrivia.RemoveAt(Count)
+                                Return node.WithTrailingTrivia(TrailingTrivia).WithTrailingEOL
+                            End If
+                            Return node
                         Case VB.SyntaxKind.WhitespaceTrivia
                             If TrailingTrivia(Count - 1).IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
-                                TrailingTrivia = TrailingTrivia.RemoveAt(0)
+                                TrailingTrivia.RemoveAt(Count - 1)
                                 Return node.WithTrailingTrivia(TrailingTrivia).WithTrailingEOL
                             ElseIf TrailingTrivia(Count - 1).IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
                                 Return node
                             ElseIf TrailingTrivia(Count - 1).IsCommentOrDirectiveTrivia Then
-                                TrailingTrivia = TrailingTrivia.Insert(Count, VB_EOLTrivia)
+                                TrailingTrivia.Insert(Count, VB_EOLTrivia)
                                 Return node.WithTrailingTrivia(TrailingTrivia)
                             End If
                             Return node.WithTrailingTrivia(TrailingTrivia)
@@ -950,7 +949,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
                     End Select
                     Stop
             End Select
-                    Return node
+            Return node
         End Function
 
 #Region "WithConvertedTriviaFrom"

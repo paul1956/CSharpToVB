@@ -122,12 +122,14 @@
     </Compile>
     <Compile Include="ColorSelector.vb" />
     <Compile Include="Compile.vb" />
+    <Compile Include="Extensions\TriviaExtensions.vb" />
     <Compile Include="IgnoreFilesWithErrorsListDialog.Designer.vb">
       <DependentUpon>IgnoreFilesWithErrorsListDialog.vb</DependentUpon>
     </Compile>
     <Compile Include="IgnoreFilesWithErrorsListDialog.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="NativeMethods.vb" />
     <Compile Include="RangeSupport.vb" />
     <Compile Include="ComGuids.vb" />
     <Compile Include="Extensions\SpecializedCollection.vb" />
@@ -146,7 +148,6 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="InternalErrorCode.vb" />
-    <Compile Include="MonitorSupport.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
@@ -163,7 +164,6 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="Extensions\StringExtensions.vb" />
-    <Compile Include="NativeMethods.vb" />
     <Compile Include="OptionsDialog.Designer.vb">
       <DependentUpon>OptionsDialog.vb</DependentUpon>
     </Compile>
@@ -182,6 +182,7 @@
     <Compile Include="VS_Selector_Dialog1.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="WindowsUtilities.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="AdvancedRTB.resx">
@@ -247,13 +248,13 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.Common">
-      <Version>3.1.0-beta3-final</Version>
+      <Version>3.1.0</Version>
     </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.1.0-beta3-final" />
-    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="3.1.0-beta3-final" />
-    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="3.1.0-beta3-final" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="3.1.0-beta3-final" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="3.1.0-beta3-final" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.1.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="3.1.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="3.1.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="3.1.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="3.1.0" />
     <PackageReference Include="WindowsBase">
       <Version>4.6.1055</Version>
     </PackageReference>

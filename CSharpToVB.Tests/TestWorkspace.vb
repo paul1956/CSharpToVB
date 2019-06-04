@@ -7,6 +7,7 @@ Imports Microsoft.CodeAnalysis.Host
 Imports Microsoft.CodeAnalysis.Text
 
 Namespace CodeConverter.Tests
+
     Friend Class TestWorkspace
         Inherits Workspace
 
@@ -16,10 +17,9 @@ Namespace CodeConverter.Tests
         '				typeof(Microsoft.CodeAnalysis.CSharp.Formatting.CSharpFormattingOptions).Assembly
         '			});
 
-
         Public Sub New(Optional workspaceKind As String = "Test")
             MyBase.New(services, workspaceKind)
-            '			
+            '
             '			foreach (var a in MefHostServices.DefaultAssemblies)
             '			{
             '				Console.WriteLine(a.FullName);
@@ -46,5 +46,7 @@ Namespace CodeConverter.Tests
             Dim sInfo As SolutionInfo = SolutionInfo.Create(SolutionId.CreateNewId(), VersionStamp.Create(), Nothing, {projectInfo})
             Me.OnSolutionAdded(sInfo)
         End Sub
+
     End Class
+
 End Namespace

@@ -2,19 +2,21 @@
 Option Infer Off
 Option Strict On
 
+Imports System.Diagnostics.CodeAnalysis
+Imports System.IO
+Imports System.Text
+
 Imports CSharpToVBApp
+
 Imports IVisualBasicCode.CodeConverter
+Imports IVisualBasicCode.CodeConverter.ConversionResult
+
 Imports ManageProgressBar
+
 Imports Microsoft.Build.Locator
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Emit
 Imports Microsoft.CodeAnalysis.MSBuild
-Imports Microsoft.CodeAnalysis.VisualBasic
-Imports System.Collections.Immutable
-Imports System.ComponentModel
-Imports System.Diagnostics.CodeAnalysis
-Imports System.IO
-Imports System.Text
 
 Public Class Form1
 
@@ -38,9 +40,9 @@ Public Class Form1
         End Set
     End Property
 
+    Property MSBuildInstance As VisualStudioInstance = Nothing
     Property StopRequested As Boolean = False
-
-    Private Shared Function ConvertSourceFileNameToDestination(ProjectDirectory As String, ProjectSavePath As String, DocumentName As Document, TargetLanguageExtension As String) As String
+    Private Shared Function ConvertSourceFileToDestinationFile(ProjectDirectory As String, ProjectSavePath As String, DocumentName As Document) As String
         If ProjectSavePath.IsEmptyNullOrWhitespace Then
             Return String.Empty
         End If
@@ -49,7 +51,7 @@ Public Class Form1
         If Not Directory.Exists(PathToSaveDirectory) Then
             Directory.CreateDirectory(PathToSaveDirectory)
         End If
-        Return Path.Combine(PathToSaveDirectory, Path.ChangeExtension(DocumentName.Name, TargetLanguageExtension))
+        Return PathToSaveDirectory
     End Function
 
     Private Shared Function CreateDirectoryIfNonexistent(SolutionRoot As String) As String
@@ -57,6 +59,35 @@ Public Class Form1
             Directory.CreateDirectory(SolutionRoot)
         End If
         Return SolutionRoot
+    End Function
+
+    Private Shared Function GetFileCount(DirPath As String, SourceLanguageExtension As String, SkipBinAndObjFolders As Boolean, SkipTestResourceFiles As Boolean) As Long
+        Dim TotalFilesToProcess As Long = 0L
+        Try
+            For Each Subdirectory As String In Directory.GetDirectories(DirPath)
+
+                If SkipTestResourceFiles AndAlso (Subdirectory.EndsWith("Test\Resources") OrElse Subdirectory.EndsWith("Setup\Templates")) Then
+                    Continue For
+                End If
+                If SkipBinAndObjFolders AndAlso (Subdirectory = "bin" OrElse Subdirectory = "obj" OrElse Subdirectory = "g") Then
+                    Continue For
+                End If
+                TotalFilesToProcess += GetFileCount(Subdirectory, SourceLanguageExtension, SkipBinAndObjFolders, SkipTestResourceFiles)
+            Next
+            For Each File As String In Directory.GetFiles(path:=DirPath, searchPattern:=$"*.{SourceLanguageExtension}")
+
+                If Not ParseCSharpSource(File).GetRoot.SyntaxTree.IsGeneratedCode(Function(t As SyntaxTrivia) As Boolean
+                                                                                      Return t.IsComment OrElse t.IsRegularOrDocComment
+                                                                                  End Function, cancellationToken:=Nothing) Then
+                    TotalFilesToProcess += 1
+                End If
+            Next
+        Catch ua As UnauthorizedAccessException
+            'Stop
+        Catch ex As Exception
+            'Stop
+        End Try
+        Return TotalFilesToProcess
     End Function
 
     Private Sub ButtonSearch_Click(sender As Object, e As EventArgs) Handles ButtonSearch.Click
@@ -137,9 +168,8 @@ Public Class Form1
         Dim FragmentRange As IEnumerable(Of Range) = GetClassifiedRanges(TextToCompile, LanguageNames.VisualBasic)
 
         If Not CompileResult?.Success Then
-            Dim Success As Boolean = Me.ResultOfConversion.FilteredListOfFailures.Count = 0
-            Me.ResultOfConversion.Success = Success
-            If Success Then
+            If Me.ResultOfConversion.FilteredListOfFailures.Count = 0 Then
+                Me.ResultOfConversion.ResultStatus = ResultTriState.Success
                 If My.Settings.ColorizeOutput Then
                     Me.Colorize(FragmentRange, Me.RichTextBoxConversionOutput, TextToCompile.SplitLines.Length, Me.ResultOfConversion.FilteredListOfFailures)
                 Else
@@ -172,15 +202,19 @@ Public Class Form1
 
     Private Function Convert_Compile_Colorize(RequestToConvert As ConvertRequest, OptionalReferences() As MetadataReference) As Boolean
         Me.ResultOfConversion = ConvertInputRequest(RequestToConvert, OptionalReferences)
-        Me.mnuEditSaveAs.Enabled = Me.ResultOfConversion.Success
-        If Me.ResultOfConversion.Success Then
-            Me.Compile_Colorize(Me.ResultOfConversion.ConvertedCode)
-            Me.LabelErrorCount.Text = $"Number of Errors: {Me.ResultOfConversion.FilteredListOfFailures.Count}"
-        Else
-            Me.RichTextBoxConversionOutput.SelectionColor = Color.Red
-            Me.RichTextBoxConversionOutput.Text = Me.GetExceptionsAsString(Me.ResultOfConversion.Exceptions)
-        End If
-        Return Me.ResultOfConversion.Success
+        Me.mnuEditSaveAs.Enabled = Me.ResultOfConversion.ResultStatus = ResultTriState.Success
+        Select Case Me.ResultOfConversion.ResultStatus
+            Case ResultTriState.Success
+                Me.Compile_Colorize(Me.ResultOfConversion.ConvertedCode)
+                Me.LabelErrorCount.Text = $"Number of Errors: {Me.ResultOfConversion.FilteredListOfFailures.Count}"
+            Case ResultTriState.Failure
+                Me.RichTextBoxConversionOutput.SelectionColor = Color.Red
+                Me.RichTextBoxConversionOutput.Text = Me.GetExceptionsAsString(Me.ResultOfConversion.Exceptions)
+            Case ResultTriState.Ignore
+                Me.RichTextBoxConversionOutput.Text = ""
+                Me.LabelErrorCount.Text = "File Skipped"
+        End Select
+        Return Me.ResultOfConversion.ResultStatus <> ResultTriState.Failure
     End Function
 
     ' Do not remove, this is part of initialization and could be used for future support of VB to C#
@@ -190,11 +224,11 @@ Public Class Form1
         Dim Progress As New ReportProgress(Me.ConversionProgressBar)
         If Me.CSharp2VB.Checked Then
             Me.VB2CSharp.Checked = False
-            Me.RequestToConvert = New ConvertRequest(ConversionOperation.CS_To_VB, AddressOf Application.DoEvents, Progress)
+            Me.RequestToConvert = New ConvertRequest(ConvertRequest.CS_To_VB, My.Settings.SkipAutoGenerated, AddressOf Application.DoEvents, Progress)
             Me.Text = "Convert C# To Visual Basic"
         Else
             Me.VB2CSharp.Checked = True
-            Me.RequestToConvert = New ConvertRequest(ConversionOperation.VB_To_CS, AddressOf Application.DoEvents, Progress)
+            Me.RequestToConvert = New ConvertRequest(ConvertRequest.VB_To_CS, My.Settings.SkipAutoGenerated, AddressOf Application.DoEvents, Progress)
             Me.Text = "Convert Visual Basic to C#"
         End If
     End Sub
@@ -248,10 +282,6 @@ Public Class Form1
         Return False
     End Function
 
-    Private Sub Form1_Closing(sender As Object, e As CancelEventArgs) Handles Me.Closing
-        RestoreMonitorSettings()
-    End Sub
-
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles Me.Load
         Dim items(Me.ImageList1.Images.Count - 1) As String
         For i As Integer = 0 To Me.ImageList1.Images.Count - 1
@@ -294,7 +324,6 @@ Public Class Form1
             Case Else
                 Me.mnuOptionsDelayBetweenConversions.SelectedIndex = 0
         End Select
-
 
         Me.mnuFileSnippetLoadLast.Enabled = File.Exists(SnippetFileWithPath)
         Me.mnuOptionsPauseConvertOnSuccess.Checked = My.Settings.PauseConvertOnSuccess
@@ -406,17 +435,12 @@ Public Class Form1
         Me.ResizeRichTextBuffers()
     End Sub
 
-    Private Function LoadInputBufferFromStream(LanguageExtension As String, fileStream As Stream, SkipAutoGenerated As Boolean) As Integer
+    Private Function LoadInputBufferFromStream(LanguageExtension As String, fileStream As Stream) As Integer
         Me.StopRequested = False
         LocalUseWaitCutsor(MeForm:=Me, Enable:=True)
         Dim SourceText As String = GetFileTextFromStream(fileStream)
         Dim InputLines As Integer
         Dim ConversionInputLinesArray() As String = SourceText.SplitLines
-        If SkipAutoGenerated Then
-            If SourceText.Contains({"< autogenerated", "<autogenerated", "<auto-generated"}, StringComparison.CurrentCultureIgnoreCase) Then
-                Return 0
-            End If
-        End If
         InputLines = ConversionInputLinesArray.Length
         If Me.mnuOptionsColorizeSource.Checked Then
             Me.Colorize(GetClassifiedRanges(SourceCode:=ConversionInputLinesArray.Join(vbCrLf), Language:=If(LanguageExtension = "vb", LanguageNames.VisualBasic, LanguageNames.CSharp)), ConversionBuffer:=Me.RichTextBoxConversionInput, Lines:=InputLines)
@@ -468,11 +492,14 @@ Public Class Form1
                         MsgBox($"Conversion aborted.", Title:="C# to VB")
                         Exit Sub
                     End If
-                    KeepMonitorActive()
                     Dim LastFileNameWithPath As String = If(My.Settings.StartFolderConvertFromLastFile, My.Settings.MRU_Data.Last, "")
                     Dim FilesProcessed As Long = 0L
-                    Dim TotalFilesToProcess As Long = GetFileCount(SourceFolderName, SourceLanguageExtension)
-                    If Me.ProcessDirectory(SourceFolderName, ProjectSavePath, LastFileNameWithPath, SourceLanguageExtension, FilesProcessed, TotalFilesToProcess) Then
+                    If Me.ProcessAllFiles(SourceFolderName,
+                                        ProjectSavePath,
+                                        LastFileNameWithPath,
+                                        SourceLanguageExtension,
+                                        FilesProcessed
+                                        ) Then
                         MsgBox($"Conversion completed, {FilesProcessed} files completed successfully.", Title:="C# to VB")
                     Else
                         MsgBox($"Conversion stopped.", Title:="C# to VB")
@@ -549,8 +576,7 @@ Public Class Form1
             ' This path is a directory.
             Dim LastFileNameWithPath As String = If(My.Settings.StartFolderConvertFromLastFile, My.Settings.MRU_Data.Last, "")
             Dim FilesProcessed As Long = 0
-            Dim TotalFilesToProcess As Long = GetFileCount(LastFileNameWithPath, SourceLanguageExtension)
-            If Me.ProcessDirectory(FolderName, ProjectSavePath, LastFileNameWithPath, SourceLanguageExtension, FilesProcessed, TotalFilesToProcess) Then
+            If Me.ProcessAllFiles(FolderName, ProjectSavePath, LastFileNameWithPath, SourceLanguageExtension, FilesProcessed) Then
                 MsgBox($"Conversion completed.")
             End If
         Else
@@ -595,26 +621,51 @@ Public Class Form1
             If .ShowDialog = DialogResult.OK Then
                 Dim ProjectSavePath As String = Me.GetFoldertSavePath(Path.GetDirectoryName(.FileName), SourceLanguageExtension)
                 Me.mnuConvertConvertFolder.Enabled = True
-                If VS_Selector_Dialog1.ShowDialog(Me) <> DialogResult.OK Then
-                    Stop
+                If Me.MSBuildInstance Is Nothing Then
+                    If VS_Selector_Dialog1.ShowDialog(Me) <> DialogResult.OK Then
+                        Stop
+                    End If
+                    Console.WriteLine($"Using MSBuild at '{VS_Selector_Dialog1.MSBuildInstance.MSBuildPath}' to load projects.")
+                    ' NOTE: Be sure to register an instance with the MSBuildLocator
+                    '       before calling MSBuildWorkspace.Create()
+                    '       otherwise, MSBuildWorkspace won't MEF compose.
+                    Me.MSBuildInstance = VS_Selector_Dialog1.MSBuildInstance
+                    MSBuildLocator.RegisterInstance(Me.MSBuildInstance)
                 End If
-                Console.WriteLine($"Using MSBuild at '{VS_Selector_Dialog1.MSBuildInstance.MSBuildPath}' to load projects.")
-                ' NOTE: Be sure to register an instance with the MSBuildLocator
-                '       before calling MSBuildWorkspace.Create()
-                '       otherwise, MSBuildWorkspace won't MEF compose.
-                MSBuildLocator.RegisterInstance(VS_Selector_Dialog1.MSBuildInstance)
 
                 Using Workspace As MSBuildWorkspace = MSBuildWorkspace.Create()
                     AddHandler Workspace.WorkspaceFailed, AddressOf Me.MSBuildWorkspaceFailed
                     Dim currentProject As Project = Workspace.OpenProjectAsync(.FileName).Result
                     Workspace.LoadMetadataForReferencedProjects = True
                     If currentProject.HasDocuments Then
+                        Me.RichTextBoxErrorList.Text = ""
+                        Me.RichTextBoxFileList.Text = ""
+                        SetButtonStopAndCursor(Me, Me.ButtonStop, StopButtonVisible:=True)
+                        Dim FilesProcessed As Integer = 0
+                        Dim TotalFilesToProcess As Integer = currentProject.Documents.Count
                         For Each document As Document In currentProject.Documents
+                            If ParseCSharpSource(document.GetTextAsync(Nothing).Result.ToString).GetRoot.SyntaxTree.IsGeneratedCode(Function(t As SyntaxTrivia) As Boolean
+                                                                                                                                        Return t.IsComment OrElse t.IsRegularOrDocComment
+                                                                                                                                    End Function, cancellationToken:=Nothing) Then
+                                TotalFilesToProcess -= 1
+                                Me.FilesConversionProgress.Text = $"Processed {FilesProcessed:N0} of {TotalFilesToProcess:N0} Files"
+                                Application.DoEvents()
+                                Continue For
+                            Else
+                                FilesProcessed += 1
+                                Me.RichTextBoxFileList.AppendText($"{FilesProcessed.ToString.PadLeft(5)} {document.FilePath}{vbCrLf}")
+                                Me.RichTextBoxFileList.Select(Me.RichTextBoxFileList.TextLength, 0)
+                                Me.RichTextBoxFileList.ScrollToCaret()
+                                Me.FilesConversionProgress.Text = $"Processed {FilesProcessed:N0} of {TotalFilesToProcess:N0} Files"
+                                Application.DoEvents()
+                            End If
                             Dim TargetLanguageExtension As String = If(SourceLanguageExtension = "cs", "vb", "cs")
-                            If Not Me.ProcessFile(document.FilePath, ConvertSourceFileNameToDestination(Path.GetDirectoryName(.FileName), ProjectSavePath, document, TargetLanguageExtension), SourceLanguageExtension, TotalFilesToProcess:=0, currentProject.MetadataReferences.ToArray) Then
+
+                            If Not Me.ProcessFile(document.FilePath, ConvertSourceFileToDestinationFile(Path.GetDirectoryName(.FileName), ProjectSavePath, document), SourceLanguageExtension, currentProject.MetadataReferences.ToArray) Then
                                 Exit For
                             End If
                         Next document
+                        SetButtonStopAndCursor(Me, Me.ButtonStop, StopButtonVisible:=False)
                     End If
                 End Using
                 SetButtonStopAndCursor(MeForm:=Me, StopButton:=Me.ButtonStop, StopButtonVisible:=False)
@@ -815,8 +866,7 @@ Public Class Form1
     End Sub
 
     Private Sub OpenFile(FileNameWithPath As String, LanguageExtension As String)
-        Me.LoadInputBufferFromStream(LanguageExtension, File.OpenRead(path:=FileNameWithPath), SkipAutoGenerated:=False)
-        Me.mnuConvertConvertSnippet.Enabled = True
+        Me.mnuConvertConvertSnippet.Enabled = 0 <> Me.LoadInputBufferFromStream(LanguageExtension, File.OpenRead(path:=FileNameWithPath))
         Me.MRU_AddTo(FileNameWithPath)
     End Sub
 
@@ -863,18 +913,18 @@ Public Class Form1
     ''' <returns>
     ''' False if error and user wants to stop, True if success or user wants to ignore error
     ''' </returns>
-    Private Function ProcessDirectory(SourceDirectory As String, TargetDirectory As String, LastFileNameWithPath As String, SourceLanguageExtension As String, ByRef FilesProcessed As Long, TotalFilesToProcess As Long) As Boolean
+    Private Function ProcessAllFiles(SourceDirectory As String, TargetDirectory As String, LastFileNameWithPath As String, SourceLanguageExtension As String, ByRef FilesProcessed As Long) As Boolean
         Try
             Me.RichTextBoxErrorList.Text = ""
             Me.RichTextBoxFileList.Text = ""
             SetButtonStopAndCursor(Me, Me.ButtonStop, StopButtonVisible:=True)
+            Dim TotalFilesToProcess As Long = GetFileCount(SourceDirectory, SourceLanguageExtension, My.Settings.SkipBinAndObjFolders, My.Settings.SkipTestResourceFiles)
             ' Process the list of files found in the directory.
-            Return ProcessDirectoriesModule.ProcessDirectory(SourceDirectory, TargetDirectory, MeForm:=Me, Me.ButtonStop, Me.RichTextBoxFileList, LastFileNameWithPath, SourceLanguageExtension, FilesProcessed, TotalFilesToProcess, AddressOf Me.ProcessFile)
+            Return ProcessDirectory(SourceDirectory, TargetDirectory, MeForm:=Me, Me.ButtonStop, Me.RichTextBoxFileList, LastFileNameWithPath, SourceLanguageExtension, FilesProcessed, TotalFilesToProcess, AddressOf Me.ProcessFile)
         Catch ex As Exception
             ' don't crash on exit
             Stop
         Finally
-            RestoreMonitorSettings()
             SetButtonStopAndCursor(Me, Me.ButtonStop, StopButtonVisible:=False)
         End Try
         Return False
@@ -887,7 +937,7 @@ Public Class Form1
     ''' <param name="TargetDirectory">Complete path up to File to be converted</param>
     ''' <param name="SourceLanguageExtension">vb or cs</param>
     ''' <returns>False if error and user wants to stop, True if success or user wants to ignore error.</returns>
-    Private Function ProcessFile(SourceFileNameWithPath As String, TargetDirectory As String, SourceLanguageExtension As String, TotalFilesToProcess As Long, OptionalReferences() As MetadataReference) As Boolean
+    Private Function ProcessFile(SourceFileNameWithPath As String, TargetDirectory As String, SourceLanguageExtension As String, OptionalReferences() As MetadataReference) As Boolean
         If My.Settings.IgnoreFileList.Contains(SourceFileNameWithPath) Then
             Return True
         End If
@@ -896,11 +946,10 @@ Public Class Form1
         Me.StopRequested = False
         Me.MRU_AddTo(SourceFileNameWithPath)
         Dim fsRead As FileStream = File.OpenRead(SourceFileNameWithPath)
-        Dim lines As Integer = Me.LoadInputBufferFromStream(SourceLanguageExtension, fsRead, My.Settings.SkipAutoGenerated)
+        Dim lines As Integer = Me.LoadInputBufferFromStream(SourceLanguageExtension, fsRead)
         If lines > 0 Then
             Me.RequestToConvert.SourceCode = Me.RichTextBoxConversionInput.Text
             If Not Me.Convert_Compile_Colorize(Me.RequestToConvert, OptionalReferences) Then
-                RestoreMonitorSettings()
                 Select Case MsgBox($"Conversion failed, do you want to stop processing this file automatically in the future? Yes and No will continue processing files, Cancel will stop conversions!", MsgBoxStyle.YesNoCancel)
                     Case MsgBoxResult.Cancel
                         Return False
@@ -922,7 +971,6 @@ Public Class Form1
                     WriteTextToStream(TargetDirectory, NewFileName, Me.RichTextBoxConversionOutput.Text)
                 End If
                 If My.Settings.PauseConvertOnSuccess Then
-                    RestoreMonitorSettings()
                     If MsgBox($"{SourceFileNameWithPath} successfully converted, Continue?", MsgBoxStyle.MsgBoxSetForeground Or MsgBoxStyle.YesNo) = MsgBoxResult.No Then
                         Return False
                     End If
@@ -1092,7 +1140,7 @@ Public Class Form1
         If Me.VB2CSharp.Checked Then
             Me.CSharp2VB.Checked = False
             Dim Progress As New ReportProgress(Me.ConversionProgressBar)
-            Me.RequestToConvert = New ConvertRequest("vb2cs", AddressOf Application.DoEvents, Progress)
+            Me.RequestToConvert = New ConvertRequest(ConvertRequest.VB_To_CS, My.Settings.SkipAutoGenerated, AddressOf Application.DoEvents, Progress)
             Me.Text = "Convert Visual Basic To C#"
         End If
     End Sub
@@ -1113,21 +1161,4 @@ Public Class Form1
         Me.MRU_Update()
     End Sub
 
-    Public Shared Function GetFileCount(DirPath As String, SourceLanguageExtension As String) As Long
-        Dim IncludeSubDirs As Boolean = True
-        Dim rv As Long = 0L
-        Try
-            If IncludeSubDirs Then
-                For Each dirname As String In IO.Directory.GetDirectories(DirPath)
-                    rv += GetFileCount(dirname, SourceLanguageExtension)
-                Next
-                rv += Directory.GetFiles(path:=DirPath, searchPattern:=$"*.{SourceLanguageExtension}").Length
-            End If
-        Catch ua As UnauthorizedAccessException
-            'Stop
-        Catch ex As Exception
-            'Stop
-        End Try
-        Return rv
-    End Function
 End Class

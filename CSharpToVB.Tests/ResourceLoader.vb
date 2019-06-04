@@ -2,16 +2,15 @@
 Option Infer Off
 Option Strict On
 
-
 ' Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-Imports System
 Imports System.IO
 Imports System.Reflection
 Imports System.Text
 
 Namespace TestResources
     Friend Module ResourceLoader
+
         Private Function GetResourceStream(name As String) As Stream
             Dim assembly As Assembly = GetType(ResourceLoader).GetTypeInfo().Assembly
 
@@ -53,5 +52,6 @@ Namespace TestResources
 
             Return resource
         End Function
+
     End Module
 End Namespace

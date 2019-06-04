@@ -2,8 +2,6 @@
 Option Infer Off
 Option Strict On
 
-Imports IVisualBasicCode.CodeConverter.Visual_Basic
-
 Namespace IVisualBasicCode.CodeConverter.Util
     Friend Module NameGenerator
 
@@ -73,7 +71,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
         Public Function EnsureUniqueness(baseName As String, reservedNames As IEnumerable(Of String), Optional isCaseSensitive As Boolean = True) As String
             Dim names As List(Of String) = New List(Of String) From {baseName}
             Dim isFixed As List(Of Boolean) = New List(Of Boolean) From {False}
-            For Each s As SymbolTableEntry In CSharpConverter.UsedIdentifiers.Values
+            For Each s As SymbolTableEntry In UsedIdentifiers.Values
                 names.Add(s.Name)
             Next
 

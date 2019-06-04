@@ -3,10 +3,11 @@ Option Infer Off
 Option Strict On
 
 Imports System.IO
-Imports System.Text
+
 Imports Microsoft.CodeAnalysis
 
 Public Module ProcessDirectoriesModule
+
     ''' <summary>
     ''' Converts new directory from TargetDirectory/SubdirectoryName
     ''' </summary>
@@ -50,7 +51,7 @@ Public Module ProcessDirectoriesModule
     ''' <returns>
     ''' False if error and user wants to stop, True if success or user wants to ignore error
     ''' </returns>
-    Public Function ProcessDirectory(SourceDirectory As String, TargetDirectory As String, MeForm As Form1, StopButton As Button, RichTextBoxFileList As RichTextBox, ByRef LastFileNameWithPath As String, SourceLanguageExtension As String, ByRef FilesProcessed As Long, TotalFilesToProcess As Long, ProcessFile As Func(Of String, String, String, Long, MetadataReference(), Boolean)) As Boolean
+    Public Function ProcessDirectory(SourceDirectory As String, TargetDirectory As String, MeForm As Form1, StopButton As Button, RichTextBoxFileList As RichTextBox, ByRef LastFileNameWithPath As String, SourceLanguageExtension As String, ByRef FilesProcessed As Long, ByRef TotalFilesToProcess As Long, ProcessFile As Func(Of String, String, String, MetadataReference(), Boolean)) As Boolean
         ' Process the list of files found in the directory.
         Dim DirectoryList As String() = Directory.GetFiles(path:=SourceDirectory, searchPattern:=$"*.{SourceLanguageExtension}")
         Dim TargetExtension As String = If(SourceLanguageExtension = "vb", "cs", "vb")
@@ -65,7 +66,7 @@ Public Module ProcessDirectoriesModule
                     Application.DoEvents()
                 End If
 
-                If Not ProcessFile(PathWithFileName, TargetDirectory, SourceLanguageExtension, TotalFilesToProcess, References) Then
+                If Not ProcessFile(PathWithFileName, TargetDirectory, SourceLanguageExtension, References) Then
                     SetButtonStopAndCursor(MeForm:=MeForm, StopButton:=StopButton, StopButtonVisible:=False)
                     Return False
                 End If
@@ -94,7 +95,6 @@ Public Module ProcessDirectoriesModule
         Return True
     End Function
 
-
     Public Sub SetButtonStopAndCursor(MeForm As Form1, StopButton As Button, StopButtonVisible As Boolean)
         If StopButton IsNot Nothing Then
             StopButton.Visible = StopButtonVisible
@@ -112,4 +112,5 @@ Public Module ProcessDirectoriesModule
             sw.Close()
         End Using
     End Sub
+
 End Module

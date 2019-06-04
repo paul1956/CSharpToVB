@@ -29,13 +29,4 @@ Module MonitorSupport
             ByVal intWinIniFlag As Integer) As Integer
         ' returns non-zero value if function succeeds
     End Function
-
-    Public Sub KeepMonitorActive()
-        'SetThreadExecutionState(CType(EXECUTION_STATE.ES_DISPLAY_REQUIRED + EXECUTION_STATE.ES_CONTINUOUS, EXECUTION_STATE)) 'Do not Go To Sleep
-    End Sub
-
-    Public Sub RestoreMonitorSettings()
-        'SetThreadExecutionState(EXECUTION_STATE.ES_CONTINUOUS) 'Restore Previous Settings, ie, Go To Sleep Again
-    End Sub
-
 End Module
