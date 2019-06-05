@@ -61,7 +61,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Dim Options As SyntaxList(Of VBS.OptionStatementSyntax) = VBFactory.List(Of VBS.OptionStatementSyntax)
                 Options = Options.Add(VBFactory.OptionStatement(ExplicitToken, OffToken))
                 Options = Options.Add(VBFactory.OptionStatement(InferToken, OnToken))
-                Options = Options.Add(VBFactory.OptionStatement(StrictToken, OffToken))
+                Options = Options.Add(VBFactory.OptionStatement(StrictToken, OffToken).WithTrailingEOL)
 
                 Dim ListOfAttributes As SyntaxList(Of VBS.AttributesStatementSyntax) = VBFactory.List(node.AttributeLists.Select(Function(a As AttributeListSyntax) VBFactory.AttributesStatement(VBFactory.SingletonList(DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))))
                 Dim Members As SyntaxList(Of VBS.StatementSyntax) = VBFactory.List(node.Members.Select(Function(m As MemberDeclarationSyntax) DirectCast(m.Accept(Me), VBS.StatementSyntax)))

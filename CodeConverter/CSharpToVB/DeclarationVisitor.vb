@@ -78,7 +78,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Throw New NotSupportedException($"Assignment Operator {lSyntaxKind.ToString} is not supported")
             End Function
 
-            Private Shared Function GetSemicolonTrivia(_SemicolonToken As SyntaxToken) As List(Of SyntaxTrivia)
+            Private Shared Function GetTriviaFromUnneededToken(_SemicolonToken As SyntaxToken) As List(Of SyntaxTrivia)
                 Dim NewTrailingTrivia As New List(Of SyntaxTrivia)
                 If _SemicolonToken.HasLeadingTrivia Then
                     NewTrailingTrivia.AddRange(ConvertTrivia(_SemicolonToken.LeadingTrivia))
@@ -176,7 +176,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 ReturnAttributes = VBFactory.List(retAttr)
             End Sub
 
-            Private Function GetPrependedTrivia(Of T As CS.CSharpSyntaxNode)(node As T, Keyword As SyntaxToken, Attributes As List(Of VBS.AttributeListSyntax), Modifiers As List(Of SyntaxToken)) As List(Of SyntaxTrivia)
+            Private Function DedupLeadingTrivia(Of T As CS.CSharpSyntaxNode)(node As T, Keyword As SyntaxToken, Attributes As List(Of VBS.AttributeListSyntax), Modifiers As List(Of SyntaxToken)) As List(Of SyntaxTrivia)
                 Dim NodeLeadingTrivia As New List(Of SyntaxTrivia)
                 NodeLeadingTrivia.AddRange(ConvertTrivia(node.GetLeadingTrivia))
                 If Attributes.Count > 0 Then
@@ -451,7 +451,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 FieldDeclaration = VBFactory.FieldDeclaration(Attributes, modifiers, declarators).WithLeadingTrivia(LeadingTrivia)
                 FieldDeclaration = AddSpecialCommentToField(node, FieldDeclaration)
                 Return FieldDeclaration.RestructureAttributesAndModifiers(Attributes.Count > 0, modifiers.Count > 0).
-                    WithMergedTrailingTrivia(GetSemicolonTrivia(node.SemicolonToken)).WithTrailingEOL
+                    WithMergedTrailingTrivia(GetTriviaFromUnneededToken(node.SemicolonToken)).WithTrailingEOL
             End Function
 
             Public Overrides Function VisitIndexerDeclaration(node As CSS.IndexerDeclarationSyntax) As VB.VisualBasicSyntaxNode
@@ -1056,7 +1056,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         TypeLeadingTrivia.Insert(0, VB_EOLTrivia)
                     End If
                 End If
-                Dim PrependedTrivia As List(Of SyntaxTrivia) = Me.GetPrependedTrivia(node, Keyword, Attributes, Modifiers)
+                Dim PrependedTrivia As List(Of SyntaxTrivia) = Me.DedupLeadingTrivia(node, Keyword, Attributes, Modifiers)
                 Dim PropertyStatement As VBS.PropertyStatementSyntax = VBFactory.PropertyStatement(VBFactory.List(Attributes),
                                                                                                 VBFactory.TokenList(Modifiers),
                                                                                                 Keyword,
@@ -1098,13 +1098,13 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 End If
                 Dim AccessorOpenBraceTrivia As New List(Of SyntaxTrivia)
                 Dim AccessorOpenBrace As SyntaxToken = node.AccessorList.GetBraces.Item1
-                AccessorOpenBraceTrivia.AddRange(GetNonWhitespaceTrivia(AccessorOpenBrace.LeadingTrivia))
-                AccessorOpenBraceTrivia.AddRange(GetNonWhitespaceTrivia(AccessorOpenBrace.TrailingTrivia))
+                AccessorOpenBraceTrivia.AddRange(ConvertTrivia(AccessorOpenBrace.LeadingTrivia))
+                AccessorOpenBraceTrivia.AddRange(ConvertTrivia(AccessorOpenBrace.TrailingTrivia))
 
                 Dim AccessorClosingBraceTrivia As New List(Of SyntaxTrivia)
                 Dim AccessorClosingBrace As SyntaxToken = node.AccessorList.GetBraces.Item2
-                AccessorClosingBraceTrivia.AddRange(GetNonWhitespaceTrivia(AccessorClosingBrace.LeadingTrivia))
-                AccessorClosingBraceTrivia.AddRange(GetNonWhitespaceTrivia(AccessorClosingBrace.TrailingTrivia))
+                AccessorClosingBraceTrivia.AddRange(ConvertTrivia(AccessorClosingBrace.LeadingTrivia))
+                AccessorClosingBraceTrivia.AddRange(ConvertTrivia(AccessorClosingBrace.TrailingTrivia))
 
                 Dim ClosingNodeBraces As SyntaxToken = node.GetBraces.Item2
                 Dim EndPropertyStatement As VBS.EndBlockStatementSyntax = VBFactory.EndPropertyStatement.
@@ -1115,18 +1115,6 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                         WithAppendedTrailingTrivia(TypeLeadingTrivia).
                                         RestructureAttributesAndModifiers(Attributes.Count > 0, Modifiers.Count > 0)
 
-            End Function
-
-            Private Shared Function GetNonWhitespaceTrivia(SourceTrivia As SyntaxTriviaList) As List(Of SyntaxTrivia)
-                Dim TriviaList As New List(Of SyntaxTrivia)
-                For i As Integer = 0 To SourceTrivia.Count - 1
-                    Dim t As SyntaxTrivia = ConvertTrivia(SourceTrivia(i))
-                    If t.IsKind(VB.SyntaxKind.WhitespaceTrivia) OrElse t.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                        Continue For
-                    End If
-                    TriviaList.Add(t)
-                Next
-                Return TriviaList
             End Function
 
         End Class

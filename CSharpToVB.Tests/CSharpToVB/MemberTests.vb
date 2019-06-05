@@ -313,14 +313,17 @@ Class TestClass
     Public Property Test As Integer
 
     Public ReadOnly Property Test2 As Integer
+
         Get
             Return 0
         End Get
+
     End Property
 
     Private m_test3 As Integer
 
     Public Property Test3 As Integer
+
         Get
             Return Me.m_test3
         End Get
@@ -328,6 +331,7 @@ Class TestClass
         Set(Value As Integer)
             Me.m_test3 = value
         End Set
+
     End Property
 End Class")
         End Sub

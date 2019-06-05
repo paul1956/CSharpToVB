@@ -310,7 +310,9 @@ Namespace IVisualBasicCode.CodeConverter.Util
                     Dim ConvertedKind As KeyValuePair(Of CS.SyntaxKind, VB.SyntaxKind)? = CSSyntaxKinds.FirstOrNullable(Function(kvp As KeyValuePair(Of CS.SyntaxKind, VB.SyntaxKind)) t.IsKind(kvp.Key))
                     Return If(ConvertedKind.HasValue, VBFactory.CommentTrivia($"' TODO: Error Skipped {ConvertedKind.Value.Key}"), Nothing)
                 Case CS.SyntaxKind.BadDirectiveTrivia
-                    Return VBFactory.CommentTrivia($"' TODO: Error Skipped BadDirectiveTrivia")
+                    Return VBFactory.CommentTrivia($"' TODO: Skipped BadDirectiveTrivia")
+                Case CS.SyntaxKind.NullableDirectiveTrivia
+                    Return VBFactory.CommentTrivia($"' TODO: Skipped Nullable Directive Trivia")
                 Case Else
                     Debug.WriteLine(CType(t.RawKind, VB.SyntaxKind).ToString)
                     Stop
@@ -478,14 +480,6 @@ Namespace IVisualBasicCode.CodeConverter.Util
             closeParen = parenthesizedExpression.CloseParenToken
         End Sub
 
-        Public Function GetWhitespaceTrivia(t As SyntaxTrivia) As SyntaxTrivia
-            If t.ToString.Length = 0 Then
-                Return VBFactory.ElasticSpace
-            End If
-
-            Return VBFactory.WhitespaceTrivia(t.ToString)
-        End Function
-
         <Extension()>
         Public Function IsKind(node As SyntaxNode, ParamArray kind1() As CS.SyntaxKind) As Boolean
             If node Is Nothing Then
@@ -524,8 +518,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
 
         <Extension()>
         Public Function RemoveLeadingEOL(Of T As SyntaxNode)(node As T) As T
-            Dim LeadingTrivia As New List(Of SyntaxTrivia)
-            LeadingTrivia.AddRange(node.GetLeadingTrivia())
+            Dim LeadingTrivia As List(Of SyntaxTrivia) = node.GetLeadingTrivia.ToList
             Select Case LeadingTrivia.Count
                 Case 0
                     Return node
@@ -576,13 +569,13 @@ Namespace IVisualBasicCode.CodeConverter.Util
             Dim parenthesizedExpression As VB.Syntax.ParenthesizedExpressionSyntax = DirectCast(node, VB.Syntax.ParenthesizedExpressionSyntax)
             GetPartsOfParenthesizedExpression(node, parenthesizedExpression.OpenParenToken, parenthesizedExpression.Expression, parenthesizedExpression.CloseParenToken)
 
-            Dim leadingTrivia As New List(Of SyntaxTrivia)
-            leadingTrivia.AddRange(parenthesizedExpression.OpenParenToken.LeadingTrivia.Concat(parenthesizedExpression.OpenParenToken.TrailingTrivia).Where(Function(t As SyntaxTrivia) Not t.IsElastic).Concat(parenthesizedExpression.Expression.GetLeadingTrivia()))
+            Dim LeadingTrivia As New List(Of SyntaxTrivia)
+            LeadingTrivia.AddRange(parenthesizedExpression.OpenParenToken.LeadingTrivia.Concat(parenthesizedExpression.OpenParenToken.TrailingTrivia).Where(Function(t As SyntaxTrivia) Not t.IsElastic).Concat(parenthesizedExpression.Expression.GetLeadingTrivia()))
 
-            Dim trailingTrivia As New List(Of SyntaxTrivia)
-            trailingTrivia.AddRange(parenthesizedExpression.Expression.GetTrailingTrivia().Concat(parenthesizedExpression.CloseParenToken.LeadingTrivia).Where(Function(t As SyntaxTrivia) Not t.IsElastic).Concat(parenthesizedExpression.CloseParenToken.TrailingTrivia))
+            Dim TrailingTrivia As New List(Of SyntaxTrivia)
+            TrailingTrivia.AddRange(parenthesizedExpression.Expression.GetTrailingTrivia().Concat(parenthesizedExpression.CloseParenToken.LeadingTrivia).Where(Function(t As SyntaxTrivia) Not t.IsElastic).Concat(parenthesizedExpression.CloseParenToken.TrailingTrivia))
 
-            Dim resultNode As SyntaxNode = parenthesizedExpression.Expression.WithLeadingTrivia(leadingTrivia).WithTrailingTrivia(trailingTrivia)
+            Dim resultNode As SyntaxNode = parenthesizedExpression.Expression.WithLeadingTrivia(LeadingTrivia).WithTrailingTrivia(TrailingTrivia)
             Dim VBSyntaxFacts As VB.SyntaxFacts = (New VB.SyntaxFacts)
 
             ' If there's no trivia between the original node and the tokens around it, then add
@@ -653,15 +646,15 @@ Namespace IVisualBasicCode.CodeConverter.Util
                 Return node.WithTrailingTrivia(TriviaListToMerge)
             End If
             ' Both nodes have trivia
-            Dim NewTrailingTrivia As New List(Of SyntaxTrivia)
             Dim FoundWhiteSpace As Boolean = False
+            Dim NewTrailingTrivia As New List(Of SyntaxTrivia)
             For i As Integer = 0 To NodeTrailingTrivia.Count - 1
                 Dim Trivia As SyntaxTrivia = NodeTrailingTrivia(i)
                 Dim NextTrivia As SyntaxTrivia = If(i < NodeTrailingTrivia.Count - 2, NodeTrailingTrivia(i + 1), Nothing)
                 Select Case Trivia.RawKind
                     Case VB.SyntaxKind.WhitespaceTrivia
                         If Not FoundWhiteSpace AndAlso Not NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                            NewTrailingTrivia.Add(GetWhitespaceTrivia(Trivia))
+                            NewTrailingTrivia.Add(Trivia)
                             FoundWhiteSpace = True
                         End If
                     Case VB.SyntaxKind.EndOfLineTrivia
@@ -685,7 +678,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
                 Select Case Trivia.RawKind
                     Case VB.SyntaxKind.WhitespaceTrivia
                         If Not FoundWhiteSpace AndAlso Not NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                            NewTrailingTrivia.Add(GetWhitespaceTrivia(Trivia))
+                            NewTrailingTrivia.Add(Trivia)
                             FoundWhiteSpace = True
                         End If
                     Case VB.SyntaxKind.EndOfLineTrivia
@@ -717,12 +710,11 @@ Namespace IVisualBasicCode.CodeConverter.Util
         ''' <returns>New Node with valid Trivia</returns>
         <Extension>
         Public Function WithModifiedNodeTrivia(Node As VB.VisualBasicSyntaxNode, SeparatorFollows As Boolean) As VB.VisualBasicSyntaxNode
-            Dim FinalLeadingTriviaList As New List(Of SyntaxTrivia)
             Dim AfterWhiteSpace As Boolean = False
-            Dim InitialTriviaList As New List(Of SyntaxTrivia)
-            InitialTriviaList.AddRange(Node.GetLeadingTrivia)
-            Dim TriviaListUBound As Integer = InitialTriviaList.Count - 1
-            For i As Integer = 0 To TriviaListUBound
+            Dim FinalLeadingTriviaList As New List(Of SyntaxTrivia)
+            Dim InitialTriviaList As List(Of SyntaxTrivia) = Node.GetLeadingTrivia.ToList
+            Dim InitialTriviaListUBound As Integer = InitialTriviaList.Count - 1
+            For i As Integer = 0 To InitialTriviaListUBound
                 Dim Trivia As SyntaxTrivia = InitialTriviaList(i)
                 Dim NextTrivia As SyntaxTrivia = If(i < InitialTriviaList.Count - 1, InitialTriviaList(i + 1), Nothing)
                 Select Case Trivia.RawKind
@@ -761,15 +753,15 @@ Namespace IVisualBasicCode.CodeConverter.Util
             Next
             InitialTriviaList.Clear()
             InitialTriviaList.AddRange(Node.GetTrailingTrivia)
-            TriviaListUBound = InitialTriviaList.Count - 1
+            InitialTriviaListUBound = InitialTriviaList.Count - 1
             AfterWhiteSpace = False
             Dim AfterLineContinuation As Boolean = False
             Dim AfterLinefeed As Boolean = False
             Dim AfterComment As Boolean = False
             Dim FinalTrailingTriviaList As New List(Of SyntaxTrivia)
-            For i As Integer = 0 To TriviaListUBound
+            For i As Integer = 0 To InitialTriviaListUBound
                 Dim Trivia As SyntaxTrivia = InitialTriviaList(i)
-                Dim NextTrivia As SyntaxTrivia = If(i < TriviaListUBound, InitialTriviaList(i + 1), VBFactory.ElasticMarker)
+                Dim NextTrivia As SyntaxTrivia = If(i < InitialTriviaListUBound, InitialTriviaList(i + 1), VBFactory.ElasticMarker)
                 Select Case Trivia.RawKind
                     Case VB.SyntaxKind.WhitespaceTrivia
                         If NextTrivia.IsKind(VB.SyntaxKind.CommentTrivia) OrElse
@@ -830,8 +822,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
             If trivia.Length = 0 Then
                 Return node
             End If
-            Dim TriviaList As New List(Of SyntaxTrivia)
-            TriviaList.AddRange(trivia)
+            Dim TriviaList As List(Of SyntaxTrivia) = trivia.ToList
             If TriviaList.Last.IsKind(VB.SyntaxKind.CommentTrivia) Then
                 TriviaList.Add(VB_EOLTrivia)
             End If
@@ -1010,11 +1001,9 @@ Namespace IVisualBasicCode.CodeConverter.Util
             Try
 
                 If otherToken.HasLeadingTrivia Then
-                    Dim LeadingTrivia As New List(Of SyntaxTrivia)
-                    LeadingTrivia.AddRange(ConvertTrivia(otherToken.LeadingTrivia()))
-                    Token = Token.WithLeadingTrivia(LeadingTrivia)
+                    Token = Token.WithLeadingTrivia(ConvertTrivia(otherToken.LeadingTrivia).ToList())
                 End If
-                Return Token.WithTrailingTrivia(ConvertTrivia(otherToken.TrailingTrivia()))
+                Return Token.WithTrailingTrivia(ConvertTrivia(otherToken.TrailingTrivia))
             Catch ex As Exception
                 Stop
             End Try

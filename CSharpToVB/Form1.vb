@@ -91,7 +91,7 @@ Public Class Form1
     End Function
 
     Private Sub ButtonSearch_Click(sender As Object, e As EventArgs) Handles ButtonSearch.Click
-        Me.SearchBoxVisibility(False)
+        Me.SearchBoxVisibility(Visible:=False)
     End Sub
 
     Private Sub ButtonStop_Click(sender As Object, e As EventArgs) Handles ButtonStop.Click
@@ -206,7 +206,9 @@ Public Class Form1
         Select Case Me.ResultOfConversion.ResultStatus
             Case ResultTriState.Success
                 Me.Compile_Colorize(Me.ResultOfConversion.ConvertedCode)
-                Me.LabelErrorCount.Text = $"Number of Errors: {Me.ResultOfConversion.FilteredListOfFailures.Count}"
+                Dim FilteredErrorCount As Integer = Me.ResultOfConversion.FilteredListOfFailures.Count
+                Me.LabelErrorCount.Text = $"Number of Errors: {FilteredErrorCount}"
+                Return FilteredErrorCount = 0
             Case ResultTriState.Failure
                 Me.RichTextBoxConversionOutput.SelectionColor = Color.Red
                 Me.RichTextBoxConversionOutput.Text = Me.GetExceptionsAsString(Me.ResultOfConversion.Exceptions)
@@ -521,7 +523,7 @@ Public Class Form1
     End Sub
 
     Private Sub mnuEditFind_Click(sender As Object, e As EventArgs) Handles mnuEditFind.Click
-        Me.SearchBoxVisibility(True)
+        Me.SearchBoxVisibility(Visible:=True)
     End Sub
 
     Private Sub mnuEditPaste_Click(sender As Object, e As EventArgs) Handles mnuEditPaste.Click

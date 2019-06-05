@@ -310,15 +310,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             Else
                 type = DirectCast(TypeOrAddressOf, VBS.TypeSyntax)
             End If
-            If type.GetTrailingTrivia.ContainsCommentTrivia Then
-                For Each t As SyntaxTrivia In type.GetTrailingTrivia
-                    If t.RawKind = VB.SyntaxKind.CommentTrivia Then
-                        CS_CollectedCommentTrivia.Add(CS.SyntaxFactory.Comment(t.ToString.Replace("'", "//")))
-                        type = type.WithTrailingTrivia(SpaceTrivia)
-                        Exit For
-                    End If
-                Next
-            End If
+            type = CType(type.WithModifiedNodeTrivia(SeparatorFollows:=True), VBS.TypeSyntax)
             Dim declaratorsWithoutInitializers As New List(Of CSS.VariableDeclaratorSyntax)()
             Dim declarators As New List(Of VBS.VariableDeclaratorSyntax)
             For i As Integer = 0 To VariableDeclaration.Variables.Count - 1

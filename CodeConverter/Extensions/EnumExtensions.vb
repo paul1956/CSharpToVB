@@ -20,17 +20,16 @@ Public Module EnumExtensions
 
     <Extension>
     Public Function ClearFlags(Of T As Structure)(value As T) As T
-        CheckIsEnum(Of T)(True)
+        CheckIsEnum(Of T)(withFlags:=True)
         For Each flag As T In [Enum].GetValues(GetType(T)).Cast(Of T)()
             value = value.ClearFlags(flag)
         Next flag
         Return value
     End Function
 
-
     <Extension>
     Public Function CombineFlags(Of T As Structure)(flags As IEnumerable(Of T)) As T
-        CheckIsEnum(Of T)(True)
+        CheckIsEnum(Of T)(withFlags:=True)
         Dim lValue As Long = 0
         For Each flag As T In flags
             Dim lFlag As Long = Convert.ToInt64(flag)
@@ -41,7 +40,7 @@ Public Module EnumExtensions
 
     <Extension>
     Public Function GetDescription(Of T As Structure)(value As T) As String
-        CheckIsEnum(Of T)(False)
+        CheckIsEnum(Of T)(withFlags:=False)
         Dim name As String = [Enum].GetName(GetType(T), value)
         If name IsNot Nothing Then
             Dim field As FieldInfo = GetType(T).GetField(name)
@@ -57,7 +56,7 @@ Public Module EnumExtensions
 
     <Extension>
     Public Iterator Function GetFlags(Of T As Structure)(value As T) As IEnumerable(Of T)
-        CheckIsEnum(Of T)(True)
+        CheckIsEnum(Of T)(withFlags:=True)
         For Each flag As T In [Enum].GetValues(GetType(T)).Cast(Of T)()
             If value.IsFlagSet(flag) Then
                 Yield flag
@@ -67,7 +66,7 @@ Public Module EnumExtensions
 
     <Extension>
     Public Function IsFlagSet(Of T As Structure)(value As T, flag As T) As Boolean
-        CheckIsEnum(Of T)(True)
+        CheckIsEnum(Of T)(withFlags:=True)
         Dim lValue As Long = Convert.ToInt64(value)
         Dim lFlag As Long = Convert.ToInt64(flag)
         Return (lValue And lFlag) <> 0
@@ -75,7 +74,7 @@ Public Module EnumExtensions
 
     <Extension>
     Public Function SetFlags(Of T As Structure)(value As T, flags As T, [on] As Boolean) As T
-        CheckIsEnum(Of T)(True)
+        CheckIsEnum(Of T)(withFlags:=True)
         Dim lValue As Long = Convert.ToInt64(value)
         Dim lFlag As Long = Convert.ToInt64(flags)
         If [on] Then

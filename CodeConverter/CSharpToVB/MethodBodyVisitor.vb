@@ -1059,7 +1059,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 If StatementTrailingTrivia.Count > 0 AndAlso Not StatementTrailingTrivia(0).IsEndOfLine Then
                     StatementTrailingTrivia.Insert(0, VB_EOLTrivia)
                 End If
-                Dim ConditionWithTrivia As VBS.ExpressionSyntax = DirectCast(node.Condition.Accept(Me.mNodesVisitor).WithAppendedTrailingTrivia(ConvertTrivia(node.Condition.GetTrailingTrivia)).WithModifiedNodeTrivia(True), VBS.ExpressionSyntax)
+                Dim ConditionWithTrivia As VBS.ExpressionSyntax = DirectCast(node.Condition.Accept(Me.mNodesVisitor).WithAppendedTrailingTrivia(ConvertTrivia(node.Condition.GetTrailingTrivia)).WithModifiedNodeTrivia(SeparatorFollows:=True), VBS.ExpressionSyntax)
 
                 If node.Statement.IsKind(CS.SyntaxKind.EmptyStatement) Then
                     StatementTrailingTrivia.InsertRange(0, ConvertTrivia(DirectCast(node.Statement, CSS.EmptyStatementSyntax).SemicolonToken.TrailingTrivia))

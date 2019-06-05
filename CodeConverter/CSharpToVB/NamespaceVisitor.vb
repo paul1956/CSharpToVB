@@ -32,8 +32,7 @@ End Function
             ''' <param name="OpenBraceToken"></param>
             ''' <returns>List(Of SyntaxTrivia) from OpenBrace</returns>
             Private Shared Function ConvertOpenBraceTrivia(OpenBraceToken As SyntaxToken) As List(Of SyntaxTrivia)
-                Dim LeadingTrivia As New List(Of SyntaxTrivia)
-                LeadingTrivia.AddRange(ConvertTrivia(OpenBraceToken.LeadingTrivia))
+                Dim LeadingTrivia As List(Of SyntaxTrivia) = ConvertTrivia(OpenBraceToken.LeadingTrivia).ToList
                 Dim OpenBraceTrailingTrivia As SyntaxTriviaList = OpenBraceToken.TrailingTrivia
                 If OpenBraceTrailingTrivia.Count <> 1 OrElse Not OpenBraceTrailingTrivia(0).IsEndOfLine Then
                     LeadingTrivia.AddRange(ConvertTrivia(OpenBraceTrailingTrivia))
@@ -162,7 +161,7 @@ End Function
                         End Select
                     Next
                     Dim ModuleKeywordWithTrivia As SyntaxToken = ModuleKeyword.WithLeadingTrivia(KeyWordLeadingTrivia).WithTrailingTrivia(SpaceTrivia)
-                    Dim PrependedTrivia As List(Of SyntaxTrivia) = Me.GetPrependedTrivia(node, ModuleKeyword, ListOfAttributes.ToList, ModuleModifiers)
+                    Dim PrependedTrivia As List(Of SyntaxTrivia) = Me.DedupLeadingTrivia(node, ModuleKeyword, ListOfAttributes.ToList, ModuleModifiers)
                     Dim ModuleStatement As VBS.ModuleStatementSyntax = DirectCast(VB.SyntaxFactory.ModuleStatement(
                                                                             ListOfAttributes,
                                                                             VB.SyntaxFactory.TokenList(ModuleModifiers),
@@ -191,7 +190,7 @@ End Function
                 Else
                     Dim ClassModifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, Me.IsModule, TokenContext.Class)
                     Dim ClassKeywordWithTrivia As SyntaxToken = ClassKeyWord.WithConvertedTriviaFrom(node.Keyword)
-                    Dim PrependedTrivia As List(Of SyntaxTrivia) = Me.GetPrependedTrivia(node, ClassKeywordWithTrivia, ListOfAttributes.ToList, ClassModifiers)
+                    Dim PrependedTrivia As List(Of SyntaxTrivia) = Me.DedupLeadingTrivia(node, ClassKeywordWithTrivia, ListOfAttributes.ToList, ClassModifiers)
                     Dim ClassStatement As VBS.ClassStatementSyntax = DirectCast(VB.SyntaxFactory.ClassStatement(
                                                                             ListOfAttributes,
                                                                             VB.SyntaxFactory.TokenList(ClassModifiers),

@@ -86,12 +86,12 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                                                                                               elseClause:=Nothing)
                             Dim StatementWithIssues As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
                             StatementWithIssues.AddMarker(IfBlock, StatementHandlingOption.PrependStatement, AllowDuplicates:=False)
-                            ArgumentWithTrivia = DirectCast(CS_BinaryExpression.Left.Accept(Me).WithConvertedTriviaFrom(CS_BinaryExpression.Left).WithModifiedNodeTrivia(True), VBS.ExpressionSyntax)
+                            ArgumentWithTrivia = DirectCast(CS_BinaryExpression.Left.Accept(Me).WithConvertedTriviaFrom(CS_BinaryExpression.Left).WithModifiedNodeTrivia(SeparatorFollows:=True), VBS.ExpressionSyntax)
                         Else
-                            ArgumentWithTrivia = DirectCast(NodeExpression.Accept(Me).WithModifiedNodeTrivia(True), VBS.ExpressionSyntax)
+                            ArgumentWithTrivia = DirectCast(NodeExpression.Accept(Me).WithModifiedNodeTrivia(SeparatorFollows:=True), VBS.ExpressionSyntax)
                         End If
                     Else
-                        ArgumentWithTrivia = DirectCast(NodeExpression.Accept(Me).WithModifiedNodeTrivia(True), VBS.ExpressionSyntax)
+                        ArgumentWithTrivia = DirectCast(NodeExpression.Accept(Me).WithModifiedNodeTrivia(SeparatorFollows:=True), VBS.ExpressionSyntax)
                     End If
 
                     If TypeOf node.Parent Is CSS.BracketedArgumentListSyntax Then
