@@ -246,15 +246,10 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                CS.SyntaxKind.ModuloAssignmentExpression) Then
                     Return VBFactory.SimpleAssignmentStatement(LeftNode, VBFactory.BinaryExpression(kind, LeftNode.WithoutTrivia, OperatorToken, RightNode.WithoutTrivia))
                 End If
-                Dim LeftNodeTrailingTrivia As New List(Of SyntaxTrivia)
-                If LeftNode.HasTrailingTrivia AndAlso LeftNode.GetTrailingTrivia.ContainsCommentTrivia Then
-                    LeftNodeTrailingTrivia.AddRange(LeftNode.GetTrailingTrivia)
-                    LeftNode = LeftNode.WithTrailingTrivia(SpaceTrivia)
-                End If
                 Return VBFactory.AssignmentStatement(kind,
-                                                    LeftNode,
+                                                    CType(LeftNode.WithModifiedNodeTrivia(SeparatorFollows:=True), ExpressionSyntax),
                                                     ExpressionKindToOperatorToken(kind),
-                                                    RightNode).WithMergedTrailingTrivia(LeftNodeTrailingTrivia)
+                                                    RightNode)
             End Function
 
             Private Sub MarkPatchInlineAssignHelper(node As CS.CSharpSyntaxNode)
@@ -1515,7 +1510,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     Dim e As CSS.ExpressionSyntax = node.Initializer.Expressions(i)
                     Dim ItemWithTrivia As VB.VisualBasicSyntaxNode
                     Try
-                        ItemWithTrivia = e.Accept(Me).WithConvertedTriviaFrom(e).RemoveLeadingEOL.NormalizeWhitespaceEx(useDefaultCasing:=True, indentation:="    ")
+                        ItemWithTrivia = e.Accept(Me).WithConvertedTriviaFrom(e).RemoveExtraLeadingEOL.NormalizeWhitespaceEx(useDefaultCasing:=True, indentation:="    ")
                         If TypeOf ItemWithTrivia Is VBS.NamedFieldInitializerSyntax Then
                             NamedFieldItems.Add(DirectCast(ItemWithTrivia, VBS.NamedFieldInitializerSyntax))
                         ElseIf TypeOf ItemWithTrivia Is VBS.AssignmentStatementSyntax Then
@@ -1578,9 +1573,9 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         Dim Item As VB.VisualBasicSyntaxNode = node.Expressions(i).Accept(Me)
                         Try
                             If ItemIsField Then
-                                Fields.Add(DirectCast(Item.RemoveLeadingEOL, VBS.FieldInitializerSyntax))
+                                Fields.Add(DirectCast(Item.RemoveExtraLeadingEOL, VBS.FieldInitializerSyntax))
                             Else
-                                Expressions.Add(DirectCast(Item.RemoveLeadingEOL, VBS.ExpressionSyntax))
+                                Expressions.Add(DirectCast(Item.RemoveExtraLeadingEOL, VBS.ExpressionSyntax))
                             End If
                         Catch ex As Exception
                             Stop

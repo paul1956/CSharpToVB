@@ -83,7 +83,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Dim SeparatorCount As Integer = node.Attributes.Count - 1
                 For i As Integer = 0 To SeparatorCount
                     Dim e As CSS.AttributeSyntax = node.Attributes(i)
-                    AttributeList.Add(DirectCast(e.Accept(Me), VBS.AttributeSyntax).RemoveLeadingEOL)
+                    AttributeList.Add(DirectCast(e.Accept(Me), VBS.AttributeSyntax).RemoveExtraLeadingEOL)
                     If SeparatorCount > i Then
                         Separators.Add(CommaToken.WithConvertedTrailingTriviaFrom(CS_Separators(i)))
                     End If
@@ -111,19 +111,19 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     Case Else
                         Return Nothing
                 End Select
-                Dim TrailingTrivia As New List(Of SyntaxTrivia)
-                For Each t As SyntaxTrivia In ConvertTrivia(node.GetTrailingTrivia)
-                    Select Case t.RawKind
-                        Case VB.SyntaxKind.WhitespaceTrivia
-                            TrailingTrivia.Add(t)
-                        Case VB.SyntaxKind.EndOfLineTrivia
-                            ' ignore
-                        Case Else
-                            Stop
-                    End Select
-                Next
+                'Dim TrailingTrivia As New List(Of SyntaxTrivia)
+                'For Each t As SyntaxTrivia In ConvertTrivia(node.GetTrailingTrivia)
+                '    Select Case t.RawKind
+                '        Case VB.SyntaxKind.WhitespaceTrivia
+                '            TrailingTrivia.Add(t)
+                '        Case VB.SyntaxKind.EndOfLineTrivia
+                '            ' ignore
+                '        Case Else
+                '            Stop
+                '    End Select
+                'Next
 
-                Return VBFactory.AttributeTarget(id).With(ConvertTrivia(node.GetLeadingTrivia), TrailingTrivia)
+                Return VBFactory.AttributeTarget(id).WithConvertedTriviafrom(node)
             End Function
 
         End Class

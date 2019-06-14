@@ -8,55 +8,11 @@ Imports Microsoft.CodeAnalysis
 
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
+Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 
 Namespace IVisualBasicCode.CodeConverter.Visual_Basic
 
     Public Module TriviaListSupport
-
-        Private Function ConvertDocumentCommentExternalTrivia(t As SyntaxTrivia) As SyntaxTrivia
-            If t.IsKind(CS.SyntaxKind.DocumentationCommentExteriorTrivia) Then
-                Return VB.SyntaxFactory.DocumentationCommentExteriorTrivia(t.ToString.Replace("///", "'''"))
-            End If
-
-            Throw UnreachableException()
-        End Function
-
-        Public Function CreateVBDocumentCommentFromCSharpComment(singleLineDocumentationComment As CS.Syntax.DocumentationCommentTriviaSyntax) As VB.Syntax.DocumentationCommentTriviaSyntax
-            Dim walker As New XMLVisitor()
-            walker.Visit(singleLineDocumentationComment)
-
-            Dim xmlNodes As New List(Of VB.Syntax.XmlNodeSyntax)
-            For Each node As CS.Syntax.XmlNodeSyntax In singleLineDocumentationComment.Content
-                Try
-                    Dim Item As VB.Syntax.XmlNodeSyntax = DirectCast(node.Accept(walker), VB.Syntax.XmlNodeSyntax)
-                    xmlNodes.Add(Item)
-                Catch ex As Exception
-                    Stop
-                    Throw
-                End Try
-            Next
-            Return VB.SyntaxFactory.DocumentationComment(xmlNodes.ToArray)
-        End Function
-
-        ''' <summary>
-        ''' Replace EOL with Space Trivia
-        ''' </summary>
-        ''' <param name="m"></param>
-        ''' <returns>New Trailing Trivia for Token</returns>
-        Public Function GetTrailingTriviaWithoutEOL(m As SyntaxTriviaList) As List(Of SyntaxTrivia)
-            Dim NewTrailingTrivia As New List(Of SyntaxTrivia)
-            For Each t As SyntaxTrivia In m
-                If t.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                    NewTrailingTrivia.Add(SpaceTrivia)
-                ElseIf t.IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
-                    NewTrailingTrivia.Add(t)
-                Else
-                    Stop
-                    NewTrailingTrivia.Add(t)
-                End If
-            Next
-            Return NewTrailingTrivia
-        End Function
 
         Public Sub RelocateAttributeDirectiveDisabledTrivia(TriviaList As SyntaxTriviaList, FoundDirective As Boolean, IsTheory As Boolean, ByRef StatementLeadingTrivia As List(Of SyntaxTrivia), ByRef StatementTrailingTrivia As List(Of SyntaxTrivia))
             If IsTheory Then
@@ -135,25 +91,29 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             For Each token As SyntaxToken In ChildTokens
                 Dim NewLeadingTriviaList As New SyntaxTriviaList
                 Dim NewTrailingTriviaList As New SyntaxTriviaList
+
+                Dim TokenText As String = token.Text
+                Dim ValueText As String = token.ValueText
                 If token.HasLeadingTrivia Then
                     For Each t As SyntaxTrivia In token.LeadingTrivia
-                        Dim FullString As String = t.ToFullString
-                        If FullString.Length > 3 AndAlso FullString.StartsWith("///") Then
+                        If t.IsKind(CS.SyntaxKind.DocumentationCommentExteriorTrivia) Then
+                            NewLeadingTriviaList = NewLeadingTriviaList.Add(VBFactory.DocumentationCommentExteriorTrivia(token.LeadingTrivia(0).ToString.Replace("///", "'''")))
+                            If Not TokenText.StartsWith(" ") Then
+                                TokenText = " " & TokenText
+                                ValueText = " " & ValueText
+                            End If
+                        Else
                             Stop
                         End If
-                        NewLeadingTriviaList = NewLeadingTriviaList.Add(ConvertDocumentCommentExternalTrivia(t))
                     Next
-                End If
-                If token.HasTrailingTrivia Then
-                    Throw UnexpectedValue($"XMLToken '{token.ToFullString}' should not have trailing Trivia")
                 End If
                 Select Case token.RawKind
                     Case CS.SyntaxKind.XmlTextLiteralToken
-                        NewTokenList = NewTokenList.Add(VB.SyntaxFactory.XmlTextLiteralToken(leadingTrivia:=NewLeadingTriviaList, text:=token.Text, value:=token.ValueText, trailingTrivia:=NewTrailingTriviaList))
+                        NewTokenList = NewTokenList.Add(VBFactory.XmlTextLiteralToken(NewLeadingTriviaList, TokenText, ValueText, NewTrailingTriviaList))
                     Case CS.SyntaxKind.XmlTextLiteralNewLineToken
-                        NewTokenList = NewTokenList.Add(VB.SyntaxFactory.XmlTextNewLine(text:=vbCrLf, value:=vbCrLf, leading:=NewLeadingTriviaList, trailing:=NewTrailingTriviaList))
+                        NewTokenList = NewTokenList.Add(VBFactory.XmlTextNewLine(text:=vbCrLf, value:=vbCrLf, NewLeadingTriviaList, NewTrailingTriviaList))
                     Case CS.SyntaxKind.XmlEntityLiteralToken
-                        NewTokenList = NewTokenList.Add(VB.SyntaxFactory.XmlEntityLiteralToken(leadingTrivia:=NewLeadingTriviaList, text:=token.Text, value:=token.Text.ToString, trailingTrivia:=NewTrailingTriviaList))
+                        NewTokenList = NewTokenList.Add(VBFactory.XmlEntityLiteralToken(NewLeadingTriviaList, TokenText, ValueText, NewTrailingTriviaList))
                     Case Else
                         Stop
                 End Select

@@ -268,7 +268,7 @@ Namespace CodeConverter.Tests
                 Dim ActualLine As String = ActuaLines(i)
                 If Not DesiredLine.Equals(ActualLine, StringComparison.CurrentCulture) Then
                     Dim p As (ColumnIndex As Integer, Character As String) = FindFirstDifferenceColumn(DesiredLine, ActualLine)
-                    Return $"{vbCrLf}Expected Line_{i + 1} {DesiredLine}{vbCrLf}Actual Line____{i + 1} {ActualLine}{vbCrLf}Column {p.ColumnIndex} {p.Character}"
+                    Return $"{vbCrLf}Expected Line_{i + 1} {DesiredLine}{vbCrLf}Actual Line___{i + 1} {ActualLine}{vbCrLf}Column {p.ColumnIndex} {p.Character}"
                 End If
             Next
             Return "Files identical"

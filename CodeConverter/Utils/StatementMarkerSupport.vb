@@ -258,6 +258,10 @@ Public Module StatementMarker
         Return StatementWithIssues
     End Function
 
+    ''' <summary>
+    ''' Allow access to Marker Errors with exposing implemmentation
+    ''' </summary>
+    ''' <returns>True if there are statements left out of translation</returns>
     Public Function HasMarkerError() As Boolean
         If StatementDictionary.Count > 0 Then
             Return True

@@ -265,7 +265,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
             Dim NewLeadingTrivia As New List(Of SyntaxTrivia)
             For i As Integer = 0 To Token.LeadingTrivia.Count - 1
                 Dim Trivia As SyntaxTrivia = Token.LeadingTrivia(i)
-                Dim NextTrivia As SyntaxTrivia = If(i < Token.LeadingTrivia.Count - 2, Token.LeadingTrivia(i + 1), Nothing)
+                Dim NextTrivia As SyntaxTrivia = If(i < Token.LeadingTrivia.Count - 1, Token.LeadingTrivia(i + 1), Nothing)
                 If Trivia.IsKind(VB.SyntaxKind.WhitespaceTrivia) AndAlso NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
                     Continue For
                 End If

@@ -546,7 +546,7 @@ Class TestClass
 
     ''' <summary>
     '''   Looks up a localized string similar to Analyzer driver threw the following exception:
-    '''&apos;{0}&apos;..
+    ''' &apos;{0}&apos;..
     ''' </summary>
     Private Sub TestMethod()
     End Sub

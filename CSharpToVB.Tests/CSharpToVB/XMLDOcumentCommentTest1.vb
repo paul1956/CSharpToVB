@@ -63,7 +63,7 @@ Namespace Microsoft.CodeAnalysis.CSharp.Diagnostics.Analyzers
 
         '''<remarks>
         ''' every predefined type keyword except `void` can be replaced by its framework type in code.
-        '''</remarks>
+        ''' </remarks>
         Protected Overrides Function IsPredefinedTypeReplaceableWithFrameworkType(node As PredefinedTypeSyntax) As Boolean
             Return node.Keyword.Kind() <> SyntaxKind.VoidKeyword
         End Function

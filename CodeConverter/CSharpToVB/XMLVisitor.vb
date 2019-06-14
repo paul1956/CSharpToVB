@@ -3,7 +3,6 @@ Option Infer Off
 Option Strict On
 
 Imports IVisualBasicCode.CodeConverter.Util
-Imports IVisualBasicCode.CodeConverter.Visual_Basic.CSharpConverter
 
 Imports Microsoft.CodeAnalysis
 
@@ -70,7 +69,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
         Private Function GatherAttributes(ListOfAttributes As SyntaxList(Of CSS.XmlAttributeSyntax)) As SyntaxList(Of VBS.XmlNodeSyntax)
             Dim VBAttributes As New SyntaxList(Of VBS.XmlNodeSyntax)
             For Each a As CSS.XmlAttributeSyntax In ListOfAttributes
-                VBAttributes = VBAttributes.Add(DirectCast(a.Accept(Me), VBS.XmlNodeSyntax))
+                VBAttributes = VBAttributes.Add(DirectCast(a.Accept(Me).WithConvertedLeadingTriviaFrom(a), VBS.XmlNodeSyntax))
             Next
             Return VBAttributes
         End Function
@@ -110,11 +109,6 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             Return Identifier
         End Function
 
-        ''' <summary>
-        ''' from <see cref="SourceText.From(Stream, Encoding, SourceHashAlgorithm, bool)"/> in two ways
-        ''' </summary>
-        ''' <param name="node"></param>
-        ''' <returns></returns>
         Public Overrides Function VisitNameMemberCref(node As CSS.NameMemberCrefSyntax) As VB.VisualBasicSyntaxNode
             Dim Name As VB.VisualBasicSyntaxNode = node.Name.Accept(Me)
             Dim CrefParameters As New List(Of VBS.CrefSignaturePartSyntax)
@@ -191,69 +185,17 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
         End Function
 
         Public Overrides Function VisitXmlElement(node As CSS.XmlElementSyntax) As VB.VisualBasicSyntaxNode
-            Dim StartTag As VBS.XmlElementStartTagSyntax = DirectCast(node.StartTag.Accept(Me).WithConvertedTriviaFrom(node.StartTag), VBS.XmlElementStartTagSyntax)
             Dim Content As New SyntaxList(Of VBS.XmlNodeSyntax)
-            Dim EndTag As VBS.XmlElementEndTagSyntax
+            Dim StartTag As VBS.XmlElementStartTagSyntax = DirectCast(node.StartTag.Accept(Me).WithConvertedTriviaFrom(node.StartTag), VBS.XmlElementStartTagSyntax)
 
-            Dim NoEndTag As Boolean = False
-            If node.EndTag.Name.LocalName.ValueText.IsEmptyNullOrWhitespace Then
-                EndTag = VBFactory.XmlElementEndTag(DirectCast(StartTag.Name, VBS.XmlNameSyntax).WithConvertedTriviaFrom(node.EndTag))
-                NoEndTag = True
-            Else
-                EndTag = VBFactory.XmlElementEndTag(DirectCast(node.EndTag.Name.Accept(Me), VBS.XmlNameSyntax))
-            End If
+            Dim NoEndTag As Boolean = node.EndTag.Name.LocalName.ValueText.IsEmptyNullOrWhitespace
+            Dim EndTag As VBS.XmlElementEndTagSyntax = If(NoEndTag,
+                VBFactory.XmlElementEndTag(DirectCast(StartTag.Name, VBS.XmlNameSyntax).WithConvertedTriviaFrom(node.EndTag)),
+                VBFactory.XmlElementEndTag(DirectCast(node.EndTag.Name.Accept(Me), VBS.XmlNameSyntax)))
             Try
                 For i As Integer = 0 To node.Content.Count - 1
                     Dim C As CSS.XmlNodeSyntax = node.Content(i)
-                    Dim Node1 As VBS.XmlNodeSyntax
-                    If TypeOf C Is CSS.XmlElementSyntax Then
-                        Dim E As CSS.XmlElementSyntax = DirectCast(C, CSS.XmlElementSyntax)
-                        If E.StartTag.ToFullString.Contains("< ") Then
-                            Try
-                                Dim TextSplit As String() = (E.StartTag.GetText.ToString.Substring(1) & E.Content.ToString).SplitLines()
-                                For j As Integer = 0 To TextSplit.Count - 1
-                                    Node1 = VBFactory.XmlText(TextSplit(i)).WithConvertedTrailingTriviaFrom(C)
-                                    Content = Content.Add(Node1)
-                                Next j
-                                Dim localName As SyntaxToken = VBFactory.XmlNameToken(E.EndTag.Name.ToString, Nothing)
-                                Dim Name As VBS.XmlNameSyntax = VBFactory.XmlName(Nothing, localName)
-                                Node1 = VBFactory.XmlElementEndTag(Name).WithConvertedTrailingTriviaFrom(C)
-                            Catch ex As Exception
-                                Stop
-                                Throw
-                            End Try
-                        Else
-                            Node1 = DirectCast(C.Accept(Me).WithConvertedTriviaFrom(C), VBS.XmlNodeSyntax)
-                        End If
-                    ElseIf TypeOf C Is CSS.XmlEmptyElementSyntax Then
-                        Dim E As CSS.XmlEmptyElementSyntax = DirectCast(C, CSS.XmlEmptyElementSyntax)
-                        Try
-                            Dim TextSplit As String() = E.GetText.ToString.SplitLines
-                            For j As Integer = 0 To TextSplit.Count - 2
-                                If TextSplit(j).Trim.StartsWith("///") Then
-                                    If j = 0 Then
-                                        Node1 = VBFactory.XmlText(TextSplit(j)).WithConvertedTrailingTriviaFrom(C)
-                                    Else
-                                        Node1 = VBFactory.XmlText(TextSplit(j).TrimStart.Replace("///", "") & " ").With({VBFactory.DocumentationCommentExteriorTrivia("'''"), SpaceTrivia}, {VB_EOLTrivia})
-                                    End If
-                                    Content = Content.Add(Node1)
-                                Else
-                                    Node1 = VBFactory.XmlText(Content.Last.ToString & TextSplit(j))
-                                    Content = Content.Replace(Content.Last, Node1)
-                                End If
-                            Next
-                            If TextSplit.Last.TrimStart.StartsWith("///") Then
-                                Node1 = VBFactory.XmlText(TextSplit.Last.TrimStart.Replace("///", "")).WithLeadingTrivia(VBFactory.DocumentationCommentExteriorTrivia("''' "))
-                            Else
-                                Node1 = VBFactory.XmlText(TextSplit.Last).WithConvertedTrailingTriviaFrom(C)
-                            End If
-                        Catch ex As Exception
-                            Stop
-                            Throw
-                        End Try
-                    Else
-                        Node1 = DirectCast(C.Accept(Me).WithConvertedTriviaFrom(C), VBS.XmlNodeSyntax)
-                    End If
+                    Dim Node1 As VBS.XmlNodeSyntax = CType(C.Accept(Me).WithConvertedTriviaFrom(C), VBS.XmlNodeSyntax)
                     If NoEndTag Then
                         Dim LastToken As SyntaxToken = Node1.GetLastToken
                         If LastToken.ValueText.IsNewLine Then
@@ -262,13 +204,14 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     End If
                     Content = Content.Add(Node1)
                 Next
-                Dim EndTagLeadingTrivia As New List(Of SyntaxTrivia)
-                EndTagLeadingTrivia.AddRange(ConvertTrivia(node.EndTag.GetLeadingTrivia))
-                If EndTagLeadingTrivia.Count = 1 AndAlso node.EndTag.HasLeadingTrivia AndAlso Content.Last.GetLastToken.IsKind(VB.SyntaxKind.DocumentationCommentLineBreakToken) Then
-                    EndTag = EndTag.WithPrependedLeadingTrivia(StartTag.GetLeadingTrivia)
-                End If
-                If EndTag.GetLeadingTrivia.Count > 1 AndAlso Content.Count > 0 AndAlso Content(0).GetFirstToken.GetNextToken.LeadingTrivia.Count > 0 Then
-                    EndTag = EndTag.WithLeadingTrivia(Content(0).GetFirstToken.GetNextToken.LeadingTrivia)
+
+                If node.EndTag?.HasLeadingTrivia AndAlso node.EndTag.GetLeadingTrivia(0).IsKind(CS.SyntaxKind.DocumentationCommentExteriorTrivia) Then
+                    Dim NewLeadingTriviaList As New SyntaxTriviaList
+                    NewLeadingTriviaList = NewLeadingTriviaList.Add(VBFactory.DocumentationCommentExteriorTrivia(node.EndTag.GetLeadingTrivia(0).ToString.Replace("///", "'''")))
+                    Dim NewTokenList As New SyntaxTokenList
+                    NewTokenList = NewTokenList.Add(VBFactory.XmlTextLiteralToken(NewLeadingTriviaList, " ", " ", New SyntaxTriviaList))
+                    Content = Content.Add(VBFactory.XmlText(NewTokenList))
+                    EndTag = EndTag.WithoutLeadingTrivia
                 End If
             Catch ex As Exception
                 Stop
@@ -277,17 +220,13 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             Return XmlElement
         End Function
 
-        ''' <summary>
-        ''' Represents a non-terminal node in the syntax tree. This is the language agnostic equivalent of <see
-        ''' cref="T:Microsoft.CodeAnalysis.CSharp.SyntaxNode"/>  and <see cref="T:Microsoft.CodeAnalysis.VisualBasic.SyntaxNode"/>.
-        ''' </summary>
         Public Overrides Function VisitXmlElementEndTag(node As CSS.XmlElementEndTagSyntax) As VB.VisualBasicSyntaxNode
             Return VBFactory.XmlElementEndTag(DirectCast(node.Name.Accept(Me), VBS.XmlNameSyntax))
         End Function
 
         Public Overrides Function VisitXmlElementStartTag(node As CSS.XmlElementStartTagSyntax) As VB.VisualBasicSyntaxNode
             Dim ListOfAttributes As SyntaxList(Of VBS.XmlNodeSyntax) = Me.GatherAttributes(node.Attributes)
-            Return VBFactory.XmlElementStartTag(DirectCast(node.Name.Accept(Me), VBS.XmlNodeSyntax), ListOfAttributes).WithConvertedTriviaFrom(node)
+            Return VBFactory.XmlElementStartTag(DirectCast(node.Name.Accept(Me), VBS.XmlNodeSyntax), ListOfAttributes)
         End Function
 
         Public Overrides Function VisitXmlEmptyElement(node As CSS.XmlEmptyElementSyntax) As VB.VisualBasicSyntaxNode

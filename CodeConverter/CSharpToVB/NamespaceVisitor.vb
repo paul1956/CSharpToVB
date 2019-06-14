@@ -148,19 +148,7 @@ End Function
 
                 If Me.IsModule Then
                     Dim ModuleModifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, Me.IsModule, TokenContext.InterfaceOrModule)
-                    Dim KeyWordLeadingTrivia As New List(Of SyntaxTrivia)
-                    For i As Integer = 0 To node.Keyword.LeadingTrivia.Count - 1
-                        Dim t As SyntaxTrivia = ConvertTrivia(node.Keyword.LeadingTrivia(i))
-                        Select Case t.RawKind
-                            Case VB.SyntaxKind.WhitespaceTrivia
-                                If i <> node.Keyword.LeadingTrivia.Count - 1 Then
-                                    KeyWordLeadingTrivia.Add(t)
-                                End If
-                            Case Else
-                                KeyWordLeadingTrivia.Add(t)
-                        End Select
-                    Next
-                    Dim ModuleKeywordWithTrivia As SyntaxToken = ModuleKeyword.WithLeadingTrivia(KeyWordLeadingTrivia).WithTrailingTrivia(SpaceTrivia)
+                    Dim ModuleKeywordWithTrivia As SyntaxToken = ModuleKeyword.WithConvertedLeadingTriviaFrom(node.Keyword).WithTrailingTrivia(SpaceTrivia)
                     Dim PrependedTrivia As List(Of SyntaxTrivia) = Me.DedupLeadingTrivia(node, ModuleKeyword, ListOfAttributes.ToList, ModuleModifiers)
                     Dim ModuleStatement As VBS.ModuleStatementSyntax = DirectCast(VB.SyntaxFactory.ModuleStatement(
                                                                             ListOfAttributes,
