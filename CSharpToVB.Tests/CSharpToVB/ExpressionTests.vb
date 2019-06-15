@@ -109,7 +109,8 @@ Friend Module CanonicalError
     & ""( \s*(?<CODE>[^: ]*))?\s*:"" _
  _ ' Whatever's left on this line, including colons.
     & ""(?<TEXT>.*)$"",
-        RegexOptions.IgnoreCase)
+        RegexOptions.IgnoreCase _
+    )
 
 End Module
 ")
@@ -170,7 +171,8 @@ Friend Module CanonicalError
     & ""( \s*(?<CODE>[^: ]*))?\s*:"" _
  _ ' Whatever's left on this line, including colons.
     & ""(?<TEXT>.*)$"",
-        RegexOptions.IgnoreCase)
+        RegexOptions.IgnoreCase _
+    )
 
 End Module
 ")
