@@ -310,7 +310,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             Else
                 type = DirectCast(TypeOrAddressOf, VBS.TypeSyntax)
             End If
-            type = CType(type.WithModifiedNodeTrivia(SeparatorFollows:=True), VBS.TypeSyntax)
+            type = type.WithModifiedNodeTrivia(SeparatorFollows:=True)
             Dim declaratorsWithoutInitializers As New List(Of CSS.VariableDeclaratorSyntax)()
             Dim declarators As New List(Of VBS.VariableDeclaratorSyntax)
             For i As Integer = 0 To VariableDeclaration.Variables.Count - 1

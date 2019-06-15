@@ -678,14 +678,18 @@ Public Class Form1
     End Sub
 
     Private Sub mnuFileSnippetLoadLast_Click(sender As Object, e As EventArgs) Handles mnuFileSnippetLoadLast.Click
-        Me.RichTextBoxConversionInput.LoadFile(SnippetFileWithPath)
+        If My.Settings.ColorizeInput Then
+            Me.mnuConvertConvertSnippet.Enabled = 0 <> Me.LoadInputBufferFromStream("CS", File.OpenRead(path:=SnippetFileWithPath))
+        Else
+            Me.RichTextBoxConversionInput.LoadFile(SnippetFileWithPath, RichTextBoxStreamType.PlainText)
+        End If
     End Sub
 
     Private Sub mnuFileSnippetSave_Click(sender As Object, e As EventArgs) Handles mnuFileSnippetSave.Click
         If Me.RichTextBoxConversionInput.TextLength = 0 Then
             Exit Sub
         End If
-        Me.RichTextBoxConversionInput.SaveFile(SnippetFileWithPath, RichTextBoxStreamType.RichText)
+        Me.RichTextBoxConversionInput.SaveFile(SnippetFileWithPath, RichTextBoxStreamType.PlainText)
     End Sub
 
     Private Sub mnuFileSnippett_Click(sender As Object, e As EventArgs) Handles mnuFileSnippet.Click
@@ -868,7 +872,7 @@ Public Class Form1
     End Sub
 
     Private Sub OpenFile(FileNameWithPath As String, LanguageExtension As String)
-        Me.mnuConvertConvertSnippet.Enabled = 0 <> Me.LoadInputBufferFromStream(LanguageExtension, File.OpenRead(path:=FileNameWithPath))
+        Me.mnuConvertConvertSnippet.Enabled = Me.LoadInputBufferFromStream(LanguageExtension, File.OpenRead(path:=FileNameWithPath)) <> 0
         Me.MRU_AddTo(FileNameWithPath)
     End Sub
 

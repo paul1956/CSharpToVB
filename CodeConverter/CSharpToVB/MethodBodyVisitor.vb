@@ -1047,12 +1047,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                             WithConvertedTriviaFrom(node.IfKeyword).
                                             WithAppendedTrailingTrivia(ConvertTrivia(OpenParenToken.LeadingTrivia)).
                                             WithAppendedTrailingTrivia(ConvertTrivia(OpenParenToken.TrailingTrivia))
-                'Dim IfTrailingTrivia As List(Of SyntaxTrivia) = IfKeywordWithTrivia.TrailingTrivia.ToList
-                'If IfTrailingTrivia.Count > 0 AndAlso IfTrailingTrivia.Last.RawKind = VB.SyntaxKind.EndOfLineTrivia Then
-                '    IfTrailingTrivia.Insert(IfTrailingTrivia.Count - 1, LineContinuation)
-                '    IfKeywordWithTrivia = IfKeywordWithTrivia.WithTrailingTrivia(IfTrailingTrivia)
-                'End If
-                IfKeywordWithTrivia = IfKeywordWithTrivia.WithModifiedTokenTrivia(LeadingToken:=True)
+                IfKeywordWithTrivia = IfKeywordWithTrivia.WithModifiedTokenTrivia(LeadingToken:=True, AfterEOL:=False)
 
                 StatementTrailingTrivia.AddRange(ConvertTrivia(node.CloseParenToken.LeadingTrivia))
                 StatementTrailingTrivia.AddRange(ConvertTrivia(node.CloseParenToken.TrailingTrivia))

@@ -11,9 +11,110 @@ Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 
 Namespace IVisualBasicCode.CodeConverter.Util
     Public Module SyntaxTokenExtensions
+        ''' <summary>
+        ''' Returns the token after this token in the syntax tree.
+        ''' </summary>
+        ''' <param name="predicate">Delegate applied to each token.  The token is returned if the predicate returns
+        ''' true.</param>
+        ''' <param name="stepInto">Delegate applied to trivia.  If this delegate is present then trailing trivia is
+        ''' included in the search.</param>
+        <Extension>
+        Public Function GetNextToken(Node As SyntaxToken, predicate As Func(Of SyntaxToken, Boolean), Optional stepInto As Func(Of SyntaxTrivia, Boolean) = Nothing) As SyntaxToken
+            If Node = Nothing Then
+                Return Nothing
+            End If
+
+            Return SyntaxNavigator.Instance.GetNextToken(Node, predicate, stepInto)
+        End Function
 
         <Extension>
-        Public Function WithModifiedTokenTrivia(Token As SyntaxToken, LeadingToken As Boolean) As SyntaxToken
+        Public Function IsKind(token As SyntaxToken, ParamArray kinds() As CSharp.SyntaxKind) As Boolean
+            Return kinds.Contains(CType(token.RawKind, CSharp.SyntaxKind))
+        End Function
+
+        <Extension>
+        Public Function IsKind(token As SyntaxToken, ParamArray kinds() As VB.SyntaxKind) As Boolean
+            Return kinds.Contains(CType(token.RawKind, VB.SyntaxKind))
+        End Function
+
+        <Extension()>
+        Public Function RemoveExtraEOL(Token As SyntaxToken) As SyntaxToken
+            Dim LeadingTrivia As New List(Of SyntaxTrivia)
+            LeadingTrivia.AddRange(Token.LeadingTrivia())
+            Select Case LeadingTrivia.Count
+                Case 0
+                    Return Token
+                Case 1
+                    If LeadingTrivia.First.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                        Return Token.WithLeadingTrivia(New SyntaxTriviaList)
+                    End If
+                Case 2
+                    Select Case LeadingTrivia.First.RawKind
+                        Case VB.SyntaxKind.WhitespaceTrivia
+                            If LeadingTrivia.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                                Return Token.WithLeadingTrivia(New SyntaxTriviaList)
+                            End If
+                            Return Token
+                        Case VB.SyntaxKind.EndOfLineTrivia
+                            If LeadingTrivia.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                                Return Token.WithLeadingTrivia(New SyntaxTriviaList)
+                            End If
+                            Return Token.WithLeadingTrivia(LeadingTrivia.Last)
+                        Case Else
+                    End Select
+                Case Else
+            End Select
+            Dim NewLeadingTrivia As New List(Of SyntaxTrivia)
+            For i As Integer = 0 To Token.LeadingTrivia.Count - 1
+                Dim Trivia As SyntaxTrivia = Token.LeadingTrivia(i)
+                Dim NextTrivia As SyntaxTrivia = If(i < Token.LeadingTrivia.Count - 1, Token.LeadingTrivia(i + 1), Nothing)
+                If Trivia.IsKind(VB.SyntaxKind.WhitespaceTrivia) AndAlso NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                    Continue For
+                End If
+                If Trivia.IsKind(VB.SyntaxKind.CommentTrivia) AndAlso NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                    NewLeadingTrivia.Add(Trivia)
+                    Continue For
+                End If
+
+                If Trivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) AndAlso NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                    Continue For
+                End If
+                NewLeadingTrivia.Add(Trivia)
+            Next
+
+            Return Token.WithLeadingTrivia(NewLeadingTrivia)
+        End Function
+
+        <Extension>
+        Public Function Width(token As SyntaxToken) As Integer
+            Return token.Span.Length
+        End Function
+
+        <Extension>
+        Public Function [With](token As SyntaxToken, leading As List(Of SyntaxTrivia), trailing As List(Of SyntaxTrivia)) As SyntaxToken
+            Return token.WithLeadingTrivia(leading).WithTrailingTrivia(trailing)
+        End Function
+
+        <Extension>
+        Public Function [With](token As SyntaxToken, leading As SyntaxTriviaList, trailing As SyntaxTriviaList) As SyntaxToken
+            Return token.WithLeadingTrivia(leading).WithTrailingTrivia(trailing)
+        End Function
+
+        <Extension>
+        Public Function WithAppendedTrailingTrivia(token As SyntaxToken, trivia As IEnumerable(Of SyntaxTrivia)) As SyntaxToken
+            Return token.WithTrailingTrivia(token.TrailingTrivia.Concat(trivia))
+        End Function
+
+        ''' <summary>
+        ''' Used for parameters and arguments where blank lines and
+        ''' most directives are not allowed
+        ''' </summary>
+        ''' <param name="Token"></param>
+        ''' <param name="LeadingToken"></param>
+        ''' <param name="AfterEOL"></param>
+        ''' <returns></returns>
+        <Extension>
+        Public Function WithModifiedTokenTrivia(Token As SyntaxToken, LeadingToken As Boolean, AfterEOL As Boolean) As SyntaxToken
             Dim FinalLeadingTriviaList As New List(Of SyntaxTrivia)
             Dim AfterWhiteSpace As Boolean = False
             Dim AfterLineContinuation As Boolean = LeadingToken
@@ -29,13 +130,17 @@ Namespace IVisualBasicCode.CodeConverter.Util
                     Dim NextTrivia As SyntaxTrivia = If(i < TriviaListUBound, InitialTriviaList(i + 1), Nothing)
                     Select Case Trivia.RawKind
                         Case VB.SyntaxKind.WhitespaceTrivia
+                            AfterEOL = False
                             AfterLineContinuation = False
                             AfterWhiteSpace = True
                             FinalLeadingTriviaList.Add(Trivia)
                         Case VB.SyntaxKind.EndOfLineTrivia
-                            FinalLeadingTriviaList.Add(Trivia)
                             AfterLineContinuation = False
                             AfterWhiteSpace = False
+                            If AfterEOL Then
+                                Continue For
+                            End If
+                            FinalLeadingTriviaList.Add(Trivia)
                             ' What I do depends on whats next
                             If i < TriviaListUBound Then
                                 Dim j As Integer
@@ -63,6 +168,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
                                 End If
                             End If
                         Case VB.SyntaxKind.CommentTrivia
+                            AfterEOL = False
                             If Not AfterWhiteSpace Then
                                 FinalLeadingTriviaList.Add(SpaceTrivia)
                             End If
@@ -74,6 +180,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
                             AfterLineContinuation = False
                             AfterWhiteSpace = False
                         Case VB.SyntaxKind.IfDirectiveTrivia, VB.SyntaxKind.DisabledTextTrivia, VB.SyntaxKind.EndIfDirectiveTrivia
+                            AfterEOL = False
                             FinalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(Trivia))
                             Select Case NextTrivia.RawKind
                                 Case VB.SyntaxKind.None
@@ -127,7 +234,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
                                         FinalTrailingTriviaList.Add(VBFactory.WhitespaceTrivia(NewWhiteSpaceString))
                                     Else
                                         FinalTrailingTriviaList.Add(SpaceTrivia)
-                                End If
+                                    End If
                                     FinalTrailingTriviaList.Add(LineContinuation)
                                 End If
                                 FinalTrailingTriviaList.Add(Trivia)
@@ -165,53 +272,6 @@ Namespace IVisualBasicCode.CodeConverter.Util
             End If
             Return Token.With(FinalLeadingTriviaList, FinalTrailingTriviaList)
         End Function
-
-        <Extension>
-        Public Function [With](token As SyntaxToken, leading As List(Of SyntaxTrivia), trailing As List(Of SyntaxTrivia)) As SyntaxToken
-            Return token.WithLeadingTrivia(leading).WithTrailingTrivia(trailing)
-        End Function
-
-        <Extension>
-        Public Function [With](token As SyntaxToken, leading As SyntaxTriviaList, trailing As SyntaxTriviaList) As SyntaxToken
-            Return token.WithLeadingTrivia(leading).WithTrailingTrivia(trailing)
-        End Function
-
-        ''' <summary>
-        ''' Returns the token after this token in the syntax tree.
-        ''' </summary>
-        ''' <param name="predicate">Delegate applied to each token.  The token is returned if the predicate returns
-        ''' true.</param>
-        ''' <param name="stepInto">Delegate applied to trivia.  If this delegate is present then trailing trivia is
-        ''' included in the search.</param>
-        <Extension>
-        Public Function GetNextToken(Node As SyntaxToken, predicate As Func(Of SyntaxToken, Boolean), Optional stepInto As Func(Of SyntaxTrivia, Boolean) = Nothing) As SyntaxToken
-            If Node = Nothing Then
-                Return Nothing
-            End If
-
-            Return SyntaxNavigator.Instance.GetNextToken(Node, predicate, stepInto)
-        End Function
-
-        <Extension>
-        Public Function IsKind(token As SyntaxToken, ParamArray kinds() As CSharp.SyntaxKind) As Boolean
-            Return kinds.Contains(CType(token.RawKind, CSharp.SyntaxKind))
-        End Function
-
-        <Extension>
-        Public Function IsKind(token As SyntaxToken, ParamArray kinds() As VB.SyntaxKind) As Boolean
-            Return kinds.Contains(CType(token.RawKind, VB.SyntaxKind))
-        End Function
-
-        <Extension>
-        Public Function Width(token As SyntaxToken) As Integer
-            Return token.Span.Length
-        End Function
-
-        <Extension>
-        Public Function WithAppendedTrailingTrivia(token As SyntaxToken, trivia As IEnumerable(Of SyntaxTrivia)) As SyntaxToken
-            Return token.WithTrailingTrivia(token.TrailingTrivia.Concat(trivia))
-        End Function
-
         <Extension>
         Public Function WithPrependedLeadingTrivia(token As SyntaxToken, ParamArray trivia() As SyntaxTrivia) As SyntaxToken
             If trivia.Length = 0 Then
@@ -234,54 +294,5 @@ Namespace IVisualBasicCode.CodeConverter.Util
         Public Function WithPrependedLeadingTrivia(token As SyntaxToken, trivia As IEnumerable(Of SyntaxTrivia)) As SyntaxToken
             Return token.WithPrependedLeadingTrivia(trivia.ToSyntaxTriviaList())
         End Function
-
-        <Extension()>
-        Public Function RemoveExtraEOL(Token As SyntaxToken) As SyntaxToken
-            Dim LeadingTrivia As New List(Of SyntaxTrivia)
-            LeadingTrivia.AddRange(Token.LeadingTrivia())
-            Select Case LeadingTrivia.Count
-                Case 0
-                    Return Token
-                Case 1
-                    If LeadingTrivia.First.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                        Return Token.WithLeadingTrivia(New SyntaxTriviaList)
-                    End If
-                Case 2
-                    Select Case LeadingTrivia.First.RawKind
-                        Case VB.SyntaxKind.WhitespaceTrivia
-                            If LeadingTrivia.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                                Return Token.WithLeadingTrivia(New SyntaxTriviaList)
-                            End If
-                            Return Token
-                        Case VB.SyntaxKind.EndOfLineTrivia
-                            If LeadingTrivia.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                                Return Token.WithLeadingTrivia(New SyntaxTriviaList)
-                            End If
-                            Return Token.WithLeadingTrivia(LeadingTrivia.Last)
-                        Case Else
-                    End Select
-                Case Else
-            End Select
-            Dim NewLeadingTrivia As New List(Of SyntaxTrivia)
-            For i As Integer = 0 To Token.LeadingTrivia.Count - 1
-                Dim Trivia As SyntaxTrivia = Token.LeadingTrivia(i)
-                Dim NextTrivia As SyntaxTrivia = If(i < Token.LeadingTrivia.Count - 1, Token.LeadingTrivia(i + 1), Nothing)
-                If Trivia.IsKind(VB.SyntaxKind.WhitespaceTrivia) AndAlso NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                    Continue For
-                End If
-                If Trivia.IsKind(VB.SyntaxKind.CommentTrivia) AndAlso NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                    NewLeadingTrivia.Add(Trivia)
-                    Continue For
-                End If
-
-                If Trivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) AndAlso NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                    Continue For
-                End If
-                NewLeadingTrivia.Add(Trivia)
-            Next
-
-            Return Token.WithLeadingTrivia(NewLeadingTrivia)
-        End Function
-
     End Module
 End Namespace

@@ -689,7 +689,9 @@ Namespace IVisualBasicCode.CodeConverter.Util
         ''' <param name="Node"></param>
         ''' <returns>New Node with valid Trivia</returns>
         <Extension>
-        Public Function WithModifiedNodeTrivia(Node As VB.VisualBasicSyntaxNode, SeparatorFollows As Boolean) As VB.VisualBasicSyntaxNode
+        Public Function WithModifiedNodeTrivia(Of T As VB.VisualBasicSyntaxNode)(Node As T, SeparatorFollows As Boolean) As T
+            Dim AfterFirstTrivia As Boolean = False
+            Dim AfterLineContinuation As Boolean = False
             Dim AfterWhiteSpace As Boolean = False
             Dim FinalLeadingTriviaList As New List(Of SyntaxTrivia)
             Dim InitialTriviaList As List(Of SyntaxTrivia) = Node.GetLeadingTrivia.ToList
@@ -699,20 +701,43 @@ Namespace IVisualBasicCode.CodeConverter.Util
                 Dim NextTrivia As SyntaxTrivia = If(i < InitialTriviaList.Count - 1, InitialTriviaList(i + 1), Nothing)
                 Select Case Trivia.RawKind
                     Case VB.SyntaxKind.WhitespaceTrivia
+                        If NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) OrElse AfterLineContinuation Then
+                            Continue For
+                        ElseIf NextTrivia.IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
+                            If Trivia.FullSpan.Length < NextTrivia.FullSpan.Length Then
+                                AfterFirstTrivia = False
+                                Continue For
+                            Else
+                                Trivia = NextTrivia
+                                i += 1
+                            End If
+                        End If
+                        AfterFirstTrivia = True
                         AfterWhiteSpace = True
                         FinalLeadingTriviaList.Add(Trivia)
                     Case VB.SyntaxKind.EndOfLineTrivia
+                        If Not AfterFirstTrivia Then
+                            AfterFirstTrivia = True
+                            Continue For
+                        End If
                         FinalLeadingTriviaList.Add(Trivia)
                         AfterWhiteSpace = False
-                        If FinalLeadingTriviaList.Count = 0 Then
+                        If FinalLeadingTriviaList.Count = 1 OrElse NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
                             FinalLeadingTriviaList.Add(SpaceTrivia)
                             FinalLeadingTriviaList.Add(LineContinuation)
+                            AfterLineContinuation = True
+                        Else
+                            AfterLineContinuation = False
                         End If
                     Case VB.SyntaxKind.CommentTrivia
-                        If Not AfterWhiteSpace Then
-                            FinalLeadingTriviaList.Add(SpaceTrivia)
+                        AfterFirstTrivia = True
+                        If Not AfterLineContinuation Then
+                            If Not AfterWhiteSpace Then
+                                FinalLeadingTriviaList.Add(SpaceTrivia)
+                            End If
+                            FinalLeadingTriviaList.Add(LineContinuation)
+                            AfterLineContinuation = True
                         End If
-                        FinalLeadingTriviaList.Add(LineContinuation)
                         FinalLeadingTriviaList.Add(Trivia)
                         If Not NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
                             FinalLeadingTriviaList.Add(VB_EOLTrivia)
@@ -721,13 +746,20 @@ Namespace IVisualBasicCode.CodeConverter.Util
                          VB.SyntaxKind.IfDirectiveTrivia, VB.SyntaxKind.DisabledTextTrivia,
                        VB.SyntaxKind.ElseDirectiveTrivia, VB.SyntaxKind.EndIfDirectiveTrivia
                         FinalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(Trivia))
+                        AfterFirstTrivia = True
+                        AfterLineContinuation = False
                         If NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) OrElse NextTrivia.IsNone Then
                             Continue For
                         End If
                         FinalLeadingTriviaList.Add(VB_EOLTrivia)
                     Case VB.SyntaxKind.LineContinuationTrivia
-                        ' ignore handled elsewhere
+                        If Not AfterLineContinuation Then
+                            FinalLeadingTriviaList.Add(Trivia)
+                        End If
+                        AfterLineContinuation = True
                     Case VB.SyntaxKind.RegionDirectiveTrivia, VB.SyntaxKind.EndRegionDirectiveTrivia
+                        AfterFirstTrivia = True
+                        AfterLineContinuation = False
                         FinalLeadingTriviaList.Add(Trivia)
                         If NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) OrElse NextTrivia.IsNone Then
                             Continue For
@@ -741,15 +773,19 @@ Namespace IVisualBasicCode.CodeConverter.Util
             InitialTriviaList.AddRange(Node.GetTrailingTrivia)
             InitialTriviaListUBound = InitialTriviaList.Count - 1
             AfterWhiteSpace = False
-            Dim AfterLineContinuation As Boolean = False
-            Dim AfterLinefeed As Boolean = False
             Dim AfterComment As Boolean = False
+            AfterLineContinuation = False
+            Dim AfterLinefeed As Boolean = False
             Dim FinalTrailingTriviaList As New List(Of SyntaxTrivia)
             For i As Integer = 0 To InitialTriviaListUBound
                 Dim Trivia As SyntaxTrivia = InitialTriviaList(i)
                 Dim NextTrivia As SyntaxTrivia = If(i < InitialTriviaListUBound, InitialTriviaList(i + 1), VBFactory.ElasticMarker)
                 Select Case Trivia.RawKind
                     Case VB.SyntaxKind.WhitespaceTrivia
+                        If NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                            Continue For
+                        End If
+
                         If NextTrivia.IsKind(VB.SyntaxKind.CommentTrivia) OrElse
                                 NextTrivia.IsKind(VB.SyntaxKind.LineContinuationTrivia) Then
                             FinalTrailingTriviaList.Add(Trivia)
@@ -758,9 +794,11 @@ Namespace IVisualBasicCode.CodeConverter.Util
                             AfterWhiteSpace = True
                         End If
                     Case VB.SyntaxKind.EndOfLineTrivia
-                        ' There is a Token after this node
+                        If NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                            Continue For
+                        End If
                         If Not AfterLinefeed Then
-                            If AfterComment Then
+                            If AfterComment OrElse AfterLineContinuation Then
                                 FinalTrailingTriviaList.Add(Trivia)
                             Else
                                 If SeparatorFollows Then
@@ -772,6 +810,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
                             AfterComment = False
                             AfterLinefeed = True
                             AfterWhiteSpace = False
+                            AfterLineContinuation = False
                         End If
                     Case VB.SyntaxKind.CommentTrivia
                         If Not AfterWhiteSpace Then

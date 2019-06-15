@@ -18,36 +18,17 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
         Partial Protected Friend Class NodesVisitor
             Inherits CS.CSharpSyntaxVisitor(Of VB.VisualBasicSyntaxNode)
 
-            Private Function VisitCSArguments(CS_OpenToken As SyntaxToken, CS_VisitorArguments As SeparatedSyntaxList(Of CSS.ArgumentSyntax), CS_CloseToken As SyntaxToken) As VB.VisualBasicSyntaxNode
-                If CS_VisitorArguments.Count = 0 Then
-                    Return VB.SyntaxFactory.ArgumentList(VB.SyntaxFactory.SeparatedList(CS_VisitorArguments.Select(Function(a As CSS.ArgumentSyntax) DirectCast(a.Accept(Me), VBS.ArgumentSyntax))))
+            Private Function VisitCSArguments(CS_OpenToken As SyntaxToken, CS_Arguments As SeparatedSyntaxList(Of CSS.ArgumentSyntax), CS_CloseToken As SyntaxToken) As VB.VisualBasicSyntaxNode
+                If CS_Arguments.Count = 0 Then
+                    Return VB.SyntaxFactory.ArgumentList(VB.SyntaxFactory.SeparatedList(CS_Arguments.Select(Function(a As CSS.ArgumentSyntax) DirectCast(a.Accept(Me), VBS.ArgumentSyntax))))
                 End If
-                Dim CS_Separators As IEnumerable(Of SyntaxToken) = CS_VisitorArguments.GetSeparators
                 Dim NodeList As New List(Of VBS.ArgumentSyntax)
                 Dim Separators As New List(Of SyntaxToken)
-                Dim SeparatorCount As Integer = CS_VisitorArguments.Count - 1
+                Dim SeparatorCount As Integer = CS_Arguments.Count - 1
                 For i As Integer = 0 To SeparatorCount
-                    Dim e As CSS.ArgumentSyntax = CS_VisitorArguments(i)
-                    Dim ArgumentSyntaxNode As VBS.ArgumentSyntax = DirectCast(e.Accept(Me), VBS.ArgumentSyntax)
-                    Dim NewLeadingTrivia As New List(Of SyntaxTrivia)
-                    Dim OldLeadingTrivia As IEnumerable(Of SyntaxTrivia) = ConvertTrivia(e.GetLeadingTrivia)
-                    Dim LeadingEol As Boolean = True
-                    For j As Integer = 0 To OldLeadingTrivia.Count - 1
-                        Dim Trivia As SyntaxTrivia = OldLeadingTrivia(j)
-                        Dim NextTrivia As SyntaxTrivia = If(j < OldLeadingTrivia.Count - 1, OldLeadingTrivia(j + 1), Nothing)
-                        If Trivia.IsKind(VB.SyntaxKind.WhitespaceTrivia) AndAlso NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                            Continue For
-                        End If
-
-                        If Trivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) AndAlso (NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) OrElse LeadingEol) Then
-                            Continue For
-                        End If
-                        LeadingEol = False
-                        NewLeadingTrivia.Add(Trivia)
-                    Next
-                    NodeList.Add(ArgumentSyntaxNode.With(NewLeadingTrivia, ConvertTrivia(e.GetTrailingTrivia)))
+                    NodeList.Add(DirectCast(CS_Arguments(i).Accept(Me), VBS.ArgumentSyntax).WithModifiedNodeTrivia(SeparatorFollows:=SeparatorCount > i))
                     If SeparatorCount > i Then
-                        Separators.Add(CommaToken.WithConvertedTrailingTriviaFrom(CS_Separators(i)))
+                        Separators.Add(CommaToken.WithConvertedTrailingTriviaFrom(CS_Arguments.GetSeparators()(i)))
                     End If
                 Next
                 Dim OpenParenTokenWithTrivia As SyntaxToken = OpenParenToken.WithConvertedTriviaFrom(CS_OpenToken)
