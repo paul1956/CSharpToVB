@@ -94,24 +94,11 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
 
                     If ArgumentWithTrivia.HasLeadingTrivia Then
                         For Each trivia As SyntaxTrivia In ArgumentWithTrivia.GetLeadingTrivia
-                            ' Keep separate in case they need special handling for now
                             Select Case trivia.RawKind
-                                Case VB.SyntaxKind.CommentTrivia
-                                    NewLeadingTrivia.Add(trivia)
-                                Case VB.SyntaxKind.WhitespaceTrivia
-                                    NewLeadingTrivia.Add(trivia)
-                                Case VB.SyntaxKind.EndOfLineTrivia
-                                    ' Possibly need to Ignore TODO
-                                    NewLeadingTrivia.Add(trivia)
-                                Case VB.SyntaxKind.IfDirectiveTrivia
-                                    NewLeadingTrivia.Add(trivia)
-                                Case VB.SyntaxKind.DisabledTextTrivia
-                                    NewLeadingTrivia.Add(trivia)
-                                Case VB.SyntaxKind.ElseDirectiveTrivia
-                                    NewLeadingTrivia.Add(trivia)
-                                Case VB.SyntaxKind.ElseIfDirectiveTrivia
-                                    NewLeadingTrivia.Add(trivia)
-                                Case VB.SyntaxKind.EndIfDirectiveTrivia
+                                Case VB.SyntaxKind.WhitespaceTrivia, VB.SyntaxKind.EndOfLineTrivia,
+                                     VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.IfDirectiveTrivia,
+                                     VB.SyntaxKind.DisabledTextTrivia, VB.SyntaxKind.ElseDirectiveTrivia,
+                                     VB.SyntaxKind.ElseIfDirectiveTrivia, VB.SyntaxKind.EndIfDirectiveTrivia
                                     NewLeadingTrivia.Add(trivia)
                                 Case VB.SyntaxKind.DisableWarningDirectiveTrivia
                                     GetStatementwithIssues(node).AddMarker(VB.SyntaxFactory.EmptyStatement.WithLeadingTrivia(trivia), StatementHandlingOption.PrependStatement, AllowDuplicates:=True)

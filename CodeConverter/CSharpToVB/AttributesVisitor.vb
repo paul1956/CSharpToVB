@@ -111,18 +111,6 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     Case Else
                         Return Nothing
                 End Select
-                'Dim TrailingTrivia As New List(Of SyntaxTrivia)
-                'For Each t As SyntaxTrivia In ConvertTrivia(node.GetTrailingTrivia)
-                '    Select Case t.RawKind
-                '        Case VB.SyntaxKind.WhitespaceTrivia
-                '            TrailingTrivia.Add(t)
-                '        Case VB.SyntaxKind.EndOfLineTrivia
-                '            ' ignore
-                '        Case Else
-                '            Stop
-                '    End Select
-                'Next
-
                 Return VBFactory.AttributeTarget(id).WithConvertedTriviafrom(node)
             End Function
 

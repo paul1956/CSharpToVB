@@ -682,6 +682,81 @@ Namespace IVisualBasicCode.CodeConverter.Util
             Return node.WithTrailingTrivia(NewTrailingTrivia)
         End Function
 
+        <Extension>
+        Public Function WithModifiedNodeTrailingTrivia(Of T As VB.VisualBasicSyntaxNode)(Node As T, SeparatorFollows As Boolean) As T
+            Dim AfterLineContinuation As Boolean = False
+            Dim AfterWhiteSpace As Boolean = False
+            Dim FinalLeadingTriviaList As New List(Of SyntaxTrivia)
+            Dim InitialTriviaList As List(Of SyntaxTrivia) = Node.GetTrailingTrivia.ToList
+            Dim InitialTriviaListUBound As Integer = InitialTriviaList.Count - 1
+            Dim AfterComment As Boolean = False
+            Dim AfterLinefeed As Boolean = False
+            Dim FinalTrailingTriviaList As New List(Of SyntaxTrivia)
+            For i As Integer = 0 To InitialTriviaListUBound
+                Dim Trivia As SyntaxTrivia = InitialTriviaList(i)
+                Dim NextTrivia As SyntaxTrivia = If(i < InitialTriviaListUBound, InitialTriviaList(i + 1), VBFactory.ElasticMarker)
+                Select Case Trivia.RawKind
+                    Case VB.SyntaxKind.WhitespaceTrivia
+                        If NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                            Continue For
+                        End If
+
+                        If NextTrivia.IsKind(VB.SyntaxKind.CommentTrivia) OrElse
+                                NextTrivia.IsKind(VB.SyntaxKind.LineContinuationTrivia) Then
+                            FinalTrailingTriviaList.Add(Trivia)
+                            AfterLinefeed = False
+                            AfterComment = False
+                            AfterWhiteSpace = True
+                        End If
+                    Case VB.SyntaxKind.EndOfLineTrivia
+                        If NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                            Continue For
+                        End If
+                        If Not AfterLinefeed Then
+                            If AfterComment OrElse AfterLineContinuation Then
+                                FinalTrailingTriviaList.Add(Trivia)
+                            Else
+                                If SeparatorFollows Then
+                                    FinalTrailingTriviaList.Add(SpaceTrivia)
+                                    FinalTrailingTriviaList.Add(LineContinuation)
+                                    FinalTrailingTriviaList.Add(Trivia)
+                                End If
+                            End If
+                            AfterComment = False
+                            AfterLinefeed = True
+                            AfterWhiteSpace = False
+                            AfterLineContinuation = False
+                        End If
+                    Case VB.SyntaxKind.CommentTrivia
+                        If Not AfterWhiteSpace Then
+                            FinalTrailingTriviaList.Add(SpaceTrivia)
+                        End If
+                        If Not AfterLineContinuation Then
+                            FinalTrailingTriviaList.Add(LineContinuation)
+                            FinalTrailingTriviaList.Add(SpaceTrivia)
+                        End If
+                        FinalTrailingTriviaList.Add(Trivia)
+                        If Not NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                            FinalTrailingTriviaList.Add(VB_EOLTrivia)
+                            AfterLineContinuation = False
+                            AfterLinefeed = True
+                        End If
+                        AfterComment = True
+                        AfterWhiteSpace = False
+                    Case VB.SyntaxKind.LineContinuationTrivia
+                        If FinalTrailingTriviaList.Last.IsKind(VB.SyntaxKind.LineContinuationTrivia) Then
+                            Continue For
+                        End If
+                        AfterWhiteSpace = False
+                        AfterLineContinuation = True
+                        FinalTrailingTriviaList.Add(LineContinuation)
+                    Case Else
+                        Stop
+                End Select
+            Next
+            Return Node.With(FinalLeadingTriviaList, FinalTrailingTriviaList)
+        End Function
+
         ''' <summary>
         ''' This function is used where a Token is Followed by a Node followed by a Token
         ''' in the middle of a statement where VB does not allow Directives

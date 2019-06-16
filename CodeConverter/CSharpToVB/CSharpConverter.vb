@@ -51,15 +51,10 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
         ''' <param name="IsTypeName"></param>
         ''' <returns></returns>
         Private Shared Function GenerateSafeVBToken(id As SyntaxToken, IsQualifiedName As Boolean, Optional IsTypeName As Boolean = False) As SyntaxToken
-            If id.Language <> "C#" Then
-                Stop
-            End If
-            If id.HasTrailingTrivia AndAlso id.TrailingTrivia(0).Language <> "C#" Then
-                Stop
-            End If
-            If id.HasLeadingTrivia AndAlso id.LeadingTrivia(0).Language <> "C#" Then
-                Stop
-            End If
+            Debug.Assert(id.Language = "C#", $"In {NameOf(GenerateSafeVBToken)} Language of Token is not C#")
+            Debug.Assert((Not id.HasLeadingTrivia) OrElse id.LeadingTrivia(0).Language = "C#", $"In {NameOf(GenerateSafeVBToken)} Language of ID Token leading trivia is not VB")
+            Debug.Assert((Not id.HasTrailingTrivia) OrElse id.TrailingTrivia(0).Language = "C#", $"In {NameOf(GenerateSafeVBToken)} Language of ID Token trailing trivia is not VB")
+
             Dim keywordKind As VB.SyntaxKind = VB.SyntaxFacts.GetKeywordKind(id.ValueText)
             If VB.SyntaxFacts.IsKeywordKind(keywordKind) Then
                 Return MakeIdentifierUnique(id, BracketNeeded:=True, QualifiedNameOrTypeName:=IsQualifiedName)
@@ -76,11 +71,6 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 IsQualifiedName = If(MethodDeclaration IsNot Nothing AndAlso String.Compare(MethodDeclaration.Identifier.ValueText, id.ValueText, ignoreCase:=True) <> 0, False, True)
                 IsQualifiedName = IsQualifiedName Or String.Compare(Param.Type.ToString, id.ValueText, ignoreCase:=False) = 0
             End If
-
-            'If id.IsParentKind(CS.SyntaxKind.Parameter) Then
-            '    Dim MethodDeclaration As CSS.MethodDeclarationSyntax = TryCast(id.Parent.Parent?.Parent, CSS.MethodDeclarationSyntax)
-            '    IsQualifiedName = If(MethodDeclaration IsNot Nothing AndAlso String.Compare(MethodDeclaration.Identifier.ValueText, id.ValueText, ignoreCase:=True) = 0, False, True)
-            'End If
             Return MakeIdentifierUnique(id, BracketNeeded:=False, QualifiedNameOrTypeName:=IsQualifiedName)
         End Function
 
@@ -337,35 +327,13 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                                                                                 AsClause,
                                                                                                 Initializer
                                                                                                 )
-                    If Declator.HasTrailingTrivia Then
-                        Dim FoundEOL As Boolean = False
-                        Dim NonCommentTrailingTrivia As New List(Of SyntaxTrivia)
-                        For Each t As SyntaxTrivia In Declator.GetTrailingTrivia
-                            Select Case t.RawKind
-                                Case VB.SyntaxKind.EndOfLineTrivia
-                                    FoundEOL = True
-                                Case VB.SyntaxKind.CommentTrivia
-                                    CS_CollectedCommentTrivia.Add(CS.SyntaxFactory.Comment(t.ToString.Replace("'", "//")))
-                                Case VB.SyntaxKind.WhitespaceTrivia
-                                    NonCommentTrailingTrivia.Add(t)
-                                Case Else
-                                    ' Directives are ignored but the results are converted. Disabled Text is deleted
-                                    'Stop
-                            End Select
-                        Next
-                        If FoundEOL Then
-                            CS_CollectedCommentTrivia.Add(CS.SyntaxFactory.EndOfLine(vbLf))
-                            Declator = Declator.WithTrailingTrivia(ConvertTrivia(CS_CollectedCommentTrivia))
-                            CS_CollectedCommentTrivia.Clear()
-                        Else
-                            Declator = Declator.WithTrailingTrivia(NonCommentTrailingTrivia)
-                        End If
-                        If i = VariableDeclaration.Variables.Count - 1 Then
-                            If Not Declator.HasTrailingTrivia OrElse Not Declator.GetTrailingTrivia.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                                Declator = Declator.WithAppendedTrailingTrivia(VB_EOLTrivia)
-                            End If
+                    Declator = Declator.WithModifiedNodeTrailingTrivia(SeparatorFollows:=False)
+                    If i = VariableDeclaration.Variables.Count - 1 Then
+                        If Not Declator.HasTrailingTrivia OrElse Not Declator.GetTrailingTrivia.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                            Declator = Declator.WithAppendedTrailingTrivia(VB_EOLTrivia)
                         End If
                     End If
+                    'End If
                     declarators.Add(Declator)
                 End If
             Next
