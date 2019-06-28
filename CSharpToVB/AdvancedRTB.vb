@@ -181,30 +181,30 @@ Public Class AdvancedRTB
         'ContextMenuStrip1
         '
         Me.ContextMenuStrip1.Items.AddRange(New ToolStripItem() {Me.ToolStripMenuItem1, Me.ToolStripSeparator1, Me.ToolStripMenuItem2, Me.ToolStripMenuItem3})
-        Me.ContextMenuStrip1.Name = NameOf(ContextMenuStrip1)
+        Me.ContextMenuStrip1.Name = "ContextMenuStrip1"
         Me.ContextMenuStrip1.Size = New System.Drawing.Size(147, 76)
         '
         'ToolStripMenuItem1
         '
-        Me.ToolStripMenuItem1.Name = NameOf(ToolStripMenuItem1)
+        Me.ToolStripMenuItem1.Name = "ToolStripMenuItem1"
         Me.ToolStripMenuItem1.Size = New System.Drawing.Size(146, 22)
         Me.ToolStripMenuItem1.Text = "Scroll Here"
         '
         'ToolStripMenuItem2
         '
-        Me.ToolStripMenuItem2.Name = NameOf(ToolStripMenuItem2)
+        Me.ToolStripMenuItem2.Name = "ToolStripMenuItem2"
         Me.ToolStripMenuItem2.Size = New System.Drawing.Size(146, 22)
         Me.ToolStripMenuItem2.Text = "Scroll Top"
         '
         'ToolStripMenuItem3
         '
-        Me.ToolStripMenuItem3.Name = NameOf(ToolStripMenuItem3)
+        Me.ToolStripMenuItem3.Name = "ToolStripMenuItem3"
         Me.ToolStripMenuItem3.Size = New System.Drawing.Size(146, 22)
         Me.ToolStripMenuItem3.Text = "Scroll Bottom"
         '
         'ToolStripSeparator1
         '
-        Me.ToolStripSeparator1.Name = NameOf(ToolStripSeparator1)
+        Me.ToolStripSeparator1.Name = "ToolStripSeparator1"
         Me.ToolStripSeparator1.Size = New System.Drawing.Size(143, 6)
         Me.ContextMenuStrip1.ResumeLayout(False)
         Me.ResumeLayout(False)

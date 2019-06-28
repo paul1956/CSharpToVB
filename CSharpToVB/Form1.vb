@@ -1041,7 +1041,7 @@ Public Class Form1
 
     Private Sub RichTextBoxConversionOutput_HorizScrollBarRightClicked(ByVal sender As Object, ByVal loc As Point) Handles RichTextBoxConversionOutput.HorizScrollBarRightClicked
         Dim p As Integer = CType(sender, AdvancedRTB).HScrollPos
-        MessageBox.Show($"Horizontal Right Clicked At: {loc.ToString}, HScrollPos = {p}")
+        MsgBox($"Horizontal Right Clicked At: {loc.ToString}, HScrollPos = {p}")
     End Sub
 
     Private Sub RichTextBoxConversionOutput_MouseEnter(sender As Object, e As EventArgs) Handles RichTextBoxConversionOutput.MouseEnter
@@ -1055,7 +1055,7 @@ Public Class Form1
 
     Private Sub RichTextBoxConversionOutput_VertScrollBarRightClicked(ByVal sender As Object, ByVal loc As Point) Handles RichTextBoxConversionOutput.VertScrollBarRightClicked
         Dim p As Integer = CType(sender, AdvancedRTB).VScrollPos
-        MessageBox.Show($"Vertical Right Clicked At: {loc.ToString}, VScrollPos = {p} ")
+        MsgBox($"Vertical Right Clicked At: {loc.ToString}, VScrollPos = {p} ")
     End Sub
 
     Private Sub RichTextBoxErrorList_Enter(sender As Object, e As EventArgs) Handles RichTextBoxErrorList.Enter
