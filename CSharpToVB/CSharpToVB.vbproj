@@ -122,7 +122,6 @@
     </Compile>
     <Compile Include="ColorSelector.vb" />
     <Compile Include="Compile.vb" />
-    <Compile Include="Extensions\TriviaExtensions.vb" />
     <Compile Include="IgnoreFilesWithErrorsListDialog.Designer.vb">
       <DependentUpon>IgnoreFilesWithErrorsListDialog.vb</DependentUpon>
     </Compile>

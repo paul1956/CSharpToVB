@@ -328,12 +328,6 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                                                                                 Initializer
                                                                                                 )
                     Declator = Declator.WithModifiedNodeTrailingTrivia(SeparatorFollows:=False)
-                    If i = VariableDeclaration.Variables.Count - 1 Then
-                        If Not Declator.HasTrailingTrivia OrElse Not Declator.GetTrailingTrivia.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                            Declator = Declator.WithAppendedTrailingTrivia(VB_EOLTrivia)
-                        End If
-                    End If
-                    'End If
                     declarators.Add(Declator)
                 End If
             Next

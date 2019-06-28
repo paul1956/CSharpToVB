@@ -14,7 +14,7 @@ Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 
 Namespace IVisualBasicCode.CodeConverter.Util
-    Friend Module SyntaxTriviaExtensions
+    Public Module SyntaxTriviaExtensions
 
         <Extension()>
         Public Function [Do](Of T)(source As IEnumerable(Of T), action As Action(Of T)) As IEnumerable(Of T)

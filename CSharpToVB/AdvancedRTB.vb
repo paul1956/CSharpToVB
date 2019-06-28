@@ -19,6 +19,7 @@ Public Class AdvancedRTB
     'Private Const OBJID_HSCROLL As Long = &HFFFFFFFA 'the horizontal scroll bar of the hwnd window
     Private Const OBJID_VSCROLL As Long = &HFFFFFFFB 'the vertical scroll bar of the hwnd window
     Friend WithEvents ContextMenuStrip1 As ContextMenuStrip
+    <CodeAnalysis.SuppressMessage("Code Quality", "IDE0069:Disposable fields should be disposed", Justification:="<Pending>")>
     Private components As System.ComponentModel.IContainer
     Friend WithEvents ToolStripMenuItem1 As ToolStripMenuItem
     Friend WithEvents ToolStripSeparator1 As ToolStripSeparator

@@ -38,29 +38,30 @@ Public Module RangeSupport
     End Function
 
     Public Function GetClassifiedRanges(SourceCode As String, Language As String) As IEnumerable(Of Range)
-        Dim workspace As New AdhocWorkspace()
-        Dim solution As Solution = workspace.CurrentSolution
-        Dim document As Document
-        If Language = LanguageNames.CSharp Then
-            Dim project As Project = solution.AddProject("projectName", "assemblyName", LanguageNames.CSharp)
-            document = project.AddDocument("name.cs", SourceCode)
+        Using workspace As New AdhocWorkspace()
+            Dim solution As Solution = workspace.CurrentSolution
+            Dim document As Document
+            If Language = LanguageNames.CSharp Then
+                Dim project As Project = solution.AddProject("projectName", "assemblyName", LanguageNames.CSharp)
+                document = project.AddDocument("name.cs", SourceCode)
 
-            Dim CSharpOptions As OptionSet = workspace.Options
-            CSharpOptions = CSharpOptions.WithChangedOption(CSharpFormattingOptions.NewLinesForBracesInMethods, value:=True)
-            CSharpOptions = CSharpOptions.WithChangedOption(CSharpFormattingOptions.NewLinesForBracesInProperties, value:=True)
-        Else
-            Dim VisualBasicOptions As OptionSet = workspace.Options
-            Dim project As Project = solution.AddProject("projectName", "assemblyName", LanguageNames.VisualBasic)
-            document = project.AddDocument("name.vb", SourceCode)
-        End If
+                Dim CSharpOptions As OptionSet = workspace.Options
+                CSharpOptions = CSharpOptions.WithChangedOption(CSharpFormattingOptions.NewLinesForBracesInMethods, value:=True)
+                CSharpOptions = CSharpOptions.WithChangedOption(CSharpFormattingOptions.NewLinesForBracesInProperties, value:=True)
+            Else
+                Dim VisualBasicOptions As OptionSet = workspace.Options
+                Dim project As Project = solution.AddProject("projectName", "assemblyName", LanguageNames.VisualBasic)
+                document = project.AddDocument("name.vb", SourceCode)
+            End If
 
-        document = Formatter.FormatAsync(document).Result
-        Dim text As SourceText = document.GetTextAsync().Result
-        Dim classifiedSpans As IEnumerable(Of ClassifiedSpan) = Classifier.GetClassifiedSpansAsync(document, TextSpan.FromBounds(0, text.Length)).Result
-        Dim ranges As IEnumerable(Of Range) = From span As ClassifiedSpan In classifiedSpans
-                                              Select New Range(span, text.GetSubText(span.TextSpan).ToString())
-        ' Whitespace isn't classified so fill in ranges for whitespace.
-        Return FillGaps(text, ranges)
+            document = Formatter.FormatAsync(document).Result
+            Dim text As SourceText = document.GetTextAsync().Result
+            Dim classifiedSpans As IEnumerable(Of ClassifiedSpan) = Classifier.GetClassifiedSpansAsync(document, TextSpan.FromBounds(0, text.Length)).Result
+            Dim ranges As IEnumerable(Of Range) = From span As ClassifiedSpan In classifiedSpans
+                                                  Select New Range(span, text.GetSubText(span.TextSpan).ToString())
+            ' Whitespace isn't classified so fill in ranges for whitespace.
+            Return FillGaps(text, ranges)
+        End Using
     End Function
 
 End Module

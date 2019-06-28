@@ -266,10 +266,10 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             End Function
 
             Private Function RestructureTrivia(TriviaList As SyntaxTriviaList, FoundEOL As Boolean, ByRef OperatorTrailingTrivia As List(Of SyntaxTrivia)) As Boolean
-                For Each t As SyntaxTrivia In TriviaList
-                    Select Case t.RawKind
+                For Each Trivia As SyntaxTrivia In TriviaList
+                    Select Case Trivia.RawKind
                         Case VB.SyntaxKind.CommentTrivia
-                            OperatorTrailingTrivia.Add(t)
+                            OperatorTrailingTrivia.Add(Trivia)
                             FoundEOL = True
                         Case VB.SyntaxKind.EndOfLineTrivia
                             FoundEOL = True
@@ -557,7 +557,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     Next
                     Return VBFactory.TupleType(SSList.ToArray)
                 End If
-                ' Cound be dictionary
+                ' Could be dictionary
                 Dim PossibleDictionary As String = PossibleTupleType.ToString.Trim
                 If TypeOf PossibleTupleType Is INamedTypeSymbol AndAlso PossibleDictionary.Contains(",") Then
                     Dim StartIndex As Integer = PossibleDictionary.IndexOf("<")
@@ -1263,7 +1263,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                     StatementWithIssues.AddMarker(FlagUnsupportedStatements(StatementWithIssues, "pointers", CommentOutOriginalStatements:=True), StatementHandlingOption.ReplaceStatement, AllowDuplicates:=True)
                                     CTypeExpressionSyntax = Expression
                                 ElseIf node.Type.IsKind(CS.SyntaxKind.PointerType) Then
-                                    Return VBFactory.CTypeExpression(Expression, VBFactory.ParseTypeName("Intptr"))
+                                    Return VBFactory.CTypeExpression(Expression, VBFactory.ParseTypeName("IntPtr"))
                                 Else
                                     CTypeExpressionSyntax = VBFactory.CTypeExpression(Expression, VBFactory.ParseTypeName(AddressOf1.Operand.ToString.Replace("&", "")))
                                 End If
@@ -2366,9 +2366,10 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                     If i < TriviaListUBound AndAlso Not InitialTriviaList(i + 1).IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
                                         FinalLeadingTriviaList.Add(VB_EOLTrivia)
                                     End If
-                                Case VB.SyntaxKind.DisableWarningDirectiveTrivia, VB.SyntaxKind.EnableWarningDirectiveTrivia
-                                    Stop
-                                    'GetStatementwithIssues(CS_Node).AddMarker(VBFactory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
+                                Case VB.SyntaxKind.DisableWarningDirectiveTrivia
+                                    GetStatementwithIssues(node).AddMarker(VB.SyntaxFactory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
+                                Case VB.SyntaxKind.EnableWarningDirectiveTrivia
+                                    GetStatementwithIssues(node).AddMarker(VB.SyntaxFactory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.AppendEmptyStatement, AllowDuplicates:=True)
                                 Case VB.SyntaxKind.LineContinuationTrivia
                                     If FinalLeadingTriviaList.Last.IsKind(VB.SyntaxKind.LineContinuationTrivia) Then
                                         Continue For

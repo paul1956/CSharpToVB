@@ -332,8 +332,15 @@ Namespace IVisualBasicCode.CodeConverter.Util
                     walker.Visit(SingleLineDocumentationComment)
 
                     Dim xmlNodes As New List(Of VB.Syntax.XmlNodeSyntax)
-                    For Each node As CSS.XmlNodeSyntax In SingleLineDocumentationComment.Content
-                        If Not node.IsKind(CS.SyntaxKind.XmlText) AndAlso node.HasLeadingTrivia AndAlso node.GetLeadingTrivia.ToList(0).IsKind(CS.SyntaxKind.DocumentationCommentExteriorTrivia) Then
+                    For i As Integer = 0 To SingleLineDocumentationComment.Content.Count - 1
+                        Dim node As CSS.XmlNodeSyntax = SingleLineDocumentationComment.Content(i)
+                        If (Not node.IsKind(CS.SyntaxKind.XmlText)) AndAlso node.GetLeadingTrivia.FirstOrDefault.IsKind(CS.SyntaxKind.DocumentationCommentExteriorTrivia) Then
+                            If i < SingleLineDocumentationComment.Content.Count - 1 Then
+                                Dim NextNode As CSS.XmlNodeSyntax = SingleLineDocumentationComment.Content(i + 1)
+                                If (Not NextNode.IsKind(CS.SyntaxKind.XmlText)) OrElse Not NextNode.GetLeadingTrivia.FirstOrDefault.IsKind(CS.SyntaxKind.DocumentationCommentExteriorTrivia) Then
+                                    xmlNodes.Add(VBFactory.XmlText(" ").WithLeadingTrivia(VBFactory.DocumentationCommentExteriorTrivia("'''")))
+                                End If
+                            End If
                             node = node.WithoutLeadingTrivia
                         End If
                         Try
@@ -553,6 +560,24 @@ Namespace IVisualBasicCode.CodeConverter.Util
                 Return False
             End If
             Return otherNode.Parent.GetLastToken() = otherNode.GetLastToken()
+        End Function
+
+        <Extension>
+        Public Function RelocateDirectivesInLeadingTrivia(Of T As VB.VisualBasicSyntaxNode)(Statement As T) As T
+            Dim NewLeadingTrivia As New List(Of SyntaxTrivia)
+            Dim NewTrailingTrivia As New List(Of SyntaxTrivia)
+            NewLeadingTrivia.AddRange(Statement.GetLeadingTrivia)
+            For Each Trivia As SyntaxTrivia In Statement.GetTrailingTrivia
+                Select Case Trivia.RawKind
+                    Case VB.SyntaxKind.WhitespaceTrivia, VB.SyntaxKind.EndOfLineTrivia, VB.SyntaxKind.CommentTrivia
+                        NewTrailingTrivia.Add(Trivia)
+                    Case VB.SyntaxKind.IfDirectiveTrivia
+                        NewLeadingTrivia.Add(Trivia)
+                    Case Else
+                        Stop
+                End Select
+            Next
+            Return Statement.With(NewLeadingTrivia, NewTrailingTrivia).WithTrailingEOL
         End Function
 
         ''' <summary>

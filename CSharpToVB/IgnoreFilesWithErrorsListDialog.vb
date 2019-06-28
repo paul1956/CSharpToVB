@@ -39,29 +39,31 @@
         End If
         ' Initialize the button column.
         Me._FileToLoad = ""
-        Dim buttonDeleteEntry As New DataGridViewButtonColumn
-        With buttonDeleteEntry
-            .HeaderText = "Delete"
-            .Name = "Delete"
-            .Text = "Delete Entry"
-            ' Use the Text property for the button text for all cells rather
-            ' than using each cell's value as the text for its own button.
-            .UseColumnTextForButtonValue = True
-        End With
-        ' Add the button column to the control.
-        Me.dgvIgnoredFilesList.Columns.Insert(0, buttonDeleteEntry)
+        Using buttonDeleteEntry As New DataGridViewButtonColumn
+            With buttonDeleteEntry
+                .HeaderText = "Delete"
+                .Name = "Delete"
+                .Text = "Delete Entry"
+                ' Use the Text property for the button text for all cells rather
+                ' than using each cell's value as the text for its own button.
+                .UseColumnTextForButtonValue = True
+            End With
+            ' Add the button column to the control.
+            Me.dgvIgnoredFilesList.Columns.Insert(0, buttonDeleteEntry)
+        End Using
 
-        Dim buttonLoadFile As New DataGridViewButtonColumn
-        With buttonLoadFile
-            .HeaderText = "Load File"
-            .Name = "Load"
-            .Text = "Load File"
-            ' Use the Text property for the button text for all cells rather
-            ' than using each cell's value as the text for its own button.
-            .UseColumnTextForButtonValue = True
-        End With
-        ' Add the button column to the control.
-        Me.dgvIgnoredFilesList.Columns.Insert(1, buttonLoadFile)
+        Using buttonLoadFile As New DataGridViewButtonColumn
+            With buttonLoadFile
+                .HeaderText = "Load File"
+                .Name = "Load"
+                .Text = "Load File"
+                ' Use the Text property for the button text for all cells rather
+                ' than using each cell's value as the text for its own button.
+                .UseColumnTextForButtonValue = True
+            End With
+            ' Add the button column to the control.
+            Me.dgvIgnoredFilesList.Columns.Insert(1, buttonLoadFile)
+        End Using
 
     End Sub
 

@@ -162,7 +162,8 @@ Namespace CodeConverter.Tests
             If ErrorMessage <> "Files identical" Then
                 Assert.AreEqual(DesiredResult, ActualResult, ErrorMessage)
             End If
-
+            csharpWorkspace.Dispose()
+            vbWorkspace.Dispose()
         End Sub
 
 #If VB_TO_CSharp Then

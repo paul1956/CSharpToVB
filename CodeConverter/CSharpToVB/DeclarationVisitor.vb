@@ -11,8 +11,8 @@ Imports Microsoft.CodeAnalysis
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
-Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
+Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace IVisualBasicCode.CodeConverter.Visual_Basic
 
@@ -102,6 +102,41 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     Return True
                 End If
                 Return False
+            End Function
+
+            Private Shared Function RelocateDirectivesInTrailingTrivia(ParameterList As VBS.ParameterListSyntax, StatementTrailingTrivia As List(Of SyntaxTrivia)) As VBS.ParameterListSyntax
+                If ParameterList IsNot Nothing AndAlso ParameterList.HasTrailingTrivia AndAlso ParameterList.GetTrailingTrivia.ContainsCommentOrDirectiveTrivia Then
+                    Dim ParameterListTrailingTrivia As New List(Of SyntaxTrivia)
+                    Dim TrailingTrivialist As SyntaxTriviaList = ParameterList.GetTrailingTrivia
+                    Dim FoundEndIf As Boolean = False
+                    For i As Integer = 0 To TrailingTrivialist.Count - 1
+                        Dim Trivia As SyntaxTrivia = TrailingTrivialist(i)
+                        Dim NextTrivia As SyntaxTrivia = If(i < TrailingTrivialist.Count - 1, TrailingTrivialist(i + 1), Nothing)
+                        Select Case Trivia.RawKind
+                            Case VB.SyntaxKind.CommentTrivia
+                                ParameterListTrailingTrivia.Add(Trivia)
+                            Case VB.SyntaxKind.EndOfLineTrivia
+                                If FoundEndIf Then
+                                    StatementTrailingTrivia.Add(Trivia)
+                                Else
+                                    ParameterListTrailingTrivia.Add(Trivia)
+                                End If
+                            Case VB.SyntaxKind.WhitespaceTrivia
+                                ParameterListTrailingTrivia.Add(Trivia)
+                            Case VB.SyntaxKind.EndIfDirectiveTrivia
+                                FoundEndIf = True
+                                If Not StatementTrailingTrivia.Any Then
+                                    StatementTrailingTrivia.Add(VB_EOLTrivia)
+                                End If
+                                StatementTrailingTrivia.Add(Trivia)
+                            Case Else
+                                Stop
+                        End Select
+                    Next
+                    ParameterList = ParameterList.WithTrailingTrivia(ParameterListTrailingTrivia)
+                End If
+
+                Return ParameterList
             End Function
 
             Private Function ConvertAccessor(node As CSS.AccessorDeclarationSyntax, IsModule As Boolean, ByRef isIterator As Boolean) As VBS.AccessorBlockSyntax
@@ -562,38 +597,9 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Dim ReturnAttributes As SyntaxList(Of VBS.AttributeListSyntax) = Nothing
                 Me.ConvertAndSplitAttributes(node.AttributeLists, Attributes, ReturnAttributes)
                 Dim ParameterList As VBS.ParameterListSyntax = DirectCast(node.ParameterList?.Accept(Me), VBS.ParameterListSyntax)
+
                 Dim FunctionStatementTrailingTrivia As New List(Of SyntaxTrivia)
-
-                If ParameterList IsNot Nothing AndAlso ParameterList.HasTrailingTrivia AndAlso ParameterList.GetTrailingTrivia.ContainsCommentOrDirectiveTrivia Then
-                    Dim ParameterListTrailingTrivia As New List(Of SyntaxTrivia)
-                    Dim FoundEOL As Boolean = False
-                    Dim FoundEndIf As Boolean = False
-                    For Each t As SyntaxTrivia In ParameterList.GetTrailingTrivia
-                        Select Case t.RawKind
-                            Case VB.SyntaxKind.CommentTrivia
-                                ParameterListTrailingTrivia.Add(t)
-                            Case VB.SyntaxKind.EndOfLineTrivia
-                                If FoundEndIf Then
-                                    FunctionStatementTrailingTrivia.Add(t)
-                                Else
-                                    FoundEOL = True
-                                    ParameterListTrailingTrivia.Add(t)
-                                End If
-                            Case VB.SyntaxKind.WhitespaceTrivia
-                                ParameterListTrailingTrivia.Add(t)
-                            Case VB.SyntaxKind.EndIfDirectiveTrivia
-                                FoundEndIf = True
-                                If Not FunctionStatementTrailingTrivia.Any Then
-                                    FunctionStatementTrailingTrivia.Add(VB_EOLTrivia)
-                                End If
-                                FunctionStatementTrailingTrivia.Add(t)
-                            Case Else
-                                Stop
-                        End Select
-                    Next
-                    ParameterList = ParameterList.WithTrailingTrivia(ParameterListTrailingTrivia)
-                End If
-
+                ParameterList = RelocateDirectivesInTrailingTrivia(ParameterList, FunctionStatementTrailingTrivia)
                 Dim block As SyntaxList(Of VBS.StatementSyntax)? = Nothing
 
                 If node.Body IsNot Nothing Then
@@ -734,10 +740,10 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         Dim CS_NodeLeadingTrivia As SyntaxTriviaList = node.ReturnType.GetLeadingTrivia
                         If CS_NodeLeadingTrivia.Count > 0 Then
                             NewModifierLeadingTrivia.AddRange(Modifiers(0).LeadingTrivia)
-                            If Not Modifiers(0).LeadingTrivia.FirstOrDefault.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                                NewModifierLeadingTrivia.Add(VB_EOLTrivia)
-                            End If
                             NewModifierLeadingTrivia.AddRange(ConvertTrivia(CS_NodeLeadingTrivia))
+                            If Not NewModifierLeadingTrivia.FirstOrDefault.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                                NewModifierLeadingTrivia.Insert(0, VB_EOLTrivia)
+                            End If
                             Modifiers(0) = Modifiers(0).WithLeadingTrivia(NewModifierLeadingTrivia)
                         End If
                         If Attributes.Count = 0 AndAlso Modifiers(0).LeadingTrivia.Count > 0 Then
@@ -920,7 +926,6 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Dim interfaceMembers As SeparatedSyntaxList(Of VBS.QualifiedNameSyntax)
                 Dim SimpleName As VBS.IdentifierNameSyntax = VBFactory.IdentifierName(node.Identifier.ValueText)
 
-
                 Dim ExplicitInterfaceIdentifier As VBS.QualifiedNameSyntax
                 If node.ExplicitInterfaceSpecifier IsNot Nothing Then
                     Dim VisualBasicSyntaxNode1 As VB.VisualBasicSyntaxNode = node.ExplicitInterfaceSpecifier.Accept(Me)
@@ -979,21 +984,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
 
                         Dim ReturnStatement As VBS.ReturnStatementSyntax = VBFactory.ReturnStatement(ReturnedExpression.WithLeadingTrivia(SpaceTrivia)).
                                                 WithLeadingTrivia(ReturnedExpression.GetLeadingTrivia)
-
-                        Dim NewLeadingTrivia As New List(Of SyntaxTrivia)
-                        NewLeadingTrivia.AddRange(ReturnStatement.GetLeadingTrivia)
-                        Dim NewTrailingTrivia As New List(Of SyntaxTrivia)
-                        For Each t As SyntaxTrivia In ReturnStatement.GetTrailingTrivia
-                            Select Case t.RawKind
-                                Case VB.SyntaxKind.WhitespaceTrivia, VB.SyntaxKind.EndOfLineTrivia, VB.SyntaxKind.CommentTrivia
-                                    NewTrailingTrivia.Add(t)
-                                Case VB.SyntaxKind.IfDirectiveTrivia
-                                    NewLeadingTrivia.Add(t)
-                                Case Else
-                                    Stop
-                            End Select
-                        Next
-                        ReturnStatement = ReturnStatement.With(NewLeadingTrivia, NewTrailingTrivia).WithTrailingEOL
+                        ReturnStatement = ReturnStatement.RelocateDirectivesInLeadingTrivia
                         Statements = ReplaceStatementsWithMarkedStatements(node, VBFactory.SingletonList(Of VBS.StatementSyntax)(ReturnStatement))
                     End If
                     accessors.Add(VBFactory.AccessorBlock(VB.SyntaxKind.GetAccessorBlock, VBFactory.GetAccessorStatement.WithTrailingEOL, Statements, VBFactory.EndGetStatement()))

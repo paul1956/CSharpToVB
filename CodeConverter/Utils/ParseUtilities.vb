@@ -2,6 +2,10 @@
 Option Infer Off
 Option Strict On
 
+Imports System.IO
+
+Imports IVisualBasicCode.CodeConverter.Util
+
 Imports Microsoft.CodeAnalysis
 
 Imports CS = Microsoft.CodeAnalysis.CSharp
@@ -24,6 +28,36 @@ Public Module ParseUtilities
                                         DocumentationMode.Parse,
                                         SourceCodeKind.Regular,
                                         CSPreprocessorSymbols)
+    End Function
+
+    Public Function GetFileCount(DirPath As String, SourceLanguageExtension As String, SkipBinAndObjFolders As Boolean, SkipTestResourceFiles As Boolean) As Long
+        Dim TotalFilesToProcess As Long = 0L
+        Try
+            For Each Subdirectory As String In Directory.GetDirectories(DirPath)
+                If SkipTestResourceFiles AndAlso (Subdirectory.EndsWith("Test\Resources") OrElse Subdirectory.EndsWith("Setup\Templates")) Then
+                    Continue For
+                End If
+                If SkipBinAndObjFolders AndAlso (Subdirectory = "bin" OrElse Subdirectory = "obj" OrElse Subdirectory = "g") Then
+                    Continue For
+                End If
+                TotalFilesToProcess += GetFileCount(Subdirectory, SourceLanguageExtension, SkipBinAndObjFolders, SkipTestResourceFiles)
+                Debug.WriteLine($"{DirPath} {TotalFilesToProcess.ToString}")
+            Next
+            For Each File As String In Directory.GetFiles(path:=DirPath, searchPattern:=$"*.{SourceLanguageExtension}")
+
+                If Not ParseCSharpSource(File).GetRoot.SyntaxTree.IsGeneratedCode(Function(t As SyntaxTrivia) As Boolean
+                                                                                      Return t.IsComment OrElse t.IsRegularOrDocComment
+                                                                                  End Function, cancellationToken:=Nothing) Then
+                    TotalFilesToProcess += 1
+                End If
+            Next
+        Catch ua As UnauthorizedAccessException
+            'Stop
+        Catch ex As Exception
+            'Stop
+        End Try
+        Debug.WriteLine($"{DirPath} {TotalFilesToProcess.ToString}")
+        Return TotalFilesToProcess
     End Function
 
     Public Function GetVBParseOptions(Optional VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)) = Nothing) As VB.VisualBasicParseOptions

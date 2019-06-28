@@ -10,6 +10,7 @@ Imports CSharpToVBApp
 
 Imports IVisualBasicCode.CodeConverter
 Imports IVisualBasicCode.CodeConverter.ConversionResult
+Imports IVisualBasicCode.CodeConverter.Util
 
 Imports ManageProgressBar
 
@@ -42,6 +43,7 @@ Public Class Form1
 
     Property MSBuildInstance As VisualStudioInstance = Nothing
     Property StopRequested As Boolean = False
+
     Private Shared Function ConvertSourceFileToDestinationFile(ProjectDirectory As String, ProjectSavePath As String, DocumentName As Document) As String
         If ProjectSavePath.IsEmptyNullOrWhitespace Then
             Return String.Empty
@@ -59,35 +61,6 @@ Public Class Form1
             Directory.CreateDirectory(SolutionRoot)
         End If
         Return SolutionRoot
-    End Function
-
-    Private Shared Function GetFileCount(DirPath As String, SourceLanguageExtension As String, SkipBinAndObjFolders As Boolean, SkipTestResourceFiles As Boolean) As Long
-        Dim TotalFilesToProcess As Long = 0L
-        Try
-            For Each Subdirectory As String In Directory.GetDirectories(DirPath)
-
-                If SkipTestResourceFiles AndAlso (Subdirectory.EndsWith("Test\Resources") OrElse Subdirectory.EndsWith("Setup\Templates")) Then
-                    Continue For
-                End If
-                If SkipBinAndObjFolders AndAlso (Subdirectory = "bin" OrElse Subdirectory = "obj" OrElse Subdirectory = "g") Then
-                    Continue For
-                End If
-                TotalFilesToProcess += GetFileCount(Subdirectory, SourceLanguageExtension, SkipBinAndObjFolders, SkipTestResourceFiles)
-            Next
-            For Each File As String In Directory.GetFiles(path:=DirPath, searchPattern:=$"*.{SourceLanguageExtension}")
-
-                If Not ParseCSharpSource(File).GetRoot.SyntaxTree.IsGeneratedCode(Function(t As SyntaxTrivia) As Boolean
-                                                                                      Return t.IsComment OrElse t.IsRegularOrDocComment
-                                                                                  End Function, cancellationToken:=Nothing) Then
-                    TotalFilesToProcess += 1
-                End If
-            Next
-        Catch ua As UnauthorizedAccessException
-            'Stop
-        Catch ex As Exception
-            'Stop
-        End Try
-        Return TotalFilesToProcess
     End Function
 
     Private Sub ButtonSearch_Click(sender As Object, e As EventArgs) Handles ButtonSearch.Click
@@ -479,38 +452,39 @@ Public Class Form1
     Private Sub mnuConvertFolder_Click(sender As Object, e As EventArgs) Handles mnuConvertConvertFolder.Click
         Me.LineNumbers_For_RichTextBoxInput.Visible = False
         Me.LineNumbers_For_RichTextBoxOutput.Visible = False
-
-        With New OpenFolderDialog
-            .Description = "Select folder to convert..."
-            .FolderMustExist = True
-            .InitialFolder = My.Settings.DefaultProjectDirectory
-            .ShowNewFolderButton = False
-            If .ShowDialog(Me) = DialogResult.OK Then
-                Dim SourceFolderName As String = .SelectedPath
-                If Directory.Exists(SourceFolderName) Then
-                    Dim SourceLanguageExtension As String = Me.RequestToConvert.GetSourceExtension
-                    Dim ProjectSavePath As String = Me.GetFoldertSavePath((.SelectedPath), SourceLanguageExtension)
-                    If ProjectSavePath = "" Then
-                        MsgBox($"Conversion aborted.", Title:="C# to VB")
-                        Exit Sub
-                    End If
-                    Dim LastFileNameWithPath As String = If(My.Settings.StartFolderConvertFromLastFile, My.Settings.MRU_Data.Last, "")
-                    Dim FilesProcessed As Long = 0L
-                    If Me.ProcessAllFiles(SourceFolderName,
-                                        ProjectSavePath,
-                                        LastFileNameWithPath,
-                                        SourceLanguageExtension,
-                                        FilesProcessed
-                                        ) Then
-                        MsgBox($"Conversion completed, {FilesProcessed} files completed successfully.", Title:="C# to VB")
+        Using OFD As New OpenFolderDialog
+            With OFD
+                .Description = "Select folder to convert..."
+                .FolderMustExist = True
+                .InitialFolder = My.Settings.DefaultProjectDirectory
+                .ShowNewFolderButton = False
+                If .ShowDialog(Me) = DialogResult.OK Then
+                    Dim SourceFolderName As String = .SelectedPath
+                    If Directory.Exists(SourceFolderName) Then
+                        Dim SourceLanguageExtension As String = Me.RequestToConvert.GetSourceExtension
+                        Dim ProjectSavePath As String = Me.GetFoldertSavePath((.SelectedPath), SourceLanguageExtension)
+                        If ProjectSavePath = "" Then
+                            MsgBox($"Conversion aborted.", Title:="C# to VB")
+                            Exit Sub
+                        End If
+                        Dim LastFileNameWithPath As String = If(My.Settings.StartFolderConvertFromLastFile, My.Settings.MRU_Data.Last, "")
+                        Dim FilesProcessed As Long = 0L
+                        If Me.ProcessAllFiles(SourceFolderName,
+                                            ProjectSavePath,
+                                            LastFileNameWithPath,
+                                            SourceLanguageExtension,
+                                            FilesProcessed
+                                            ) Then
+                            MsgBox($"Conversion completed, {FilesProcessed} files completed successfully.", Title:="C# to VB")
+                        Else
+                            MsgBox($"Conversion stopped.", Title:="C# to VB")
+                        End If
                     Else
-                        MsgBox($"Conversion stopped.", Title:="C# to VB")
+                        MsgBox($"{SourceFolderName} is not a directory.", Title:="C# to VB")
                     End If
-                Else
-                    MsgBox($"{SourceFolderName} is not a directory.", Title:="C# to VB")
                 End If
-            End If
-        End With
+            End With
+        End Using
 
     End Sub
 
@@ -842,14 +816,15 @@ Public Class Form1
             ' create new ToolStripItem, displaying the name of the file...
             ' set the tag - identifies the ToolStripItem as an MRU item and
             ' contains the full path so it can be opened later...
-            Dim clsItem As New ToolStripMenuItem(sPath) With {
+            Using clsItem As New ToolStripMenuItem(sPath) With {
                 .Tag = "MRU:" & sPath
             }
-            ' hook into the click event handler so we can open the file later...
-            AddHandler clsItem.Click, AddressOf Me.mnuFileLastFileList_Click
-            AddHandler clsItem.MouseDown, AddressOf Me.mnuFileLastFileList_MouseDown
-            ' insert into DropDownItems list...
-            Me.mnuFile.DropDownItems.Insert(Me.mnuFile.DropDownItems.Count - 11, clsItem)
+                ' hook into the click event handler so we can open the file later...
+                AddHandler clsItem.Click, AddressOf Me.mnuFileLastFileList_Click
+                AddHandler clsItem.MouseDown, AddressOf Me.mnuFileLastFileList_MouseDown
+                ' insert into DropDownItems list...
+                Me.mnuFile.DropDownItems.Insert(Me.mnuFile.DropDownItems.Count - 11, clsItem)
+            End Using
         Next
         ' show separator...
         My.Settings.Save()

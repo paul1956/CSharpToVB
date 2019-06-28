@@ -7,13 +7,18 @@ Namespace CSharpToVB.Tests
         Inherits ConverterTestBase
 
         <Fact>
-        Public Shared Sub CSharpToVB_MultilineString()
+        Public Shared Sub CSharpToVB_Await()
             TestConversionCSharpToVisualBasic("class TestClass
 {
-    void TestMethod()
+    Task<int> SomeAsyncMethod()
     {
-        var x = @""Hello,
-World!"";
+        return Task.FromResult(0);
+    }
+
+    async void TestMethod()
+    {
+        int result = await SomeAsyncMethod();
+        Console.WriteLine(result);
     }
 }", "Option Explicit Off
 Option Infer On
@@ -21,22 +26,61 @@ Option Strict Off
 
 Class TestClass
 
-    Private Sub TestMethod()
-        Dim x = ""Hello,
-World!""
+    Private Function SomeAsyncMethod() As Task(Of Integer)
+        Return Task.FromResult(0)
+    End Function
+
+    Private Async Sub TestMethod()
+        Dim result As Integer = Await SomeAsyncMethod()
+        Console.WriteLine(result)
     End Sub
 End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_ConcatinateManyString()
-            TestConversionCSharpToVisualBasic("class TestClass
+        Public Shared Sub CSharpToVB_BaseMemberAccessExpression()
+            TestConversionCSharpToVisualBasic("class BaseTestClass
+{
+    public int member;
+}
+
+class TestClass : BaseTestClass
 {
     void TestMethod()
     {
-        var x = ""Line1"" +
-                ""Line2""
-                + ""Line3"" + ""Line3A"";
+        base
+            .member = 0;
+        base.member = 1;
+    }
+}", "Option Explicit Off
+Option Infer On
+Option Strict Off
+
+Class BaseTestClass
+
+    Public member As Integer
+End Class
+
+Class TestClass
+    Inherits BaseTestClass
+
+    Private Sub TestMethod()
+        MyBase.
+            member = 0
+        MyBase.member = 1
+    End Sub
+End Class")
+        End Sub
+
+        <Fact>
+        Public Shared Sub CSharpToVB_Comment()
+            TestConversionCSharpToVisualBasic("class TestClass
+{
+    /// <summary>
+    ///  Looks up a localized string similar to Analyzer driver threw an exception of type &apos;{0}&apos; with message &apos;{1}&apos;..
+    /// </summary>
+    void TestMethod()
+    {
     }
 }", "Option Explicit Off
 Option Infer On
@@ -44,12 +88,54 @@ Option Strict Off
 
 Class TestClass
 
+    ''' <summary>
+    '''  Looks up a localized string similar to Analyzer driver threw an exception of type &apos;{0}&apos; with message &apos;{1}&apos;..
+    ''' </summary>
     Private Sub TestMethod()
-        Dim x = ""Line1"" &
-            ""Line2"" _
-        & ""Line3"" & ""Line3A""
     End Sub
 End Class")
+        End Sub
+
+        <Fact>
+        Public Shared Sub CSharpToVB_Comment1()
+            TestConversionCSharpToVisualBasic("class TestClass
+{
+        /// <summary>
+        ///   Looks up a localized string similar to Analyzer driver threw the following exception:
+        ///&apos;{0}&apos;..
+        /// </summary>
+     void TestMethod()
+    {
+    }
+}", "Option Explicit Off
+Option Infer On
+Option Strict Off
+
+Class TestClass
+
+    ''' <summary>
+    '''   Looks up a localized string similar to Analyzer driver threw the following exception:
+    ''' &apos;{0}&apos;..
+    ''' </summary>
+    Private Sub TestMethod()
+    End Sub
+End Class")
+        End Sub
+
+        <Fact>
+        Public Shared Sub CSharpToVB_CommentAfterSemicolon()
+            TestConversionCSharpToVisualBasic("static void SimpleQuery()
+{
+    int[] numbers = { 7, 9, 5, 3, 6 };           // Test
+
+}", "Option Explicit Off
+Option Infer On
+Option Strict Off
+
+Private Shared Sub SimpleQuery()
+    Dim numbers As Integer() = {7, 9, 5, 3, 6}           ' Test
+
+End Sub")
         End Sub
 
         <Fact>
@@ -178,6 +264,29 @@ End Module
 ")
         End Sub
 
+        <Fact>
+        Public Shared Sub CSharpToVB_ConcatinateManyString()
+            TestConversionCSharpToVisualBasic("class TestClass
+{
+    void TestMethod()
+    {
+        var x = ""Line1"" +
+                ""Line2""
+                + ""Line3"" + ""Line3A"";
+    }
+}", "Option Explicit Off
+Option Infer On
+Option Strict Off
+
+Class TestClass
+
+    Private Sub TestMethod()
+        Dim x = ""Line1"" &
+            ""Line2"" _
+        & ""Line3"" & ""Line3A""
+    End Sub
+End Class")
+        End Sub
 
         <Fact>
         Public Shared Sub CSharpToVB_ConditionalExpression()
@@ -200,12 +309,14 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_NullCoalescingExpression()
+        Public Shared Sub CSharpToVB_DelegateExpression()
             TestConversionCSharpToVisualBasic("class TestClass
 {
-    void TestMethod(string str)
+    void TestMethod()
     {
-        Console.WriteLine(str ?? ""<null>"");
+        var test = delegate(int a) { return a * 2 };
+
+        test(3);
     }
 }", "Option Explicit Off
 Option Infer On
@@ -213,36 +324,10 @@ Option Strict Off
 
 Class TestClass
 
-    Private Sub TestMethod(str As String)
-        Console.WriteLine(If(str, ""<null>""))
-    End Sub
-End Class")
-        End Sub
+    Private Sub TestMethod()
+        Dim test = Function(ByVal a As Integer) a * 2
 
-        <Fact>
-        Public Shared Sub CSharpToVB_MemberAccessAndInvocationExpression()
-            TestConversionCSharpToVisualBasic("class TestClass
-{
-    void TestMethod(string str)
-    {
-        int length;
-        length = str.Length;
-        Console.WriteLine(""Test""
-                            + ""1"");
-        Console.ReadKey();
-    }
-}", "Option Explicit Off
-Option Infer On
-Option Strict Off
-
-Class TestClass
-
-    Private Sub TestMethod(str As String)
-        Dim length As Integer
-        length = str.Length
-        Console.WriteLine(""Test"" _
-        & ""1"")
-        Console.ReadKey()
+        test(3)
     End Sub
 End Class")
         End Sub
@@ -269,149 +354,6 @@ Class TestClass
         Console.WriteLine(length)
         Console.ReadKey()
         Dim redirectUri As String = context.OwinContext.Authentication?.AuthenticationResponseChallenge?.Properties?.RedirectUri
-    End Sub
-End Class")
-        End Sub
-
-        <Fact>
-        Public Shared Sub CSharpToVB_ObjectInitializerExpression()
-            TestConversionCSharpToVisualBasic("class StudentName
-{
-    public string LastName, FirstName;
-}
-
-class TestClass
-{
-    void TestMethod(string str)
-    {
-        StudentName student2 = new StudentName
-        {
-            FirstName = ""Craig"",
-            LastName = ""Playmate"",
-        };
-    }
-}", "Option Explicit Off
-Option Infer On
-Option Strict Off
-
-Class StudentName
-
-    Public LastName, FirstName As String
-End Class
-
-Class TestClass
-
-    Private Sub TestMethod(str As String)
-        Dim student2 As StudentName = New StudentName With
-            { _
-            .FirstName = ""Craig"",
-            .LastName = ""Playmate""}
-    End Sub
-End Class")
-        End Sub
-
-        <Fact>
-        Public Shared Sub CSharpToVB_ObjectInitializerExpression2()
-            TestConversionCSharpToVisualBasic("class TestClass
-{
-    void TestMethod(string str)
-    {
-        var student2 = new {
-            FirstName = ""Craig"",
-            LastName = ""Playmate"",
-        };
-    }
-}", "Option Explicit Off
-Option Infer On
-Option Strict Off
-
-Class TestClass
-
-    Private Sub TestMethod(str As String)
-        Dim student2 = New With {Key .FirstName = ""Craig"", Key .LastName = ""Playmate""}
-    End Sub
-End Class")
-        End Sub
-
-        <Fact>
-        Public Shared Sub CSharpToVB_ThisMemberAccessExpression()
-            TestConversionCSharpToVisualBasic("class TestClass
-{
-    private int member;
-
-    void TestMethod()
-    {
-        this.member = 0;
-    }
-}", "Option Explicit Off
-Option Infer On
-Option Strict Off
-
-Class TestClass
-
-    Private member As Integer
-
-    Private Sub TestMethod()
-        Me.member = 0
-    End Sub
-End Class")
-        End Sub
-
-        <Fact>
-        Public Shared Sub CSharpToVB_BaseMemberAccessExpression()
-            TestConversionCSharpToVisualBasic("class BaseTestClass
-{
-    public int member;
-}
-
-class TestClass : BaseTestClass
-{
-    void TestMethod()
-    {
-        base
-            .member = 0;
-        base.member = 1;
-    }
-}", "Option Explicit Off
-Option Infer On
-Option Strict Off
-
-Class BaseTestClass
-
-    Public member As Integer
-End Class
-
-Class TestClass
-    Inherits BaseTestClass
-
-    Private Sub TestMethod()
-        MyBase.
-            member = 0
-        MyBase.member = 1
-    End Sub
-End Class")
-        End Sub
-
-        <Fact>
-        Public Shared Sub CSharpToVB_DelegateExpression()
-            TestConversionCSharpToVisualBasic("class TestClass
-{
-    void TestMethod()
-    {
-        var test = delegate(int a) { return a * 2 };
-
-        test(3);
-    }
-}", "Option Explicit Off
-Option Infer On
-Option Strict Off
-
-Class TestClass
-
-    Private Sub TestMethod()
-        Dim test = Function(ByVal a As Integer) a * 2
-
-        test(3)
     End Sub
 End Class")
         End Sub
@@ -451,61 +393,6 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_Await()
-            TestConversionCSharpToVisualBasic("class TestClass
-{
-    Task<int> SomeAsyncMethod()
-    {
-        return Task.FromResult(0);
-    }
-
-    async void TestMethod()
-    {
-        int result = await SomeAsyncMethod();
-        Console.WriteLine(result);
-    }
-}", "Option Explicit Off
-Option Infer On
-Option Strict Off
-
-Class TestClass
-
-    Private Function SomeAsyncMethod() As Task(Of Integer)
-        Return Task.FromResult(0)
-    End Function
-
-    Private Async Sub TestMethod()
-        Dim result As Integer = Await SomeAsyncMethod()
-        Console.WriteLine(result)
-    End Sub
-End Class")
-        End Sub
-
-        <Fact>
-        Public Shared Sub CSharpToVB_Comment()
-            TestConversionCSharpToVisualBasic("class TestClass
-{
-    /// <summary>
-    ///  Looks up a localized string similar to Analyzer driver threw an exception of type &apos;{0}&apos; with message &apos;{1}&apos;..
-    /// </summary>
-    void TestMethod()
-    {
-    }
-}", "Option Explicit Off
-Option Infer On
-Option Strict Off
-
-Class TestClass
-
-    ''' <summary>
-    '''  Looks up a localized string similar to Analyzer driver threw an exception of type &apos;{0}&apos; with message &apos;{1}&apos;..
-    ''' </summary>
-    Private Sub TestMethod()
-    End Sub
-End Class")
-        End Sub
-
-        <Fact>
         Public Shared Sub CSharpToVB_LineCOntinuationComment()
             TestConversionCSharpToVisualBasic("class TestClass
 {
@@ -530,36 +417,10 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_Comment1()
-            TestConversionCSharpToVisualBasic("class TestClass
-{
-        /// <summary>
-        ///   Looks up a localized string similar to Analyzer driver threw the following exception:
-        ///&apos;{0}&apos;..
-        /// </summary>
-     void TestMethod()
-    {
-    }
-}", "Option Explicit Off
-Option Infer On
-Option Strict Off
-
-Class TestClass
-
-    ''' <summary>
-    '''   Looks up a localized string similar to Analyzer driver threw the following exception:
-    ''' &apos;{0}&apos;..
-    ''' </summary>
-    Private Sub TestMethod()
-    End Sub
-End Class")
-        End Sub
-
-        <Fact>
         Public Shared Sub CSharpToVB_Linq1()
             TestConversionCSharpToVisualBasic("static void SimpleQuery()
 {
-    int[] numbers = { 7, 9, 5, 3, 6 };           // Test
+    int[] numbers = { 7, 9, 5, 3, 6 };
 
     var res = from n in numbers
             where n > 5
@@ -572,7 +433,7 @@ Option Infer On
 Option Strict Off
 
 Private Shared Sub SimpleQuery()
-    Dim numbers As Integer() = {7, 9, 5, 3, 6}           ' Test
+    Dim numbers As Integer() = {7, 9, 5, 3, 6}
 
     Dim res = From n In numbers
               Where n > 5
@@ -738,6 +599,157 @@ Public Sub Linq103()
 End Sub")
         End Sub
 
+        <Fact>
+        Public Shared Sub CSharpToVB_MemberAccessAndInvocationExpression()
+            TestConversionCSharpToVisualBasic("class TestClass
+{
+    void TestMethod(string str)
+    {
+        int length;
+        length = str.Length;
+        Console.WriteLine(""Test""
+                            + ""1"");
+        Console.ReadKey();
+    }
+}", "Option Explicit Off
+Option Infer On
+Option Strict Off
+
+Class TestClass
+
+    Private Sub TestMethod(str As String)
+        Dim length As Integer
+        length = str.Length
+        Console.WriteLine(""Test"" _
+        & ""1"")
+        Console.ReadKey()
+    End Sub
+End Class")
+        End Sub
+
+        <Fact>
+        Public Shared Sub CSharpToVB_MultilineString()
+            TestConversionCSharpToVisualBasic("class TestClass
+{
+    void TestMethod()
+    {
+        var x = @""Hello,
+World!"";
+    }
+}", "Option Explicit Off
+Option Infer On
+Option Strict Off
+
+Class TestClass
+
+    Private Sub TestMethod()
+        Dim x = ""Hello,
+World!""
+    End Sub
+End Class")
+        End Sub
+        <Fact>
+        Public Shared Sub CSharpToVB_NullCoalescingExpression()
+            TestConversionCSharpToVisualBasic("class TestClass
+{
+    void TestMethod(string str)
+    {
+        Console.WriteLine(str ?? ""<null>"");
+    }
+}", "Option Explicit Off
+Option Infer On
+Option Strict Off
+
+Class TestClass
+
+    Private Sub TestMethod(str As String)
+        Console.WriteLine(If(str, ""<null>""))
+    End Sub
+End Class")
+        End Sub
+        <Fact>
+        Public Shared Sub CSharpToVB_ObjectInitializerExpression()
+            TestConversionCSharpToVisualBasic("class StudentName
+{
+    public string LastName, FirstName;
+}
+
+class TestClass
+{
+    void TestMethod(string str)
+    {
+        StudentName student2 = new StudentName
+        {
+            FirstName = ""Craig"",
+            LastName = ""Playmate"",
+        };
+    }
+}", "Option Explicit Off
+Option Infer On
+Option Strict Off
+
+Class StudentName
+
+    Public LastName, FirstName As String
+End Class
+
+Class TestClass
+
+    Private Sub TestMethod(str As String)
+        Dim student2 As StudentName = New StudentName With
+            { _
+            .FirstName = ""Craig"",
+            .LastName = ""Playmate""}
+    End Sub
+End Class")
+        End Sub
+
+        <Fact>
+        Public Shared Sub CSharpToVB_ObjectInitializerExpression2()
+            TestConversionCSharpToVisualBasic("class TestClass
+{
+    void TestMethod(string str)
+    {
+        var student2 = new {
+            FirstName = ""Craig"",
+            LastName = ""Playmate"",
+        };
+    }
+}", "Option Explicit Off
+Option Infer On
+Option Strict Off
+
+Class TestClass
+
+    Private Sub TestMethod(str As String)
+        Dim student2 = New With {Key .FirstName = ""Craig"", Key .LastName = ""Playmate""}
+    End Sub
+End Class")
+        End Sub
+
+        <Fact>
+        Public Shared Sub CSharpToVB_ThisMemberAccessExpression()
+            TestConversionCSharpToVisualBasic("class TestClass
+{
+    private int member;
+
+    void TestMethod()
+    {
+        this.member = 0;
+    }
+}", "Option Explicit Off
+Option Infer On
+Option Strict Off
+
+Class TestClass
+
+    Private member As Integer
+
+    Private Sub TestMethod()
+        Me.member = 0
+    End Sub
+End Class")
+        End Sub
     End Class
 
 End Namespace

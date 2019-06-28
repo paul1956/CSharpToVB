@@ -61,7 +61,7 @@ Namespace Microsoft.CodeAnalysis.CSharp.Diagnostics.Analyzers
             End Get
         End Property
 
-        '''<remarks>
+        ''' <remarks>
         ''' every predefined type keyword except `void` can be replaced by its framework type in code.
         ''' </remarks>
         Protected Overrides Function IsPredefinedTypeReplaceableWithFrameworkType(node As PredefinedTypeSyntax) As Boolean

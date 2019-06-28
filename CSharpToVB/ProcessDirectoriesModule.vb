@@ -70,7 +70,7 @@ Public Module ProcessDirectoriesModule
                     SetButtonStopAndCursor(MeForm:=MeForm, StopButton:=StopButton, StopButtonVisible:=False)
                     Return False
                 End If
-                If TotalFilesToProcess > 0 Then
+                If MeForm IsNot Nothing Then
                     MeForm.FilesConversionProgress.Text = $"Processed {FilesProcessed:N0} of {TotalFilesToProcess:N0} Files"
                     Application.DoEvents()
                 End If
