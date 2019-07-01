@@ -873,11 +873,11 @@ Partial Class Form1
     Friend WithEvents mnuOptionsAutoCompile As ToolStripMenuItem
     Friend WithEvents ToolStripSeparator4 As ToolStripSeparator
     Friend WithEvents SplitContainer1 As SplitContainer
-    Friend WithEvents RichTextBoxConversionOutput As AdvancedRTB
+    Friend WithEvents RichTextBoxConversionOutput As AdvancedRTB = Nothing
     Friend WithEvents RichTextBoxConversionInput As RichTextBox
     Friend WithEvents RichTextBoxErrorList As RichTextBox
-    Friend WithEvents LineNumbers_For_RichTextBoxInput As LineNumbers_For_RichTextBox
-    Friend WithEvents LineNumbers_For_RichTextBoxOutput As LineNumbers_For_RichTextBox
+    Friend WithEvents LineNumbers_For_RichTextBoxInput As LineNumbers_For_RichTextBox = Nothing
+    Friend WithEvents LineNumbers_For_RichTextBoxOutput As LineNumbers_For_RichTextBox = Nothing
     Friend WithEvents RichTextBoxFileList As RichTextBox
     Friend WithEvents mnuOptionsStartFolderConvertFromLastFile As ToolStripMenuItem
     Friend WithEvents mnuFileExit As ToolStripMenuItem

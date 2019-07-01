@@ -8,7 +8,7 @@ Public Module FileSupport
     Private Const VisualStudioBaseName As String = "Visual Studio "
 
     Private Function GetUserDirectoryFromTemp() As String
-        Dim SourceDirectory As String = My.Computer.FileSystem.SpecialDirectories.Temp
+        Dim SourceDirectory As String = FileIO.SpecialDirectories.Temp
         SourceDirectory = Directory.GetParent(SourceDirectory).FullName
         SourceDirectory = Directory.GetParent(SourceDirectory).FullName
         SourceDirectory = Directory.GetParent(SourceDirectory).FullName
@@ -28,7 +28,7 @@ Public Module FileSupport
     End Function
 
     Public Function GetLatestVisualStudioProjectPath() As String
-        Dim DirectoryEntries As String() = Directory.GetDirectories((My.Computer.FileSystem.SpecialDirectories.MyDocuments))
+        Dim DirectoryEntries As String() = Directory.GetDirectories((FileIO.SpecialDirectories.MyDocuments))
         Dim LatestVersion As Integer = 0
         For Each dir As String In DirectoryEntries
             Dim DirectoryFileName As String = Path.GetFileName(dir)
@@ -39,6 +39,6 @@ Public Module FileSupport
                 End If
             End If
         Next
-        Return Path.Combine(My.Computer.FileSystem.SpecialDirectories.MyDocuments, $"{VisualStudioBaseName}{LatestVersion:0000}", "Projects")
+        Return Path.Combine(FileIO.SpecialDirectories.MyDocuments, $"{VisualStudioBaseName}{LatestVersion:0000}", "Projects")
     End Function
 End Module

@@ -4,7 +4,7 @@ Option Strict On
 Imports System.IO
 
 Public Class ColorSelector
-    Private Shared ReadOnly FullPath As String = Path.Combine(My.Computer.FileSystem.SpecialDirectories.MyDocuments, "ColorDictionary.csv")
+    Private Shared ReadOnly FullPath As String = Path.Combine(FileIO.SpecialDirectories.MyDocuments, "ColorDictionary.csv")
     Private Shared ReadOnly ColorMappingDictionary As New Dictionary(Of String, Color) From {
          {"class name", Color.FromArgb(0, 128, 128)},
          {"comment", Color.FromArgb(0, 100, 0)},

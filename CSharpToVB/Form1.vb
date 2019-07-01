@@ -21,7 +21,7 @@ Imports Microsoft.CodeAnalysis.MSBuild
 
 Public Class Form1
 
-    Private Shared ReadOnly SnippetFileWithPath As String = Path.Combine(My.Computer.FileSystem.SpecialDirectories.MyDocuments, "CSharpToVBLastSnippet.RTF")
+    Private Shared ReadOnly SnippetFileWithPath As String = Path.Combine(FileIO.SpecialDirectories.MyDocuments, "CSharpToVBLastSnippet.RTF")
     Private _CurrentBuffer As RichTextBox
 
     Private RequestToConvert As ConvertRequest

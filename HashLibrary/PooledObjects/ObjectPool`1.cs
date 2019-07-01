@@ -5,11 +5,6 @@
 //
 // #define TRACE_LEAKS
 
-// define DETECT_LEAKS to detect possible leaks
-// #if DEBUG
-// #define DETECT_LEAKS  //for now always enable DETECT_LEAKS in debug.
-// #endif
-
 using System;
 using System.Diagnostics;
 using System.Threading;

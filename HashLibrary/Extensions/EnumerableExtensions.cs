@@ -223,18 +223,18 @@ namespace Roslyn.Utilities
             return source.Count == 0;
         }
 
-        private static readonly Func<object, bool> s_notNullTest = x => x != null;
+        //private static readonly Func<object, bool> s_notNullTest = x => x != null;
 
-        public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T> source)
-            where T : class
-        {
-            if (source == null)
-            {
-                return SpecializedCollections.EmptyEnumerable<T>();
-            }
+        //public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T> source)
+        //    where T : class
+        //{
+        //    if (source == null)
+        //    {
+        //        return SpecializedCollections.EmptyEnumerable<T>();
+        //    }
 
-            return source.Where((Func<T, bool>)s_notNullTest);
-        }
+        //    return source.Where((Func<T, bool>)s_notNullTest);
+        //}
 
         //public static ImmutableArray<TResult> SelectAsArray<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> selector)
         //{
