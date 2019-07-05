@@ -66,7 +66,7 @@ Public Module ProcessDirectoriesModule
                     Application.DoEvents()
                 End If
 
-                If Not ProcessFile(PathWithFileName, TargetDirectory, SourceLanguageExtension, References) Then
+                If Not ProcessFile(PathWithFileName, TargetDirectory, SourceLanguageExtension, References.ToArray) Then
                     SetButtonStopAndCursor(MeForm:=MeForm, StopButton:=StopButton, StopButtonVisible:=False)
                     Return False
                 End If

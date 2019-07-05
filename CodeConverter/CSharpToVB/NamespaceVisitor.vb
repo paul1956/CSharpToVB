@@ -386,9 +386,11 @@ End Function
             End Function
 
             Public Overrides Function VisitNamespaceDeclaration(node As CSS.NamespaceDeclarationSyntax) As VB.VisualBasicSyntaxNode
-                If UsedIdentifierStack.Count > 1 Then
-                    UsedIdentifiers = DirectCast(UsedIdentifierStack.Pop, Dictionary(Of String, SymbolTableEntry))
-                End If
+                SyncLock UsedIdentifierStack
+                    If UsedIdentifierStack.Count > 0 Then
+                        UsedIdentifiers = DirectCast(UsedIdentifierStack.Pop, Dictionary(Of String, SymbolTableEntry))
+                    End If
+                End SyncLock
 
                 For Each [using] As CSS.UsingDirectiveSyntax In node.Usings
                     [using].Accept(Me)
@@ -508,7 +510,11 @@ End Function
                     Me.allImports.Add(import)
                 End If
 
-                UsedIdentifiers = DirectCast(UsedIdentifierStack.Pop, Dictionary(Of String, SymbolTableEntry))
+                SyncLock UsedIdentifierStack
+                    If UsedIdentifierStack.Count > 0 Then
+                        UsedIdentifiers = DirectCast(UsedIdentifierStack.Pop, Dictionary(Of String, SymbolTableEntry))
+                    End If
+                End SyncLock
                 Return Nothing
             End Function
 

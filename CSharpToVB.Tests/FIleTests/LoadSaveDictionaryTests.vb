@@ -20,7 +20,7 @@ Namespace CSharpToVB.Tests
 
         <Fact>
         Public Shared Sub VB_DictionaryWriteTest()
-            Dim filePath As String = IO.Path.Combine(My.Computer.FileSystem.SpecialDirectories.MyDocuments, "ColorDictionary.csv")
+            Dim filePath As String = IO.Path.Combine(FileIO.SpecialDirectories.MyDocuments, "ColorDictionary.csv")
             ColorSelector.WriteColorDictionaryToFile(filePath)
         End Sub
 

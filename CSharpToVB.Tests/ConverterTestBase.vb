@@ -49,7 +49,7 @@ Namespace CodeConverter.Tests
                     moduleName:="",
                     mainTypeName:="",
                     "Script",
-                    {NameOf(System), "System.Collections.Generic", "System.Linq"},
+                    {"System", "System.Collections.Generic", "System.Linq"},
                     OptimizationLevel.Debug,
                     checkOverflow:=False,
                     allowUnsafe:=True

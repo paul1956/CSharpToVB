@@ -9,38 +9,67 @@ Imports System.Runtime.CompilerServices
 Imports Microsoft.CodeAnalysis
 
 Public Module SharedReferences
-    Private ReadOnly CodeAnalysisReference As MetadataReference = MetadataReference.CreateFromFile(GetType(Compilation).Assembly.Location)
-    Private ReadOnly ComponentModelEditorBrowsable As PortableExecutableReference = MetadataReference.CreateFromFile(GetType(System.ComponentModel.EditorBrowsableAttribute).GetAssemblyLocation())
-    Private ReadOnly MSCorLibReference As MetadataReference = MetadataReference.CreateFromFile(GetType(Object).Assembly.Location)
-    Private ReadOnly SystemAssembly As MetadataReference = MetadataReference.CreateFromFile(GetType(ComponentModel.BrowsableAttribute).Assembly.Location)
-    Private ReadOnly SystemCore As MetadataReference = MetadataReference.CreateFromFile(GetType(Enumerable).Assembly.Location)
+    Private ReadOnly FrameworkDirectory As String = Directory.GetParent(GetType(Object).Assembly.Location).FullName
 
-    Private ReadOnly SystemXmlLinq As MetadataReference = MetadataReference.CreateFromFile(GetType(XElement).Assembly.Location)
-
-    Private ReadOnly VBPortable As PortableExecutableReference = MetadataReference.CreateFromFile("C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\Microsoft.VisualBasic.dll")
-    Private ReadOnly VBRuntime As PortableExecutableReference = MetadataReference.CreateFromFile(GetType(CompilerServices.StandardModuleAttribute).Assembly.Location)
-
-    Private _References As New List(Of MetadataReference)
-
+    Private ReadOnly _References As New List(Of MetadataReference)
+    Private ReadOnly _ReferencePath As New List(Of String)
     Private Sub BuildReferenceList()
         If _References.Count > 0 Then
             Return
         End If
-        Dim SystemReferences As New List(Of PortableExecutableReference)
-        Const FrameworkDirectory As String = "C:\Windows\Microsoft.NET\Framework\v4.0.30319\"
-        For Each DLL As String In Directory.GetFiles(FrameworkDirectory, "*.dll")
-            SystemReferences.Add(MetadataReference.CreateFromFile(DLL))
+        ' CodeAnalysisReference
+        Dim Location As String = GetType(Compilation).Assembly.Location
+        _ReferencePath.Add(Location)
+        _References.Add(MetadataReference.CreateFromFile(GetType(Compilation).Assembly.Location))
+
+        'SystemReferences
+        For Each DLL_Path As String In Directory.GetFiles(FrameworkDirectory, "*.dll")
+            If _ReferencePath.Contains(DLL_Path) Then
+                Stop
+            Else
+                _ReferencePath.Add(DLL_Path)
+                _References.Add(MetadataReference.CreateFromFile(DLL_Path))
+            End If
         Next
-        _References = New List(Of MetadataReference)({
-                                    CodeAnalysisReference,
-                                    MSCorLibReference,
-                                    SystemAssembly,
-                                    SystemCore,
-                                    SystemXmlLinq,
-                                    ComponentModelEditorBrowsable,
-                                    VBPortable,
-                                    VBRuntime})
-        _References.AddRange(SystemReferences)
+
+#If Not NETCOREAPP3_0 Then
+        ' ComponentModelEditorBrowsable
+        Location = GetType(ComponentModel.EditorBrowsableAttribute).GetAssemblyLocation
+        If _ReferencePath.Contains(Location) Then
+            Stop
+        Else
+            _ReferencePath.Add(Location)
+            _References.Add(MetadataReference.CreateFromFile(Location))
+        End If
+
+        ' SystemCore
+        Location = GetType(Enumerable).Assembly.Location
+        If _ReferencePath.Contains(Location) Then
+            Stop
+        Else
+            _ReferencePath.Add(Location)
+            _References.Add(MetadataReference.CreateFromFile(Location))
+        End If
+
+        ' SystemXmlLinq
+        Location = GetType(XElement).Assembly.Location
+        If _ReferencePath.Contains(Location) Then
+            Stop
+        Else
+            _ReferencePath.Add(Location)
+            _References.Add(MetadataReference.CreateFromFile(Location))
+        End If
+#End If
+
+        ' VBRuntime
+        Location = GetType(CompilerServices.StandardModuleAttribute).Assembly.Location
+        If _ReferencePath.Contains(Location) Then
+            Stop
+        Else
+            _ReferencePath.Add(Location)
+            _References.Add(MetadataReference.CreateFromFile(Location))
+        End If
+
     End Sub
 
     <Extension>
@@ -50,12 +79,12 @@ Public Module SharedReferences
         Return CStr(locationProperty.GetValue(asm))
     End Function
 
-    Public Function References() As MetadataReference()
+    Public Function References() As List(Of MetadataReference)
         Try
             If _References.Count = 0 Then
                 BuildReferenceList()
             End If
-            Return _References.ToArray()
+            Return _References.ToList
         Catch ex As Exception
             Stop
         End Try

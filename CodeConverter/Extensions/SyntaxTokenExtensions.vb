@@ -28,8 +28,8 @@ Namespace IVisualBasicCode.CodeConverter.Util
         End Function
 
         <Extension>
-        Public Function IsKind(token As SyntaxToken, ParamArray kinds() As CSharp.SyntaxKind) As Boolean
-            Return kinds.Contains(CType(token.RawKind, CSharp.SyntaxKind))
+        Public Function IsKind(token As SyntaxToken, ParamArray kinds() As Microsoft.CodeAnalysis.CSharp.SyntaxKind) As Boolean
+            Return kinds.Contains(CType(token.RawKind, Microsoft.CodeAnalysis.CSharp.SyntaxKind))
         End Function
 
         <Extension>

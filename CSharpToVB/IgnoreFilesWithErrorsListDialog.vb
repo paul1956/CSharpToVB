@@ -39,21 +39,21 @@
         End If
         ' Initialize the button column.
         Me._FileToLoad = ""
-        Using buttonDeleteEntry As New DataGridViewButtonColumn
-            With buttonDeleteEntry
-                .HeaderText = "Delete"
-                .Name = "Delete"
-                .Text = "Delete Entry"
-                ' Use the Text property for the button text for all cells rather
-                ' than using each cell's value as the text for its own button.
-                .UseColumnTextForButtonValue = True
-            End With
-            ' Add the button column to the control.
-            Me.dgvIgnoredFilesList.Columns.Insert(0, buttonDeleteEntry)
-        End Using
+#Disable Warning IDE0067 ' Dispose objects before losing scope
+        Dim buttonDeleteEntry As New DataGridViewButtonColumn
+        With buttonDeleteEntry
+            .HeaderText = "Delete"
+            .Name = "Delete"
+            .Text = "Delete Entry"
+            ' Use the Text property for the button text for all cells rather
+            ' than using each cell's value as the text for its own button.
+            .UseColumnTextForButtonValue = True
+        End With
+        ' Add the button column to the control.
+        Me.dgvIgnoredFilesList.Columns.Insert(0, buttonDeleteEntry)
 
-        Using buttonLoadFile As New DataGridViewButtonColumn
-            With buttonLoadFile
+        Dim buttonLoadFile As New DataGridViewButtonColumn
+        With buttonLoadFile
                 .HeaderText = "Load File"
                 .Name = "Load"
                 .Text = "Load File"
@@ -61,10 +61,9 @@
                 ' than using each cell's value as the text for its own button.
                 .UseColumnTextForButtonValue = True
             End With
-            ' Add the button column to the control.
-            Me.dgvIgnoredFilesList.Columns.Insert(1, buttonLoadFile)
-        End Using
-
+        ' Add the button column to the control.
+        Me.dgvIgnoredFilesList.Columns.Insert(1, buttonLoadFile)
+#Enable Warning IDE0067 ' Dispose objects before losing scope
     End Sub
 
     Private Sub OK_Button_Click(ByVal sender As Object, ByVal e As EventArgs) Handles OK_Button.Click

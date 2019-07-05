@@ -18,10 +18,22 @@ Imports Microsoft.Build.Locator
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Emit
 Imports Microsoft.CodeAnalysis.MSBuild
+Imports Microsoft.VisualBasic.FileIO
 
 Public Class Form1
 
-    Private Shared ReadOnly SnippetFileWithPath As String = Path.Combine(FileIO.SpecialDirectories.MyDocuments, "CSharpToVBLastSnippet.RTF")
+#If NETCOREAPP3_0 Then
+    <STAThread>
+    Public Shared Sub Main()
+        Application.EnableVisualStyles()
+        Application.SetCompatibleTextRenderingDefault(False)
+        Dim f As New Form1()
+        Application.Run(f)
+        f.Dispose()
+    End Sub
+#End If
+
+    Private Shared ReadOnly SnippetFileWithPath As String = Path.Combine(SpecialDirectories.MyDocuments, "CSharpToVBLastSnippet.RTF")
     Private _CurrentBuffer As RichTextBox
 
     Private RequestToConvert As ConvertRequest
@@ -368,7 +380,12 @@ Public Class Form1
         PathFromSolutionRoot.RemoveAt(0)
         If File.Exists(SolutionRoot) Then
             MsgBox($"A file exists at {SolutionRoot} this Is a fatal error the program will exit", MsgBoxStyle.OkOnly And MsgBoxStyle.Critical, "Fatal Error")
+            Me.Close()
+#If NETCOREAPP3_0 Then
+            Environment.Exit(0)
+#Else
             End
+#End If
         End If
         If Directory.Exists(SolutionRoot) Then
             Select Case MsgBox($"The converted project will be save to {SolutionRoot} a directory which already exists. To use it And overwrite existing files select Yes. Selecting No will delete existing content, Selecting Cancel will stop conversion. , ", MsgBoxStyle.YesNoCancel, "Target Directory Save Options")
@@ -444,7 +461,7 @@ Public Class Form1
         Me.LineNumbers_For_RichTextBoxOutput.Visible = False
         Me.ResizeRichTextBuffers()
         Me.RequestToConvert.SourceCode = Me.RichTextBoxConversionInput.Text
-        Me.Convert_Compile_Colorize(Me.RequestToConvert, References)
+        Me.Convert_Compile_Colorize(Me.RequestToConvert, References.ToArray)
         Me.mnuConvertConvertFolder.Enabled = True
         SetButtonStopAndCursor(MeForm:=Me, StopButton:=Me.ButtonStop, StopButtonVisible:=False)
     End Sub
@@ -529,7 +546,11 @@ Public Class Form1
 
     Private Sub mnuFileExit_Click(sender As Object, e As EventArgs) Handles mnuFileExit.Click
         Me.Close()
+#If NETCOREAPP3_0 Then
+        Environment.Exit(0)
+#Else
         End
+#End If
     End Sub
 
     Private Sub mnuFileLastFileList_Click(ByVal sender As Object, ByVal e As EventArgs)
@@ -816,15 +837,16 @@ Public Class Form1
             ' create new ToolStripItem, displaying the name of the file...
             ' set the tag - identifies the ToolStripItem as an MRU item and
             ' contains the full path so it can be opened later...
-            Using clsItem As New ToolStripMenuItem(sPath) With {
+#Disable Warning IDE0067 ' Dispose objects before losing scope
+            Dim clsItem As New ToolStripMenuItem(sPath) With {
                 .Tag = "MRU:" & sPath
             }
-                ' hook into the click event handler so we can open the file later...
-                AddHandler clsItem.Click, AddressOf Me.mnuFileLastFileList_Click
-                AddHandler clsItem.MouseDown, AddressOf Me.mnuFileLastFileList_MouseDown
-                ' insert into DropDownItems list...
-                Me.mnuFile.DropDownItems.Insert(Me.mnuFile.DropDownItems.Count - 11, clsItem)
-            End Using
+#Enable Warning IDE0067 ' Dispose objects before losing scope
+            ' hook into the click event handler so we can open the file later...
+            AddHandler clsItem.Click, AddressOf Me.mnuFileLastFileList_Click
+            AddHandler clsItem.MouseDown, AddressOf Me.mnuFileLastFileList_MouseDown
+            ' insert into DropDownItems list...
+            Me.mnuFile.DropDownItems.Insert(Me.mnuFile.DropDownItems.Count - 11, clsItem)
         Next
         ' show separator...
         My.Settings.Save()

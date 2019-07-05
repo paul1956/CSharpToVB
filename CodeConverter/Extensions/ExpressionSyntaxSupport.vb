@@ -19,7 +19,7 @@ Public Module ExpressionSyntaxSupport
                 If typeInfo.Type IsNot Nothing Then
                     If (typeInfo.Type.IsErrorType) Then
                         Return (Model.Compilation.ObjectType, True)
-                    ElseIf typeInfo.Type Is Model.Compilation.ObjectType Then
+                    ElseIf Equals(typeInfo.Type, Model.Compilation.ObjectType) Then
                         Return (Model.Compilation.ObjectType, False)
                     End If
                 End If

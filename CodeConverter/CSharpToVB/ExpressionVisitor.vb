@@ -163,7 +163,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         Dim typedTupleElementSyntax1 As VBS.TypedTupleElementSyntax = VBFactory.TypedTupleElement(ConvertToType(TuplePart(0)))
                         TupleElements.Add(typedTupleElementSyntax1)
                     Else
-                        Dim Identifier As SyntaxToken = CSharp.SyntaxFactory.Identifier(TuplePart(1))
+                        Dim Identifier As SyntaxToken = CS.SyntaxFactory.Identifier(TuplePart(1))
                         Dim namedTupleElementSyntax1 As VBS.NamedTupleElementSyntax = VBFactory.NamedTupleElement(GenerateSafeVBToken(Identifier, IsQualifiedName:=False), VBFactory.SimpleAsClause(ConvertToType(TuplePart(0))))
                         TupleElements.Add(namedTupleElementSyntax1)
                     End If
@@ -175,7 +175,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 If Not node.IsKind(CS.SyntaxKind.AddExpression) Then
                     Return False
                 End If
-                If Me.IsStringExpression(node.Left) AndAlso Me.IsStringExpression(node.Right) Then
+                If Me.IsStringExpression(node.Left) OrElse Me.IsStringExpression(node.Right) Then
                     Return True
                 End If
                 Dim LeftNodeTypeInfo As TypeInfo
@@ -192,6 +192,10 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
 
             Private Function IsStringExpression(Node As SyntaxNode) As Boolean
                 If Node.IsKind(CS.SyntaxKind.StringLiteralExpression, CS.SyntaxKind.CharacterLiteralExpression, CS.SyntaxKind.InterpolatedStringExpression) Then
+                    Return True
+                End If
+                ' Extra to pick up more strings
+                If Node.ToString.Replace("(", "").Replace(")", "").ToLower.EndsWith("tostring") Then
                     Return True
                 End If
                 Dim _Typeinfo As TypeInfo = ModelExtensions.GetTypeInfo(Me.mSemanticModel, Node)
@@ -1556,10 +1560,10 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     Dim OpenBraceTokenWithTrivia As SyntaxToken = OpenBraceToken.WithConvertedTriviaFrom(node.OpenBraceToken)
 #If NETCOREAPP3_0 Then
 
-                    Dim ReportProgress As Boolean = SeparatorCount > 500
+                    Dim ReportProgress As Boolean = ExpressionLastIndex > 500
 
                     If ReportProgress Then
-                        OriginalRequest.ProgressBar?.SetTotalItems(SeparatorCount)
+                        OriginalRequest.ProgressBar?.SetTotalItems(ExpressionLastIndex)
                     End If
 #End If
                     ' Figuring out this without using Accept is complicated below is safe but not fast
@@ -1882,7 +1886,10 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                             End If
                         Case CS.SyntaxKind.SimpleAssignmentExpression
                             Dim LeftNodeTypeInfo As TypeInfo = ModelExtensions.GetTypeInfo(Me.mSemanticModel, DirectCast(node.Parent, CSS.AssignmentExpressionSyntax).Left)
-                            If LeftNodeTypeInfo.Type.IsTupleType Then
+                            If LeftNodeTypeInfo.Type Is Nothing OrElse LeftNodeTypeInfo.Type.IsErrorType Then
+                                Return NothingExpression
+                            End If
+                            If LeftNodeTypeInfo.Type?.IsTupleType Then
                                 Dim TypeList As New List(Of String)
                                 Dim TupleNameString As String = LeftNodeTypeInfo.Type.ToString
                                 TupleNameString = TupleNameString.Substring(1, TupleNameString.Length - 2)
@@ -1896,13 +1903,9 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                 Return VBFactory.CTypeExpression(NothingExpression,
                                                                  VBFactory.ParseTypeName($"({String.Join(", ", TypeList)})"))
                             Else
-                                If Not LeftNodeTypeInfo.Type.IsErrorType Then
-                                    Return If(LeftNodeTypeInfo.Type.Name Is "",
-                                                NothingExpression,
-                                                CType(VBFactory.CTypeExpression(NothingExpression, ConvertToType(LeftNodeTypeInfo.Type.Name)), VBS.ExpressionSyntax))
-                                Else
-                                    Return NothingExpression
-                                End If
+                                Return If(LeftNodeTypeInfo.Type.Name Is "",
+                                            NothingExpression,
+                                            CType(VBFactory.CTypeExpression(NothingExpression, ConvertToType(LeftNodeTypeInfo.Type.Name)), VBS.ExpressionSyntax))
                             End If
                         Case CS.SyntaxKind.ConditionalExpression
                             Dim LeftNodeTypeInfo As TypeInfo = ModelExtensions.GetTypeInfo(Me.mSemanticModel, DirectCast(node.Parent, CSS.ConditionalExpressionSyntax).WhenTrue)
@@ -1921,7 +1924,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                                       )
                         Case CS.SyntaxKind.Argument, CS.SyntaxKind.SimpleLambdaExpression
                             Return NothingExpression
-                        Case CS.SyntaxKind.ArrowExpressionClause, CS.SyntaxKind.CoalesceExpression, CS.SyntaxKind.ParenthesizedLambdaExpression
+                        Case CS.SyntaxKind.ArrowExpressionClause, CS.SyntaxKind.CoalesceExpression, CS.SyntaxKind.ParenthesizedLambdaExpression, CS.SyntaxKind.SwitchExpressionArm
                             ' TODO Handle better
                             Return NothingExpression
                         Case Else
@@ -1957,10 +1960,10 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     Dim Names As SeparatedSyntaxList(Of VBS.ModifiedIdentifierSyntax) = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(UniqueName))
                     Dim AsClause As VBS.AsClauseSyntax = VBFactory.AsNewClause(DirectCast(Expression.With({SpaceTrivia}, {SpaceTrivia}), VBS.NewExpressionSyntax))
                     Dim VariableDeclaration As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(Names, AsClause, initializer:=Nothing))
-                    Dim DimStatement As VBS.LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(DimModifier, VariableDeclaration).WithTrailingEOL
+                    Dim DimStatement As VBS.LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(DimModifier, VariableDeclaration).WithLeadingTrivia(Expression.GetLeadingTrivia).WithTrailingEOL
                     Dim StatementWithIssues As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
                     StatementWithIssues.AddMarker(DimStatement.WithTrailingEOL, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
-                    Expression = UniqueIdentifier.WithTriviaFrom(Expression)
+                    Expression = UniqueIdentifier.WithLeadingTrivia(Expression.GetLeadingTrivia.Last).WithTrailingTrivia(Expression.GetTrailingTrivia)
                 ElseIf TypeOf Expression Is VBS.CollectionInitializerSyntax Then
                     Dim UniqueName As String = MethodBodyVisitor.GetUniqueVariableNameInScope(node, "tempVar", Me.mSemanticModel)
                     Dim UniqueIdentifier As VBS.IdentifierNameSyntax = VBFactory.IdentifierName(VBFactory.Identifier(UniqueName))
@@ -2411,7 +2414,12 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         Return VBFactory.GetTypeExpression(VBFactory.ParseTypeName($"{NodeType.Identifier.ValueText}()"))
                     End If
                 End If
-                Return VBFactory.GetTypeExpression(DirectCast(node.Type.Accept(Me), VBS.TypeSyntax))
+                Dim VBSyntaxNode As VB.VisualBasicSyntaxNode = node.Type.Accept(Me)
+                If VBSyntaxNode.IsKind(VB.SyntaxKind.AddressOfExpression) Then
+                    Stop
+                    VBSyntaxNode = DirectCast(VBSyntaxNode, VBS.UnaryExpressionSyntax).Operand
+                End If
+                Return VBFactory.GetTypeExpression(DirectCast(VBSyntaxNode, VBS.TypeSyntax))
             End Function
 
         End Class

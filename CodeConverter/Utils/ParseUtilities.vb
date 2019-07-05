@@ -30,7 +30,7 @@ Public Module ParseUtilities
                                         CSPreprocessorSymbols)
     End Function
 
-    Public Function GetFileCount(DirPath As String, SourceLanguageExtension As String, SkipBinAndObjFolders As Boolean, SkipTestResourceFiles As Boolean) As Long
+    Public Function GetFileCount(DirPath As String, SourceLanguageExtension As String, SkipBinAndObjFolders As Boolean, SkipTestResourceFiles As Boolean, Optional Depth As Integer = 0) As Long
         Dim TotalFilesToProcess As Long = 0L
         Try
             For Each Subdirectory As String In Directory.GetDirectories(DirPath)
@@ -40,8 +40,12 @@ Public Module ParseUtilities
                 If SkipBinAndObjFolders AndAlso (Subdirectory = "bin" OrElse Subdirectory = "obj" OrElse Subdirectory = "g") Then
                     Continue For
                 End If
-                TotalFilesToProcess += GetFileCount(Subdirectory, SourceLanguageExtension, SkipBinAndObjFolders, SkipTestResourceFiles)
-                Debug.WriteLine($"{DirPath} {TotalFilesToProcess.ToString}")
+                Dim TempFileCount As Long = GetFileCount(Subdirectory, SourceLanguageExtension, SkipBinAndObjFolders, SkipTestResourceFiles, Depth + 1)
+                If Depth > 0 Then
+                    TotalFilesToProcess += TempFileCount
+                Else
+                    TotalFilesToProcess = TempFileCount
+                End If
             Next
             For Each File As String In Directory.GetFiles(path:=DirPath, searchPattern:=$"*.{SourceLanguageExtension}")
 
@@ -56,7 +60,6 @@ Public Module ParseUtilities
         Catch ex As Exception
             'Stop
         End Try
-        Debug.WriteLine($"{DirPath} {TotalFilesToProcess.ToString}")
         Return TotalFilesToProcess
     End Function
 

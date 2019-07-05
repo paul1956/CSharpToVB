@@ -4,6 +4,8 @@ Option Strict On
 
 Imports Microsoft.CodeAnalysis
 
+Imports CS = Microsoft.CodeAnalysis.CSharp
+
 Namespace IVisualBasicCode.CodeConverter
 
     Public Class CodeWithOptions
@@ -12,7 +14,7 @@ Namespace IVisualBasicCode.CodeConverter
             Me.Text = _Request.SourceCode
             Me.FromLanguage = LanguageNames.CSharp
             Me.ToLanguage = LanguageNames.VisualBasic
-            Me.FromLanguageVersion = CSharp.LanguageVersion.Latest
+            Me.FromLanguageVersion = CS.LanguageVersion.Latest
             Me.ToLanguageVersion = VisualBasic.LanguageVersion.Latest
             Me.Request = _Request
         End Sub
@@ -24,7 +26,7 @@ Namespace IVisualBasicCode.CodeConverter
         Public Property ToLanguageVersion() As Integer
         Public Property Request As ConvertRequest
 
-        Public Function SetFromLanguage(Optional name As String = LanguageNames.CSharp, Optional version As Integer = CSharp.LanguageVersion.Latest) As CodeWithOptions
+        Public Function SetFromLanguage(Optional name As String = LanguageNames.CSharp, Optional version As Integer = CS.LanguageVersion.Latest) As CodeWithOptions
             Me.FromLanguage = name
             Me.FromLanguageVersion = version
             Return Me

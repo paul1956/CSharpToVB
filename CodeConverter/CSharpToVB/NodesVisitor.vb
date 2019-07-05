@@ -265,7 +265,11 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         Dim ConstatntPattern As ConstantPatternSyntax = CType(arm.Pattern, ConstantPatternSyntax)
                         Dim RelationalCaseClause As VBS.RelationalCaseClauseSyntax = VBFactory.CaseEqualsClause(CType(ConstatntPattern.Expression.Accept(Me), VBS.ExpressionSyntax))
                         Dim CaseStatement As VBS.CaseStatementSyntax = VBFactory.CaseStatement(RelationalCaseClause)
-                        Dim Statements As SyntaxList(Of VBS.StatementSyntax) = VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.SimpleAssignmentStatement(TempIdentifier, CType(arm.Expression.Accept(Me), VBS.ExpressionSyntax).WithTrailingEOL))
+                        Dim Expression As VBS.ExpressionSyntax = CType(arm.Expression.Accept(Me), VBS.ExpressionSyntax)
+                        Dim LeadingTrivia As New List(Of SyntaxTrivia)
+                        LeadingTrivia.AddRange(Expression.GetLeadingTrivia)
+                        Expression = Expression.WithLeadingTrivia(SpaceTrivia)
+                        Dim Statements As SyntaxList(Of VBS.StatementSyntax) = VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.SimpleAssignmentStatement(TempIdentifier, Expression.WithTrailingEOL).WithLeadingTrivia(LeadingTrivia))
                         Blocks = Blocks.Add(VBFactory.CaseBlock(CaseStatement.WithTrailingEOL, Statements))
                     ElseIf TypeOf arm.Pattern Is DiscardPatternSyntax Then
                         Dim ExpressionOrThrow As VisualBasicSyntaxNode = arm.Expression.Accept(Me)
