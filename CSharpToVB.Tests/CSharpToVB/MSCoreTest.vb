@@ -11,9 +11,9 @@ Namespace XUnitTestProject1
 class test : IComparable { }")
 
             Dim compilation As CSharpCompilation = CSharpCompilation.Create("MyCompilation", syntaxTrees:={tree}, references:=SharedReferences.References)
-            Dim lSemanticModel = compilation.GetSemanticModel(tree)
-            Dim InputNode As Syntax.CompilationUnitSyntax = compilation.SyntaxTrees(0).GetRoot
-            Dim node As Syntax.ClassDeclarationSyntax = InputNode.Members(0)
+            Dim lSemanticModel As SemanticModel = compilation.GetSemanticModel(tree)
+            Dim InputNode As Syntax.CompilationUnitSyntax = CType(compilation.SyntaxTrees(0).GetRoot, Syntax.CompilationUnitSyntax)
+            Dim node As Syntax.ClassDeclarationSyntax = CType(InputNode.Members(0), Syntax.ClassDeclarationSyntax)
 
             Assert.True(node.Kind() = SyntaxKind.ClassDeclaration)
             Dim classOrInterface As Syntax.TypeSyntax = node.BaseList?.Types.FirstOrDefault()?.Type

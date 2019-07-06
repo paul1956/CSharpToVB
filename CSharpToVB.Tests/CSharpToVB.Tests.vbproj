@@ -82,6 +82,7 @@
     <Compile Include="CSharpToVBForms\TestCompile.vb" />
     <Compile Include="CSharpToVB\ExpressionTests.vb" />
     <Compile Include="CSharpToVB\MemberTests.vb" />
+    <Compile Include="CSharpToVB\MSCoreTest.vb" />
     <Compile Include="CSharpToVB\NamespaceLevelTests.vb" />
     <Compile Include="CSharpToVB\SpecialConversionTests.vb" />
     <Compile Include="CSharpToVB\StatementTests.vb" />

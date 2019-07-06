@@ -92,9 +92,6 @@ Partial Class Form1
         Me.ToolTip1 = New System.Windows.Forms.ToolTip(Me.components)
         Me.SplitContainer1 = New System.Windows.Forms.SplitContainer()
         Me.RichTextBoxConversionInput = New System.Windows.Forms.RichTextBox()
-        Me.LineNumbers_For_RichTextBoxInput = New CSharpToVBApp.LineNumbers_For_RichTextBox()
-        Me.RichTextBoxConversionOutput = New CSharpToVBApp.AdvancedRTB()
-        Me.LineNumbers_For_RichTextBoxOutput = New CSharpToVBApp.LineNumbers_For_RichTextBox()
         Me.StatusStrip1 = New System.Windows.Forms.StatusStrip()
         Me.StatusStripCurrentFileName = New System.Windows.Forms.ToolStripStatusLabel()
         Me.StatusStripSpacer = New System.Windows.Forms.ToolStripStatusLabel()
@@ -103,6 +100,9 @@ Partial Class Form1
         Me.RichTextBoxFileList = New System.Windows.Forms.RichTextBox()
         Me.RichTextBoxErrorList = New System.Windows.Forms.RichTextBox()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
+        Me.LineNumbers_For_RichTextBoxInput = New CSharpToVBApp.LineNumbers_For_RichTextBox()
+        Me.RichTextBoxConversionOutput = New CSharpToVBApp.AdvancedRTB()
+        Me.LineNumbers_For_RichTextBoxOutput = New CSharpToVBApp.LineNumbers_For_RichTextBox()
         Me.MenuStrip1.SuspendLayout()
         Me.ContextMenuStrip1.SuspendLayout()
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -118,9 +118,9 @@ Partial Class Form1
         Me.CSharp2VB.AutoSize = True
         Me.CSharp2VB.Checked = True
         Me.CSharp2VB.Enabled = False
-        Me.CSharp2VB.Location = New System.Drawing.Point(1565, 5)
+        Me.CSharp2VB.Location = New System.Drawing.Point(1826, 1)
         Me.CSharp2VB.Name = "CSharp2VB"
-        Me.CSharp2VB.Size = New System.Drawing.Size(72, 17)
+        Me.CSharp2VB.Size = New System.Drawing.Size(73, 19)
         Me.CSharp2VB.TabIndex = 3
         Me.CSharp2VB.TabStop = True
         Me.CSharp2VB.Text = "C# To VB"
@@ -129,9 +129,9 @@ Partial Class Form1
         'VB2CSharp
         '
         Me.VB2CSharp.AutoSize = True
-        Me.VB2CSharp.Location = New System.Drawing.Point(1471, 5)
+        Me.VB2CSharp.Location = New System.Drawing.Point(1716, 1)
         Me.VB2CSharp.Name = "VB2CSharp"
-        Me.VB2CSharp.Size = New System.Drawing.Size(72, 17)
+        Me.VB2CSharp.Size = New System.Drawing.Size(73, 19)
         Me.VB2CSharp.TabIndex = 4
         Me.VB2CSharp.Text = "VB To C#"
         Me.VB2CSharp.UseVisualStyleBackColor = True
@@ -143,7 +143,8 @@ Partial Class Form1
         Me.MenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuFile, Me.mnuEdit, Me.mnuCompile, Me.mnuConvert, Me.mnuOptions, Me.mnuView, Me.mnuHelp})
         Me.MenuStrip1.Location = New System.Drawing.Point(0, 0)
         Me.MenuStrip1.Name = "MenuStrip1"
-        Me.MenuStrip1.Size = New System.Drawing.Size(1648, 24)
+        Me.MenuStrip1.Padding = New System.Windows.Forms.Padding(7, 2, 0, 2)
+        Me.MenuStrip1.Size = New System.Drawing.Size(1923, 24)
         Me.MenuStrip1.TabIndex = 7
         Me.MenuStrip1.Text = "MenuStrip1"
         '
@@ -518,9 +519,9 @@ Partial Class Form1
         '
         'SearchInput
         '
-        Me.SearchInput.Location = New System.Drawing.Point(800, 3)
+        Me.SearchInput.Location = New System.Drawing.Point(933, 1)
         Me.SearchInput.Name = "SearchInput"
-        Me.SearchInput.Size = New System.Drawing.Size(168, 20)
+        Me.SearchInput.Size = New System.Drawing.Size(195, 23)
         Me.SearchInput.TabIndex = 10
         '
         'ImageList1
@@ -534,9 +535,9 @@ Partial Class Form1
         '
         Me.SearchDirection.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawVariable
         Me.SearchDirection.FormattingEnabled = True
-        Me.SearchDirection.Location = New System.Drawing.Point(979, 2)
+        Me.SearchDirection.Location = New System.Drawing.Point(1142, 1)
         Me.SearchDirection.Name = "SearchDirection"
-        Me.SearchDirection.Size = New System.Drawing.Size(53, 21)
+        Me.SearchDirection.Size = New System.Drawing.Size(61, 24)
         Me.SearchDirection.TabIndex = 11
         '
         'SearchWhere
@@ -544,9 +545,9 @@ Partial Class Form1
         Me.SearchWhere.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.SearchWhere.FormattingEnabled = True
         Me.SearchWhere.Items.AddRange(New Object() {"Search Input Buffer", "Search OutPut Buffer", "Search Both"})
-        Me.SearchWhere.Location = New System.Drawing.Point(632, 3)
+        Me.SearchWhere.Location = New System.Drawing.Point(737, 1)
         Me.SearchWhere.Name = "SearchWhere"
-        Me.SearchWhere.Size = New System.Drawing.Size(159, 21)
+        Me.SearchWhere.Size = New System.Drawing.Size(185, 23)
         Me.SearchWhere.TabIndex = 14
         '
         'InputFolderBrowserDialog1
@@ -557,9 +558,9 @@ Partial Class Form1
         'PictureBox1
         '
         Me.PictureBox1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.PictureBox1.Location = New System.Drawing.Point(974, 1)
+        Me.PictureBox1.Location = New System.Drawing.Point(1136, 1)
         Me.PictureBox1.Name = "PictureBox1"
-        Me.PictureBox1.Size = New System.Drawing.Size(27, 21)
+        Me.PictureBox1.Size = New System.Drawing.Size(31, 23)
         Me.PictureBox1.TabIndex = 13
         Me.PictureBox1.TabStop = False
         '
@@ -567,18 +568,18 @@ Partial Class Form1
         '
         Me.ButtonSearch.BackColor = System.Drawing.SystemColors.ButtonFace
         Me.ButtonSearch.Image = CType(resources.GetObject("ButtonSearch.Image"), System.Drawing.Image)
-        Me.ButtonSearch.Location = New System.Drawing.Point(1035, 1)
+        Me.ButtonSearch.Location = New System.Drawing.Point(1207, 1)
         Me.ButtonSearch.Name = "ButtonSearch"
-        Me.ButtonSearch.Size = New System.Drawing.Size(33, 23)
+        Me.ButtonSearch.Size = New System.Drawing.Size(38, 23)
         Me.ButtonSearch.TabIndex = 12
         Me.ToolTip1.SetToolTip(Me.ButtonSearch, "Close Search")
         Me.ButtonSearch.UseVisualStyleBackColor = False
         '
         'ButtonStop
         '
-        Me.ButtonStop.Location = New System.Drawing.Point(1169, 1)
+        Me.ButtonStop.Location = New System.Drawing.Point(1364, 0)
         Me.ButtonStop.Name = "ButtonStop"
-        Me.ButtonStop.Size = New System.Drawing.Size(70, 23)
+        Me.ButtonStop.Size = New System.Drawing.Size(82, 23)
         Me.ButtonStop.TabIndex = 19
         Me.ButtonStop.Text = "Stop Conversion"
         Me.ButtonStop.UseVisualStyleBackColor = True
@@ -587,9 +588,9 @@ Partial Class Form1
         'LabelErrorCount
         '
         Me.LabelErrorCount.AutoSize = True
-        Me.LabelErrorCount.Location = New System.Drawing.Point(1254, 6)
+        Me.LabelErrorCount.Location = New System.Drawing.Point(1463, 4)
         Me.LabelErrorCount.Name = "LabelErrorCount"
-        Me.LabelErrorCount.Size = New System.Drawing.Size(98, 13)
+        Me.LabelErrorCount.Size = New System.Drawing.Size(110, 15)
         Me.LabelErrorCount.TabIndex = 20
         Me.LabelErrorCount.Text = "Number of Errors: 0"
         '
@@ -618,8 +619,9 @@ Partial Class Form1
         Me.SplitContainer1.Panel2.Controls.Add(Me.StatusStrip1)
         Me.SplitContainer1.Panel2.Controls.Add(Me.RichTextBoxFileList)
         Me.SplitContainer1.Panel2.Controls.Add(Me.RichTextBoxErrorList)
-        Me.SplitContainer1.Size = New System.Drawing.Size(1648, 528)
-        Me.SplitContainer1.SplitterDistance = 80
+        Me.SplitContainer1.Size = New System.Drawing.Size(1923, 613)
+        Me.SplitContainer1.SplitterDistance = 164
+        Me.SplitContainer1.SplitterWidth = 5
         Me.SplitContainer1.TabIndex = 22
         '
         'RichTextBoxConversionInput
@@ -628,12 +630,81 @@ Partial Class Form1
         Me.RichTextBoxConversionInput.DetectUrls = False
         Me.RichTextBoxConversionInput.Dock = System.Windows.Forms.DockStyle.Left
         Me.RichTextBoxConversionInput.Font = New System.Drawing.Font("Consolas", 11.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.RichTextBoxConversionInput.Location = New System.Drawing.Point(20, 0)
+        Me.RichTextBoxConversionInput.Location = New System.Drawing.Point(23, 0)
         Me.RichTextBoxConversionInput.Name = "RichTextBoxConversionInput"
-        Me.RichTextBoxConversionInput.Size = New System.Drawing.Size(1047, 80)
+        Me.RichTextBoxConversionInput.Size = New System.Drawing.Size(1221, 164)
         Me.RichTextBoxConversionInput.TabIndex = 9
         Me.RichTextBoxConversionInput.Text = ""
         Me.RichTextBoxConversionInput.WordWrap = False
+        '
+        'StatusStrip1
+        '
+        Me.StatusStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.StatusStripCurrentFileName, Me.StatusStripSpacer, Me.ConversionProgressBar, Me.FilesConversionProgress})
+        Me.StatusStrip1.Location = New System.Drawing.Point(0, 419)
+        Me.StatusStrip1.Name = "StatusStrip1"
+        Me.StatusStrip1.Padding = New System.Windows.Forms.Padding(1, 0, 16, 0)
+        Me.StatusStrip1.Size = New System.Drawing.Size(1923, 25)
+        Me.StatusStrip1.TabIndex = 2
+        Me.StatusStrip1.Text = "StatusStrip1"
+        '
+        'StatusStripCurrentFileName
+        '
+        Me.StatusStripCurrentFileName.BackColor = System.Drawing.SystemColors.Menu
+        Me.StatusStripCurrentFileName.Name = "StatusStripCurrentFileName"
+        Me.StatusStripCurrentFileName.Size = New System.Drawing.Size(0, 20)
+        Me.StatusStripCurrentFileName.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        '
+        'StatusStripSpacer
+        '
+        Me.StatusStripSpacer.BackColor = System.Drawing.SystemColors.MenuBar
+        Me.StatusStripSpacer.Enabled = False
+        Me.StatusStripSpacer.Name = "StatusStripSpacer"
+        Me.StatusStripSpacer.Size = New System.Drawing.Size(1397, 20)
+        Me.StatusStripSpacer.Spring = True
+        '
+        'ConversionProgressBar
+        '
+        Me.ConversionProgressBar.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right
+        Me.ConversionProgressBar.AutoSize = False
+        Me.ConversionProgressBar.Name = "ConversionProgressBar"
+        Me.ConversionProgressBar.Size = New System.Drawing.Size(257, 19)
+        Me.ConversionProgressBar.Step = 1
+        Me.ConversionProgressBar.Style = System.Windows.Forms.ProgressBarStyle.Continuous
+        '
+        'FilesConversionProgress
+        '
+        Me.FilesConversionProgress.AutoSize = False
+        Me.FilesConversionProgress.BackColor = System.Drawing.SystemColors.Control
+        Me.FilesConversionProgress.Name = "FilesConversionProgress"
+        Me.FilesConversionProgress.Size = New System.Drawing.Size(250, 20)
+        '
+        'RichTextBoxFileList
+        '
+        Me.RichTextBoxFileList.ContextMenuStrip = Me.ContextMenuStrip1
+        Me.RichTextBoxFileList.DetectUrls = False
+        Me.RichTextBoxFileList.HideSelection = False
+        Me.RichTextBoxFileList.Location = New System.Drawing.Point(0, 0)
+        Me.RichTextBoxFileList.Name = "RichTextBoxFileList"
+        Me.RichTextBoxFileList.Size = New System.Drawing.Size(1245, 110)
+        Me.RichTextBoxFileList.TabIndex = 0
+        Me.RichTextBoxFileList.Text = ""
+        Me.RichTextBoxFileList.WordWrap = False
+        '
+        'RichTextBoxErrorList
+        '
+        Me.RichTextBoxErrorList.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.RichTextBoxErrorList.ContextMenuStrip = Me.ContextMenuStrip1
+        Me.RichTextBoxErrorList.DetectUrls = False
+        Me.RichTextBoxErrorList.Location = New System.Drawing.Point(1273, 0)
+        Me.RichTextBoxErrorList.Name = "RichTextBoxErrorList"
+        Me.RichTextBoxErrorList.Size = New System.Drawing.Size(924, 110)
+        Me.RichTextBoxErrorList.TabIndex = 1
+        Me.RichTextBoxErrorList.Text = ""
+        Me.RichTextBoxErrorList.WordWrap = False
+        '
+        'OpenFileDialog1
+        '
+        Me.OpenFileDialog1.FileName = "OpenFileDialog1"
         '
         'LineNumbers_For_RichTextBoxInput
         '
@@ -670,7 +741,7 @@ Partial Class Form1
         Me.LineNumbers_For_RichTextBoxInput.Show_GridLines = True
         Me.LineNumbers_For_RichTextBoxInput.Show_LineNrs = True
         Me.LineNumbers_For_RichTextBoxInput.Show_MarginLines = True
-        Me.LineNumbers_For_RichTextBoxInput.Size = New System.Drawing.Size(20, 80)
+        Me.LineNumbers_For_RichTextBoxInput.Size = New System.Drawing.Size(23, 164)
         Me.LineNumbers_For_RichTextBoxInput.TabIndex = 23
         Me.LineNumbers_For_RichTextBoxInput.Visible = False
         '
@@ -681,9 +752,9 @@ Partial Class Form1
         Me.RichTextBoxConversionOutput.Dock = System.Windows.Forms.DockStyle.Right
         Me.RichTextBoxConversionOutput.Font = New System.Drawing.Font("Consolas", 11.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.RichTextBoxConversionOutput.HScrollPos = 0
-        Me.RichTextBoxConversionOutput.Location = New System.Drawing.Point(855, 0)
+        Me.RichTextBoxConversionOutput.Location = New System.Drawing.Point(999, 0)
         Me.RichTextBoxConversionOutput.Name = "RichTextBoxConversionOutput"
-        Me.RichTextBoxConversionOutput.Size = New System.Drawing.Size(793, 80)
+        Me.RichTextBoxConversionOutput.Size = New System.Drawing.Size(924, 164)
         Me.RichTextBoxConversionOutput.TabIndex = 10
         Me.RichTextBoxConversionOutput.Text = ""
         Me.RichTextBoxConversionOutput.VScrollPos = 0
@@ -708,7 +779,7 @@ Partial Class Form1
         Me.LineNumbers_For_RichTextBoxOutput.LineNrs_ClippedByItemRectangle = True
         Me.LineNumbers_For_RichTextBoxOutput.LineNrs_LeadingZeroes = True
         Me.LineNumbers_For_RichTextBoxOutput.LineNrs_Offset = New System.Drawing.Size(0, 0)
-        Me.LineNumbers_For_RichTextBoxOutput.Location = New System.Drawing.Point(836, 0)
+        Me.LineNumbers_For_RichTextBoxOutput.Location = New System.Drawing.Point(977, 0)
         Me.LineNumbers_For_RichTextBoxOutput.Margin = New System.Windows.Forms.Padding(0)
         Me.LineNumbers_For_RichTextBoxOutput.MarginLines_Color = System.Drawing.Color.SlateGray
         Me.LineNumbers_For_RichTextBoxOutput.MarginLines_Side = CSharpToVBApp.LineNumbers_For_RichTextBox.LineNumberDockSide.Right
@@ -723,83 +794,15 @@ Partial Class Form1
         Me.LineNumbers_For_RichTextBoxOutput.Show_GridLines = True
         Me.LineNumbers_For_RichTextBoxOutput.Show_LineNrs = True
         Me.LineNumbers_For_RichTextBoxOutput.Show_MarginLines = True
-        Me.LineNumbers_For_RichTextBoxOutput.Size = New System.Drawing.Size(18, 80)
+        Me.LineNumbers_For_RichTextBoxOutput.Size = New System.Drawing.Size(21, 164)
         Me.LineNumbers_For_RichTextBoxOutput.TabIndex = 22
         Me.LineNumbers_For_RichTextBoxOutput.Visible = False
         '
-        'StatusStrip1
-        '
-        Me.StatusStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.StatusStripCurrentFileName, Me.StatusStripSpacer, Me.ConversionProgressBar, Me.FilesConversionProgress})
-        Me.StatusStrip1.Location = New System.Drawing.Point(0, 422)
-        Me.StatusStrip1.Name = "StatusStrip1"
-        Me.StatusStrip1.Size = New System.Drawing.Size(1648, 22)
-        Me.StatusStrip1.TabIndex = 2
-        Me.StatusStrip1.Text = "StatusStrip1"
-        '
-        'StatusStripCurrentFileName
-        '
-        Me.StatusStripCurrentFileName.BackColor = System.Drawing.SystemColors.Menu
-        Me.StatusStripCurrentFileName.Name = "StatusStripCurrentFileName"
-        Me.StatusStripCurrentFileName.Size = New System.Drawing.Size(0, 17)
-        Me.StatusStripCurrentFileName.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
-        '
-        'StatusStripSpacer
-        '
-        Me.StatusStripSpacer.BackColor = System.Drawing.SystemColors.MenuBar
-        Me.StatusStripSpacer.Enabled = False
-        Me.StatusStripSpacer.Name = "StatusStripSpacer"
-        Me.StatusStripSpacer.Size = New System.Drawing.Size(1161, 17)
-        Me.StatusStripSpacer.Spring = True
-        '
-        'ConversionProgressBar
-        '
-        Me.ConversionProgressBar.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right
-        Me.ConversionProgressBar.AutoSize = False
-        Me.ConversionProgressBar.Name = "ConversionProgressBar"
-        Me.ConversionProgressBar.Size = New System.Drawing.Size(220, 16)
-        Me.ConversionProgressBar.Step = 1
-        Me.ConversionProgressBar.Style = System.Windows.Forms.ProgressBarStyle.Continuous
-        '
-        'FilesConversionProgress
-        '
-        Me.FilesConversionProgress.AutoSize = False
-        Me.FilesConversionProgress.BackColor = System.Drawing.SystemColors.Control
-        Me.FilesConversionProgress.Name = "FilesConversionProgress"
-        Me.FilesConversionProgress.Size = New System.Drawing.Size(250, 17)
-        '
-        'RichTextBoxFileList
-        '
-        Me.RichTextBoxFileList.ContextMenuStrip = Me.ContextMenuStrip1
-        Me.RichTextBoxFileList.DetectUrls = False
-        Me.RichTextBoxFileList.HideSelection = False
-        Me.RichTextBoxFileList.Location = New System.Drawing.Point(0, 0)
-        Me.RichTextBoxFileList.Name = "RichTextBoxFileList"
-        Me.RichTextBoxFileList.Size = New System.Drawing.Size(1068, 96)
-        Me.RichTextBoxFileList.TabIndex = 0
-        Me.RichTextBoxFileList.Text = ""
-        Me.RichTextBoxFileList.WordWrap = False
-        '
-        'RichTextBoxErrorList
-        '
-        Me.RichTextBoxErrorList.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.RichTextBoxErrorList.ContextMenuStrip = Me.ContextMenuStrip1
-        Me.RichTextBoxErrorList.DetectUrls = False
-        Me.RichTextBoxErrorList.Location = New System.Drawing.Point(1091, 0)
-        Me.RichTextBoxErrorList.Name = "RichTextBoxErrorList"
-        Me.RichTextBoxErrorList.Size = New System.Drawing.Size(793, 96)
-        Me.RichTextBoxErrorList.TabIndex = 1
-        Me.RichTextBoxErrorList.Text = ""
-        Me.RichTextBoxErrorList.WordWrap = False
-        '
-        'OpenFileDialog1
-        '
-        Me.OpenFileDialog1.FileName = "OpenFileDialog1"
-        '
         'Form1
         '
-        Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
+        Me.AutoScaleDimensions = New System.Drawing.SizeF(7.0!, 15.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(1648, 552)
+        Me.ClientSize = New System.Drawing.Size(1923, 637)
         Me.Controls.Add(Me.LabelErrorCount)
         Me.Controls.Add(Me.ButtonStop)
         Me.Controls.Add(Me.SearchWhere)
@@ -811,6 +814,7 @@ Partial Class Form1
         Me.Controls.Add(Me.CSharp2VB)
         Me.Controls.Add(Me.SplitContainer1)
         Me.Controls.Add(Me.MenuStrip1)
+        Me.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.KeyPreview = True
         Me.MainMenuStrip = Me.MenuStrip1
         Me.Name = "Form1"
