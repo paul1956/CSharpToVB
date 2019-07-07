@@ -20,6 +20,10 @@ Imports Microsoft.CodeAnalysis.Emit
 Imports Microsoft.CodeAnalysis.MSBuild
 Imports Microsoft.VisualBasic.FileIO
 
+#If NETCOREAPP3_0 Then
+Imports VBMsgBox
+#End If
+
 Public Class Form1
 
 #If NETCOREAPP3_0 Then

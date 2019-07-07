@@ -17,6 +17,9 @@ Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
+#If NETCOREAPP3_0 Then
+Imports VBMsgBox
+#End If
 Namespace IVisualBasicCode.CodeConverter.Visual_Basic
 
     Partial Public Class CSharpConverter
@@ -1175,12 +1178,8 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                                     )
                     Return binaryExpressionSyntax3
                 Catch ex As InsufficientExecutionStackException
-#If Not NETCOREAPP3_0 Then
                     MsgBox(ex.Message, MsgBoxStyle.Critical, "Stack Overflow")
                     Return Nothing
-#Else
-                    Throw
-#End If
                 Catch ex As Exception
                     Stop
                     Throw
