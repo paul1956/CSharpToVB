@@ -23,27 +23,27 @@ Public Module SharedReferences
             End If
             ' CodeAnalysisReference
             Dim Location As String = GetType(Compilation).Assembly.Location
-            _ReferencePath.AddReferences(Location)
+            AddReferences(_ReferencePath, Location)
 
             'SystemReferences
             For Each DLL_Path As String In Directory.GetFiles(FrameworkDirectory, "*.dll")
                 If DLL_Path.EndsWith("System.EnterpriseServices.Wrapper.dll") Then
                     Continue For
                 End If
-                _ReferencePath.AddReferences(DLL_Path)
+                AddReferences(_ReferencePath, DLL_Path)
             Next
 
             ' ComponentModelEditorBrowsable
             Location = GetType(ComponentModel.EditorBrowsableAttribute).GetAssemblyLocation
-            _ReferencePath.AddReferences(Location)
+            AddReferences(_ReferencePath, Location)
 
             ' SystemCore
             Location = GetType(Enumerable).Assembly.Location
-            _ReferencePath.AddReferences(Location)
+            AddReferences(_ReferencePath, Location)
 
             ' SystemXmlLinq
             Location = GetType(XElement).Assembly.Location
-            _ReferencePath.AddReferences(Location)
+            AddReferences(_ReferencePath, Location)
 
             ' VBRuntime
             Location = GetType(CompilerServices.StandardModuleAttribute).Assembly.Location
@@ -51,24 +51,22 @@ Public Module SharedReferences
         End SyncLock
     End Sub
 
-    <Extension>
     Private Sub AddReferences(L As List(Of String), FileNameWithPath As String)
         If L.Contains(FileNameWithPath) Then
             Return
         End If
-        Dim hasMetadataIsAssembly As (HasMetadata As Boolean, IsAssembly As Boolean) = FileNameWithPath.HasMetadataIsAssembly
+        Dim hasMetadataOrIsAssembly As (HasMetadata As Boolean, IsAssembly As Boolean) = HasMetadataIsAssembly(FileNameWithPath)
 
-        If Not hasMetadataIsAssembly.HasMetadata Then
+        If Not hasMetadataOrIsAssembly.HasMetadata Then
             Return
         End If
         L.Add(FileNameWithPath)
-        If hasMetadataIsAssembly.IsAssembly Then
+        If hasMetadataOrIsAssembly.IsAssembly Then
             _CSharpReferences.Add(MetadataReference.CreateFromFile(FileNameWithPath))
         End If
         _VisualBasicReferences.Add(MetadataReference.CreateFromFile(FileNameWithPath))
     End Sub
 
-    <Extension>
     Private Function HasMetadataIsAssembly(sourcePath As String) As (HasMetadata As Boolean, IsAssembly As Boolean)
         Using assemblyStream As New FileStream(sourcePath, FileMode.Open, FileAccess.Read, FileShare.Delete Or FileShare.Read)
             Try
