@@ -274,7 +274,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
         ''' <param name="node"></param>
         ''' <returns></returns>
         ''' <remarks>Fix handling of AddressOf where is mistakenly added to DirectCast and C# Pointers</remarks>
-        Private Shared Function RemodelVariableDeclaration(VariableDeclaration As CSS.VariableDeclarationSyntax, _NodesVisitor As NodesVisitor, IsFieldDeclaration As Boolean, ByRef LeadingTrivia As List(Of SyntaxTrivia)) As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax)
+        Private Shared Function RemodelVariableDeclaration(VariableDeclaration As CSS.VariableDeclarationSyntax, _NodesVisitor As NodesVisitor, _Model As SemanticModel, IsFieldDeclaration As Boolean, ByRef LeadingTrivia As List(Of SyntaxTrivia)) As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax)
             Dim type As VBS.TypeSyntax
             Dim DeclarationType As VB.VisualBasicSyntaxNode = VariableDeclaration.Type.Accept(_NodesVisitor)
             Dim TypeOrAddressOf As VB.VisualBasicSyntaxNode = DeclarationType.WithConvertedLeadingTriviaFrom(VariableDeclaration.Type)
@@ -309,27 +309,46 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     declaratorsWithoutInitializers.Add(v.WithAppendedTrailingTrivia(CS_CollectedCommentTrivia))
                     CS_CollectedCommentTrivia.Clear()
                     Continue For
-                Else
-                    Dim AsClause As VBS.SimpleAsClauseSyntax = If(VariableDeclaration.Type.IsVar OrElse VariableDeclaration.Type.IsKind(CS.SyntaxKind.RefType), Nothing, VB.SyntaxFactory.SimpleAsClause(type))
-                    Dim Value As VBS.ExpressionSyntax = DirectCast(v.Initializer.Value.Accept(_NodesVisitor), VBS.ExpressionSyntax)
-                    If Value Is Nothing Then
-                        Value = VB.SyntaxFactory.IdentifierName("HandleRefExpression").WithConvertedTriviaFrom(v.Initializer.Value)
-                    End If
-                    If Value.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
-                        LeadingTrivia.AddRange(Value.GetLeadingTrivia)
-                    End If
-                    Dim Initializer As VBS.EqualsValueSyntax = VB.SyntaxFactory.EqualsValue(Value.WithLeadingTrivia(SpaceTrivia))
-                    ' Get the names last to lead with var jsonWriter = new JsonWriter(stringWriter)
-                    ' Which should be Dim jsonWriter_Renamed = new JsonWriter(stringWriter)
-                    Dim Names As SeparatedSyntaxList(Of VBS.ModifiedIdentifierSyntax) = VB.SyntaxFactory.SingletonSeparatedList(DirectCast(v.Accept(_NodesVisitor), VBS.ModifiedIdentifierSyntax))
-                    Dim Declator As VBS.VariableDeclaratorSyntax = VB.SyntaxFactory.VariableDeclarator(
-                                                                                                Names,
-                                                                                                AsClause,
-                                                                                                Initializer
-                                                                                                )
-                    Declator = Declator.WithModifiedNodeTrailingTrivia(SeparatorFollows:=False)
-                    declarators.Add(Declator)
                 End If
+                Dim AsClause As VBS.AsClauseSyntax = Nothing
+                If VariableDeclaration.Type.IsKind(CS.SyntaxKind.RefType) Then
+                ElseIf Not VariableDeclaration.Type.IsVar Then
+                    AsClause = VB.SyntaxFactory.SimpleAsClause(type)
+                Else
+                    ' Get Type from Initializer
+                    If v.Initializer.Value.IsKind(CS.SyntaxKind.AnonymousObjectCreationExpression) Then
+                        AsClause = VB.SyntaxFactory.AsNewClause(CType(v.Initializer.Value.Accept(_NodesVisitor), VBS.NewExpressionSyntax))
+                    ElseIf v.Initializer.Value.IsKind(CS.SyntaxKind.ImplicitArrayCreationExpression) Then
+                    Else
+                        Dim Result As (_ITypeSymbol As ITypeSymbol, _Error As Boolean) = DetermineType(v.Initializer.Value, _Model)
+                        If Not Result._Error Then
+                            AsClause = VB.SyntaxFactory.SimpleAsClause(NodesVisitor.ConvertToType(Result._ITypeSymbol))
+                        Else
+                            AsClause = Nothing
+                        End If
+                    End If
+                End If
+                Dim Value As VBS.ExpressionSyntax = DirectCast(v.Initializer.Value.Accept(_NodesVisitor), VBS.ExpressionSyntax)
+                If Value Is Nothing Then
+                    Value = VB.SyntaxFactory.IdentifierName("HandleRefExpression").WithConvertedTriviaFrom(v.Initializer.Value)
+                End If
+                If Value.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
+                    LeadingTrivia.AddRange(Value.GetLeadingTrivia)
+                End If
+                Dim Initializer As VBS.EqualsValueSyntax = Nothing
+                If Not AsClause.IsKind(VB.SyntaxKind.AsNewClause) Then
+                    Initializer = VB.SyntaxFactory.EqualsValue(Value.WithLeadingTrivia(SpaceTrivia))
+                End If
+                ' Get the names last to lead with var jsonWriter = new JsonWriter(stringWriter)
+                ' Which should be Dim jsonWriter_Renamed = new JsonWriter(stringWriter)
+                Dim Names As SeparatedSyntaxList(Of VBS.ModifiedIdentifierSyntax) = VB.SyntaxFactory.SingletonSeparatedList(DirectCast(v.Accept(_NodesVisitor), VBS.ModifiedIdentifierSyntax))
+                Dim Declator As VBS.VariableDeclaratorSyntax = VB.SyntaxFactory.VariableDeclarator(
+                                                                                            Names,
+                                                                                            AsClause,
+                                                                                            Initializer
+                                                                                            )
+                Declator = Declator.WithModifiedNodeTrailingTrivia(SeparatorFollows:=False)
+                declarators.Add(Declator)
             Next
             If declaratorsWithoutInitializers.Count > 0 Then
                 Dim ModifiedIdentifierList As New List(Of VBS.ModifiedIdentifierSyntax)

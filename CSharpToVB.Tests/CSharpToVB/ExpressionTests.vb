@@ -281,7 +281,7 @@ Option Strict Off
 Class TestClass
 
     Private Sub TestMethod()
-        Dim x = ""Line1"" &
+        Dim x As String = ""Line1"" &
             ""Line2"" _
         & ""Line3"" & ""Line3A""
     End Sub
@@ -325,7 +325,7 @@ Option Strict Off
 Class TestClass
 
     Private Sub TestMethod()
-        Dim test = Function(ByVal a As Integer) a * 2
+        Dim test As System.Func(Of Integer, Integer) = Function(ByVal a As Integer) a * 2
 
         test(3)
     End Sub
@@ -377,15 +377,15 @@ Option Strict Off
 Class TestClass
 
     Private Sub TestMethod()
-        Dim test = Function(a) a * 2
-        Dim test2 = Function(a, b) As Integer
-                        If b > 0 Then
-                            Return a / b
-                        End If
+        Dim test As System.Func(Of Object, Object) = Function(a) a * 2
+        Dim test2 As System.Func(Of Object, Object, Integer) = Function(a, b) As Integer
+                                                                   If b > 0 Then
+                                                                       Return a / b
+                                                                   End If
 
-                        Return 0
-                    End Function
-        Dim test3 = Function(a, b) a Mod b
+                                                                   Return 0
+                                                               End Function
+        Dim test3 As System.Func(Of Object, Object, Object) = Function(a, b) a Mod b
 
         test(3)
     End Sub
@@ -643,7 +643,7 @@ Option Strict Off
 Class TestClass
 
     Private Sub TestMethod()
-        Dim x = ""Hello,
+        Dim x As String = ""Hello,
 World!""
     End Sub
 End Class")
@@ -722,7 +722,7 @@ Option Strict Off
 Class TestClass
 
     Private Sub TestMethod(str As String)
-        Dim student2 = New With {Key .FirstName = ""Craig"", Key .LastName = ""Playmate""}
+        Dim student2 As New With {Key .FirstName = ""Craig"", Key .LastName = ""Playmate""}
     End Sub
 End Class")
         End Sub

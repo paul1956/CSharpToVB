@@ -227,7 +227,7 @@ Namespace CSharpToVB.Tests
                 Dim RequestToConvert As ConvertRequest = New ConvertRequest(ConvertRequest.CS_To_VB, True, Sub() Return, _ProgressBar:=Nothing) With {
                                                                 .SourceCode = GetFileTextFromStream(fs)
                                                                 }
-                Dim ResultOfConversion As ConversionResult = ConvertInputRequest(RequestToConvert, If(OptionalReferences, References.ToArray))
+                Dim ResultOfConversion As ConversionResult = ConvertInputRequest(RequestToConvert, If(OptionalReferences, CSharpReferences.ToArray))
                 If ResultOfConversion.ResultStatus = ResultTriState.Failure Then
                     Return False
                 End If

@@ -20,12 +20,16 @@ Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 #If NETCOREAPP3_0 Then
 Imports VBMsgBox
 #End If
+
 Namespace IVisualBasicCode.CodeConverter.Visual_Basic
 
     Partial Public Class CSharpConverter
 
         Partial Protected Friend Class NodesVisitor
             Inherits CS.CSharpSyntaxVisitor(Of VB.VisualBasicSyntaxNode)
+            Private Const IDictionary As String = "IDictionary"
+            Private Const IEnumerable As String = "IEnumerable"
+            Private Const IEnumerableOf As String = "IEnumerable(Of "
 
             Private Function ConvertLambdaExpression(node As CSS.AnonymousFunctionExpressionSyntax, block As Object, parameters As SeparatedSyntaxList(Of CSS.ParameterSyntax), CS_Modifiers As SyntaxTokenList) As VBS.LambdaExpressionSyntax
                 Dim NodesList As New List(Of VBS.ParameterSyntax)
@@ -54,7 +58,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     Dim AddAsClause As Boolean = symbol.ReturnType.IsErrorType OrElse symbol.ReturnType.ToString.Contains("?")
                     Dim AsClause As VBS.SimpleAsClauseSyntax = If(AddAsClause,
                                                                   Nothing,
-                                                                  VBFactory.SimpleAsClause(Me.ConvertToType(symbol.ReturnType))
+                                                                  VBFactory.SimpleAsClause(ConvertToType(symbol.ReturnType))
                                                                   )
                     header = VBFactory.FunctionLambdaHeader(VBFactory.List(Of VBS.AttributeListSyntax)(), VBFactory.TokenList(Modifiers), parameterList, asClause:=AsClause)
                     EndSubOrFunctionStatement = VBFactory.EndFunctionStatement().WithConvertedTriviaFrom(Braces.Item2)
@@ -158,7 +162,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return VBFactory.InterpolatedStringTextToken(TokenString, TokenString)
             End Function
 
-            Private Function CovertStringToTupleType(TupleString As String) As TypeSyntax
+            Private Shared Function CovertStringToTupleType(TupleString As String) As TypeSyntax
                 Dim TupleElements As New List(Of VBS.TupleElementSyntax)
                 For Each t As String In TupleString.Substring(1, TupleString.Length - 2).Split(","c)
                     Dim TuplePart() As String = t.Trim.Split(" "c)
@@ -302,10 +306,6 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 End If
 
                 Return expression IsNot Nothing
-            End Function
-
-            Private Function ValidatePunctuation(Part As SymbolDisplayPart, DesiredKind As SymbolDisplayPartKind, ParamArray Str() As String) As Boolean
-                Return Part.Kind = DesiredKind AndAlso (Str.Length = 0 OrElse Str.Contains(Part.ToString))
             End Function
 
             Public Function ConvertAndModifyNodeTrivia(Node As VB.VisualBasicSyntaxNode, NodesOrTokens As List(Of SyntaxNodeOrToken), Index As Integer) As VB.VisualBasicSyntaxNode
@@ -520,78 +520,77 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return Token.With(FinalLeadingTriviaList, FinalTrailingTriviaList)
             End Function
 
-            Public Function ConvertToType(PossibleTupleType As ITypeSymbol) As VBS.TypeSyntax
-                Dim TupleComponents As List(Of SymbolDisplayPart) = PossibleTupleType.ToDisplayParts.ToList
-                If PossibleTupleType.IsTupleType Then
-                    Dim SSList As New List(Of VBS.TupleElementSyntax)
-                    For i As Integer = 1 To TupleComponents.Count - 2
-                        Dim TupleTypePartString As String = ""
-                        If TupleComponents(i).ToString = "?" Then
-                            SSList.Add(VBFactory.TypedTupleElement(PredefinedTypeObject))
-                            i += 1
-                            If Me.ValidatePunctuation(TupleComponents(i), SymbolDisplayPartKind.Space) Then
-                                i += 1
-                            End If
-                        Else
-                            While TupleComponents(i).Kind <> SymbolDisplayPartKind.Space AndAlso Not Me.ValidatePunctuation(TupleComponents(i), SymbolDisplayPartKind.Punctuation, ")", ",")
-                                TupleTypePartString &= TupleComponents(i).ToString
-                                i += 1
-                            End While
-                            TupleTypePartString = TupleTypePartString.Replace("<", "(").Replace(">", ")")
-
-                            If Me.ValidatePunctuation(TupleComponents(i), SymbolDisplayPartKind.Space) Then
-                                i += 1
-                            End If
-                        End If
-                        Dim TupleNamePartString As String
-                        If TupleComponents(i).Kind = SymbolDisplayPartKind.FieldName Then
-                            TupleNamePartString = TupleComponents(i).ToString
-                            SSList.Add(VBFactory.NamedTupleElement(VBFactory.Identifier(TupleNamePartString), VBFactory.SimpleAsClause(ConvertToType(TupleTypePartString.Trim.Replace("<", "(Of ").Replace(">", ")")))))
-                            i += 1
-                        Else
-                            SSList.Add(VBFactory.TypedTupleElement(ConvertToType(TupleTypePartString.ToString.Trim.Replace("<", "(Of ").Replace(">", ")"))))
-                        End If
-
-                        ' Skip ", "
-                        If Me.ValidatePunctuation(TupleComponents(i), SymbolDisplayPartKind.Punctuation, ",") Then
-                            i += 1
-                        ElseIf Me.ValidatePunctuation(TupleComponents(i), SymbolDisplayPartKind.Punctuation, ")") Then
-                            ' skip ")"
-                            i += 1
-                        Else
-                            Stop
-                        End If
-                    Next
-                    Return VBFactory.TupleType(SSList.ToArray)
+            Public Shared Function ConvertToTupleElement(TupleElement As IFieldSymbol) As VBS.TupleElementSyntax
+                If TupleElement.Type Is Nothing Then
+                    Return VBFactory.NamedTupleElement(TupleElement.Name.ToString)
                 End If
-                ' Could be dictionary
-                Dim PossibleDictionary As String = PossibleTupleType.ToString.Trim
-                If TypeOf PossibleTupleType Is INamedTypeSymbol AndAlso PossibleDictionary.Contains(",") Then
-                    Dim StartIndex As Integer = PossibleDictionary.IndexOf("<")
-                    Dim IndexOfGreaterThan As Integer = PossibleDictionary.LastIndexOf(">")
-                    Dim DictionaryTypeElement As New List(Of VBS.TypeSyntax)
-                    Dim Name As String
-                    If StartIndex > 0 Then
-                        Name = PossibleDictionary.Substring(0, StartIndex)
-                        PossibleDictionary = PossibleDictionary.Substring(StartIndex + 1, IndexOfGreaterThan - StartIndex - 1)
-                        While PossibleDictionary.Length > 0
+                Dim AsClause As SimpleAsClauseSyntax = VBFactory.SimpleAsClause(ConvertToType(TupleElement.Type))
+                Return VBFactory.NamedTupleElement(VBFactory.Identifier(AddBracketsIfRequired(TupleElement.Name)), AsClause)
+            End Function
+
+            Public Shared Function ConvertToType(PossibleTupleType As ITypeSymbol) As VBS.TypeSyntax
+                If PossibleTupleType.IsKind(SymbolKind.ArrayType) Then
+                    Dim ElementType As TypeSyntax = ConvertToType(DirectCast(PossibleTupleType, IArrayTypeSymbol).ElementType)
+                    If TypeOf ElementType Is VBS.ArrayTypeSyntax Then
+                        Return ElementType
+                    End If
+                    Return VBFactory.ArrayType(ElementType)
+                End If
+                If PossibleTupleType.IsTupleType Then
+                    Dim TupleElementList As New List(Of VBS.TupleElementSyntax)
+                    For Each TupleElement As IFieldSymbol In DirectCast(PossibleTupleType, INamedTypeSymbol).TupleElements
+                        TupleElementList.Add(ConvertToTupleElement(TupleElement))
+                    Next
+                    Return VBFactory.TupleType(TupleElementList.ToArray)
+                End If
+                If PossibleTupleType.Name = "Tuple" Then
+                    Dim TupleElementList As New List(Of VBS.TypeSyntax)
+                    For Each TupleElement As ITypeSymbol In DirectCast(PossibleTupleType, INamedTypeSymbol).TypeArguments
+                        TupleElementList.Add(ConvertToType(TupleElement))
+                    Next
+                    Return VBFactory.GenericName("Tuple", VBFactory.TypeArgumentList(VBFactory.SeparatedList(TupleElementList)))
+                End If
+                Dim PossibleName As String = PossibleTupleType.ToString.Trim
+                Dim StartIndex As Integer = PossibleName.IndexOf("<")
+                If StartIndex > 0 Then
+                    Dim IndexOfLastGreaterThan As Integer = PossibleName.LastIndexOf(">")
+                    Dim Name As String = PossibleName.Substring(0, StartIndex)
+                    Dim PossibleTypes As String = PossibleName.Substring(StartIndex + 1, IndexOfLastGreaterThan - StartIndex - 1)
+                    If PossibleTupleType.ToString.StartsWith("System.Func") Then
+                        Dim DictionaryTypeElement As New List(Of VBS.TypeSyntax)
+                        While PossibleTypes.Length > 0
                             Dim EndIndex As Integer
-                            If PossibleDictionary.StartsWith("(") Then
+                            ' Tuple
+                            If PossibleTypes.StartsWith("(") Then
                                 ' Tuple
-                                EndIndex = PossibleDictionary.IndexOf(")")
-                                DictionaryTypeElement.Add(Me.CovertStringToTupleType(PossibleDictionary.Substring(0, EndIndex + 1).Trim))
+                                EndIndex = PossibleTypes.LastIndexOf(")")
+                                DictionaryTypeElement.Add(CovertStringToTupleType(PossibleTypes.Substring(0, EndIndex + 1).Trim))
                                 EndIndex += 1
                             Else
-                                EndIndex = PossibleDictionary.IndexOf(",")
-                                EndIndex = If(EndIndex = -1, PossibleDictionary.Length, EndIndex)
-                                DictionaryTypeElement.Add(ConvertToType(PossibleDictionary.Substring(0, EndIndex).Replace("<", "(Of ").Replace(">", ")").Trim))
+                                ' Type
+                                EndIndex = PossibleTypes.IndexOf(",")
+                                Dim FirstLessThan As Integer = PossibleTypes.IndexOf("<")
+                                EndIndex = If(EndIndex = -1 OrElse (FirstLessThan <> -1 AndAlso FirstLessThan < EndIndex), PossibleTypes.Length, EndIndex)
+                                DictionaryTypeElement.Add(ConvertToType(PossibleTypes.Substring(0, EndIndex).Replace("<", "(Of ").Replace(">", ")").Trim))
                             End If
-                            If EndIndex + 1 < PossibleDictionary.Length Then
-                                PossibleDictionary = PossibleDictionary.Substring(EndIndex + 1).Trim
+                            If EndIndex + 1 < PossibleTypes.Length Then
+                                PossibleTypes = PossibleTypes.Substring(EndIndex + 1).Trim
                             Else
                                 Exit While
                             End If
                         End While
+                        Return VBFactory.GenericName(Name, VBFactory.TypeArgumentList(VBFactory.SeparatedList(DictionaryTypeElement)))
+                    End If
+                    ' Could be dictionary or List
+                    If TypeOf PossibleTupleType Is INamedTypeSymbol AndAlso PossibleName.Contains(",") Then
+                        Dim NamedType As INamedTypeSymbol = CType(PossibleTupleType, INamedTypeSymbol)
+                        Dim DictionaryTypeElement As New List(Of VBS.TypeSyntax)
+                        If NamedType.TypeArguments.Count = 0 Then
+                            Return PredefinedTypeObject
+                        End If
+                        For Each Element As ITypeSymbol In NamedType.TypeArguments
+                            DictionaryTypeElement.Add(ConvertToType(Element))
+                        Next
                         Return VBFactory.GenericName(Name, VBFactory.TypeArgumentList(OpenParenToken,
                                                                                       OfKeyword.WithTrailingTrivia(SpaceTrivia),
                                                                                       VBFactory.SeparatedList(DictionaryTypeElement),
@@ -600,7 +599,86 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                                     )
                     End If
                 End If
-                Return ConvertToType(PossibleDictionary.Replace("<", "(Of ").Replace(">", ")"))
+                Return ConvertToType(PossibleName.Replace("<", "(Of ").Replace(">", ")"))
+            End Function
+
+            Public Shared Function GetElementType(_ITypeSymbol As ITypeSymbol) As VBS.TypeSyntax
+                Dim _TypeSyntax As VBS.TypeSyntax = ConvertToType(_ITypeSymbol)
+                If _TypeSyntax.IsKind(VB.SyntaxKind.ArrayType) Then
+                    If DirectCast(_ITypeSymbol, IArrayTypeSymbol).ElementType.TypeKind = TypeKind.Array Then
+                        Return _TypeSyntax.NormalizeWhitespace
+                    End If
+                    Return DirectCast(_TypeSyntax, VBS.ArrayTypeSyntax).ElementType.NormalizeWhitespace
+                End If
+                If TypeOf _TypeSyntax Is VBS.QualifiedNameSyntax Then
+                    Dim Right As SimpleNameSyntax = DirectCast(_TypeSyntax, VBS.QualifiedNameSyntax).Right
+                    If TypeOf Right Is IdentifierNameSyntax Then
+                        Dim TypeSyntax As TypeSyntax = GetTypeSyntaxFromInterface(_ITypeSymbol)
+                        Return TypeSyntax
+                    End If
+                    Dim GenericdName As VBS.GenericNameSyntax = DirectCast(Right, GenericNameSyntax)
+                    If GenericdName.TypeArgumentList.Arguments.Count = 1 Then
+                        Return GenericdName.TypeArgumentList.Arguments(0)
+                    Else
+                        Return VBFactory.ParseTypeName(GenericdName.TypeArgumentList.Arguments.ToString & ")")
+                    End If
+                End If
+                If TypeOf _TypeSyntax Is VBS.GenericNameSyntax Then
+                    Dim GenericdName As VBS.GenericNameSyntax = CType(_TypeSyntax, VBS.GenericNameSyntax)
+                    If GenericdName.TypeArgumentList.Arguments.Count = 1 Then
+                        Return GenericdName.TypeArgumentList.Arguments(0)
+                    Else
+                        Return GetTypeSyntaxFromInterface(_ITypeSymbol)
+                    End If
+                End If
+                If TypeOf _TypeSyntax Is VBS.IdentifierNameSyntax Then
+                    Return VBFactory.ParseTypeName(_TypeSyntax.ToString)
+                End If
+
+                If _TypeSyntax.IsKind(VB.SyntaxKind.PredefinedType) Then
+                    Select Case DirectCast(_TypeSyntax, PredefinedTypeSyntax).Keyword.ValueText.ToLower
+                        Case "string"
+                            Return VBFactory.PredefinedType(CharKeyword)
+                        Case "object"
+                            Return VBFactory.PredefinedType(ObjectKeyword)
+                        Case Else
+                            Stop
+                    End Select
+                End If
+                Return VBFactory.PredefinedType(ObjectKeyword)
+            End Function
+
+            Private Shared Function GetTypeSyntaxFromInterface(expressionConvertedType As ITypeSymbol) As TypeSyntax
+
+                If expressionConvertedType.AllInterfaces.Count = 0 Then
+                    If expressionConvertedType.ToString.EndsWith("IArityEnumerable") Then
+                        Return PredefinedTypeInteger
+                    End If
+                    Return PredefinedTypeObject
+                End If
+                For Each NamedType As INamedTypeSymbol In expressionConvertedType.AllInterfaces
+                    Dim index As Integer = NamedType.ToString.IndexOf(IEnumerableOf)
+                    Dim NewType As String
+                    If index > 0 Then
+                        NewType = NamedType.ToString.Substring(index + IEnumerableOf.Length)
+                        Return VBFactory.ParseName(NewType)
+                    End If
+                    index = NamedType.ToString.IndexOf(IDictionary)
+                    If index > 0 Then
+                        Return ConvertToType(NamedType)
+                    End If
+                    index = NamedType.ToString.IndexOf(IEnumerable)
+                    If index > 0 Then
+                        Return ConvertToType(NamedType)
+                    End If
+                Next
+
+                Dim index1 As Integer = expressionConvertedType.ToString.IndexOf(IEnumerableOf)
+                If index1 > 0 Then
+                    Dim NewType As String = expressionConvertedType.ToString.Substring(index1 + IEnumerableOf.Length)
+                    Return VBFactory.ParseName(NewType)
+                End If
+                Return Nothing
             End Function
 
             Public Overrides Function VisitAnonymousMethodExpression(node As CSS.AnonymousMethodExpressionSyntax) As VB.VisualBasicSyntaxNode
@@ -823,9 +901,9 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                             Dim builder As New System.Text.StringBuilder()
                             builder.Append("(")
                             For i As Integer = 0 To TupleList.Count - 2
-                                builder.Append(ConvertToType(TupleList(i)).ToString & ", ")
+                                builder.Append(TupleList(i) & ", ")
                             Next
-                            builder.Append(ConvertToType(TupleList.Last).ToString & ")")
+                            builder.Append(TupleList.Last & ")")
                             Dim TupleType As String = builder.ToString
 
                             Dim SimpleAs As VBS.SimpleAsClauseSyntax = VBFactory.SimpleAsClause(AsKeyword.WithTrailingTrivia(SpaceTrivia), attributeLists:=Nothing, type:=VBFactory.ParseTypeName(TupleType).WithLeadingTrivia(SpaceTrivia)).WithLeadingTrivia(SpaceTrivia)
@@ -1911,7 +1989,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                             If LeftNodeTypeInfo.Type Is Nothing OrElse LeftNodeTypeInfo.Type.IsErrorType Then
                                 Return NothingExpression
                             End If
-                            Dim _Type As VBS.TypeSyntax = If(LeftNodeTypeInfo.Type.IsTupleType, Me.CovertStringToTupleType(LeftNodeTypeInfo.Type.ToString), ConvertToType(LeftNodeTypeInfo.Type.Name))
+                            Dim _Type As VBS.TypeSyntax = If(LeftNodeTypeInfo.Type.IsTupleType, CovertStringToTupleType(LeftNodeTypeInfo.Type.ToString), ConvertToType(LeftNodeTypeInfo.Type.Name))
                             Return VBFactory.CTypeExpression(
                                                       NothingExpression,
                                                       _Type
@@ -2197,8 +2275,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Next
 
                 Dim Names As SeparatedSyntaxList(Of VBS.ModifiedIdentifierSyntax) = VBFactory.SeparatedList(Variables)
-                Dim ObjectType As VBS.PredefinedTypeSyntax = PredefinedTypeObject
-                Return VBFactory.VariableDeclarator(Names, VBFactory.SimpleAsClause(ObjectType), initializer:=Nothing)
+                Return VBFactory.VariableDeclarator(Names, VBFactory.SimpleAsClause(PredefinedTypeObject), initializer:=Nothing)
             End Function
 
             Public Overrides Function VisitPostfixUnaryExpression(node As CSS.PostfixUnaryExpressionSyntax) As VB.VisualBasicSyntaxNode

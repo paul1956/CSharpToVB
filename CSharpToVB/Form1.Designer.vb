@@ -56,7 +56,6 @@ Partial Class Form1
         Me.mnuConvertConvertFolder = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuConvertConvertSnippet = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuOptions = New System.Windows.Forms.ToolStripMenuItem()
-        Me.mnuOptionsAutoCompile = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuOptionsColorizeResult = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuOptionsColorizeSource = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuOptionsDelayBetweenConversions = New System.Windows.Forms.ToolStripComboBox()
@@ -338,21 +337,11 @@ Partial Class Form1
         '
         'mnuOptions
         '
-        Me.mnuOptions.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuOptionsAutoCompile, Me.mnuOptionsColorizeResult, Me.mnuOptionsColorizeSource, Me.mnuOptionsDelayBetweenConversions, Me.mnuOptionsAddFilesToIgnoreFilesEithErrorsList, Me.mnuOptionsEditIgnoreFilesWithErrorsList, Me.ToolStripSeparator6, Me.SkipOptionsToolStripMenuItem, Me.mnuOptionsPauseConvertOnSuccess, Me.mnuOptionsStartFolderConvertFromLastFile, Me.ToolStripSeparator4, Me.mnuOptionsAdvanced})
+        Me.mnuOptions.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuOptionsColorizeResult, Me.mnuOptionsColorizeSource, Me.mnuOptionsDelayBetweenConversions, Me.mnuOptionsAddFilesToIgnoreFilesEithErrorsList, Me.mnuOptionsEditIgnoreFilesWithErrorsList, Me.ToolStripSeparator6, Me.SkipOptionsToolStripMenuItem, Me.mnuOptionsPauseConvertOnSuccess, Me.mnuOptionsStartFolderConvertFromLastFile, Me.ToolStripSeparator4, Me.mnuOptionsAdvanced})
         Me.mnuOptions.Name = "mnuOptions"
         Me.mnuOptions.ShortcutKeys = CType((System.Windows.Forms.Keys.Alt Or System.Windows.Forms.Keys.O), System.Windows.Forms.Keys)
         Me.mnuOptions.Size = New System.Drawing.Size(61, 20)
         Me.mnuOptions.Text = "&Options"
-        '
-        'mnuOptionsAutoCompile
-        '
-        Me.mnuOptionsAutoCompile.Checked = True
-        Me.mnuOptionsAutoCompile.CheckOnClick = True
-        Me.mnuOptionsAutoCompile.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.mnuOptionsAutoCompile.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
-        Me.mnuOptionsAutoCompile.Name = "mnuOptionsAutoCompile"
-        Me.mnuOptionsAutoCompile.Size = New System.Drawing.Size(360, 22)
-        Me.mnuOptionsAutoCompile.Text = "Auto Compile"
         '
         'mnuOptionsColorizeResult
         '
@@ -620,7 +609,7 @@ Partial Class Form1
         Me.SplitContainer1.Panel2.Controls.Add(Me.RichTextBoxFileList)
         Me.SplitContainer1.Panel2.Controls.Add(Me.RichTextBoxErrorList)
         Me.SplitContainer1.Size = New System.Drawing.Size(1923, 613)
-        Me.SplitContainer1.SplitterDistance = 164
+        Me.SplitContainer1.SplitterDistance = 163
         Me.SplitContainer1.SplitterWidth = 5
         Me.SplitContainer1.TabIndex = 22
         '
@@ -632,7 +621,7 @@ Partial Class Form1
         Me.RichTextBoxConversionInput.Font = New System.Drawing.Font("Consolas", 11.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.RichTextBoxConversionInput.Location = New System.Drawing.Point(23, 0)
         Me.RichTextBoxConversionInput.Name = "RichTextBoxConversionInput"
-        Me.RichTextBoxConversionInput.Size = New System.Drawing.Size(1221, 164)
+        Me.RichTextBoxConversionInput.Size = New System.Drawing.Size(1221, 163)
         Me.RichTextBoxConversionInput.TabIndex = 9
         Me.RichTextBoxConversionInput.Text = ""
         Me.RichTextBoxConversionInput.WordWrap = False
@@ -640,7 +629,7 @@ Partial Class Form1
         'StatusStrip1
         '
         Me.StatusStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.StatusStripCurrentFileName, Me.StatusStripSpacer, Me.ConversionProgressBar, Me.FilesConversionProgress})
-        Me.StatusStrip1.Location = New System.Drawing.Point(0, 419)
+        Me.StatusStrip1.Location = New System.Drawing.Point(0, 420)
         Me.StatusStrip1.Name = "StatusStrip1"
         Me.StatusStrip1.Padding = New System.Windows.Forms.Padding(1, 0, 16, 0)
         Me.StatusStrip1.Size = New System.Drawing.Size(1923, 25)
@@ -741,7 +730,7 @@ Partial Class Form1
         Me.LineNumbers_For_RichTextBoxInput.Show_GridLines = True
         Me.LineNumbers_For_RichTextBoxInput.Show_LineNrs = True
         Me.LineNumbers_For_RichTextBoxInput.Show_MarginLines = True
-        Me.LineNumbers_For_RichTextBoxInput.Size = New System.Drawing.Size(23, 164)
+        Me.LineNumbers_For_RichTextBoxInput.Size = New System.Drawing.Size(23, 163)
         Me.LineNumbers_For_RichTextBoxInput.TabIndex = 23
         Me.LineNumbers_For_RichTextBoxInput.Visible = False
         '
@@ -754,7 +743,7 @@ Partial Class Form1
         Me.RichTextBoxConversionOutput.HScrollPos = 0
         Me.RichTextBoxConversionOutput.Location = New System.Drawing.Point(999, 0)
         Me.RichTextBoxConversionOutput.Name = "RichTextBoxConversionOutput"
-        Me.RichTextBoxConversionOutput.Size = New System.Drawing.Size(924, 164)
+        Me.RichTextBoxConversionOutput.Size = New System.Drawing.Size(924, 163)
         Me.RichTextBoxConversionOutput.TabIndex = 10
         Me.RichTextBoxConversionOutput.Text = ""
         Me.RichTextBoxConversionOutput.VScrollPos = 0
@@ -794,7 +783,7 @@ Partial Class Form1
         Me.LineNumbers_For_RichTextBoxOutput.Show_GridLines = True
         Me.LineNumbers_For_RichTextBoxOutput.Show_LineNrs = True
         Me.LineNumbers_For_RichTextBoxOutput.Show_MarginLines = True
-        Me.LineNumbers_For_RichTextBoxOutput.Size = New System.Drawing.Size(21, 164)
+        Me.LineNumbers_For_RichTextBoxOutput.Size = New System.Drawing.Size(21, 163)
         Me.LineNumbers_For_RichTextBoxOutput.TabIndex = 22
         Me.LineNumbers_For_RichTextBoxOutput.Visible = False
         '
@@ -874,7 +863,6 @@ Partial Class Form1
     Friend WithEvents LabelErrorCount As Label
     Friend WithEvents mnuCompile As ToolStripMenuItem
     Friend WithEvents ToolTip1 As ToolTip
-    Friend WithEvents mnuOptionsAutoCompile As ToolStripMenuItem
     Friend WithEvents ToolStripSeparator4 As ToolStripSeparator
     Friend WithEvents SplitContainer1 As SplitContainer
     Friend WithEvents RichTextBoxConversionOutput As AdvancedRTB = Nothing

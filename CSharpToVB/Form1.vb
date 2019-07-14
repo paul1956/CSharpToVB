@@ -301,7 +301,6 @@ Public Class Form1
             My.Settings.Save()
         End If
 
-        Me.mnuOptionsAutoCompile.Checked = My.Settings.AutoCompile
         Me.mnuOptionsColorizeSource.Checked = My.Settings.ColorizeInput
         Me.mnuOptionsColorizeResult.Checked = My.Settings.ColorizeOutput
 
@@ -465,7 +464,7 @@ Public Class Form1
         Me.LineNumbers_For_RichTextBoxOutput.Visible = False
         Me.ResizeRichTextBuffers()
         Me.RequestToConvert.SourceCode = Me.RichTextBoxConversionInput.Text
-        Me.Convert_Compile_Colorize(Me.RequestToConvert, References.ToArray)
+        Me.Convert_Compile_Colorize(Me.RequestToConvert, VisualBasicReferences.ToArray)
         Me.mnuConvertConvertFolder.Enabled = True
         SetButtonStopAndCursor(MeForm:=Me, StopButton:=Me.ButtonStop, StopButtonVisible:=False)
     End Sub
@@ -707,12 +706,6 @@ Public Class Form1
 
     Private Sub mnuOptionsAdvanced_Click(sender As Object, e As EventArgs) Handles mnuOptionsAdvanced.Click
         OptionsDialog.Show(Me)
-    End Sub
-
-    Private Sub mnuOptionsAutoCompile_Click(sender As Object, e As EventArgs) Handles mnuOptionsAutoCompile.Click
-        My.Settings.AutoCompile = CType(sender, ToolStripMenuItem).Checked
-        My.Settings.Save()
-        Application.DoEvents()
     End Sub
 
     Private Sub mnuOptionsColorizeResult_Click(sender As Object, e As EventArgs) Handles mnuOptionsColorizeResult.Click

@@ -93,7 +93,7 @@ Namespace IVisualBasicCode.CodeConverter
             Dim compilation As Compilation = CS.CSharpCompilation.Create(
                                                         assemblyName:=NameOf(Conversion),
                                                         syntaxTrees:={Tree},
-                                                        References,
+                                                        OptionalReferences,
                                                         options:=CSharpOptions)
             Try
                 Dim SourceTree As CS.CSharpSyntaxNode = DirectCast(Tree.GetRoot, CS.CSharpSyntaxNode)

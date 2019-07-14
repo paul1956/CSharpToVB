@@ -26,12 +26,5 @@ Namespace CodeConverter.Tests
             Return sb.ToString()
         End Function
 
-        <Extension>
-        Public Function GetAssemblyLocation(type As Type) As String
-            Dim asm As Assembly = type.GetTypeInfo().Assembly
-            Dim locationProperty As PropertyInfo = asm.GetType().GetRuntimeProperties().Single(Function(p As PropertyInfo) p.Name = "Location")
-            Return CStr(locationProperty.GetValue(asm))
-        End Function
-
     End Module
 End Namespace

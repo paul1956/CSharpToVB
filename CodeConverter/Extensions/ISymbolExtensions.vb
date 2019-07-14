@@ -19,6 +19,65 @@ Namespace IVisualBasicCode.CodeConverter.Util
             [Private]
         End Enum
 
+        <Extension>
+        Public Function ConvertToType(ByVal symbol As ISymbol, ByVal compilation As Compilation, Optional ByVal extensionUsedAsInstance As Boolean = False) As ITypeSymbol
+            Dim _type As ITypeSymbol = TryCast(symbol, ITypeSymbol)
+            If _type IsNot Nothing Then
+                Return _type
+            End If
+
+            Dim method As IMethodSymbol = TryCast(symbol, IMethodSymbol)
+            If method IsNot Nothing AndAlso Not method.Parameters.Any(Function(p As IParameterSymbol) p.RefKind <> RefKind.None) Then
+                ' Convert the symbol to Func<...> or Action<...>
+                If method.ReturnsVoid Then
+                    Dim count As Integer = If(extensionUsedAsInstance, method.Parameters.Length - 1, method.Parameters.Length)
+                    Dim skip As Integer = If(extensionUsedAsInstance, 1, 0)
+                    count = Math.Max(0, count)
+                    If count = 0 Then
+                        ' Action
+                        Return compilation.ActionType()
+                    Else
+                        ' Action<TArg1, ..., TArgN>
+                        Dim actionName As String = "System.Action`" & count
+                        'INSTANT VB NOTE: The variable actionType was renamed since Visual Basic does not handle local variables named the same as class members well:
+                        Dim actionType_Renamed As INamedTypeSymbol = compilation.GetTypeByMetadataName(actionName)
+
+                        If actionType_Renamed IsNot Nothing Then
+                            Dim types() As ITypeSymbol = method.Parameters.
+                            Skip(skip).
+                            Select(Function(p As IParameterSymbol) If(p.Type, compilation.GetSpecialType(SpecialType.System_Object))).
+                            ToArray()
+                            Return actionType_Renamed.Construct(types)
+                        End If
+                    End If
+                Else
+                    ' Func<TArg1,...,TArgN,TReturn>
+                    '
+                    ' +1 for the return type.
+                    Dim count As Integer = If(extensionUsedAsInstance, method.Parameters.Length - 1, method.Parameters.Length)
+                    Dim skip As Integer = If(extensionUsedAsInstance, 1, 0)
+                    Dim functionName As String = "System.Func`" & (count + 1)
+                    Dim functionType As INamedTypeSymbol = compilation.GetTypeByMetadataName(functionName)
+
+                    If functionType IsNot Nothing Then
+                        Try
+                            Dim types() As ITypeSymbol = method.Parameters.
+                            Skip(skip).Select(Function(p As IParameterSymbol) p.Type).
+                            Concat(method.ReturnType).
+                            Select(Function(t As ITypeSymbol) If(t Is Nothing OrElse t.IsErrorType, compilation.GetSpecialType(SpecialType.System_Object), t)).
+                            ToArray()
+                            Return functionType.Construct(types)
+                        Catch ex As Exception
+                            Stop
+                        End Try
+                    End If
+                End If
+            End If
+
+            ' Otherwise, just default to object.
+            Return compilation.ObjectType
+        End Function
+
         <ExcludeFromCodeCoverage>
         <Extension>
         Private Function GetResultantVisibility(symbol As ISymbol) As SymbolVisibility
@@ -81,15 +140,14 @@ Namespace IVisualBasicCode.CodeConverter.Util
                     Else
                         ' Action<TArg1, ..., TArgN>
                         Dim actionName As String = "System.Action`" & count
-                        'INSTANT VB NOTE: The variable actionType was renamed since Visual Basic does not handle local variables named the same as class members well:
-                        Dim actionType_Renamed As INamedTypeSymbol = compilation.GetTypeByMetadataName(actionName)
+                        Dim _ActionType As INamedTypeSymbol = compilation.GetTypeByMetadataName(actionName)
 
-                        If actionType_Renamed IsNot Nothing Then
+                        If _ActionType IsNot Nothing Then
                             Dim types() As ITypeSymbol = method.Parameters.
                             Skip(skip).
                             Select(Function(p As IParameterSymbol) If(p.Type, compilation.GetSpecialType(SpecialType.System_Object))).
                             ToArray()
-                            Return actionType_Renamed.Construct(types)
+                            Return _ActionType.Construct(types)
                         End If
                     End If
                 Else
@@ -103,12 +161,12 @@ Namespace IVisualBasicCode.CodeConverter.Util
 
                     If functionType IsNot Nothing Then
                         Try
-                            Dim types() As ITypeSymbol = method.Parameters.
-                            Skip(skip).Select(Function(p As IParameterSymbol) p.Type).
+                            Dim CSharpTypes() As ITypeSymbol = method.Parameters.
+                            Skip(skip).Select(Function(p As IParameterSymbol) If(p.Type.IsErrorType, compilation.GetSpecialType(SpecialType.System_Object), p.Type)).
                             Concat({method.ReturnType}).
-                            Select(Function(t As ITypeSymbol) If(t, compilation.GetSpecialType(SpecialType.System_Object))).
+                            Select(Function(t As ITypeSymbol) If(t Is Nothing OrElse t.IsErrorType, compilation.GetSpecialType(SpecialType.System_Object), t)).
                             ToArray()
-                            Return functionType.Construct(types)
+                            Return functionType.Construct(CSharpTypes)
                         Catch ex As Exception
                             Stop
                         End Try

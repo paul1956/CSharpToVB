@@ -27,12 +27,18 @@ Public Module ExpressionSyntaxSupport
                 If symbol IsNot Nothing Then
                     Dim _type As ITypeSymbol = TryCast(symbol, ITypeSymbol)
                     If _type IsNot Nothing Then
+                        If symbol.Kind = SymbolKind.PointerType Then
+                            Return (_type, True)
+                        End If
+                        If _type.ToString.Contains("<anonymous type") OrElse _type.ToString.StartsWith("(") Then
+                            Return (_type, True)
+                        End If
                         Return (_type, False)
                     End If
                     Return (symbol.ConvertISymbolToType(Model.Compilation), False)
-                End If
+                    End If
 
-            End If
+                End If
         Catch ex As Exception
             Stop
         End Try

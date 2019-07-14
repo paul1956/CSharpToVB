@@ -45,7 +45,7 @@ Public Module Compile
         Dim compilation As VisualBasicCompilation = VisualBasicCompilation.Create(
                                                                     assemblyName:=assemblyName,
                                                                     syntaxTrees:={syntaxTree},
-                                                                    references:=References,
+                                                                    VisualBasicReferences,
                                                                     options:=CompilationOptions
                                                                                   )
 

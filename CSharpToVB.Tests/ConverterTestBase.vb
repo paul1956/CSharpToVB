@@ -65,7 +65,7 @@ Namespace CodeConverter.Tests
                     )
                 },
                 projectReferences:=Nothing,
-                metadataReferences:=SharedReferences.References)
+                metadataReferences:=SharedReferences.CSharpReferences)
                 )
             doc = workspace.CurrentSolution.GetProject(projectId).GetDocument(documentId)
         End Sub
@@ -106,7 +106,7 @@ Namespace CodeConverter.Tests
                                                 )
                                             },
                                             projectReferences:=Nothing,
-                                            metadataReferences:=SharedReferences.References))
+                                            metadataReferences:=SharedReferences.VisualBasicReferences))
             doc = workspace.CurrentSolution.GetProject(ProjectId).GetDocument(DocumentID)
         End Sub
 

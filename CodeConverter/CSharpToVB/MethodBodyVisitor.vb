@@ -9,6 +9,7 @@ Imports IVisualBasicCode.CodeConverter.Util
 
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.CSharp
+Imports Microsoft.CodeAnalysis.Simplification
 Imports Microsoft.CodeAnalysis.VisualBasic
 
 Imports CS = Microsoft.CodeAnalysis.CSharp
@@ -949,6 +950,16 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Dim variable As VB.VisualBasicSyntaxNode
                 If node.Type.IsVar Then
                     variable = VBFactory.IdentifierName(GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False))
+
+                    Dim variableITypeSymbol As (_ITypeSymbol As ITypeSymbol, _Error As Boolean) = node.Expression.DetermineType(Me.mSemanticModel)
+                    If variableITypeSymbol._Error = False Then
+                        Dim _ITypeSymbol As ITypeSymbol = variableITypeSymbol._ITypeSymbol
+                        variable = VBFactory.VariableDeclarator(VBFactory.SingletonSeparatedList(
+                                  VBFactory.ModifiedIdentifier(GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False)).WithTrailingTrivia(SpaceTrivia)),
+                                                                asClause:=VBFactory.SimpleAsClause(NodesVisitor.GetElementType(_ITypeSymbol)),
+                                                                initializer:=Nothing)
+
+                    End If
                 Else
                     variable = VBFactory.VariableDeclarator(VBFactory.SingletonSeparatedList(
                                   VBFactory.ModifiedIdentifier(GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False)).WithTrailingTrivia(SpaceTrivia)),
@@ -964,7 +975,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Dim ForEachStatementSyntax As VBS.ForEachStatementSyntax = VBFactory.ForEachStatement(variable, expression).WithTrailingEOL
                 Dim block As VBS.ForEachBlockSyntax = VBFactory.ForEachBlock(ForEachStatementSyntax.WithConvertedLeadingTriviaFrom(node.ForEachKeyword),
                                                                              stmt,
-                                                                             NextStatement)
+                                                                             NextStatement).WithAdditionalAnnotations(Simplifier.Annotation)
                 Return ReplaceStatementsWithMarkedStatements(node, VBFactory.SingletonList(Of VBS.StatementSyntax)(block))
             End Function
 
@@ -1149,7 +1160,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     modifiers.Add(DimKeyword)
                 End If
                 Dim LeadingTrivia As New List(Of SyntaxTrivia)
-                Dim declarators As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) = RemodelVariableDeclaration(node.Declaration, Me.mNodesVisitor, IsFieldDeclaration:=False, LeadingTrivia)
+                Dim declarators As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) = RemodelVariableDeclaration(node.Declaration, Me.mNodesVisitor, Me.mSemanticModel, IsFieldDeclaration:=False, LeadingTrivia)
                 Dim localDeclarationStatement As VBS.LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(
                                                         VBFactory.TokenList(modifiers),
                                                         declarators).
@@ -1364,7 +1375,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         UsingStatement = VBFactory.UsingStatement(DirectCast(node.Expression?.Accept(Me.mNodesVisitor), VBS.ExpressionSyntax), VBFactory.SeparatedList(Of VBS.VariableDeclaratorSyntax)())
                     End If
                 Else
-                    UsingStatement = VBFactory.UsingStatement(expression:=Nothing, RemodelVariableDeclaration(node.Declaration, Me.mNodesVisitor, IsFieldDeclaration:=False, LeadingTrivia))
+                    UsingStatement = VBFactory.UsingStatement(expression:=Nothing, RemodelVariableDeclaration(node.Declaration, Me.mNodesVisitor, Me.mSemanticModel, IsFieldDeclaration:=False, LeadingTrivia))
                 End If
 
                 Dim EndUsing As VBS.EndBlockStatementSyntax = VBFactory.EndUsingStatement.WithConvertedTriviaFrom(node.Statement.GetBraces.Item2)

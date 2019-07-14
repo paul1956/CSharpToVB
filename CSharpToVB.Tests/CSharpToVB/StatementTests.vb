@@ -97,7 +97,7 @@ Option Strict Off
 Class TestClass
 
     Private Sub TestMethod()
-        Dim b = 0
+        Dim b As Integer = 0
     End Sub
 End Class")
         End Sub
@@ -159,7 +159,7 @@ Option Strict Off
 Class TestClass
 
     Private Sub TestMethod()
-        Dim b = New String(""test"")
+        Dim b As String = New String(""test"")
     End Sub
 End Class")
         End Sub
@@ -445,7 +445,7 @@ Class Test
 the_beginning:
         Dim value As Integer = 1
         Const myPIe As Double = System.Math.PI
-        Dim text = ""This is my text!""
+        Dim text As String = ""This is my text!""
         GoTo the_beginning
     End Sub
 End Class")
@@ -629,7 +629,7 @@ Option Strict Off
 Class TestClass
 
     Private Sub TestMethod(values As Integer())
-        For Each val In values
+        For Each val As Integer In values
             If val = 2 Then
                 Continue For
             End If

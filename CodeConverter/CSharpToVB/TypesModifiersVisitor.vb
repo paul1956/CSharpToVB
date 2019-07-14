@@ -24,12 +24,13 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 If SplitTypeString.Count > 2 Then
                     Stop
                 End If
-                TypeString = SplitTypeString(0)
                 Dim IndexOfLessThan As Integer = TypeString.IndexOf("<")
+                Dim TypeName As String = SplitTypeString(0)
+                Dim Name As String = If(SplitTypeString.Count = 1, "", SplitTypeString(1) & " As ")
                 If IndexOfLessThan > 0 Then
-                    Return VBFactory.ParseTypeName(TypeString.Left(IndexOfLessThan)).ToString & TypeString.Substring(IndexOfLessThan).Replace("<", "(Of ").Replace(">", ")")
+                    Return $"{Name}{TypeName.Left(IndexOfLessThan)}{TypeName.Substring(IndexOfLessThan).Replace("<", "(Of ").Replace(">", ")")}"
                 End If
-                Return ConvertToType(TypeString).ToString
+                Return Name & ConvertToType(TypeName).ToString
             End Function
 
             Private Shared Function ConvertTupleToTypeStrings(TypeString As String) As List(Of String)
@@ -66,9 +67,53 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     End Function)
                     Return clauses.FirstOrDefault(Function(c As CSS.TypeParameterConstraintClauseSyntax) c.Name.ToString() = node.ToString())
                 End If
+
             End Function
 
-            Public Shared Function ConvertToType(TypeString As String) As VBS.TypeSyntax
+            Public Shared Function ConvertToType(_TypeString As String) As VBS.TypeSyntax
+                Dim TypeString As String = _TypeString.Trim
+                Dim IndexOf As Integer = TypeString.IndexOf("(Of ")
+                If IndexOf >= 0 Then
+                    Dim Name As String = TypeString.Substring(0, IndexOf)
+                    TypeString = TypeString.Substring(IndexOf + 3)
+                    Dim IndexOfLastCloseParen As Integer = TypeString.LastIndexOf(")")
+                    TypeString = TypeString.Substring(0, IndexOfLastCloseParen)
+                    Dim TypeList As New List(Of VBS.TypeSyntax)
+                    Dim PossibleTypes As String = TypeString.Trim
+                    While PossibleTypes.Length > 0
+                        Dim EndIndex As Integer
+                        ' Type
+                        EndIndex = PossibleTypes.IndexOf(",")
+                        Dim FirstLessThan As Integer = PossibleTypes.IndexOf("(")
+                        If EndIndex = -1 OrElse FirstLessThan = -1 Then
+                            EndIndex = PossibleTypes.Length
+                        ElseIf EndIndex > FirstLessThan Then
+                            Dim OpenParenCount As Integer = 0
+                            For i As Integer = FirstLessThan To PossibleTypes.Length - 1
+                                Select Case PossibleTypes.Substring(i, 1)
+                                    Case "("
+                                        OpenParenCount += 1
+                                    Case ")"
+                                        OpenParenCount -= 1
+                                        EndIndex = i + 1
+                                    Case ","
+                                        If OpenParenCount = 0 Then
+                                            EndIndex = i
+                                            Exit For
+                                        End If
+                                End Select
+                            Next
+                        End If
+                        TypeList.Add(ConvertToType(PossibleTypes.Substring(0, EndIndex).Trim))
+                        If EndIndex + 1 < PossibleTypes.Length Then
+                            PossibleTypes = PossibleTypes.Substring(EndIndex + 1).Trim
+                        Else
+                            Exit While
+                        End If
+                    End While
+                    Dim TypeArguemntList As VBS.TypeArgumentListSyntax = VBFactory.TypeArgumentList(VBFactory.SeparatedList(TypeList))
+                    Return VBFactory.GenericName(Name, TypeArguemntList)
+                End If
                 Select Case TypeString.ToLower
                     Case "byte"
                         Return PredefinedTypeByte

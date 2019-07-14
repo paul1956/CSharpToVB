@@ -480,7 +480,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Else
                     modifierList(0) = modifierList(0).WithLeadingTrivia(LeadingTrivia)
                 End If
-                Dim declarators As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) = RemodelVariableDeclaration(node.Declaration, Me, IsFieldDeclaration:=True, LeadingTrivia)
+                Dim declarators As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) = RemodelVariableDeclaration(node.Declaration, Me, Me.mSemanticModel, IsFieldDeclaration:=True, LeadingTrivia)
                 Dim FieldDeclaration As VBS.FieldDeclarationSyntax
                 Dim modifiers As SyntaxTokenList = VBFactory.TokenList(modifierList)
                 FieldDeclaration = VBFactory.FieldDeclaration(Attributes, modifiers, declarators).WithLeadingTrivia(LeadingTrivia)

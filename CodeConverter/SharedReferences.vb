@@ -4,91 +4,117 @@ Option Strict On
 
 Imports System.IO
 Imports System.Reflection
+Imports System.Reflection.Metadata
+Imports System.Reflection.PortableExecutable
 Imports System.Runtime.CompilerServices
 
 Imports Microsoft.CodeAnalysis
 
 Public Module SharedReferences
+    Private ReadOnly _CSharpReferences As New List(Of MetadataReference)
+    Private ReadOnly _ReferencePath As New List(Of String)
+    Private ReadOnly _VisualBasicReferences As New List(Of MetadataReference)
     Private ReadOnly FrameworkDirectory As String = Directory.GetParent(GetType(Object).Assembly.Location).FullName
 
-    Private ReadOnly _References As New List(Of MetadataReference)
-    Private ReadOnly _ReferencePath As New List(Of String)
     Private Sub BuildReferenceList()
-        If _References.Count > 0 Then
+        SyncLock _ReferencePath
+            If _ReferencePath.Count > 0 Then
+                Return
+            End If
+            ' CodeAnalysisReference
+            Dim Location As String = GetType(Compilation).Assembly.Location
+            _ReferencePath.AddReferences(Location)
+
+            'SystemReferences
+            For Each DLL_Path As String In Directory.GetFiles(FrameworkDirectory, "*.dll")
+                If DLL_Path.EndsWith("System.EnterpriseServices.Wrapper.dll") Then
+                    Continue For
+                End If
+                _ReferencePath.AddReferences(DLL_Path)
+            Next
+
+            ' ComponentModelEditorBrowsable
+            Location = GetType(ComponentModel.EditorBrowsableAttribute).GetAssemblyLocation
+            _ReferencePath.AddReferences(Location)
+
+            ' SystemCore
+            Location = GetType(Enumerable).Assembly.Location
+            _ReferencePath.AddReferences(Location)
+
+            ' SystemXmlLinq
+            Location = GetType(XElement).Assembly.Location
+            _ReferencePath.AddReferences(Location)
+
+            ' VBRuntime
+            Location = GetType(CompilerServices.StandardModuleAttribute).Assembly.Location
+            _VisualBasicReferences.Add(MetadataReference.CreateFromFile(Location))
+        End SyncLock
+    End Sub
+
+    <Extension>
+    Private Sub AddReferences(L As List(Of String), FileNameWithPath As String)
+        If L.Contains(FileNameWithPath) Then
             Return
         End If
-        ' CodeAnalysisReference
-        Dim Location As String = GetType(Compilation).Assembly.Location
-        _ReferencePath.Add(Location)
-        _References.Add(MetadataReference.CreateFromFile(GetType(Compilation).Assembly.Location))
+        Dim hasMetadataIsAssembly As (HasMetadata As Boolean, IsAssembly As Boolean) = FileNameWithPath.HasMetadataIsAssembly
 
-        'SystemReferences
-        For Each DLL_Path As String In Directory.GetFiles(FrameworkDirectory, "*.dll")
-            If _ReferencePath.Contains(DLL_Path) Then
-                Stop
-            Else
-                _ReferencePath.Add(DLL_Path)
-                _References.Add(MetadataReference.CreateFromFile(DLL_Path))
-            End If
-        Next
-
-#If Not NETCOREAPP3_0 Then
-        ' ComponentModelEditorBrowsable
-        Location = GetType(ComponentModel.EditorBrowsableAttribute).GetAssemblyLocation
-        If _ReferencePath.Contains(Location) Then
-            Stop
-        Else
-            _ReferencePath.Add(Location)
-            _References.Add(MetadataReference.CreateFromFile(Location))
+        If Not hasMetadataIsAssembly.HasMetadata Then
+            Return
         End If
-
-        ' SystemCore
-        Location = GetType(Enumerable).Assembly.Location
-        If _ReferencePath.Contains(Location) Then
-            Stop
-        Else
-            _ReferencePath.Add(Location)
-            _References.Add(MetadataReference.CreateFromFile(Location))
+        L.Add(FileNameWithPath)
+        If hasMetadataIsAssembly.IsAssembly Then
+            _CSharpReferences.Add(MetadataReference.CreateFromFile(FileNameWithPath))
         End If
-
-        ' SystemXmlLinq
-        Location = GetType(XElement).Assembly.Location
-        If _ReferencePath.Contains(Location) Then
-            Stop
-        Else
-            _ReferencePath.Add(Location)
-            _References.Add(MetadataReference.CreateFromFile(Location))
-        End If
-#End If
-
-        ' VBRuntime
-        Location = GetType(CompilerServices.StandardModuleAttribute).Assembly.Location
-        If _ReferencePath.Contains(Location) Then
-            Stop
-        Else
-            _ReferencePath.Add(Location)
-            _References.Add(MetadataReference.CreateFromFile(Location))
-        End If
-
+        _VisualBasicReferences.Add(MetadataReference.CreateFromFile(FileNameWithPath))
     End Sub
+
+    <Extension>
+    Private Function HasMetadataIsAssembly(sourcePath As String) As (HasMetadata As Boolean, IsAssembly As Boolean)
+        Using assemblyStream As New FileStream(sourcePath, FileMode.Open, FileAccess.Read, FileShare.Delete Or FileShare.Read)
+            Try
+                Using peReader As New PEReader(assemblyStream, PEStreamOptions.LeaveOpen)
+                    If peReader.HasMetadata Then
+                        Dim reader As MetadataReader = peReader.GetMetadataReader()
+                        Return (True, reader.IsAssembly)
+                    End If
+                End Using
+            Catch e1 As BadImageFormatException
+                ' not a PE
+            End Try
+
+            Return (False, False)
+        End Using
+    End Function
+
+    Public Function CSharpReferences() As List(Of MetadataReference)
+        Try
+            If _CSharpReferences.Count = 0 Then
+                BuildReferenceList()
+            End If
+            Return _CSharpReferences.ToList
+        Catch ex As Exception
+            Stop
+        End Try
+        Return Nothing
+    End Function
+
+    Public Function VisualBasicReferences() As List(Of MetadataReference)
+        Try
+            If _VisualBasicReferences.Count = 0 Then
+                BuildReferenceList()
+            End If
+            Return _VisualBasicReferences.ToList
+        Catch ex As Exception
+            Stop
+        End Try
+        Return Nothing
+    End Function
 
     <Extension>
     Public Function GetAssemblyLocation(type As Type) As String
         Dim asm As Assembly = type.GetTypeInfo().Assembly
         Dim locationProperty As PropertyInfo = asm.GetType().GetRuntimeProperties().Single(Function(p As PropertyInfo) p.Name = "Location")
         Return CStr(locationProperty.GetValue(asm))
-    End Function
-
-    Public Function References() As List(Of MetadataReference)
-        Try
-            If _References.Count = 0 Then
-                BuildReferenceList()
-            End If
-            Return _References.ToList
-        Catch ex As Exception
-            Stop
-        End Try
-        Return Nothing
     End Function
 
 End Module

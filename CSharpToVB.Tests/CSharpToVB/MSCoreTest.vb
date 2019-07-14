@@ -10,7 +10,7 @@ Namespace XUnitTestProject1
             Dim tree As SyntaxTree = CSharpSyntaxTree.ParseText("using System;
 class test : IComparable { }")
 
-            Dim compilation As CSharpCompilation = CSharpCompilation.Create("MyCompilation", syntaxTrees:={tree}, references:=SharedReferences.References)
+            Dim compilation As CSharpCompilation = CSharpCompilation.Create("MyCompilation", syntaxTrees:={tree}, references:=SharedReferences.CSharpReferences)
             Dim lSemanticModel As SemanticModel = compilation.GetSemanticModel(tree)
             Dim InputNode As Syntax.CompilationUnitSyntax = CType(compilation.SyntaxTrees(0).GetRoot, Syntax.CompilationUnitSyntax)
             Dim node As Syntax.ClassDeclarationSyntax = CType(InputNode.Members(0), Syntax.ClassDeclarationSyntax)
