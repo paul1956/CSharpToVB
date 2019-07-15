@@ -12,15 +12,6 @@
     <AssemblyName>CSharpToVBApp</AssemblyName>
     <ApplicationManifest>My Project\app.manifest</ApplicationManifest>
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Remove="MsgBox\**" />
-    <EmbeddedResource Remove="MsgBox\**" />
-    <None Remove="MsgBox\**" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Remove="My Project\Application.Designer.vb" />
-    <Compile Remove="My Project\AssemblyInfo.vb" />
-  </ItemGroup>
 
   <ItemGroup>
     <Import Include="System.Data" />
