@@ -9,7 +9,7 @@ The Tests under "TestCompile" are designed to translate the C# code in Roslyn an
 GetRoslynRootDirectory to find it. Results of folder conversion are stored in with the same directory
 structure with the root directory renamed to _VB. The original directories are unchanged.
 
-This version required Visual Studio 2019 and uses the new Visual Basic feature _ ' Comment to preserve
+This version required at least Visual Studio 2019 Preview 3.0 to compile the code it produces uses the new Visual Basic feature _ ' Comment to preserve
 most comments and formatting.
 
 Opening the resulting Visual Basic files in Visual Studio will further improve the formatting.

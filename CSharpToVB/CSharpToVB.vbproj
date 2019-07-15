@@ -1,268 +1,49 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{5D36ED60-91A7-4D39-BA56-BAFCE97F97C5}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <StartupObject>CSharpToVBApp.My.MyApplication</StartupObject>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <RootNamespace>CSharpToVBApp</RootNamespace>
-    <AssemblyName>CSharpToVBApp</AssemblyName>
-    <FileAlignment>512</FileAlignment>
-    <MyType>WindowsForms</MyType>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
-    <TargetFrameworkProfile />
-    <PublishUrl>publish\</PublishUrl>
-    <Install>true</Install>
-    <InstallFrom>Disk</InstallFrom>
-    <UpdateEnabled>false</UpdateEnabled>
-    <UpdateMode>Foreground</UpdateMode>
-    <UpdateInterval>7</UpdateInterval>
-    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
-    <UpdatePeriodically>false</UpdatePeriodically>
-    <UpdateRequired>false</UpdateRequired>
-    <MapFileExtensions>true</MapFileExtensions>
-    <TargetCulture>en-US</TargetCulture>
-    <ProductName>C# to VB Converter</ProductName>
-    <PublisherName>Travel By Paul</PublisherName>
-    <ApplicationRevision>1</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <UseApplicationTrust>false</UseApplicationTrust>
-    <PublishWizardCompleted>true</PublishWizardCompleted>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <StartupObject>CSharpToVBApp.Form1</StartupObject>
+    <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
   <PropertyGroup>
     <LangVersion>16</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <DefineDebug>true</DefineDebug>
-    <DefineTrace>true</DefineTrace>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DocumentationFile>CSharpToVBApp.xml</DocumentationFile>
-    <NoWarn>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</NoWarn>
-    <WarningsAsErrors>
-    </WarningsAsErrors>
-    <DefineConstants>VB_TO_CSharp=False</DefineConstants>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <DefineDebug>false</DefineDebug>
-    <DefineTrace>true</DefineTrace>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DocumentationFile>CSharpToVBApp.xml</DocumentationFile>
-    <NoWarn>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</NoWarn>
-    <WarningsAsErrors>
-    </WarningsAsErrors>
-  </PropertyGroup>
-  <PropertyGroup>
-    <OptionExplicit>Off</OptionExplicit>
-  </PropertyGroup>
-  <PropertyGroup>
-    <OptionCompare>Binary</OptionCompare>
-  </PropertyGroup>
-  <PropertyGroup>
-    <OptionStrict>Off</OptionStrict>
-  </PropertyGroup>
-  <PropertyGroup>
-    <OptionInfer>On</OptionInfer>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ManifestCertificateThumbprint>8553FC25BE88EE4DCA4F2743EF609828570CDB6A</ManifestCertificateThumbprint>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ManifestKeyFile>CSharpToVB_TemporaryKey.pfx</ManifestKeyFile>
-  </PropertyGroup>
-  <PropertyGroup>
-    <GenerateManifests>true</GenerateManifests>
-  </PropertyGroup>
-  <PropertyGroup>
-    <SignManifests>true</SignManifests>
-  </PropertyGroup>
-  <PropertyGroup>
+    <AssemblyName>CSharpToVBApp</AssemblyName>
     <ApplicationManifest>My Project\app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
-    <Reference Include="System" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Deployment" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
+    <Compile Remove="MsgBox\**" />
+    <EmbeddedResource Remove="MsgBox\**" />
+    <None Remove="MsgBox\**" />
   </ItemGroup>
   <ItemGroup>
-    <Import Include="Microsoft.VisualBasic" />
-    <Import Include="System" />
-    <Import Include="System.Collections" />
-    <Import Include="System.Collections.Generic" />
+    <Compile Remove="My Project\Application.Designer.vb" />
+    <Compile Remove="My Project\AssemblyInfo.vb" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Import Include="System.Data" />
     <Import Include="System.Drawing" />
-    <Import Include="System.Diagnostics" />
     <Import Include="System.Windows.Forms" />
-    <Import Include="System.Linq" />
-    <Import Include="System.Xml.Linq" />
-    <Import Include="System.Threading.Tasks" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="AdvancedRTB.vb">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="ColorSelector.vb" />
-    <Compile Include="Compile.vb" />
-    <Compile Include="IgnoreFilesWithErrorsListDialog.Designer.vb">
-      <DependentUpon>IgnoreFilesWithErrorsListDialog.vb</DependentUpon>
-    </Compile>
-    <Compile Include="IgnoreFilesWithErrorsListDialog.vb">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="NativeMethods.vb" />
-    <Compile Include="RangeSupport.vb" />
-    <Compile Include="ComGuids.vb" />
-    <Compile Include="Extensions\SpecializedCollection.vb" />
-    <Compile Include="OpenFolderDialog.vb" />
-    <Compile Include="Errors.vb" />
-    <Compile Include="Extensions\Contract.vb" />
-    <Compile Include="Form1.vb">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Form1.Designer.vb">
-      <DependentUpon>Form1.vb</DependentUpon>
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="IgnoreErrorList.vb" />
-    <Compile Include="LineNumbers_For_RichTextBox.vb">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="InternalErrorCode.vb" />
-    <Compile Include="My Project\AssemblyInfo.vb" />
-    <Compile Include="My Project\Application.Designer.vb">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Application.myapp</DependentUpon>
-    </Compile>
-    <Compile Include="My Project\Resources.Designer.vb">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-    <Compile Include="My Project\Settings.Designer.vb">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
-    <Compile Include="Extensions\StringExtensions.vb" />
-    <Compile Include="OptionsDialog.Designer.vb">
-      <DependentUpon>OptionsDialog.vb</DependentUpon>
-    </Compile>
-    <Compile Include="OptionsDialog.vb">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="ProcessDirectoriesModule.vb" />
-    <Compile Include="Range.vb" />
-    <Compile Include="Settings.vb" />
-    <Compile Include="Utilities\FileSupport.vb" />
-    <Compile Include="Utilities\SpecializedCollections.Singleton.Collection.vb" />
-    <Compile Include="Utilities\SpecializedCollections.Singleton.Enumerator`.vb" />
-    <Compile Include="VS_Selector_Dialog1.Designer.vb">
-      <DependentUpon>VS_Selector_Dialog1.vb</DependentUpon>
-    </Compile>
-    <Compile Include="VS_Selector_Dialog1.vb">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="WindowsUtilities.vb" />
+    <PackageReference Include="Microsoft.Build.Locator" Version="1.2.2" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="3.1.0" />
   </ItemGroup>
+
   <ItemGroup>
-    <EmbeddedResource Include="AdvancedRTB.resx">
-      <DependentUpon>AdvancedRTB.vb</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Form1.resx">
-      <DependentUpon>Form1.vb</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="IgnoreFilesWithErrorsListDialog.resx">
-      <DependentUpon>IgnoreFilesWithErrorsListDialog.vb</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="My Project\Resources.resx">
-      <Generator>VbMyResourcesResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.vb</LastGenOutput>
-      <CustomToolNamespace>My.Resources</CustomToolNamespace>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="OptionsDialog.resx">
-      <DependentUpon>OptionsDialog.vb</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="VS_Selector_Dialog1.resx">
-      <DependentUpon>VS_Selector_Dialog1.vb</DependentUpon>
-    </EmbeddedResource>
+    <ProjectReference Include="..\CodeConverter\CodeConverter.vbproj" />
+    <ProjectReference Include="..\ManageProgressBar\ManageProgressBar.vbproj" />
+    <ProjectReference Include="..\VBMsgBox\VBMsgBox.vbproj" />
   </ItemGroup>
+
   <ItemGroup>
-    <None Include="CSharpToVB.vbproj.vsspell" />
-    <None Include="CSharpToVB_TemporaryKey.pfx" />
-    <None Include="My Project\app.manifest" />
-    <None Include="My Project\Application.myapp">
-      <Generator>MyApplicationCodeGenerator</Generator>
-      <LastGenOutput>Application.Designer.vb</LastGenOutput>
-    </None>
-    <None Include="My Project\Settings.settings">
+    <None Update="My Project\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
-      <CustomToolNamespace>My</CustomToolNamespace>
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
     </None>
-    <None Include="App.config">
-      <SubType>Designer</SubType>
-    </None>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\Close_16xLG.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\CodeConverter\CodeConverter.vbproj">
-      <Project>{5b4a54bd-e39f-4212-9465-05370d1ad59e}</Project>
-      <Name>CodeConverter</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ManageProgressBar\ManageProgressBar.vbproj">
-      <Project>{EB03AF11-3C02-4CC3-AA64-977E8CE31879}</Project>
-      <Name>ManageProgressBar</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Locator">
-      <Version>1.2.2</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="2.9.3" PrivateAssets="all">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="3.1.0" />
-    <PackageReference Include="WindowsBase">
-      <Version>4.6.1055</Version>
-    </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <BootstrapperPackage Include=".NETFramework,Version=v4.7.1">
-      <Visible>False</Visible>
-      <ProductName>Microsoft .NET Framework 4.7.1 %28x86 and x64%29</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
+
 </Project>

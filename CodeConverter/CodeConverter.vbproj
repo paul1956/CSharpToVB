@@ -2,55 +2,20 @@
 
   <PropertyGroup>
     <RootNamespace></RootNamespace>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <OptionStrict>On</OptionStrict>
     <OptionInfer>Off</OptionInfer>
     <AssemblyName>VB.CodeConverter</AssemblyName>
   </PropertyGroup>
   <PropertyGroup>
-	<LangVersion>16</LangVersion>
+    <LangVersion>16</LangVersion>
   </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <NoWarn />
-    <WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <NoWarn />
-    <WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <DefineConstants>VB_TO_CSharp="False"</DefineConstants>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="Utils\obj\**" />
-    <Compile Remove="VBToCSharp\**" />
-    <EmbeddedResource Remove="Utils\obj\**" />
-    <EmbeddedResource Remove="VBToCSharp\**" />
-    <None Remove="Utils\obj\**" />
-    <None Remove="VBToCSharp\**" />
-  </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis" Version="3.1.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="2.9.3">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="3.1.0" />
-    <PackageReference Include="System.Memory" Version="4.5.3" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\HashLibrary\HashLibrary.csproj" />
+    <ProjectReference Include="..\ManageProgressBar\ManageProgressBar.vbproj" />
+    <ProjectReference Include="..\VBMsgBox\VBMsgBox.vbproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Reference Include="Microsoft.VisualBasic">
-      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\Microsoft.VisualBasic.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
 </Project>

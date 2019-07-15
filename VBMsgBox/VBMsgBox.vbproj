@@ -1,13 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <RootNamespace>ManageProgressBar</RootNamespace>
+    <RootNamespace>VBMsgBox</RootNamespace>
     <TargetFramework>netcoreapp3.0</TargetFramework>
+    <Authors>Paul Cohen</Authors>
+    <NeutralLanguage></NeutralLanguage>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Description>VB MessageBox for .NET Core 3.0</Description>
+    <PackageTags>Visual Basic MsgBox</PackageTags>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="System.Drawing.Common" Version="4.6.0-preview6.19303.8" />
-  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="System.Windows.Forms">

@@ -622,15 +622,17 @@ Public Class Form1
                 Dim ProjectSavePath As String = Me.GetFoldertSavePath(Path.GetDirectoryName(.FileName), SourceLanguageExtension)
                 Me.mnuConvertConvertFolder.Enabled = True
                 If Me.MSBuildInstance Is Nothing Then
-                    If VS_Selector_Dialog1.ShowDialog(Me) <> DialogResult.OK Then
+                    Dim VS_Selector As New VS_Selector_Dialog1
+                    If VS_Selector.ShowDialog(Me) <> DialogResult.OK Then
                         Stop
                     End If
-                    Console.WriteLine($"Using MSBuild at '{VS_Selector_Dialog1.MSBuildInstance.MSBuildPath}' to load projects.")
+                    Console.WriteLine($"Using MSBuild at '{VS_Selector.MSBuildInstance.MSBuildPath}' to load projects.")
                     ' NOTE: Be sure to register an instance with the MSBuildLocator
                     '       before calling MSBuildWorkspace.Create()
                     '       otherwise, MSBuildWorkspace won't MEF compose.
-                    Me.MSBuildInstance = VS_Selector_Dialog1.MSBuildInstance
+                    Me.MSBuildInstance = VS_Selector.MSBuildInstance
                     MSBuildLocator.RegisterInstance(Me.MSBuildInstance)
+                    VS_Selector.Dispose()
                 End If
 
                 Using Workspace As MSBuildWorkspace = MSBuildWorkspace.Create()
@@ -705,7 +707,9 @@ Public Class Form1
     End Sub
 
     Private Sub mnuOptionsAdvanced_Click(sender As Object, e As EventArgs) Handles mnuOptionsAdvanced.Click
-        OptionsDialog.Show(Me)
+        Using o As New OptionsDialog
+            Dim r As DialogResult = o.ShowDialog(Me)
+        End Using
     End Sub
 
     Private Sub mnuOptionsColorizeResult_Click(sender As Object, e As EventArgs) Handles mnuOptionsColorizeResult.Click
@@ -742,12 +746,14 @@ Public Class Form1
     End Sub
 
     Private Sub mnuOptionsEditIgnoreFilesWithErrorsList_Click(sender As Object, e As EventArgs) Handles mnuOptionsEditIgnoreFilesWithErrorsList.Click
-        IgnoreFilesWithErrorsList.ShowDialog(Me)
-        If IgnoreFilesWithErrorsList.FileToLoad <> "" Then
+        Dim IgnoreFilesWithErrorsDialog As New IgnoreFilesWithErrorsList
+        IgnoreFilesWithErrorsDialog.ShowDialog(Me)
+        If IgnoreFilesWithErrorsDialog.FileToLoad <> "" Then
             Dim LanguageExtension As String = Me.RequestToConvert.GetSourceExtension
             Me.mnuConvertConvertFolder.Enabled = False
-            Me.OpenFile(IgnoreFilesWithErrorsList.FileToLoad, LanguageExtension)
+            Me.OpenFile(IgnoreFilesWithErrorsDialog.FileToLoad, LanguageExtension)
         End If
+        IgnoreFilesWithErrorsDialog.Dispose()
     End Sub
 
     Private Sub mnuOptionsPauseConvertOnSuccess_Click(sender As Object, e As EventArgs) Handles mnuOptionsPauseConvertOnSuccess.Click
