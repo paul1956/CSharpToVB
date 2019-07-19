@@ -29,3 +29,5 @@ it is almost empty.
 There are several Stop statements for debugging, and if you continue past them reasonable things will
 happen but a better translation is possible.
 The program does not deal well with bad C# code.
+https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json is added to NuGet Package Source to find
+Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpecific attributes used for testing.

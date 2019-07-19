@@ -10,16 +10,14 @@ Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Simplification
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
+Imports VBMsgBox
+
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
-
-#If NETCOREAPP3_0 Then
-Imports VBMsgBox
-#End If
 
 Namespace IVisualBasicCode.CodeConverter.Visual_Basic
 

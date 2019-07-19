@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28729.10
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "CSharpToVB", "CSharpToVB\CSharpToVB.vbproj", "{5D36ED60-91A7-4D39-BA56-BAFCE97F97C5}"
+Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "CSharpToVB", "CSharpToVB\CSharpToVB.vbproj", "{5D36ED60-91A7-4D39-BA56-BAFCE97F97C5}"
 EndProject
 Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "CodeConverter", "CodeConverter\CodeConverter.vbproj", "{5B4A54BD-E39F-4212-9465-05370D1AD59E}"
 EndProject
@@ -14,11 +14,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HashLibrary", "HashLibrary\HashLibrary.csproj", "{A31D8B14-6383-45F2-90AB-82AFEA1F2CA5}"
 EndProject
-Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "CSharpToVB.Tests", "CSharpToVB.Tests\CSharpToVB.Tests.vbproj", "{93A45B05-179A-4EA7-AE67-60B8C71F38A4}"
+Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "CSharpToVB.Tests", "CSharpToVB.Tests\CSharpToVB.Tests.vbproj", "{93A45B05-179A-4EA7-AE67-60B8C71F38A4}"
 EndProject
-Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "ManageProgressBar", "ManageProgressBar\ManageProgressBar.vbproj", "{EB03AF11-3C02-4CC3-AA64-977E8CE31879}"
+Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "ManageProgressBar", "ManageProgressBar\ManageProgressBar.vbproj", "{EB03AF11-3C02-4CC3-AA64-977E8CE31879}"
 EndProject
 Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "VBMsgBox", "VBMsgBox\VBMsgBox.vbproj", "{D9D14C6A-B921-4D72-B566-BD10464B7DBE}"
+EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "VBMsgBox.Tests", "MessageBox.Tests\VBMsgBox.Tests.vbproj", "{BEEF5723-E33F-4DF5-ABAD-FC2E4C6B79D2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -50,6 +52,10 @@ Global
 		{D9D14C6A-B921-4D72-B566-BD10464B7DBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D9D14C6A-B921-4D72-B566-BD10464B7DBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D9D14C6A-B921-4D72-B566-BD10464B7DBE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BEEF5723-E33F-4DF5-ABAD-FC2E4C6B79D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BEEF5723-E33F-4DF5-ABAD-FC2E4C6B79D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BEEF5723-E33F-4DF5-ABAD-FC2E4C6B79D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BEEF5723-E33F-4DF5-ABAD-FC2E4C6B79D2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

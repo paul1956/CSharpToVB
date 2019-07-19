@@ -26,15 +26,16 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             Struct
         End Enum
 
-        Private Function ConvertModifier(m As SyntaxToken, IsModule As Boolean, Optional context As TokenContext = TokenContext.[Global]) As SyntaxToken
-            Dim Token As SyntaxToken = ConvertModifierTokenKind(CS.CSharpExtensions.Kind(m), IsModule, context)
+        Private Function ConvertModifier(m As SyntaxToken, IsModule As Boolean, context As TokenContext, ByRef FoundVisibility As Boolean) As SyntaxToken
+            Dim Token As SyntaxToken = ConvertModifierTokenKind(CS.CSharpExtensions.Kind(m), IsModule, context, FoundVisibility)
             If Token.IsKind(VB.SyntaxKind.EmptyToken) Then
-                Return EmptyToken.WithConvertedleadingTriviaFrom(m)
+                Return EmptyToken.WithConvertedLeadingTriviaFrom(m)
             End If
             Return Token.WithConvertedTriviaFrom(m)
         End Function
 
         Private Iterator Function ConvertModifiersCore(CS_Modifiers As IEnumerable(Of SyntaxToken), IsModule As Boolean, Context As TokenContext) As IEnumerable(Of SyntaxToken)
+            Dim FoundVisibility As Boolean = False
             Dim LeadingTrivia As New List(Of SyntaxTrivia)
             Dim FirstModifier As Boolean = True
             If CS_Modifiers.Count > 0 Then
@@ -51,14 +52,16 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Next
 
                 If Not visibility AndAlso Context = TokenContext.Member Then
+                    Dim DefaultVisibility As SyntaxToken = CSharpDefaultVisibility(Context)
                     If FirstModifier Then
-                        Yield CSharpDefaultVisibility(Context).WithLeadingTrivia(LeadingTrivia)
+                        Yield DefaultVisibility.WithLeadingTrivia(LeadingTrivia)
                         LeadingTrivia.Clear()
                         LeadingTrivia.Add(SpaceTrivia)
                         FirstModifier = False
                     Else
-                        Yield CSharpDefaultVisibility(Context)
+                        Yield DefaultVisibility
                     End If
+                    FoundVisibility = Not DefaultVisibility.IsKind(VB.SyntaxKind.EmptyToken)
                 End If
             End If
             For i As Integer = 0 To CS_Modifiers.Count - 1
@@ -66,7 +69,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 If i = 0 AndAlso Not FirstModifier Then
                     CS_Modifier = CS_Modifier.WithLeadingTrivia(CS_SpaceTrivia)
                 End If
-                Dim VB_Modifier As SyntaxToken = ConvertModifier(CS_Modifier, IsModule, Context)
+                Dim VB_Modifier As SyntaxToken = ConvertModifier(CS_Modifier, IsModule, Context, FoundVisibility)
                 Dim TrailingTrivia As New List(Of SyntaxTrivia)
 
                 ' If there is only empty Token then attach leading trivia to it otherwise ignore
@@ -219,15 +222,21 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             Return ConvertModifiersCore(CS_Modifiers, IsModule, Context).ToList
         End Function
 
-        Public Function ConvertModifierTokenKind(t As CS.SyntaxKind, IsModule As Boolean, Optional context As TokenContext = TokenContext.[Global]) As SyntaxToken
+        Public Function ConvertModifierTokenKind(t As CS.SyntaxKind, IsModule As Boolean, context As TokenContext, ByRef FoundVisibility As Boolean) As SyntaxToken
             Select Case t
                 Case CS.SyntaxKind.None
                     Return EmptyToken
                 Case CS.SyntaxKind.PublicKeyword
+                    FoundVisibility = True
                     Return PublicKeyword
                 Case CS.SyntaxKind.PrivateKeyword
+                    If FoundVisibility Then
+                        Return EmptyToken
+                    End If
+                    FoundVisibility = True
                     Return PrivateKeyword
                 Case CS.SyntaxKind.InternalKeyword
+                    FoundVisibility = True
                     Return FriendKeyword
                 Case CS.SyntaxKind.ProtectedKeyword
                     Return ProtectedKeyword
@@ -268,6 +277,9 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Case CS.SyntaxKind.SealedKeyword
                     Return If(context = TokenContext.[Global] OrElse context = TokenContext.Class, NotInheritableKeyword, NotOverridableKeyword)
                 Case CS.SyntaxKind.StaticKeyword
+                    If FoundVisibility Then
+                        Return EmptyToken
+                    End If
                     Return If(IsModule, If(context = TokenContext.VariableOrConst, PrivateKeyword, EmptyToken), SharedKeyword)
                 Case CS.SyntaxKind.ThisKeyword
                     Return MeKeyword
