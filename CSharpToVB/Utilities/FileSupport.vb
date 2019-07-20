@@ -28,17 +28,22 @@ Public Module FileSupport
     End Function
 
     Public Function GetLatestVisualStudioProjectPath() As String
-        Dim DirectoryEntries As String() = Directory.GetDirectories((FileIO.SpecialDirectories.MyDocuments))
+        Dim DirectoryEntries As String() = Directory.GetDirectories((FileIO.SpecialDirectories.MyDocuments), VisualStudioBaseName.Trim & "*")
         Dim LatestVersion As Integer = 0
         For Each dir As String In DirectoryEntries
             Dim DirectoryFileName As String = Path.GetFileName(dir)
             If DirectoryFileName.StartsWith(VisualStudioBaseName) Then
-                Dim VSVersion As Integer = CInt(DirectoryFileName.Replace(VisualStudioBaseName, ""))
-                If VSVersion > LatestVersion Then
-                    LatestVersion = VSVersion
+                If Directory.Exists(Path.Combine(dir, "Projects")) Then
+                    Dim VSVersion As Integer = CInt(DirectoryFileName.Replace(VisualStudioBaseName, ""))
+                    If VSVersion > LatestVersion Then
+                        LatestVersion = VSVersion
+                    End If
                 End If
             End If
         Next
+        If LatestVersion = 0 Then
+            Return FileIO.SpecialDirectories.MyDocuments
+        End If
         Return Path.Combine(FileIO.SpecialDirectories.MyDocuments, $"{VisualStudioBaseName}{LatestVersion:0000}", "Projects")
     End Function
 End Module
