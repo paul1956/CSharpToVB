@@ -20,8 +20,6 @@ Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "ManageProgressBar", "Manage
 EndProject
 Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "VBMsgBox", "VBMsgBox\VBMsgBox.vbproj", "{D9D14C6A-B921-4D72-B566-BD10464B7DBE}"
 EndProject
-Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "VBMsgBox.Tests", "MessageBox.Tests\VBMsgBox.Tests.vbproj", "{BEEF5723-E33F-4DF5-ABAD-FC2E4C6B79D2}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -52,10 +50,6 @@ Global
 		{D9D14C6A-B921-4D72-B566-BD10464B7DBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D9D14C6A-B921-4D72-B566-BD10464B7DBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D9D14C6A-B921-4D72-B566-BD10464B7DBE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BEEF5723-E33F-4DF5-ABAD-FC2E4C6B79D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BEEF5723-E33F-4DF5-ABAD-FC2E4C6B79D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BEEF5723-E33F-4DF5-ABAD-FC2E4C6B79D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BEEF5723-E33F-4DF5-ABAD-FC2E4C6B79D2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
