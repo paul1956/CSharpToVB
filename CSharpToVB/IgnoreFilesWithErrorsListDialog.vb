@@ -1,4 +1,7 @@
-﻿Public Class IgnoreFilesWithErrorsList
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+Public Class IgnoreFilesWithErrorsList
     Dim _FileToLoad = ""
     Private ReadOnly list_string As IList(Of String) = New List(Of String)()
 
@@ -54,13 +57,13 @@
 
         Dim buttonLoadFile As New DataGridViewButtonColumn
         With buttonLoadFile
-                .HeaderText = "Load File"
-                .Name = "Load"
-                .Text = "Load File"
-                ' Use the Text property for the button text for all cells rather
-                ' than using each cell's value as the text for its own button.
-                .UseColumnTextForButtonValue = True
-            End With
+            .HeaderText = "Load File"
+            .Name = "Load"
+            .Text = "Load File"
+            ' Use the Text property for the button text for all cells rather
+            ' than using each cell's value as the text for its own button.
+            .UseColumnTextForButtonValue = True
+        End With
         ' Add the button column to the control.
         Me.dgvIgnoredFilesList.Columns.Insert(1, buttonLoadFile)
 #Enable Warning IDE0067 ' Dispose objects before losing scope

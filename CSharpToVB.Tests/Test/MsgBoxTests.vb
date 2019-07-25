@@ -8,7 +8,7 @@ Imports VBMsgBox
 
 Imports Xunit
 
-Namespace Microsoft.VisualBasic.Tests.VB
+Namespace VBMsgBox.Test
 
     Public NotInheritable Class MsgBoxTests
 

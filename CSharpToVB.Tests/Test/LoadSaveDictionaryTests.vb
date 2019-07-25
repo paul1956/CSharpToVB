@@ -1,13 +1,21 @@
-﻿Imports CSharpToVBApp
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+Imports CodeConverter.Tests.Utils
+
+Imports CSharpToVBApp
+
 Imports Microsoft.CodeAnalysis
+
 Imports Xunit
 
-Namespace CSharpToVB.Tests
+Namespace DictionaryLoadSave.Tests
 
     <TestClass()> Public Class LoadSaveDictionaryTests
         Dim LastFileProcessed As String
         ReadOnly ListOfFiles As New List(Of String)
         Dim MaxPathLength As Integer = 0
+
         Public Function GetMaxPathLength(PathWithFileName As String, TargetDirectory As String, LanguageExtension As String, DontCare() As MetadataReference) As Boolean
             ' Do not delete the next line of the parameter
             Me.LastFileProcessed = PathWithFileName
@@ -29,7 +37,7 @@ Namespace CSharpToVB.Tests
             Dim FilesProcessed As Long = 0
             Dim LastFileNameWithPath As String = ""
             Dim Condition As Boolean = ProcessDirectory(GetRoslynRootDirectory(), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, LastFileNameWithPath:=LastFileNameWithPath, SourceLanguageExtension:="cs", FilesProcessed, 0, ProcessFile:=AddressOf Me.GetMaxPathLength)
-            Assert.True(Me.MaxPathLength = 210, $"MaxPathLength of 210 <> {Me.MaxPathLength}")
+            Assert.Equal(Me.MaxPathLength, 210)
         End Sub
 
         <Fact>
@@ -37,8 +45,9 @@ Namespace CSharpToVB.Tests
             Dim OriginalString As String = "This is a 2 Line
 String"
             Dim ResultlString As String = "This is a 2 LineString"
-            Assert.True(OriginalString.WithoutNewLines = ResultlString)
+            Assert.Equal(OriginalString.WithoutNewLines, ResultlString)
         End Sub
+
     End Class
 
 End Namespace

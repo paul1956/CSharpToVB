@@ -2,8 +2,6 @@
 Option Infer Off
 Option Strict On
 
-Imports System.Reflection
-Imports System.Runtime.CompilerServices
 Imports System.Text
 
 Namespace CodeConverter.Tests
@@ -24,6 +22,15 @@ Namespace CodeConverter.Tests
                 End If
             Next i
             Return sb.ToString()
+        End Function
+
+        Private _roslynRootDirectory As String = ""
+
+        Public Function GetRoslynRootDirectory() As String
+            If _roslynRootDirectory.IsEmptyNullOrWhitespace Then
+                _roslynRootDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) & "\Source\Repos\roslyn"
+            End If
+            Return _roslynRootDirectory
         End Function
 
     End Module

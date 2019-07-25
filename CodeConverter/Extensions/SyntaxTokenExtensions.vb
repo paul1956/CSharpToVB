@@ -1,4 +1,7 @@
-﻿Option Explicit On
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+Option Explicit On
 Option Infer Off
 Option Strict On
 
@@ -11,6 +14,7 @@ Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 
 Namespace IVisualBasicCode.CodeConverter.Util
     Public Module SyntaxTokenExtensions
+
         ''' <summary>
         ''' Returns the token after this token in the syntax tree.
         ''' </summary>
@@ -272,6 +276,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
             End If
             Return Token.With(FinalLeadingTriviaList, FinalTrailingTriviaList)
         End Function
+
         <Extension>
         Public Function WithPrependedLeadingTrivia(token As SyntaxToken, ParamArray trivia() As SyntaxTrivia) As SyntaxToken
             If trivia.Length = 0 Then
@@ -294,5 +299,6 @@ Namespace IVisualBasicCode.CodeConverter.Util
         Public Function WithPrependedLeadingTrivia(token As SyntaxToken, trivia As IEnumerable(Of SyntaxTrivia)) As SyntaxToken
             Return token.WithPrependedLeadingTrivia(trivia.ToSyntaxTriviaList())
         End Function
+
     End Module
 End Namespace

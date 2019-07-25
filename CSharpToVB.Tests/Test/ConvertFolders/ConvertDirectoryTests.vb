@@ -1,4 +1,9 @@
-﻿Imports System.IO
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+Imports System.IO
+
+Imports CodeConverter.Tests
 
 Imports CSharpToVBApp
 
@@ -10,7 +15,7 @@ Imports Microsoft.CodeAnalysis.Emit
 
 Imports Xunit
 
-Namespace CSharpToVB.Tests
+Namespace ConvertDirectory.Tests
 
     <TestClass()> Public Class TestCompile
         Private LastFileProcessed As String
@@ -20,6 +25,7 @@ Namespace CSharpToVB.Tests
             Return True
         End Function
 
+        <Trait("Category", "SkipWhenLiveUnitTesting")>
         <Fact>
         Public Sub ConvertDirectoryCodeStyle()
 
@@ -35,12 +41,14 @@ Namespace CSharpToVB.Tests
             Assert.True(ProcessDirectory(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "Core"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, LastFileNameWithPath:="", SourceLanguageExtension:="cs", FilesProcessed, 0, ProcessFile:=AddressOf Me.ProcessFile), $"Failing file {Me.LastFileProcessed}")
         End Sub
 
+        <Trait("Category", "SkipWhenLiveUnitTesting")>
         <Fact>
         Public Sub ConvertDirectoryCompilersCSharpCSC()
             Dim FilesProcessed As Long = 0
             Assert.True(ProcessDirectory(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "CSharp", "CSC"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, LastFileNameWithPath:="", SourceLanguageExtension:="cs", FilesProcessed, 0, ProcessFile:=AddressOf Me.ProcessFile), $"Failing file {Me.LastFileProcessed}")
         End Sub
 
+        <Trait("Category", "SkipWhenLiveUnitTesting")>
         <Fact>
         Public Sub ConvertDirectoryCompilersCSharpCSharpAnalyzerDriver()
             Dim FilesProcessed As Long = 0
@@ -83,42 +91,49 @@ Namespace CSharpToVB.Tests
             Assert.True(ProcessDirectory(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "CSharp", "Test", "Syntax"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, LastFileNameWithPath:="", SourceLanguageExtension:="cs", FilesProcessed, 0, ProcessFile:=AddressOf Me.ProcessFile), $"Failing file {Me.LastFileProcessed}")
         End Sub
 
+        <Trait("Category", "SkipWhenLiveUnitTesting")>
         <Fact>
         Public Sub ConvertDirectoryCompilersCSharpTestWinRT()
             Dim FilesProcessed As Long = 0
             Assert.True(ProcessDirectory(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "CSharp", "Test", "WinRT"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, LastFileNameWithPath:="", SourceLanguageExtension:="cs", FilesProcessed, 0, ProcessFile:=AddressOf Me.ProcessFile), $"Failing file {Me.LastFileProcessed}")
         End Sub
 
+        <Trait("Category", "SkipWhenLiveUnitTesting")>
         <Fact>
         Public Sub ConvertDirectoryCompilersExtension()
             Dim FilesProcessed As Long = 0
             Assert.True(ProcessDirectory(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "Extension"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, LastFileNameWithPath:="", SourceLanguageExtension:="cs", FilesProcessed, 0, ProcessFile:=AddressOf Me.ProcessFile), $"Failing file {Me.LastFileProcessed}")
         End Sub
 
+        <Trait("Category", "SkipWhenLiveUnitTesting")>
         <Fact>
         Public Sub ConvertDirectoryCompilersRealParserTests()
             Dim FilesProcessed As Long = 0
             Assert.True(ProcessDirectory(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "RealParserTests"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, LastFileNameWithPath:="", SourceLanguageExtension:="cs", FilesProcessed, 0, ProcessFile:=AddressOf Me.ProcessFile), $"Failing file {Me.LastFileProcessed}")
         End Sub
 
+        <Trait("Category", "SkipWhenLiveUnitTesting")>
         <Fact>
         Public Sub ConvertDirectoryCompilersServerVBCSCompiler()
             Dim FilesProcessed As Long = 0
             Assert.True(ProcessDirectory(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "Server", "VBCSCompiler"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, LastFileNameWithPath:="", SourceLanguageExtension:="cs", FilesProcessed, 0, ProcessFile:=AddressOf Me.ProcessFile), $"Failing file {Me.LastFileProcessed}")
         End Sub
 
+        <Trait("Category", "SkipWhenLiveUnitTesting")>
         <Fact>
         Public Sub ConvertDirectoryCompilersServerVBCSCompilerTests()
             Dim FilesProcessed As Long = 0
             Assert.True(ProcessDirectory(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "Server", "VBCSCompilerTests"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, LastFileNameWithPath:="", SourceLanguageExtension:="cs", FilesProcessed, 0, ProcessFile:=AddressOf Me.ProcessFile), $"Failing file {Me.LastFileProcessed}")
         End Sub
 
+        <Trait("Category", "SkipWhenLiveUnitTesting")>
         <Fact>
         Public Sub ConvertDirectoryCompilersShared()
             Dim FilesProcessed As Long = 0
             Assert.True(ProcessDirectory(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "Shared"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, LastFileNameWithPath:="", SourceLanguageExtension:="cs", FilesProcessed, 0, ProcessFile:=AddressOf Me.ProcessFile), $"Failing file {Me.LastFileProcessed}")
         End Sub
 
+        <Trait("Category", "SkipWhenLiveUnitTesting")>
         <Fact>
         Public Sub ConvertDirectoryCompilersTest()
             Dim FilesProcessed As Long = 0
@@ -132,12 +147,14 @@ Namespace CSharpToVB.Tests
             Assert.True(ProcessDirectory(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "VisualBasic"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, LastFileNameWithPath:="", SourceLanguageExtension:="cs", FilesProcessed, 0, ProcessFile:=AddressOf Me.ProcessFile), $"Failing file {Me.LastFileProcessed}")
         End Sub
 
+        <Trait("Category", "SkipWhenLiveUnitTesting")>
         <Fact>
         Public Sub ConvertDirectoryDependencies()
             Dim FilesProcessed As Long = 0
             Assert.True(ProcessDirectory(Path.Combine(GetRoslynRootDirectory(), "src", "Dependencies"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, LastFileNameWithPath:="", SourceLanguageExtension:="cs", FilesProcessed, 0, ProcessFile:=AddressOf Me.ProcessFile), $"Failing file {Me.LastFileProcessed}")
         End Sub
 
+        <Trait("Category", "SkipWhenLiveUnitTesting")>
         <Fact>
         Public Sub ConvertDirectoryDeployment()
             Dim FilesProcessed As Long = 0
@@ -172,6 +189,7 @@ Namespace CSharpToVB.Tests
             Assert.True(ProcessDirectory(Path.Combine(GetRoslynRootDirectory(), "src", "Interactive"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, LastFileNameWithPath:="", SourceLanguageExtension:="cs", FilesProcessed, 0, ProcessFile:=AddressOf Me.ProcessFile), $"Failing file {Me.LastFileProcessed}")
         End Sub
 
+        <Trait("Category", "SkipWhenLiveUnitTesting")>
         <Fact>
         Public Sub ConvertDirectoryNuGet()
             Dim FilesProcessed As Long = 0
@@ -185,6 +203,7 @@ Namespace CSharpToVB.Tests
             Assert.True(ProcessDirectory(Path.Combine(GetRoslynRootDirectory(), "src", "Scripting"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, LastFileNameWithPath:="", SourceLanguageExtension:="cs", FilesProcessed, 0, ProcessFile:=AddressOf Me.ProcessFile), $"Failing file {Me.LastFileProcessed}")
         End Sub
 
+        <Trait("Category", "SkipWhenLiveUnitTesting")>
         <Fact>
         Public Sub ConvertDirectorySetup()
             Dim FilesProcessed As Long = 0
@@ -212,6 +231,7 @@ Namespace CSharpToVB.Tests
             Assert.True(ProcessDirectory(Path.Combine(GetRoslynRootDirectory(), "src", "VisualStudio"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, LastFileNameWithPath:="", SourceLanguageExtension:="cs", FilesProcessed, 0, ProcessFile:=AddressOf Me.ProcessFile), $"Failing file {Me.LastFileProcessed}")
         End Sub
 
+        <Trait("Category", "SkipWhenLiveUnitTesting")>
         <Fact>
         Public Sub ConvertDirectoryWorkspaces()
             Dim FilesProcessed As Long = 0
@@ -240,14 +260,6 @@ Namespace CSharpToVB.Tests
             End Using
             Return True
         End Function
-
-        <Fact>
-        Public Sub VB_CountAll()
-            Dim FilesProcessed As Long = 0
-            Dim SourceDirectory As String = GetRoslynRootDirectory()
-            Assert.True(ProcessDirectory(SourceDirectory, TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, LastFileNameWithPath:="", SourceLanguageExtension:="cs", FilesProcessed, TotalFilesToProcess:=0, ProcessFile:=AddressOf CountFile), $"Failing file {Me.LastFileProcessed}")
-            Assert.Equal(GetFileCount(SourceDirectory, "cs", SkipBinAndObjFolders:=True, SkipTestResourceFiles:=True), FilesProcessed)
-        End Sub
 
     End Class
 

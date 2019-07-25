@@ -1,5 +1,8 @@
 ﻿Option Explicit On
 Option Infer Off
+' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
 Option Strict On
 
 Imports System.Collections.Immutable
@@ -165,85 +168,6 @@ Namespace CodeConverter.Tests
             csharpWorkspace.Dispose()
             vbWorkspace.Dispose()
         End Sub
-
-#If VB_TO_CSharp Then
-
-        Private Shared Sub VBWorkspaceSetup(text As String, ByRef workspace As TestWorkspace, ByRef doc As Document, Optional parseOptions As VisualBasicParseOptions = Nothing)
-            workspace = New TestWorkspace()
-            Dim projectId As ProjectId = ProjectId.CreateNewId()
-            Dim documentId As DocumentId = DocumentId.CreateNewId(projectId)
-            If parseOptions Is Nothing Then
-                parseOptions = New VisualBasicParseOptions(
-                    VisualBasic.LanguageVersion.VisualBasic15_5,
-                    DocumentationMode.Diagnose Or DocumentationMode.Parse,
-                    SourceCodeKind.Regular)
-            End If
-            workspace.Options.WithChangedOption(CSharpFormattingOptions.NewLinesForBracesInControlBlocks, False)
-            Dim compilationOptions As VisualBasicCompilationOptions = (New VisualBasicCompilationOptions(OutputKind.DynamicallyLinkedLibrary)).WithRootNamespace("TestProject").WithGlobalImports(GlobalImport.Parse(NameOf(System), "System.Collections.Generic", "System.Linq", "Microsoft.VisualBasic"))
-            workspace.Open(ProjectInfo.Create(
-                                           projectId, VersionStamp.Create(),
-                                           "TestProject",
-                                           "TestProject",
-                                           LanguageNames.VisualBasic,
-                                           Nothing,
-                                           Nothing,
-                                           compilationOptions,
-                                           parseOptions,
-                                           {
-                                                DocumentInfo.Create(
-                                                    documentId,
-                                                    "a.vb",
-                                                    Nothing,
-                                                    SourceCodeKind.Regular,
-                                                    TextLoader.From(
-                                                        TextAndVersion.Create(
-                                                            SourceText.From(text),
-                                                            VersionStamp.Create()
-                                                            )
-                                                        )
-                                                    )
-                                           },
-                                           Nothing,
-                                           DiagnosticTestBase.DefaultMetadataReferences)
-                                   )
-            doc = workspace.CurrentSolution.GetProject(projectId).GetDocument(documentId)
-        End Sub
-
-        Public Sub TestConversionVisualBasicToCSharp(visualBasicCode As String, expectedCsharpCode As String, Optional csharpOptions As CSharpParseOptions = Nothing, Optional vbOptions As VisualBasicParseOptions = Nothing)
-            Dim csharpWorkspace As TestWorkspace = Nothing
-            Dim vbWorkspace As TestWorkspace = Nothing
-            Dim inputDocument As Document = Nothing
-            Dim outputDocument As Document = Nothing
-            VBWorkspaceSetup(visualBasicCode, vbWorkspace, inputDocument, vbOptions)
-            CSharpWorkspaceSetup(csharpWorkspace, outputDocument, csharpOptions)
-            Dim outputNode As CSharpSyntaxNode = Convert(CType(inputDocument.GetSyntaxRootAsync().Result, VisualBasicSyntaxNode), inputDocument.GetSemanticModelAsync().Result, outputDocument)
-
-            Dim txt As String = outputDocument.WithSyntaxRoot(Formatter.Format(outputNode, vbWorkspace)).GetTextAsync().Result.ToString()
-            txt = Utils.HomogenizeEol(txt).TrimEnd()
-            expectedCsharpCode = Utils.HomogenizeEol(expectedCsharpCode).TrimEnd()
-            If expectedCsharpCode <> txt Then
-                Dim l As Integer = Math.Max(expectedCsharpCode.Length, txt.Length)
-                Dim sb As New StringBuilder(l * 4)
-                sb.AppendLine("expected:")
-                sb.AppendLine(expectedCsharpCode)
-                sb.AppendLine("got:")
-                sb.AppendLine(txt)
-                sb.AppendLine("diff:")
-                For i As Integer = 0 To l - 1
-                    If i >= expectedCsharpCode.Length OrElse i >= txt.Length OrElse expectedCsharpCode.Chars(i) <> txt.Chars(i) Then
-                        sb.Append("x"c)
-                    Else
-                        sb.Append(expectedCsharpCode.Chars(i))
-                    End If
-                Next i
-                Assert.True(False, sb.ToString())
-            End If
-        End Sub
-        ' Converts VB to C#
-        Private Function Convert(input As VisualBasicSyntaxNode, semanticModel As SemanticModel, targetDocument As Document) As CSharpSyntaxNode
-            Return VisualBasicConverter.Convert(input, semanticModel, targetDocument)
-        End Function
-#End If
 
         Private Shared Function FindFirstDifferenceColumn(DesiredLine As String, ActualLine As String) As (ColumnIndex As Integer, Character As String)
             Dim minLength As Integer = Math.Min(DesiredLine.Length, ActualLine.Length) - 1

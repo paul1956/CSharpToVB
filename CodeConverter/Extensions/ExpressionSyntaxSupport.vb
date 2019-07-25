@@ -1,10 +1,16 @@
-﻿Option Explicit On
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+Option Explicit On
 Option Strict On
 Option Infer Off
 
 Imports System.Runtime.CompilerServices
+
 Imports IVisualBasicCode.CodeConverter.Util
+
 Imports Microsoft.CodeAnalysis
+
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 
 Public Module ExpressionSyntaxSupport
@@ -36,9 +42,9 @@ Public Module ExpressionSyntaxSupport
                         Return (_type, False)
                     End If
                     Return (symbol.ConvertISymbolToType(Model.Compilation), False)
-                    End If
-
                 End If
+
+            End If
         Catch ex As Exception
             Stop
         End Try
