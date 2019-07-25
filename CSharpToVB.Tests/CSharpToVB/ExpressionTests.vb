@@ -178,7 +178,7 @@ Imports System.Text.RegularExpressions
 Friend Module CanonicalError
 
     ' Defines the main pattern for matching messages.
-    Private Private ReadOnly s_originCategoryCodeTextExpression As Regex = New Regex( _
+    Private ReadOnly s_originCategoryCodeTextExpression As Regex = New Regex( _
  _ ' Beginning of line and any amount of whitespace.
         ""^\s*"" _
  _ ' Match a [optional project number prefix 'ddd>'], single letter + colon + remaining filename, or
@@ -241,7 +241,7 @@ Imports System.Text.RegularExpressions
 Friend Module CanonicalError
 
     ' Defines the main pattern for matching messages.
-    Private Private ReadOnly s_originCategoryCodeTextExpression As Regex = New Regex( _
+    Private ReadOnly s_originCategoryCodeTextExpression As Regex = New Regex( _
         ""^\s*"" _
  _ ' Match a [optional project number prefix 'ddd>'], single letter + colon + remaining filename, or
  _ ' string with no colon followed by a colon.

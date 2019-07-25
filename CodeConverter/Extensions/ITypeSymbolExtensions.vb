@@ -162,7 +162,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
 
         ' Is a member with declared accessibility "declaredAccessiblity" accessible from within
         ' "within", which must be a named type or an assembly.
-        Public Function IsMemberAccessible(containingType As INamedTypeSymbol, declaredAccessibility As Accessibility, within As ISymbol, throughTypeOpt As ITypeSymbol, ByRef failedThroughTypeCheck As Boolean) As Boolean
+        Public Function IsMemberAccessible(containingType As INamedTypeSymbol, declaredAccessibility As Microsoft.CodeAnalysis.Accessibility, within As ISymbol, throughTypeOpt As ITypeSymbol, ByRef failedThroughTypeCheck As Boolean) As Boolean
             '			Contract.Requires(within is INamedTypeSymbol || within is IAssemblySymbol);
             '			Contract.ThrowIfNull(containingType);
 
@@ -178,18 +178,18 @@ Namespace IVisualBasicCode.CodeConverter.Util
             End If
 
             Select Case declaredAccessibility
-                Case Accessibility.NotApplicable
+                Case Microsoft.CodeAnalysis.Accessibility.NotApplicable
                     ' TODO(cyrusn): Is this the right thing to do here?  Should the caller ever be
                     ' asking about the accessibility of a symbol that has "NotApplicable" as its
                     ' value?  For now, I'm preserving the behavior of the existing code.  But perhaps
                     ' we should fail here and require the caller to not do this?
                     Return True
 
-                Case Accessibility.Public
+                Case Microsoft.CodeAnalysis.Accessibility.Public
                     ' Public symbols are always accessible from any context
                     Return True
 
-                Case Accessibility.Private
+                Case Microsoft.CodeAnalysis.Accessibility.Private
                     ' All expressions in the current submission (top-level or nested in a method or
                     ' type) can access previous submission's private top-level members. Previous
                     ' submissions are treated like outer classes for the current submission - the
@@ -201,12 +201,12 @@ Namespace IVisualBasicCode.CodeConverter.Util
                     ' private members never accessible from outside a type.
                     Return withinNamedType IsNot Nothing AndAlso IsPrivateSymbolAccessible(withinNamedType, originalContainingType)
 
-                Case Accessibility.Internal
+                Case Microsoft.CodeAnalysis.Accessibility.Internal
                     ' An internal type is accessible if we're in the same assembly or we have
                     ' friend access to the assembly it was defined in.
                     Return withinAssembly.IsSameAssemblyOrHasFriendAccessTo(containingType.ContainingAssembly)
 
-                Case Accessibility.ProtectedAndInternal
+                Case Microsoft.CodeAnalysis.Accessibility.ProtectedAndInternal
                     If Not withinAssembly.IsSameAssemblyOrHasFriendAccessTo(containingType.ContainingAssembly) Then
                         ' We require internal access.  If we don't have it, then this symbol is
                         ' definitely not accessible to us.
@@ -216,7 +216,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
                     ' We had internal access.  Also have to make sure we have protected access.
                     Return IsProtectedSymbolAccessible(withinNamedType, withinAssembly, throughTypeOpt, originalContainingType, failedThroughTypeCheck)
 
-                Case Accessibility.ProtectedOrInternal
+                Case Microsoft.CodeAnalysis.Accessibility.ProtectedOrInternal
                     If withinAssembly.IsSameAssemblyOrHasFriendAccessTo(containingType.ContainingAssembly) Then
                         ' If we have internal access to this symbol, then that's sufficient.  no
                         ' need to do the complicated protected case.
@@ -227,7 +227,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
                     ' sufficient.
                     Return IsProtectedSymbolAccessible(withinNamedType, withinAssembly, throughTypeOpt, originalContainingType, failedThroughTypeCheck)
 
-                Case Accessibility.Protected
+                Case Microsoft.CodeAnalysis.Accessibility.Protected
                     Return IsProtectedSymbolAccessible(withinNamedType, withinAssembly, throughTypeOpt, originalContainingType, failedThroughTypeCheck)
 
                 Case Else

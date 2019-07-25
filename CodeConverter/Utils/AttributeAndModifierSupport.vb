@@ -277,10 +277,16 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Case CS.SyntaxKind.SealedKeyword
                     Return If(context = TokenContext.[Global] OrElse context = TokenContext.Class, NotInheritableKeyword, NotOverridableKeyword)
                 Case CS.SyntaxKind.StaticKeyword
-                    If FoundVisibility Then
+                    If IsModule Then
+                        If context = TokenContext.VariableOrConst Then
+                            If FoundVisibility Then
+                                Return EmptyToken
+                            End If
+                            Return PrivateKeyword
+                        End If
                         Return EmptyToken
                     End If
-                    Return If(IsModule, If(context = TokenContext.VariableOrConst, PrivateKeyword, EmptyToken), SharedKeyword)
+                    Return SharedKeyword
                 Case CS.SyntaxKind.ThisKeyword
                     Return MeKeyword
                 Case CS.SyntaxKind.BaseKeyword

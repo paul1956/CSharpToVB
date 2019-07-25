@@ -102,12 +102,12 @@ Namespace IVisualBasicCode.CodeConverter.Util
             Do While symbol IsNot Nothing AndAlso symbol.Kind <> SymbolKind.Namespace
                 Select Case symbol.DeclaredAccessibility
                     ' If we see anything private, then the symbol is private.
-                    Case Accessibility.NotApplicable, Accessibility.Private
+                    Case Microsoft.CodeAnalysis.Accessibility.NotApplicable, Microsoft.CodeAnalysis.Accessibility.Private
                         Return SymbolVisibility.Private
 
                     ' If we see anything internal, then knock it down from public to
                     ' internal.
-                    Case Accessibility.Internal, Accessibility.ProtectedAndInternal
+                    Case Microsoft.CodeAnalysis.Accessibility.Internal, Microsoft.CodeAnalysis.Accessibility.ProtectedAndInternal
                         visibility = SymbolVisibility.Internal
 
                         ' For anything else (Public, Protected, ProtectedOrInternal), the

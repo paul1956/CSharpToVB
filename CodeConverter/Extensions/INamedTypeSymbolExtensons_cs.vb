@@ -10,21 +10,21 @@ Namespace IVisualBasicCode.CodeConverter.Util
 
     Public Module INamedTypeSymbolExtensons
 
-        Private Function IsNonNestedTypeAccessible(assembly As IAssemblySymbol, declaredAccessibility As Accessibility, within As ISymbol) As Boolean
+        Private Function IsNonNestedTypeAccessible(assembly As IAssemblySymbol, declaredAccessibility As Microsoft.CodeAnalysis.Accessibility, within As ISymbol) As Boolean
             Contract.Requires(TypeOf within Is INamedTypeSymbol OrElse TypeOf within Is IAssemblySymbol)
             Contract.ThrowIfNull(assembly)
             Dim withinAssembly As IAssemblySymbol = If((TryCast(within, IAssemblySymbol)), DirectCast(within, INamedTypeSymbol).ContainingAssembly)
 
             Select Case declaredAccessibility
-                Case Accessibility.NotApplicable, Accessibility.Public
+                Case Microsoft.CodeAnalysis.Accessibility.NotApplicable, Microsoft.CodeAnalysis.Accessibility.Public
                     ' Public symbols are always accessible from any context
                     Return True
 
-                Case Accessibility.Private, Accessibility.Protected, Accessibility.ProtectedAndInternal
+                Case Microsoft.CodeAnalysis.Accessibility.Private, Microsoft.CodeAnalysis.Accessibility.Protected, Microsoft.CodeAnalysis.Accessibility.ProtectedAndInternal
                     ' Shouldn't happen except in error cases.
                     Return False
 
-                Case Accessibility.Internal, Accessibility.ProtectedOrInternal
+                Case Microsoft.CodeAnalysis.Accessibility.Internal, Microsoft.CodeAnalysis.Accessibility.ProtectedOrInternal
                     ' An internal type is accessible if we're in the same assembly or we have
                     ' friend access to the assembly it was defined in.
                     Return withinAssembly.IsSameAssemblyOrHasFriendAccessTo(assembly)
