@@ -9,7 +9,7 @@ Namespace MSCoreReference.Tests
     Public Class MSCoreReferenceTest
 
         <Fact>
-        Sub TestSub()
+        Sub VerifyReferencesExist()
             Dim tree As SyntaxTree = CSharpSyntaxTree.ParseText("using System;
 class test : IComparable { }")
 
