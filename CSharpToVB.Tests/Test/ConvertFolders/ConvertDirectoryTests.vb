@@ -20,7 +20,9 @@ Namespace ConvertDirectory.Tests
     <TestClass()> Public Class TestCompile
         Private LastFileProcessed As String
 
+#Disable Warning IDE0060 ' Remove unused parameter
         Public Shared Function CountFile(PathWithFileName As String, TargetDirectory As String, LanguageExtension As String, DontCare() As MetadataReference) As Boolean
+#Enable Warning IDE0060 ' Remove unused parameter
             ' Do not delete the parameter LanguageExtension it is needed by other versions of this routine
             Return True
         End Function

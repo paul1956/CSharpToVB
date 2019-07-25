@@ -1,24 +1,16 @@
 ﻿' Licensed to the .NET Foundation under one or more agreements.
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
-Imports System.IO
-
-Imports CodeConverter.Tests.Utils
-
 Imports CSharpToVBApp
 
-Imports IVisualBasicCode.CodeConverter
-Imports IVisualBasicCode.CodeConverter.ConversionResult
-
 Imports Microsoft.CodeAnalysis
-Imports Microsoft.CodeAnalysis.Emit
 
 Imports Xunit
 
 Namespace ConvertDirectory.Tests
 
     <TestClass()> Public Class CountFilesTest
-        Private LastFileProcessed As String
+        Private ReadOnly LastFileProcessed As String
 
         Public Shared Function CountFile(PathWithFileName As String, TargetDirectory As String, LanguageExtension As String, DontCare() As MetadataReference) As Boolean
             ' Do not delete the parameter LanguageExtension it is needed by other versions of this routine

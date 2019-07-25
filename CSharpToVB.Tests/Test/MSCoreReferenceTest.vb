@@ -8,7 +8,14 @@ Imports Xunit
 Namespace MSCoreReference.Tests
     Public Class MSCoreReferenceTest
 
-        <Fact>
+        Public Shared ReadOnly Property CodeCoverageEnabled() As Boolean
+            Get
+                Return False
+            End Get
+        End Property
+
+        <ConditionalFact(NameOf(CodeCoverageEnabled))>
+        <PlatformSpecific(TestPlatforms.Windows)>
         Sub VerifyReferencesExist()
             Dim tree As SyntaxTree = CSharpSyntaxTree.ParseText("using System;
 class test : IComparable { }")
