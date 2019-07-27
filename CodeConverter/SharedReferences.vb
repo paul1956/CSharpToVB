@@ -20,12 +20,11 @@ Public Module SharedReferences
     Private ReadOnly FrameworkDirectory As String = Directory.GetParent(GetType(Object).Assembly.Location).FullName
 
     Private Sub BuildReferenceList()
-        SyncLock _ReferencePath
-            If _ReferencePath.Count > 0 Then
-                Return
-            End If
-            ' CodeAnalysisReference
-            Dim Location As String = GetType(Compilation).Assembly.Location
+        If _ReferencePath.Count > 0 Then
+            Return
+        End If
+        ' CodeAnalysisReference
+        Dim Location As String = GetType(Compilation).Assembly.Location
             AddReferences(_ReferencePath, Location)
 
             'SystemReferences
@@ -50,8 +49,7 @@ Public Module SharedReferences
 
             ' VBRuntime
             Location = GetType(CompilerServices.StandardModuleAttribute).Assembly.Location
-            _VisualBasicReferences.Add(MetadataReference.CreateFromFile(Location))
-        End SyncLock
+        _VisualBasicReferences.Add(MetadataReference.CreateFromFile(Location))
     End Sub
 
     Private Sub AddReferences(L As List(Of String), FileNameWithPath As String)
@@ -89,22 +87,26 @@ Public Module SharedReferences
 
     Public Function CSharpReferences() As List(Of MetadataReference)
         Try
-            If _CSharpReferences.Count = 0 Then
-                BuildReferenceList()
-            End If
-            Return _CSharpReferences.ToList
+            SyncLock _ReferencePath
+                If _CSharpReferences.Count = 0 Then
+                    BuildReferenceList()
+                End If
+                Return _CSharpReferences.ToList
+            End SyncLock
         Catch ex As Exception
-            Stop
+            Throw
         End Try
         Return Nothing
     End Function
 
     Public Function VisualBasicReferences() As List(Of MetadataReference)
         Try
-            If _VisualBasicReferences.Count = 0 Then
-                BuildReferenceList()
-            End If
-            Return _VisualBasicReferences.ToList
+            SyncLock _ReferencePath
+                If _VisualBasicReferences.Count = 0 Then
+                    BuildReferenceList()
+                End If
+                Return _VisualBasicReferences.ToList
+            End SyncLock
         Catch ex As Exception
             Stop
         End Try

@@ -22,6 +22,7 @@ Namespace ConvertDirectory.Tests
         Public Sub VB_CountAll()
             Dim FilesProcessed As Long = 0
             Dim SourceDirectory As String = GetRoslynRootDirectory()
+            Assert.NotNull(SourceDirectory)
             Assert.True(ProcessDirectory(SourceDirectory, TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, LastFileNameWithPath:="", SourceLanguageExtension:="cs", FilesProcessed, TotalFilesToProcess:=0, ProcessFile:=AddressOf CountFile), $"Failing file {Me.LastFileProcessed}")
             Assert.Equal(GetFileCount(SourceDirectory, "cs", SkipBinAndObjFolders:=True, SkipTestResourceFiles:=True), FilesProcessed)
         End Sub

@@ -6,12 +6,15 @@
         <Configuration>
           <Format>json</Format>
           <!--<MergeWith>/custom/path/result.json</MergeWith>-->
-          <Exclude>[coverlet.*.tests?]*,[*]Coverlet.Core*</Exclude> <!-- [Assembly-Filter]Type-Filter -->
-          <!--<Include>[coverlet.*]*,[*]Coverlet.Core*</Include> --><!-- [Assembly-Filter]Type-Filter -->
+          <Exclude>[coverlet.*.tests?]*,[*]Coverlet.Core*</Exclude>
+          <!-- [Assembly-Filter]Type-Filter -->
+          <!--<Include>[coverlet.*]*,[*]Coverlet.Core*</Include> -->
+          <!-- [Assembly-Filter]Type-Filter -->
           <ExcludeByAttribute>Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute</ExcludeByAttribute>
-          <ExcludeByFile>../Test/MSCoreReferenceTest.vb,../Test/MsgBoxTests.vb</ExcludeByFile> <!-- Absolute or relative file paths -->
+          <ExcludeByFile></ExcludeByFile>
+          <!-- Absolute or relative file paths -->
           <!--<IncludeDirectory>../dir1/,../dir2/,</IncludeDirectory>-->
-          <SingleHit>true</SingleHit>
+          <SingleHit>false</SingleHit>
           <UseSourceLink>false</UseSourceLink>
         </Configuration>
       </DataCollector>
