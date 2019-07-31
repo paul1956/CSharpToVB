@@ -6,6 +6,7 @@
     <RootNamespace>CSharpToVBApp</RootNamespace>
     <StartupObject>CSharpToVBApp.Form1</StartupObject>
     <UseWindowsForms>true</UseWindowsForms>
+    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
   </PropertyGroup>
   <PropertyGroup>
     <LangVersion>16</LangVersion>
