@@ -82,10 +82,6 @@ Public Class Form1
         Return SolutionRoot
     End Function
 
-    Private Sub ButtonSearch_Click(sender As Object, e As EventArgs) Handles ButtonSearch.Click
-        Me.SearchBoxVisibility(Visible:=False)
-    End Sub
-
     Private Sub ButtonStop_Click(sender As Object, e As EventArgs) Handles ButtonStop.Click
         Me.StopRequested = True
         Me.ButtonStop.Visible = False
@@ -1101,7 +1097,6 @@ Public Class Form1
     End Sub
 
     Private Sub SearchBoxVisibility(Visible As Boolean)
-        Me.ButtonSearch.Visible = Visible
         Me.SearchDirection.Visible = Visible
         Me.PictureBox1.Visible = Visible
         Me.SearchInput.Visible = Visible

@@ -85,10 +85,8 @@ Partial Class Form1
         Me.SearchWhere = New System.Windows.Forms.ComboBox()
         Me.InputFolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
         Me.PictureBox1 = New System.Windows.Forms.PictureBox()
-        Me.ButtonSearch = New System.Windows.Forms.Button()
         Me.ButtonStop = New System.Windows.Forms.Button()
         Me.LabelErrorCount = New System.Windows.Forms.Label()
-        Me.ToolTip1 = New System.Windows.Forms.ToolTip(Me.components)
         Me.SplitContainer1 = New System.Windows.Forms.SplitContainer()
         Me.RichTextBoxConversionInput = New System.Windows.Forms.RichTextBox()
         Me.StatusStrip1 = New System.Windows.Forms.StatusStrip()
@@ -553,17 +551,6 @@ Partial Class Form1
         Me.PictureBox1.TabIndex = 13
         Me.PictureBox1.TabStop = False
         '
-        'ButtonSearch
-        '
-        Me.ButtonSearch.BackColor = System.Drawing.SystemColors.ButtonFace
-        Me.ButtonSearch.Image = CType(resources.GetObject("ButtonSearch.Image"), System.Drawing.Image)
-        Me.ButtonSearch.Location = New System.Drawing.Point(1207, 1)
-        Me.ButtonSearch.Name = "ButtonSearch"
-        Me.ButtonSearch.Size = New System.Drawing.Size(38, 23)
-        Me.ButtonSearch.TabIndex = 12
-        Me.ToolTip1.SetToolTip(Me.ButtonSearch, "Close Search")
-        Me.ButtonSearch.UseVisualStyleBackColor = False
-        '
         'ButtonStop
         '
         Me.ButtonStop.Location = New System.Drawing.Point(1364, 0)
@@ -582,10 +569,6 @@ Partial Class Form1
         Me.LabelErrorCount.Size = New System.Drawing.Size(110, 15)
         Me.LabelErrorCount.TabIndex = 20
         Me.LabelErrorCount.Text = "Number of Errors: 0"
-        '
-        'ToolTip1
-        '
-        Me.ToolTip1.ToolTipTitle = "Close Search"
         '
         'SplitContainer1
         '
@@ -796,7 +779,6 @@ Partial Class Form1
         Me.Controls.Add(Me.ButtonStop)
         Me.Controls.Add(Me.SearchWhere)
         Me.Controls.Add(Me.PictureBox1)
-        Me.Controls.Add(Me.ButtonSearch)
         Me.Controls.Add(Me.SearchDirection)
         Me.Controls.Add(Me.SearchInput)
         Me.Controls.Add(Me.VB2CSharp)
@@ -848,7 +830,6 @@ Partial Class Form1
     Friend WithEvents SearchInput As TextBox
     Friend WithEvents ImageList1 As ImageList
     Friend WithEvents SearchDirection As ComboBox
-    Friend WithEvents ButtonSearch As Button
     Friend WithEvents PictureBox1 As PictureBox
     Friend WithEvents SearchWhere As ComboBox
     Friend WithEvents InputFolderBrowserDialog1 As FolderBrowserDialog
@@ -862,7 +843,6 @@ Partial Class Form1
     Friend WithEvents ButtonStop As Button
     Friend WithEvents LabelErrorCount As Label
     Friend WithEvents mnuCompile As ToolStripMenuItem
-    Friend WithEvents ToolTip1 As ToolTip
     Friend WithEvents ToolStripSeparator4 As ToolStripSeparator
     Friend WithEvents SplitContainer1 As SplitContainer
     Friend WithEvents RichTextBoxConversionOutput As AdvancedRTB = Nothing
