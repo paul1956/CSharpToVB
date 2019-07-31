@@ -559,13 +559,13 @@ Public Class Form1
 #End If
     End Sub
 
-    Private Sub mnuFileLastFileList_Click(ByVal sender As Object, ByVal e As EventArgs)
+    Private Sub mnu_MRUList_Click(ByVal sender As Object, ByVal e As EventArgs)
         ' open the file...
         Dim LanguageExtension As String = Me.RequestToConvert.GetSourceExtension
         Me.OpenFile(DirectCast(sender, ToolStripItem).Tag.ToString().Substring(4), LanguageExtension)
     End Sub
 
-    Private Sub mnuFileLastFileList_MouseDown(sender As Object, e As MouseEventArgs)
+    Private Sub mnu_MRUList_MouseDown(sender As Object, e As MouseEventArgs)
         If e.Button = Windows.Forms.MouseButtons.Right Then
             Clipboard.SetText(text:=CType(sender, ToolStripMenuItem).Text)
         End If
@@ -833,8 +833,8 @@ Public Class Form1
         Next
         ' iterate through list and remove each from menu...
         For Each clsMenu As ToolStripItem In clsItems
-            RemoveHandler clsMenu.Click, AddressOf Me.mnuFileLastFileList_Click
-            RemoveHandler clsMenu.MouseDown, AddressOf Me.mnuFileLastFileList_MouseDown
+            RemoveHandler clsMenu.Click, AddressOf Me.mnu_MRUList_Click
+            RemoveHandler clsMenu.MouseDown, AddressOf Me.mnu_MRUList_MouseDown
             Me.mnuFile.DropDownItems.Remove(clsMenu)
         Next
         ' display items (in reverse order so the most recent is on top)...
@@ -843,14 +843,12 @@ Public Class Form1
             ' create new ToolStripItem, displaying the name of the file...
             ' set the tag - identifies the ToolStripItem as an MRU item and
             ' contains the full path so it can be opened later...
-#Disable Warning IDE0067 ' Dispose objects before losing scope
             Dim clsItem As New ToolStripMenuItem(sPath) With {
                 .Tag = "MRU:" & sPath
             }
-#Enable Warning IDE0067 ' Dispose objects before losing scope
             ' hook into the click event handler so we can open the file later...
-            AddHandler clsItem.Click, AddressOf Me.mnuFileLastFileList_Click
-            AddHandler clsItem.MouseDown, AddressOf Me.mnuFileLastFileList_MouseDown
+            AddHandler clsItem.Click, AddressOf Me.mnu_MRUList_Click
+            AddHandler clsItem.MouseDown, AddressOf Me.mnu_MRUList_MouseDown
             ' insert into DropDownItems list...
             Me.mnuFile.DropDownItems.Insert(Me.mnuFile.DropDownItems.Count - 11, clsItem)
         Next
