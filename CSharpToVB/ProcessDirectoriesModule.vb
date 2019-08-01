@@ -55,6 +55,9 @@ Public Module ProcessDirectoriesModule
     ''' False if error and user wants to stop, True if success or user wants to ignore error
     ''' </returns>
     Public Function ProcessDirectory(SourceDirectory As String, TargetDirectory As String, MeForm As Form1, StopButton As Button, RichTextBoxFileList As RichTextBox, ByRef LastFileNameWithPath As String, SourceLanguageExtension As String, ByRef FilesProcessed As Long, ByRef TotalFilesToProcess As Long, ProcessFile As Func(Of String, String, String, MetadataReference(), Boolean)) As Boolean
+        If SourceDirectory.IsEmptyNullOrWhitespace OrElse Not Directory.Exists(SourceDirectory) Then
+            Return True
+        End If
         ' Process the list of files found in the directory.
         Dim DirectoryList As String() = Directory.GetFiles(path:=SourceDirectory, searchPattern:=$"*.{SourceLanguageExtension}")
         Dim TargetExtension As String = If(SourceLanguageExtension = "vb", "cs", "vb")

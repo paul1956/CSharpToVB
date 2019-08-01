@@ -1,6 +1,7 @@
 ﻿' Licensed to the .NET Foundation under one or more agreements.
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
+Imports System.IO
 Imports System.Runtime.CompilerServices
 Imports System.Text
 
@@ -63,7 +64,18 @@ Public Module TestUtilities
 
     Public Function GetRoslynRootDirectory() As String
         If _roslynRootDirectory.IsEmptyNullOrWhitespace Then
-            _roslynRootDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) & "\Source\Repos\roslyn"
+            _roslynRootDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Source")
+            If Not Directory.Exists(_roslynRootDirectory) Then
+                Return ""
+            End If
+            _roslynRootDirectory = Path.Combine(_roslynRootDirectory, "Repos")
+            If Not Directory.Exists(_roslynRootDirectory) Then
+                Return ""
+            End If
+            _roslynRootDirectory = Path.Combine(_roslynRootDirectory, "Roslyn")
+            If Not Directory.Exists(_roslynRootDirectory) Then
+                Return ""
+            End If
         End If
         Return _roslynRootDirectory
     End Function
@@ -75,4 +87,5 @@ Public Module TestUtilities
         Assert.Equal(expectedCount, actualCount)
         Return tree
     End Function
+
 End Module
