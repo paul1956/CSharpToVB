@@ -17,13 +17,13 @@ Imports Xunit
 
 Namespace ConvertDirectory.Tests
     ''' <summary>
-    ''' Return True to skip test
+    ''' Return False to skip test
     ''' </summary>
     <TestClass()> Public Class TestCompile
         Private LastFileProcessed As String
         Public Shared ReadOnly Property SkipWhenRoslynNotPresent() As Boolean
             Get
-                Return Not Directory.Exists(GetRoslynRootDirectory)
+                Return Directory.Exists(GetRoslynRootDirectory)
             End Get
         End Property
 
