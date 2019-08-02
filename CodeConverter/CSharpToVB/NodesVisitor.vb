@@ -202,7 +202,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             ''' <returns></returns>
             ''' <remarks>Added by PC</remarks>
             Public Overrides Function VisitSingleVariableDesignation(Node As SingleVariableDesignationSyntax) As VisualBasicSyntaxNode
-                Dim Identifier As SyntaxToken = GenerateSafeVBToken(Node.Identifier, IsQualifiedName:=False)
+                Dim Identifier As SyntaxToken = GenerateSafeVBToken(Node.Identifier, IsQualifiedName:=False, IsTypeName:=False)
                 Dim IdentifierExpression As VBS.IdentifierNameSyntax = VBFactory.IdentifierName(Identifier)
                 Dim ModifiedIdentifier As VBS.ModifiedIdentifierSyntax = VBFactory.ModifiedIdentifier(Identifier).WithTrailingTrivia(SpaceTrivia)
                 Dim SeparatedSyntaxListOfModifiedIdentifier As SeparatedSyntaxList(Of VBS.ModifiedIdentifierSyntax) =
@@ -346,7 +346,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             End Function
 
             Public Overrides Function VisitVariableDeclarator(node As VariableDeclaratorSyntax) As VisualBasicSyntaxNode
-                Dim Identifier As SyntaxToken = GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False)
+                Dim Identifier As SyntaxToken = GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False)
                 Dim ArgumentList As New List(Of VBS.ArgumentSyntax)
                 If node.ArgumentList IsNot Nothing Then
                     For i As Integer = 0 To node.ArgumentList.Arguments.Count - 1

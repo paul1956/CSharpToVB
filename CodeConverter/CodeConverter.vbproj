@@ -9,6 +9,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <LangVersion>16</LangVersion>
+    <OptionExplicit>On</OptionExplicit>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis" Version="3.2.0" />

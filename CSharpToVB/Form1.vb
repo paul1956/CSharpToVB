@@ -682,6 +682,7 @@ Public Class Form1
         Else
             Me.RichTextBoxConversionInput.LoadFile(SnippetFileWithPath, RichTextBoxStreamType.PlainText)
         End If
+        Me.mnuCompile.Enabled = True
     End Sub
 
     Private Sub mnuFileSnippetSave_Click(sender As Object, e As EventArgs) Handles mnuFileSnippetSave.Click

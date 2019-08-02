@@ -172,7 +172,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         TupleElements.Add(typedTupleElementSyntax1)
                     Else
                         Dim Identifier As SyntaxToken = CS.SyntaxFactory.Identifier(TuplePart(1))
-                        Dim namedTupleElementSyntax1 As VBS.NamedTupleElementSyntax = VBFactory.NamedTupleElement(GenerateSafeVBToken(Identifier, IsQualifiedName:=False), VBFactory.SimpleAsClause(ConvertToType(TuplePart(0))))
+                        Dim namedTupleElementSyntax1 As NamedTupleElementSyntax = VBFactory.NamedTupleElement(GenerateSafeVBToken(Identifier, IsQualifiedName:=False, IsTypeName:=False), VBFactory.SimpleAsClause(ConvertToType(TuplePart(0))))
                         TupleElements.Add(namedTupleElementSyntax1)
                     End If
                 Next
@@ -1123,7 +1123,16 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                                 CloseParenToken)
                             Return TryCastExpression
                         Case CS.SyntaxKind.IsExpression
-                            Return VBFactory.TypeOfIsExpression(DirectCast(LeftVBNode, VBS.ExpressionSyntax), DirectCast(RightVBNode, VBS.TypeSyntax))
+                            Dim NewLeadingTrivia As New List(Of SyntaxTrivia)
+                            If LeftVBNode.HasLeadingTrivia AndAlso LeftVBNode.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
+                                NewLeadingTrivia.AddRange(LeftVBNode.GetLeadingTrivia)
+                                LeftVBNode = LeftVBNode.WithoutTrivia.WithTrailingTrivia(SpaceTrivia)
+                            End If
+                            If RightVBNode.HasLeadingTrivia AndAlso RightVBNode.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
+                                NewLeadingTrivia.AddRange(RightVBNode.GetLeadingTrivia)
+                                RightVBNode = RightVBNode.WithoutTrivia.WithTrailingTrivia(SpaceTrivia)
+                            End If
+                            Return VBFactory.TypeOfIsExpression(DirectCast(LeftVBNode, VBS.ExpressionSyntax), DirectCast(RightVBNode, VBS.TypeSyntax)).WithLeadingTrivia(NewLeadingTrivia)
                         Case CS.SyntaxKind.EqualsExpression, CS.SyntaxKind.NotEqualsExpression
                             Dim otherArgument As VBS.ExpressionSyntax = Nothing
                             If node.Left.IsKind(CS.SyntaxKind.NullLiteralExpression) Then
@@ -1505,7 +1514,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             End Function
 
             Public Overrides Function VisitDiscardDesignation(node As CSS.DiscardDesignationSyntax) As VB.VisualBasicSyntaxNode
-                Dim Identifier As SyntaxToken = GenerateSafeVBToken(node.UnderscoreToken, IsQualifiedName:=False)
+                Dim Identifier As SyntaxToken = GenerateSafeVBToken(node.UnderscoreToken, IsQualifiedName:=False, IsTypeName:=False)
                 Dim IdentifierExpression As VBS.IdentifierNameSyntax = VBFactory.IdentifierName(Identifier)
                 Dim ModifiedIdentifier As VBS.ModifiedIdentifierSyntax = VBFactory.ModifiedIdentifier(Identifier)
                 Dim SeparatedSyntaxListOfModifiedIdentifier As SeparatedSyntaxList(Of VBS.ModifiedIdentifierSyntax) =
@@ -2397,7 +2406,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         Dim typedTupleElementSyntax1 As VBS.TypedTupleElementSyntax = VBFactory.TypedTupleElement(DirectCast(node.Type.Accept(Me), VBS.TypeSyntax))
                         Return typedTupleElementSyntax1
                     End If
-                    Dim namedTupleElementSyntax1 As VBS.NamedTupleElementSyntax = VBFactory.NamedTupleElement(GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False).WithConvertedTriviaFrom(node.Type), VBFactory.SimpleAsClause(DirectCast(node.Type.Accept(Me).WithConvertedTriviaFrom(node.Identifier), VBS.TypeSyntax)))
+                    Dim namedTupleElementSyntax1 As NamedTupleElementSyntax = VBFactory.NamedTupleElement(GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False).WithConvertedTriviaFrom(node.Type), VBFactory.SimpleAsClause(DirectCast(node.Type.Accept(Me).WithConvertedTriviaFrom(node.Identifier), VBS.TypeSyntax)))
                     Return namedTupleElementSyntax1
                 Catch ex As Exception
                     Stop

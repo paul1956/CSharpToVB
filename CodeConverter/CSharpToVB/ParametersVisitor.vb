@@ -93,7 +93,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Dim ModifierLeadingTrivia As New List(Of SyntaxTrivia)
                 Dim ModifierTrailingTrivia As New List(Of SyntaxTrivia)
 
-                Dim id As SyntaxToken = GenerateSafeVBToken(id:=node.Identifier, IsQualifiedName:=False).
+                Dim id As SyntaxToken = GenerateSafeVBToken(id:=node.Identifier, IsQualifiedName:=False, IsTypeName:=False).
                     WithTrailingTrivia(SpaceTrivia)
 
                 Dim TypeLeadingTrivia As IEnumerable(Of SyntaxTrivia) = ConvertTrivia(node.Type?.GetLeadingTrivia)

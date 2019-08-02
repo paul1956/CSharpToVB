@@ -309,6 +309,9 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 If Initializer IsNot Nothing Then
                     Body = Body.InsertRange(0, ReplaceStatementsWithMarkedStatements(node,
                                             VBFactory.SingletonList(Of VBS.StatementSyntax)(Initializer)))
+                Else
+                    Body = ReplaceStatementsWithMarkedStatements(node, Body)
+
                 End If
                 Return VBFactory.ConstructorBlock(SubNewStatement, Body, EndSubStatement).WithConvertedTriviaFrom(node)
             End Function
@@ -403,7 +406,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Dim ReturnAttributes As SyntaxList(Of VBS.AttributeListSyntax) = Nothing
                 Me.ConvertAndSplitAttributes(node.AttributeLists, Attributes, ReturnAttributes)
                 Dim Modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, Me.IsModule, TokenContext.Member)
-                Dim Identifier As SyntaxToken = GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False).WithTrailingTrivia(SpaceTrivia)
+                Dim Identifier As SyntaxToken = GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False).WithTrailingTrivia(SpaceTrivia)
                 Dim AsClause As VBS.SimpleAsClauseSyntax = VBFactory.SimpleAsClause(attributeLists:=ReturnAttributes, DirectCast(node.Type.Accept(Me), VBS.TypeSyntax))
                 Modifiers.Add(CustomKeyword)
                 Dim stmt As VBS.EventStatementSyntax = VBFactory.EventStatement(attributeLists:=VBFactory.List(Attributes), VBFactory.TokenList(Modifiers), Identifier, parameterList:=Nothing, AsClause, implementsClause:=Nothing).WithTrailingEOL
@@ -590,7 +593,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     Return FlagUnsupportedStatements(node, "ref return Functions", CommentOutOriginalStatements:=True)
                 End If
                 UsedIdentifierStack.Push(UsedIdentifiers)
-                Dim id As SyntaxToken = GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False)
+                Dim id As SyntaxToken = GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False)
                 Dim visitor As New MethodBodyVisitor(Me.mSemanticModel, Me)
 
                 Dim methodInfo As ISymbol = ModelExtensions.GetDeclaredSymbol(Me.mSemanticModel, node)
@@ -956,7 +959,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 End If
 
                 If node.ExplicitInterfaceSpecifier Is Nothing Then
-                    Identifier = GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False)
+                    Identifier = GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False)
                 Else
                     Identifier = VBFactory.Identifier($"{IdString}_{node.Identifier.ValueText}")
                     ImplementsClause = VBFactory.ImplementsClause(interfaceMembers)

@@ -248,7 +248,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         TypeParameterConstraintClause = Nothing
                     End If
                 End If
-                Dim TypeParameterSyntax As VBS.TypeParameterSyntax = VBFactory.TypeParameter(variance, GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False), TypeParameterConstraintClause).WithConvertedTriviaFrom(node)
+                Dim TypeParameterSyntax As VBS.TypeParameterSyntax = VBFactory.TypeParameter(variance, GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=True), TypeParameterConstraintClause).WithConvertedTriviaFrom(node)
                 Return TypeParameterSyntax
             End Function
 

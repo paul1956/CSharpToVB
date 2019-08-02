@@ -138,7 +138,7 @@ End Function
                     End If
                 Next
 
-                Dim id As SyntaxToken = GenerateSafeVBToken(node.Identifier, False)
+                Dim id As SyntaxToken = GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False)
 
                 Dim [inherits] As New List(Of VBS.InheritsStatementSyntax)()
                 Dim [implements] As New List(Of VBS.ImplementsStatementSyntax)()
@@ -211,7 +211,7 @@ End Function
             End Function
 
             Public Overrides Function VisitDelegateDeclaration(node As CSS.DelegateDeclarationSyntax) As VB.VisualBasicSyntaxNode
-                Dim Identifier As SyntaxToken = GenerateSafeVBToken(node.Identifier, False)
+                Dim Identifier As SyntaxToken = GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False)
                 Dim methodInfo As INamedTypeSymbol = TryCast(ModelExtensions.GetDeclaredSymbol(Me.mSemanticModel, node), INamedTypeSymbol)
                 Dim AttributeLists As SyntaxList(Of VBS.AttributeListSyntax) = VB.SyntaxFactory.List(node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))
                 Dim Modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, Me.IsModule)
@@ -316,7 +316,7 @@ End Function
                 Dim EnumStatement As VBS.EnumStatementSyntax = DirectCast(VB.SyntaxFactory.EnumStatement(ListOfAttributes,
                                                                                                VB.SyntaxFactory.TokenList(Modifiers),
                                                                                                EnumKeyword.WithConvertedTriviaFrom(node.EnumKeyword),
-                                                                                               identifier:=GenerateSafeVBToken(id:=node.Identifier, IsQualifiedName:=False),
+                                                                                               identifier:=GenerateSafeVBToken(id:=node.Identifier, IsQualifiedName:=False, IsTypeName:=False),
                                                                                                UnderlyingType).
                                                                                        RestructureAttributesAndModifiers(ListOfAttributes.Count > 0, Modifiers.Count > 0), VBS.EnumStatementSyntax)
 
@@ -330,7 +330,7 @@ End Function
 
             Public Overrides Function VisitEnumMemberDeclaration(node As CSS.EnumMemberDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim initializer As VBS.ExpressionSyntax = DirectCast(node.EqualsValue?.Value.Accept(Me), VBS.ExpressionSyntax)
-                Return VB.SyntaxFactory.EnumMemberDeclaration(VB.SyntaxFactory.List(node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) DirectCast(a.Accept(Me), VBS.AttributeListSyntax))), GenerateSafeVBToken(node.Identifier, False), initializer:=If(initializer Is Nothing, Nothing, VB.SyntaxFactory.EqualsValue(initializer))).WithConvertedTriviaFrom(node)
+                Return VB.SyntaxFactory.EnumMemberDeclaration(VB.SyntaxFactory.List(node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) DirectCast(a.Accept(Me), VBS.AttributeListSyntax))), GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False), initializer:=If(initializer Is Nothing, Nothing, VB.SyntaxFactory.EqualsValue(initializer))).WithConvertedTriviaFrom(node)
             End Function
 
             Public Overrides Function VisitExplicitInterfaceSpecifier(node As CSS.ExplicitInterfaceSpecifierSyntax) As VB.VisualBasicSyntaxNode
@@ -359,7 +359,7 @@ End Function
                         members.Add(DirectCast(m.Accept(Me), VBS.StatementSyntax))
                     End If
                 Next
-                Dim Identifier As SyntaxToken = GenerateSafeVBToken(node.Identifier, False)
+                Dim Identifier As SyntaxToken = GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False)
                 Dim TypeParameterList As VBS.TypeParameterListSyntax = DirectCast(node.TypeParameterList?.Accept(Me), VBS.TypeParameterListSyntax)
                 Dim StatementLeadingTrivia As New List(Of SyntaxTrivia)
                 If node.Modifiers.Count > 0 AndAlso Modifiers.Count = 0 Then
@@ -450,7 +450,7 @@ End Function
                 StructureStatement = DirectCast(VB.SyntaxFactory.StructureStatement(ListOfAttributes,
                                                                             VB.SyntaxFactory.TokenList(Modifiers),
                                                                             StructureKeyword.WithConvertedTriviaFrom(node.Keyword),
-                                                                            GenerateSafeVBToken(node.Identifier, False),
+                                                                            GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False),
                                                                             TypeParameterList
                                                                             ).RestructureAttributesAndModifiers(ListOfAttributes.Count > 0, Modifiers.Count > 0), VBS.StructureStatementSyntax).WithTrailingEOL
 
@@ -487,7 +487,7 @@ End Function
                 Dim Identifier As SyntaxToken
                 If node.[Alias] IsNot Nothing Then
                     Dim name As CSS.IdentifierNameSyntax = node.[Alias].Name
-                    Identifier = GenerateSafeVBToken(name.Identifier, False)
+                    Identifier = GenerateSafeVBToken(name.Identifier, IsQualifiedName:=False, IsTypeName:=False)
                     [Alias] = VB.SyntaxFactory.ImportAliasClause(Identifier)
                 End If
                 ImportsName = DirectCast(node.Name.Accept(Me), VBS.NameSyntax)
