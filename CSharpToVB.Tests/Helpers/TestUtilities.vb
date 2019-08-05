@@ -63,20 +63,22 @@ Public Module TestUtilities
     End Function
 
     Public Function GetRoslynRootDirectory() As String
-        If _roslynRootDirectory.IsEmptyNullOrWhitespace Then
-            _roslynRootDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Source")
-            If Not Directory.Exists(_roslynRootDirectory) Then
-                Return ""
+        SyncLock _roslynRootDirectory
+            If _roslynRootDirectory.IsEmptyNullOrWhitespace Then
+                _roslynRootDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Source")
+                If Not Directory.Exists(_roslynRootDirectory) Then
+                    Return ""
+                End If
+                _roslynRootDirectory = Path.Combine(_roslynRootDirectory, "Repos")
+                If Not Directory.Exists(_roslynRootDirectory) Then
+                    Return ""
+                End If
+                _roslynRootDirectory = Path.Combine(_roslynRootDirectory, "Roslyn")
+                If Not Directory.Exists(_roslynRootDirectory) Then
+                    Return ""
+                End If
             End If
-            _roslynRootDirectory = Path.Combine(_roslynRootDirectory, "Repos")
-            If Not Directory.Exists(_roslynRootDirectory) Then
-                Return ""
-            End If
-            _roslynRootDirectory = Path.Combine(_roslynRootDirectory, "Roslyn")
-            If Not Directory.Exists(_roslynRootDirectory) Then
-                Return ""
-            End If
-        End If
+        End SyncLock
         Return _roslynRootDirectory
     End Function
 
