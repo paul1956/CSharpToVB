@@ -7,13 +7,11 @@ Option Strict On
 
 Imports System.Collections.Immutable
 Imports System.Diagnostics.CodeAnalysis
-
+Imports HashLibrary
 Imports IVisualBasicCode.CodeConverter.Util
 
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Shared.Extensions
-
-Imports Utilities
 
 Partial Friend Class SymbolEquivalenceComparer
 

@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 
-namespace Utilities
+namespace HashLibrary
 {
     public static class CodeRefactoringHash
     {
@@ -13,7 +13,7 @@ namespace Utilities
         /// </summary>
         public static int Combine(int newKey, int currentKey)
         {
-            return unchecked((currentKey * (int)0xA5555529) + newKey);
+            return unchecked(currentKey * (int)0xA5555529 + newKey);
         }
 
         public static int Combine(bool newKeyPart, int currentKey)
@@ -60,7 +60,7 @@ namespace Utilities
                 if (value != null)
 #pragma warning restore RECS0017 // Possible compare of value type with 'null'
                 {
-                    hashCode = CodeRefactoringHash.Combine(value.GetHashCode(), hashCode);
+                    hashCode = Combine(value.GetHashCode(), hashCode);
                 }
             }
 
@@ -86,7 +86,7 @@ namespace Utilities
                 if (value != null)
 #pragma warning restore RECS0017 // Possible compare of value type with 'null'
                 {
-                    hashCode = CodeRefactoringHash.Combine(value.GetHashCode(), hashCode);
+                    hashCode = Combine(value.GetHashCode(), hashCode);
                 }
             }
 
@@ -114,7 +114,7 @@ namespace Utilities
                 if (value != null)
 #pragma warning restore RECS0017 // Possible compare of value type with 'null'
                 {
-                    hashCode = CodeRefactoringHash.Combine(value.GetHashCode(), hashCode);
+                    hashCode = Combine(value.GetHashCode(), hashCode);
                 }
             }
 
@@ -139,7 +139,7 @@ namespace Utilities
 
                 if (value != null)
                 {
-                    hashCode = CodeRefactoringHash.Combine(stringComparer.GetHashCode(value), hashCode);
+                    hashCode = Combine(stringComparer.GetHashCode(value), hashCode);
                 }
             }
 
@@ -166,11 +166,11 @@ namespace Utilities
         /// <returns>The FNV-1a hash of <paramref name="data"/></returns>
         public static int GetFNVHashCode(byte[] data)
         {
-            int hashCode = CodeRefactoringHash.FnvOffsetBias;
+            int hashCode = FnvOffsetBias;
 
             for (int i = 0; i < data.Length; i++)
             {
-                hashCode = unchecked((hashCode ^ data[i]) * CodeRefactoringHash.FnvPrime);
+                hashCode = unchecked((hashCode ^ data[i]) * FnvPrime);
             }
 
             return hashCode;
@@ -188,7 +188,7 @@ namespace Utilities
         /// <returns>The FNV-1a hash of <paramref name="data"/></returns>
         public static unsafe int GetFNVHashCode(byte* data, int length, out bool isAscii)
         {
-            int hashCode = CodeRefactoringHash.FnvOffsetBias;
+            int hashCode = FnvOffsetBias;
 
             byte asciiMask = 0;
 
@@ -196,7 +196,7 @@ namespace Utilities
             {
                 byte b = data[i];
                 asciiMask |= b;
-                hashCode = unchecked((hashCode ^ b) * CodeRefactoringHash.FnvPrime);
+                hashCode = unchecked((hashCode ^ b) * FnvPrime);
             }
 
             isAscii = (asciiMask & 0x80) == 0;
@@ -211,11 +211,11 @@ namespace Utilities
         /// <returns>The FNV-1a hash of <paramref name="data"/></returns>
         public static int GetFNVHashCode(ImmutableArray<byte> data)
         {
-            int hashCode = CodeRefactoringHash.FnvOffsetBias;
+            int hashCode = FnvOffsetBias;
 
             for (int i = 0; i < data.Length; i++)
             {
-                hashCode = unchecked((hashCode ^ data[i]) * CodeRefactoringHash.FnvPrime);
+                hashCode = unchecked((hashCode ^ data[i]) * FnvPrime);
             }
 
             return hashCode;
@@ -235,12 +235,12 @@ namespace Utilities
         /// <returns>The FNV-1a hash code of the substring beginning at <paramref name="start"/> and ending after <paramref name="length"/> characters.</returns>
         public static int GetFNVHashCode(string text, int start, int length)
         {
-            int hashCode = CodeRefactoringHash.FnvOffsetBias;
+            int hashCode = FnvOffsetBias;
             int end = start + length;
 
             for (int i = start; i < end; i++)
             {
-                hashCode = unchecked((hashCode ^ text[i]) * CodeRefactoringHash.FnvPrime);
+                hashCode = unchecked((hashCode ^ text[i]) * FnvPrime);
             }
 
             return hashCode;
@@ -283,7 +283,7 @@ namespace Utilities
         /// <returns>The FNV-1a hash code of <paramref name="text"/></returns>
         public static int GetFNVHashCode(string text)
         {
-            return CombineFNVHash(CodeRefactoringHash.FnvOffsetBias, text);
+            return CombineFNVHash(FnvOffsetBias, text);
         }
 
         /// <summary>
@@ -294,12 +294,12 @@ namespace Utilities
         /// <returns>The FNV-1a hash code of <paramref name="text"/></returns>
         public static int GetFNVHashCode(System.Text.StringBuilder text)
         {
-            int hashCode = CodeRefactoringHash.FnvOffsetBias;
+            int hashCode = FnvOffsetBias;
             int end = text.Length;
 
             for (int i = 0; i < end; i++)
             {
-                hashCode = unchecked((hashCode ^ text[i]) * CodeRefactoringHash.FnvPrime);
+                hashCode = unchecked((hashCode ^ text[i]) * FnvPrime);
             }
 
             return hashCode;
@@ -315,12 +315,12 @@ namespace Utilities
         /// <returns>The FNV-1a hash code of the substring beginning at <paramref name="start"/> and ending after <paramref name="length"/> characters.</returns>
         public static int GetFNVHashCode(char[] text, int start, int length)
         {
-            int hashCode = CodeRefactoringHash.FnvOffsetBias;
+            int hashCode = FnvOffsetBias;
             int end = start + length;
 
             for (int i = start; i < end; i++)
             {
-                hashCode = unchecked((hashCode ^ text[i]) * CodeRefactoringHash.FnvPrime);
+                hashCode = unchecked((hashCode ^ text[i]) * FnvPrime);
             }
 
             return hashCode;
@@ -337,7 +337,7 @@ namespace Utilities
         /// <returns>The FNV-1a hash code of the character.</returns>
         public static int GetFNVHashCode(char ch)
         {
-            return CodeRefactoringHash.CombineFNVHash(CodeRefactoringHash.FnvOffsetBias, ch);
+            return CombineFNVHash(FnvOffsetBias, ch);
         }
 
         /// <summary>
@@ -351,7 +351,7 @@ namespace Utilities
         {
             foreach (char ch in text)
             {
-                hashCode = unchecked((hashCode ^ ch) * CodeRefactoringHash.FnvPrime);
+                hashCode = unchecked((hashCode ^ ch) * FnvPrime);
             }
 
             return hashCode;
@@ -366,7 +366,7 @@ namespace Utilities
         /// <returns>The result of combining <paramref name="hashCode"/> with <paramref name="ch"/> using the FNV-1a algorithm</returns>
         public static int CombineFNVHash(int hashCode, char ch)
         {
-            return unchecked((hashCode ^ ch) * CodeRefactoringHash.FnvPrime);
+            return unchecked((hashCode ^ ch) * FnvPrime);
         }
     }
 }
