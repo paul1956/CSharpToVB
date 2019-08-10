@@ -12,11 +12,11 @@
     <OptionExplicit>On</OptionExplicit>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis" Version="3.2.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis" Version="3.2.1" />
+    <PackageReference Include="VBMsgBox" Version="1.0.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\HashLibrary\HashLibrary.csproj" />
     <ProjectReference Include="..\ManageProgressBar\ManageProgressBar.vbproj" />
-    <ProjectReference Include="..\VBMsgBox\VBMsgBox.vbproj" />
   </ItemGroup>
 </Project>

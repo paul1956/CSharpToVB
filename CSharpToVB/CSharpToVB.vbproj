@@ -22,15 +22,14 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Build.Locator" Version="1.2.2" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.2.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="3.2.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="3.2.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.2.1" />
+    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="3.2.1" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="3.2.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\CodeConverter\CodeConverter.vbproj" />
     <ProjectReference Include="..\ManageProgressBar\ManageProgressBar.vbproj" />
-    <ProjectReference Include="..\VBMsgBox\VBMsgBox.vbproj" />
   </ItemGroup>
 
   <ItemGroup>
