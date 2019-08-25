@@ -646,7 +646,7 @@ Public Class Form1
                         If ProjectFileString.Contains("<Project Sdk=""Microsoft.NET.Sdk") Then
                             ' This is not perfect but is a good start
                             ProjectFileString = ProjectFileString.Replace(".cs", ".vb")
-                            Dim NewVB_ProjectName As String = New FileInfo(currentProject.FilePath).Name.ToLower.Replace(".csproj", ".vbproj")
+                            Dim NewVB_ProjectName As String = New FileInfo(currentProject.FilePath).Name.ToLower.Replace(".csproj", "_VB.vbproj")
                             File.WriteAllText(Path.Combine(ProjectSavePath, NewVB_ProjectName), ProjectFileString)
                         End If
                         Me.RichTextBoxErrorList.Text = ""
