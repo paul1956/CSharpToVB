@@ -642,10 +642,12 @@ Public Class Form1
                     If currentProject.HasDocuments Then
                         Dim fsRead As FileStream = File.OpenRead(currentProject.FilePath)
                         Dim ProjectFileString As String = GetFileTextFromStream(fsRead)
-                        If ProjectFileString.Contains("<Project Sdk=""Microsoft.NET.Sdk") Then
-                            Dim NewVB_ProjectName As String = New FileInfo(currentProject.FilePath).Name.ToLower.Replace(".csproj", ".vbproj")
-                            File.Copy(currentProject.FilePath, Path.Combine(ProjectSavePath, NewVB_ProjectName))
 
+                        If ProjectFileString.Contains("<Project Sdk=""Microsoft.NET.Sdk") Then
+                            ' This is not perfect but is a good start
+                            ProjectFileString = ProjectFileString.Replace(".cs", ".vb")
+                            Dim NewVB_ProjectName As String = New FileInfo(currentProject.FilePath).Name.ToLower.Replace(".csproj", ".vbproj")
+                            File.WriteAllText(Path.Combine(ProjectSavePath, NewVB_ProjectName), ProjectFileString)
                         End If
                         Me.RichTextBoxErrorList.Text = ""
                             Me.RichTextBoxFileList.Text = ""
