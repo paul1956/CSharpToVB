@@ -8,7 +8,7 @@ Imports Xunit
 
 Namespace DictionaryLoadSave.Tests
 
-    <TestClass()> Public Class LoadSaveDictionaryTests
+    <TestClass()> Public NotInheritable Class LoadSaveDictionaryTests
 
         <Fact>
         Public Shared Sub VB_DictionaryWriteTest()

@@ -17,7 +17,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
 
         <Extension>
         Public Function RestructureArguments(VB_Node As VBS.StatementSyntax, CS_ArgumentList As CSS.ArgumentListSyntax) As VBS.StatementSyntax
-            If CS_ArgumentList.ContainsConditionalDirective = DirectiveState.None Then
+            If Not CS_ArgumentList.ContainsConditionalDirective Then
                 Return VB_Node
             End If
 

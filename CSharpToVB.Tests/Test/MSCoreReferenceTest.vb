@@ -6,9 +6,9 @@ Imports Microsoft.CodeAnalysis.CSharp
 Imports Xunit
 
 Namespace MSCoreReference.Tests
-    Public Class MSCoreReferenceTest
+    Public NotInheritable Class MSCoreReferenceTest
 
-        Sub VerifyReferencesExist()
+        Shared Sub VerifyReferencesExist()
             Dim tree As SyntaxTree = CSharpSyntaxTree.ParseText("using System;
 class test : IComparable { }")
 

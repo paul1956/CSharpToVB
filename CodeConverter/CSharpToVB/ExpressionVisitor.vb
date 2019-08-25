@@ -32,8 +32,8 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             Private Const IEnumerable As String = "IEnumerable"
             Private Const IEnumerableOf As String = "IEnumerable(Of "
 
-            Private Function ConvertLambdaExpression(node As CSS.AnonymousFunctionExpressionSyntax, block As Object, parameters As SeparatedSyntaxList(Of CSS.ParameterSyntax), CS_Modifiers As SyntaxTokenList) As VBS.LambdaExpressionSyntax
-                Dim NodesList As New List(Of VBS.ParameterSyntax)
+            Private Function ConvertLambdaExpression(node As CSS.AnonymousFunctionExpressionSyntax, block As Object, parameters As SeparatedSyntaxList(Of CSS.ParameterSyntax), CS_Modifiers As SyntaxTokenList) As LambdaExpressionSyntax
+                Dim NodesList As New List(Of ParameterSyntax)
                 Dim Separators As New List(Of SyntaxToken)
                 If parameters.Count > 0 Then
                     Dim SeparatorCount As Integer = parameters.SeparatorCount
@@ -41,42 +41,42 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     CS_Separators.AddRange(parameters.GetSeparators)
 
                     For i As Integer = 0 To SeparatorCount - 1
-                        Dim p As VBS.ParameterSyntax = DirectCast(parameters(i).Accept(Me), VBS.ParameterSyntax)
+                        Dim p As ParameterSyntax = DirectCast(parameters(i).Accept(Me), ParameterSyntax)
                         NodesList.Add(p)
                         Separators.Add(CommaToken.WithConvertedTriviaFrom(CS_Separators(i)))
                     Next
-                    NodesList.Add(DirectCast(parameters.Last.Accept(Me), VBS.ParameterSyntax))
+                    NodesList.Add(DirectCast(parameters.Last.Accept(Me), ParameterSyntax))
                 End If
 
-                Dim header As VBS.LambdaHeaderSyntax
+                Dim header As LambdaHeaderSyntax
                 Dim symbol As IMethodSymbol = TryCast(ModelExtensions.GetSymbolInfo(Me.mSemanticModel, node).Symbol, IMethodSymbol)
                 Dim Modifiers As List(Of SyntaxToken) = ConvertModifiers(CS_Modifiers, Me.IsModule, TokenContext.Local)
-                Dim EndSubOrFunctionStatement As VBS.EndBlockStatementSyntax
-                Dim parameterList As VBS.ParameterListSyntax = VBFactory.ParameterList(VBFactory.SeparatedList(NodesList, Separators))
+                Dim EndSubOrFunctionStatement As EndBlockStatementSyntax
+                Dim parameterList As ParameterListSyntax = VBFactory.ParameterList(VBFactory.SeparatedList(NodesList, Separators))
                 Dim IsFunction As Boolean = Not (symbol.ReturnsVoid OrElse TypeOf node.Body Is CSS.AssignmentExpressionSyntax)
                 Dim Braces As (SyntaxToken, SyntaxToken) = node.Body.GetBraces
                 If IsFunction Then
                     Dim AddAsClause As Boolean = symbol.ReturnType.IsErrorType OrElse symbol.ReturnType.ToString.Contains("?")
-                    Dim AsClause As VBS.SimpleAsClauseSyntax = If(AddAsClause,
+                    Dim AsClause As SimpleAsClauseSyntax = If(AddAsClause,
                                                                   Nothing,
                                                                   VBFactory.SimpleAsClause(ConvertToType(symbol.ReturnType))
                                                                   )
-                    header = VBFactory.FunctionLambdaHeader(VBFactory.List(Of VBS.AttributeListSyntax)(), VBFactory.TokenList(Modifiers), parameterList, asClause:=AsClause)
+                    header = VBFactory.FunctionLambdaHeader(VBFactory.List(Of AttributeListSyntax)(), VBFactory.TokenList(Modifiers), parameterList, asClause:=AsClause)
                     EndSubOrFunctionStatement = VBFactory.EndFunctionStatement().WithConvertedTriviaFrom(Braces.Item2)
                 Else
-                    header = VBFactory.SubLambdaHeader(VBFactory.List(Of VBS.AttributeListSyntax)(), VBFactory.TokenList(Modifiers), parameterList, asClause:=Nothing)
+                    header = VBFactory.SubLambdaHeader(VBFactory.List(Of AttributeListSyntax)(), VBFactory.TokenList(Modifiers), parameterList, asClause:=Nothing)
                     EndSubOrFunctionStatement = VBFactory.EndSubStatement().WithConvertedTriviaFrom(Braces.Item2)
                 End If
                 If TypeOf block Is CSS.BlockSyntax Then
                     block = DirectCast(block, CSS.BlockSyntax).Statements
                 End If
 
-                Dim Statements As New SyntaxList(Of VBS.StatementSyntax)
-                Dim EndBlock As VBS.EndBlockStatementSyntax
+                Dim Statements As New SyntaxList(Of StatementSyntax)
+                Dim EndBlock As EndBlockStatementSyntax
                 If TypeOf block Is CS.CSharpSyntaxNode Then
                     Dim body As VB.VisualBasicSyntaxNode = DirectCast(block, CS.CSharpSyntaxNode).Accept(Me)
                     If TypeOf block Is CSS.ThrowExpressionSyntax Then
-                        Statements = VBFactory.SingletonList(DirectCast(body, VBS.StatementSyntax).WithTrailingEOL)
+                        Statements = VBFactory.SingletonList(DirectCast(body, StatementSyntax).WithTrailingEOL)
                         If IsFunction Then
                             Return VBFactory.MultiLineLambdaExpression(VB.SyntaxKind.MultiLineFunctionLambdaExpression, header.WithTrailingEOL, Statements, EndSubOrFunctionStatement).WithConvertedTriviaFrom(node)
                         End If
@@ -84,38 +84,38 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     End If
                     If TypeOf block Is CSS.ObjectCreationExpressionSyntax Then
                         If IsFunction Then
-                            Statements = VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.ReturnStatement(DirectCast(body, VBS.NewExpressionSyntax)).WithTrailingEOL)
+                            Statements = VBFactory.SingletonList(Of StatementSyntax)(VBFactory.ReturnStatement(DirectCast(body, NewExpressionSyntax)).WithTrailingEOL)
                             Return VBFactory.MultiLineLambdaExpression(VB.SyntaxKind.MultiLineFunctionLambdaExpression, header.WithTrailingEOL, Statements, EndSubOrFunctionStatement).WithConvertedTriviaFrom(node)
                         End If
-                        Dim Names As SeparatedSyntaxList(Of VBS.ModifiedIdentifierSyntax) = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier("DoNotCare"))
-                        Dim AsClause As VBS.AsClauseSyntax = VBFactory.AsNewClause(DirectCast(body, VBS.NewExpressionSyntax))
-                        Dim Declarators As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(Names, AsClause, initializer:=Nothing))
-                        Statements = VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.LocalDeclarationStatement(DimModifier, Declarators))
+                        Dim Names As SeparatedSyntaxList(Of ModifiedIdentifierSyntax) = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier("DoNotCare"))
+                        Dim AsClause As AsClauseSyntax = VBFactory.AsNewClause(DirectCast(body, NewExpressionSyntax))
+                        Dim Declarators As SeparatedSyntaxList(Of VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(Names, AsClause, initializer:=Nothing))
+                        Statements = VBFactory.SingletonList(Of StatementSyntax)(VBFactory.LocalDeclarationStatement(DimModifier, Declarators))
                         Return VBFactory.MultiLineLambdaExpression(VB.SyntaxKind.MultiLineSubLambdaExpression, header.WithTrailingEOL, Statements, EndSubOrFunctionStatement).WithConvertedTriviaFrom(node)
                     End If
                     If body.IsKind(VB.SyntaxKind.SimpleAssignmentStatement) Then
-                        Dim SimpleAssignment As VBS.AssignmentStatementSyntax = DirectCast(body, VBS.AssignmentStatementSyntax)
+                        Dim SimpleAssignment As AssignmentStatementSyntax = DirectCast(body, AssignmentStatementSyntax)
                         If SimpleAssignment.Left.IsKind(VB.SyntaxKind.SimpleMemberAccessExpression) Then
-                            Dim MemberAccessExpression As VBS.MemberAccessExpressionSyntax = DirectCast(SimpleAssignment.Left, VBS.MemberAccessExpressionSyntax)
+                            Dim MemberAccessExpression As MemberAccessExpressionSyntax = DirectCast(SimpleAssignment.Left, MemberAccessExpressionSyntax)
                             Select Case MemberAccessExpression.Expression.Kind
                                 Case VB.SyntaxKind.ObjectCreationExpression, VB.SyntaxKind.SimpleMemberAccessExpression
                                     EndBlock = VBFactory.EndBlockStatement(VB.SyntaxKind.EndSubStatement, SubKeyword)
                                     Dim UniqueName As String = MethodBodyVisitor.GetUniqueVariableNameInScope(node, "tempVar", Me.mSemanticModel)
-                                    Dim UniqueIdentifier As VBS.IdentifierNameSyntax = VBFactory.IdentifierName(VBFactory.Identifier(UniqueName))
-                                    Dim Names As SeparatedSyntaxList(Of VBS.ModifiedIdentifierSyntax) = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(UniqueName))
-                                    Dim DimStatement As VBS.LocalDeclarationStatementSyntax
+                                    Dim UniqueIdentifier As IdentifierNameSyntax = VBFactory.IdentifierName(VBFactory.Identifier(UniqueName))
+                                    Dim Names As SeparatedSyntaxList(Of ModifiedIdentifierSyntax) = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(UniqueName))
+                                    Dim DimStatement As LocalDeclarationStatementSyntax
 
-                                    If TypeOf MemberAccessExpression.Expression Is VBS.NewExpressionSyntax Then
-                                        Dim AsClause As VBS.AsClauseSyntax = VBFactory.AsNewClause(DirectCast(MemberAccessExpression.Expression, VBS.NewExpressionSyntax))
-                                        Dim VariableDeclaration As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(Names, AsClause, initializer:=Nothing))
+                                    If TypeOf MemberAccessExpression.Expression Is NewExpressionSyntax Then
+                                        Dim AsClause As AsClauseSyntax = VBFactory.AsNewClause(DirectCast(MemberAccessExpression.Expression, NewExpressionSyntax))
+                                        Dim VariableDeclaration As SeparatedSyntaxList(Of VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(Names, AsClause, initializer:=Nothing))
                                         DimStatement = VBFactory.LocalDeclarationStatement(DimModifier, VariableDeclaration)
-                                    ElseIf TypeOf MemberAccessExpression.Expression Is VBS.MemberAccessExpressionSyntax Then
-                                        Dim MemberAccess As VBS.MemberAccessExpressionSyntax = DirectCast(MemberAccessExpression.Expression, VBS.MemberAccessExpressionSyntax)
-                                        If TypeOf MemberAccess.Expression IsNot VBS.NewExpressionSyntax Then
+                                    ElseIf TypeOf MemberAccessExpression.Expression Is MemberAccessExpressionSyntax Then
+                                        Dim MemberAccess As MemberAccessExpressionSyntax = DirectCast(MemberAccessExpression.Expression, MemberAccessExpressionSyntax)
+                                        If TypeOf MemberAccess.Expression IsNot NewExpressionSyntax Then
                                             Exit Select
                                         End If
-                                        Dim AsClause As VBS.AsClauseSyntax = VBFactory.AsNewClause(DirectCast(MemberAccess.Expression, VBS.NewExpressionSyntax))
-                                        Dim VariableDeclaration As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(Names, AsClause, initializer:=Nothing))
+                                        Dim AsClause As AsClauseSyntax = VBFactory.AsNewClause(DirectCast(MemberAccess.Expression, NewExpressionSyntax))
+                                        Dim VariableDeclaration As SeparatedSyntaxList(Of VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(Names, AsClause, initializer:=Nothing))
                                         DimStatement = VBFactory.LocalDeclarationStatement(DimModifier, VariableDeclaration)
                                     Else
                                         Exit Select
@@ -138,8 +138,8 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
 
                 ' TypeOf block Is SyntaxList(Of CSS.StatementSyntax)
                 Statements = Statements.AddRange(VBFactory.List(DirectCast(block, SyntaxList(Of CSS.StatementSyntax)).SelectMany(Function(s As CSS.StatementSyntax) s.Accept(New MethodBodyVisitor(Me.mSemanticModel, Me)))))
-                Dim expression As VBS.ExpressionSyntax = Nothing
-                If Statements.Count = 1 AndAlso Me.UnpackExpressionFromStatement(Statements(0), expression) Then
+                Dim expression As ExpressionSyntax = Nothing
+                If Statements.Count = 1 AndAlso UnpackExpressionFromStatement(Statements(0), expression) Then
                     Dim lSyntaxKind As VB.SyntaxKind = If(IsFunction, VB.SyntaxKind.SingleLineFunctionLambdaExpression, VB.SyntaxKind.SingleLineSubLambdaExpression)
                     Return VBFactory.SingleLineLambdaExpression(lSyntaxKind, header.WithAsClause(Nothing), expression).WithConvertedTriviaFrom(node).WithPrependedLeadingTrivia(Statements(0).GetLeadingTrivia)
                 End If
@@ -164,11 +164,11 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             End Function
 
             Private Shared Function CovertStringToTupleType(TupleString As String) As TypeSyntax
-                Dim TupleElements As New List(Of VBS.TupleElementSyntax)
+                Dim TupleElements As New List(Of TupleElementSyntax)
                 For Each t As String In TupleString.Substring(1, TupleString.Length - 2).Split(","c)
                     Dim TuplePart() As String = t.Trim.Split(" "c)
                     If TuplePart.Count = 1 Then
-                        Dim typedTupleElementSyntax1 As VBS.TypedTupleElementSyntax = VBFactory.TypedTupleElement(ConvertToType(TuplePart(0)))
+                        Dim typedTupleElementSyntax1 As TypedTupleElementSyntax = VBFactory.TypedTupleElement(ConvertToType(TuplePart(0)))
                         TupleElements.Add(typedTupleElementSyntax1)
                     Else
                         Dim Identifier As SyntaxToken = CS.SyntaxFactory.Identifier(TuplePart(1))
@@ -214,42 +214,42 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return False
             End Function
 
-            Private Function MakeAssignmentStatement(node As CSS.AssignmentExpressionSyntax) As VBS.StatementSyntax
-                Dim LeftNode As VBS.ExpressionSyntax = DirectCast(node.Left.Accept(Me), VBS.ExpressionSyntax)
+            Private Function MakeAssignmentStatement(node As CSS.AssignmentExpressionSyntax) As StatementSyntax
+                Dim LeftNode As ExpressionSyntax = DirectCast(node.Left.Accept(Me), ExpressionSyntax)
                 If CS.CSharpExtensions.Kind(node) = CS.SyntaxKind.CoalesceAssignmentExpression Then
-                    Dim PossibleNullNode As VBS.ExpressionSyntax = DirectCast(node.Right.Accept(Me).WithLeadingTrivia(SpaceTrivia), VBS.ExpressionSyntax)
-                    Dim IsNothingCondition As VBS.ExpressionSyntax = VBFactory.IsExpression(LeftNode, NothingExpression).With({SpaceTrivia}, {SpaceTrivia})
-                    Dim AssignmentStatement As VBS.AssignmentStatementSyntax = VBFactory.SimpleAssignmentStatement(LeftNode, PossibleNullNode)
+                    Dim PossibleNullNode As ExpressionSyntax = DirectCast(node.Right.Accept(Me).WithLeadingTrivia(SpaceTrivia), ExpressionSyntax)
+                    Dim IsNothingCondition As ExpressionSyntax = VBFactory.IsExpression(LeftNode, NothingExpression).With({SpaceTrivia}, {SpaceTrivia})
+                    Dim AssignmentStatement As AssignmentStatementSyntax = VBFactory.SimpleAssignmentStatement(LeftNode, PossibleNullNode)
                     Dim LeadingTrivia As New List(Of SyntaxTrivia)
                     If AssignmentStatement.HasLeadingTrivia Then
                         LeadingTrivia.AddRange(AssignmentStatement.GetLeadingTrivia)
                         AssignmentStatement = AssignmentStatement.WithLeadingTrivia(SpaceTrivia)
                     End If
-                    Dim AssignmentStatements As SyntaxList(Of VBS.StatementSyntax) = VBFactory.SingletonList(Of VBS.StatementSyntax)(AssignmentStatement)
+                    Dim AssignmentStatements As SyntaxList(Of StatementSyntax) = VBFactory.SingletonList(Of StatementSyntax)(AssignmentStatement)
                     Return VBFactory.SingleLineIfStatement(IsNothingCondition, AssignmentStatements, elseClause:=Nothing).With(LeadingTrivia, ConvertTrivia(node.GetTrailingTrivia))
                 End If
                 Dim kind As VB.SyntaxKind = ConvertCSExpressionsKindToVBKind(CS.CSharpExtensions.Kind(node))
                 Dim OperatorToken As SyntaxToken = ExpressionKindToOperatorToken(kind)
-                Dim RightNode As VBS.ExpressionSyntax
+                Dim RightNode As ExpressionSyntax
                 If node.Right.IsKind(CS.SyntaxKind.CoalesceExpression) Then
                     Dim CS_Right As CSS.BinaryExpressionSyntax = DirectCast(node.Right, CSS.BinaryExpressionSyntax)
                     If CS_Right.Right.IsKind(CS.SyntaxKind.ThrowExpression) Then
-                        Dim TestNode As VBS.ExpressionSyntax = DirectCast(CS_Right.Left.Accept(Me).WithLeadingTrivia(SpaceTrivia), VBS.ExpressionSyntax)
-                        Dim SecondExpression As VBS.ThrowStatementSyntax = DirectCast(CS_Right.Right.Accept(Me).WithConvertedTriviaFrom(CS_Right.Right), VBS.ThrowStatementSyntax).WithTrailingEOL
-                        Dim Statements As SyntaxList(Of VBS.StatementSyntax) = VBFactory.SingletonList(Of VBS.StatementSyntax)(SecondExpression)
+                        Dim TestNode As ExpressionSyntax = DirectCast(CS_Right.Left.Accept(Me).WithLeadingTrivia(SpaceTrivia), ExpressionSyntax)
+                        Dim SecondExpression As ThrowStatementSyntax = DirectCast(CS_Right.Right.Accept(Me).WithConvertedTriviaFrom(CS_Right.Right), ThrowStatementSyntax).WithTrailingEOL
+                        Dim Statements As SyntaxList(Of StatementSyntax) = VBFactory.SingletonList(Of StatementSyntax)(SecondExpression)
 
-                        Dim Condition As VBS.ExpressionSyntax = VBFactory.IsExpression(TestNode, NothingExpression)
-                        Dim IfBlock As VBS.SingleLineIfStatementSyntax = VBFactory.SingleLineIfStatement(Condition,
+                        Dim Condition As ExpressionSyntax = VBFactory.IsExpression(TestNode, NothingExpression)
+                        Dim IfBlock As SingleLineIfStatementSyntax = VBFactory.SingleLineIfStatement(Condition,
                                                                                                           Statements,
                                                                                                           elseClause:=Nothing)
                         Dim StatementWithIssues As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
                         StatementWithIssues.AddMarker(IfBlock, StatementHandlingOption.PrependStatement, AllowDuplicates:=False)
-                        RightNode = DirectCast(CS_Right.Left.Accept(Me), VBS.ExpressionSyntax)
+                        RightNode = DirectCast(CS_Right.Left.Accept(Me), ExpressionSyntax)
                     Else
-                        RightNode = DirectCast(node.Right.Accept(Me), VBS.ExpressionSyntax)
+                        RightNode = DirectCast(node.Right.Accept(Me), ExpressionSyntax)
                     End If
                 Else
-                    RightNode = DirectCast(node.Right.Accept(Me), VBS.ExpressionSyntax)
+                    RightNode = DirectCast(node.Right.Accept(Me), ExpressionSyntax)
                     RightNode = If(RightNode, VBFactory.IdentifierName("HandleRefExpression"))
                 End If
                 If node.IsKind(CS.SyntaxKind.AndAssignmentExpression,
@@ -269,12 +269,12 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Me.inlineAssignHelperMarkers.Add(parentDefinition)
             End Sub
 
-            Private Function ReduceArrayUpperBoundExpression(expr As CSS.ExpressionSyntax) As VBS.ExpressionSyntax
+            Private Function ReduceArrayUpperBoundExpression(expr As CSS.ExpressionSyntax) As ExpressionSyntax
                 Dim constant As [Optional](Of Object) = Me.mSemanticModel.GetConstantValue(expr)
                 If constant.HasValue AndAlso TypeOf constant.Value Is Integer Then
                     Return VBFactory.NumericLiteralExpression(VBFactory.Literal(CInt(constant.Value) - 1))
                 End If
-                Return VBFactory.BinaryExpression(kind:=VB.SyntaxKind.SubtractExpression, left:=DirectCast(expr.Accept(Me), VBS.ExpressionSyntax), operatorToken:=MinusToken, right:=VBFactory.NumericLiteralExpression(VBFactory.Literal(1)))
+                Return VBFactory.BinaryExpression(kind:=VB.SyntaxKind.SubtractExpression, left:=DirectCast(expr.Accept(Me), ExpressionSyntax), operatorToken:=MinusToken, right:=VBFactory.NumericLiteralExpression(VBFactory.Literal(1)))
             End Function
 
             Private Function RestructureTrivia(TriviaList As SyntaxTriviaList, FoundEOL As Boolean, ByRef OperatorTrailingTrivia As List(Of SyntaxTrivia)) As Boolean
@@ -297,11 +297,11 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return FoundEOL
             End Function
 
-            Private Function UnpackExpressionFromStatement(statementSyntax As VBS.StatementSyntax, <Out> ByRef expression As VBS.ExpressionSyntax) As Boolean
-                If TypeOf statementSyntax Is VBS.ReturnStatementSyntax Then
-                    expression = (DirectCast(statementSyntax, VBS.ReturnStatementSyntax)).Expression
-                ElseIf TypeOf statementSyntax Is VBS.YieldStatementSyntax Then
-                    expression = (DirectCast(statementSyntax, VBS.YieldStatementSyntax)).Expression
+            Private Shared Function UnpackExpressionFromStatement(statementSyntax As StatementSyntax, <Out> ByRef expression As ExpressionSyntax) As Boolean
+                If TypeOf statementSyntax Is ReturnStatementSyntax Then
+                    expression = (DirectCast(statementSyntax, ReturnStatementSyntax)).Expression
+                ElseIf TypeOf statementSyntax Is YieldStatementSyntax Then
+                    expression = (DirectCast(statementSyntax, YieldStatementSyntax)).Expression
                 Else
                     expression = Nothing
                 End If
@@ -309,7 +309,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return expression IsNot Nothing
             End Function
 
-            Public Function ConvertAndModifyNodeTrivia(Node As VB.VisualBasicSyntaxNode, NodesOrTokens As List(Of SyntaxNodeOrToken), Index As Integer) As VB.VisualBasicSyntaxNode
+            Public Shared Function ConvertAndModifyNodeTrivia(Node As VB.VisualBasicSyntaxNode, NodesOrTokens As List(Of SyntaxNodeOrToken), Index As Integer) As VB.VisualBasicSyntaxNode
                 Dim AfterWhiteSpace As Boolean = False
                 Dim AfterLineContinuation As Boolean = False
                 Dim InitialTriviaList As List(Of SyntaxTrivia) = ConvertTrivia(NodesOrTokens(Index).GetLeadingTrivia).ToList
@@ -393,7 +393,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                     Next
                                 End If
                                 If j = 0 OrElse j < InitialTriviaListUBound AndAlso InitialTriviaList(j).RawKind = VB.SyntaxKind.CommentTrivia Then
-                                    If Not NewWhiteSpaceString = "" Then
+                                    If NewWhiteSpaceString.IsNotEmptyNullOrWhitespace Then
                                         FinalTrailingTriviaList.Add(VBFactory.WhitespaceTrivia(NewWhiteSpaceString))
                                     Else
                                         FinalTrailingTriviaList.Add(SpaceTrivia)
@@ -403,7 +403,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                     AfterLineContinuation = True
                                 Else
                                     FinalTrailingTriviaList.Add(Trivia)
-                                    If Not NewWhiteSpaceString = "" Then
+                                    If NewWhiteSpaceString.IsNotEmptyNullOrWhitespace Then
                                         FinalTrailingTriviaList.Add(VBFactory.WhitespaceTrivia(NewWhiteSpaceString))
                                     End If
                                 End If
@@ -430,7 +430,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return Node.With(FinalLeadingTriviaList, FinalTrailingTriviaList)
             End Function
 
-            Public Function ConvertAndModifyTokenTrivia(Token As SyntaxToken, NodesOrTokens As List(Of SyntaxNodeOrToken), Index As Integer) As SyntaxToken
+            Public Shared Function ConvertAndModifyTokenTrivia(Token As SyntaxToken, NodesOrTokens As List(Of SyntaxNodeOrToken), Index As Integer) As SyntaxToken
                 Dim InitialTriviaList As List(Of SyntaxTrivia) = ConvertTrivia(NodesOrTokens(Index).GetLeadingTrivia).ToList
                 Dim InitialTriviaListUBound As Integer = InitialTriviaList.Count - 1
                 Dim AfterWhiteSpace As Boolean = False
@@ -460,7 +460,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                     End If
                                 Next
                                 If j < InitialTriviaListUBound AndAlso InitialTriviaList(j).RawKind = VB.SyntaxKind.CommentTrivia Then
-                                    If Not NewWhiteSpaceString = "" Then
+                                    If NewWhiteSpaceString.IsNotEmptyNullOrWhitespace Then
                                         FinalLeadingTriviaList.Add(VBFactory.WhitespaceTrivia(NewWhiteSpaceString))
                                     Else
                                         FinalLeadingTriviaList.Add(SpaceTrivia)
@@ -468,7 +468,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                     FinalLeadingTriviaList.Add(LineContinuation)
                                     AfterLineContinuation = True
                                 Else
-                                    If Not NewWhiteSpaceString = "" Then
+                                    If NewWhiteSpaceString.IsNotEmptyNullOrWhitespace Then
                                         FinalLeadingTriviaList.Add(VBFactory.WhitespaceTrivia(NewWhiteSpaceString))
                                     End If
                                 End If
@@ -521,7 +521,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return Token.With(FinalLeadingTriviaList, FinalTrailingTriviaList)
             End Function
 
-            Public Shared Function ConvertToTupleElement(TupleElement As IFieldSymbol) As VBS.TupleElementSyntax
+            Public Shared Function ConvertToTupleElement(TupleElement As IFieldSymbol) As TupleElementSyntax
                 If TupleElement.Type Is Nothing Then
                     Return VBFactory.NamedTupleElement(TupleElement.Name.ToString)
                 End If
@@ -529,23 +529,23 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return VBFactory.NamedTupleElement(VBFactory.Identifier(AddBracketsIfRequired(TupleElement.Name)), AsClause)
             End Function
 
-            Public Shared Function ConvertToType(PossibleTupleType As ITypeSymbol) As VBS.TypeSyntax
+            Public Shared Function ConvertToType(PossibleTupleType As ITypeSymbol) As TypeSyntax
                 If PossibleTupleType.IsKind(SymbolKind.ArrayType) Then
                     Dim ElementType As TypeSyntax = ConvertToType(DirectCast(PossibleTupleType, IArrayTypeSymbol).ElementType)
-                    If TypeOf ElementType Is VBS.ArrayTypeSyntax Then
+                    If TypeOf ElementType Is ArrayTypeSyntax Then
                         Return ElementType
                     End If
                     Return VBFactory.ArrayType(ElementType)
                 End If
                 If PossibleTupleType.IsTupleType Then
-                    Dim TupleElementList As New List(Of VBS.TupleElementSyntax)
+                    Dim TupleElementList As New List(Of TupleElementSyntax)
                     For Each TupleElement As IFieldSymbol In DirectCast(PossibleTupleType, INamedTypeSymbol).TupleElements
                         TupleElementList.Add(ConvertToTupleElement(TupleElement))
                     Next
                     Return VBFactory.TupleType(TupleElementList.ToArray)
                 End If
                 If PossibleTupleType.Name = "Tuple" Then
-                    Dim TupleElementList As New List(Of VBS.TypeSyntax)
+                    Dim TupleElementList As New List(Of TypeSyntax)
                     For Each TupleElement As ITypeSymbol In DirectCast(PossibleTupleType, INamedTypeSymbol).TypeArguments
                         TupleElementList.Add(ConvertToType(TupleElement))
                     Next
@@ -558,7 +558,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     Dim Name As String = PossibleName.Substring(0, StartIndex)
                     Dim PossibleTypes As String = PossibleName.Substring(StartIndex + 1, IndexOfLastGreaterThan - StartIndex - 1)
                     If PossibleTupleType.ToString.StartsWith("System.Func") Then
-                        Dim DictionaryTypeElement As New List(Of VBS.TypeSyntax)
+                        Dim DictionaryTypeElement As New List(Of TypeSyntax)
                         While PossibleTypes.Length > 0
                             Dim EndIndex As Integer
                             ' Tuple
@@ -585,7 +585,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     ' Could be dictionary or List
                     If TypeOf PossibleTupleType Is INamedTypeSymbol AndAlso PossibleName.Contains(",") Then
                         Dim NamedType As INamedTypeSymbol = CType(PossibleTupleType, INamedTypeSymbol)
-                        Dim DictionaryTypeElement As New List(Of VBS.TypeSyntax)
+                        Dim DictionaryTypeElement As New List(Of TypeSyntax)
                         If NamedType.TypeArguments.Count = 0 Then
                             Return PredefinedTypeObject
                         End If
@@ -603,36 +603,36 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return ConvertToType(PossibleName.Replace("<", "(Of ").Replace(">", ")"))
             End Function
 
-            Public Shared Function GetElementType(_ITypeSymbol As ITypeSymbol) As VBS.TypeSyntax
-                Dim _TypeSyntax As VBS.TypeSyntax = ConvertToType(_ITypeSymbol)
+            Public Shared Function GetElementType(_ITypeSymbol As ITypeSymbol) As TypeSyntax
+                Dim _TypeSyntax As TypeSyntax = ConvertToType(_ITypeSymbol)
                 If _TypeSyntax.IsKind(VB.SyntaxKind.ArrayType) Then
                     If DirectCast(_ITypeSymbol, IArrayTypeSymbol).ElementType.TypeKind = TypeKind.Array Then
                         Return _TypeSyntax.NormalizeWhitespace
                     End If
-                    Return DirectCast(_TypeSyntax, VBS.ArrayTypeSyntax).ElementType.NormalizeWhitespace
+                    Return DirectCast(_TypeSyntax, ArrayTypeSyntax).ElementType.NormalizeWhitespace
                 End If
-                If TypeOf _TypeSyntax Is VBS.QualifiedNameSyntax Then
-                    Dim Right As SimpleNameSyntax = DirectCast(_TypeSyntax, VBS.QualifiedNameSyntax).Right
+                If TypeOf _TypeSyntax Is QualifiedNameSyntax Then
+                    Dim Right As SimpleNameSyntax = DirectCast(_TypeSyntax, QualifiedNameSyntax).Right
                     If TypeOf Right Is IdentifierNameSyntax Then
                         Dim TypeSyntax As TypeSyntax = GetTypeSyntaxFromInterface(_ITypeSymbol)
                         Return TypeSyntax
                     End If
-                    Dim GenericdName As VBS.GenericNameSyntax = DirectCast(Right, GenericNameSyntax)
+                    Dim GenericdName As GenericNameSyntax = DirectCast(Right, GenericNameSyntax)
                     If GenericdName.TypeArgumentList.Arguments.Count = 1 Then
                         Return GenericdName.TypeArgumentList.Arguments(0)
                     Else
                         Return VBFactory.ParseTypeName(GenericdName.TypeArgumentList.Arguments.ToString & ")")
                     End If
                 End If
-                If TypeOf _TypeSyntax Is VBS.GenericNameSyntax Then
-                    Dim GenericdName As VBS.GenericNameSyntax = CType(_TypeSyntax, VBS.GenericNameSyntax)
+                If TypeOf _TypeSyntax Is GenericNameSyntax Then
+                    Dim GenericdName As GenericNameSyntax = CType(_TypeSyntax, GenericNameSyntax)
                     If GenericdName.TypeArgumentList.Arguments.Count = 1 Then
                         Return GenericdName.TypeArgumentList.Arguments(0)
                     Else
                         Return GetTypeSyntaxFromInterface(_ITypeSymbol)
                     End If
                 End If
-                If TypeOf _TypeSyntax Is VBS.IdentifierNameSyntax Then
+                If TypeOf _TypeSyntax Is IdentifierNameSyntax Then
                     Return VBFactory.ParseTypeName(_TypeSyntax.ToString)
                 End If
 
@@ -691,7 +691,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             End Function
 
             Public Overrides Function VisitAnonymousObjectCreationExpression(node As CSS.AnonymousObjectCreationExpressionSyntax) As VB.VisualBasicSyntaxNode
-                Dim FieldInitializers As New List(Of VBS.FieldInitializerSyntax)
+                Dim FieldInitializers As New List(Of FieldInitializerSyntax)
                 For i As Integer = 0 To node.Initializers.Count - 1
                     Dim Initializer As CSS.AnonymousObjectMemberDeclaratorSyntax = node.Initializers(i)
                     Dim LeadingTrivia As SyntaxTriviaList = VBFactory.TriviaList(ConvertTrivia(Initializer.GetLeadingTrivia))
@@ -699,11 +699,11 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         If Not LeadingTrivia.ContainsEndIfTrivia Then
                             LeadingTrivia = LeadingTrivia.Insert(0, VBFactory.CommentTrivia(" ' TODO: Comment moved from middle of expression to end, check for correct placement"))
                         End If
-                        Dim Statement As VBS.EmptyStatementSyntax = VBFactory.EmptyStatement.WithLeadingTrivia(LeadingTrivia)
+                        Dim Statement As EmptyStatementSyntax = VBFactory.EmptyStatement.WithLeadingTrivia(LeadingTrivia)
                         GetStatementwithIssues(node).AddMarker(Statement, StatementHandlingOption.AppendEmptyStatement, AllowDuplicates:=True)
                         Initializer = Initializer.WithoutLeadingTrivia
                     End If
-                    Dim Field As VBS.FieldInitializerSyntax = DirectCast(Initializer.Accept(Me), VBS.FieldInitializerSyntax).NormalizeWhitespaceEx(useDefaultCasing:=True, PreserveCRLF:=True)
+                    Dim Field As FieldInitializerSyntax = DirectCast(Initializer.Accept(Me), FieldInitializerSyntax).NormalizeWhitespaceEx(useDefaultCasing:=True, PreserveCRLF:=True)
                     Dim FirstTrivia As Boolean = True
                     Dim FoundComment As Boolean = False
                     Dim FieldLeadingTrivia As SyntaxTriviaList = Field.GetLeadingTrivia
@@ -746,27 +746,27 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             End Function
 
             Public Overrides Function VisitArrayCreationExpression(node As CSS.ArrayCreationExpressionSyntax) As VB.VisualBasicSyntaxNode
-                Dim upperBoundArguments As IEnumerable(Of VBS.ArgumentSyntax) = node.Type.RankSpecifiers.First()?.Sizes.Where(Function(s As CSS.ExpressionSyntax) Not (TypeOf s Is CSS.OmittedArraySizeExpressionSyntax)).Select(Function(s As CSS.ExpressionSyntax) DirectCast(VBFactory.SimpleArgument(Me.ReduceArrayUpperBoundExpression(s)), VBS.ArgumentSyntax))
-                Dim cleanUpperBounds As New List(Of VBS.ArgumentSyntax)
-                For Each Argument As VBS.ArgumentSyntax In upperBoundArguments
+                Dim upperBoundArguments As IEnumerable(Of ArgumentSyntax) = node.Type.RankSpecifiers.First()?.Sizes.Where(Function(s As CSS.ExpressionSyntax) Not (TypeOf s Is CSS.OmittedArraySizeExpressionSyntax)).Select(Function(s As CSS.ExpressionSyntax) DirectCast(VBFactory.SimpleArgument(Me.ReduceArrayUpperBoundExpression(s)), ArgumentSyntax))
+                Dim cleanUpperBounds As New List(Of ArgumentSyntax)
+                For Each Argument As ArgumentSyntax In upperBoundArguments
                     If Argument.ToString <> "-1" Then
                         cleanUpperBounds.Add(Argument)
                     End If
                 Next
                 upperBoundArguments = cleanUpperBounds
-                Dim rankSpecifiers As IEnumerable(Of VBS.ArrayRankSpecifierSyntax) = node.Type.RankSpecifiers.Select(Function(rs As CSS.ArrayRankSpecifierSyntax) DirectCast(rs.Accept(Me), VBS.ArrayRankSpecifierSyntax))
-                Dim AttributeLists As SyntaxList(Of VBS.AttributeListSyntax) = VBFactory.List(Of VBS.AttributeListSyntax)()
+                Dim rankSpecifiers As IEnumerable(Of ArrayRankSpecifierSyntax) = node.Type.RankSpecifiers.Select(Function(rs As CSS.ArrayRankSpecifierSyntax) DirectCast(rs.Accept(Me), ArrayRankSpecifierSyntax))
+                Dim AttributeLists As SyntaxList(Of AttributeListSyntax) = VBFactory.List(Of AttributeListSyntax)()
                 Dim VBNode As VB.VisualBasicSyntaxNode = node.Type.ElementType.Accept(Me)
-                Dim ArrayType As VBS.TypeSyntax
-                If TypeOf VBNode Is VBS.TypeSyntax Then
-                    ArrayType = DirectCast(VBNode, VBS.TypeSyntax)
+                Dim ArrayType As TypeSyntax
+                If TypeOf VBNode Is TypeSyntax Then
+                    ArrayType = DirectCast(VBNode, TypeSyntax)
                 Else
                     Stop
                     Throw UnreachableException
                 End If
-                Dim ArrayBounds As VBS.ArgumentListSyntax = If(upperBoundArguments.Any(), VBFactory.ArgumentList(arguments:=VBFactory.SeparatedList(upperBoundArguments)), Nothing)
-                Dim RankSpecifiersList As SyntaxList(Of VBS.ArrayRankSpecifierSyntax) = If(upperBoundArguments.Any(), VBFactory.List(rankSpecifiers.Skip(1)), VBFactory.List(rankSpecifiers))
-                Dim Initializer As VBS.CollectionInitializerSyntax = If(DirectCast(node.Initializer?.Accept(Me), VBS.CollectionInitializerSyntax), VBFactory.CollectionInitializer())
+                Dim ArrayBounds As ArgumentListSyntax = If(upperBoundArguments.Any(), VBFactory.ArgumentList(arguments:=VBFactory.SeparatedList(upperBoundArguments)), Nothing)
+                Dim RankSpecifiersList As SyntaxList(Of ArrayRankSpecifierSyntax) = If(upperBoundArguments.Any(), VBFactory.List(rankSpecifiers.Skip(1)), VBFactory.List(rankSpecifiers))
+                Dim Initializer As CollectionInitializerSyntax = If(DirectCast(node.Initializer?.Accept(Me), CollectionInitializerSyntax), VBFactory.CollectionInitializer())
                 Return VBFactory.ArrayCreationExpression(
                                                     NewKeyword.WithTrailingTrivia(SpaceTrivia),
                                                     AttributeLists,
@@ -797,22 +797,22 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     End If
                     If IsDelegate OrElse node.Right.IsKind(CS.SyntaxKind.ParenthesizedLambdaExpression) Then
                         If node.OperatorToken.IsKind(CS.SyntaxKind.PlusEqualsToken) Then
-                            Return VBFactory.AddHandlerStatement(DirectCast(node.Left.Accept(Me).WithLeadingTrivia(SpaceTrivia), VBS.ExpressionSyntax), DirectCast(node.Right.Accept(Me), VBS.ExpressionSyntax)).WithConvertedTriviaFrom(node)
+                            Return VBFactory.AddHandlerStatement(DirectCast(node.Left.Accept(Me).WithLeadingTrivia(SpaceTrivia), ExpressionSyntax), DirectCast(node.Right.Accept(Me), ExpressionSyntax)).WithConvertedTriviaFrom(node)
                         End If
 
                         If node.OperatorToken.IsKind(CS.SyntaxKind.MinusEqualsToken) Then
                             ' TODO capture and leading comments from node.left
-                            Return VBFactory.RemoveHandlerStatement(DirectCast(node.Left.Accept(Me), VBS.ExpressionSyntax).WithLeadingTrivia(SpaceTrivia), DirectCast(node.Right.Accept(Me), VBS.ExpressionSyntax)).WithConvertedTriviaFrom(node)
+                            Return VBFactory.RemoveHandlerStatement(DirectCast(node.Left.Accept(Me), ExpressionSyntax).WithLeadingTrivia(SpaceTrivia), DirectCast(node.Right.Accept(Me), ExpressionSyntax)).WithConvertedTriviaFrom(node)
                         End If
                     End If
                     If node.Left.IsKind(CS.SyntaxKind.DeclarationExpression, CS.SyntaxKind.TupleExpression) Then
                         Dim TupleName As String
-                        Dim RightNode As VBS.ExpressionSyntax = DirectCast(node.Right.Accept(Me).WithConvertedTriviaFrom(node.Right), VBS.ExpressionSyntax)
-                        Dim Initializer As VBS.EqualsValueSyntax = VBFactory.EqualsValue(RightNode)
+                        Dim RightNode As ExpressionSyntax = DirectCast(node.Right.Accept(Me).WithConvertedTriviaFrom(node.Right), ExpressionSyntax)
+                        Dim Initializer As EqualsValueSyntax = VBFactory.EqualsValue(RightNode)
                         Dim DimModifiersTokenList As SyntaxTokenList = VBFactory.TokenList(
                                                     DimKeyword.WithConvertedLeadingTriviaFrom(node.Left.GetFirstToken())
                                                     )
-                        Dim StatementList As New SyntaxList(Of VBS.StatementSyntax)
+                        Dim StatementList As New SyntaxList(Of StatementSyntax)
                         Dim VariableNames As New List(Of String)
                         If node.Left.IsKind(CS.SyntaxKind.DeclarationExpression) Then
                             TupleName = MethodBodyVisitor.GetUniqueVariableNameInScope(node, "TupleTempVar", Me.mSemanticModel)
@@ -827,41 +827,41 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                 End If
                             Next
 
-                            Dim TempTupleIdentifier As SeparatedSyntaxList(Of VBS.ModifiedIdentifierSyntax) = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(TupleName))
-                            Dim VariableDeclaration As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(TempTupleIdentifier, asClause:=Nothing, Initializer))
-                            Dim DimStatement As VBS.LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(DimModifiersTokenList, VariableDeclaration).WithPrependedLeadingTrivia(VBFactory.CommentTrivia($" ' TODO: VB has no equivalent to C# deconstruction declarations, an attempt was made to convert."), VB_EOLTrivia)
+                            Dim TempTupleIdentifier As SeparatedSyntaxList(Of ModifiedIdentifierSyntax) = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(TupleName))
+                            Dim VariableDeclaration As SeparatedSyntaxList(Of VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(TempTupleIdentifier, asClause:=Nothing, Initializer))
+                            Dim DimStatement As LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(DimModifiersTokenList, VariableDeclaration).WithPrependedLeadingTrivia(VBFactory.CommentTrivia($" ' TODO: VB has no equivalent to C# deconstruction declarations, an attempt was made to convert."), VB_EOLTrivia)
                             StatementList = StatementList.Add(DimStatement)
 
                             For i As Integer = 0 To VariableNames.Count - 1
                                 If VariableNames(i) = "_" Then
                                     Continue For
                                 End If
-                                Dim AsClause As VBS.AsClauseSyntax = Nothing
+                                Dim AsClause As AsClauseSyntax = Nothing
                                 If NodeLeft.Type Is Nothing Then
                                     Stop
                                 Else
-                                    AsClause = VBFactory.SimpleAsClause(CType(NodeLeft.Type.Accept(Me), VBS.TypeSyntax))
+                                    AsClause = VBFactory.SimpleAsClause(CType(NodeLeft.Type.Accept(Me), TypeSyntax))
                                 End If
-                                Dim TupleExpression As VBS.ExpressionSyntax = VBFactory.ParseExpression($"{TupleName}.Item{(i + 1)}")
+                                Dim TupleExpression As ExpressionSyntax = VBFactory.ParseExpression($"{TupleName}.Item{(i + 1)}")
                                 Initializer = VBFactory.EqualsValue(VBFactory.InvocationExpression(TupleExpression))
-                                Dim Declarators As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(
+                                Dim Declarators As SeparatedSyntaxList(Of VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(
                                                                             VBFactory.VariableDeclarator(
                                                                             VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(VariableNames(i))),
                                                                             AsClause,
                                                                             Initializer)
                                                                         )
-                                Dim AssignmentStatement As VBS.LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(DimModifier, Declarators)
+                                Dim AssignmentStatement As LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(DimModifier, Declarators)
                                 StatementList = StatementList.Add(AssignmentStatement)
                             Next
                         End If
 
                         ' Handle assignment to a Tuple of Variables that already exist
                         If node.Left.IsKind(CS.SyntaxKind.TupleExpression) Then
-                            Dim LeftTupleNode As VBS.TupleExpressionSyntax = DirectCast(node.Left.Accept(Me).WithConvertedTriviaFrom(node.Left), VBS.TupleExpressionSyntax)
+                            Dim LeftTupleNode As TupleExpressionSyntax = DirectCast(node.Left.Accept(Me).WithConvertedTriviaFrom(node.Left), TupleExpressionSyntax)
 
                             VariableNames = New List(Of String)
                             TupleName = MethodBodyVisitor.GetUniqueVariableNameInScope(node, "TupleTempVar", Me.mSemanticModel)
-                            For Each Argument As VBS.ArgumentSyntax In LeftTupleNode.Arguments
+                            For Each Argument As ArgumentSyntax In LeftTupleNode.Arguments
                                 VariableNames.Add(Argument.ToString)
                             Next
                             Dim TupleList As New List(Of String)
@@ -907,32 +907,32 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                             builder.Append(TupleList.Last & ")")
                             Dim TupleType As String = builder.ToString
 
-                            Dim SimpleAs As VBS.SimpleAsClauseSyntax = VBFactory.SimpleAsClause(AsKeyword.WithTrailingTrivia(SpaceTrivia), attributeLists:=Nothing, type:=VBFactory.ParseTypeName(TupleType).WithLeadingTrivia(SpaceTrivia)).WithLeadingTrivia(SpaceTrivia)
-                            Dim Names As SeparatedSyntaxList(Of VBS.ModifiedIdentifierSyntax) = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(TupleName))
-                            Dim VariableDeclaration As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(Names, SimpleAs, Initializer))
-                            Dim DimStatement As VBS.LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(DimModifiersTokenList, VariableDeclaration)
+                            Dim SimpleAs As SimpleAsClauseSyntax = VBFactory.SimpleAsClause(AsKeyword.WithTrailingTrivia(SpaceTrivia), attributeLists:=Nothing, type:=VBFactory.ParseTypeName(TupleType).WithLeadingTrivia(SpaceTrivia)).WithLeadingTrivia(SpaceTrivia)
+                            Dim Names As SeparatedSyntaxList(Of ModifiedIdentifierSyntax) = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(TupleName))
+                            Dim VariableDeclaration As SeparatedSyntaxList(Of VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(Names, SimpleAs, Initializer))
+                            Dim DimStatement As LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(DimModifiersTokenList, VariableDeclaration)
                             StatementList = StatementList.Add(DimStatement)
 
                             For i As Integer = 0 To TupleList.Count - 1
                                 If TupleList(i) = "_" Then
                                     Continue For
                                 End If
-                                Dim NewLeftNode As VBS.ExpressionSyntax = VBFactory.IdentifierName(VariableNames(i))
-                                Dim NewRightNode As VBS.ExpressionSyntax = VBFactory.InvocationExpression(VBFactory.ParseExpression($"{TupleName}.Item{(i + 1)}"))
+                                Dim NewLeftNode As ExpressionSyntax = VBFactory.IdentifierName(VariableNames(i))
+                                Dim NewRightNode As ExpressionSyntax = VBFactory.InvocationExpression(VBFactory.ParseExpression($"{TupleName}.Item{(i + 1)}"))
                                 Dim kind As VB.SyntaxKind = ConvertCSExpressionsKindToVBKind(CS.CSharpExtensions.Kind(node))
                                 Dim OperatorToken As SyntaxToken = ExpressionKindToOperatorToken(kind)
-                                Dim AssignmentStatement As VBS.AssignmentStatementSyntax = VBFactory.AssignmentStatement(kind,
+                                Dim AssignmentStatement As AssignmentStatementSyntax = VBFactory.AssignmentStatement(kind,
                                                                                                         NewLeftNode,
                                                                                                         OperatorToken,
                                                                                                         NewRightNode)
                                 StatementList = StatementList.Add(AssignmentStatement)
                             Next
                         End If
-                        Dim TryStatement As VBS.TryStatementSyntax = VBFactory.TryStatement.
+                        Dim TryStatement As TryStatementSyntax = VBFactory.TryStatement.
                             WithLeadingTrivia(VB_EOLTrivia).
                             WithPrependedLeadingTrivia(VBFactory.CommentTrivia("' TODO: This Try Block can be removed"))
-                        Dim Throwstatement As SyntaxList(Of VBS.StatementSyntax) = VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.ThrowStatement)
-                        Dim CatchBlock As SyntaxList(Of VBS.CatchBlockSyntax) = VBFactory.SingletonList(VBFactory.CatchBlock(VBFactory.CatchStatement,
+                        Dim Throwstatement As SyntaxList(Of StatementSyntax) = VBFactory.SingletonList(Of StatementSyntax)(VBFactory.ThrowStatement)
+                        Dim CatchBlock As SyntaxList(Of CatchBlockSyntax) = VBFactory.SingletonList(VBFactory.CatchBlock(VBFactory.CatchStatement,
                                                                                                                              Throwstatement)
                                                                                                         )
                         Return VBFactory.TryBlock(TryStatement,
@@ -952,16 +952,16 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
 
                 If TypeOf node.Parent Is CSS.InitializerExpressionSyntax Then
                     If TypeOf node.Left Is CSS.ImplicitElementAccessSyntax Then
-                        Return VBFactory.CollectionInitializer(VBFactory.SeparatedList({DirectCast(node.Left.Accept(Me), VBS.ExpressionSyntax), DirectCast(node.Right.Accept(Me), VBS.ExpressionSyntax)})).WithConvertedTriviaFrom(node)
+                        Return VBFactory.CollectionInitializer(VBFactory.SeparatedList({DirectCast(node.Left.Accept(Me), ExpressionSyntax), DirectCast(node.Right.Accept(Me), ExpressionSyntax)})).WithConvertedTriviaFrom(node)
                     Else
                         Dim NodeRight As VB.VisualBasicSyntaxNode = node.Right.Accept(Me)
-                        If TypeOf NodeRight Is VBS.ObjectMemberInitializerSyntax Then
-                            Dim ObjectMemberInitializer As VBS.ObjectMemberInitializerSyntax = DirectCast(NodeRight, VBS.ObjectMemberInitializerSyntax)
-                            Dim AttributeLists As SyntaxList(Of VBS.AttributeListSyntax) = Nothing
-                            Dim ArgumentList As VBS.ArgumentListSyntax = Nothing
-                            Dim Type1 As VBS.TypeSyntax = VBFactory.ParseTypeName("TODO_ObjectNameGoesHere")
-                            Dim ObjectCreationExpression As VBS.ObjectCreationExpressionSyntax = VBFactory.ObjectCreationExpression(NewKeyword, AttributeLists, Type1, ArgumentList, initializer:=ObjectMemberInitializer)
-                            Dim IdentifierName As VBS.IdentifierNameSyntax = DirectCast(node.Left.Accept(Me), VBS.IdentifierNameSyntax)
+                        If TypeOf NodeRight Is ObjectMemberInitializerSyntax Then
+                            Dim ObjectMemberInitializer As ObjectMemberInitializerSyntax = DirectCast(NodeRight, ObjectMemberInitializerSyntax)
+                            Dim AttributeLists As SyntaxList(Of AttributeListSyntax) = Nothing
+                            Dim ArgumentList As ArgumentListSyntax = Nothing
+                            Dim Type1 As TypeSyntax = VBFactory.ParseTypeName("TODO_ObjectNameGoesHere")
+                            Dim ObjectCreationExpression As ObjectCreationExpressionSyntax = VBFactory.ObjectCreationExpression(NewKeyword, AttributeLists, Type1, ArgumentList, initializer:=ObjectMemberInitializer)
+                            Dim IdentifierName As IdentifierNameSyntax = DirectCast(node.Left.Accept(Me), IdentifierNameSyntax)
                             If node.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
                                 Stop
                             End If
@@ -969,32 +969,32 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         End If
 
                         Dim VisualBasicNode As VB.VisualBasicSyntaxNode = node.Left.Accept(Me)
-                        If TypeOf VisualBasicNode Is VBS.IdentifierNameSyntax Then
+                        If TypeOf VisualBasicNode Is IdentifierNameSyntax Then
                             If node.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
                                 GetStatementwithIssues(node).AddMarker(VBFactory.EmptyStatement.WithLeadingTrivia(ConvertTrivia(node.GetLeadingTrivia)), StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
                             End If
-                            Return VBFactory.NamedFieldInitializer(DirectCast(VisualBasicNode.WithoutLeadingTrivia, VBS.IdentifierNameSyntax), DirectCast(NodeRight, VBS.ExpressionSyntax)).WithConvertedTrailingTriviaFrom(node)
-                        ElseIf TypeOf VisualBasicNode Is VBS.MemberAccessExpressionSyntax Then
+                            Return VBFactory.NamedFieldInitializer(DirectCast(VisualBasicNode.WithoutLeadingTrivia, IdentifierNameSyntax), DirectCast(NodeRight, ExpressionSyntax)).WithConvertedTrailingTriviaFrom(node)
+                        ElseIf TypeOf VisualBasicNode Is MemberAccessExpressionSyntax Then
                             Dim kind As VB.SyntaxKind = ConvertCSExpressionsKindToVBKind(CS.CSharpExtensions.Kind(node))
                             Dim OperatorToken As SyntaxToken = ExpressionKindToOperatorToken(kind)
-                            Return VBFactory.AssignmentStatement(kind, DirectCast(VisualBasicNode, VBS.MemberAccessExpressionSyntax), OperatorToken, DirectCast(NodeRight, VBS.ExpressionSyntax)).WithConvertedTriviaFrom(node)
+                            Return VBFactory.AssignmentStatement(kind, DirectCast(VisualBasicNode, MemberAccessExpressionSyntax), OperatorToken, DirectCast(NodeRight, ExpressionSyntax)).WithConvertedTriviaFrom(node)
                         Else
                             Stop
                         End If
                     End If
                 End If
 
-                Dim LeftExpression As VBS.ExpressionSyntax = DirectCast(node.Left.Accept(Me), VBS.ExpressionSyntax)
-                Dim RightExpression As VBS.ExpressionSyntax = DirectCast(node.Right.Accept(Me), VBS.ExpressionSyntax)
+                Dim LeftExpression As ExpressionSyntax = DirectCast(node.Left.Accept(Me), ExpressionSyntax)
+                Dim RightExpression As ExpressionSyntax = DirectCast(node.Right.Accept(Me), ExpressionSyntax)
                 If TypeOf node.Parent Is CSS.ArrowExpressionClauseSyntax Then
                     Return VBFactory.SimpleAssignmentStatement(LeftExpression, RightExpression)
                 End If
                 Me.MarkPatchInlineAssignHelper(node)
-                Return VBFactory.InvocationExpression(expression:=VBFactory.IdentifierName("__InlineAssignHelper"), argumentList:=VBFactory.ArgumentList(VBFactory.SeparatedList((New VBS.ArgumentSyntax() {VBFactory.SimpleArgument(LeftExpression), VBFactory.SimpleArgument(RightExpression)})))).WithConvertedTriviaFrom(node)
+                Return VBFactory.InvocationExpression(expression:=VBFactory.IdentifierName("__InlineAssignHelper"), argumentList:=VBFactory.ArgumentList(VBFactory.SeparatedList((New ArgumentSyntax() {VBFactory.SimpleArgument(LeftExpression), VBFactory.SimpleArgument(RightExpression)})))).WithConvertedTriviaFrom(node)
             End Function
 
             Public Overrides Function VisitAwaitExpression(node As CSS.AwaitExpressionSyntax) As VB.VisualBasicSyntaxNode
-                Return VBFactory.AwaitExpression(expression:=DirectCast(node.Expression.Accept(Me), VBS.ExpressionSyntax)).WithConvertedTriviaFrom(node)
+                Return VBFactory.AwaitExpression(expression:=DirectCast(node.Expression.Accept(Me), ExpressionSyntax)).WithConvertedTriviaFrom(node)
             End Function
 
             Public Overrides Function VisitBaseExpression(node As CSS.BaseExpressionSyntax) As VB.VisualBasicSyntaxNode
@@ -1021,15 +1021,15 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         Next
                         kind = VB.SyntaxKind.ConcatenateExpression
                         Dim VBNode As VB.VisualBasicSyntaxNode = CType(CS_NodesOrTokens(0), CSS.ExpressionSyntax).Accept(Me)
-                        LeftVBNode = Me.ConvertAndModifyNodeTrivia(VBNode, CS_NodesOrTokens, 0)
+                        LeftVBNode = ConvertAndModifyNodeTrivia(VBNode, CS_NodesOrTokens, 0)
                         For i As Integer = 1 To CS_NodesOrTokens.Count - 1
-                            VBOperatorToken = Me.ConvertAndModifyTokenTrivia(AmpersandToken, CS_NodesOrTokens, i)
+                            VBOperatorToken = ConvertAndModifyTokenTrivia(AmpersandToken, CS_NodesOrTokens, i)
                             VBNode = CType(CS_NodesOrTokens(i + 1), CSS.ExpressionSyntax).Accept(Me)
-                            RightVBNode = Me.ConvertAndModifyNodeTrivia(VBNode, CS_NodesOrTokens, i + 1)
+                            RightVBNode = ConvertAndModifyNodeTrivia(VBNode, CS_NodesOrTokens, i + 1)
                             LeftVBNode = VBFactory.ConcatenateExpression(
-                                                            DirectCast(LeftVBNode, VBS.ExpressionSyntax),
+                                                            DirectCast(LeftVBNode, ExpressionSyntax),
                                                             VBOperatorToken,
-                                                            DirectCast(RightVBNode, VBS.ExpressionSyntax)
+                                                            DirectCast(RightVBNode, ExpressionSyntax)
                                                             )
                             i += 1
                         Next
@@ -1037,14 +1037,14 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     End If
                     kind = ConvertCSExpressionsKindToVBKind(CS.CSharpExtensions.Kind(node))
                     LeftVBNode = node.Left.Accept(Me).WithConvertedTriviaFrom(node.Left)
-                    Dim LeftExpression As VBS.ExpressionSyntax = DirectCast(LeftVBNode, VBS.ExpressionSyntax)
+                    Dim LeftExpression As ExpressionSyntax = DirectCast(LeftVBNode, ExpressionSyntax)
                     RightVBNode = node.Right.Accept(Me).WithConvertedTriviaFrom(node.Right)
                     Dim CommaTokenWithTrivia As SyntaxToken = CommaToken
                     Select Case node.Kind
                         Case CS.SyntaxKind.CoalesceExpression
                             Dim IfKeywordWithTrivia As SyntaxToken = IfKeyword
-                            If TypeOf RightVBNode Is VBS.ExpressionSyntax Then
-                                Dim SecondExpression As VBS.ExpressionSyntax = DirectCast(RightVBNode, VBS.ExpressionSyntax)
+                            If TypeOf RightVBNode Is ExpressionSyntax Then
+                                Dim SecondExpression As ExpressionSyntax = DirectCast(RightVBNode, ExpressionSyntax)
                                 Dim SeparatorTrailingTrivia As New List(Of SyntaxTrivia)
                                 If LeftExpression.ContainsEOLTrivia OrElse LeftExpression.ContainsCommentOrDirectiveTrivia Then
                                     Dim IfLeadingTrivia As New List(Of SyntaxTrivia)
@@ -1083,7 +1083,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                         SecondExpression = SecondExpression.WithLeadingTrivia(StatementTrivia.Last)
                                     End If
                                 End If
-                                Dim binaryConditionalExpressionSyntax1 As VBS.BinaryConditionalExpressionSyntax = VBFactory.BinaryConditionalExpression(
+                                Dim binaryConditionalExpressionSyntax1 As BinaryConditionalExpressionSyntax = VBFactory.BinaryConditionalExpression(
                                                             IfKeywordWithTrivia,
                                                             OpenParenToken,
                                                             LeftExpression,
@@ -1092,12 +1092,12 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                                             CloseParenToken)
                                 Return binaryConditionalExpressionSyntax1
                             End If
-                            If TypeOf RightVBNode Is VBS.ThrowStatementSyntax Then
-                                Dim Condition As VBS.ExpressionSyntax = VBFactory.IsExpression(LeftExpression.WithTrailingTrivia(SpaceTrivia), NothingExpression)
-                                Dim IfStatement As VBS.IfStatementSyntax = VBFactory.IfStatement(IfKeywordWithTrivia, Condition, ThenKeyword)
+                            If TypeOf RightVBNode Is ThrowStatementSyntax Then
+                                Dim Condition As ExpressionSyntax = VBFactory.IsExpression(LeftExpression.WithTrailingTrivia(SpaceTrivia), NothingExpression)
+                                Dim IfStatement As IfStatementSyntax = VBFactory.IfStatement(IfKeywordWithTrivia, Condition, ThenKeyword)
 
-                                Dim Statements As SyntaxList(Of VBS.StatementSyntax) = VBFactory.SingletonList(DirectCast(RightVBNode, VBS.StatementSyntax))
-                                Dim IfBlock As VBS.StatementSyntax = VBFactory.SingleLineIfStatement(IfKeywordWithTrivia,
+                                Dim Statements As SyntaxList(Of StatementSyntax) = VBFactory.SingletonList(DirectCast(RightVBNode, StatementSyntax))
+                                Dim IfBlock As StatementSyntax = VBFactory.SingleLineIfStatement(IfKeywordWithTrivia,
                                                                                                Condition,
                                                                                                ThenKeyword,
                                                                                                Statements,
@@ -1108,13 +1108,13 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                 Stop
                             End If
                         Case CS.SyntaxKind.AsExpression
-                            Dim FirstExpression As VBS.ExpressionSyntax = DirectCast(LeftVBNode, VBS.ExpressionSyntax)
+                            Dim FirstExpression As ExpressionSyntax = DirectCast(LeftVBNode, ExpressionSyntax)
                             If FirstExpression.ContainsEOLTrivia Then
                                 FirstExpression = FirstExpression.WithRestructuredingEOLTrivia
                                 CommaTokenWithTrivia = CommaTokenWithTrivia.WithTrailingTrivia(VB_EOLTrivia)
                             End If
-                            Dim Type As VBS.TypeSyntax = DirectCast(RightVBNode, VBS.TypeSyntax)
-                            Dim TryCastExpression As VBS.TryCastExpressionSyntax = VBFactory.TryCastExpression(
+                            Dim Type As TypeSyntax = DirectCast(RightVBNode, TypeSyntax)
+                            Dim TryCastExpression As TryCastExpressionSyntax = VBFactory.TryCastExpression(
                                                 TryCastKeyword,
                                                 OpenParenToken,
                                                 FirstExpression,
@@ -1132,17 +1132,17 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                 NewLeadingTrivia.AddRange(RightVBNode.GetLeadingTrivia)
                                 RightVBNode = RightVBNode.WithoutTrivia.WithTrailingTrivia(SpaceTrivia)
                             End If
-                            Return VBFactory.TypeOfIsExpression(DirectCast(LeftVBNode, VBS.ExpressionSyntax), DirectCast(RightVBNode, VBS.TypeSyntax)).WithLeadingTrivia(NewLeadingTrivia)
+                            Return VBFactory.TypeOfIsExpression(DirectCast(LeftVBNode, ExpressionSyntax), DirectCast(RightVBNode, TypeSyntax)).WithLeadingTrivia(NewLeadingTrivia)
                         Case CS.SyntaxKind.EqualsExpression, CS.SyntaxKind.NotEqualsExpression
-                            Dim otherArgument As VBS.ExpressionSyntax = Nothing
+                            Dim otherArgument As ExpressionSyntax = Nothing
                             If node.Left.IsKind(CS.SyntaxKind.NullLiteralExpression) Then
-                                otherArgument = DirectCast(RightVBNode, VBS.ExpressionSyntax).With({SpaceTrivia}, {SpaceTrivia})
+                                otherArgument = DirectCast(RightVBNode, ExpressionSyntax).With({SpaceTrivia}, {SpaceTrivia})
                             ElseIf node.Left.IsKind(CS.SyntaxKind.SizeOfExpression) AndAlso DirectCast(node.Left, CSS.SizeOfExpressionSyntax).Type.IsKind(CS.SyntaxKind.PointerType) Then
                                 LeftExpression = IntPrtSizeExpression
                             End If
 
                             If node.Right.IsKind(CS.SyntaxKind.NullLiteralExpression) Then
-                                otherArgument = DirectCast(LeftVBNode, VBS.ExpressionSyntax).With({SpaceTrivia}, {SpaceTrivia})
+                                otherArgument = DirectCast(LeftVBNode, ExpressionSyntax).With({SpaceTrivia}, {SpaceTrivia})
                             ElseIf node.Right.IsKind(CS.SyntaxKind.SizeOfExpression) AndAlso DirectCast(node.Right, CSS.SizeOfExpressionSyntax).Type.IsKind(CS.SyntaxKind.PointerType) Then
                                 RightVBNode = IntPrtSizeExpression
                             End If
@@ -1160,13 +1160,13 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
 
                     ' Handle all other expressions here
                     Dim LeftTrailingTrivia As SyntaxTriviaList = LeftExpression.GetTrailingTrivia
-                    Dim RightExpression As VBS.ExpressionSyntax = DirectCast(RightVBNode, VBS.ExpressionSyntax)
+                    Dim RightExpression As ExpressionSyntax = DirectCast(RightVBNode, ExpressionSyntax)
                     If LeftTrailingTrivia.ToList.Count = 1 AndAlso LeftTrailingTrivia(0).ToString.Trim = "?" Then
-                        Dim OldIdentifier As VBS.IdentifierNameSyntax = RightExpression.DescendantNodes.
-                                                                           OfType(Of VBS.IdentifierNameSyntax).
-                                                                           First(Function(b As VBS.IdentifierNameSyntax) b.Kind() = VB.SyntaxKind.IdentifierName)
-                        Dim NewIdentifierWithQuestionMark As VBS.IdentifierNameSyntax =
-                                    VBFactory.IdentifierName($"{DirectCast(node.Left.Accept(Me), VBS.ExpressionSyntax).ToString}?")
+                        Dim OldIdentifier As IdentifierNameSyntax = RightExpression.DescendantNodes.
+                                                                           OfType(Of IdentifierNameSyntax).
+                                                                           First(Function(b As IdentifierNameSyntax) b.Kind() = VB.SyntaxKind.IdentifierName)
+                        Dim NewIdentifierWithQuestionMark As IdentifierNameSyntax =
+                                    VBFactory.IdentifierName($"{DirectCast(node.Left.Accept(Me), ExpressionSyntax).ToString}?")
                         Return RightExpression.ReplaceNode(OldIdentifier, NewIdentifierWithQuestionMark)
                     End If
 
@@ -1233,7 +1233,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         operatorToken = operatorToken.WithTrailingTrivia(NewOperatorTrailingTrivia)
                     End If
 
-                    Dim RightNode As VBS.ExpressionSyntax = DirectCast(node.Right.Accept(Me), VBS.ExpressionSyntax)
+                    Dim RightNode As ExpressionSyntax = DirectCast(node.Right.Accept(Me), ExpressionSyntax)
 
                     If node.Right.HasTrailingTrivia Then
                         MovedTrailingTrivia.Clear()
@@ -1258,7 +1258,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         End If
                     End If
                     RightExpression = RightNode.With({SpaceTrivia}, MovedTrailingTrivia)
-                    Dim binaryExpressionSyntax3 As VBS.BinaryExpressionSyntax = VBFactory.BinaryExpression(
+                    Dim binaryExpressionSyntax3 As BinaryExpressionSyntax = VBFactory.BinaryExpression(
                                                     kind,
                                                     LeftExpression,
                                                     operatorToken,
@@ -1280,7 +1280,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Dim NewTrailingTrivia As New List(Of SyntaxTrivia)
                 Try
                     Dim type As ITypeSymbol = ModelExtensions.GetTypeInfo(Me.mSemanticModel, node.Type).Type
-                    Dim Expression As VBS.ExpressionSyntax = DirectCast(node.Expression.Accept(Me), VBS.ExpressionSyntax)
+                    Dim Expression As ExpressionSyntax = DirectCast(node.Expression.Accept(Me), ExpressionSyntax)
                     NewTrailingTrivia.AddRange(Expression.GetTrailingTrivia)
                     NewTrailingTrivia.AddRange(ConvertTrivia(node.GetTrailingTrivia))
                     Expression = Expression.WithoutTrivia
@@ -1309,8 +1309,8 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                 CTypeExpressionSyntax = VBFactory.PredefinedCastExpression(CByteKeyword, Expression)
                             End If
                         Case SpecialType.System_Int16
-                            Dim FixExpression As VBS.ExpressionSyntax = VBFactory.IdentifierName("Fix")
-                            Dim ArgumentList As VBS.ArgumentListSyntax = VBFactory.ArgumentList(VBFactory.SingletonSeparatedList(Of VBS.ArgumentSyntax)(VBFactory.SimpleArgument(Expression)))
+                            Dim FixExpression As ExpressionSyntax = VBFactory.IdentifierName("Fix")
+                            Dim ArgumentList As ArgumentListSyntax = VBFactory.ArgumentList(VBFactory.SingletonSeparatedList(Of ArgumentSyntax)(VBFactory.SimpleArgument(Expression)))
                             CTypeExpressionSyntax = VBFactory.PredefinedCastExpression(CShortKeyword, VBFactory.InvocationExpression(FixExpression, ArgumentList))
                         Case SpecialType.System_UInt16
                             If ExpressionTypeStr = "char" Then
@@ -1322,15 +1322,15 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                             If ExpressionTypeStr = "char" Then
                                 CTypeExpressionSyntax = VBFactory.ParseExpression($"ChrW({Expression.ToString})").WithTrailingTrivia(NewTrailingTrivia)
                             Else
-                                Dim FixExpression As VBS.ExpressionSyntax = VBFactory.IdentifierName("Fix")
-                                Dim ArgumentList As VBS.ArgumentListSyntax = VBFactory.ArgumentList(VBFactory.SingletonSeparatedList(Of VBS.ArgumentSyntax)(VBFactory.SimpleArgument(Expression)))
+                                Dim FixExpression As ExpressionSyntax = VBFactory.IdentifierName("Fix")
+                                Dim ArgumentList As ArgumentListSyntax = VBFactory.ArgumentList(VBFactory.SingletonSeparatedList(Of ArgumentSyntax)(VBFactory.SimpleArgument(Expression)))
                                 CTypeExpressionSyntax = VBFactory.PredefinedCastExpression(CIntKeyword, VBFactory.InvocationExpression(FixExpression, ArgumentList))
                             End If
                         Case SpecialType.System_UInt32
                             CTypeExpressionSyntax = VBFactory.PredefinedCastExpression(CUIntKeyword, Expression)
                         Case SpecialType.System_Int64
-                            Dim FixExpression As VBS.ExpressionSyntax = VBFactory.IdentifierName("Fix")
-                            Dim ArgumentList As VBS.ArgumentListSyntax = VBFactory.ArgumentList(VBFactory.SingletonSeparatedList(Of VBS.ArgumentSyntax)(VBFactory.SimpleArgument(Expression)))
+                            Dim FixExpression As ExpressionSyntax = VBFactory.IdentifierName("Fix")
+                            Dim ArgumentList As ArgumentListSyntax = VBFactory.ArgumentList(VBFactory.SingletonSeparatedList(Of ArgumentSyntax)(VBFactory.SimpleArgument(Expression)))
                             CTypeExpressionSyntax = VBFactory.PredefinedCastExpression(CLngKeyword, VBFactory.InvocationExpression(FixExpression, ArgumentList))
                         Case SpecialType.System_UInt64
                             CTypeExpressionSyntax = VBFactory.PredefinedCastExpression(CULngKeyword, Expression)
@@ -1348,7 +1348,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                             ' Added support to correctly handle AddressOf
                             Dim TypeOrAddressOf As VB.VisualBasicSyntaxNode = node.Type.Accept(Me)
                             If TypeOrAddressOf.IsKind(VB.SyntaxKind.AddressOfExpression) Then
-                                Dim AddressOf1 As VBS.UnaryExpressionSyntax = DirectCast(TypeOrAddressOf, VBS.UnaryExpressionSyntax)
+                                Dim AddressOf1 As UnaryExpressionSyntax = DirectCast(TypeOrAddressOf, UnaryExpressionSyntax)
                                 If AddressOf1.Operand.ToString.StartsWith("&") Then
                                     Dim StatementWithIssues As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
                                     StatementWithIssues.AddMarker(FlagUnsupportedStatements(StatementWithIssues, "pointers", CommentOutOriginalStatements:=True), StatementHandlingOption.ReplaceStatement, AllowDuplicates:=True)
@@ -1359,7 +1359,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                     CTypeExpressionSyntax = VBFactory.CTypeExpression(Expression, VBFactory.ParseTypeName(AddressOf1.Operand.ToString.Replace("&", "")))
                                 End If
                             Else
-                                CTypeExpressionSyntax = VBFactory.CTypeExpression(Expression, DirectCast(TypeOrAddressOf, VBS.TypeSyntax))
+                                CTypeExpressionSyntax = VBFactory.CTypeExpression(Expression, DirectCast(TypeOrAddressOf, TypeSyntax))
                             End If
                     End Select
                 Catch ex As Exception
@@ -1377,43 +1377,43 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 ' Only notify once on one line TODO Merge the comments
                 StatementWithIssue.AddMarker(VBFactory.EmptyStatement.WithLeadingTrivia(LeadingTrivia), StatementHandlingOption.PrependStatement, AllowDuplicates:=False)
 
-                Dim Expression As VBS.ExpressionSyntax = DirectCast(node.Expression.Accept(Me), VBS.ExpressionSyntax)
-                If TypeOf Expression Is VBS.PredefinedCastExpressionSyntax Then
-                    Dim CastExpression As VBS.PredefinedCastExpressionSyntax = DirectCast(Expression, VBS.PredefinedCastExpressionSyntax)
+                Dim Expression As ExpressionSyntax = DirectCast(node.Expression.Accept(Me), ExpressionSyntax)
+                If TypeOf Expression Is PredefinedCastExpressionSyntax Then
+                    Dim CastExpression As PredefinedCastExpressionSyntax = DirectCast(Expression, PredefinedCastExpressionSyntax)
                     If Unchecked Then
                         Return VBFactory.ParseExpression($"{CastExpression.Keyword.ToString}(Val(""&H"" & Hex({CastExpression.Expression.ToString})))")
                     Else
                         Return VBFactory.ParseExpression($"{CastExpression.Keyword.ToString}({CastExpression.Expression.ToString})")
                     End If
                 End If
-                If TypeOf Expression Is VBS.BinaryExpressionSyntax OrElse
-                    TypeOf Expression Is VBS.InvocationExpressionSyntax OrElse
-                    TypeOf Expression Is VBS.LiteralExpressionSyntax OrElse
-                    TypeOf Expression Is VBS.ObjectCreationExpressionSyntax Then
+                If TypeOf Expression Is BinaryExpressionSyntax OrElse
+                    TypeOf Expression Is InvocationExpressionSyntax OrElse
+                    TypeOf Expression Is LiteralExpressionSyntax OrElse
+                    TypeOf Expression Is ObjectCreationExpressionSyntax Then
                     If Unchecked Then
                         Return VBFactory.ParseExpression($"Unchecked({Expression.ToString})")
                     Else
                         Return Expression
                     End If
                 End If
-                If TypeOf Expression Is VBS.CTypeExpressionSyntax OrElse
-                    TypeOf Expression Is VBS.TernaryConditionalExpressionSyntax OrElse
-                    TypeOf Expression Is VBS.UnaryExpressionSyntax OrElse
-                    TypeOf Expression Is VBS.ParenthesizedExpressionSyntax OrElse
-                    TypeOf Expression Is VBS.IdentifierNameSyntax Then
+                If TypeOf Expression Is CTypeExpressionSyntax OrElse
+                    TypeOf Expression Is TernaryConditionalExpressionSyntax OrElse
+                    TypeOf Expression Is UnaryExpressionSyntax OrElse
+                    TypeOf Expression Is ParenthesizedExpressionSyntax OrElse
+                    TypeOf Expression Is IdentifierNameSyntax Then
                     Return Expression
                 End If
                 Throw UnreachableException
             End Function
 
             Public Overrides Function VisitConditionalAccessExpression(node As CSS.ConditionalAccessExpressionSyntax) As VB.VisualBasicSyntaxNode
-                Dim expression As VBS.ExpressionSyntax = DirectCast(node.Expression.Accept(Me), VBS.ExpressionSyntax)
+                Dim expression As ExpressionSyntax = DirectCast(node.Expression.Accept(Me), ExpressionSyntax)
                 Dim TrailingTriviaList As New List(Of SyntaxTrivia)
                 If expression.ContainsEOLTrivia Then
                     TrailingTriviaList.AddRange(expression.WithRestructuredingEOLTrivia.GetTrailingTrivia)
                     expression = expression.WithoutTrailingTrivia
                 End If
-                Return VBFactory.ConditionalAccessExpression(expression, QuestionToken.WithTrailingTrivia(TrailingTriviaList), DirectCast(node.WhenNotNull.Accept(Me), VBS.ExpressionSyntax)).WithConvertedTriviaFrom(node)
+                Return VBFactory.ConditionalAccessExpression(expression, QuestionToken.WithTrailingTrivia(TrailingTriviaList), DirectCast(node.WhenNotNull.Accept(Me), ExpressionSyntax)).WithConvertedTriviaFrom(node)
             End Function
 
             Public Overrides Function VisitConditionalExpression(node As CSS.ConditionalExpressionSyntax) As VB.VisualBasicSyntaxNode
@@ -1428,24 +1428,24 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Dim NewItemTrailingTrivia As New List(Of SyntaxTrivia)
                 Dim NewSeparatorTrailingTrivia As New List(Of SyntaxTrivia)
 
-                Dim Condition As VBS.ExpressionSyntax = DirectCast(Me.ConvertAndModifyNodeTrivia(node.Condition.Accept(Me), NodesOrTokens, 0), VBS.ExpressionSyntax)
+                Dim Condition As ExpressionSyntax = DirectCast(ConvertAndModifyNodeTrivia(node.Condition.Accept(Me), NodesOrTokens, 0), ExpressionSyntax)
 
                 Dim CS_WhenTrue As CSS.ExpressionSyntax = node.WhenTrue
-                Dim WhenTrue As VBS.ExpressionSyntax = Nothing
+                Dim WhenTrue As ExpressionSyntax = Nothing
                 If Not CS_WhenTrue.IsKind(CS.SyntaxKind.ThrowExpression) Then
-                    WhenTrue = DirectCast(Me.ConvertAndModifyNodeTrivia(node.WhenTrue.Accept(Me), NodesOrTokens, 2), VBS.ExpressionSyntax)
+                    WhenTrue = DirectCast(ConvertAndModifyNodeTrivia(node.WhenTrue.Accept(Me), NodesOrTokens, 2), ExpressionSyntax)
                 End If
 
-                Dim FirstCommaToken As SyntaxToken = Me.ConvertAndModifyTokenTrivia(CommaToken, NodesOrTokens, 1)
+                Dim FirstCommaToken As SyntaxToken = ConvertAndModifyTokenTrivia(CommaToken, NodesOrTokens, 1)
 
                 Dim CS_WhenFalse As CSS.ExpressionSyntax = node.WhenFalse
-                Dim WhenFalse As VBS.ExpressionSyntax = Nothing
+                Dim WhenFalse As ExpressionSyntax = Nothing
                 If Not CS_WhenFalse.IsKind(CS.SyntaxKind.ThrowExpression) Then
-                    WhenFalse = DirectCast(Me.ConvertAndModifyNodeTrivia(node.WhenFalse.Accept(Me), NodesOrTokens, 4), VBS.ExpressionSyntax)
+                    WhenFalse = DirectCast(ConvertAndModifyNodeTrivia(node.WhenFalse.Accept(Me), NodesOrTokens, 4), ExpressionSyntax)
                 End If
 
                 Dim IfKeywordWithTrivia As SyntaxToken = IfKeyword.WithConvertedLeadingTriviaFrom(node.Condition.GetFirstToken)
-                Dim SecondCommaToken As SyntaxToken = Me.ConvertAndModifyTokenTrivia(CommaToken, NodesOrTokens, 3)
+                Dim SecondCommaToken As SyntaxToken = ConvertAndModifyTokenTrivia(CommaToken, NodesOrTokens, 3)
 
                 If Not CS_WhenFalse.IsKind(CS.SyntaxKind.ThrowExpression) AndAlso Not CS_WhenTrue.IsKind(CS.SyntaxKind.ThrowExpression) Then
                     Return VBFactory.TernaryConditionalExpression(
@@ -1458,19 +1458,19 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     WhenFalse,
                     CloseParenToken)
                 End If
-                Dim ThrowStatement As VBS.ThrowStatementSyntax
-                Dim ResultExpression As VBS.ExpressionSyntax
+                Dim ThrowStatement As ThrowStatementSyntax
+                Dim ResultExpression As ExpressionSyntax
                 If Not CS_WhenFalse.IsKind(CS.SyntaxKind.ThrowExpression) Then
-                    ThrowStatement = DirectCast(CS_WhenTrue.Accept(Me).WithConvertedTriviaFrom(CS_WhenTrue), VBS.ThrowStatementSyntax).WithTrailingEOL
-                    ResultExpression = DirectCast(CS_WhenFalse.Accept(Me).WithConvertedTriviaFrom(CS_WhenFalse), VBS.ExpressionSyntax)
+                    ThrowStatement = DirectCast(CS_WhenTrue.Accept(Me).WithConvertedTriviaFrom(CS_WhenTrue), ThrowStatementSyntax).WithTrailingEOL
+                    ResultExpression = DirectCast(CS_WhenFalse.Accept(Me).WithConvertedTriviaFrom(CS_WhenFalse), ExpressionSyntax)
                 Else
                     Condition = VBFactory.NotExpression(Condition.WithoutTrivia)
-                    ThrowStatement = DirectCast(CS_WhenFalse.Accept(Me).WithConvertedTriviaFrom(CS_WhenFalse), VBS.ThrowStatementSyntax).WithTrailingEOL
-                    ResultExpression = DirectCast(CS_WhenTrue.Accept(Me).WithConvertedTriviaFrom(CS_WhenTrue), VBS.ExpressionSyntax)
+                    ThrowStatement = DirectCast(CS_WhenFalse.Accept(Me).WithConvertedTriviaFrom(CS_WhenFalse), ThrowStatementSyntax).WithTrailingEOL
+                    ResultExpression = DirectCast(CS_WhenTrue.Accept(Me).WithConvertedTriviaFrom(CS_WhenTrue), ExpressionSyntax)
                 End If
-                Dim Statements As SyntaxList(Of VBS.StatementSyntax) = VBFactory.SingletonList(Of VBS.StatementSyntax)(ThrowStatement)
+                Dim Statements As SyntaxList(Of StatementSyntax) = VBFactory.SingletonList(Of StatementSyntax)(ThrowStatement)
 
-                Dim IfBlock As VBS.SingleLineIfStatementSyntax = VBFactory.SingleLineIfStatement(Condition.WithTrailingTrivia({SpaceTrivia}),
+                Dim IfBlock As SingleLineIfStatementSyntax = VBFactory.SingleLineIfStatement(Condition.WithTrailingTrivia({SpaceTrivia}),
                                                                                                  Statements,
                                                                                                  elseClause:=Nothing
                                                                                                  )
@@ -1480,17 +1480,17 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             End Function
 
             Public Overrides Function VisitDeclarationExpression(Node As CSS.DeclarationExpressionSyntax) As VB.VisualBasicSyntaxNode
-                Dim Value As VBS.IdentifierNameSyntax
+                Dim Value As IdentifierNameSyntax
                 If Node.Designation.IsKind(CS.SyntaxKind.SingleVariableDesignation) Then
                     Dim SingleVariableDesignation As CSS.SingleVariableDesignationSyntax = DirectCast(Node.Designation, CSS.SingleVariableDesignationSyntax)
-                    Value = DirectCast(SingleVariableDesignation.Accept(Me), VBS.IdentifierNameSyntax).WithConvertedTriviaFrom(Node)
+                    Value = DirectCast(SingleVariableDesignation.Accept(Me), IdentifierNameSyntax).WithConvertedTriviaFrom(Node)
                     Return Value
                 End If
                 If Node.Designation.IsKind(CS.SyntaxKind.ParenthesizedVariableDesignation) Then
                     Dim ParenthesizedVariableDesignation As CSS.ParenthesizedVariableDesignationSyntax = DirectCast(Node.Designation, CSS.ParenthesizedVariableDesignationSyntax)
-                    Dim VariableDeclaration As VBS.VariableDeclaratorSyntax = DirectCast(ParenthesizedVariableDesignation.Accept(Me), VBS.VariableDeclaratorSyntax)
+                    Dim VariableDeclaration As VariableDeclaratorSyntax = DirectCast(ParenthesizedVariableDesignation.Accept(Me), VariableDeclaratorSyntax)
 
-                    Dim DeclarationToBeAdded As VBS.LocalDeclarationStatementSyntax =
+                    Dim DeclarationToBeAdded As LocalDeclarationStatementSyntax =
                     VBFactory.LocalDeclarationStatement(
                                         DimModifier,
                                         VBFactory.SingletonSeparatedList(VariableDeclaration)
@@ -1502,7 +1502,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 End If
                 If Node.Designation.IsKind(CS.SyntaxKind.DiscardDesignation) Then
                     Dim DiscardDesignation As CSS.DiscardDesignationSyntax = DirectCast(Node.Designation, CSS.DiscardDesignationSyntax)
-                    Value = DirectCast(DiscardDesignation.Accept(Me), VBS.IdentifierNameSyntax).WithConvertedTriviaFrom(Node)
+                    Value = DirectCast(DiscardDesignation.Accept(Me), IdentifierNameSyntax).WithConvertedTriviaFrom(Node)
                     Return Value
 
                 End If
@@ -1515,9 +1515,9 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
 
             Public Overrides Function VisitDiscardDesignation(node As CSS.DiscardDesignationSyntax) As VB.VisualBasicSyntaxNode
                 Dim Identifier As SyntaxToken = GenerateSafeVBToken(node.UnderscoreToken, IsQualifiedName:=False, IsTypeName:=False)
-                Dim IdentifierExpression As VBS.IdentifierNameSyntax = VBFactory.IdentifierName(Identifier)
-                Dim ModifiedIdentifier As VBS.ModifiedIdentifierSyntax = VBFactory.ModifiedIdentifier(Identifier)
-                Dim SeparatedSyntaxListOfModifiedIdentifier As SeparatedSyntaxList(Of VBS.ModifiedIdentifierSyntax) =
+                Dim IdentifierExpression As IdentifierNameSyntax = VBFactory.IdentifierName(Identifier)
+                Dim ModifiedIdentifier As ModifiedIdentifierSyntax = VBFactory.ModifiedIdentifier(Identifier)
+                Dim SeparatedSyntaxListOfModifiedIdentifier As SeparatedSyntaxList(Of ModifiedIdentifierSyntax) =
                     VBFactory.SingletonSeparatedList(
                         ModifiedIdentifier
                         )
@@ -1536,7 +1536,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     TypeName = VBFactory.ParseTypeName("Object")
                 End If
 
-                Dim SeparatedListOfvariableDeclarations As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) =
+                Dim SeparatedListOfvariableDeclarations As SeparatedSyntaxList(Of VariableDeclaratorSyntax) =
                     VBFactory.SingletonSeparatedList(
                         VBFactory.VariableDeclarator(
                             SeparatedSyntaxListOfModifiedIdentifier,
@@ -1545,7 +1545,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                 )
                          )
 
-                Dim DeclarationStatement As VBS.LocalDeclarationStatementSyntax =
+                Dim DeclarationStatement As LocalDeclarationStatementSyntax =
                     VBFactory.LocalDeclarationStatement(DimModifier,
                                                             SeparatedListOfvariableDeclarations).
                                                     WithAdditionalAnnotations(Simplifier.Annotation)
@@ -1555,8 +1555,8 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             End Function
 
             Public Overrides Function VisitElementAccessExpression(node As CSS.ElementAccessExpressionSyntax) As VB.VisualBasicSyntaxNode
-                Dim argumentList As VBS.ArgumentListSyntax = DirectCast(node.ArgumentList.Accept(Me), VBS.ArgumentListSyntax)
-                Dim expression As VBS.ExpressionSyntax
+                Dim argumentList As ArgumentListSyntax = DirectCast(node.ArgumentList.Accept(Me), ArgumentListSyntax)
+                Dim expression As ExpressionSyntax
                 If node.Expression.IsKind(CS.SyntaxKind.BaseExpression) Then
                     If node.GetAncestor(Of CSS.IndexerDeclarationSyntax).IsKind(CS.SyntaxKind.IndexerDeclaration) Then
                         expression = VBFactory.ParseExpression($"MyBase.Item")
@@ -1566,19 +1566,19 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         Return VBFactory.ParseName($"MyBase.{argumentList.Arguments(0)}")
                     End If
                 ElseIf node.Expression.IsKind(CS.SyntaxKind.ObjectCreationExpression) Then
-                    expression = DirectCast(node.Expression.Accept(Me), VBS.ExpressionSyntax)
+                    expression = DirectCast(node.Expression.Accept(Me), ExpressionSyntax)
                     Dim UniqueName As String = MethodBodyVisitor.GetUniqueVariableNameInScope(node, "tempVar", Me.mSemanticModel)
-                    Dim UniqueIdentifier As VBS.IdentifierNameSyntax = VBFactory.IdentifierName(VBFactory.Identifier(UniqueName))
-                    Dim Names As SeparatedSyntaxList(Of VBS.ModifiedIdentifierSyntax) = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(UniqueName))
+                    Dim UniqueIdentifier As IdentifierNameSyntax = VBFactory.IdentifierName(VBFactory.Identifier(UniqueName))
+                    Dim Names As SeparatedSyntaxList(Of ModifiedIdentifierSyntax) = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(UniqueName))
 
-                    Dim AsClause As VBS.AsClauseSyntax = VBFactory.AsNewClause(DirectCast(expression, VBS.NewExpressionSyntax))
-                    Dim VariableDeclaration As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(Names, AsClause, initializer:=Nothing))
-                    Dim DimStatement As VBS.LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(DimModifier, VariableDeclaration)
+                    Dim AsClause As AsClauseSyntax = VBFactory.AsNewClause(DirectCast(expression, NewExpressionSyntax))
+                    Dim VariableDeclaration As SeparatedSyntaxList(Of VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(Names, AsClause, initializer:=Nothing))
+                    Dim DimStatement As LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(DimModifier, VariableDeclaration)
                     Dim StatementWithIssues As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
                     StatementWithIssues.AddMarker(DimStatement, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
                     expression = UniqueIdentifier.WithTriviaFrom(expression)
                 Else
-                    expression = DirectCast(node.Expression.Accept(Me), VBS.ExpressionSyntax)
+                    expression = DirectCast(node.Expression.Accept(Me), ExpressionSyntax)
                 End If
 
                 Return VBFactory.InvocationExpression(expression, argumentList.WithoutLeadingTrivia)
@@ -1586,15 +1586,15 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
 
             Public Overrides Function VisitElementBindingExpression(node As CSS.ElementBindingExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Dim Arguments0 As VB.VisualBasicSyntaxNode = node.ArgumentList.Arguments(0).Accept(Me)
-                Dim expression As VBS.ExpressionSyntax = VBFactory.ParseExpression(Arguments0.ToString)
-                Dim ParenthesizedExpression As VBS.ParenthesizedExpressionSyntax = VBFactory.ParenthesizedExpression(expression)
+                Dim expression As ExpressionSyntax = VBFactory.ParseExpression(Arguments0.ToString)
+                Dim ParenthesizedExpression As ParenthesizedExpressionSyntax = VBFactory.ParenthesizedExpression(expression)
                 Return VBFactory.InvocationExpression(ParenthesizedExpression)
             End Function
 
             Public Overrides Function VisitImplicitArrayCreationExpression(node As CSS.ImplicitArrayCreationExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Dim CS_Separators As IEnumerable(Of SyntaxToken) = node.Initializer.Expressions.GetSeparators
-                Dim ExpressionItems As New List(Of VBS.ExpressionSyntax)
-                Dim NamedFieldItems As New List(Of VBS.FieldInitializerSyntax)
+                Dim ExpressionItems As New List(Of ExpressionSyntax)
+                Dim NamedFieldItems As New List(Of FieldInitializerSyntax)
                 Dim Separators As New List(Of SyntaxToken)
                 Dim SeparatorCount As Integer = node.Initializer.Expressions.Count - 1
                 For i As Integer = 0 To SeparatorCount
@@ -1602,14 +1602,14 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     Dim ItemWithTrivia As VB.VisualBasicSyntaxNode
                     Try
                         ItemWithTrivia = e.Accept(Me).WithConvertedTriviaFrom(e).RemoveExtraLeadingEOL.NormalizeWhitespaceEx(useDefaultCasing:=True, indentation:="    ")
-                        If TypeOf ItemWithTrivia Is VBS.NamedFieldInitializerSyntax Then
-                            NamedFieldItems.Add(DirectCast(ItemWithTrivia, VBS.NamedFieldInitializerSyntax))
-                        ElseIf TypeOf ItemWithTrivia Is VBS.AssignmentStatementSyntax Then
+                        If TypeOf ItemWithTrivia Is NamedFieldInitializerSyntax Then
+                            NamedFieldItems.Add(DirectCast(ItemWithTrivia, NamedFieldInitializerSyntax))
+                        ElseIf TypeOf ItemWithTrivia Is AssignmentStatementSyntax Then
                             Dim StatementwithIssues As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
                             StatementwithIssues.AddMarker(FlagUnsupportedStatements(StatementwithIssues, $"C# Assignment Expression", CommentOutOriginalStatements:=True), StatementHandlingOption.ReplaceStatement, AllowDuplicates:=False)
                             Return Nothing
                         Else
-                            ExpressionItems.Add(DirectCast(ItemWithTrivia, VBS.ExpressionSyntax))
+                            ExpressionItems.Add(DirectCast(ItemWithTrivia, ExpressionSyntax))
                         End If
                     Catch ex As Exception
                         Stop
@@ -1626,11 +1626,11 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 End If
                 If ExpressionItems.Count > 0 Then
                     RestructureNodesAndSeparators(OpenBraceTokenWithTrivia, ExpressionItems, Separators, CloseBraceTokenWithTrivia)
-                    Dim ExpressionInitializers As SeparatedSyntaxList(Of VBS.ExpressionSyntax) = VBFactory.SeparatedList(ExpressionItems, Separators)
+                    Dim ExpressionInitializers As SeparatedSyntaxList(Of ExpressionSyntax) = VBFactory.SeparatedList(ExpressionItems, Separators)
                     Return VBFactory.CollectionInitializer(OpenBraceTokenWithTrivia, ExpressionInitializers, CloseBraceTokenWithTrivia).WithConvertedLeadingTriviaFrom(node.NewKeyword)
                 Else
                     RestructureNodesAndSeparators(OpenBraceTokenWithTrivia, NamedFieldItems, Separators, CloseBraceTokenWithTrivia)
-                    Dim Initializers As SeparatedSyntaxList(Of VBS.FieldInitializerSyntax) = VBFactory.SeparatedList(NamedFieldItems)
+                    Dim Initializers As SeparatedSyntaxList(Of FieldInitializerSyntax) = VBFactory.SeparatedList(NamedFieldItems)
                     Return VBFactory.AnonymousObjectCreationExpression(VBFactory.ObjectMemberInitializer(Initializers))
                 End If
             End Function
@@ -1639,8 +1639,8 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Try
 
                     Dim CS_Separators As IEnumerable(Of SyntaxToken) = node.Expressions.GetSeparators
-                    Dim Expressions As New List(Of VBS.ExpressionSyntax)
-                    Dim Fields As New List(Of VBS.FieldInitializerSyntax)
+                    Dim Expressions As New List(Of ExpressionSyntax)
+                    Dim Fields As New List(Of FieldInitializerSyntax)
                     Dim Separators As New List(Of SyntaxToken)
                     Dim ExpressionLastIndex As Integer = node.Expressions.Count - 1
                     Dim FinalSeparator As Boolean = CS_Separators.Count > 0 AndAlso ExpressionLastIndex <> CS_Separators.Count
@@ -1654,7 +1654,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     End If
 #End If
                     ' Figuring out this without using Accept is complicated below is safe but not fast
-                    Dim ItemIsField As Boolean = node.Expressions.Any AndAlso TypeOf node.Expressions(0).Accept(Me) Is VBS.FieldInitializerSyntax
+                    Dim ItemIsField As Boolean = node.Expressions.Any AndAlso TypeOf node.Expressions(0).Accept(Me) Is FieldInitializerSyntax
                     For i As Integer = 0 To ExpressionLastIndex
 #If NETCOREAPP3_0 Then
                         If ReportProgress Then
@@ -1664,9 +1664,9 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         Dim Item As VB.VisualBasicSyntaxNode = node.Expressions(i).Accept(Me)
                         Try
                             If ItemIsField Then
-                                Fields.Add(DirectCast(Item.RemoveExtraLeadingEOL, VBS.FieldInitializerSyntax))
+                                Fields.Add(DirectCast(Item.RemoveExtraLeadingEOL, FieldInitializerSyntax))
                             Else
-                                Expressions.Add(DirectCast(Item.RemoveExtraLeadingEOL, VBS.ExpressionSyntax))
+                                Expressions.Add(DirectCast(Item.RemoveExtraLeadingEOL, ExpressionSyntax))
                             End If
                         Catch ex As Exception
                             Stop
@@ -1729,18 +1729,18 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         If Expressions.Count > 0 Then
                             If Not Expressions(ExpressionLastIndex).ContainsEOLTrivia Then
                                 Expressions(ExpressionLastIndex) = Expressions(ExpressionLastIndex).WithAppendedTrailingTrivia(VB_EOLTrivia)
-                                Return VBFactory.ObjectCollectionInitializer(VBFactory.CollectionInitializer(OpenBraceTokenWithTrivia, VBFactory.SeparatedList(Expressions.OfType(Of VBS.ExpressionSyntax), Separators), CloseBraceTokenWithTrivia))
+                                Return VBFactory.ObjectCollectionInitializer(VBFactory.CollectionInitializer(OpenBraceTokenWithTrivia, VBFactory.SeparatedList(Expressions.OfType(Of ExpressionSyntax), Separators), CloseBraceTokenWithTrivia))
                             End If
                         Else
-                            Return VBFactory.ObjectCollectionInitializer(VBFactory.CollectionInitializer(OpenBraceTokenWithTrivia, VBFactory.SeparatedList(Expressions.OfType(Of VBS.ExpressionSyntax), Separators), CloseBraceTokenWithTrivia.WithoutTrivia)).WithTrailingTrivia(CloseBraceTokenWithTrivia.LeadingTrivia)
+                            Return VBFactory.ObjectCollectionInitializer(VBFactory.CollectionInitializer(OpenBraceTokenWithTrivia, VBFactory.SeparatedList(Expressions.OfType(Of ExpressionSyntax), Separators), CloseBraceTokenWithTrivia.WithoutTrivia)).WithTrailingTrivia(CloseBraceTokenWithTrivia.LeadingTrivia)
                         End If
                     End If
 
                     RestructureNodesAndSeparators(OpenBraceTokenWithTrivia, Expressions, Separators, CloseBraceTokenWithTrivia)
                     If node.IsKind(CS.SyntaxKind.ArrayInitializerExpression) OrElse node.IsKind(CS.SyntaxKind.CollectionInitializerExpression) Then
-                        Dim initializers As SeparatedSyntaxList(Of VBS.ExpressionSyntax) = VBFactory.SeparatedList(Expressions, Separators)
+                        Dim initializers As SeparatedSyntaxList(Of ExpressionSyntax) = VBFactory.SeparatedList(Expressions, Separators)
 
-                        Dim CollectionInitializer As VBS.CollectionInitializerSyntax = VBFactory.CollectionInitializer(OpenBraceTokenWithTrivia, initializers, CloseBraceTokenWithTrivia)
+                        Dim CollectionInitializer As CollectionInitializerSyntax = VBFactory.CollectionInitializer(OpenBraceTokenWithTrivia, initializers, CloseBraceTokenWithTrivia)
                         Return CollectionInitializer
                     End If
                     Return VBFactory.CollectionInitializer(OpenBraceTokenWithTrivia.RemoveExtraEOL, VBFactory.SeparatedList(Expressions, Separators), CloseBraceTokenWithTrivia)
@@ -1751,7 +1751,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             End Function
 
             Public Overrides Function VisitInterpolatedStringExpression(node As CSS.InterpolatedStringExpressionSyntax) As VB.VisualBasicSyntaxNode
-                Return VBFactory.InterpolatedStringExpression(node.Contents.Select(Function(c As CSS.InterpolatedStringContentSyntax) DirectCast(c.Accept(Me), VBS.InterpolatedStringContentSyntax)).ToArray()).WithConvertedTriviaFrom(node)
+                Return VBFactory.InterpolatedStringExpression(node.Contents.Select(Function(c As CSS.InterpolatedStringContentSyntax) DirectCast(c.Accept(Me), InterpolatedStringContentSyntax)).ToArray()).WithConvertedTriviaFrom(node)
             End Function
 
             Public Overrides Function VisitInterpolatedStringText(node As CSS.InterpolatedStringTextSyntax) As VB.VisualBasicSyntaxNode
@@ -1761,7 +1761,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             End Function
 
             Public Overrides Function VisitInterpolation(node As CSS.InterpolationSyntax) As VB.VisualBasicSyntaxNode
-                Return VBFactory.Interpolation(DirectCast(node.Expression.Accept(Me), VBS.ExpressionSyntax)).WithConvertedTriviaFrom(node)
+                Return VBFactory.Interpolation(DirectCast(node.Expression.Accept(Me), ExpressionSyntax)).WithConvertedTriviaFrom(node)
             End Function
 
             Public Overrides Function VisitInterpolationFormatClause(node As CSS.InterpolationFormatClauseSyntax) As VB.VisualBasicSyntaxNode
@@ -1778,9 +1778,9 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     End Try
                     Throw UnreachableException
                 End If
-                Dim Expression As VBS.ExpressionSyntax = DirectCast(node.Expression.Accept(Me), VBS.ExpressionSyntax).WithoutTrailingTrivia
+                Dim Expression As ExpressionSyntax = DirectCast(node.Expression.Accept(Me), ExpressionSyntax).WithoutTrailingTrivia
 
-                Dim ArgumentList1 As VBS.ArgumentListSyntax = DirectCast(node.ArgumentList.Accept(Me), VBS.ArgumentListSyntax)
+                Dim ArgumentList1 As ArgumentListSyntax = DirectCast(node.ArgumentList.Accept(Me), ArgumentListSyntax)
                 Dim NewTrailingTrivia As List(Of SyntaxTrivia) = ArgumentList1.GetTrailingTrivia.ToList
                 NewTrailingTrivia.AddRange(ConvertTrivia(node.GetTrailingTrivia))
                 Select Case NewTrailingTrivia.Count
@@ -1808,7 +1808,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     Case Else
 
                 End Select
-                Dim invocationExpressionSyntax1 As VBS.InvocationExpressionSyntax = VBFactory.InvocationExpression(Expression, ArgumentList1).WithConvertedLeadingTriviaFrom(node).WithTrailingTrivia(NewTrailingTrivia)
+                Dim invocationExpressionSyntax1 As InvocationExpressionSyntax = VBFactory.InvocationExpression(Expression, ArgumentList1).WithConvertedLeadingTriviaFrom(node).WithTrailingTrivia(NewTrailingTrivia)
                 Return invocationExpressionSyntax1
             End Function
 
@@ -1820,7 +1820,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             ''' <remarks>Added by PC</remarks>
             Public Overrides Function VisitIsPatternExpression(node As CSS.IsPatternExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Dim Pattern As CSS.PatternSyntax = node.Pattern
-                Dim VBExpression As VBS.ExpressionSyntax = DirectCast(node.Expression.Accept(Me), VBS.ExpressionSyntax)
+                Dim VBExpression As ExpressionSyntax = DirectCast(node.Expression.Accept(Me), ExpressionSyntax)
                 Dim StatementWithIssue As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
                 Dim ReportCheckCorrectness As Boolean = True
                 If node.GetAncestor(Of CSS.SwitchSectionSyntax) IsNot Nothing Then
@@ -1831,16 +1831,16 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     Dim DeclarationPattern As CSS.DeclarationPatternSyntax = DirectCast(Pattern, CSS.DeclarationPatternSyntax)
                     Dim Designation As CSS.SingleVariableDesignationSyntax = DirectCast(DeclarationPattern.Designation, CSS.SingleVariableDesignationSyntax)
 
-                    Dim VariableType As VBS.TypeSyntax = CType(DeclarationPattern.Type.Accept(Me), VBS.TypeSyntax)
-                    Dim value As VBS.ExpressionSyntax = VBFactory.TryCastExpression(VBExpression, VariableType)
+                    Dim VariableType As TypeSyntax = CType(DeclarationPattern.Type.Accept(Me), TypeSyntax)
+                    Dim value As ExpressionSyntax = VBFactory.TryCastExpression(VBExpression, VariableType)
 
                     Dim Identifier As SyntaxToken = GenerateSafeVBToken(id:=Designation.Identifier, IsQualifiedName:=False, IsTypeName:=False)
-                    Dim VariableName As VBS.ModifiedIdentifierSyntax = VBFactory.ModifiedIdentifier(Identifier.WithTrailingTrivia(SpaceTrivia))
-                    Dim SeparatedSyntaxListOfModifiedIdentifier As SeparatedSyntaxList(Of VBS.ModifiedIdentifierSyntax) =
+                    Dim VariableName As ModifiedIdentifierSyntax = VBFactory.ModifiedIdentifier(Identifier.WithTrailingTrivia(SpaceTrivia))
+                    Dim SeparatedSyntaxListOfModifiedIdentifier As SeparatedSyntaxList(Of ModifiedIdentifierSyntax) =
                         VBFactory.SingletonSeparatedList(
                             VariableName)
 
-                    Dim SeparatedListOfvariableDeclarations As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) =
+                    Dim SeparatedListOfvariableDeclarations As SeparatedSyntaxList(Of VariableDeclaratorSyntax) =
                         VBFactory.SingletonSeparatedList(
                             node:=VBFactory.VariableDeclarator(
                                 names:=SeparatedSyntaxListOfModifiedIdentifier,
@@ -1849,7 +1849,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                     )
                              )
 
-                    Dim DeclarationToBeAdded As VBS.LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(DimModifier,
+                    Dim DeclarationToBeAdded As LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(DimModifier,
                                                                                                                           SeparatedListOfvariableDeclarations
                                                                                                                           ).WithTrailingTrivia(VB_EOLTrivia).
                                                                                                                           WithAdditionalAnnotations(Simplifier.Annotation)
@@ -1868,23 +1868,23 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     If ConstantPattern.Expression.IsKind(CS.SyntaxKind.NullLiteralExpression) Then
                         Return VBFactory.IsExpression(left:=VBExpression, right:=NothingExpression)
                     End If
-                    Return VBFactory.EqualsExpression(left:=VBExpression, right:=DirectCast(ConstantPattern.Expression.Accept(Me), VBS.ExpressionSyntax))
+                    Return VBFactory.EqualsExpression(left:=VBExpression, right:=DirectCast(ConstantPattern.Expression.Accept(Me), ExpressionSyntax))
                 ElseIf TypeOf Pattern Is CSS.VarPatternSyntax Then
                     Dim VarPattern As CSS.VarPatternSyntax = DirectCast(Pattern, CSS.VarPatternSyntax)
                     Dim SingleVariableDesignation As CSS.SingleVariableDesignationSyntax = DirectCast(VarPattern.Designation, CSS.SingleVariableDesignationSyntax)
                     Dim Identifier As SyntaxToken = GenerateSafeVBToken(id:=SingleVariableDesignation.Identifier, IsQualifiedName:=False, IsTypeName:=False)
-                    Dim Name As VBS.IdentifierNameSyntax = VBFactory.IdentifierName(Identifier.ToString)
+                    Dim Name As IdentifierNameSyntax = VBFactory.IdentifierName(Identifier.ToString)
 
-                    Dim VariableName As VBS.ModifiedIdentifierSyntax = VBFactory.ModifiedIdentifier(Identifier.WithTrailingTrivia(SpaceTrivia))
+                    Dim VariableName As ModifiedIdentifierSyntax = VBFactory.ModifiedIdentifier(Identifier.WithTrailingTrivia(SpaceTrivia))
 
-                    Dim Declarators As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(
+                    Dim Declarators As SeparatedSyntaxList(Of VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(
                             node:=VBFactory.VariableDeclarator(VBFactory.SingletonSeparatedList(
                             VariableName),
                             asClause:=Nothing, initializer:=VBFactory.EqualsValue(VBExpression)).WithTrailingEOL
                              )
 
                     Dim LeadingTrivia As SyntaxTriviaList = CheckCorrectnessLeadingTrivia(StatementWithIssue, "VB has no direct equivalent To C# var pattern expressions")
-                    Dim DeclarationToBeAdded As VBS.LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(DimModifier,
+                    Dim DeclarationToBeAdded As LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(DimModifier,
                         Declarators).WithAdditionalAnnotations(Simplifier.Annotation)
                     If ReportCheckCorrectness Then
                         DeclarationToBeAdded = DeclarationToBeAdded.WithPrependedLeadingTrivia(CheckCorrectnessLeadingTrivia(StatementWithIssue, "VB has no direct equivalent To C# var pattern expressions")).WithTrailingEOL
@@ -1895,7 +1895,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
 
                     Return Name
                 ElseIf TypeOf Pattern Is CSS.RecursivePatternSyntax Then
-                    Dim EmptyStatementWithError As VBS.EmptyStatementSyntax = FlagUnsupportedStatements(StatementWithIssue,
+                    Dim EmptyStatementWithError As EmptyStatementSyntax = FlagUnsupportedStatements(StatementWithIssue,
                                                                                             "Recursive Pattern Syntax",
                                                                                             CommentOutOriginalStatements:=True)
                     StatementWithIssue.AddMarker(Statement:=EmptyStatementWithError,
@@ -1939,7 +1939,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                             If FnStmt IsNot Nothing Then
                                 Return VBFactory.CTypeExpression(
                                                     NothingExpression,
-                                                    CType(FnStmt.ReturnType.Accept(Me), VBS.TypeSyntax)
+                                                    CType(FnStmt.ReturnType.Accept(Me), TypeSyntax)
                                                     )
                             End If
                         Case CS.SyntaxKind.EqualsValueClause
@@ -1948,7 +1948,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                 If LocalDecStmt.Declaration.Type IsNot Nothing Then
                                     Return VBFactory.CTypeExpression(
                                                         NothingExpression,
-                                                        CType(LocalDecStmt.Declaration.Type.Accept(Me).WithoutLeadingTrivia, VBS.TypeSyntax)
+                                                        CType(LocalDecStmt.Declaration.Type.Accept(Me).WithoutLeadingTrivia, TypeSyntax)
                                                         )
                                 End If
                             End If
@@ -1957,7 +1957,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                 If VariableDeclaration.Type IsNot Nothing Then
                                     Return VBFactory.CTypeExpression(
                                                         NothingExpression,
-                                                        CType(VariableDeclaration.Type.Accept(Me), VBS.TypeSyntax)
+                                                        CType(VariableDeclaration.Type.Accept(Me), TypeSyntax)
                                                         )
                                 End If
                             ElseIf node.Parent.Parent.RawKind = CS.SyntaxKind.Parameter Then
@@ -1965,7 +1965,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                 If Parameter.Type IsNot Nothing Then
                                     Return VBFactory.CTypeExpression(
                                                         NothingExpression,
-                                                        CType(Parameter.Type.Accept(Me), VBS.TypeSyntax)
+                                                        CType(Parameter.Type.Accept(Me), TypeSyntax)
                                                         )
                                 End If
                             Else
@@ -1992,14 +1992,14 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                             Else
                                 Return If(LeftNodeTypeInfo.Type.Name Is "",
                                             NothingExpression,
-                                            CType(VBFactory.CTypeExpression(NothingExpression, ConvertToType(LeftNodeTypeInfo.Type.Name)), VBS.ExpressionSyntax))
+                                            CType(VBFactory.CTypeExpression(NothingExpression, ConvertToType(LeftNodeTypeInfo.Type.Name)), ExpressionSyntax))
                             End If
                         Case CS.SyntaxKind.ConditionalExpression
                             Dim LeftNodeTypeInfo As TypeInfo = ModelExtensions.GetTypeInfo(Me.mSemanticModel, DirectCast(node.Parent, CSS.ConditionalExpressionSyntax).WhenTrue)
                             If LeftNodeTypeInfo.Type Is Nothing OrElse LeftNodeTypeInfo.Type.IsErrorType Then
                                 Return NothingExpression
                             End If
-                            Dim _Type As VBS.TypeSyntax = If(LeftNodeTypeInfo.Type.IsTupleType, CovertStringToTupleType(LeftNodeTypeInfo.Type.ToString), ConvertToType(LeftNodeTypeInfo.Type.Name))
+                            Dim _Type As TypeSyntax = If(LeftNodeTypeInfo.Type.IsTupleType, CovertStringToTupleType(LeftNodeTypeInfo.Type.ToString), ConvertToType(LeftNodeTypeInfo.Type.Name))
                             Return VBFactory.CTypeExpression(
                                                       NothingExpression,
                                                       _Type
@@ -2012,6 +2012,9 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         Case CS.SyntaxKind.Argument, CS.SyntaxKind.SimpleLambdaExpression
                             Return NothingExpression
                         Case CS.SyntaxKind.ArrowExpressionClause, CS.SyntaxKind.CoalesceExpression, CS.SyntaxKind.ParenthesizedLambdaExpression, CS.SyntaxKind.SwitchExpressionArm
+                            ' TODO Handle better
+                            Return NothingExpression
+                        Case CS.SyntaxKind.SuppressNullableWarningExpression
                             ' TODO Handle better
                             Return NothingExpression
                         Case Else
@@ -2039,26 +2042,26 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     StatementWithIssues.AddMarker(FlagUnsupportedStatements(StatementWithIssues, $"Pointer Member Access Expressions", CommentOutOriginalStatements:=True), StatementHandlingOption.ReplaceStatement, AllowDuplicates:=False)
                 End If
 
-                Dim Expression As VBS.ExpressionSyntax = DirectCast(node.Expression.Accept(Me), VBS.ExpressionSyntax).WithConvertedTriviaFrom(node.Expression)
+                Dim Expression As ExpressionSyntax = DirectCast(node.Expression.Accept(Me), ExpressionSyntax).WithConvertedTriviaFrom(node.Expression)
 
-                If TypeOf Expression Is VBS.NewExpressionSyntax AndAlso Not TypeOf Expression Is VBS.ArrayCreationExpressionSyntax Then
+                If TypeOf Expression Is NewExpressionSyntax AndAlso Not TypeOf Expression Is ArrayCreationExpressionSyntax Then
                     Dim UniqueName As String = MethodBodyVisitor.GetUniqueVariableNameInScope(node, "tempVar", Me.mSemanticModel)
-                    Dim UniqueIdentifier As VBS.IdentifierNameSyntax = VBFactory.IdentifierName(VBFactory.Identifier(UniqueName))
-                    Dim Names As SeparatedSyntaxList(Of VBS.ModifiedIdentifierSyntax) = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(UniqueName))
-                    Dim AsClause As VBS.AsClauseSyntax = VBFactory.AsNewClause(DirectCast(Expression.With({SpaceTrivia}, {SpaceTrivia}), VBS.NewExpressionSyntax))
-                    Dim VariableDeclaration As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(Names, AsClause, initializer:=Nothing))
-                    Dim DimStatement As VBS.LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(DimModifier, VariableDeclaration).WithLeadingTrivia(Expression.GetLeadingTrivia).WithTrailingEOL
+                    Dim UniqueIdentifier As IdentifierNameSyntax = VBFactory.IdentifierName(VBFactory.Identifier(UniqueName))
+                    Dim Names As SeparatedSyntaxList(Of ModifiedIdentifierSyntax) = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(UniqueName))
+                    Dim AsClause As AsClauseSyntax = VBFactory.AsNewClause(DirectCast(Expression.With({SpaceTrivia}, {SpaceTrivia}), NewExpressionSyntax))
+                    Dim VariableDeclaration As SeparatedSyntaxList(Of VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(Names, AsClause, initializer:=Nothing))
+                    Dim DimStatement As LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(DimModifier, VariableDeclaration).WithLeadingTrivia(Expression.GetLeadingTrivia).WithTrailingEOL
                     Dim StatementWithIssues As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
                     StatementWithIssues.AddMarker(DimStatement.WithTrailingEOL, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
                     Expression = UniqueIdentifier.WithLeadingTrivia(Expression.GetLeadingTrivia.Last).WithTrailingTrivia(Expression.GetTrailingTrivia)
-                ElseIf TypeOf Expression Is VBS.CollectionInitializerSyntax Then
+                ElseIf TypeOf Expression Is CollectionInitializerSyntax Then
                     Dim UniqueName As String = MethodBodyVisitor.GetUniqueVariableNameInScope(node, "tempVar", Me.mSemanticModel)
-                    Dim UniqueIdentifier As VBS.IdentifierNameSyntax = VBFactory.IdentifierName(VBFactory.Identifier(UniqueName))
-                    Dim Names As SeparatedSyntaxList(Of VBS.ModifiedIdentifierSyntax) = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(UniqueName))
-                    Dim AsClause As VBS.AsClauseSyntax = Nothing
-                    Dim Initializer As VBS.EqualsValueSyntax = VBFactory.EqualsValue(Expression)
-                    Dim VariableDeclaration As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(Names, asClause:=AsClause, Initializer))
-                    Dim DimStatement As VBS.LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(DimModifier, VariableDeclaration).WithTrailingEOL
+                    Dim UniqueIdentifier As IdentifierNameSyntax = VBFactory.IdentifierName(VBFactory.Identifier(UniqueName))
+                    Dim Names As SeparatedSyntaxList(Of ModifiedIdentifierSyntax) = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(UniqueName))
+                    Dim AsClause As AsClauseSyntax = Nothing
+                    Dim Initializer As EqualsValueSyntax = VBFactory.EqualsValue(Expression)
+                    Dim VariableDeclaration As SeparatedSyntaxList(Of VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(Names, asClause:=AsClause, Initializer))
+                    Dim DimStatement As LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(DimModifier, VariableDeclaration).WithTrailingEOL
                     Dim StatementWithIssues As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
                     StatementWithIssues.AddMarker(DimStatement, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
                     Expression = UniqueIdentifier.WithTriviaFrom(Expression)
@@ -2099,7 +2102,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     OperatorTrailingTrivia.Add(VB_EOLTrivia)
                 End If
                 Dim OperatorToken As SyntaxToken = DotToken.With(ConvertTrivia(node.OperatorToken.LeadingTrivia).ToList, OperatorTrailingTrivia)
-                Dim Name As VBS.SimpleNameSyntax = DirectCast(node.Name.Accept(Me).With(NewNameLeadingTrivia, ConvertTrivia(node.Name.GetTrailingTrivia)), VBS.SimpleNameSyntax)
+                Dim Name As SimpleNameSyntax = DirectCast(node.Name.Accept(Me).With(NewNameLeadingTrivia, ConvertTrivia(node.Name.GetTrailingTrivia)), SimpleNameSyntax)
                 OperatorTrailingTrivia.Clear()
 
                 If Expression.GetLastToken.ContainsEOLTrivia Then
@@ -2118,32 +2121,32 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             End Function
 
             Public Overrides Function VisitMemberBindingExpression(node As CSS.MemberBindingExpressionSyntax) As VB.VisualBasicSyntaxNode
-                Dim name As VBS.SimpleNameSyntax = DirectCast(node.Name.Accept(Me), VBS.SimpleNameSyntax)
+                Dim name As SimpleNameSyntax = DirectCast(node.Name.Accept(Me), SimpleNameSyntax)
                 Return VBFactory.SimpleMemberAccessExpression(name:=name)
             End Function
 
             Public Overrides Function VisitObjectCreationExpression(node As CSS.ObjectCreationExpressionSyntax) As VB.VisualBasicSyntaxNode
-                Dim type1 As VBS.TypeSyntax = DirectCast(node.Type.Accept(Me), VBS.TypeSyntax)
-                Dim argumentList As VBS.ArgumentListSyntax = DirectCast(node.ArgumentList?.Accept(Me), VBS.ArgumentListSyntax)
+                Dim type1 As TypeSyntax = DirectCast(node.Type.Accept(Me), TypeSyntax)
+                Dim argumentList As ArgumentListSyntax = DirectCast(node.ArgumentList?.Accept(Me), ArgumentListSyntax)
                 If argumentList IsNot Nothing Then
                     type1 = type1.WithTrailingTrivia(SpaceTrivia)
                 End If
                 Dim PossibleInitializer As VB.VisualBasicSyntaxNode = node.Initializer?.Accept(Me)
-                Dim initializer As VBS.ObjectCollectionInitializerSyntax = Nothing
+                Dim initializer As ObjectCollectionInitializerSyntax = Nothing
                 If PossibleInitializer IsNot Nothing Then
                     type1 = type1.WithTrailingTrivia(SpaceTrivia)
                     Select Case PossibleInitializer.Kind
                         Case VB.SyntaxKind.CollectionInitializer
-                            initializer = VBFactory.ObjectCollectionInitializer(initializer:=DirectCast(PossibleInitializer, VBS.CollectionInitializerSyntax))
+                            initializer = VBFactory.ObjectCollectionInitializer(initializer:=DirectCast(PossibleInitializer, CollectionInitializerSyntax))
                         Case VB.SyntaxKind.ObjectCollectionInitializer
-                            initializer = DirectCast(PossibleInitializer, VBS.ObjectCollectionInitializerSyntax)
+                            initializer = DirectCast(PossibleInitializer, ObjectCollectionInitializerSyntax)
                         Case VB.SyntaxKind.ObjectMemberInitializer
                             ' Remove trailing trivia before with
                             If argumentList IsNot Nothing Then
                                 argumentList = argumentList.WithCloseParenToken(CloseParenToken)
                             End If
-                            Dim memberinitializer As VBS.ObjectMemberInitializerSyntax = DirectCast(PossibleInitializer, VBS.ObjectMemberInitializerSyntax)
-                            Return VBFactory.ObjectCreationExpression(NewKeyword, VBFactory.List(Of VBS.AttributeListSyntax)(), type1.WithTrailingTrivia(SpaceTrivia), argumentList, memberinitializer)
+                            Dim memberinitializer As ObjectMemberInitializerSyntax = DirectCast(PossibleInitializer, ObjectMemberInitializerSyntax)
+                            Return VBFactory.ObjectCreationExpression(NewKeyword, VBFactory.List(Of AttributeListSyntax)(), type1.WithTrailingTrivia(SpaceTrivia), argumentList, memberinitializer)
 
                         Case Else
                             Throw UnexpectedValue(NameOf(PossibleInitializer))
@@ -2153,7 +2156,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     argumentList = argumentList.WithTrailingTrivia(SpaceTrivia)
                 End If
                 If argumentList?.ContainsDirectives Then
-                    Dim NewArgumentList As New List(Of VBS.ArgumentSyntax)
+                    Dim NewArgumentList As New List(Of ArgumentSyntax)
                     Dim NewSeparatorList As New List(Of SyntaxToken)
                     Dim FoundEOL As Boolean = False
 
@@ -2164,19 +2167,19 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     NewArgumentList.Add(argumentList.Arguments(argumentList.Arguments.Count - 1).RemoveDirectiveTrivia(FoundEOL))
                     argumentList = argumentList.WithArguments(VBFactory.SeparatedList(NewArgumentList, NewSeparatorList))
                 End If
-                Return VBFactory.ObjectCreationExpression(VBFactory.List(Of VBS.AttributeListSyntax)(), type1, argumentList, initializer)
+                Return VBFactory.ObjectCreationExpression(VBFactory.List(Of AttributeListSyntax)(), type1, argumentList, initializer)
             End Function
 
             Public Overrides Function VisitParenthesizedExpression(node As CSS.ParenthesizedExpressionSyntax) As VB.VisualBasicSyntaxNode
-                Dim Expression As VBS.ExpressionSyntax = DirectCast(node.Expression.Accept(Me), VBS.ExpressionSyntax)
-                If TypeOf Expression Is VBS.CTypeExpressionSyntax OrElse
-                   TypeOf Expression Is VBS.IdentifierNameSyntax OrElse
-                   TypeOf Expression Is VBS.InvocationExpressionSyntax OrElse
-                   TypeOf Expression Is VBS.QueryExpressionSyntax OrElse
-                    TypeOf Expression Is VBS.TryCastExpressionSyntax Then
+                Dim Expression As ExpressionSyntax = DirectCast(node.Expression.Accept(Me), ExpressionSyntax)
+                If TypeOf Expression Is CTypeExpressionSyntax OrElse
+                   TypeOf Expression Is IdentifierNameSyntax OrElse
+                   TypeOf Expression Is InvocationExpressionSyntax OrElse
+                   TypeOf Expression Is QueryExpressionSyntax OrElse
+                    TypeOf Expression Is TryCastExpressionSyntax Then
                     Return Expression.WithTrailingTrivia(SpaceTrivia)
                 End If
-                Dim DeclarationToBeAdded As VBS.LocalDeclarationStatementSyntax
+                Dim DeclarationToBeAdded As LocalDeclarationStatementSyntax
                 If TypeOf node.Parent Is CSS.MemberAccessExpressionSyntax OrElse
                    TypeOf node.Parent Is CSS.ElementAccessExpressionSyntax OrElse
                     TypeOf node.Parent Is CSS.ConditionalAccessExpressionSyntax Then
@@ -2184,23 +2187,23 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     Dim StatementWithIssue As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
                     ' Statement with issues points to "Statement" Probably an Expression Statement. If this is part of an ElseIf we need to go higher
                     Dim UniqueName As String = MethodBodyVisitor.GetUniqueVariableNameInScope(node, "tempVar", Me.mSemanticModel)
-                    Dim UniqueIdentifier As VBS.IdentifierNameSyntax = VBFactory.IdentifierName(VBFactory.Identifier(UniqueName))
-                    Dim Names As SeparatedSyntaxList(Of VBS.ModifiedIdentifierSyntax) = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(UniqueName))
-                    Dim VariableDeclaration As VBS.VariableDeclaratorSyntax
-                    Dim Initializer As VBS.EqualsValueSyntax = VBFactory.EqualsValue(Expression)
+                    Dim UniqueIdentifier As IdentifierNameSyntax = VBFactory.IdentifierName(VBFactory.Identifier(UniqueName))
+                    Dim Names As SeparatedSyntaxList(Of ModifiedIdentifierSyntax) = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(UniqueName))
+                    Dim VariableDeclaration As VariableDeclaratorSyntax
+                    Dim Initializer As EqualsValueSyntax = VBFactory.EqualsValue(Expression)
                     If TypeOf node.Parent Is CSS.MemberAccessExpressionSyntax OrElse TypeOf node.Parent Is CSS.ElementAccessExpressionSyntax Then
-                        If TypeOf Expression Is VBS.TernaryConditionalExpressionSyntax Then
-                            Dim TExpression As VBS.TernaryConditionalExpressionSyntax = DirectCast(Expression, VBS.TernaryConditionalExpressionSyntax)
+                        If TypeOf Expression Is TernaryConditionalExpressionSyntax Then
+                            Dim TExpression As TernaryConditionalExpressionSyntax = DirectCast(Expression, TernaryConditionalExpressionSyntax)
                             If TExpression.Condition.IsKind(VB.SyntaxKind.IdentifierName) Then
-                                Dim IfStatement As VBS.IfStatementSyntax =
+                                Dim IfStatement As IfStatementSyntax =
                                    VBFactory.IfStatement(IfKeyword, TExpression.Condition, ThenKeyword).WithConvertedLeadingTriviaFrom(node)
-                                Dim EndIfStatement As VBS.EndBlockStatementSyntax = VBFactory.EndIfStatement(EndKeyword, IfKeyword).WithConvertedTrailingTriviaFrom(node)
-                                Dim IfBlockStatements As New SyntaxList(Of VBS.StatementSyntax)
+                                Dim EndIfStatement As EndBlockStatementSyntax = VBFactory.EndIfStatement(EndKeyword, IfKeyword).WithConvertedTrailingTriviaFrom(node)
+                                Dim IfBlockStatements As New SyntaxList(Of StatementSyntax)
                                 IfBlockStatements = IfBlockStatements.Add(VBFactory.SimpleAssignmentStatement(left:=UniqueIdentifier, right:=TExpression.WhenTrue))
-                                Dim ElseBlockStatements As New SyntaxList(Of VBS.StatementSyntax)
+                                Dim ElseBlockStatements As New SyntaxList(Of StatementSyntax)
                                 ElseBlockStatements = ElseBlockStatements.Add(VBFactory.SimpleAssignmentStatement(left:=UniqueIdentifier, right:=TExpression.WhenFalse))
-                                Dim ElseBlock As VBS.ElseBlockSyntax = VBFactory.ElseBlock(ElseBlockStatements)
-                                Dim IfBlockToBeAdded As VBS.StatementSyntax = VBFactory.MultiLineIfBlock(
+                                Dim ElseBlock As ElseBlockSyntax = VBFactory.ElseBlock(ElseBlockStatements)
+                                Dim IfBlockToBeAdded As StatementSyntax = VBFactory.MultiLineIfBlock(
                                                                     IfStatement,
                                                                     IfBlockStatements,
                                                                     Nothing,
@@ -2220,17 +2223,17 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                             Else
                                 ' This case is handled below
                             End If
-                        ElseIf TypeOf Expression Is VBS.BinaryConditionalExpressionSyntax Then
-                            Dim BExpression As VBS.BinaryConditionalExpressionSyntax = DirectCast(Expression, VBS.BinaryConditionalExpressionSyntax)
+                        ElseIf TypeOf Expression Is BinaryConditionalExpressionSyntax Then
+                            Dim BExpression As BinaryConditionalExpressionSyntax = DirectCast(Expression, BinaryConditionalExpressionSyntax)
                             If BExpression.FirstExpression.IsKind(VB.SyntaxKind.IdentifierName) Then
-                                UniqueIdentifier = DirectCast(BExpression.FirstExpression, VBS.IdentifierNameSyntax)
-                                Dim IfStatement As VBS.IfStatementSyntax =
+                                UniqueIdentifier = DirectCast(BExpression.FirstExpression, IdentifierNameSyntax)
+                                Dim IfStatement As IfStatementSyntax =
                                    VBFactory.IfStatement(IfKeyword, VBFactory.IsExpression(left:=UniqueIdentifier, right:=NothingExpression), ThenKeyword).WithConvertedLeadingTriviaFrom(node)
-                                Dim EndIfStatement As VBS.EndBlockStatementSyntax = VBFactory.EndIfStatement(EndKeyword, IfKeyword).WithConvertedTrailingTriviaFrom(node)
-                                Dim Statements As New SyntaxList(Of VBS.StatementSyntax)
+                                Dim EndIfStatement As EndBlockStatementSyntax = VBFactory.EndIfStatement(EndKeyword, IfKeyword).WithConvertedTrailingTriviaFrom(node)
+                                Dim Statements As New SyntaxList(Of StatementSyntax)
                                 Statements = Statements.Add(VBFactory.SimpleAssignmentStatement(left:=UniqueIdentifier, right:=BExpression.SecondExpression))
 
-                                Dim IfBlockToBeAdded As VBS.StatementSyntax = VBFactory.MultiLineIfBlock(
+                                Dim IfBlockToBeAdded As StatementSyntax = VBFactory.MultiLineIfBlock(
                                                                     ifStatement:=IfStatement,
                                                                     statements:=Statements,
                                                                     elseIfBlocks:=Nothing,
@@ -2269,7 +2272,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 '    Expression = Expression.RestructureCommentTrivia
                 'End If
                 Dim TrailingTrivia As List(Of SyntaxTrivia) = Expression.GetTrailingTrivia.ToList
-                Dim parenthesizedExpressionSyntax1 As VBS.ParenthesizedExpressionSyntax = VBFactory.ParenthesizedExpression(Expression.WithoutTrailingTrivia).WithTrailingTrivia(TrailingTrivia)
+                Dim parenthesizedExpressionSyntax1 As ParenthesizedExpressionSyntax = VBFactory.ParenthesizedExpression(Expression.WithoutTrailingTrivia).WithTrailingTrivia(TrailingTrivia)
                 Return parenthesizedExpressionSyntax1
             End Function
 
@@ -2278,19 +2281,19 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             End Function
 
             Public Overrides Function VisitParenthesizedVariableDesignation(node As CSS.ParenthesizedVariableDesignationSyntax) As VB.VisualBasicSyntaxNode
-                Dim Variables As New List(Of VBS.ModifiedIdentifierSyntax)
+                Dim Variables As New List(Of ModifiedIdentifierSyntax)
                 For i As Integer = 0 To node.Variables.Count - 1
-                    Dim VariableDeclarator As VBS.ModifiedIdentifierSyntax = VBFactory.ModifiedIdentifier(node.Variables(i).ToString)
+                    Dim VariableDeclarator As ModifiedIdentifierSyntax = VBFactory.ModifiedIdentifier(node.Variables(i).ToString)
                     Variables.Add(VariableDeclarator)
                 Next
 
-                Dim Names As SeparatedSyntaxList(Of VBS.ModifiedIdentifierSyntax) = VBFactory.SeparatedList(Variables)
+                Dim Names As SeparatedSyntaxList(Of ModifiedIdentifierSyntax) = VBFactory.SeparatedList(Variables)
                 Return VBFactory.VariableDeclarator(Names, VBFactory.SimpleAsClause(PredefinedTypeObject), initializer:=Nothing)
             End Function
 
             Public Overrides Function VisitPostfixUnaryExpression(node As CSS.PostfixUnaryExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Dim CSExpressionKind As CS.SyntaxKind = CS.CSharpExtensions.Kind(node)
-                Dim OperandExpression As VBS.ExpressionSyntax = DirectCast(node.Operand.Accept(Me), VBS.ExpressionSyntax)
+                Dim OperandExpression As ExpressionSyntax = DirectCast(node.Operand.Accept(Me), ExpressionSyntax)
                 If CSExpressionKind = CS.SyntaxKind.SuppressNullableWarningExpression Then
                     Return OperandExpression
                 End If
@@ -2313,21 +2316,21 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         minMax = "Max"
                         op = VB.SyntaxKind.AddExpression
                     End If
-                    Dim MathExpression As VBS.NameSyntax = VBFactory.ParseName("Math." & minMax)
-                    Dim InterlockedExpressionName As VBS.NameSyntax = VBFactory.ParseName("System.Threading.Interlocked." & OperatorName)
+                    Dim MathExpression As NameSyntax = VBFactory.ParseName("Math." & minMax)
+                    Dim InterlockedExpressionName As NameSyntax = VBFactory.ParseName("System.Threading.Interlocked." & OperatorName)
 
-                    Dim OperandArgument As VBS.SimpleArgumentSyntax = VBFactory.SimpleArgument(OperandExpression)
+                    Dim OperandArgument As SimpleArgumentSyntax = VBFactory.SimpleArgument(OperandExpression)
 
-                    Dim OperandArgumentList As VBS.ArgumentListSyntax = VBFactory.ArgumentList(VBFactory.SingletonSeparatedList(Of VBS.ArgumentSyntax)(OperandArgument))
-                    Dim ArgumentInvocationExpression As VBS.InvocationExpressionSyntax = VBFactory.InvocationExpression(InterlockedExpressionName, OperandArgumentList)
-                    Dim SecondArgumentSyntax As VBS.SimpleArgumentSyntax = VBFactory.SimpleArgument(VBFactory.BinaryExpression(op,
+                    Dim OperandArgumentList As ArgumentListSyntax = VBFactory.ArgumentList(VBFactory.SingletonSeparatedList(Of ArgumentSyntax)(OperandArgument))
+                    Dim ArgumentInvocationExpression As InvocationExpressionSyntax = VBFactory.InvocationExpression(InterlockedExpressionName, OperandArgumentList)
+                    Dim SecondArgumentSyntax As SimpleArgumentSyntax = VBFactory.SimpleArgument(VBFactory.BinaryExpression(op,
                                                                                                                                    OperandExpression,
                                                                                                                                    ExpressionKindToOperatorToken(op),
                                                                                                                                    Expression_1)
                                                                                                                                    )
                     Return VBFactory.InvocationExpression(
                         MathExpression,
-                        VBFactory.ArgumentList(VBFactory.SeparatedList((New VBS.ArgumentSyntax() {VBFactory.SimpleArgument(ArgumentInvocationExpression),
+                        VBFactory.ArgumentList(VBFactory.SeparatedList((New ArgumentSyntax() {VBFactory.SimpleArgument(ArgumentInvocationExpression),
                                                                                                       SecondArgumentSyntax})))).WithConvertedTriviaFrom(node)
                 End If
             End Function
@@ -2339,7 +2342,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     StatementWithIssues.AddMarker(FlagUnsupportedStatements(StatementWithIssues, "IndirectPointer Expressions", CommentOutOriginalStatements:=True), StatementHandlingOption.ReplaceStatement, AllowDuplicates:=False)
                     Return NothingExpression
                 End If
-                Dim OperandExpression As VBS.ExpressionSyntax = DirectCast(node.Operand.Accept(Me), VBS.ExpressionSyntax)
+                Dim OperandExpression As ExpressionSyntax = DirectCast(node.Operand.Accept(Me), ExpressionSyntax)
                 If TypeOf node.Parent Is CSS.ExpressionStatementSyntax Then
                     Return VBFactory.AssignmentStatement(kind,
                                                              OperandExpression,
@@ -2359,8 +2362,8 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         End If
                     Else
                         Dim operatorName As String = If(kind = VB.SyntaxKind.AddAssignmentStatement, "Increment", "Decrement")
-                        Dim MathExpression As VBS.NameSyntax = VBFactory.ParseName("System.Threading.Interlocked." & operatorName)
-                        Return VBFactory.InvocationExpression(MathExpression, VBFactory.ArgumentList(VBFactory.SeparatedList((New VBS.ArgumentSyntax() {VBFactory.SimpleArgument(OperandExpression)}))))
+                        Dim MathExpression As NameSyntax = VBFactory.ParseName("System.Threading.Interlocked." & operatorName)
+                        Return VBFactory.InvocationExpression(MathExpression, VBFactory.ArgumentList(VBFactory.SeparatedList((New ArgumentSyntax() {VBFactory.SimpleArgument(OperandExpression)}))))
                     End If
                 End If
                 If kind = VB.SyntaxKind.AddressOfExpression Then
@@ -2394,8 +2397,8 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             End Function
 
             Public Overrides Function VisitThrowExpression(node As CSS.ThrowExpressionSyntax) As VB.VisualBasicSyntaxNode
-                Dim Expression As VBS.ExpressionSyntax = DirectCast(node.Expression.Accept(Me), VBS.ExpressionSyntax)
-                Dim ThrowStatement As VBS.ThrowStatementSyntax = VBFactory.ThrowStatement(Expression).WithTrailingEOL
+                Dim Expression As ExpressionSyntax = DirectCast(node.Expression.Accept(Me), ExpressionSyntax)
+                Dim ThrowStatement As ThrowStatementSyntax = VBFactory.ThrowStatement(Expression).WithTrailingEOL
                 Dim ParentNode As SyntaxNode = node.Parent
                 Return ThrowStatement.WithTrailingEOL
             End Function
@@ -2403,10 +2406,10 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             Public Overrides Function VisitTupleElement(node As CSS.TupleElementSyntax) As VB.VisualBasicSyntaxNode
                 Try
                     If node.Identifier.ValueText.IsEmptyNullOrWhitespace Then
-                        Dim typedTupleElementSyntax1 As VBS.TypedTupleElementSyntax = VBFactory.TypedTupleElement(DirectCast(node.Type.Accept(Me), VBS.TypeSyntax))
+                        Dim typedTupleElementSyntax1 As TypedTupleElementSyntax = VBFactory.TypedTupleElement(DirectCast(node.Type.Accept(Me), TypeSyntax))
                         Return typedTupleElementSyntax1
                     End If
-                    Dim namedTupleElementSyntax1 As NamedTupleElementSyntax = VBFactory.NamedTupleElement(GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False).WithConvertedTriviaFrom(node.Type), VBFactory.SimpleAsClause(DirectCast(node.Type.Accept(Me).WithConvertedTriviaFrom(node.Identifier), VBS.TypeSyntax)))
+                    Dim namedTupleElementSyntax1 As NamedTupleElementSyntax = VBFactory.NamedTupleElement(GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False).WithConvertedTriviaFrom(node.Type), VBFactory.SimpleAsClause(DirectCast(node.Type.Accept(Me).WithConvertedTriviaFrom(node.Identifier), TypeSyntax)))
                     Return namedTupleElementSyntax1
                 Catch ex As Exception
                     Stop
@@ -2420,10 +2423,10 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             ''' <param name="node"></param>
             ''' <returns></returns>
             Public Overrides Function VisitTupleExpression(node As CSS.TupleExpressionSyntax) As VB.VisualBasicSyntaxNode
-                Dim lArgumentSyntax As New List(Of VBS.SimpleArgumentSyntax)
+                Dim lArgumentSyntax As New List(Of SimpleArgumentSyntax)
                 If TypeOf node.Arguments(0).Expression IsNot CSS.DeclarationExpressionSyntax Then
                     For Each a As CSS.ArgumentSyntax In node.Arguments
-                        Dim Argument As VBS.SimpleArgumentSyntax = DirectCast(a.Accept(Me), VBS.SimpleArgumentSyntax)
+                        Dim Argument As SimpleArgumentSyntax = DirectCast(a.Accept(Me), SimpleArgumentSyntax)
                         Dim AfterWhiteSpace As Boolean = False
                         Dim InitialTriviaList As List(Of SyntaxTrivia) = Argument.GetLeadingTrivia.ToList
                         Dim TriviaListUBound As Integer = InitialTriviaList.Count - 1
@@ -2474,12 +2477,12 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     Return VBFactory.TupleExpression(VBFactory.SeparatedList(lArgumentSyntax))
                 End If
                 For Each a As CSS.ArgumentSyntax In node.Arguments
-                    Dim Identifier As VBS.IdentifierNameSyntax
+                    Dim Identifier As IdentifierNameSyntax
                     If a.Expression.IsKind(CS.SyntaxKind.IdentifierName) Then
-                        Identifier = DirectCast(DirectCast(a.Expression, CSS.IdentifierNameSyntax).Accept(Me), VBS.IdentifierNameSyntax)
+                        Identifier = DirectCast(DirectCast(a.Expression, CSS.IdentifierNameSyntax).Accept(Me), IdentifierNameSyntax)
                     Else
                         Dim d As CSS.DeclarationExpressionSyntax = DirectCast(a.Expression, CSS.DeclarationExpressionSyntax)
-                        Identifier = DirectCast(d.Designation.Accept(Me), VBS.IdentifierNameSyntax)
+                        Identifier = DirectCast(d.Designation.Accept(Me), IdentifierNameSyntax)
                     End If
                     lArgumentSyntax.Add(VBFactory.SimpleArgument(Identifier))
                 Next
@@ -2487,8 +2490,8 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             End Function
 
             Public Overrides Function VisitTupleType(node As CSS.TupleTypeSyntax) As VB.VisualBasicSyntaxNode
-                Dim SSList As New List(Of VBS.TupleElementSyntax)
-                SSList.AddRange(node.Elements.Select(Function(a As CSS.TupleElementSyntax) DirectCast(a.Accept(Me), VBS.TupleElementSyntax)))
+                Dim SSList As New List(Of TupleElementSyntax)
+                SSList.AddRange(node.Elements.Select(Function(a As CSS.TupleElementSyntax) DirectCast(a.Accept(Me), TupleElementSyntax)))
                 Return VBFactory.TupleType(SSList.ToArray)
             End Function
 
@@ -2503,9 +2506,9 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Dim VBSyntaxNode As VB.VisualBasicSyntaxNode = node.Type.Accept(Me)
                 If VBSyntaxNode.IsKind(VB.SyntaxKind.AddressOfExpression) Then
                     Stop
-                    VBSyntaxNode = DirectCast(VBSyntaxNode, VBS.UnaryExpressionSyntax).Operand
+                    VBSyntaxNode = DirectCast(VBSyntaxNode, UnaryExpressionSyntax).Operand
                 End If
-                Return VBFactory.GetTypeExpression(DirectCast(VBSyntaxNode, VBS.TypeSyntax))
+                Return VBFactory.GetTypeExpression(DirectCast(VBSyntaxNode, TypeSyntax))
             End Function
 
         End Class

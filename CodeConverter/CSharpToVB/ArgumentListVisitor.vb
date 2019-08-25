@@ -139,11 +139,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
 
             Public Overrides Function VisitTypeArgumentList(node As CSS.TypeArgumentListSyntax) As VB.VisualBasicSyntaxNode
                 Dim CS_VisitorArguments As SeparatedSyntaxList(Of CSS.TypeSyntax) = node.Arguments
-
-                If CS_VisitorArguments.Count = 0 Then
-                    Throw UnreachableException
-                    Return VB.SyntaxFactory.TypeArgumentList(VB.SyntaxFactory.SeparatedList(CS_VisitorArguments.Select(Function(a As CSS.TypeSyntax) DirectCast(a.Accept(Me), VBS.TypeSyntax))))
-                End If
+                Debug.Assert(CS_VisitorArguments.Count <> 0, "VisitTypeArgumentList CS_VisitorArguments.Count = 0")
                 Dim CS_Separators As IEnumerable(Of SyntaxToken) = CS_VisitorArguments.GetSeparators
                 Dim NodeList As New List(Of VBS.TypeSyntax)
                 Dim Separators As New List(Of SyntaxToken)

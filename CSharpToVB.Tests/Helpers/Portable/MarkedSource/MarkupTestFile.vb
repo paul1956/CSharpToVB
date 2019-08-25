@@ -84,8 +84,8 @@ Namespace Roslyn.Test.Utilities
                     ' Is it starting a new match, or ending an existing match.  As a workaround, we
                     ' special case these and consider it ending a match if we have something on the
                     ' stack already.
-                    If (matches(0).Item2 = SpanStartString AndAlso matches(1).Item2 = SpanEndString AndAlso spanStartStack.Peek().Item2 = String.Empty) OrElse
-                    (matches(0).Item2 = SpanStartString AndAlso matches(1).Item2 = NamedSpanEndString AndAlso spanStartStack.Peek().Item2 <> String.Empty) Then
+                    If (matches(0).Item2 = SpanStartString AndAlso matches(1).Item2 = SpanEndString AndAlso spanStartStack.Peek().Item2.Length = 0) OrElse
+                    (matches(0).Item2 = SpanStartString AndAlso matches(1).Item2 = NamedSpanEndString AndAlso spanStartStack.Peek().Item2.Length <> 0) Then
                         orderedMatches.RemoveAt(0)
                     End If
                 End If

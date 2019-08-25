@@ -31,7 +31,7 @@ Public Class VisualBasicFormattingTestBase
         Return SyntaxFactory.ParseCompilationUnit(text, options:=DirectCast(parseOptions, VisualBasicParseOptions))
     End Function
 
-    Protected Function CreateMethod(ParamArray lines() As String) As String
+    Protected Shared Function CreateMethod(ParamArray lines() As String) As String
         Dim adjustedLines As New List(Of String) From {
             "Class C",
             "    Sub Method()"
@@ -40,7 +40,7 @@ Public Class VisualBasicFormattingTestBase
         adjustedLines.Add("    End Sub")
         adjustedLines.Add("End Class")
 
-        Return Me.StringFromLines(adjustedLines.ToArray())
+        Return StringFromLines(adjustedLines.ToArray())
     End Function
 
     Protected Function AssertFormatLf2CrLfAsync(code As String, expected As String, Optional optionSet As Dictionary(Of OptionKey, Object) = Nothing) As Task
@@ -115,7 +115,7 @@ Public Class VisualBasicFormattingTestBase
         Return Me.AssertFormatAsync(expected, code, spans, LanguageNames.VisualBasic, changedOptionSet, testWithTransformation, parseOptions)
     End Function
 
-    Private Function StringFromLines(ParamArray lines As String()) As String
+    Private Shared Function StringFromLines(ParamArray lines As String()) As String
         Return String.Join(Environment.NewLine, lines)
     End Function
 End Class

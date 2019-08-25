@@ -199,7 +199,7 @@ Public Class Form1
                 Return FilteredErrorCount = 0
             Case ResultTriState.Failure
                 Me.RichTextBoxConversionOutput.SelectionColor = Color.Red
-                Me.RichTextBoxConversionOutput.Text = Me.GetExceptionsAsString(Me.ResultOfConversion.Exceptions)
+                Me.RichTextBoxConversionOutput.Text = GetExceptionsAsString(Me.ResultOfConversion.Exceptions)
             Case ResultTriState.Ignore
                 Me.RichTextBoxConversionOutput.Text = ""
                 Me.LabelErrorCount.Text = "File Skipped"
@@ -342,7 +342,7 @@ Public Class Form1
     End Sub
 
     <ExcludeFromCodeCoverage>
-    Private Function GetExceptionsAsString(Exceptions As IReadOnlyList(Of Exception)) As String
+    Private Shared Function GetExceptionsAsString(Exceptions As IReadOnlyList(Of Exception)) As String
         If Exceptions Is Nothing OrElse Exceptions.Count = 0 Then
             Return String.Empty
         End If
@@ -372,7 +372,8 @@ Public Class Form1
 
         While SystemtRootDirectory <> CurrentDirectory
             If Directory.GetFiles(CurrentDirectory, "*.sln").Count > 0 OrElse Directory.GetFiles(CurrentDirectory, "*.gitignore").Count > 0 Then
-                SolutionRoot = Directory.GetParent(CurrentDirectory).FullName
+                SolutionRoot = CurrentDirectory
+                Exit While
             End If
             CurrentDirectory = Directory.GetParent(CurrentDirectory).FullName
         End While
@@ -482,7 +483,7 @@ Public Class Form1
                     If Directory.Exists(SourceFolderName) Then
                         Dim SourceLanguageExtension As String = Me.RequestToConvert.GetSourceExtension
                         Dim ProjectSavePath As String = Me.GetFoldertSavePath((.SelectedPath), SourceLanguageExtension)
-                        If ProjectSavePath = "" Then
+                        If ProjectSavePath.IsEmptyNullOrWhitespace Then
                             MsgBox($"Conversion aborted.", Title:="C# to VB")
                             Exit Sub
                         End If
@@ -639,35 +640,42 @@ Public Class Form1
                     Dim currentProject As Project = Workspace.OpenProjectAsync(.FileName).Result
                     Workspace.LoadMetadataForReferencedProjects = True
                     If currentProject.HasDocuments Then
-                        Me.RichTextBoxErrorList.Text = ""
-                        Me.RichTextBoxFileList.Text = ""
-                        SetButtonStopAndCursor(Me, Me.ButtonStop, StopButtonVisible:=True)
-                        Dim FilesProcessed As Integer = 0
-                        Dim TotalFilesToProcess As Integer = currentProject.Documents.Count
-                        For Each document As Document In currentProject.Documents
-                            If ParseCSharpSource(document.GetTextAsync(Nothing).Result.ToString).GetRoot.SyntaxTree.IsGeneratedCode(Function(t As SyntaxTrivia) As Boolean
-                                                                                                                                        Return t.IsComment OrElse t.IsRegularOrDocComment
-                                                                                                                                    End Function, cancellationToken:=Nothing) Then
-                                TotalFilesToProcess -= 1
-                                Me.FilesConversionProgress.Text = $"Processed {FilesProcessed:N0} of {TotalFilesToProcess:N0} Files"
-                                Application.DoEvents()
-                                Continue For
-                            Else
-                                FilesProcessed += 1
-                                Me.RichTextBoxFileList.AppendText($"{FilesProcessed.ToString.PadLeft(5)} {document.FilePath}{vbCrLf}")
-                                Me.RichTextBoxFileList.Select(Me.RichTextBoxFileList.TextLength, 0)
-                                Me.RichTextBoxFileList.ScrollToCaret()
-                                Me.FilesConversionProgress.Text = $"Processed {FilesProcessed:N0} of {TotalFilesToProcess:N0} Files"
-                                Application.DoEvents()
-                            End If
-                            Dim TargetLanguageExtension As String = If(SourceLanguageExtension = "cs", "vb", "cs")
+                        Dim fsRead As FileStream = File.OpenRead(currentProject.FilePath)
+                        Dim ProjectFileString As String = GetFileTextFromStream(fsRead)
+                        If ProjectFileString.Contains("<Project Sdk=""Microsoft.NET.Sdk") Then
+                            Dim NewVB_ProjectName As String = New FileInfo(currentProject.FilePath).Name.ToLower.Replace(".csproj", ".vbproj")
+                            File.Copy(currentProject.FilePath, Path.Combine(ProjectSavePath, NewVB_ProjectName))
 
-                            If Not Me.ProcessFile(document.FilePath, ConvertSourceFileToDestinationFile(Path.GetDirectoryName(.FileName), ProjectSavePath, document), SourceLanguageExtension, currentProject.MetadataReferences.ToArray) Then
-                                Exit For
-                            End If
-                        Next document
-                        SetButtonStopAndCursor(Me, Me.ButtonStop, StopButtonVisible:=False)
-                    End If
+                        End If
+                        Me.RichTextBoxErrorList.Text = ""
+                            Me.RichTextBoxFileList.Text = ""
+                            SetButtonStopAndCursor(Me, Me.ButtonStop, StopButtonVisible:=True)
+                            Dim FilesProcessed As Integer = 0
+                            Dim TotalFilesToProcess As Integer = currentProject.Documents.Count
+                            For Each document As Document In currentProject.Documents
+                                If ParseCSharpSource(document.GetTextAsync(Nothing).Result.ToString).GetRoot.SyntaxTree.IsGeneratedCode(Function(t As SyntaxTrivia) As Boolean
+                                                                                                                                            Return t.IsComment OrElse t.IsRegularOrDocComment
+                                                                                                                                        End Function, cancellationToken:=Nothing) Then
+                                    TotalFilesToProcess -= 1
+                                    Me.FilesConversionProgress.Text = $"Processed {FilesProcessed: N0} of {TotalFilesToProcess:N0} Files"
+                                    Application.DoEvents()
+                                    Continue For
+                                Else
+                                    FilesProcessed += 1
+                                    Me.RichTextBoxFileList.AppendText($"{FilesProcessed.ToString.PadLeft(5)} {document.FilePath}{vbCrLf}")
+                                    Me.RichTextBoxFileList.Select(Me.RichTextBoxFileList.TextLength, 0)
+                                    Me.RichTextBoxFileList.ScrollToCaret()
+                                    Me.FilesConversionProgress.Text = $"Processed {FilesProcessed:N0} of {TotalFilesToProcess:N0} Files"
+                                    Application.DoEvents()
+                                End If
+                                Dim TargetLanguageExtension As String = If(SourceLanguageExtension = "cs", "vb", "cs")
+
+                                If Not Me.ProcessFile(document.FilePath, ConvertSourceFileToDestinationFile(Path.GetDirectoryName(.FileName), ProjectSavePath, document), SourceLanguageExtension, currentProject.MetadataReferences.ToArray) Then
+                                    Exit For
+                                End If
+                            Next document
+                            SetButtonStopAndCursor(Me, Me.ButtonStop, StopButtonVisible:=False)
+                        End If
                 End Using
                 SetButtonStopAndCursor(MeForm:=Me, StopButton:=Me.ButtonStop, StopButtonVisible:=False)
             Else
@@ -748,7 +756,7 @@ Public Class Form1
     Private Sub mnuOptionsEditIgnoreFilesWithErrorsList_Click(sender As Object, e As EventArgs) Handles mnuOptionsEditIgnoreFilesWithErrorsList.Click
         Dim IgnoreFilesWithErrorsDialog As New IgnoreFilesWithErrorsList
         IgnoreFilesWithErrorsDialog.ShowDialog(Me)
-        If IgnoreFilesWithErrorsDialog.FileToLoad <> "" Then
+        If IgnoreFilesWithErrorsDialog.FileToLoad.IsNotEmptyNullOrWhitespace Then
             Dim LanguageExtension As String = Me.RequestToConvert.GetSourceExtension
             Me.mnuConvertConvertFolder.Enabled = False
             Me.OpenFile(IgnoreFilesWithErrorsDialog.FileToLoad, LanguageExtension)
@@ -866,7 +874,9 @@ Public Class Form1
 
     ' Print message for WorkspaceFailed event to help diagnosing project load failures.
     Private Sub MSBuildWorkspaceFailed(o As Object, e1 As WorkspaceDiagnosticEventArgs)
-        MsgBox(e1.Diagnostic.Message, MsgBoxStyle.AbortRetryIgnore)
+        If MsgBox(e1.Diagnostic.Message, MsgBoxStyle.AbortRetryIgnore, "MSBuild Failed") = MsgBoxResult.Abort Then
+            End
+        End If
     End Sub
 
     Private Sub OpenFile(FileNameWithPath As String, LanguageExtension As String)

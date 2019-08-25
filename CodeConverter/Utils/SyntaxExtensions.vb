@@ -18,10 +18,5 @@ Namespace IVisualBasicCode.CodeConverter.Util
             Return node IsNot Nothing AndAlso node.Parent.IsKind(kind)
         End Function
 
-        <Extension()>
-        Public Function IsParentKind(node As SyntaxToken, kind As CS.SyntaxKind) As Boolean
-            Return node.Parent IsNot Nothing AndAlso node.Parent.IsKind(kind)
-        End Function
-
     End Module
 End Namespace

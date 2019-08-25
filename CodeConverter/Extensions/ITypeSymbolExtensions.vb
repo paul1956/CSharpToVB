@@ -144,12 +144,6 @@ Namespace IVisualBasicCode.CodeConverter.Util
         End Function
 
         <Extension()>
-        Friend Function IsEnumType(type As ITypeSymbol) As Boolean
-            Debug.Assert(type IsNot Nothing)
-            Return type.TypeKind = TypeKind.Enum
-        End Function
-
-        <Extension()>
         Public Function IsErrorType(symbol As ITypeSymbol) As Boolean
             Return symbol.TypeKind = TypeKind.[Error]
         End Function

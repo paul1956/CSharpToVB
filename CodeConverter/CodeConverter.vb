@@ -112,7 +112,7 @@ Namespace IVisualBasicCode.CodeConverter
                     UsedIdentifiers.Clear()
                     Return New ConversionResult(ConvertedNode, LanguageNames.CSharp, LanguageNames.VisualBasic)
                 Else
-                    Return New ConversionResult()
+                    Return New ConversionResult(Array.Empty(Of Exception))
                 End If
             Catch ex As Exception
                 Return New ConversionResult(ex)

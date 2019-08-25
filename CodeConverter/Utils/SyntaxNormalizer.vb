@@ -5,6 +5,7 @@ Option Explicit On
 Option Infer Off
 Option Strict On
 
+Imports System.Diagnostics.CodeAnalysis
 Imports IVisualBasicCode.CodeConverter.Util
 
 Imports Microsoft.CodeAnalysis.PooledObjects1
@@ -89,12 +90,12 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         End Sub
 
         Private Sub AddLinebreaksAfterTokenIfNeeded(node As SyntaxToken, linebreaksAfterToken As Integer)
-            If Not Me.EndsWithColonSeparator(node) Then
+            If Not EndsWithColonSeparator(node) Then
                 Me._lineBreaksAfterToken(node) = linebreaksAfterToken
             End If
         End Sub
 
-        Private Function EndsInLineBreak(trivia As SyntaxTrivia) As Boolean
+        Private Shared Function EndsInLineBreak(trivia As SyntaxTrivia) As Boolean
             If trivia.IsKind(SyntaxKind.EndOfLineTrivia) Then
                 Return True
             End If
@@ -115,12 +116,12 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Return False
         End Function
 
-        Private Function EndsWithColonSeparator(node As SyntaxToken) As Boolean
+        Private Shared Function EndsWithColonSeparator(node As SyntaxToken) As Boolean
             Return node.HasTrailingTrivia AndAlso
                     node.TrailingTrivia.Last.IsKind(SyntaxKind.ColonTrivia)
         End Function
 
-        Private Function ExtraIndentNeeded(previousToken As SyntaxToken, CurrentToken As SyntaxToken) As Boolean
+        Private Shared Function ExtraIndentNeeded(previousToken As SyntaxToken, CurrentToken As SyntaxToken) As Boolean
             If previousToken.ContainsEOLTrivia Then
                 If previousToken.IsKind(
                                 SyntaxKind.AmpersandToken,
@@ -152,7 +153,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         End Function
 
         Private Function GetIndentation(count As Integer, CurrentToken As SyntaxToken) As SyntaxTrivia
-            If Me.ExtraIndentNeeded(Me._previousToken, CurrentToken) Then
+            If ExtraIndentNeeded(Me._previousToken, CurrentToken) Then
                 count += 1
             End If
             Dim capacity As Integer = count + 1
@@ -232,7 +233,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             End If
         End Sub
 
-        Private Function NeedsIndentAfterLineBreak(trivia As SyntaxTrivia) As Boolean
+        Private Shared Function NeedsIndentAfterLineBreak(trivia As SyntaxTrivia) As Boolean
             Select Case trivia.Kind
                 Case SyntaxKind.CommentTrivia,
                         SyntaxKind.DocumentationCommentExteriorTrivia,
@@ -244,11 +245,11 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             End Select
         End Function
 
-        Private Function NeedsLineBreakAfter(trivia As SyntaxTrivia) As Boolean
+        Private Shared Function NeedsLineBreakAfter(trivia As SyntaxTrivia) As Boolean
             Return trivia.IsKind(SyntaxKind.CommentTrivia)
         End Function
 
-        Private Function NeedsLineBreakBefore(trivia As SyntaxTrivia) As Boolean
+        Private Shared Function NeedsLineBreakBefore(trivia As SyntaxTrivia) As Boolean
             Select Case trivia.Kind
                 Case SyntaxKind.DocumentationCommentExteriorTrivia
                     Return True
@@ -258,8 +259,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             End Select
         End Function
 
-        Private Function NeedsLineBreakBetween(trivia As SyntaxTrivia, nextTrivia As SyntaxTrivia, isTrailingTrivia As Boolean) As Boolean
-            If Me.EndsInLineBreak(trivia) Then
+        Private Shared Function NeedsLineBreakBetween(trivia As SyntaxTrivia, nextTrivia As SyntaxTrivia, isTrailingTrivia As Boolean) As Boolean
+            If EndsInLineBreak(trivia) Then
                 Return False
             End If
 
@@ -503,7 +504,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Return True
         End Function
 
-        Private Function NeedsSeparatorBetween(trivia As SyntaxTrivia) As Boolean
+        Private Shared Function NeedsSeparatorBetween(trivia As SyntaxTrivia) As Boolean
             Select Case trivia.Kind
                 Case SyntaxKind.None,
                         SyntaxKind.WhitespaceTrivia,
@@ -609,12 +610,12 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
                         Not (Trivia.IsKind(SyntaxKind.ColonTrivia) AndAlso tokenParent IsNot Nothing AndAlso tokenParent.IsKind(SyntaxKind.LabelStatement)) AndAlso
                         Not (tokenParent IsNot Nothing AndAlso tokenParent.Parent IsNot Nothing AndAlso tokenParent.Parent.IsKind(SyntaxKind.CrefReference)) AndAlso
                         (
-                            (currentTriviaList.Count > 0 AndAlso Me.NeedsSeparatorBetween(currentTriviaList.Last()) AndAlso Not Me.EndsInLineBreak(currentTriviaList.Last())) OrElse
+                            (currentTriviaList.Count > 0 AndAlso NeedsSeparatorBetween(currentTriviaList.Last()) AndAlso Not EndsInLineBreak(currentTriviaList.Last())) OrElse
                             (currentTriviaList.Count = 0 AndAlso isTrailing)
                         )
 
-                    Dim needsLineBreak As Boolean = Me.NeedsLineBreakBefore(Trivia) OrElse
-                        (currentTriviaList.Count > 0 AndAlso Me.NeedsLineBreakBetween(currentTriviaList.Last(), Trivia, isTrailing))
+                    Dim needsLineBreak As Boolean = NeedsLineBreakBefore(Trivia) OrElse
+                        (currentTriviaList.Count > 0 AndAlso NeedsLineBreakBetween(currentTriviaList.Last(), Trivia, isTrailing))
 
                     If needsLineBreak AndAlso Not Me._afterLineBreak Then
                         If Me._EOLTraiingTriviaCount = 0 Then
@@ -626,7 +627,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
                     End If
 
                     If Me._afterLineBreak And Not isTrailing Then
-                        If Not Me._afterIndentation AndAlso Me.NeedsIndentAfterLineBreak(Trivia) Then
+                        If Not Me._afterIndentation AndAlso NeedsIndentAfterLineBreak(Trivia) Then
                             currentTriviaList.Add(Me.GetIndentation(Me.GetIndentationDepth(Trivia), CurrentToken))
                             Me._afterIndentation = True
                         End If
@@ -662,7 +663,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
                         End If
                     End If
 
-                    If Me.NeedsLineBreakAfter(Trivia) Then
+                    If NeedsLineBreakAfter(Trivia) Then
                         If Not isTrailing Then
                             currentTriviaList.Add(Me.GetEndOfLine())
                             Me._EOLLeadingTriviaCount += 1
@@ -670,12 +671,12 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
                         Me._afterLineBreak = True
                         Me._afterIndentation = False
                     Else
-                        Me._afterLineBreak = Me.EndsInLineBreak(Trivia)
+                        Me._afterLineBreak = EndsInLineBreak(Trivia)
                     End If
                 Next
 
                 If lineBreaksAfter > 0 Then
-                    If currentTriviaList.Count > 0 AndAlso Me.EndsInLineBreak(currentTriviaList.Last()) Then
+                    If currentTriviaList.Count > 0 AndAlso EndsInLineBreak(currentTriviaList.Last()) Then
                         lineBreaksAfter -= 1
                     End If
 
@@ -843,6 +844,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Return MyBase.VisitAttributeList(node)
         End Function
 
+        <ExcludeFromCodeCoverage>
         Public Overrides Function VisitBadDirectiveTrivia(node As BadDirectiveTriviaSyntax) As SyntaxNode
             Me.AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
 
@@ -937,6 +939,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Return MyBase.VisitCompilationUnit(node)
         End Function
 
+        <ExcludeFromCodeCoverage>
         Public Overrides Function VisitConstDirectiveTrivia(node As ConstDirectiveTriviaSyntax) As SyntaxNode
             Me.AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
 
@@ -953,6 +956,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Return MyBase.VisitConstructorBlock(node)
         End Function
 
+        <ExcludeFromCodeCoverage>
         Public Overrides Function VisitDisableWarningDirectiveTrivia(node As DisableWarningDirectiveTriviaSyntax) As SyntaxNode
             Me.AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
 
@@ -992,6 +996,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Return MyBase.VisitElseBlock(node)
         End Function
 
+        <ExcludeFromCodeCoverage>
         Public Overrides Function VisitElseDirectiveTrivia(node As ElseDirectiveTriviaSyntax) As SyntaxNode
             Me.AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
 
@@ -1024,6 +1029,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Return result
         End Function
 
+        <ExcludeFromCodeCoverage>
         Public Overrides Function VisitEnableWarningDirectiveTrivia(node As EnableWarningDirectiveTriviaSyntax) As SyntaxNode
             Me.AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
 
@@ -1036,18 +1042,21 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Return MyBase.VisitEndBlockStatement(node)
         End Function
 
+        <ExcludeFromCodeCoverage>
         Public Overrides Function VisitEndExternalSourceDirectiveTrivia(node As EndExternalSourceDirectiveTriviaSyntax) As SyntaxNode
             Me.AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
 
             Return MyBase.VisitEndExternalSourceDirectiveTrivia(node)
         End Function
 
+        <ExcludeFromCodeCoverage>
         Public Overrides Function VisitEndIfDirectiveTrivia(node As EndIfDirectiveTriviaSyntax) As SyntaxNode
             Me.AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
 
             Return MyBase.VisitEndIfDirectiveTrivia(node)
         End Function
 
+        <ExcludeFromCodeCoverage>
         Public Overrides Function VisitEndRegionDirectiveTrivia(node As EndRegionDirectiveTriviaSyntax) As SyntaxNode
             Me.AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
 
@@ -1091,12 +1100,14 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Return result
         End Function
 
+        <ExcludeFromCodeCoverage>
         Public Overrides Function VisitExternalChecksumDirectiveTrivia(node As ExternalChecksumDirectiveTriviaSyntax) As SyntaxNode
             Me.AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
 
             Return MyBase.VisitExternalChecksumDirectiveTrivia(node)
         End Function
 
+        <ExcludeFromCodeCoverage>
         Public Overrides Function VisitExternalSourceDirectiveTrivia(node As ExternalSourceDirectiveTriviaSyntax) As SyntaxNode
             Me.AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
 
@@ -1147,6 +1158,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Return result
         End Function
 
+        <ExcludeFromCodeCoverage>
         Public Overrides Function VisitIfDirectiveTrivia(node As IfDirectiveTriviaSyntax) As SyntaxNode
             Me.AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
 
@@ -1320,6 +1332,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Return MyBase.VisitNextStatement(node)
         End Function
 
+        <ExcludeFromCodeCoverage>
         Public Overrides Function VisitOperatorBlock(node As OperatorBlockSyntax) As SyntaxNode
             Me.AddLinebreaksAfterTokenIfNeeded(node.BlockStatement.GetLastToken(), 1)
 
@@ -1330,6 +1343,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Return MyBase.VisitOperatorBlock(node)
         End Function
 
+        <ExcludeFromCodeCoverage>
         Public Overrides Function VisitOperatorStatement(node As OperatorStatementSyntax) As SyntaxNode
             Dim result As SyntaxNode = MyBase.VisitOperatorStatement(node)
             Me._IndentationDepth += 1
@@ -1356,12 +1370,14 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Return result
         End Function
 
+        <ExcludeFromCodeCoverage>
         Public Overrides Function VisitReferenceDirectiveTrivia(node As ReferenceDirectiveTriviaSyntax) As SyntaxNode
             Me.AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
 
             Return MyBase.VisitReferenceDirectiveTrivia(node)
         End Function
 
+        <ExcludeFromCodeCoverage>
         Public Overrides Function VisitRegionDirectiveTrivia(node As RegionDirectiveTriviaSyntax) As SyntaxNode
             Me.AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
 
@@ -1538,6 +1554,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Return result
         End Function
 
+        <ExcludeFromCodeCoverage>
         Public Overrides Function VisitUsingBlock(node As UsingBlockSyntax) As SyntaxNode
             Me.AddLinebreaksAfterTokenIfNeeded(node.UsingStatement.GetLastToken(), 1)
 
@@ -1554,6 +1571,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Return MyBase.VisitUsingBlock(node)
         End Function
 
+        <ExcludeFromCodeCoverage>
         Public Overrides Function VisitUsingStatement(node As UsingStatementSyntax) As SyntaxNode
             Dim result As SyntaxNode = MyBase.VisitUsingStatement(node)
             Me._IndentationDepth += 1
@@ -1582,6 +1600,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Return result
         End Function
 
+        <ExcludeFromCodeCoverage>
         Public Overrides Function VisitWithBlock(node As WithBlockSyntax) As SyntaxNode
             Me.AddLinebreaksAfterTokenIfNeeded(node.WithStatement.GetLastToken(), 1)
 
@@ -1592,6 +1611,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Return MyBase.VisitWithBlock(node)
         End Function
 
+        <ExcludeFromCodeCoverage>
         Public Overrides Function VisitWithStatement(node As WithStatementSyntax) As SyntaxNode
             Dim result As SyntaxNode = MyBase.VisitWithStatement(node)
             Me._IndentationDepth += 1

@@ -22,13 +22,26 @@ Public Class AdvancedRTB
     'Private Const OBJID_HSCROLL As Long = &HFFFFFFFA 'the horizontal scroll bar of the hwnd window
     Private Const OBJID_VSCROLL As Long = &HFFFFFFFB 'the vertical scroll bar of the hwnd window
     Friend WithEvents ContextMenuStrip1 As ContextMenuStrip
-    <CodeAnalysis.SuppressMessage("Code Quality", "IDE0069:Disposable fields should be disposed", Justification:="<Pending>")>
     Private components As System.ComponentModel.IContainer
     Friend WithEvents ToolStripMenuItem1 As ToolStripMenuItem
     Friend WithEvents ToolStripSeparator1 As ToolStripSeparator
     Friend WithEvents ToolStripMenuItem2 As ToolStripMenuItem
     Friend WithEvents ToolStripMenuItem3 As ToolStripMenuItem
     Private Const WM_NCRBUTTONDOWN As Integer = &HA4
+
+    Protected Overloads Sub Dispose(disposing As Boolean)
+        If disposing Then
+            Me.components.Dispose()
+        End If
+
+        ' Free native resources
+    End Sub
+
+    Protected Overloads Sub Dispose()
+        Me.components.Dispose()
+        Me.Dispose(True)
+        GC.SuppressFinalize(Me)
+    End Sub
 
     <DllImport("user32.dll", SetLastError:=True, ThrowOnUnmappableChar:=True, CharSet:=CharSet.Auto)>
     Private Shared Function SetScrollInfo(
@@ -101,7 +114,7 @@ Public Class AdvancedRTB
         End Function
     End Structure
 
-    Private Sub SetScrollPos(handle As IntPtr, SB_Orientation As SBOrientation, v As Boolean)
+    Private Shared Sub SetScrollPos(handle As IntPtr, SB_Orientation As SBOrientation, v As Boolean)
         Dim scrollinfo As New SCROLLINFO With {
             .CB_Size = CUInt(Marshal.SizeOf(GetType(SCROLLINFO))),
             .F_Mask = ScrollInfoMask.SIF_POS
@@ -114,7 +127,7 @@ Public Class AdvancedRTB
     ''' <param name="handle"></param>
     ''' <param name="SB_Orientation"></param>
     ''' <returns></returns>
-    Private Function GetScrollPos(handle As IntPtr, SB_Orientation As SBOrientation) As Integer
+    Private Shared Function GetScrollPos(handle As IntPtr, SB_Orientation As SBOrientation) As Integer
         Dim si As New SCROLLINFO
         With si
             .CB_Size = CUInt(Marshal.SizeOf(si))
@@ -129,11 +142,11 @@ Public Class AdvancedRTB
     ''' </summary>
     Public Property HScrollPos() As Integer
         Get
-            Return Me.GetScrollPos(Me.Handle, SBOrientation.SB_HORZ)
+            Return GetScrollPos(Me.Handle, SBOrientation.SB_HORZ)
 
         End Get
         Set(ByVal value As Integer)
-            Me.SetScrollPos(Me.Handle, SBOrientation.SB_HORZ, True)
+            SetScrollPos(Me.Handle, SBOrientation.SB_HORZ, True)
         End Set
     End Property
 
@@ -142,10 +155,10 @@ Public Class AdvancedRTB
     ''' </summary>
     Public Property VScrollPos() As Integer
         Get
-            Return Me.GetScrollPos(Me.Handle, SBOrientation.SB_VERT)
+            Return GetScrollPos(Me.Handle, SBOrientation.SB_VERT)
         End Get
         Set(ByVal value As Integer)
-            Me.SetScrollPos(Me.Handle, SBOrientation.SB_VERT, True)
+            SetScrollPos(Me.Handle, SBOrientation.SB_VERT, True)
         End Set
     End Property
 
@@ -231,4 +244,5 @@ Public Class AdvancedRTB
         Me.SelectionStart = Me.Text.Length
 
     End Sub
+
 End Class

@@ -244,8 +244,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
 
                 Case CS.SyntaxKind.ErrorDirectiveTrivia
                     Dim ErrorDirective As CSS.ErrorDirectiveTriviaSyntax = DirectCast(StructuredTrivia, CSS.ErrorDirectiveTriviaSyntax)
-                    Return VBFactory.CommentTrivia($"' TODO: Check VB does not support Error Directive Trivia, Original Directive {t.ToString}")
-
+                    Return VBFactory.CommentTrivia($"' TODO: Check VB does not support Error Directive Trivia, Original Directive {ErrorDirective.ToFullString}")
                 Case CS.SyntaxKind.IfDirectiveTrivia
                     If t.Token.Parent?.AncestorsAndSelf.OfType(Of CSS.InitializerExpressionSyntax).Any Then
                         IgnoredIfDepth += 1
@@ -379,21 +378,18 @@ Namespace IVisualBasicCode.CodeConverter.Util
                                                                     WithAppendedTriviaFromEndOfDirectiveToken(PragmaChecksumDirective.EndOfDirectiveToken)
                                                                     )
                 Case CS.SyntaxKind.SkippedTokensTrivia
-                    Dim CSSyntaxKinds As Dictionary(Of CS.SyntaxKind, VB.SyntaxKind) =
-                        New Dictionary(Of CS.SyntaxKind, VB.SyntaxKind) From {
-                            {CS.SyntaxKind.SkippedTokensTrivia, VB.SyntaxKind.SkippedTokensTrivia},
-                            {CS.SyntaxKind.WarningDirectiveTrivia, VB.SyntaxKind.DisableWarningDirectiveTrivia},
-                            {CS.SyntaxKind.ReferenceDirectiveTrivia, VB.SyntaxKind.ReferenceDirectiveTrivia},
-                            {CS.SyntaxKind.BadDirectiveTrivia, VB.SyntaxKind.BadDirectiveTrivia},
-                            {CS.SyntaxKind.ConflictMarkerTrivia, VB.SyntaxKind.ConflictMarkerTrivia},
-                            {CS.SyntaxKind.LoadDirectiveTrivia, VB.SyntaxKind.ExternalSourceDirectiveTrivia}
-                            }
-                    Dim ConvertedKind As KeyValuePair(Of CS.SyntaxKind, VB.SyntaxKind)? = CSSyntaxKinds.FirstOrNullable(Function(kvp As KeyValuePair(Of CS.SyntaxKind, VB.SyntaxKind)) t.IsKind(kvp.Key))
-                    Return If(ConvertedKind.HasValue, VBFactory.CommentTrivia($"' TODO: Error Skipped {ConvertedKind.Value.Key}"), Nothing)
+                    Dim Builder As New StringBuilder
+                    For Each tok As SyntaxToken In CType(StructuredTrivia, CSS.SkippedTokensTriviaSyntax).Tokens
+                        Builder.Append(tok.ToString)
+                    Next
+                    Return VBFactory.CommentTrivia($"' TODO: Error SkippedTokensTrivia '{Builder.ToString}'")
                 Case CS.SyntaxKind.BadDirectiveTrivia
                     Return VBFactory.CommentTrivia($"' TODO: Skipped BadDirectiveTrivia")
-                Case CS.SyntaxKind.NullableDirectiveTrivia
-                    Return VBFactory.CommentTrivia($"' TODO: Skipped Nullable Directive Trivia")
+                Case CS.SyntaxKind.ConflictMarkerTrivia
+                    Stop
+                Case CS.SyntaxKind.LoadDirectiveTrivia
+                    Stop
+                    'VB.SyntaxKind.ExternalSourceDirectiveTrivia
                 Case Else
                     Debug.WriteLine(CType(t.RawKind, VB.SyntaxKind).ToString)
                     Stop
@@ -447,6 +443,12 @@ Namespace IVisualBasicCode.CodeConverter.Util
                                     End If
                                 Next
                             Next
+                        Case CS.SyntaxKind.NullableDirectiveTrivia
+                            Dim StructuredTrivia As CSS.StructuredTriviaSyntax = DirectCast(Trivia.GetStructure, CSS.StructuredTriviaSyntax)
+                            Dim NullableDirective As CS.Syntax.NullableDirectiveTriviaSyntax = CType(StructuredTrivia, CSS.NullableDirectiveTriviaSyntax)
+                            TriviaList.Add(VBFactory.CommentTrivia($"' TODO: Skipped Nullable Directive {NullableDirective.SettingToken.Text} {NullableDirective.TargetToken.Text}"))
+                            TriviaList.AddRange(ConvertTrivia(NullableDirective.TargetToken.TrailingTrivia))
+                            TriviaList.AddRange(ConvertTrivia(NullableDirective.EndOfDirectiveToken.TrailingTrivia))
                         Case Else
                             Dim ConvertedTrivia As SyntaxTrivia = ConvertTrivia(Trivia)
                             If ConvertedTrivia = Nothing Then

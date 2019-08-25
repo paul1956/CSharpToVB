@@ -5,6 +5,7 @@ Option Explicit On
 Option Infer Off
 Option Strict On
 
+Imports System.Diagnostics.CodeAnalysis
 Imports System.Runtime.InteropServices
 Imports System.Text
 
@@ -656,6 +657,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return UniqueVariableName
             End Function
 
+            <ExcludeFromCodeCoverage>
             Public Overrides Function DefaultVisit(node As SyntaxNode) As SyntaxList(Of VBS.StatementSyntax)
                 Throw New NotImplementedException(node.[GetType]().ToString & " not implemented!")
             End Function
@@ -1261,6 +1263,9 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         If TypeOf PatternSwitch.Pattern Is CSS.DeclarationPatternSyntax Then
                             Expression = VBFactory.TrueLiteralExpression(TrueKeyword)
                         ElseIf TypeOf PatternSwitch.Pattern Is CSS.ConstantPatternSyntax Then
+                            ' TODO Handle
+                        ElseIf TypeOf PatternSwitch.Pattern Is CSS.RecursivePatternSyntax Then
+                            ' TODO Handle
                         Else
                             Stop
                         End If

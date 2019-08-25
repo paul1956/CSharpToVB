@@ -18,7 +18,7 @@ Public Module ProcessDirectoriesModule
     ''' <param name="SubdirectoryName"></param>
     ''' <returns></returns>
     Private Function ConvertSourceToTargetDirectory(TargetDirectory As String, SubdirectoryName As String) As String
-        If TargetDirectory = "" Then
+        If TargetDirectory.IsEmptyNullOrWhitespace Then
             Return ""
         End If
         Return Path.Combine(TargetDirectory, New DirectoryInfo(SubdirectoryName).Name)

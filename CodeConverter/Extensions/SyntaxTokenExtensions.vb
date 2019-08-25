@@ -90,11 +90,6 @@ Namespace IVisualBasicCode.CodeConverter.Util
         End Function
 
         <Extension>
-        Public Function Width(token As SyntaxToken) As Integer
-            Return token.Span.Length
-        End Function
-
-        <Extension>
         Public Function [With](token As SyntaxToken, leading As List(Of SyntaxTrivia), trailing As List(Of SyntaxTrivia)) As SyntaxToken
             Return token.WithLeadingTrivia(leading).WithTrailingTrivia(trailing)
         End Function
@@ -158,7 +153,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
                                     End If
                                 Next
                                 If j < TriviaListUBound AndAlso InitialTriviaList(j).IsKind(VB.SyntaxKind.CommentTrivia) Then
-                                    If Not NewWhiteSpaceString = "" Then
+                                    If NewWhiteSpaceString.IsNotEmptyNullOrWhitespace Then
                                         FinalLeadingTriviaList.Add(VBFactory.WhitespaceTrivia(NewWhiteSpaceString))
                                     Else
                                         FinalLeadingTriviaList.Add(SpaceTrivia)
@@ -166,7 +161,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
                                     FinalLeadingTriviaList.Add(LineContinuation)
                                     AfterLineContinuation = True
                                 Else
-                                    If Not NewWhiteSpaceString = "" Then
+                                    If NewWhiteSpaceString.IsNotEmptyNullOrWhitespace Then
                                         FinalLeadingTriviaList.Add(VBFactory.WhitespaceTrivia(NewWhiteSpaceString))
                                     End If
                                 End If
@@ -234,7 +229,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
                             End If
                             If j = 0 OrElse j < TriviaListUBound AndAlso InitialTriviaList(j).IsKind(VB.SyntaxKind.CommentTrivia) Then
                                 If Not AfterLineContinuation Then
-                                    If Not NewWhiteSpaceString = "" Then
+                                    If NewWhiteSpaceString.IsNotEmptyNullOrWhitespace Then
                                         FinalTrailingTriviaList.Add(VBFactory.WhitespaceTrivia(NewWhiteSpaceString))
                                     Else
                                         FinalTrailingTriviaList.Add(SpaceTrivia)
@@ -245,7 +240,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
                                 AfterLineContinuation = True
                             Else
                                 FinalTrailingTriviaList.Add(Trivia)
-                                If Not NewWhiteSpaceString = "" Then
+                                If NewWhiteSpaceString.IsNotEmptyNullOrWhitespace Then
                                     FinalTrailingTriviaList.Add(VBFactory.WhitespaceTrivia(NewWhiteSpaceString))
                                 End If
                             End If
@@ -275,15 +270,6 @@ Namespace IVisualBasicCode.CodeConverter.Util
                 FinalTrailingTriviaList.AddRange(Token.TrailingTrivia)
             End If
             Return Token.With(FinalLeadingTriviaList, FinalTrailingTriviaList)
-        End Function
-
-        <Extension>
-        Public Function WithPrependedLeadingTrivia(token As SyntaxToken, ParamArray trivia() As SyntaxTrivia) As SyntaxToken
-            If trivia.Length = 0 Then
-                Return token
-            End If
-
-            Return token.WithPrependedLeadingTrivia(DirectCast(trivia, IEnumerable(Of SyntaxTrivia)))
         End Function
 
         <Extension>

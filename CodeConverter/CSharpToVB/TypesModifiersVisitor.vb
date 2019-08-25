@@ -180,7 +180,13 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             End Function
 
             Public Overrides Function VisitNullableType(node As CSS.NullableTypeSyntax) As VB.VisualBasicSyntaxNode
-                Return VBFactory.NullableType(DirectCast(node.ElementType.Accept(Me), VBS.TypeSyntax)).WithConvertedTriviaFrom(node)
+                Dim TypeSyntax As VB.VisualBasicSyntaxNode = node.ElementType.Accept(Me)
+                If TypeOf TypeSyntax Is VBS.ArrayTypeSyntax Then
+                    Dim ArrayType As VBS.ArrayTypeSyntax = DirectCast(TypeSyntax, VBS.ArrayTypeSyntax)
+                    Dim NullableType As VBS.NullableTypeSyntax = VBFactory.NullableType(DirectCast(TypeSyntax, VBS.ArrayTypeSyntax).ElementType)
+                    Return VBFactory.ArrayType(NullableType, ArrayType.RankSpecifiers).WithConvertedTriviaFrom(node)
+                End If
+                Return VBFactory.NullableType(DirectCast(TypeSyntax, VBS.TypeSyntax)).WithConvertedTriviaFrom(node)
             End Function
 
             Public Overrides Function VisitPointerType(node As CSS.PointerTypeSyntax) As VB.VisualBasicSyntaxNode

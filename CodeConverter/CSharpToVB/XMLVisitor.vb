@@ -5,6 +5,7 @@ Option Explicit On
 Option Infer Off
 Option Strict On
 
+Imports System.Diagnostics.CodeAnalysis
 Imports IVisualBasicCode.CodeConverter.Util
 
 Imports Microsoft.CodeAnalysis
@@ -77,6 +78,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             Return VBAttributes
         End Function
 
+        <ExcludeFromCodeCoverage>
         Public Overrides Function DefaultVisit(node As SyntaxNode) As VB.VisualBasicSyntaxNode
             Return MyBase.DefaultVisit(node)
         End Function

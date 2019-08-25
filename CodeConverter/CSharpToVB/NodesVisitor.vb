@@ -5,6 +5,7 @@ Option Explicit On
 Option Infer Off
 Option Strict On
 
+Imports System.Diagnostics.CodeAnalysis
 Imports IVisualBasicCode.CodeConverter.Util
 
 Imports Microsoft.CodeAnalysis
@@ -12,7 +13,6 @@ Imports Microsoft.CodeAnalysis.CSharp.Syntax
 Imports Microsoft.CodeAnalysis.Simplification
 Imports Microsoft.CodeAnalysis.VisualBasic
 Imports CS = Microsoft.CodeAnalysis.CSharp
-Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
@@ -46,6 +46,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 End Get
             End Property
 
+            <ExcludeFromCodeCoverage>
             Public Overrides Function DefaultVisit(node As SyntaxNode) As VisualBasicSyntaxNode
                 Throw New NotImplementedException(node.[GetType]().ToString & " not implemented!")
             End Function
@@ -347,7 +348,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             End Function
 
             Public Overrides Function VisitVariableDeclarator(node As VariableDeclaratorSyntax) As VisualBasicSyntaxNode
-                Dim Identifier As SyntaxToken = GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False,IsTypeName:=False)
+                Dim Identifier As SyntaxToken = GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False)
                 Dim ArgumentList As New List(Of VBS.ArgumentSyntax)
                 If node.ArgumentList IsNot Nothing Then
                     For i As Integer = 0 To node.ArgumentList.Arguments.Count - 1

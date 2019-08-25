@@ -38,10 +38,6 @@ Public Class OpenFolderDialog
     ''' <returns></returns>
     Public Property ShowNewFolderButton As Boolean
 
-    'just to have possibility of Using statement.
-    Public Sub Dispose() Implements IDisposable.Dispose
-    End Sub
-
     Public Function ShowDialog(ByVal owner As IWin32Window) As DialogResult
         Dim frm As IFileDialog = DirectCast(New FileOpenDialogRCW(), IFileDialog)
         Dim Options As FILEOPENDIALOGOPTIONS
@@ -73,7 +69,7 @@ Public Class OpenFolderDialog
             Dim shellItem As IShellItem = Nothing
             If frm.GetResult(shellItem) = HRESULT.S_OK Then
                 Dim pszString As IntPtr
-                If shellItem.GetDisplayName(SIGDN.SIGDN_FILESYSPATH, pszString) = HRESULT.S_OK Then
+                If shellItem.GetDisplayName(SIGDN.FILESYSPATH, pszString) = HRESULT.S_OK Then
                     If pszString <> IntPtr.Zero Then
                         Try
                             Me.SelectedPath = Marshal.PtrToStringAuto(pszString)
@@ -87,5 +83,37 @@ Public Class OpenFolderDialog
         End If
         Return DialogResult.Cancel
     End Function
+
+#Region "IDisposable Support"
+    Private disposedValue As Boolean ' To detect redundant calls
+
+    ' IDisposable
+    Protected Overridable Sub Dispose(disposing As Boolean)
+        If Not Me.disposedValue Then
+            If disposing Then
+                ' TODO: dispose managed state (managed objects).
+            End If
+
+            ' TODO: free unmanaged resources (unmanaged objects) and override Finalize() below.
+            ' TODO: set large fields to null.
+        End If
+        Me.disposedValue = True
+    End Sub
+
+    ' TODO: override Finalize() only if Dispose(disposing As Boolean) above has code to free unmanaged resources.
+    'Protected Overrides Sub Finalize()
+    '    ' Do not change this code.  Put cleanup code in Dispose(disposing As Boolean) above.
+    '    Dispose(False)
+    '    MyBase.Finalize()
+    'End Sub
+
+    ' This code added by Visual Basic to correctly implement the disposable pattern.
+    Public Sub Dispose() Implements IDisposable.Dispose
+        ' Do not change this code.  Put cleanup code in Dispose(disposing As Boolean) above.
+        Me.Dispose(True)
+        ' TODO: uncomment the following line if Finalize() is overridden above.
+        ' GC.SuppressFinalize(Me)
+    End Sub
+#End Region
 
 End Class

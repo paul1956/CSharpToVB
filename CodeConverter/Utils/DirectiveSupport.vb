@@ -26,24 +26,25 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
         End Enum
 
         <Extension>
-        Public Function ContainsConditionalDirective(ArgumentList As CSS.ArgumentListSyntax) As DirectiveState
-            Dim FoundDirectives As DirectiveState = DirectiveState.None
+        Public Function ContainsConditionalDirective(ArgumentList As CSS.ArgumentListSyntax) As Boolean
             If ArgumentList.Arguments.Count = 0 Then
-                Return FoundDirectives
+                Return False
             End If
             For i As Integer = 0 To ArgumentList.Arguments.Count - 1
                 For Each t As SyntaxTrivia In ArgumentList.Arguments(i).GetLeadingTrivia
                     Select Case t.RawKind
                         Case CS.SyntaxKind.IfDirectiveTrivia
-                            FoundDirectives = FoundDirectives.SetFlags(DirectiveState.IfFound)
+                            Return True
                         Case CS.SyntaxKind.DisabledTextTrivia
-                            FoundDirectives = FoundDirectives.SetFlags(DirectiveState.DisabledText)
+                            Return True
                         Case CS.SyntaxKind.ElseDirectiveTrivia
-                            FoundDirectives = FoundDirectives.SetFlags(DirectiveState.ElseFound)
+                            Return True
                         Case CS.SyntaxKind.ElifDirectiveTrivia
-                            FoundDirectives = FoundDirectives.SetFlags(DirectiveState.ElIf)
+                            Return True
                         Case CS.SyntaxKind.EndIfDirectiveTrivia
-                            FoundDirectives = FoundDirectives.SetFlags(DirectiveState.EndIfFound)
+                            Return True
+                        Case CS.SyntaxKind.NullableDirectiveTrivia
+                            Return False
                         Case CS.SyntaxKind.WhitespaceTrivia
                             ' ignore
                         Case CS.SyntaxKind.SingleLineCommentTrivia
@@ -51,12 +52,12 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         Case CS.SyntaxKind.EndOfLineTrivia
                             ' Ignore
                         Case Else
-                            Debug.WriteLine($"Unknown TriviaKind {CType(t.RawKind, CS.SyntaxKind).ToString}")
+                            Debug.WriteLine($"Unknown TriviaKind {CType(t.RawKind, CS.SyntaxKind).ToString} in ContainsConditionalDirective")
                             Stop
                     End Select
                 Next
             Next
-            Return FoundDirectives
+            Return False
         End Function
 
     End Module

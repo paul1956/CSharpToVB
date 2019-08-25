@@ -2,9 +2,14 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 Imports System.ComponentModel
+Imports System.Diagnostics.CodeAnalysis
 Imports System.Reflection
 Imports System.Runtime.CompilerServices
 
+''' <summary>
+''' This code is currently not used but is left here for future purposes
+''' </summary>
+<ExcludeFromCodeCoverage>
 Public Module EnumExtensions
 
     Private Sub CheckIsEnum(Of T)(withFlags As Boolean)
