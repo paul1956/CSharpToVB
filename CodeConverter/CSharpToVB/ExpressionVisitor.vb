@@ -2127,8 +2127,12 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
 
             Public Overrides Function VisitObjectCreationExpression(node As CSS.ObjectCreationExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Dim type1 As TypeSyntax = DirectCast(node.Type.Accept(Me), TypeSyntax)
+
                 Dim argumentList As ArgumentListSyntax = DirectCast(node.ArgumentList?.Accept(Me), ArgumentListSyntax)
                 If argumentList IsNot Nothing Then
+                    If type1.ToString = "System.EventHandler" AndAlso argumentList.Arguments.Count = 1 Then
+                        argumentList = VBFactory.ArgumentList(VBFactory.SingletonSeparatedList(Of ArgumentSyntax)(VBFactory.SimpleArgument(VBFactory.AddressOfExpression(DirectCast(argumentList.Arguments(0), SimpleArgumentSyntax).Expression))))
+                    End If
                     type1 = type1.WithTrailingTrivia(SpaceTrivia)
                 End If
                 Dim PossibleInitializer As VB.VisualBasicSyntaxNode = node.Initializer?.Accept(Me)

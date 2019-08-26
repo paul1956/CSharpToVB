@@ -21,25 +21,3 @@ Public NotInheritable Class ComGuids
     Friend Const IKnownFolderManager As String = "44BEAAEC-24F4-4E90-B3F0-23D258FBB146"
     Friend Const IPropertyStore As String = "886D8EEB-8CF2-4446-8D02-CDBA1DBDCF99"
 End Class
-
-Friend NotInheritable Class CLSIDGuid
-
-    Private Sub New()
-    End Sub
-
-    ' CLSID GUID strings for relevant coclasses
-    Friend Const FileOpenDialog As String = "DC1C5A9C-E88A-4dde-A5A1-60F82A20AEF7"
-    Friend Const FileSaveDialog As String = "C0B4E2F3-BA21-4773-8DBA-335EC946EB8B"
-    Friend Const KnownFolderManager As String = "4df0c730-df9d-4ae3-9153-aa6b82e9795a"
-End Class
-
-Friend NotInheritable Class KFIDGuid
-
-    Private Sub New()
-    End Sub
-
-    Friend Const ComputerFolder As String = "0AC0837C-BBF8-452A-850D-79D08E667CA7"
-    Friend Const Favorites As String = "1777F761-68AD-4D8A-87BD-30B759FA33DD"
-    Friend Const Documents As String = "FDD39AD0-238F-46AF-ADB4-6C85480369C7"
-    Friend Const Profile As String = "5E6C858F-0E22-4760-9AFE-EA3317B67173"
-End Class

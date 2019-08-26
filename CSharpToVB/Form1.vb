@@ -8,7 +8,7 @@ Option Strict On
 Imports System.Diagnostics.CodeAnalysis
 Imports System.IO
 Imports System.Text
-
+Imports System.Xml
 Imports CSharpToVBApp
 
 Imports IVisualBasicCode.CodeConverter
@@ -361,7 +361,7 @@ Public Class Form1
     ''' <param name="DirectoryToBeTranslatedWithPath"></param>
     ''' <param name="SourceLanguageExtension"></param>
     ''' <returns>Path to new solution that mirrors the DirectoryToBeTranslated, new solution folder is rename with _SourceLanguageExtension</returns>
-    Private Function GetFoldertSavePath(DirectoryToBeTranslatedWithPath As String, SourceLanguageExtension As String) As String
+    Private Function GetFoldertSavePath(DirectoryToBeTranslatedWithPath As String, SourceLanguageExtension As String, ConvertingProject As Boolean) As String
         Dim TargetLanguageExtension As String = If(SourceLanguageExtension.ToLower = "vb", "_cs", "_vb")
         Debug.Assert(Directory.Exists(DirectoryToBeTranslatedWithPath), $"{DirectoryToBeTranslatedWithPath} does Not exist")
         Debug.Assert(Directory.GetDirectoryRoot(DirectoryToBeTranslatedWithPath) <> DirectoryToBeTranslatedWithPath, $"{DirectoryToBeTranslatedWithPath} does Not exist")
@@ -372,8 +372,12 @@ Public Class Form1
 
         While SystemtRootDirectory <> CurrentDirectory
             If Directory.GetFiles(CurrentDirectory, "*.sln").Count > 0 OrElse Directory.GetFiles(CurrentDirectory, "*.gitignore").Count > 0 Then
-                SolutionRoot = CurrentDirectory
-                Exit While
+                If ConvertingProject Then
+                    SolutionRoot = CurrentDirectory
+                    Exit While
+                Else
+                    SolutionRoot = Directory.GetParent(CurrentDirectory).FullName
+                End If
             End If
             CurrentDirectory = Directory.GetParent(CurrentDirectory).FullName
         End While
@@ -384,11 +388,7 @@ Public Class Form1
         If File.Exists(SolutionRoot) Then
             MsgBox($"A file exists at {SolutionRoot} this Is a fatal error the program will exit", MsgBoxStyle.OkOnly And MsgBoxStyle.Critical, "Fatal Error")
             Me.Close()
-#If NETCOREAPP3_0 Then
-            Environment.Exit(0)
-#Else
             End
-#End If
         End If
         If Directory.Exists(SolutionRoot) Then
             Select Case MsgBox($"The converted project will be save to {SolutionRoot} a directory which already exists. To use it And overwrite existing files select Yes. Selecting No will delete existing content, Selecting Cancel will stop conversion. , ", MsgBoxStyle.YesNoCancel, "Target Directory Save Options")
@@ -482,7 +482,7 @@ Public Class Form1
                     Dim SourceFolderName As String = .SelectedPath
                     If Directory.Exists(SourceFolderName) Then
                         Dim SourceLanguageExtension As String = Me.RequestToConvert.GetSourceExtension
-                        Dim ProjectSavePath As String = Me.GetFoldertSavePath((.SelectedPath), SourceLanguageExtension)
+                        Dim ProjectSavePath As String = Me.GetFoldertSavePath((.SelectedPath), SourceLanguageExtension, ConvertingProject:=False)
                         If ProjectSavePath.IsEmptyNullOrWhitespace Then
                             MsgBox($"Conversion aborted.", Title:="C# to VB")
                             Exit Sub
@@ -549,11 +549,7 @@ Public Class Form1
 
     Private Sub mnuFileExit_Click(sender As Object, e As EventArgs) Handles mnuFileExit.Click
         Me.Close()
-#If NETCOREAPP3_0 Then
-        Environment.Exit(0)
-#Else
         End
-#End If
     End Sub
 
     Private Sub mnu_MRUList_Click(ByVal sender As Object, ByVal e As EventArgs)
@@ -572,7 +568,7 @@ Public Class Form1
         Dim FolderName As String = CType(sender, ToolStripMenuItem).Text
         If Directory.Exists(FolderName) Then
             Dim SourceLanguageExtension As String = Me.RequestToConvert.GetSourceExtension
-            Dim ProjectSavePath As String = Me.GetFoldertSavePath(FolderName, SourceLanguageExtension)
+            Dim ProjectSavePath As String = Me.GetFoldertSavePath(FolderName, SourceLanguageExtension, ConvertingProject:=False)
             ' This path is a directory.
             Dim LastFileNameWithPath As String = If(My.Settings.StartFolderConvertFromLastFile, My.Settings.MRU_Data.Last, "")
             Dim FilesProcessed As Long = 0
@@ -619,7 +615,7 @@ Public Class Form1
             .ValidateNames = True
             ' InputLines is used for future progress bar
             If .ShowDialog = DialogResult.OK Then
-                Dim ProjectSavePath As String = Me.GetFoldertSavePath(Path.GetDirectoryName(.FileName), SourceLanguageExtension)
+                Dim ProjectSavePath As String = Me.GetFoldertSavePath(Path.GetDirectoryName(.FileName), SourceLanguageExtension, ConvertingProject:=True)
                 Me.mnuConvertConvertFolder.Enabled = True
                 If Me.MSBuildInstance Is Nothing Then
                     Dim VS_Selector As New VS_Selector_Dialog1
@@ -640,44 +636,148 @@ Public Class Form1
                     Dim currentProject As Project = Workspace.OpenProjectAsync(.FileName).Result
                     Workspace.LoadMetadataForReferencedProjects = True
                     If currentProject.HasDocuments Then
-                        Dim fsRead As FileStream = File.OpenRead(currentProject.FilePath)
-                        Dim ProjectFileString As String = GetFileTextFromStream(fsRead)
+                        Dim xmlDoc As New XmlDocument With {
+                            .PreserveWhitespace = True
+                        }
+                        xmlDoc.Load(currentProject.FilePath)
+                        Dim root As XmlNode = xmlDoc.FirstChild
 
-                        If ProjectFileString.Contains("<Project Sdk=""Microsoft.NET.Sdk") Then
-                            ' This is not perfect but is a good start
-                            ProjectFileString = ProjectFileString.Replace(".cs", ".vb")
-                            Dim NewVB_ProjectName As String = New FileInfo(currentProject.FilePath).Name.ToLower.Replace(".csproj", "_VB.vbproj")
-                            File.WriteAllText(Path.Combine(ProjectSavePath, NewVB_ProjectName), ProjectFileString)
+                        If root.Attributes.Count > 0 AndAlso root.Attributes(0).Name = "Sdk" Then
+                            If root.Attributes(0).Value = "Microsoft.NET.Sdk" OrElse
+                                root.Attributes(0).Value = "Microsoft.NET.Sdk.WindowsDesktop" Then
+                                Dim FrameworkReferenceNodeIndex As Integer = -1
+                                If root.HasChildNodes Then
+                                    Dim PropertyGroupIndex As Integer = 0
+                                    Dim FoundUseWindowsForms As Boolean = False
+                                    For i As Integer = 0 To root.ChildNodes.Count - 1
+                                        Dim RootChildNode As XmlNode = root.ChildNodes(i)
+                                        Select Case RootChildNode.Name
+                                            Case "PropertyGroup"
+                                                PropertyGroupIndex = i
+                                                For J As Integer = 0 To RootChildNode.ChildNodes.Count - 1
+                                                    Dim PropertyGroupChildNode As XmlNode = RootChildNode.ChildNodes(J)
+                                                    Select Case PropertyGroupChildNode.Name
+                                                        Case "OutputType"
+                                                            ' Ignore
+                                                        Case "TargetFramework"
+                                                            ' Ignore
+                                                        Case "RootNamespace"
+                                                            ' Ignore
+                                                        Case "AssemblyName"
+                                                            ' Ignore
+                                                        Case "GenerateAssemblyInfo"
+                                                              ' Ignore
+                                                        Case "UseWindowsForms"
+                                                            FoundUseWindowsForms = True
+                                                        Case "#whitespace"
+                                                            ' Ignore
+                                                        Case "#comment"
+                                                            root.ChildNodes(i).ChildNodes(J).Value = PropertyGroupChildNode.Value.Replace(".cs", ".vb")
+                                                        Case Else
+                                                            Stop
+                                                    End Select
+                                                Next J
+                                            Case "ItemGroup"
+                                                For J As Integer = 0 To RootChildNode.ChildNodes.Count - 1
+                                                    Dim xmlNode As XmlNode = root.ChildNodes(i).ChildNodes(J)
+                                                    Select Case RootChildNode.ChildNodes(J).Name
+                                                        Case "FrameworkReference"
+                                                            If RootChildNode.ChildNodes.Count = 3 AndAlso
+                                                                RootChildNode.ChildNodes(0).Name = "#whitespace" AndAlso
+                                                                RootChildNode.ChildNodes(0).Name = "#whitespace" Then
+                                                                FrameworkReferenceNodeIndex = i
+                                                            Else
+                                                                xmlNode.RemoveAll()
+                                                            End If
+                                                            If Not FoundUseWindowsForms Then
+                                                                Dim strXml As String = "<UseWindowsForms>true</UseWindowsForms>"
+                                                                Dim xmlDocFragment As XmlDocumentFragment = xmlDoc.CreateDocumentFragment()
+                                                                xmlDocFragment.InnerXml = strXml                                                                '<UseWindowsForms>true</UseWindowsForms>
+                                                                root.ChildNodes(PropertyGroupIndex).AppendChild(xmlDocFragment)
+                                                            End If
+                                                        Case "#whitespace"
+                                                            ' Ignore
+                                                        Case "#comment"
+                                                            root.ChildNodes(i).ChildNodes(J).Value = xmlNode.Value.Replace(".cs", ".vb")
+                                                        Case "Compile"
+                                                            For k As Integer = 0 To xmlNode.Attributes.Count - 1
+                                                                root.ChildNodes(i).ChildNodes(J).Attributes(k).Value = ChangeExtension(xmlNode.Attributes(k).Value)
+                                                            Next k
+                                                            For k As Integer = 0 To xmlNode.ChildNodes.Count - 1
+                                                                Select Case root.ChildNodes(i).ChildNodes(J).ChildNodes(k).Name
+                                                                    Case "DependentUpon"
+                                                                        For l As Integer = 0 To root.ChildNodes(i).ChildNodes(J).ChildNodes(k).ChildNodes.Count - 1
+                                                                            root.ChildNodes(i).ChildNodes(J).ChildNodes(k).ChildNodes(l).Value = ChangeExtension(xmlNode.ChildNodes(k).ChildNodes(l).Value)
+                                                                        Next l
+                                                                    Case "#whitespace"
+                                                                        ' Ignore
+                                                                    Case Else
+                                                                        Stop
+                                                                End Select
+                                                            Next k
+                                                        Case "EmbeddedResource"
+                                                            For k As Integer = 0 To xmlNode.ChildNodes.Count - 1
+                                                                Select Case root.ChildNodes(i).ChildNodes(J).ChildNodes(k).Name
+                                                                    Case "DependentUpon"
+                                                                        For l As Integer = 0 To root.ChildNodes(i).ChildNodes(J).ChildNodes(k).ChildNodes.Count - 1
+                                                                            root.ChildNodes(i).ChildNodes(J).ChildNodes(k).ChildNodes(l).Value = ChangeExtension(xmlNode.ChildNodes(k).ChildNodes(l).Value)
+                                                                        Next l
+                                                                    Case "#whitespace"
+                                                                        ' Ignore
+                                                                    Case Else
+                                                                        Stop
+                                                                End Select
+                                                            Next k
+                                                        Case Else
+                                                            Stop
+                                                    End Select
+                                                Next J
+                                            Case "#whitespace"
+                                            Case "#comment"
+                                                root.ChildNodes(i).Value = RootChildNode.Value.Replace(".cs", ".vb")
+                                            Case Else
+                                                Stop
+                                        End Select
+                                    Next i
+                                End If
+                                If FrameworkReferenceNodeIndex >= 0 Then
+                                    root.Attributes(0).Value = "Microsoft.NET.Sdk.WindowsDesktop"
+                                    root.ChildNodes(FrameworkReferenceNodeIndex).RemoveAll()
+                                End If
+                                Dim NewVB_ProjectName As String = New FileInfo(currentProject.FilePath).Name.ToLower.Replace(".csproj", "_VB.vbproj")
+                                xmlDoc.Save(Path.Combine(ProjectSavePath, NewVB_ProjectName))
+                            End If
                         End If
+
                         Me.RichTextBoxErrorList.Text = ""
-                            Me.RichTextBoxFileList.Text = ""
-                            SetButtonStopAndCursor(Me, Me.ButtonStop, StopButtonVisible:=True)
-                            Dim FilesProcessed As Integer = 0
-                            Dim TotalFilesToProcess As Integer = currentProject.Documents.Count
-                            For Each document As Document In currentProject.Documents
-                                If ParseCSharpSource(document.GetTextAsync(Nothing).Result.ToString).GetRoot.SyntaxTree.IsGeneratedCode(Function(t As SyntaxTrivia) As Boolean
-                                                                                                                                            Return t.IsComment OrElse t.IsRegularOrDocComment
-                                                                                                                                        End Function, cancellationToken:=Nothing) Then
-                                    TotalFilesToProcess -= 1
-                                    Me.FilesConversionProgress.Text = $"Processed {FilesProcessed: N0} of {TotalFilesToProcess:N0} Files"
-                                    Application.DoEvents()
-                                    Continue For
-                                Else
-                                    FilesProcessed += 1
-                                    Me.RichTextBoxFileList.AppendText($"{FilesProcessed.ToString.PadLeft(5)} {document.FilePath}{vbCrLf}")
-                                    Me.RichTextBoxFileList.Select(Me.RichTextBoxFileList.TextLength, 0)
-                                    Me.RichTextBoxFileList.ScrollToCaret()
-                                    Me.FilesConversionProgress.Text = $"Processed {FilesProcessed:N0} of {TotalFilesToProcess:N0} Files"
-                                    Application.DoEvents()
-                                End If
-                                Dim TargetLanguageExtension As String = If(SourceLanguageExtension = "cs", "vb", "cs")
+                        Me.RichTextBoxFileList.Text = ""
+                        SetButtonStopAndCursor(Me, Me.ButtonStop, StopButtonVisible:=True)
+                        Dim FilesProcessed As Integer = 0
+                        Dim TotalFilesToProcess As Integer = currentProject.Documents.Count
+                        For Each document As Document In currentProject.Documents
+                            If ParseCSharpSource(document.GetTextAsync(Nothing).Result.ToString).GetRoot.SyntaxTree.IsGeneratedCode(Function(t As SyntaxTrivia) As Boolean
+                                                                                                                                        Return t.IsComment OrElse t.IsRegularOrDocComment
+                                                                                                                                    End Function, cancellationToken:=Nothing) Then
+                                TotalFilesToProcess -= 1
+                                Me.FilesConversionProgress.Text = $"Processed {FilesProcessed: N0} of {TotalFilesToProcess:N0} Files"
+                                Application.DoEvents()
+                                Continue For
+                            Else
+                                FilesProcessed += 1
+                                Me.RichTextBoxFileList.AppendText($"{FilesProcessed.ToString.PadLeft(5)} {document.FilePath}{vbCrLf}")
+                                Me.RichTextBoxFileList.Select(Me.RichTextBoxFileList.TextLength, 0)
+                                Me.RichTextBoxFileList.ScrollToCaret()
+                                Me.FilesConversionProgress.Text = $"Processed {FilesProcessed:N0} of {TotalFilesToProcess:N0} Files"
+                                Application.DoEvents()
+                            End If
+                            Dim TargetLanguageExtension As String = If(SourceLanguageExtension = "cs", "vb", "cs")
 
-                                If Not Me.ProcessFile(document.FilePath, ConvertSourceFileToDestinationFile(Path.GetDirectoryName(.FileName), ProjectSavePath, document), SourceLanguageExtension, currentProject.MetadataReferences.ToArray) Then
-                                    Exit For
-                                End If
-                            Next document
-                            SetButtonStopAndCursor(Me, Me.ButtonStop, StopButtonVisible:=False)
-                        End If
+                            If Not Me.ProcessFile(document.FilePath, ConvertSourceFileToDestinationFile(Path.GetDirectoryName(.FileName), ProjectSavePath, document), SourceLanguageExtension, currentProject.MetadataReferences.ToArray) Then
+                                Exit For
+                            End If
+                        Next document
+                        SetButtonStopAndCursor(Me, Me.ButtonStop, StopButtonVisible:=False)
+                    End If
                 End Using
                 SetButtonStopAndCursor(MeForm:=Me, StopButton:=Me.ButtonStop, StopButtonVisible:=False)
             Else
@@ -685,6 +785,13 @@ Public Class Form1
             End If
         End With
     End Sub
+
+    Private Shared Function ChangeExtension(AttributeValue As String) As String
+        If AttributeValue.EndsWith(".cs") Then
+            Return $"{AttributeValue.Substring(0, AttributeValue.Length - 2)}vb"
+        End If
+        Return AttributeValue
+    End Function
 
     Private Sub mnuFileSnippetLoadLast_Click(sender As Object, e As EventArgs) Handles mnuFileSnippetLoadLast.Click
         If My.Settings.ColorizeInput Then

@@ -969,13 +969,19 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
 
                     End If
                 Else
+                    Dim VBType As VBS.TypeSyntax
+                    If node.Type.IsKind(CS.SyntaxKind.IdentifierName) Then
+                        VBType = VBFactory.IdentifierName(GenerateSafeVBToken(DirectCast(node.Type, CSS.IdentifierNameSyntax).Identifier, IsQualifiedName:=False, IsTypeName:=True))
+                    Else
+                        VBType = DirectCast(node.Type.Accept(Me.mNodesVisitor), VBS.TypeSyntax)
+                    End If
                     variable = VBFactory.VariableDeclarator(VBFactory.SingletonSeparatedList(
-                                  VBFactory.ModifiedIdentifier(GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False)).WithTrailingTrivia(SpaceTrivia)),
-                                                                asClause:=VBFactory.SimpleAsClause(DirectCast(node.Type.Accept(Me.mNodesVisitor), VBS.TypeSyntax)),
-                                                                initializer:=Nothing)
+                                      VBFactory.ModifiedIdentifier(GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False)).WithTrailingTrivia(SpaceTrivia)),
+                                                                    asClause:=VBFactory.SimpleAsClause(VBType),
+                                                                    initializer:=Nothing)
                 End If
 
-                Dim expression As VBS.ExpressionSyntax = DirectCast(node.Expression.Accept(Me.mNodesVisitor), VBS.ExpressionSyntax).WithConvertedTrailingTriviaFrom(node.CloseParenToken)
+                    Dim expression As VBS.ExpressionSyntax = DirectCast(node.Expression.Accept(Me.mNodesVisitor), VBS.ExpressionSyntax).WithConvertedTrailingTriviaFrom(node.CloseParenToken)
                 Dim OpenBraceTrailingTrivia As New List(Of SyntaxTrivia)
                 Dim ClosingBraceLeadingTrivia As New List(Of SyntaxTrivia)
                 Dim stmt As SyntaxList(Of VBS.StatementSyntax) = Me.ConvertBlock(node.Statement, OpenBraceTrailingTrivia, ClosingBraceLeadingTrivia)

@@ -686,7 +686,15 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 If node.Modifiers.Any(Function(m As SyntaxToken) m.IsKind(CS.SyntaxKind.ExternKeyword)) Then
                     block = VBFactory.List(Of VBS.StatementSyntax)()
                 End If
-                Dim Modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, Me.IsModule, If(containingType?.IsInterfaceType() = True, TokenContext.Local, TokenContext.Member))
+                Dim Modifiers As List(Of SyntaxToken)
+                If Me.IsModule AndAlso
+                    id.ValueText = "Main" AndAlso
+                    node.Modifiers.Count = 1 AndAlso
+                    node.Modifiers(0).ValueText = "static" Then
+                    Modifiers = PublicModifier.ToList
+                Else
+                    Modifiers = ConvertModifiers(node.Modifiers, Me.IsModule, If(containingType?.IsInterfaceType() = True, TokenContext.Local, TokenContext.Member))
+                End If
                 If visitor.IsInterator Then
                     Modifiers.Add(IteratorKeyword)
                 End If
