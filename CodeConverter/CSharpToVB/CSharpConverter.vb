@@ -53,7 +53,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
         ''' <param name="IsQualifiedName">True if name is part of a Qualified Name and should not be renamed</param>
         ''' <param name="IsTypeName"></param>
         ''' <returns></returns>
-        Private Shared Function GenerateSafeVBToken(id As SyntaxToken, IsQualifiedName As Boolean, IsTypeName As Boolean) As SyntaxToken
+        Public Shared Function GenerateSafeVBToken(id As SyntaxToken, IsQualifiedName As Boolean, IsTypeName As Boolean) As SyntaxToken
             Debug.Assert(id.Language = "C#", $"In {NameOf(GenerateSafeVBToken)} Language of Token is not C#")
             Debug.Assert((Not id.HasLeadingTrivia) OrElse id.LeadingTrivia(0).Language = "C#", $"In {NameOf(GenerateSafeVBToken)} Language of ID Token leading trivia is not VB")
             Debug.Assert((Not id.HasTrailingTrivia) OrElse id.TrailingTrivia(0).Language = "C#", $"In {NameOf(GenerateSafeVBToken)} Language of ID Token trailing trivia is not VB")

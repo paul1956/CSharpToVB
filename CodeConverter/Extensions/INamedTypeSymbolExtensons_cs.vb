@@ -19,7 +19,51 @@ Namespace IVisualBasicCode.CodeConverter.Util
         Private Function ConvertISymbolToNameSyntaxInterfaceName(interfaceMethod As ISymbol) As NameSyntax
             Dim TypeString As String = interfaceMethod.ContainingSymbol.ToString
             TypeString = TypeString.Replace("<", "(Of ").Replace(">", ")").Replace("[", "(").Replace("]", ")")
-            Return VisualBasic.SyntaxFactory.ParseName(TypeString)
+            Dim FirstTupleIndex As Integer = TypeString.IndexOf("(Of (")
+            If FirstTupleIndex < 0 Then
+                Return VisualBasic.SyntaxFactory.ParseName(TypeString)
+            End If
+            FirstTupleIndex += 4
+            Dim Result As String = TypeString.Substring(0, FirstTupleIndex)
+            Dim OpenIndex As Integer = FirstTupleIndex
+            Dim OpenParenCount As Integer = 0
+            Dim CloseIndex As Integer = FirstTupleIndex
+            Dim TupleList As New List(Of String)
+            While CloseIndex < TypeString.Length - 1
+                Select Case TypeString.Substring(CloseIndex, 1)
+                    Case "("
+                        OpenParenCount += 1
+                    Case ")"
+                        OpenParenCount -= 1
+                        If OpenParenCount = 0 Then
+                            Dim TupleString As String = TypeString.Substring(OpenIndex, (CloseIndex - OpenIndex) + 1)
+                            Result &= ExtractConvertedTuple(TupleString)
+                            If CloseIndex < TypeString.Length - 2 Then
+                                Stop
+                            Else
+                                Exit While
+                            End If
+                        End If
+                    Case Else
+                End Select
+                CloseIndex += 1
+            End While
+            Result = $"{Result})"
+            Return VisualBasic.SyntaxFactory.ParseName(Result)
+        End Function
+
+        Private Function ExtractConvertedTuple(TupleString As String) As String
+            Dim TupleElements As New List(Of String)
+            For Each t As String In TupleString.Substring(1, TupleString.Length - 2).Split(","c)
+                Dim TuplePart() As String = t.Trim.Split(" "c)
+                If TuplePart.Count = 1 Then
+                    TupleElements.Add(NodesVisitor.ConvertToType(TuplePart(0).ToString).ToString)
+                Else
+                    Dim Identifier As SyntaxToken = CSharp.SyntaxFactory.Identifier(TuplePart(1))
+                    TupleElements.Add($"{GenerateSafeVBToken(Identifier, IsQualifiedName:=False, IsTypeName:=False).ValueText} As {NodesVisitor.ConvertToType(TuplePart(0).ToString)}")
+                End If
+            Next
+            Return $"({String.Join(", ", TupleElements)})"
         End Function
 
         Private Function GetAbstractClassesToImplement(_classOrStructType As INamedTypeSymbol, abstractClasses As IEnumerable(Of INamedTypeSymbol)) As ImmutableArray(Of INamedTypeSymbol)
