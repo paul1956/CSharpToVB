@@ -19,11 +19,11 @@ Public Class VisualBasicFormattingTestBase
 
     Protected ReadOnly Property DefaultWorkspace As Workspace
         Get
-            If Me._ws Is Nothing Then
-                Me._ws = New AdhocWorkspace()
+            If _ws Is Nothing Then
+                _ws = New AdhocWorkspace()
             End If
 
-            Return Me._ws
+            Return _ws
         End Get
     End Property
 
@@ -47,7 +47,7 @@ Public Class VisualBasicFormattingTestBase
         code = code.Replace(vbLf, vbCrLf)
         expected = expected.Replace(vbLf, vbCrLf)
 
-        Return Me.AssertFormatAsync(code, expected, changedOptionSet:=optionSet)
+        Return AssertFormatAsync(code, expected, changedOptionSet:=optionSet)
     End Function
 
     Protected Async Function AssertFormatUsingAllEntryPointsAsync(code As String, expected As String) As Task
@@ -77,7 +77,7 @@ Public Class VisualBasicFormattingTestBase
             AssertResult(expected, Await document.GetTextAsync(), changes)
 
             ' format with node and transform
-            Me.AssertFormatWithTransformation(workspace, expected, syntaxTree.GetRoot(), spans, Nothing, False)
+            AssertFormatWithTransformation(workspace, expected, syntaxTree.GetRoot(), spans, Nothing, False)
         End Using
     End Function
 
@@ -86,7 +86,7 @@ Public Class VisualBasicFormattingTestBase
         Dim spans As ImmutableArray(Of TextSpan) = Nothing
         MarkupTestFile.GetSpans(markupCode, code, spans)
 
-        Return Me.AssertFormatAsync(expected, code, spans)
+        Return AssertFormatAsync(expected, code, spans)
     End Function
 
     Friend Overloads Function AssertFormatAsync(
@@ -95,7 +95,7 @@ Public Class VisualBasicFormattingTestBase
         Optional changedOptionSet As Dictionary(Of OptionKey, Object) = Nothing,
         Optional testWithTransformation As Boolean = False,
         Optional experimental As Boolean = False) As Task
-        Return Me.AssertFormatAsync(expected, code, SpecializedCollection.SingletonEnumerable(New TextSpan(0, code.Length)), changedOptionSet, testWithTransformation, experimental:=experimental)
+        Return AssertFormatAsync(expected, code, SpecializedCollection.SingletonEnumerable(New TextSpan(0, code.Length)), changedOptionSet, testWithTransformation, experimental:=experimental)
     End Function
 
     Protected Overloads Function AssertFormatAsync(
@@ -112,7 +112,7 @@ Public Class VisualBasicFormattingTestBase
             ' parseOptions = parseOptions.WithExperimentalFeatures
         End If
 
-        Return Me.AssertFormatAsync(expected, code, spans, LanguageNames.VisualBasic, changedOptionSet, testWithTransformation, parseOptions)
+        Return AssertFormatAsync(expected, code, spans, LanguageNames.VisualBasic, changedOptionSet, testWithTransformation, parseOptions)
     End Function
 
     Private Shared Function StringFromLines(ParamArray lines As String()) As String

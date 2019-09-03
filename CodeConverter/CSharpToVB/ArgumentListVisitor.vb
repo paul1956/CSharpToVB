@@ -79,7 +79,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     End If
 
                     If TypeOf node.Parent Is CSS.BracketedArgumentListSyntax Then
-                        Dim _Typeinfo As TypeInfo = ModelExtensions.GetTypeInfo(Me.mSemanticModel, NodeExpression)
+                        Dim _Typeinfo As TypeInfo = ModelExtensions.GetTypeInfo(mSemanticModel, NodeExpression)
                         If Not Equals(_Typeinfo.ConvertedType, _Typeinfo.Type) Then
                             If _Typeinfo.Type?.SpecialType = SpecialType.System_Char Then '
                                 ArgumentWithTrivia = VB.SyntaxFactory.ParseExpression($"ChrW({ArgumentWithTrivia.WithoutTrivia.ToString})").WithTriviaFrom(ArgumentWithTrivia)
@@ -126,11 +126,11 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             End Function
 
             Public Overrides Function VisitArgumentList(node As CSS.ArgumentListSyntax) As VB.VisualBasicSyntaxNode
-                Return Me.VisitCSArguments(node.OpenParenToken, node.Arguments, node.CloseParenToken)
+                Return VisitCSArguments(node.OpenParenToken, node.Arguments, node.CloseParenToken)
             End Function
 
             Public Overrides Function VisitBracketedArgumentList(node As CSS.BracketedArgumentListSyntax) As VB.VisualBasicSyntaxNode
-                Return Me.VisitCSArguments(node.OpenBracketToken, node.Arguments, node.CloseBracketToken)
+                Return VisitCSArguments(node.OpenBracketToken, node.Arguments, node.CloseBracketToken)
             End Function
 
             Public Overrides Function VisitOmittedTypeArgument(node As CSS.OmittedTypeArgumentSyntax) As VB.VisualBasicSyntaxNode

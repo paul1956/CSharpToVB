@@ -41,8 +41,8 @@ Namespace Microsoft.CodeAnalysis.PooledObjects
 
         Friend Sub New(factory As Factory, size As Integer)
             Debug.Assert(size >= 1)
-            Me._factory = factory
-            Me._items = New Element(size - 2) {}
+            _factory = factory
+            _items = New Element(size - 2) {}
         End Sub
 
         ''' <remarks>
@@ -52,7 +52,7 @@ Namespace Microsoft.CodeAnalysis.PooledObjects
         Friend Delegate Function Factory() As T
 
         Private Function AllocateSlow() As T
-            Dim items() As Element = Me._items
+            Dim items() As Element = _items
 
             For i As Integer = 0 To items.Length - 1
                 ' Note that the initial read is optimistically not synchronized. That is intentional.
@@ -66,16 +66,16 @@ Namespace Microsoft.CodeAnalysis.PooledObjects
                 End If
             Next i
 
-            Return Me.CreateInstance()
+            Return CreateInstance()
         End Function
 
         Private Function CreateInstance() As T
-            Dim inst As T = Me._factory()
+            Dim inst As T = _factory()
             Return inst
         End Function
 
         Private Sub FreeSlow(obj As T)
-            Dim items() As Element = Me._items
+            Dim items() As Element = _items
             For i As Integer = 0 To items.Length - 1
                 If items(i).Value Is Nothing Then
                     ' Intentionally not using interlocked here.
@@ -91,9 +91,9 @@ Namespace Microsoft.CodeAnalysis.PooledObjects
         Private Sub Validate(obj As Object)
             Debug.Assert(obj IsNot Nothing, "freeing null?")
 
-            Debug.Assert(Me._firstItem IsNot obj, "freeing twice?")
+            Debug.Assert(_firstItem IsNot obj, "freeing twice?")
 
-            Dim items() As Element = Me._items
+            Dim items() As Element = _items
             For i As Integer = 0 To items.Length - 1
                 Dim value As T = items(i).Value
                 If value Is Nothing Then
@@ -117,9 +117,9 @@ Namespace Microsoft.CodeAnalysis.PooledObjects
             ' Note that the initial read is optimistically not synchronized. That is intentional.
             ' We will interlock only when we have a candidate. in a worst case we may miss some
             ' recently returned objects. Not a big deal.
-            Dim inst As T = Me._firstItem
-            If inst Is Nothing OrElse inst IsNot Interlocked.CompareExchange(Me._firstItem, Nothing, inst) Then
-                inst = Me.AllocateSlow()
+            Dim inst As T = _firstItem
+            If inst Is Nothing OrElse inst IsNot Interlocked.CompareExchange(_firstItem, Nothing, inst) Then
+                inst = AllocateSlow()
             End If
             Return inst
         End Function
@@ -133,16 +133,16 @@ Namespace Microsoft.CodeAnalysis.PooledObjects
         ''' reducing how far we will typically search in Allocate.
         ''' </remarks>
         Friend Sub Free(obj As T)
-            Me.Validate(obj)
+            Validate(obj)
             ' ForgetTrackedObject(obj)
 
-            If Me._firstItem Is Nothing Then
+            If _firstItem Is Nothing Then
                 ' Intentionally not using interlocked here.
                 ' In a worst case scenario two objects may be stored into same slot.
                 ' It is very unlikely to happen and will only mean that one of the objects will get collected.
-                Me._firstItem = obj
+                _firstItem = obj
             Else
-                Me.FreeSlow(obj)
+                FreeSlow(obj)
             End If
         End Sub
 

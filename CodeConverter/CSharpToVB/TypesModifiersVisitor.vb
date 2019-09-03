@@ -22,7 +22,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
         Partial Protected Friend Class NodesVisitor
             Inherits CS.CSharpSyntaxVisitor(Of VB.VisualBasicSyntaxNode)
 
-            Private Shared Function ConvertNamedTypeToTypeString(TypeString As String) As String
+            Public Shared Function ConvertNamedTypeToTypeString(TypeString As String) As String
                 Dim SplitTypeString() As String = TypeString.Trim.Split(" "c)
                 If SplitTypeString.Count > 2 Then
                     Stop

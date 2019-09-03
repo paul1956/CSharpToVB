@@ -7,7 +7,7 @@ Option Strict On
 
 Imports System.Collections.Immutable
 Imports System.IO
-
+Imports System.Reflection
 Imports IVisualBasicCode.CodeConverter
 Imports IVisualBasicCode.CodeConverter.ConversionResult
 
@@ -48,7 +48,7 @@ Public Module Compile
         Dim compilation As VisualBasicCompilation = VisualBasicCompilation.Create(
                                                                     assemblyName:=assemblyName,
                                                                     syntaxTrees:={syntaxTree},
-                                                                    VisualBasicReferences,
+                                                                    VisualBasicReferences(Assembly.Load("System.Windows.Forms").Location),
                                                                     options:=CompilationOptions
                                                                                   )
 

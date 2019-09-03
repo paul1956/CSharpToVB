@@ -79,12 +79,12 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 End If
 
                 Dim newAttributes As VBS.AttributeListSyntax()
-                Dim modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, Me.IsModule, TokenContext.Local)
+                Dim modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, IsModule, TokenContext.Local)
                 If (modifiers.Count = 0 AndAlso returnType IsNot Nothing) OrElse node.Modifiers.Any(CS.SyntaxKind.ThisKeyword) Then
                     modifiers = VB.SyntaxFactory.TokenList(ByValKeyword).ToList
                     newAttributes = Array.Empty(Of VBS.AttributeListSyntax)
                 ElseIf node.Modifiers.Any(CS.SyntaxKind.OutKeyword) Then
-                    newAttributes = {VB.SyntaxFactory.AttributeList(VB.SyntaxFactory.SingletonSeparatedList(VB.SyntaxFactory.Attribute(VB.SyntaxFactory.ParseTypeName("Out"))))}
+                    newAttributes = {VB.SyntaxFactory.AttributeList(VB.SyntaxFactory.SingletonSeparatedList(VB.SyntaxFactory.Attribute(VB.SyntaxFactory.ParseTypeName("Runtime.InteropServices.Out"))))}
                 Else
                     newAttributes = Array.Empty(Of VBS.AttributeListSyntax)
                 End If

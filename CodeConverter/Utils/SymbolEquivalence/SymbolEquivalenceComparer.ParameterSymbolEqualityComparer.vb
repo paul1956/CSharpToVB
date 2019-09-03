@@ -28,8 +28,8 @@ Partial Friend Class SymbolEquivalenceComparer
 
         <ExcludeFromCodeCoverage>
         Public Sub New(symbolEqualityComparer As SymbolEquivalenceComparer, distinguishRefFromOut As Boolean)
-            Me._symbolEqualityComparer = symbolEqualityComparer
-            Me._distinguishRefFromOut = distinguishRefFromOut
+            _symbolEqualityComparer = symbolEqualityComparer
+            _distinguishRefFromOut = distinguishRefFromOut
         End Sub
 
         <ExcludeFromCodeCoverage>
@@ -50,17 +50,17 @@ Partial Friend Class SymbolEquivalenceComparer
             ' See the comment in the outer type.  If we're comparing two parameters for
             ' equality, then we want to consider method type parameters by index only.
 
-            Return AreRefKindsEquivalent(x.RefKind, y.RefKind, Me._distinguishRefFromOut) AndAlso nameComparisonCheck AndAlso Me._symbolEqualityComparer.GetEquivalenceVisitor().AreEquivalent(x.CustomModifiers, y.CustomModifiers, equivalentTypesWithDifferingAssemblies) AndAlso Me._symbolEqualityComparer.SignatureTypeEquivalenceComparer.Equals(x.Type, y.Type, equivalentTypesWithDifferingAssemblies)
+            Return AreRefKindsEquivalent(x.RefKind, y.RefKind, _distinguishRefFromOut) AndAlso nameComparisonCheck AndAlso _symbolEqualityComparer.GetEquivalenceVisitor().AreEquivalent(x.CustomModifiers, y.CustomModifiers, equivalentTypesWithDifferingAssemblies) AndAlso _symbolEqualityComparer.SignatureTypeEquivalenceComparer.Equals(x.Type, y.Type, equivalentTypesWithDifferingAssemblies)
         End Function
 
         <ExcludeFromCodeCoverage>
         Public Shadows Function Equals(x As IParameterSymbol, y As IParameterSymbol) As Boolean Implements IEqualityComparer(Of IParameterSymbol).Equals
-            Return Me.Equals(x, y, Nothing, False, False)
+            Return Equals(x, y, Nothing, False, False)
         End Function
 
         <ExcludeFromCodeCoverage>
         Public Shadows Function Equals(x As IParameterSymbol, y As IParameterSymbol, compareParameterName As Boolean, isCaseSensitive As Boolean) As Boolean
-            Return Me.Equals(x, y, Nothing, compareParameterName, isCaseSensitive)
+            Return Equals(x, y, Nothing, compareParameterName, isCaseSensitive)
         End Function
 
         <ExcludeFromCodeCoverage>
@@ -69,7 +69,7 @@ Partial Friend Class SymbolEquivalenceComparer
                 Return 0
             End If
 
-            Return CodeRefactoringHash.Combine(x.IsRefOrOut(), Me._symbolEqualityComparer.SignatureTypeEquivalenceComparer.GetHashCode(x.Type))
+            Return CodeRefactoringHash.Combine(x.IsRefOrOut(), _symbolEqualityComparer.SignatureTypeEquivalenceComparer.GetHashCode(x.Type))
         End Function
 
     End Class

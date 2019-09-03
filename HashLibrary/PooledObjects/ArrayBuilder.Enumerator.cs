@@ -42,7 +42,7 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
             {
                 get
                 {
-                    return this.Current;
+                    return Current;
                 }
             }
 

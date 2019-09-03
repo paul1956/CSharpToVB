@@ -58,7 +58,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 End If
                 Dim symbolInfo As SymbolInfo
                 Try
-                    symbolInfo = ModelExtensions.GetSymbolInfo(Me.mSemanticModel, originalName)
+                    symbolInfo = ModelExtensions.GetSymbolInfo(mSemanticModel, originalName)
                 Catch ex As Exception
                     ' Ignore
                 End Try
@@ -70,12 +70,12 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             End Function
 
             Public Overrides Function VisitAliasQualifiedName(node As CSS.AliasQualifiedNameSyntax) As VB.VisualBasicSyntaxNode
-                Return Me.WrapTypedNameIfNecessary(VBFactory.QualifiedName(DirectCast(node.[Alias].Accept(Me), VBS.NameSyntax), DirectCast(node.Name.Accept(Me), VBS.SimpleNameSyntax)), node).WithConvertedTriviaFrom(node)
+                Return WrapTypedNameIfNecessary(VBFactory.QualifiedName(DirectCast(node.[Alias].Accept(Me), VBS.NameSyntax), DirectCast(node.Name.Accept(Me), VBS.SimpleNameSyntax)), node).WithConvertedTriviaFrom(node)
             End Function
 
             Public Overrides Function VisitGenericName(node As CSS.GenericNameSyntax) As VB.VisualBasicSyntaxNode
                 Dim TypeArgumentList As VBS.TypeArgumentListSyntax = DirectCast(node.TypeArgumentList.Accept(Me), VBS.TypeArgumentListSyntax)
-                Return Me.WrapTypedNameIfNecessary(VBFactory.GenericName(GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False).WithTrailingTrivia, TypeArgumentList), node)
+                Return WrapTypedNameIfNecessary(VBFactory.GenericName(GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False).WithTrailingTrivia, TypeArgumentList), node)
             End Function
 
             Public Overrides Function VisitIdentifierName(node As CSS.IdentifierNameSyntax) As VB.VisualBasicSyntaxNode
@@ -90,7 +90,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         If ParentAsMemberAccessExpression.Expression.IsKind(CS.SyntaxKind.IdentifierName) Then
                             Dim IdentifierExpression As CSS.IdentifierNameSyntax = DirectCast(ParentAsMemberAccessExpression.Expression, CSS.IdentifierNameSyntax)
                             If IdentifierExpression.Identifier.ToString = node.Identifier.ToString Then
-                                Return Me.WrapTypedNameIfNecessary(VBFactory.IdentifierName(GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False)), node)
+                                Return WrapTypedNameIfNecessary(VBFactory.IdentifierName(GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False)), node)
                             End If
                         End If
                     End If
@@ -99,7 +99,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                             Return VBFactory.ParseName(AddBracketsIfRequired(node.Identifier.ValueText))
                         End If
                     End If
-                    Return Me.WrapTypedNameIfNecessary(VBFactory.IdentifierName(GenerateSafeVBToken(node.Identifier, IsQualifiedName:=True, IsTypeName:=False)), node)
+                    Return WrapTypedNameIfNecessary(VBFactory.IdentifierName(GenerateSafeVBToken(node.Identifier, IsQualifiedName:=True, IsTypeName:=False)), node)
                 End If
 
                 If TypeOf OriginalNameParent Is CSS.DeclarationExpressionSyntax Then
@@ -116,10 +116,10 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 End If
                 If TypeOf OriginalNameParent Is CSS.UsingDirectiveSyntax OrElse
                     OriginalNameParent.IsKind(CS.SyntaxKind.TypeArgumentList, CS.SyntaxKind.SimpleBaseType) Then
-                    Return Me.WrapTypedNameIfNecessary(VBFactory.IdentifierName(GenerateSafeVBToken(node.Identifier, IsQualifiedName:=True, IsTypeName:=True)), node)
+                    Return WrapTypedNameIfNecessary(VBFactory.IdentifierName(GenerateSafeVBToken(node.Identifier, IsQualifiedName:=True, IsTypeName:=True)), node)
                 End If
                 If TypeOf OriginalNameParent Is CSS.ArrayTypeSyntax Then
-                    Return Me.WrapTypedNameIfNecessary(VBFactory.IdentifierName(GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=True)), node)
+                    Return WrapTypedNameIfNecessary(VBFactory.IdentifierName(GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=True)), node)
                 End If
                 ' The trivial on node reflects the wrong place on the file as order is switched so don't convert trivia here
                 If TypeOf OriginalNameParent Is CSS.AliasQualifiedNameSyntax Then
@@ -132,11 +132,11 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     End If
                 End If
 
-                Return Me.WrapTypedNameIfNecessary(VBFactory.IdentifierName(GenerateSafeVBToken(node.Identifier, OriginalNameParent.IsKind(CS.SyntaxKind.QualifiedName), IsTypeName:=False)), node)
+                Return WrapTypedNameIfNecessary(VBFactory.IdentifierName(GenerateSafeVBToken(node.Identifier, OriginalNameParent.IsKind(CS.SyntaxKind.QualifiedName), IsTypeName:=TypeOf OriginalNameParent Is CSS.InvocationExpressionSyntax)), node)
             End Function
 
             Public Overrides Function VisitQualifiedName(node As CSS.QualifiedNameSyntax) As VB.VisualBasicSyntaxNode
-                Return Me.WrapTypedNameIfNecessary(VBFactory.QualifiedName(DirectCast(node.Left.Accept(Me), VBS.NameSyntax), DirectCast(node.Right.Accept(Me), VBS.SimpleNameSyntax)), node)
+                Return WrapTypedNameIfNecessary(VBFactory.QualifiedName(DirectCast(node.Left.Accept(Me), VBS.NameSyntax), DirectCast(node.Right.Accept(Me), VBS.SimpleNameSyntax)), node)
             End Function
 
         End Class

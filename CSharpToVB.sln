@@ -9,6 +9,7 @@ Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "CodeConverter", "CodeConver
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D43ACB3A-D858-4352-A083-214B9CA331F9}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
 		ReadMe.txt = ReadMe.txt
 	EndProjectSection
 EndProject

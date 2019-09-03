@@ -40,7 +40,7 @@ Option Strict Off
 Class TestClass(Of T As {Class, New}, T2 As Structure, T3)
 
     ' Comment
-    Public Sub New(<Out> ByRef argument As T, ByRef argument2 As T2, argument3 As T3)
+    Public Sub New(<Runtime.InteropServices.Out> ByRef argument As T, ByRef argument2 As T2, argument3 As T3)
     End Sub
 End Class")
         End Sub
@@ -239,7 +239,7 @@ Option Strict Off
 
 Class TestClass
 
-    Public Sub TestMethod(Of T As {Class, New}, T2 As Structure, T3)(<Out> ByRef argument As T, ByRef argument2 As T2, argument3 As T3)
+    Public Sub TestMethod(Of T As {Class, New}, T2 As Structure, T3)(<Runtime.InteropServices.Out> ByRef argument As T, ByRef argument2 As T2, argument3 As T3)
         argument = Nothing
         argument2 = CType(Nothing, T2)
         argument3 = CType(Nothing, T3)
@@ -288,7 +288,7 @@ Option Strict Off
 
 Class TestClass
 
-    Public Function TestMethod(Of T As {Class, New}, T2 As Structure, T3)(<Out> ByRef argument As T, ByRef argument2 As T2, argument3 As T3) As Integer
+    Public Function TestMethod(Of T As {Class, New}, T2 As Structure, T3)(<Runtime.InteropServices.Out> ByRef argument As T, ByRef argument2 As T2, argument3 As T3) As Integer
         Return 0
     End Function
 End Class")
@@ -355,7 +355,7 @@ Option Strict Off
 
 Class TestClass
 
-    Public NotOverridable Sub TestMethod(Of T As {Class, New}, T2 As Structure, T3)(<Out> ByRef argument As T, ByRef argument2 As T2, argument3 As T3)
+    Public NotOverridable Sub TestMethod(Of T As {Class, New}, T2 As Structure, T3)(<Runtime.InteropServices.Out> ByRef argument As T, ByRef argument2 As T2, argument3 As T3)
         argument = Nothing
         argument2 = CType(Nothing, T2)
         argument3 = CType(Nothing, T3)
@@ -379,7 +379,7 @@ Option Strict Off
 
 Class TestClass
 
-    Public Shared Sub TestMethod(Of T As {Class, New}, T2 As Structure, T3)(<Out> ByRef argument As T, ByRef argument2 As T2, argument3 As T3)
+    Public Shared Sub TestMethod(Of T As {Class, New}, T2 As Structure, T3)(<Runtime.InteropServices.Out> ByRef argument As T, ByRef argument2 As T2, argument3 As T3)
         argument = Nothing
         argument2 = CType(Nothing, T2)
         argument3 = CType(Nothing, T3)

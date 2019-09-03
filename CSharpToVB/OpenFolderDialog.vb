@@ -43,24 +43,24 @@ Public Class OpenFolderDialog
         Dim Options As FILEOPENDIALOGOPTIONS
         frm.GetOptions(Options)
         Options = Options Or FILEOPENDIALOGOPTIONS.FOS_PICKFOLDERS Or FILEOPENDIALOGOPTIONS.FOS_FORCEFILESYSTEM Or FILEOPENDIALOGOPTIONS.FOS_NOVALIDATE Or FILEOPENDIALOGOPTIONS.FOS_NOTESTFILECREATE Or FILEOPENDIALOGOPTIONS.FOS_DONTADDTORECENT Or FILEOPENDIALOGOPTIONS.FOS_PATHMUSTEXIST
-        If Not Me.FolderMustExist Then
+        If Not FolderMustExist Then
             Options = Options Xor FILEOPENDIALOGOPTIONS.FOS_PATHMUSTEXIST Xor FILEOPENDIALOGOPTIONS.FOS_FILEMUSTEXIST
         End If
         frm.SetOptions(Options)
-        frm.SetTitle(Me.Description)
-        If Me.InitialFolder IsNot Nothing Then
+        frm.SetTitle(Description)
+        If InitialFolder IsNot Nothing Then
             Dim directoryShellItem As IShellItem = Nothing
             Dim riid As New Guid(ComGuids.IShellItem)
             'IShellItem
-            If SHCreateItemFromParsingName(Me.InitialFolder, IntPtr.Zero, riid, directoryShellItem) = HRESULT.S_OK Then
+            If SHCreateItemFromParsingName(InitialFolder, IntPtr.Zero, riid, directoryShellItem) = HRESULT.S_OK Then
                 frm.SetFolder(directoryShellItem)
             End If
         End If
-        If Me.DefaultFolder IsNot Nothing Then
+        If DefaultFolder IsNot Nothing Then
             Dim directoryShellItem As IShellItem = Nothing
             Dim riid As New Guid(ComGuids.IShellItem)
             'IShellItem
-            If SHCreateItemFromParsingName(Me.DefaultFolder, IntPtr.Zero, riid, directoryShellItem) = HRESULT.S_OK Then
+            If SHCreateItemFromParsingName(DefaultFolder, IntPtr.Zero, riid, directoryShellItem) = HRESULT.S_OK Then
                 frm.SetDefaultFolder(directoryShellItem)
             End If
         End If
@@ -72,7 +72,7 @@ Public Class OpenFolderDialog
                 If shellItem.GetDisplayName(SIGDN.FILESYSPATH, pszString) = HRESULT.S_OK Then
                     If pszString <> IntPtr.Zero Then
                         Try
-                            Me.SelectedPath = Marshal.PtrToStringAuto(pszString)
+                            SelectedPath = Marshal.PtrToStringAuto(pszString)
                             Return DialogResult.OK
                         Finally
                             Marshal.FreeCoTaskMem(pszString)
@@ -89,7 +89,7 @@ Public Class OpenFolderDialog
 
     ' IDisposable
     Protected Overridable Sub Dispose(disposing As Boolean)
-        If Not Me.disposedValue Then
+        If Not disposedValue Then
             If disposing Then
                 ' TODO: dispose managed state (managed objects).
             End If
@@ -97,7 +97,7 @@ Public Class OpenFolderDialog
             ' TODO: free unmanaged resources (unmanaged objects) and override Finalize() below.
             ' TODO: set large fields to null.
         End If
-        Me.disposedValue = True
+        disposedValue = True
     End Sub
 
     ' TODO: override Finalize() only if Dispose(disposing As Boolean) above has code to free unmanaged resources.
@@ -110,7 +110,7 @@ Public Class OpenFolderDialog
     ' This code added by Visual Basic to correctly implement the disposable pattern.
     Public Sub Dispose() Implements IDisposable.Dispose
         ' Do not change this code.  Put cleanup code in Dispose(disposing As Boolean) above.
-        Me.Dispose(True)
+        Dispose(True)
         ' TODO: uncomment the following line if Finalize() is overridden above.
         ' GC.SuppressFinalize(Me)
     End Sub

@@ -6,7 +6,7 @@ Option Infer Off
 Option Strict On
 
 Imports System.Collections.Immutable
-
+Imports System.Reflection
 Imports IVisualBasicCode.CodeConverter.Util
 Imports IVisualBasicCode.CodeConverter.Visual_Basic
 
@@ -68,7 +68,7 @@ Namespace CodeConverter.Tests
                     )
                 },
                 projectReferences:=Nothing,
-                metadataReferences:=SharedReferences.CSharpReferences)
+                metadataReferences:=CSharpReferences(Assembly.Load("System.Windows.Forms").Location, Nothing))
                 )
             doc = workspace.CurrentSolution.GetProject(projectId).GetDocument(documentId)
         End Sub
@@ -109,7 +109,7 @@ Namespace CodeConverter.Tests
                                                 )
                                             },
                                             projectReferences:=Nothing,
-                                            metadataReferences:=SharedReferences.VisualBasicReferences))
+                                            metadataReferences:=VisualBasicReferences(Assembly.Load("System.Windows.Forms").Location)))
             doc = workspace.CurrentSolution.GetProject(ProjectId).GetDocument(DocumentID)
         End Sub
 

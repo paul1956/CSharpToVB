@@ -1,6 +1,7 @@
-' Licensed to the .NET Foundation under one or more agreements.
+﻿' Licensed to the .NET Foundation under one or more agreements.
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
+Imports System.Reflection
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.CSharp
 Imports Xunit
@@ -12,7 +13,7 @@ Namespace MSCoreReference.Tests
             Dim tree As SyntaxTree = CSharpSyntaxTree.ParseText("using System;
 class test : IComparable { }")
 
-            Dim compilation As CSharpCompilation = CSharpCompilation.Create("MyCompilation", syntaxTrees:={tree}, references:=SharedReferences.CSharpReferences)
+            Dim compilation As CSharpCompilation = CSharpCompilation.Create("MyCompilation", syntaxTrees:={tree}, CSharpReferences("", New List(Of MetadataReference)))
             Dim lSemanticModel As SemanticModel = compilation.GetSemanticModel(tree)
             Dim InputNode As Syntax.CompilationUnitSyntax = CType(compilation.SyntaxTrees(0).GetRoot, Syntax.CompilationUnitSyntax)
             Dim node As Syntax.ClassDeclarationSyntax = CType(InputNode.Members(0), Syntax.ClassDeclarationSyntax)

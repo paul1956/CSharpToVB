@@ -64,6 +64,30 @@ Namespace IVisualBasicCode.CodeConverter.Util
             Return visibility
         End Function
 
+        Private Function IsNonNestedTypeAccessible(assembly As IAssemblySymbol, declaredAccessibility As Microsoft.CodeAnalysis.Accessibility, within As ISymbol) As Boolean
+            Contract.Requires(TypeOf within Is INamedTypeSymbol OrElse TypeOf within Is IAssemblySymbol)
+            Contract.ThrowIfNull(assembly)
+            Dim withinAssembly As IAssemblySymbol = If((TryCast(within, IAssemblySymbol)), DirectCast(within, INamedTypeSymbol).ContainingAssembly)
+
+            Select Case declaredAccessibility
+                Case Microsoft.CodeAnalysis.Accessibility.NotApplicable, Microsoft.CodeAnalysis.Accessibility.Public
+                    ' Public symbols are always accessible from any context
+                    Return True
+
+                Case Microsoft.CodeAnalysis.Accessibility.Private, Microsoft.CodeAnalysis.Accessibility.Protected, Microsoft.CodeAnalysis.Accessibility.ProtectedAndInternal
+                    ' Shouldn't happen except in error cases.
+                    Return False
+
+                Case Microsoft.CodeAnalysis.Accessibility.Internal, Microsoft.CodeAnalysis.Accessibility.ProtectedOrInternal
+                    ' An internal type is accessible if we're in the same assembly or we have
+                    ' friend access to the assembly it was defined in.
+                    Return withinAssembly.IsSameAssemblyOrHasFriendAccessTo(assembly)
+
+                Case Else
+                    Throw ExceptionUtilities.UnexpectedValue(declaredAccessibility)
+            End Select
+        End Function
+
         <Extension>
         Public Function ConvertISymbolToType(ByVal symbol As ISymbol, ByVal compilation As Compilation, Optional ByVal extensionUsedAsInstance As Boolean = False) As ITypeSymbol
             Dim _type As ITypeSymbol = TryCast(symbol, ITypeSymbol)
@@ -154,12 +178,65 @@ Namespace IVisualBasicCode.CodeConverter.Util
             Return Nothing
         End Function
 
+        ''' <summary>
+        ''' Checks if 'symbol' is accessible from within 'within'.
+        ''' </summary>
+        <Extension>
+        Public Function IsAccessibleWithin(symbol As ISymbol, within As ISymbol, Optional throughTypeOpt As ITypeSymbol = Nothing) As Boolean
+            Dim tempVar As Boolean = TypeOf within Is IAssemblySymbol
+            Dim assembly As IAssemblySymbol = If(tempVar, CType(within, IAssemblySymbol), Nothing)
+            If tempVar Then
+                Return symbol.IsAccessibleWithin(assembly, throughTypeOpt)
+            Else
+                Dim tempVar2 As Boolean = TypeOf within Is INamedTypeSymbol
+                Dim namedType As INamedTypeSymbol = If(tempVar2, CType(within, INamedTypeSymbol), Nothing)
+                If tempVar2 Then
+                    Return symbol.IsAccessibleWithin(namedType, throughTypeOpt)
+                Else
+                    Throw New ArgumentException()
+                End If
+            End If
+        End Function
+
         <Extension()>
         Public Function IsInterfaceType(symbol As ISymbol) As Boolean
             If symbol Is Nothing OrElse TryCast(symbol, ITypeSymbol) Is Nothing Then
                 Return False
             End If
             Return DirectCast(symbol, ITypeSymbol).IsInterfaceType() = True
+        End Function
+
+        ' Is the named type "type" accessible from within "within", which must be a named type or
+        ' an assembly.
+        Public Function IsNamedTypeAccessible(type As INamedTypeSymbol, within As ISymbol) As Boolean
+            Debug.Assert(TypeOf within Is INamedTypeSymbol OrElse TypeOf within Is IAssemblySymbol)
+            Contract.ThrowIfNull(type)
+
+            If type.IsErrorType() Then
+                ' Always assume that error types are accessible.
+                Return True
+            End If
+
+            If Not type.IsDefinition Then
+                ' All type argument must be accessible.
+                For Each typeArg As ITypeSymbol In type.TypeArguments
+                    ' type parameters are always accessible, so don't check those (so common it's
+                    ' worth optimizing this).
+                    If typeArg.Kind <> SymbolKind.TypeParameter AndAlso
+                        typeArg.TypeKind <> TypeKind.Error AndAlso
+                        Not IsSymbolAccessibleCore(symbol:=typeArg,
+                                                   Within:=within,
+                                                   throughTypeOpt:=Nothing,
+                                                   failedThroughTypeCheck:=Nothing) Then
+                        Return False
+                    End If
+                Next typeArg
+            End If
+
+            Dim containingType As INamedTypeSymbol = type.ContainingType
+            Return If(containingType Is Nothing,
+                            IsNonNestedTypeAccessible(assembly:=type.ContainingAssembly, declaredAccessibility:=type.DeclaredAccessibility, within:=within),
+                            IsMemberAccessible(containingType:=type.ContainingType, declaredAccessibility:=type.DeclaredAccessibility, within:=within, throughTypeOpt:=Nothing, failedThroughTypeCheck:=Nothing))
         End Function
 
     End Module

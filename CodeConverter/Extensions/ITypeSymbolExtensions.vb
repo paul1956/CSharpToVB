@@ -5,8 +5,10 @@ Option Explicit On
 Option Infer Off
 Option Strict On
 
+Imports System.Collections.Immutable
 Imports System.ComponentModel
 Imports System.Runtime.CompilerServices
+Imports System.Threading
 
 Imports Microsoft.CodeAnalysis
 
@@ -15,21 +17,25 @@ Namespace IVisualBasicCode.CodeConverter.Util
     <EditorBrowsable(EditorBrowsableState.Never)>
     Partial Public Module ITypeSymbolExtensions
 
-        <Extension()>
-        Public Iterator Function GetBaseTypesAndThis(type As ITypeSymbol) As IEnumerable(Of ITypeSymbol)
-            Dim current As ITypeSymbol = type
-            While current IsNot Nothing
-                Yield current
-                current = current.BaseType
-            End While
+        <Extension>
+        Public Function GetAllInterfacesIncludingThis(type As ITypeSymbol) As IList(Of INamedTypeSymbol)
+            Dim allInterfaces As ImmutableArray(Of INamedTypeSymbol) = type.AllInterfaces
+            Dim tempVar As Boolean = TypeOf type Is INamedTypeSymbol
+            Dim namedType As INamedTypeSymbol = If(tempVar, CType(type, INamedTypeSymbol), Nothing)
+            If tempVar AndAlso namedType.TypeKind = TypeKind.Interface AndAlso Not allInterfaces.Contains(namedType) Then
+                Dim result As New List(Of INamedTypeSymbol)(allInterfaces.Length + 1) From {
+                    namedType
+                }
+                result.AddRange(allInterfaces)
+                Return result
+            End If
+
+            Return allInterfaces
         End Function
 
-        ' Determine if "type" inherits from "baseType", ignoring constructed types, and dealing
-        ' only with original types.
         <Extension>
-        Public Function InheritsFromOrEqualsIgnoringConstruction(type As ITypeSymbol, baseType As ITypeSymbol) As Boolean
-            Dim originalBaseType As ITypeSymbol = baseType.OriginalDefinition
-            Return type.GetBaseTypesAndThis.Contains(Function(t As ITypeSymbol) SymbolEquivalenceComparer.Instance.Equals(t.OriginalDefinition, originalBaseType))
+        Public Function IsAbstractClass(symbol As ITypeSymbol) As Boolean
+            Return CBool(symbol?.TypeKind = TypeKind.Class AndAlso symbol.IsAbstract)
         End Function
 
         ' Is the type "withinType" nested within the original type "originalContainingType".
@@ -133,6 +139,23 @@ Namespace IVisualBasicCode.CodeConverter.Util
         <Extension>
         Public Function ActionType(ByVal compilation As Compilation) As INamedTypeSymbol
             Return compilation.GetTypeByMetadataName(GetType(Action).FullName)
+        End Function
+
+        <Extension()>
+        Public Iterator Function GetBaseTypesAndThis(type As ITypeSymbol) As IEnumerable(Of ITypeSymbol)
+            Dim current As ITypeSymbol = type
+            While current IsNot Nothing
+                Yield current
+                current = current.BaseType
+            End While
+        End Function
+
+        ' Determine if "type" inherits from "baseType", ignoring constructed types, and dealing
+        ' only with original types.
+        <Extension>
+        Public Function InheritsFromOrEqualsIgnoringConstruction(type As ITypeSymbol, baseType As ITypeSymbol) As Boolean
+            Dim originalBaseType As ITypeSymbol = baseType.OriginalDefinition
+            Return type.GetBaseTypesAndThis.Contains(Function(t As ITypeSymbol) SymbolEquivalenceComparer.Instance.Equals(t.OriginalDefinition, originalBaseType))
         End Function
 
         <Extension()>

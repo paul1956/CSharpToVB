@@ -22,7 +22,7 @@ Namespace Microsoft.CodeAnalysis.UnitTests.Formatting
             language As String,
             ByVal Optional changedOptionSet As Dictionary(Of OptionKey, Object) = Nothing,
             ByVal Optional testWithTransformation As Boolean = True) As Task
-            Return Me.AssertFormatAsync(expected, code, {New TextSpan(0, code.Length)}, language, changedOptionSet, testWithTransformation)
+            Return AssertFormatAsync(expected, code, {New TextSpan(0, code.Length)}, language, changedOptionSet, testWithTransformation)
         End Function
 
         Protected Async Function AssertFormatAsync(
@@ -54,7 +54,7 @@ Namespace Microsoft.CodeAnalysis.UnitTests.Formatting
                 AssertFormat(Workspace, expected, Root, spans, Options, Await _Document.GetTextAsync())
 
                 ' format with node and transform
-                Me.AssertFormatWithTransformation(Workspace, expected, Root, spans, Options, treeCompare, _ParseOptions)
+                AssertFormatWithTransformation(Workspace, expected, Root, spans, Options, treeCompare, _ParseOptions)
             End Using
         End Function
 
@@ -67,7 +67,7 @@ Namespace Microsoft.CodeAnalysis.UnitTests.Formatting
             Assert.Equal(expected, newRootNode.ToFullString())
 
             ' test doesn't use parsing option. add one if needed later
-            Dim newRootNodeFromString As SyntaxNode = Me.ParseCompilation(expected, parseOptions)
+            Dim newRootNodeFromString As SyntaxNode = ParseCompilation(expected, parseOptions)
             If treeCompare Then
                 ' simple check to see whether two nodes are equivalent each other.
                 Assert.[True](newRootNodeFromString.IsEquivalentTo(newRootNode))

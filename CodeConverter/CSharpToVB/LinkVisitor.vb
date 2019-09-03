@@ -29,7 +29,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Else
                     Dim group As CSS.GroupClauseSyntax = DirectCast(body.SelectOrGroup, CSS.GroupClauseSyntax)
                     Dim Items As VBS.ExpressionRangeVariableSyntax = VBFactory.ExpressionRangeVariable(DirectCast(group.GroupExpression.Accept(Me), VBS.ExpressionSyntax))
-                    Dim Identifier As VBS.ModifiedIdentifierSyntax = VBFactory.ModifiedIdentifier(Me.GeneratePlaceholder("groupByKey"))
+                    Dim Identifier As VBS.ModifiedIdentifierSyntax = VBFactory.ModifiedIdentifier(GeneratePlaceholder("groupByKey"))
                     Dim NameEquals As VBS.VariableNameEqualsSyntax = VBFactory.VariableNameEquals(Identifier)
                     Dim Expression As VBS.ExpressionSyntax = DirectCast(group.ByExpression.Accept(Me), VBS.ExpressionSyntax)
                     Dim Keys As VBS.ExpressionRangeVariableSyntax
@@ -45,14 +45,14 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     Dim AggrationRange As VBS.AggregationRangeVariableSyntax = VBFactory.AggregationRangeVariable(Aggregation)
                     Yield VBFactory.GroupByClause(VBFactory.SingletonSeparatedList(Items), VBFactory.SingletonSeparatedList(Keys), VBFactory.SingletonSeparatedList(AggrationRange))
                     If body.Continuation?.Body IsNot Nothing Then
-                        For Each clause As VBS.QueryClauseSyntax In Me.ConvertQueryBody(body.Continuation.Body)
+                        For Each clause As VBS.QueryClauseSyntax In ConvertQueryBody(body.Continuation.Body)
                             Yield clause
                         Next
                     End If
                 End If
             End Function
             Private Function GeneratePlaceholder(v As String) As String
-                Return $"__{v}{Math.Min(Threading.Interlocked.Increment(Me.placeholder), Me.placeholder - 1)}__"
+                Return $"__{v}{Math.Min(Threading.Interlocked.Increment(placeholder), placeholder - 1)}__"
             End Function
             Public Overrides Function VisitFromClause(node As CSS.FromClauseSyntax) As VB.VisualBasicSyntaxNode
                 Dim expression As VBS.ExpressionSyntax = DirectCast(node.Expression.Accept(Me), VBS.ExpressionSyntax).WithConvertedTriviaFrom(node.Expression)
@@ -114,7 +114,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 ' From trivia handled in VisitFromClause
                 Dim FromClause As VBS.QueryClauseSyntax = DirectCast(node.FromClause.Accept(Me), VBS.QueryClauseSyntax)
                 Dim BodyClauses As IEnumerable(Of VBS.QueryClauseSyntax) = node.Body.Clauses.Select(Function(c As CSS.QueryClauseSyntax) DirectCast(c.Accept(Me).WithConvertedTriviaFrom(c), VBS.QueryClauseSyntax))
-                Dim Body As IEnumerable(Of VBS.QueryClauseSyntax) = Me.ConvertQueryBody(node.Body)
+                Dim Body As IEnumerable(Of VBS.QueryClauseSyntax) = ConvertQueryBody(node.Body)
                 Return VBFactory.QueryExpression(VBFactory.SingletonList(FromClause).AddRange(BodyClauses).AddRange(Body)).WithConvertedTriviaFrom(node)
             End Function
             Public Overrides Function VisitSelectClause(node As CSS.SelectClauseSyntax) As VB.VisualBasicSyntaxNode

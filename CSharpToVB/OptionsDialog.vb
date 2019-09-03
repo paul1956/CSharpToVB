@@ -10,8 +10,8 @@ Public Class OptionsDialog
     Private SelectedColorName As String = "default"
 
     Private Sub Cancel_Button_Click(ByVal sender As Object, ByVal e As EventArgs) Handles Cancel_Button.Click
-        Me.DialogResult = DialogResult.Cancel
-        Me.Close()
+        DialogResult = DialogResult.Cancel
+        Close()
     End Sub
 
     Private Sub ItemColor_ComboBox_DrawItem(sender As Object, e As DrawItemEventArgs) Handles ItemColor_ComboBox.DrawItem
@@ -30,46 +30,46 @@ Public Class OptionsDialog
     End Sub
 
     Private Sub ItemColor_ComboBox_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ItemColor_ComboBox.SelectedIndexChanged
-        Me.SelectedColorName = CStr(Me.ItemColor_ComboBox.SelectedItem)
-        Me.SelectedColor = ColorSelector.GetColorFromName(Me.SelectedColorName)
+        SelectedColorName = CStr(ItemColor_ComboBox.SelectedItem)
+        SelectedColor = ColorSelector.GetColorFromName(SelectedColorName)
     End Sub
 
     Private Sub OK_Button_Click(ByVal sender As Object, ByVal e As EventArgs) Handles OK_Button.Click
-        My.Settings.DefaultProjectDirectory = CType(Me.ProjectDirectoryList.SelectedItem, MyListItem).Value
+        My.Settings.DefaultProjectDirectory = CType(ProjectDirectoryList.SelectedItem, MyListItem).Value
         My.Settings.Save()
-        Me.DialogResult = DialogResult.OK
+        DialogResult = DialogResult.OK
         ColorSelector.WriteColorDictionaryToFile()
         Application.DoEvents()
-        Me.Close()
+        Close()
     End Sub
 
     Private Sub OptionsDialog_Load(sender As Object, e As EventArgs) Handles Me.Load
-        Me.ProjectDirectoryList.Items.Add(New MyListItem("Projects", GetLatestVisualStudioProjectPath))
-        Me.ProjectDirectoryList.Items.Add(New MyListItem("Repos", GetAlternetVisualStudioProjectsPath))
-        For i As Integer = 0 To Me.ProjectDirectoryList.Items.Count - 1
-            If CType(Me.ProjectDirectoryList.Items(i), MyListItem).Value = My.Settings.DefaultProjectDirectory Then
-                Me.ProjectDirectoryList.SelectedIndex = i
+        ProjectDirectoryList.Items.Add(New MyListItem("Projects", GetLatestVisualStudioProjectPath))
+        ProjectDirectoryList.Items.Add(New MyListItem("Repos", GetAlternetVisualStudioProjectsPath))
+        For i As Integer = 0 To ProjectDirectoryList.Items.Count - 1
+            If CType(ProjectDirectoryList.Items(i), MyListItem).Value = My.Settings.DefaultProjectDirectory Then
+                ProjectDirectoryList.SelectedIndex = i
                 Exit For
             End If
         Next
         For Each Name As String In ColorSelector.GetColorNameList()
-            Me.ItemColor_ComboBox.Items.Add(Name)
+            ItemColor_ComboBox.Items.Add(Name)
         Next Name
-        Me.ItemColor_ComboBox.SelectedIndex = Me.ItemColor_ComboBox.FindStringExact("default")
+        ItemColor_ComboBox.SelectedIndex = ItemColor_ComboBox.FindStringExact("default")
     End Sub
 
     Private Sub UpdateColor_Button_Click(sender As Object, e As EventArgs) Handles UpdateColor_Button.Click
-        Me.ColorDialog1.Color = Me.SelectedColor
-        If Me.ColorDialog1.ShowDialog <> Windows.Forms.DialogResult.Cancel Then
-            ColorSelector.SetColor(Me.ItemColor_ComboBox.Items(Me.ItemColor_ComboBox.SelectedIndex).ToString, Me.ColorDialog1.Color)
+        ColorDialog1.Color = SelectedColor
+        If ColorDialog1.ShowDialog <> Windows.Forms.DialogResult.Cancel Then
+            ColorSelector.SetColor(ItemColor_ComboBox.Items(ItemColor_ComboBox.SelectedIndex).ToString, ColorDialog1.Color)
             Application.DoEvents()
         End If
     End Sub
 
     Private Class MyListItem
         Public Sub New(ByVal pText As String, ByVal pValue As String)
-            Me._Text = pText
-            Me._Value = pValue
+            _Text = pText
+            _Value = pValue
         End Sub
 
         Public ReadOnly Property Text() As String
@@ -77,7 +77,7 @@ Public Class OptionsDialog
         Public ReadOnly Property Value() As String
 
         Public Overrides Function ToString() As String
-            Return Me.Text
+            Return Text
         End Function
     End Class
 

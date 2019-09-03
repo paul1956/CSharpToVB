@@ -62,7 +62,9 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             If VB.SyntaxFacts.IsKeywordKind(keywordKind) Then
                 Return MakeIdentifierUnique(id, BracketNeeded:=True, QualifiedNameOrTypeName:=IsQualifiedName)
             End If
-            If Not IsTypeName Then
+            If IsTypeName Then
+                IsQualifiedName = True
+            Else
                 If VB.SyntaxFacts.IsPredefinedType(keywordKind) Then
                     Return MakeIdentifierUnique(id, BracketNeeded:=True, QualifiedNameOrTypeName:=IsQualifiedName)
                 End If
@@ -251,6 +253,16 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 ' We have a case sensitive exact match so just return it
                 Return VB.SyntaxFactory.Identifier(UsedIdentifiers(ConvertedIdentifier).Name).WithConvertedTriviaFrom(id)
             End If
+            Dim IsFieldIdentifier As Boolean = False
+            If TypeOf id.Parent Is CSS.VariableDeclaratorSyntax Then
+                Dim VarDecl As CSS.VariableDeclaratorSyntax = CType(id.Parent, CSS.VariableDeclaratorSyntax)
+                Dim FieldDeclatationOrNothing As CSS.FieldDeclarationSyntax = VarDecl.FirstAncestorOrSelf(Of CSS.FieldDeclarationSyntax)
+                If Char.IsLower(CChar(ConvertedIdentifier.Left(1))) AndAlso FieldDeclatationOrNothing IsNot Nothing Then
+                    If FieldDeclatationOrNothing.Modifiers.Count > 0 AndAlso FieldDeclatationOrNothing.Modifiers.Contains(Function(t As SyntaxToken) t.IsKind(CS.SyntaxKind.PrivateKeyword)) Then
+                        IsFieldIdentifier = True
+                    End If
+                End If
+            End If
             For Each ident As KeyValuePair(Of String, SymbolTableEntry) In UsedIdentifiers
                 If String.Compare(ident.Key, ConvertedIdentifier, ignoreCase:=False) = 0 Then
                     ' We have an exact match keep looking
@@ -261,14 +273,24 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     If UsedIdentifiers(ident.Key).IsType Then
                         UsedIdentifiers.Add(ConvertedIdentifier, New SymbolTableEntry(_Name:=ConvertedIdentifier, _IsType:=False))
                     Else
-                        Dim NewUniqueName As String = If(ConvertedIdentifier.StartsWith("["), ConvertedIdentifier.Replace("[", "").Replace("]", "_Renamed"), $"{ConvertedIdentifier}_Renamed")
+                        Dim NewUniqueName As String
+                        If ident.Value.Name.StartsWith("_") Then
+                            NewUniqueName = ConvertedIdentifier
+                        Else
+                            NewUniqueName = If(ConvertedIdentifier.StartsWith("["),
+                                                ConvertedIdentifier.Replace("[", "_").Replace("]", ""),
+                                                If(Char.IsLower(CChar(ConvertedIdentifier.Substring(0, 1))),
+                                                    $"_{ConvertedIdentifier}",
+                                                    $"{ConvertedIdentifier}_Renamed"))
+                        End If
                         UsedIdentifiers.Add(ConvertedIdentifier, New SymbolTableEntry(_Name:=NewUniqueName, _IsType:=QualifiedNameOrTypeName))
                     End If
                     Return VB.SyntaxFactory.Identifier(UsedIdentifiers(ConvertedIdentifier).Name).WithConvertedTriviaFrom(id)
                 End If
             Next
-            UsedIdentifiers.Add(ConvertedIdentifier, New SymbolTableEntry(ConvertedIdentifier, QualifiedNameOrTypeName))
-            Return VB.SyntaxFactory.Identifier(ConvertedIdentifier)
+            Dim _ConvertedIdentifier As String = $"{If(IsFieldIdentifier, "_", "")}{ConvertedIdentifier}"
+            UsedIdentifiers.Add(ConvertedIdentifier, New SymbolTableEntry(_ConvertedIdentifier, QualifiedNameOrTypeName))
+            Return VB.SyntaxFactory.Identifier(_ConvertedIdentifier)
         End Function
 
         ''' <summary>
@@ -391,11 +413,11 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             End If
             SyncLock ThisLock
                 ClearMarker()
-                UsedIdentifierStack.Push(UsedIdentifiers)
+                UsedStacks.Push(UsedIdentifiers)
                 UsedIdentifiers.Clear()
                 visualBasicSyntaxNode1 = SourceTree.Accept(New NodesVisitor(_SemanticModel))
-                If UsedIdentifierStack.Count > 0 Then
-                    UsedIdentifiers = DirectCast(UsedIdentifierStack.Pop, Dictionary(Of String, SymbolTableEntry))
+                If UsedStacks.Count > 0 Then
+                    UsedIdentifiers = DirectCast(UsedStacks.Pop, Dictionary(Of String, SymbolTableEntry))
                 End If
             End SyncLock
             Return visualBasicSyntaxNode1

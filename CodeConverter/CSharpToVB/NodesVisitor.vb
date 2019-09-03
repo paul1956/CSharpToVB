@@ -34,15 +34,15 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             Private placeholder As Integer = 1
 
             Public Sub New(lSemanticModel As SemanticModel)
-                Me.mSemanticModel = lSemanticModel
+                mSemanticModel = lSemanticModel
             End Sub
 
             Public ReadOnly Property IsModule As Boolean
                 Get
-                    If Me.IsModuleStack.Count = 0 Then
+                    If IsModuleStack.Count = 0 Then
                         Return False
                     End If
-                    Return Me.IsModuleStack.Peek
+                    Return IsModuleStack.Peek
                 End Get
             End Property
 
@@ -75,10 +75,10 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 If externList.Count > 0 Then
                     compilationUnitSyntax1 = VBFactory.CompilationUnit(
                         VBFactory.List(Of VBS.OptionStatementSyntax)(),
-                        VBFactory.List(Me.allImports),
+                        VBFactory.List(allImports),
                         ListOfAttributes,
                         Members).WithTriviaFrom(externList(0))
-                ElseIf Me.allImports.Count > 0 Then
+                ElseIf allImports.Count > 0 Then
                     If Members.Count > 0 AndAlso Members(0).HasLeadingTrivia Then
                         If (TypeOf Members(0) IsNot VBS.NamespaceBlockSyntax AndAlso TypeOf Members(0) IsNot VBS.ModuleBlockSyntax) OrElse Members(0).GetLeadingTrivia.ToFullString.Contains("auto-generated") Then
                             Dim HeadingTriviaList As New List(Of SyntaxTrivia)
@@ -99,12 +99,12 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                     NewLeadingTrivia.Add(t)
                                 End If
                             Next
-                            Me.allImports(0) = Me.allImports(0).WithPrependedLeadingTrivia(NewLeadingTrivia)
+                            allImports(0) = allImports(0).WithPrependedLeadingTrivia(NewLeadingTrivia)
                         End If
                     End If
                     compilationUnitSyntax1 = VBFactory.CompilationUnit(
                                                                 Options,
-                                                                VBFactory.List(Me.allImports),
+                                                                VBFactory.List(allImports),
                                                                 ListOfAttributes,
                                                                 Members,
                                                                 EndOfFIleTokenWithTrivia
@@ -112,7 +112,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Else
                     compilationUnitSyntax1 = VBFactory.CompilationUnit(
                                                                 Options,
-                                                                VBFactory.List(Me.allImports),
+                                                                VBFactory.List(allImports),
                                                                 ListOfAttributes,
                                                                 Members,
                                                                 EndOfFIleTokenWithTrivia)
@@ -254,9 +254,9 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Dim StatementWithIssue As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
 
                 Dim NewCaseStatement As VBS.SelectStatementSyntax = VBFactory.SelectStatement(CType(node.GoverningExpression.Accept(Me), VBS.ExpressionSyntax))
-                Dim TempVariableName As SyntaxToken = VBFactory.Identifier(MethodBodyVisitor.GetUniqueVariableNameInScope(node, "tempVar", Me.mSemanticModel))
+                Dim TempVariableName As SyntaxToken = VBFactory.Identifier(MethodBodyVisitor.GetUniqueVariableNameInScope(node, "tempVar", mSemanticModel))
                 Dim TempIdentifier As VBS.IdentifierNameSyntax = VBFactory.IdentifierName(TempVariableName)
-                Dim _Typeinfo As TypeInfo = ModelExtensions.GetTypeInfo(Me.mSemanticModel, node.GoverningExpression)
+                Dim _Typeinfo As TypeInfo = ModelExtensions.GetTypeInfo(mSemanticModel, node.GoverningExpression)
                 Dim Variable As VBS.VariableDeclaratorSyntax
                 Dim AsClause As VBS.AsClauseSyntax = Nothing
                 If _Typeinfo.Type IsNot Nothing AndAlso Not _Typeinfo.Type.IsErrorType Then

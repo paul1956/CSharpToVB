@@ -14,12 +14,12 @@ Namespace IVisualBasicCode.CodeConverter
     Public Class CodeWithOptions
 
         Public Sub New(_Request As ConvertRequest)
-            Me.Text = _Request.SourceCode
-            Me.FromLanguage = LanguageNames.CSharp
-            Me.ToLanguage = LanguageNames.VisualBasic
-            Me.FromLanguageVersion = CS.LanguageVersion.Latest
-            Me.ToLanguageVersion = VisualBasic.LanguageVersion.Latest
-            Me.Request = _Request
+            Text = _Request.SourceCode
+            FromLanguage = LanguageNames.CSharp
+            ToLanguage = LanguageNames.VisualBasic
+            FromLanguageVersion = CS.LanguageVersion.Latest
+            ToLanguageVersion = VisualBasic.LanguageVersion.Latest
+            Request = _Request
         End Sub
 
         Public Property FromLanguage As String
@@ -30,14 +30,14 @@ Namespace IVisualBasicCode.CodeConverter
         Public Property Request As ConvertRequest
 
         Public Function SetFromLanguage(Optional name As String = LanguageNames.CSharp, Optional version As Integer = CS.LanguageVersion.Latest) As CodeWithOptions
-            Me.FromLanguage = name
-            Me.FromLanguageVersion = version
+            FromLanguage = name
+            FromLanguageVersion = version
             Return Me
         End Function
 
         Public Function SetToLanguage(Optional name As String = LanguageNames.VisualBasic, Optional version As Integer = VisualBasic.LanguageVersion.Latest) As CodeWithOptions
-            Me.ToLanguage = name
-            Me.ToLanguageVersion = version
+            ToLanguage = name
+            ToLanguageVersion = version
             Return Me
         End Function
 

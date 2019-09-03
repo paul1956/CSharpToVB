@@ -292,8 +292,6 @@ Namespace IVisualBasicCode.CodeConverter.Util
                     Dim EndRegionDirective As CSS.EndRegionDirectiveTriviaSyntax = DirectCast(StructuredTrivia, CSS.EndRegionDirectiveTriviaSyntax)
                     Return VBFactory.Trivia(VBFactory.EndRegionDirectiveTrivia(HashToken, EndKeyword, RegionKeyword).
                                             WithAppendedTriviaFromEndOfDirectiveToken(EndRegionDirective.EndOfDirectiveToken))
-                Case CS.SyntaxKind.MultiLineDocumentationCommentTrivia
-                    Return VBFactory.CommentTrivia($"' TODO: Check VB does not support MultiLine Document Comment Trivia, Original Directive {t.ToString}")
                 Case CS.SyntaxKind.PragmaWarningDirectiveTrivia
                     Dim PragmaWarningDirectiveTrivia As CSS.PragmaWarningDirectiveTriviaSyntax = DirectCast(StructuredTrivia, CSS.PragmaWarningDirectiveTriviaSyntax)
                     Dim ErrorList As New List(Of VB.Syntax.IdentifierNameSyntax)
@@ -429,6 +427,12 @@ Namespace IVisualBasicCode.CodeConverter.Util
                                     TriviaList.Add(VB_EOLTrivia)
                                 End If
                             Next
+                        Case CS.SyntaxKind.NullableDirectiveTrivia
+                            Dim StructuredTrivia As CSS.StructuredTriviaSyntax = DirectCast(Trivia.GetStructure, CSS.StructuredTriviaSyntax)
+                            Dim NullableDirective As CS.Syntax.NullableDirectiveTriviaSyntax = CType(StructuredTrivia, CSS.NullableDirectiveTriviaSyntax)
+                            TriviaList.Add(VBFactory.CommentTrivia($"' TODO: Skipped Nullable Directive {NullableDirective.SettingToken.Text} {NullableDirective.TargetToken.Text}"))
+                            TriviaList.AddRange(ConvertTrivia(NullableDirective.TargetToken.TrailingTrivia))
+                            TriviaList.AddRange(ConvertTrivia(NullableDirective.EndOfDirectiveToken.TrailingTrivia))
                         Case CS.SyntaxKind.MultiLineDocumentationCommentTrivia
                             Dim sld As CSS.StructuredTriviaSyntax = DirectCast(Trivia.GetStructure, CSS.StructuredTriviaSyntax)
                             For Each t1 As SyntaxNode In sld.ChildNodes
@@ -443,12 +447,6 @@ Namespace IVisualBasicCode.CodeConverter.Util
                                     End If
                                 Next
                             Next
-                        Case CS.SyntaxKind.NullableDirectiveTrivia
-                            Dim StructuredTrivia As CSS.StructuredTriviaSyntax = DirectCast(Trivia.GetStructure, CSS.StructuredTriviaSyntax)
-                            Dim NullableDirective As CS.Syntax.NullableDirectiveTriviaSyntax = CType(StructuredTrivia, CSS.NullableDirectiveTriviaSyntax)
-                            TriviaList.Add(VBFactory.CommentTrivia($"' TODO: Skipped Nullable Directive {NullableDirective.SettingToken.Text} {NullableDirective.TargetToken.Text}"))
-                            TriviaList.AddRange(ConvertTrivia(NullableDirective.TargetToken.TrailingTrivia))
-                            TriviaList.AddRange(ConvertTrivia(NullableDirective.EndOfDirectiveToken.TrailingTrivia))
                         Case Else
                             Dim ConvertedTrivia As SyntaxTrivia = ConvertTrivia(Trivia)
                             If ConvertedTrivia = Nothing Then

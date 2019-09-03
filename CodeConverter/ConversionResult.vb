@@ -35,10 +35,10 @@ Namespace IVisualBasicCode.CodeConverter
         End Enum
 
         Public Sub New(_ConvertedTree As SyntaxNode, InputLanguage As String, OutputLanguage As String)
-            Me.Exceptions = New List(Of Exception)
-            Me.SourceLanguage = InputLanguage
-            Me.ResultStatus = ResultTriState.Success
-            Me.TargetLanguage = OutputLanguage
+            Exceptions = New List(Of Exception)
+            SourceLanguage = InputLanguage
+            ResultStatus = ResultTriState.Success
+            TargetLanguage = OutputLanguage
             Using Workspace As New AdhocWorkspace()
                 Dim project As Project = Workspace.CurrentSolution.AddProject("Project", "Project.dll", OutputLanguage)
 
@@ -50,15 +50,15 @@ Namespace IVisualBasicCode.CodeConverter
                 Dim _SyntaxTree As SyntaxTree = _Document.GetSyntaxTreeAsync().Result
 
                 Dim Root As SyntaxNode = _SyntaxTree.GetRootAsync().Result
-                Me.ConvertedCode = WorkspaceFormat(Workspace, Root, spans:=Nothing, Workspace.Options, _Document.GetTextAsync().Result)
-                Me.ConvertedTree = DirectCast(Root, VB.VisualBasicSyntaxNode)
+                ConvertedCode = WorkspaceFormat(Workspace, Root, spans:=Nothing, Workspace.Options, _Document.GetTextAsync().Result)
+                ConvertedTree = DirectCast(Root, VB.VisualBasicSyntaxNode)
             End Using
 
         End Sub
 
         <ExcludeFromCodeCoverage>
         Public Sub New(ParamArray exceptions() As Exception)
-            Me.ResultStatus = If(exceptions.Count = 0, ResultTriState.Ignore, ResultTriState.Failure)
+            ResultStatus = If(exceptions.Count = 0, ResultTriState.Ignore, ResultTriState.Failure)
             Me.Exceptions = exceptions
         End Sub
 

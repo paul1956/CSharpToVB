@@ -25,11 +25,11 @@ Partial Friend Class SymbolEquivalenceComparer
 
         <ExcludeFromCodeCoverage>
         Public Sub New(symbolEquivalenceComparer As SymbolEquivalenceComparer, compareMethodTypeParametersByIndex As Boolean, objectAndDynamicCompareEqually As Boolean)
-            Me._symbolEquivalenceComparer = symbolEquivalenceComparer
-            Me._compareMethodTypeParametersByIndex = compareMethodTypeParametersByIndex
-            Me._objectAndDynamicCompareEqually = objectAndDynamicCompareEqually
-            Me._parameterAggregator = Function(acc As Integer, sym As IParameterSymbol) CodeRefactoringHash.Combine(symbolEquivalenceComparer.ParameterEquivalenceComparer.GetHashCode(sym), acc)
-            Me._symbolAggregator = Function(acc As Integer, sym As ISymbol) Me.GetHashCode(sym, acc)
+            _symbolEquivalenceComparer = symbolEquivalenceComparer
+            _compareMethodTypeParametersByIndex = compareMethodTypeParametersByIndex
+            _objectAndDynamicCompareEqually = objectAndDynamicCompareEqually
+            _parameterAggregator = Function(acc As Integer, sym As IParameterSymbol) CodeRefactoringHash.Combine(symbolEquivalenceComparer.ParameterEquivalenceComparer.GetHashCode(sym), acc)
+            _symbolAggregator = Function(acc As Integer, sym As ISymbol) GetHashCode(sym, acc)
         End Sub
 
         <ExcludeFromCodeCoverage>
@@ -60,29 +60,29 @@ Partial Friend Class SymbolEquivalenceComparer
         <ExcludeFromCodeCoverage>
         Private Function CombineAnonymousTypeHashCode(x As INamedTypeSymbol, currentHash As Integer) As Integer
             If x.TypeKind = TypeKind.Delegate Then
-                Return Me.GetHashCode(x.DelegateInvokeMethod, currentHash)
+                Return GetHashCode(x.DelegateInvokeMethod, currentHash)
             Else
                 Dim xMembers As IEnumerable(Of IPropertySymbol) = x.GetValidAnonymousTypeProperties()
 
                 Return xMembers.Aggregate(currentHash, Function(a As Integer, p As IPropertySymbol)
-                                                           Return CodeRefactoringHash.Combine(p.Name, CodeRefactoringHash.Combine(p.IsReadOnly, Me.GetHashCode(p.Type, a)))
+                                                           Return CodeRefactoringHash.Combine(p.Name, CodeRefactoringHash.Combine(p.IsReadOnly, GetHashCode(p.Type, a)))
                                                        End Function)
             End If
         End Function
 
         <ExcludeFromCodeCoverage>
         Private Function CombineHashCodes(x As IArrayTypeSymbol, currentHash As Integer) As Integer
-            Return CodeRefactoringHash.Combine(x.Rank, Me.GetHashCode(x.ElementType, currentHash))
+            Return CodeRefactoringHash.Combine(x.Rank, GetHashCode(x.ElementType, currentHash))
         End Function
 
         <ExcludeFromCodeCoverage>
         Private Function CombineHashCodes(x As IAssemblySymbol, currentHash As Integer) As Integer
-            Return CodeRefactoringHash.Combine(If(Me._symbolEquivalenceComparer._assemblyComparerOpt?.GetHashCode(x), 0), currentHash)
+            Return CodeRefactoringHash.Combine(If(_symbolEquivalenceComparer._assemblyComparerOpt?.GetHashCode(x), 0), currentHash)
         End Function
 
         <ExcludeFromCodeCoverage>
         Private Function CombineHashCodes(x As IFieldSymbol, currentHash As Integer) As Integer
-            Return CodeRefactoringHash.Combine(x.Name, Me.GetHashCode(x.ContainingSymbol, currentHash))
+            Return CodeRefactoringHash.Combine(x.Name, GetHashCode(x.ContainingSymbol, currentHash))
         End Function
 
         <ExcludeFromCodeCoverage>
@@ -96,28 +96,28 @@ Partial Friend Class SymbolEquivalenceComparer
 
             Dim checkContainingType_ As Boolean = CheckContainingType(x)
             If checkContainingType_ Then
-                currentHash = Me.GetHashCode(x.ContainingSymbol, currentHash)
+                currentHash = GetHashCode(x.ContainingSymbol, currentHash)
             End If
 
-            currentHash = CombineHashCodes(x.Parameters, currentHash, Me._parameterAggregator)
+            currentHash = CombineHashCodes(x.Parameters, currentHash, _parameterAggregator)
 
-            Return If(IsConstructedFromSelf(x), currentHash, CombineHashCodes(x.TypeArguments, currentHash, Me._symbolAggregator))
+            Return If(IsConstructedFromSelf(x), currentHash, CombineHashCodes(x.TypeArguments, currentHash, _symbolAggregator))
         End Function
 
         <ExcludeFromCodeCoverage>
         Private Function CombineHashCodes(x As IModuleSymbol, currentHash As Integer) As Integer
-            Return Me.CombineHashCodes(x.ContainingAssembly, CodeRefactoringHash.Combine(x.Name, currentHash))
+            Return CombineHashCodes(x.ContainingAssembly, CodeRefactoringHash.Combine(x.Name, currentHash))
         End Function
 
         Private Function CombineHashCodes(x As INamedTypeSymbol, currentHash As Integer) As Integer
-            currentHash = Me.CombineNamedTypeHashCode(x, currentHash)
+            currentHash = CombineNamedTypeHashCode(x, currentHash)
 
             Dim errorType As IErrorTypeSymbol = TryCast(x, IErrorTypeSymbol)
             If errorType IsNot Nothing Then
                 For Each candidate As ISymbol In errorType.CandidateSymbols
                     Dim candidateNamedType As INamedTypeSymbol = TryCast(candidate, INamedTypeSymbol)
                     If candidateNamedType IsNot Nothing Then
-                        currentHash = Me.CombineNamedTypeHashCode(candidateNamedType, currentHash)
+                        currentHash = CombineNamedTypeHashCode(candidateNamedType, currentHash)
                     End If
                 Next candidate
             End If
@@ -127,34 +127,34 @@ Partial Friend Class SymbolEquivalenceComparer
 
         <ExcludeFromCodeCoverage>
         Private Function CombineHashCodes(x As INamespaceSymbol, currentHash As Integer) As Integer
-            If x.IsGlobalNamespace AndAlso Me._symbolEquivalenceComparer._assemblyComparerOpt Is Nothing Then
+            If x.IsGlobalNamespace AndAlso _symbolEquivalenceComparer._assemblyComparerOpt Is Nothing Then
                 ' Exclude global namespace's container's hash when assemblies can differ.
                 Return CodeRefactoringHash.Combine(x.Name, currentHash)
             End If
 
-            Return CodeRefactoringHash.Combine(x.IsGlobalNamespace, CodeRefactoringHash.Combine(x.Name, Me.GetHashCode(x.ContainingSymbol, currentHash)))
+            Return CodeRefactoringHash.Combine(x.IsGlobalNamespace, CodeRefactoringHash.Combine(x.Name, GetHashCode(x.ContainingSymbol, currentHash)))
         End Function
 
         <ExcludeFromCodeCoverage>
         Private Function CombineHashCodes(x As IParameterSymbol, currentHash As Integer) As Integer
-            Return CodeRefactoringHash.Combine(x.IsRefOrOut(), CodeRefactoringHash.Combine(x.Name, Me.GetHashCode(x.Type, Me.GetHashCode(x.ContainingSymbol, currentHash))))
+            Return CodeRefactoringHash.Combine(x.IsRefOrOut(), CodeRefactoringHash.Combine(x.Name, GetHashCode(x.Type, GetHashCode(x.ContainingSymbol, currentHash))))
         End Function
 
         <ExcludeFromCodeCoverage>
         Private Function CombineHashCodes(x As IPointerTypeSymbol, currentHash As Integer) As Integer
-            Return CodeRefactoringHash.Combine(GetType(IPointerTypeSymbol).GetHashCode(), Me.GetHashCode(x.PointedAtType, currentHash))
+            Return CodeRefactoringHash.Combine(GetType(IPointerTypeSymbol).GetHashCode(), GetHashCode(x.PointedAtType, currentHash))
         End Function
 
         <ExcludeFromCodeCoverage>
         Private Function CombineHashCodes(x As IPropertySymbol, currentHash As Integer) As Integer
-            currentHash = CodeRefactoringHash.Combine(x.IsIndexer, CodeRefactoringHash.Combine(x.Name, CodeRefactoringHash.Combine(x.Parameters.Length, Me.GetHashCode(x.ContainingSymbol, currentHash))))
+            currentHash = CodeRefactoringHash.Combine(x.IsIndexer, CodeRefactoringHash.Combine(x.Name, CodeRefactoringHash.Combine(x.Parameters.Length, GetHashCode(x.ContainingSymbol, currentHash))))
 
-            Return CombineHashCodes(x.Parameters, currentHash, Me._parameterAggregator)
+            Return CombineHashCodes(x.Parameters, currentHash, _parameterAggregator)
         End Function
 
         <ExcludeFromCodeCoverage>
         Private Function CombineHashCodes(x As IEventSymbol, currentHash As Integer) As Integer
-            Return CodeRefactoringHash.Combine(x.Name, Me.GetHashCode(x.ContainingSymbol, currentHash))
+            Return CodeRefactoringHash.Combine(x.Name, GetHashCode(x.ContainingSymbol, currentHash))
         End Function
 
         <ExcludeFromCodeCoverage>
@@ -165,48 +165,48 @@ Partial Friend Class SymbolEquivalenceComparer
 
             ' If we want object and dynamic to be the same, and this is 'object', then return
             ' the same hash we do for 'dynamic'.
-            currentHash = CodeRefactoringHash.Combine(x.IsDefinition, CodeRefactoringHash.Combine(IsConstructedFromSelf(x), CodeRefactoringHash.Combine(x.Arity, CodeRefactoringHash.Combine(CInt(Math.Truncate(GetTypeKind(x))), CodeRefactoringHash.Combine(x.Name, CodeRefactoringHash.Combine(x.IsAnonymousType, CodeRefactoringHash.Combine(x.IsUnboundGenericType, Me.GetHashCode(x.ContainingSymbol, currentHash))))))))
+            currentHash = CodeRefactoringHash.Combine(x.IsDefinition, CodeRefactoringHash.Combine(IsConstructedFromSelf(x), CodeRefactoringHash.Combine(x.Arity, CodeRefactoringHash.Combine(CInt(Math.Truncate(GetTypeKind(x))), CodeRefactoringHash.Combine(x.Name, CodeRefactoringHash.Combine(x.IsAnonymousType, CodeRefactoringHash.Combine(x.IsUnboundGenericType, GetHashCode(x.ContainingSymbol, currentHash))))))))
 
             If x.IsAnonymousType Then
-                Return Me.CombineAnonymousTypeHashCode(x, currentHash)
+                Return CombineAnonymousTypeHashCode(x, currentHash)
             End If
 
-            Return If(IsConstructedFromSelf(x) OrElse x.IsUnboundGenericType, currentHash, CombineHashCodes(x.TypeArguments, currentHash, Me._symbolAggregator))
+            Return If(IsConstructedFromSelf(x) OrElse x.IsUnboundGenericType, currentHash, CombineHashCodes(x.TypeArguments, currentHash, _symbolAggregator))
         End Function
 
         <ExcludeFromCodeCoverage>
         Private Function GetHashCodeWorker(x As ISymbol, currentHash As Integer) As Integer
             Select Case x.Kind
                 Case SymbolKind.ArrayType
-                    Return Me.CombineHashCodes(DirectCast(x, IArrayTypeSymbol), currentHash)
+                    Return CombineHashCodes(DirectCast(x, IArrayTypeSymbol), currentHash)
                 Case SymbolKind.Assembly
-                    Return Me.CombineHashCodes(DirectCast(x, IAssemblySymbol), currentHash)
+                    Return CombineHashCodes(DirectCast(x, IAssemblySymbol), currentHash)
                 Case SymbolKind.Event
-                    Return Me.CombineHashCodes(DirectCast(x, IEventSymbol), currentHash)
+                    Return CombineHashCodes(DirectCast(x, IEventSymbol), currentHash)
                 Case SymbolKind.Field
-                    Return Me.CombineHashCodes(DirectCast(x, IFieldSymbol), currentHash)
+                    Return CombineHashCodes(DirectCast(x, IFieldSymbol), currentHash)
                 Case SymbolKind.Label
                     Return CombineHashCodes(DirectCast(x, ILabelSymbol), currentHash)
                 Case SymbolKind.Local
                     Return CombineHashCodes(DirectCast(x, ILocalSymbol), currentHash)
                 Case SymbolKind.Method
-                    Return Me.CombineHashCodes(DirectCast(x, IMethodSymbol), currentHash)
+                    Return CombineHashCodes(DirectCast(x, IMethodSymbol), currentHash)
                 Case SymbolKind.NetModule
-                    Return Me.CombineHashCodes(DirectCast(x, IModuleSymbol), currentHash)
+                    Return CombineHashCodes(DirectCast(x, IModuleSymbol), currentHash)
                 Case SymbolKind.NamedType
-                    Return Me.CombineHashCodes(DirectCast(x, INamedTypeSymbol), currentHash)
+                    Return CombineHashCodes(DirectCast(x, INamedTypeSymbol), currentHash)
                 Case SymbolKind.Namespace
-                    Return Me.CombineHashCodes(DirectCast(x, INamespaceSymbol), currentHash)
+                    Return CombineHashCodes(DirectCast(x, INamespaceSymbol), currentHash)
                 Case SymbolKind.Parameter
-                    Return Me.CombineHashCodes(DirectCast(x, IParameterSymbol), currentHash)
+                    Return CombineHashCodes(DirectCast(x, IParameterSymbol), currentHash)
                 Case SymbolKind.PointerType
-                    Return Me.CombineHashCodes(DirectCast(x, IPointerTypeSymbol), currentHash)
+                    Return CombineHashCodes(DirectCast(x, IPointerTypeSymbol), currentHash)
                 Case SymbolKind.Property
-                    Return Me.CombineHashCodes(DirectCast(x, IPropertySymbol), currentHash)
+                    Return CombineHashCodes(DirectCast(x, IPropertySymbol), currentHash)
                 Case SymbolKind.RangeVariable
                     Return CombineHashCodes(DirectCast(x, IRangeVariableSymbol), currentHash)
                 Case SymbolKind.TypeParameter
-                    Return Me.CombineHashCodes(DirectCast(x, ITypeParameterSymbol), currentHash)
+                    Return CombineHashCodes(DirectCast(x, ITypeParameterSymbol), currentHash)
                 Case SymbolKind.Preprocessing
                     Return CombineHashCodes(DirectCast(x, IPreprocessingSymbol), currentHash)
                 Case Else
@@ -220,7 +220,7 @@ Partial Friend Class SymbolEquivalenceComparer
 
             currentHash = CodeRefactoringHash.Combine(x.Ordinal, CodeRefactoringHash.Combine(CInt(Math.Truncate(x.TypeParameterKind)), currentHash))
 
-            If x.TypeParameterKind = TypeParameterKind.Method AndAlso Me._compareMethodTypeParametersByIndex Then
+            If x.TypeParameterKind = TypeParameterKind.Method AndAlso _compareMethodTypeParametersByIndex Then
                 Return currentHash
             End If
 
@@ -234,7 +234,7 @@ Partial Friend Class SymbolEquivalenceComparer
                 Return currentHash
             End If
 
-            Return Me.GetHashCode(x.ContainingSymbol, currentHash)
+            Return GetHashCode(x.ContainingSymbol, currentHash)
         End Function
 
         <ExcludeFromCodeCoverage>
@@ -249,11 +249,11 @@ Partial Friend Class SymbolEquivalenceComparer
             ' and 'dynamic' as the same.  However, since they're different types, we don't
             ' want to bail out using the above check.
 
-            If x.IsKind(SymbolKind.DynamicType) OrElse (Me._objectAndDynamicCompareEqually AndAlso IsObjectType(x)) Then
+            If x.IsKind(SymbolKind.DynamicType) OrElse (_objectAndDynamicCompareEqually AndAlso IsObjectType(x)) Then
                 Return CodeRefactoringHash.Combine(GetType(IDynamicTypeSymbol), currentHash)
             End If
 
-            Return Me.GetHashCodeWorker(x, currentHash)
+            Return GetHashCodeWorker(x, currentHash)
         End Function
 
     End Class

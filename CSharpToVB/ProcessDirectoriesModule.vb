@@ -6,7 +6,7 @@ Option Infer Off
 Option Strict On
 
 Imports System.IO
-
+Imports System.Reflection
 Imports Microsoft.CodeAnalysis
 
 Public Module ProcessDirectoriesModule
@@ -72,7 +72,7 @@ Public Module ProcessDirectoriesModule
                     Application.DoEvents()
                 End If
 
-                If Not ProcessFile(PathWithFileName, TargetDirectory, SourceLanguageExtension, CSharpReferences.ToArray) Then
+                If Not ProcessFile(PathWithFileName, TargetDirectory, SourceLanguageExtension, CSharpReferences(Assembly.Load("System.Windows.Forms").Location, Nothing).ToArray) Then
                     SetButtonStopAndCursor(MeForm:=MeForm, StopButton:=StopButton, StopButtonVisible:=False)
                     Return False
                 End If

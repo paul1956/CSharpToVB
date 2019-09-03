@@ -7,41 +7,41 @@ Public Class IgnoreFilesWithErrorsList
 
     Public ReadOnly Property FileToLoad As String
         Get
-            Return Me._FileToLoad
+            Return _FileToLoad
         End Get
     End Property
 
     Private Sub btlClearErrorFileList_Click_1(sender As Object, e As EventArgs) Handles btlClearErrorFileList.Click
         My.Settings.IgnoreFileList.Clear()
-        Me.UpdateGrid()
+        UpdateGrid()
     End Sub
 
     Private Sub Cancel_Button_Click(ByVal sender As Object, ByVal e As EventArgs) Handles Cancel_Button.Click
-        Me.DialogResult = DialogResult.Cancel
-        Me.Close()
+        DialogResult = DialogResult.Cancel
+        Close()
     End Sub
 
     Private Sub dgvIgnoredFilesList_CellClick(sender As Object, e As DataGridViewCellEventArgs) Handles dgvIgnoredFilesList.CellClick
         ' Ignore clicks that are not on button cells.
         If e.RowIndex < 0 Then Return
         Select Case e.ColumnIndex
-            Case Me.dgvIgnoredFilesList.Columns("Delete").Index
+            Case dgvIgnoredFilesList.Columns("Delete").Index
                 My.Settings.IgnoreFileList.RemoveAt(e.RowIndex)
-                Me.UpdateGrid()
-            Case Me.dgvIgnoredFilesList.Columns("Load").Index
-                Me._FileToLoad = My.Settings.IgnoreFileList(e.RowIndex)
+                UpdateGrid()
+            Case dgvIgnoredFilesList.Columns("Load").Index
+                _FileToLoad = My.Settings.IgnoreFileList(e.RowIndex)
             Case Else
                 Return
         End Select
     End Sub
 
     Private Sub IgnoreFilesWithErrorsListDialog_Load(sender As Object, e As EventArgs) Handles Me.Load
-        Me.UpdateGrid()
-        If Me.dgvIgnoredFilesList.Columns.Count > 1 Then
+        UpdateGrid()
+        If dgvIgnoredFilesList.Columns.Count > 1 Then
             Exit Sub
         End If
         ' Initialize the button column.
-        Me._FileToLoad = ""
+        _FileToLoad = ""
 #Disable Warning IDE0067 ' Dispose objects before losing scope
         Dim buttonDeleteEntry As New DataGridViewButtonColumn
         With buttonDeleteEntry
@@ -53,7 +53,7 @@ Public Class IgnoreFilesWithErrorsList
             .UseColumnTextForButtonValue = True
         End With
         ' Add the button column to the control.
-        Me.dgvIgnoredFilesList.Columns.Insert(0, buttonDeleteEntry)
+        dgvIgnoredFilesList.Columns.Insert(0, buttonDeleteEntry)
 
         Dim buttonLoadFile As New DataGridViewButtonColumn
         With buttonLoadFile
@@ -65,22 +65,22 @@ Public Class IgnoreFilesWithErrorsList
             .UseColumnTextForButtonValue = True
         End With
         ' Add the button column to the control.
-        Me.dgvIgnoredFilesList.Columns.Insert(1, buttonLoadFile)
+        dgvIgnoredFilesList.Columns.Insert(1, buttonLoadFile)
 #Enable Warning IDE0067 ' Dispose objects before losing scope
     End Sub
 
     Private Sub OK_Button_Click(ByVal sender As Object, ByVal e As EventArgs) Handles OK_Button.Click
-        Me.DialogResult = DialogResult.OK
+        DialogResult = DialogResult.OK
         My.Settings.Save()
-        Me.Close()
+        Close()
     End Sub
 
     Private Sub UpdateGrid()
-        Me.list_string.Clear()
+        list_string.Clear()
         For Each s As String In My.Settings.IgnoreFileList
-            Me.list_string.Add(s)
+            list_string.Add(s)
         Next
-        Me.dgvIgnoredFilesList.DataSource = Me.list_string.Select(Function(x As String) New With {Key .Value = x}).ToList()
+        dgvIgnoredFilesList.DataSource = list_string.Select(Function(x As String) New With {Key .Value = x}).ToList()
     End Sub
 
 End Class

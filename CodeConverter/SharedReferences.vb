@@ -19,37 +19,48 @@ Public Module SharedReferences
     Private ReadOnly _VisualBasicReferences As New List(Of MetadataReference)
     Private ReadOnly FrameworkDirectory As String = Directory.GetParent(GetType(Object).Assembly.Location).FullName
 
-    Private Sub BuildReferenceList()
+    Private Sub BuildReferenceList(WindowsFormsLocation As String, OptionalReference As IReadOnlyList(Of MetadataReference))
         If _ReferencePath.Count > 0 Then
             Return
         End If
         ' CodeAnalysisReference
         Dim Location As String = GetType(Compilation).Assembly.Location
-            AddReferences(_ReferencePath, Location)
+        AddReferences(_ReferencePath, Location)
 
-            'SystemReferences
-            For Each DLL_Path As String In Directory.GetFiles(FrameworkDirectory, "*.dll")
-                If DLL_Path.EndsWith("System.EnterpriseServices.Wrapper.dll") Then
-                    Continue For
-                End If
-                AddReferences(_ReferencePath, DLL_Path)
-            Next
+        'SystemReferences
+        For Each DLL_Path As String In Directory.GetFiles(FrameworkDirectory, "*.dll")
+            If DLL_Path.EndsWith("System.EnterpriseServices.Wrapper.dll") Then
+                Continue For
+            End If
+            AddReferences(_ReferencePath, DLL_Path)
+        Next
 
-            ' ComponentModelEditorBrowsable
-            Location = GetType(ComponentModel.EditorBrowsableAttribute).GetAssemblyLocation
-            AddReferences(_ReferencePath, Location)
+        ' ComponentModelEditorBrowsable
+        Location = GetType(ComponentModel.EditorBrowsableAttribute).GetAssemblyLocation
+        AddReferences(_ReferencePath, Location)
 
-            ' SystemCore
-            Location = GetType(Enumerable).Assembly.Location
-            AddReferences(_ReferencePath, Location)
+        ' SystemCore
+        Location = GetType(Enumerable).Assembly.Location
+        AddReferences(_ReferencePath, Location)
 
-            ' SystemXmlLinq
-            Location = GetType(XElement).Assembly.Location
-            AddReferences(_ReferencePath, Location)
+        ' SystemXmlLinq
+        Location = GetType(XElement).Assembly.Location
+        AddReferences(_ReferencePath, Location)
 
-            ' VBRuntime
-            Location = GetType(CompilerServices.StandardModuleAttribute).Assembly.Location
+        ' VBRuntime
+        Location = GetType(CompilerServices.StandardModuleAttribute).Assembly.Location
         _VisualBasicReferences.Add(MetadataReference.CreateFromFile(Location))
+
+        ' Windows Forms
+        If WindowsFormsLocation.IsNotEmptyNullOrWhitespace Then
+            AddReferences(_ReferencePath, WindowsFormsLocation)
+        End If
+
+        ' Optional References
+        If OptionalReference?.Count > 0 Then
+            _VisualBasicReferences.AddRange(OptionalReference)
+            _CSharpReferences.AddRange(OptionalReference)
+        End If
     End Sub
 
     Private Sub AddReferences(L As List(Of String), FileNameWithPath As String)
@@ -85,11 +96,11 @@ Public Module SharedReferences
         End Using
     End Function
 
-    Public Function CSharpReferences() As List(Of MetadataReference)
+    Public Function CSharpReferences(WindowsFormsLocation As String, OptionalReference As IReadOnlyList(Of MetadataReference)) As List(Of MetadataReference)
         Try
             SyncLock _ReferencePath
                 If _CSharpReferences.Count = 0 Then
-                    BuildReferenceList()
+                    BuildReferenceList(WindowsFormsLocation, OptionalReference)
                 End If
                 Return _CSharpReferences.ToList
             End SyncLock
@@ -99,11 +110,11 @@ Public Module SharedReferences
         Return Nothing
     End Function
 
-    Public Function VisualBasicReferences() As List(Of MetadataReference)
+    Public Function VisualBasicReferences(WindowsFormsLocation As String, Optional OptionalReference As IReadOnlyList(Of MetadataReference) = Nothing) As List(Of MetadataReference)
         Try
             SyncLock _ReferencePath
                 If _VisualBasicReferences.Count = 0 Then
-                    BuildReferenceList()
+                    BuildReferenceList(WindowsFormsLocation, OptionalReference)
                 End If
                 Return _VisualBasicReferences.ToList
             End SyncLock
