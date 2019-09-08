@@ -74,7 +74,6 @@ End Function
                             StartImplementsIndex = 1
                             TypeSyntaxArray = _Type.BaseList?.Types.Skip(StartImplementsIndex).Select(Function(t As CSS.BaseTypeSyntax) DirectCast(t.Type.Accept(Me).WithTrailingTrivia(SpaceTrivia), VBS.TypeSyntax)).ToArray()
                         End If
-                        Dim cancellationToken As CancellationToken = New CancellationToken
                         If TypeSyntaxArray.Length > 0 Then
                             [implements].Add(VB.SyntaxFactory.ImplementsStatement(TypeSyntaxArray))
                             Dim ImplementsClauses As IEnumerable(Of CSS.TypeSyntax) = _Type.BaseList?.Types.Skip(StartImplementsIndex).Select(Function(t As CSS.BaseTypeSyntax) t.Type)
@@ -83,8 +82,8 @@ End Function
                                 Dim classOrStructType As INamedTypeSymbol = Nothing
                                 Dim interfaceTypes As IEnumerable(Of INamedTypeSymbol) = Nothing
 
-                                If TryInitializeState(mSemanticModel, ImplementsClause, cancellationToken, classOrStructDecl, classOrStructType, interfaceTypes) Then
-                                    Dim items As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))) = classOrStructType.GetAllImplementedMembers(interfaceTypes, cancellationToken)
+                                If TryInitializeState(mSemanticModel, ImplementsClause, CancellationToken.None, classOrStructDecl, classOrStructType, interfaceTypes) Then
+                                    Dim items As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))) = classOrStructType.GetAllImplementedMembers(interfaceTypes, CancellationToken.None)
                                     ImplementedMembers = ImplementedMembers.AddRange(items)
                                 End If
                             Next

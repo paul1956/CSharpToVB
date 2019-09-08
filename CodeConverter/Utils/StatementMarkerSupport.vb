@@ -48,7 +48,7 @@ Public Module StatementMarker
     ''' <remarks>Added by PC</remarks>
     Private Function ConvertSourceTextToTriviaList(FullString As String, Optional LeadingComment As String = "") As SyntaxTriviaList
         Dim NewTrivia As New SyntaxTriviaList
-        If LeadingComment.IsNotEmptyNullOrWhitespace Then
+        If Not String.IsNullOrWhiteSpace(LeadingComment) Then
             Dim LeadingCommentLines() As String = LeadingComment.SplitLines
             For Each Line As String In LeadingCommentLines
                 NewTrivia = NewTrivia.Add(VisualBasic.SyntaxFactory.CommentTrivia($"' {Line}"))

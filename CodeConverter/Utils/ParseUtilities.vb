@@ -6,7 +6,7 @@ Option Infer Off
 Option Strict On
 
 Imports System.IO
-
+Imports System.Threading
 Imports CSharpToVBCodeConverter.Util
 
 Imports Microsoft.CodeAnalysis
@@ -56,7 +56,7 @@ Public Module ParseUtilities
 
                 If Not ParseCSharpSource(File).GetRoot.SyntaxTree.IsGeneratedCode(Function(t As SyntaxTrivia) As Boolean
                                                                                       Return t.IsComment OrElse t.IsRegularOrDocComment
-                                                                                  End Function, cancellationToken:=Nothing) Then
+                                                                                  End Function, CancellationToken.None) Then
                     TotalFilesToProcess += 1
                 End If
             Next

@@ -18,6 +18,9 @@
     <RepositoryType>GitHub</RepositoryType>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Extensions\PooledObjects.vb" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis" Version="3.3.0-beta2-final" />
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.4">
       <PrivateAssets>all</PrivateAssets>

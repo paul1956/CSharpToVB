@@ -153,15 +153,15 @@ Namespace CSharpToVBCodeConverter.Util
                                     End If
                                 Next
                                 If j < TriviaListUBound AndAlso InitialTriviaList(j).IsKind(VB.SyntaxKind.CommentTrivia) Then
-                                    If NewWhiteSpaceString.IsNotEmptyNullOrWhitespace Then
-                                        FinalLeadingTriviaList.Add(VBFactory.WhitespaceTrivia(NewWhiteSpaceString))
-                                    Else
+                                    If String.IsNullOrWhiteSpace(NewWhiteSpaceString) Then
                                         FinalLeadingTriviaList.Add(SpaceTrivia)
+                                    Else
+                                        FinalLeadingTriviaList.Add(VBFactory.WhitespaceTrivia(NewWhiteSpaceString))
                                     End If
                                     FinalLeadingTriviaList.Add(LineContinuation)
                                     AfterLineContinuation = True
                                 Else
-                                    If NewWhiteSpaceString.IsNotEmptyNullOrWhitespace Then
+                                    If Not String.IsNullOrWhiteSpace(NewWhiteSpaceString) Then
                                         FinalLeadingTriviaList.Add(VBFactory.WhitespaceTrivia(NewWhiteSpaceString))
                                     End If
                                 End If
@@ -229,10 +229,10 @@ Namespace CSharpToVBCodeConverter.Util
                             End If
                             If j = 0 OrElse j < TriviaListUBound AndAlso InitialTriviaList(j).IsKind(VB.SyntaxKind.CommentTrivia) Then
                                 If Not AfterLineContinuation Then
-                                    If NewWhiteSpaceString.IsNotEmptyNullOrWhitespace Then
-                                        FinalTrailingTriviaList.Add(VBFactory.WhitespaceTrivia(NewWhiteSpaceString))
-                                    Else
+                                    If String.IsNullOrWhiteSpace(NewWhiteSpaceString) Then
                                         FinalTrailingTriviaList.Add(SpaceTrivia)
+                                    Else
+                                        FinalTrailingTriviaList.Add(VBFactory.WhitespaceTrivia(NewWhiteSpaceString))
                                     End If
                                     FinalTrailingTriviaList.Add(LineContinuation)
                                 End If
@@ -240,7 +240,7 @@ Namespace CSharpToVBCodeConverter.Util
                                 AfterLineContinuation = True
                             Else
                                 FinalTrailingTriviaList.Add(Trivia)
-                                If NewWhiteSpaceString.IsNotEmptyNullOrWhitespace Then
+                                If Not String.IsNullOrWhiteSpace(NewWhiteSpaceString) Then
                                     FinalTrailingTriviaList.Add(VBFactory.WhitespaceTrivia(NewWhiteSpaceString))
                                 End If
                             End If

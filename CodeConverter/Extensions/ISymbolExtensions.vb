@@ -14,55 +14,13 @@ Namespace CSharpToVBCodeConverter.Util
 
     ' All type argument must be accessible.
 
-    Partial Public Module ISymbolExtensions
+    Public Module ISymbolExtensions
 
         Public Enum SymbolVisibility
             [Public]
             Internal
             [Private]
         End Enum
-
-        <ExcludeFromCodeCoverage>
-        <Extension>
-        Private Function GetResultantVisibility(symbol As ISymbol) As SymbolVisibility
-            ' Start by assuming it's visible.
-            Dim visibility As SymbolVisibility = SymbolVisibility.Public
-
-            Select Case symbol.Kind
-                Case SymbolKind.Alias
-                    ' Aliases are uber private.  They're only visible in the same file that they
-                    ' were declared in.
-                    Return SymbolVisibility.Private
-
-                Case SymbolKind.Parameter
-                    ' Parameters are only as visible as their containing symbol
-                    Return GetResultantVisibility(symbol.ContainingSymbol)
-
-                Case SymbolKind.TypeParameter
-                    ' Type Parameters are private.
-                    Return SymbolVisibility.Private
-            End Select
-
-            Do While symbol IsNot Nothing AndAlso symbol.Kind <> SymbolKind.Namespace
-                Select Case symbol.DeclaredAccessibility
-                    ' If we see anything private, then the symbol is private.
-                    Case Microsoft.CodeAnalysis.Accessibility.NotApplicable, Microsoft.CodeAnalysis.Accessibility.Private
-                        Return SymbolVisibility.Private
-
-                    ' If we see anything internal, then knock it down from public to
-                    ' internal.
-                    Case Microsoft.CodeAnalysis.Accessibility.Internal, Microsoft.CodeAnalysis.Accessibility.ProtectedAndInternal
-                        visibility = SymbolVisibility.Internal
-
-                        ' For anything else (Public, Protected, ProtectedOrInternal), the
-                        ' symbol stays at the level we've gotten so far.
-                End Select
-
-                symbol = symbol.ContainingSymbol
-            Loop
-
-            Return visibility
-        End Function
 
         Private Function IsNonNestedTypeAccessible(assembly As IAssemblySymbol, declaredAccessibility As Microsoft.CodeAnalysis.Accessibility, within As ISymbol) As Boolean
             Contracts.Contract.Requires(TypeOf within Is INamedTypeSymbol OrElse TypeOf within Is IAssemblySymbol)
@@ -86,6 +44,109 @@ Namespace CSharpToVBCodeConverter.Util
                 Case Else
                     Throw ExceptionUtilities.UnexpectedValue(declaredAccessibility)
             End Select
+        End Function
+
+        ''' <summary>
+        ''' Checks if 'symbol' is accessible from within 'within', which must be a INamedTypeSymbol
+        ''' or an IAssemblySymbol.  If 'symbol' is accessed off of an expression then
+        ''' 'throughTypeOpt' is the type of that expression. This is needed to properly do protected
+        ''' access checks. Sets "failedThroughTypeCheck" to true if this protected check failed.
+        ''' </summary>
+        '// NOTE: I expect this function to be called a lot.  As such, I do not do any memory
+        '// allocations in the function itself (including not making any iterators).  This does mean
+        '// that certain helper functions that we'd like to call are in-lined in this method to
+        '// prevent the overhead of returning collections or enumerators.
+        Private Function IsSymbolAccessibleCore(symbol As ISymbol, Within As ISymbol, throughTypeOpt As ITypeSymbol, ByRef failedThroughTypeCheck As Boolean) As Boolean ' must be assembly or named type symbol
+            Contracts.Contract.Requires(symbol IsNot Nothing)
+            Contracts.Contract.Requires(Within IsNot Nothing)
+            Contracts.Contract.Assume(TypeOf Within Is INamedTypeSymbol OrElse TypeOf Within Is IAssemblySymbol)
+
+            failedThroughTypeCheck = False
+            Dim withinAssembly As IAssemblySymbol = If((TryCast(Within, IAssemblySymbol)), DirectCast(Within, INamedTypeSymbol).ContainingAssembly)
+
+            Select Case symbol.Kind
+                Case SymbolKind.Alias
+                    Return IsSymbolAccessibleCore(symbol:=DirectCast(symbol, IAliasSymbol).Target,
+                                                      Within:=Within,
+                                                      throughTypeOpt:=throughTypeOpt,
+                                                      failedThroughTypeCheck:=failedThroughTypeCheck)
+
+                Case SymbolKind.ArrayType
+                    Return IsSymbolAccessibleCore(symbol:=DirectCast(symbol, IArrayTypeSymbol).ElementType,
+                                                      Within:=Within,
+                                                      throughTypeOpt:=Nothing,
+                                                      failedThroughTypeCheck:=failedThroughTypeCheck)
+
+                Case SymbolKind.PointerType
+                    Return IsSymbolAccessibleCore(symbol:=DirectCast(symbol, IPointerTypeSymbol).PointedAtType,
+                                                      Within:=Within,
+                                                      throughTypeOpt:=Nothing,
+                                                      failedThroughTypeCheck:=failedThroughTypeCheck)
+
+                Case SymbolKind.NamedType
+                    Return IsNamedTypeAccessible(DirectCast(symbol, INamedTypeSymbol), Within)
+
+                Case SymbolKind.ErrorType, SymbolKind.Discard
+                    Return True
+
+                Case SymbolKind.TypeParameter, SymbolKind.Parameter, SymbolKind.Local, SymbolKind.Label, SymbolKind.Namespace, SymbolKind.DynamicType, SymbolKind.Assembly, SymbolKind.NetModule, SymbolKind.RangeVariable
+                    ' These types of symbols are always accessible (if visible).
+                    Return True
+
+                Case SymbolKind.Method, SymbolKind.Property, SymbolKind.Field, SymbolKind.Event
+                    If symbol.IsStatic Then
+                        ' static members aren't accessed "through" an "instance" of any type.  So we
+                        ' null out the "through" instance here.  This ensures that we'll understand
+                        ' accessing protected statics properly.
+                        throughTypeOpt = Nothing
+                    End If
+
+                    ' If this is a synthesized operator of dynamic, it's always accessible.
+                    If symbol.IsKind(SymbolKind.Method) AndAlso
+                            DirectCast(symbol, IMethodSymbol).MethodKind = MethodKind.BuiltinOperator AndAlso
+                            symbol.ContainingSymbol.IsKind(SymbolKind.DynamicType) Then
+                        Return True
+                    End If
+
+                    ' If it's a synthesized operator on a pointer, use the pointer's PointedAtType.
+                    If symbol.IsKind(SymbolKind.Method) AndAlso
+                            DirectCast(symbol, IMethodSymbol).MethodKind = MethodKind.BuiltinOperator AndAlso
+                            symbol.ContainingSymbol.IsKind(SymbolKind.PointerType) Then
+                        Return IsSymbolAccessibleCore(symbol:=DirectCast(symbol.ContainingSymbol, IPointerTypeSymbol).PointedAtType,
+                                                          Within:=Within,
+                                                          throughTypeOpt:=Nothing,
+                                                          failedThroughTypeCheck:=failedThroughTypeCheck)
+                    End If
+
+                    Return IsMemberAccessible(containingType:=symbol.ContainingType,
+                                                  declaredAccessibility:=symbol.DeclaredAccessibility,
+                                                  within:=Within,
+                                                  throughTypeOpt:=throughTypeOpt,
+                                                  failedThroughTypeCheck:=failedThroughTypeCheck)
+
+                Case Else
+                    Throw UnexpectedValue(symbol.Kind)
+            End Select
+        End Function
+
+        ''' <summary>
+        ''' Checks if 'symbol' is accessible from within 'within'.
+        ''' </summary>
+        <Extension>
+        Friend Function IsAccessibleWithin(symbol As ISymbol, within As ISymbol, Optional throughTypeOpt As ITypeSymbol = Nothing) As Boolean
+            Dim tempVar As Boolean = TypeOf within Is IAssemblySymbol
+            Dim assembly As IAssemblySymbol = If(tempVar, CType(within, IAssemblySymbol), Nothing)
+            If tempVar Then
+                Return symbol.IsAccessibleWithin(assembly, throughTypeOpt)
+            Else
+                Dim tempVar2 As Boolean = TypeOf within Is INamedTypeSymbol
+                Dim namedType As INamedTypeSymbol = If(tempVar2, CType(within, INamedTypeSymbol), Nothing)
+                If tempVar2 Then
+                    Return symbol.IsAccessibleWithin(namedType, throughTypeOpt)
+                Else
+                    Throw New ArgumentException($"TypeOf {NameOf(within)} is not {NameOf(INamedTypeSymbol)}")
+                End If
+            End If
         End Function
 
         <Extension>
@@ -178,26 +239,6 @@ Namespace CSharpToVBCodeConverter.Util
                     Return local.Type
             End Select
             Return Nothing
-        End Function
-
-        ''' <summary>
-        ''' Checks if 'symbol' is accessible from within 'within'.
-        ''' </summary>
-        <Extension>
-        Friend Function IsAccessibleWithin(symbol As ISymbol, within As ISymbol, Optional throughTypeOpt As ITypeSymbol = Nothing) As Boolean
-            Dim tempVar As Boolean = TypeOf within Is IAssemblySymbol
-            Dim assembly As IAssemblySymbol = If(tempVar, CType(within, IAssemblySymbol), Nothing)
-            If tempVar Then
-                Return symbol.IsAccessibleWithin(assembly, throughTypeOpt)
-            Else
-                Dim tempVar2 As Boolean = TypeOf within Is INamedTypeSymbol
-                Dim namedType As INamedTypeSymbol = If(tempVar2, CType(within, INamedTypeSymbol), Nothing)
-                If tempVar2 Then
-                    Return symbol.IsAccessibleWithin(namedType, throughTypeOpt)
-                Else
-                    Throw New ArgumentException($"TypeOf {NameOf(within)} is not {NameOf(INamedTypeSymbol)}")
-                End If
-            End If
         End Function
 
         <Extension()>

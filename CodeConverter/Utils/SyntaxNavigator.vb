@@ -5,7 +5,7 @@ Option Explicit On
 Option Infer Off
 Option Strict On
 
-Imports Microsoft.CodeAnalysis.PooledObjects
+Imports Microsoft.CodeAnalysis.PooledObjects1
 
 Namespace Microsoft.CodeAnalysis
 
@@ -13,7 +13,7 @@ Namespace Microsoft.CodeAnalysis
 
         Private Const None As Integer = 0
 
-        Private Shared ReadOnly s_childEnumeratorStackPool As ObjectPool(Of Stack(Of ChildSyntaxList.Enumerator)) = New ObjectPool(Of Stack(Of ChildSyntaxList.Enumerator))(Function() New Stack(Of ChildSyntaxList.Enumerator)(), 10)
+        Private Shared ReadOnly s_childEnumeratorStackPool As New ObjectPool(Of Stack(Of ChildSyntaxList.Enumerator))(Function() New Stack(Of ChildSyntaxList.Enumerator)(), 10)
         Public Shared ReadOnly Instance As SyntaxNavigator = New SyntaxNavigator()
 
         Private Sub New()

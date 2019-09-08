@@ -9,6 +9,7 @@ Imports System.Diagnostics.CodeAnalysis
 Imports System.IO
 Imports System.Reflection
 Imports System.Text
+Imports System.Threading
 Imports System.Xml
 Imports CSharpToVBApp
 
@@ -654,7 +655,7 @@ Public Class Form1
                         For Each document As Document In currentProject.Documents
                             If ParseCSharpSource(document.GetTextAsync(Nothing).Result.ToString).GetRoot.SyntaxTree.IsGeneratedCode(Function(t As SyntaxTrivia) As Boolean
                                                                                                                                         Return t.IsComment OrElse t.IsRegularOrDocComment
-                                                                                                                                    End Function, cancellationToken:=Nothing) Then
+                                                                                                                                    End Function, CancellationToken.None) Then
                                 TotalFilesToProcess -= 1
                                 FilesConversionProgress.Text = $"Processed {FilesProcessed: N0} of {TotalFilesToProcess:N0} Files"
                                 Application.DoEvents()
@@ -913,7 +914,7 @@ Public Class Form1
     Private Sub mnuOptionsEditIgnoreFilesWithErrorsList_Click(sender As Object, e As EventArgs) Handles mnuOptionsEditIgnoreFilesWithErrorsList.Click
         Dim IgnoreFilesWithErrorsDialog As New IgnoreFilesWithErrorsList
         IgnoreFilesWithErrorsDialog.ShowDialog(Me)
-        If IgnoreFilesWithErrorsDialog.FileToLoad.IsNotEmptyNullOrWhitespace Then
+        If Not String.IsNullOrWhiteSpace(IgnoreFilesWithErrorsDialog.FileToLoad) Then
             Dim LanguageExtension As String = RequestToConvert.GetSourceExtension
             mnuConvertConvertFolder.Enabled = False
             OpenFile(IgnoreFilesWithErrorsDialog.FileToLoad, LanguageExtension)
@@ -1137,7 +1138,7 @@ Public Class Form1
                         Return True
                 End Select
             Else
-                If TargetDirectory.IsNotEmptyNullOrWhitespace Then
+                If Not String.IsNullOrWhiteSpace(TargetDirectory) Then
                     Dim NewFileName As String = Path.ChangeExtension(New FileInfo(SourceFileNameWithPath).Name, If(SourceLanguageExtension = "vb", "cs", "vb"))
                     WriteTextToStream(TargetDirectory, NewFileName, RichTextBoxConversionOutput.Text)
                 End If

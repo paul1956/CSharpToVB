@@ -52,7 +52,7 @@ Public Module SharedReferences
         _VisualBasicReferences.Add(MetadataReference.CreateFromFile(Location))
 
         ' Windows Forms
-        If WindowsFormsLocation.IsNotEmptyNullOrWhitespace Then
+        If Not String.IsNullOrWhiteSpace(WindowsFormsLocation) Then
             AddReferences(_ReferencePath, WindowsFormsLocation)
         End If
 

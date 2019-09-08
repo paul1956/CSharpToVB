@@ -19,7 +19,7 @@ Namespace Microsoft.CodeAnalysis.PooledObjects
     '''    is no space in the pool, extra returned objects will be dropped.
     '''
     ''' 2) it is implied that if object was obtained from a pool, the caller will return it back in
-    '''    a relatively short time. Keeping checked out objects for long durations is ok, but
+    '''    a relatively short time. Keeping checked out objects for long durations is OK, but
     '''    reduces usefulness of pooling. Just new up your own.
     '''
     ''' Not returning objects to the pool in not detrimental to the pool's work, but is a bad practice.
@@ -89,18 +89,12 @@ Namespace Microsoft.CodeAnalysis.PooledObjects
 
         <Conditional("DEBUG")>
         Private Sub Validate(obj As Object)
-            Debug.Assert(obj IsNot Nothing, "freeing null?")
-
-            Debug.Assert(_firstItem IsNot obj, "freeing twice?")
-
             Dim items() As Element = _items
             For i As Integer = 0 To items.Length - 1
                 Dim value As T = items(i).Value
                 If value Is Nothing Then
                     Return
                 End If
-
-                Debug.Assert(value IsNot obj, "freeing twice?")
             Next i
         End Sub
 
@@ -150,18 +144,6 @@ Namespace Microsoft.CodeAnalysis.PooledObjects
         Private Structure Element
             Friend Value As T
         End Structure
-
-        '''' <summary>
-        '''' Removes an object from leak tracking.
-        ''''
-        '''' This is called when an object is returned to the pool.  It may also be explicitly
-        '''' called if an object allocated from the pool is intentionally not being returned
-        '''' to the pool.  This can be of use with pooled arrays if the consumer wants to
-        '''' return a larger array to the pool than was originally allocated.
-        '''' </summary>
-        '<Conditional("DEBUG")>
-        'Friend Shared Sub ForgetTrackedObject(old As T, Optional replacement As T = Nothing)
-        'End Sub
     End Class
 
 End Namespace

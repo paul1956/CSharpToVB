@@ -410,17 +410,17 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                                     Next
                                 End If
                                 If j = 0 OrElse j < InitialTriviaListUBound AndAlso InitialTriviaList(j).RawKind = VB.SyntaxKind.CommentTrivia Then
-                                    If NewWhiteSpaceString.IsNotEmptyNullOrWhitespace Then
-                                        FinalTrailingTriviaList.Add(VBFactory.WhitespaceTrivia(NewWhiteSpaceString))
-                                    Else
+                                    If String.IsNullOrWhiteSpace(NewWhiteSpaceString) Then
                                         FinalTrailingTriviaList.Add(SpaceTrivia)
+                                    Else
+                                        FinalTrailingTriviaList.Add(VBFactory.WhitespaceTrivia(NewWhiteSpaceString))
                                     End If
                                     FinalTrailingTriviaList.Add(LineContinuation)
                                     FinalTrailingTriviaList.Add(Trivia)
                                     AfterLineContinuation = True
                                 Else
                                     FinalTrailingTriviaList.Add(Trivia)
-                                    If NewWhiteSpaceString.IsNotEmptyNullOrWhitespace Then
+                                    If Not String.IsNullOrWhiteSpace(NewWhiteSpaceString) Then
                                         FinalTrailingTriviaList.Add(VBFactory.WhitespaceTrivia(NewWhiteSpaceString))
                                     End If
                                 End If
@@ -483,15 +483,15 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                                     End If
                                 Next
                                 If j < InitialTriviaListUBound AndAlso InitialTriviaList(j).RawKind = VB.SyntaxKind.CommentTrivia Then
-                                    If NewWhiteSpaceString.IsNotEmptyNullOrWhitespace Then
-                                        FinalLeadingTriviaList.Add(VBFactory.WhitespaceTrivia(NewWhiteSpaceString))
-                                    Else
+                                    If String.IsNullOrWhiteSpace(NewWhiteSpaceString) Then
                                         FinalLeadingTriviaList.Add(SpaceTrivia)
+                                    Else
+                                        FinalLeadingTriviaList.Add(VBFactory.WhitespaceTrivia(NewWhiteSpaceString))
                                     End If
                                     FinalLeadingTriviaList.Add(LineContinuation)
                                     AfterLineContinuation = True
                                 Else
-                                    If NewWhiteSpaceString.IsNotEmptyNullOrWhitespace Then
+                                    If Not String.IsNullOrWhiteSpace(NewWhiteSpaceString) Then
                                         FinalLeadingTriviaList.Add(VBFactory.WhitespaceTrivia(NewWhiteSpaceString))
                                     End If
                                 End If

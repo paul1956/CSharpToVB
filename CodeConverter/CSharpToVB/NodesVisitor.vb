@@ -359,7 +359,9 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
             Public Overrides Function VisitVariableDeclarator(node As VariableDeclaratorSyntax) As VisualBasicSyntaxNode
                 Dim Identifier As SyntaxToken = GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False)
                 Dim ArgumentList As New List(Of VBS.ArgumentSyntax)
-                If node.ArgumentList IsNot Nothing Then
+                If node.ArgumentList Is Nothing Then
+                    Return VBFactory.ModifiedIdentifier(Identifier).WithTrailingTrivia(SpaceTrivia)
+                Else
                     For i As Integer = 0 To node.ArgumentList.Arguments.Count - 1
                         Dim Expression As VBS.ExpressionSyntax = CType(node.ArgumentList.Arguments(i).Expression.Accept(Me), VBS.ExpressionSyntax)
                         If TypeOf Expression Is VBS.LiteralExpressionSyntax Then
@@ -381,8 +383,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                             Stop
                         End If
                     Next
-                Else
-                    Return VBFactory.ModifiedIdentifier(Identifier).WithTrailingTrivia(SpaceTrivia)
                 End If
                 Dim Nullable As SyntaxToken = Nothing
                 Dim ArrayBounds As VBS.ArgumentListSyntax = VBFactory.ArgumentList(VBFactory.SeparatedList(ArgumentList))

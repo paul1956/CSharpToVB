@@ -25,7 +25,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Throw New ArgumentNullException(NameOf(tree))
             End If
             If String.IsNullOrWhiteSpace(FullName) Then
-                Throw New ArgumentException("given namespace cannot be null or empty.", NameOf(FullName))
+                Throw New ArgumentNullException(NameOf(FullName))
             End If
             FullName = FullName.Trim()
             Return tree.GetRoot().DescendantNodes(AddressOf MatchesNamespaceOrRoot).OfType(Of CSS.UsingDirectiveSyntax)().Any(Function(u As CSS.UsingDirectiveSyntax) u.Name.ToString().Equals(FullName, StringComparison.OrdinalIgnoreCase))

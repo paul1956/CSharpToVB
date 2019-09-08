@@ -39,11 +39,6 @@ Public Module StringExtensions
         Return regularExpression.Match(s).Success
     End Function
 
-    <Extension()>
-    Public Function IsNotEmptyNullOrWhitespace(StringToCheck As String) As Boolean
-        Return Not String.IsNullOrWhiteSpace(StringToCheck)
-    End Function
-
     ' String isn't IEnumerable<char> in the current Portable profile.
     <Extension>
     Public Function Last(arg As String) As Char

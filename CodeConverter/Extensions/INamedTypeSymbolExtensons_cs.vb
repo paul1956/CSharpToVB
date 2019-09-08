@@ -332,7 +332,7 @@ Namespace CSharpToVBCodeConverter.Util
                                 Return type.GetMembers()
                             End Function,
                             allowReimplementation:=False,
-                            cancellationToken:=cancellationToken)
+                            cancellationToken)
         End Function
 
         '<Extension>
@@ -353,7 +353,7 @@ Namespace CSharpToVBCodeConverter.Util
         '                        Return type.GetMembers()
         '                    End Function,
         '                    allowReimplementation:=False,
-        '                    cancellationToken:=cancellationToken)
+        '                    cancellationToken)
 
         'End Function
 
@@ -376,7 +376,7 @@ Namespace CSharpToVBCodeConverter.Util
                                 Return type.GetMembers()
                             End Function,
                             allowReimplementation:=False,
-                            cancellationToken:=cancellationToken)
+                            cancellationToken)
         End Function
 
         '<Extension>
@@ -393,7 +393,7 @@ Namespace CSharpToVBCodeConverter.Util
         '    End Function,
         '    AddressOf GetMembers,
         '    allowReimplementation:=True,
-        '    cancellationToken:=cancellationToken)
+        '    cancellationToken)
         'End Function
 
         '<Extension>
@@ -410,7 +410,7 @@ Namespace CSharpToVBCodeConverter.Util
         '    End Function,
         '    interfaceMemberGetter,
         '    allowReimplementation:=True,
-        '    cancellationToken:=cancellationToken)
+        '    cancellationToken)
         'End Function
 
         <Extension>
