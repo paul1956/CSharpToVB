@@ -20,7 +20,7 @@ Public Module Compile
     Public Function CompileVisualBasicString(StringToBeCompiled As String, ErrorsToBeIgnored As List(Of String), SeverityToReport As DiagnosticSeverity, ByRef ResultOfConversion As ConversionResult) As EmitResult
         Contracts.Contract.Requires(ResultOfConversion IsNot Nothing)
         If String.IsNullOrWhiteSpace(StringToBeCompiled) Then
-            ResultOfConversion?.GetFilteredListOfFailures().Clear()
+            ResultOfConversion.SetFilteredListOfFailures(New List(Of Diagnostic))
             ResultOfConversion.ResultStatus = ResultTriState.Success
             Return Nothing
         End If
