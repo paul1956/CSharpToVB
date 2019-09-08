@@ -83,7 +83,7 @@ End Namespace
 "
 
         <Fact>
-        Public Shared Sub CSharpToVB_MalformedDocumentComments()
+        Public Shared Sub CSharpToVBMalformedDocumentComments()
             TestConversionCSharpToVisualBasic(CsharpCode, DesiredResult)
         End Sub
 

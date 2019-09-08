@@ -14,7 +14,7 @@ Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 Public Module ParameterSyntaxExtensions
 
     <Extension>
-    Public Function RemoveModifier(Parameter As ParameterSyntax, ModifierKind As SyntaxKind) As ParameterSyntax
+    Friend Function RemoveModifier(Parameter As ParameterSyntax, ModifierKind As SyntaxKind) As ParameterSyntax
         Dim ReturnTokenList As New SyntaxTokenList
         If Parameter.Modifiers.Any Then
             For Each token As SyntaxToken In Parameter.Modifiers

@@ -11,7 +11,7 @@ Namespace CSharpToVB.Tests
         Inherits ConverterTestBase
 
         <Fact>
-        Public Shared Sub CSharpToVB_AbstractMethod()
+        Public Shared Sub CSharpToVBAbstractMethod()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     public abstract void TestMethod();
@@ -26,7 +26,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_Constructor()
+        Public Shared Sub CSharpToVBConstructor()
             TestConversionCSharpToVisualBasic("class TestClass<T, T2, T3> where T : class, new where T2 : struct
 {
     // Comment
@@ -46,7 +46,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_CustomEvent()
+        Public Shared Sub CSharpToVBCustomEvent()
             TestConversionCSharpToVisualBasic("using System;
 class TestClass
 {
@@ -83,7 +83,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_Destructor()
+        Public Shared Sub CSharpToVBDestructor()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     ~TestClass()
@@ -101,7 +101,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_Event()
+        Public Shared Sub CSharpToVBEvent()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     public event EventHandler MyEvent;
@@ -116,7 +116,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_ExtensionMethod()
+        Public Shared Sub CSharpToVBExtensionMethod()
             TestConversionCSharpToVisualBasic("static class TestClass
 {
     public static void TestMethod(this String str)
@@ -138,7 +138,7 @@ End Module")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_ExtensionMethodWithExistingImport()
+        Public Shared Sub CSharpToVBExtensionMethodWithExistingImport()
             TestConversionCSharpToVisualBasic("using System.Runtime.CompilerServices;
 
 static class TestClass
@@ -162,7 +162,7 @@ End Module")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_Field()
+        Public Shared Sub CSharpToVBField()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     const int answer = 42;
@@ -183,7 +183,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_Indexer()
+        Public Shared Sub CSharpToVBIndexer()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     public int this[int index] { get; set; }
@@ -224,7 +224,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_Method()
+        Public Shared Sub CSharpToVBMethod()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     public void TestMethod<T, T2, T3>(out T argument, ref T2 argument2, T3 argument3) where T : class, new where T2 : struct
@@ -248,7 +248,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_MethodOutVar()
+        Public Shared Sub CSharpToVBMethodOutVar()
             TestConversionCSharpToVisualBasic("using Microsoft.CodeAnalysis
 
 class TestClass
@@ -275,7 +275,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_MethodWithReturnType()
+        Public Shared Sub CSharpToVBMethodWithReturnType()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     public int TestMethod<T, T2, T3>(out T argument, ref T2 argument2, T3 argument3) where T : class, new where T2 : struct
@@ -295,7 +295,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_Property()
+        Public Shared Sub CSharpToVBProperty()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     public int Test { get; set; }
@@ -340,7 +340,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_SealedMethod()
+        Public Shared Sub CSharpToVBSealedMethod()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     public sealed void TestMethod<T, T2, T3>(out T argument, ref T2 argument2, T3 argument3) where T : class, new where T2 : struct
@@ -364,7 +364,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_StaticMethod()
+        Public Shared Sub CSharpToVBStaticMethod()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     public static void TestMethod<T, T2, T3>(out T argument, ref T2 argument2, T3 argument3) where T : class, new where T2 : struct

@@ -16,7 +16,7 @@ Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 
-Namespace IVisualBasicCode.CodeConverter.Util
+Namespace CSharpToVBCodeConverter.Util
     Public Module SyntaxTriviaExtensions
 
         <Extension()>
@@ -47,21 +47,9 @@ Namespace IVisualBasicCode.CodeConverter.Util
             Return source
         End Function
 
-        <ExcludeFromCodeCoverage>
-        <Extension>
-        Public Function AsString(trivia As IEnumerable(Of SyntaxTrivia)) As String
-            If trivia.Any() Then
-                Dim sb As New StringBuilder()
-                trivia.Select(Function(t As SyntaxTrivia) t.ToFullString()).Do(Function(s As String) sb.Append(s))
-                Return sb.ToString()
-            Else
-                Return String.Empty
-            End If
-        End Function
-
         <Extension>
         Public Function ContainsCommentOrDirectiveTrivia(TriviaList As List(Of SyntaxTrivia)) As Boolean
-            If TriviaList.Count = 0 Then
+            If TriviaList Is Nothing OrElse TriviaList.Count = 0 Then
                 Return False
             End If
             For Each t As SyntaxTrivia In TriviaList
@@ -125,6 +113,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
         ''' <returns>True if any Trivia is a Comment or a Directive</returns>
         <Extension>
         Public Function ContainsCommentOrDirectiveTrivia(node As VB.VisualBasicSyntaxNode) As Boolean
+            Contracts.Contract.Requires(node IsNot Nothing)
             Dim CurrentToken As SyntaxToken = node.GetFirstToken
             While CurrentToken <> Nothing
                 If CurrentToken.LeadingTrivia.ContainsCommentOrDirectiveTrivia OrElse CurrentToken.TrailingTrivia.ContainsCommentOrDirectiveTrivia Then
@@ -174,6 +163,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
 
         <Extension>
         Public Function ContainsEOLTrivia(node As VB.VisualBasicSyntaxNode) As Boolean
+            Contracts.Contract.Requires(node IsNot Nothing)
             If Not node.HasTrailingTrivia Then
                 Return False
             End If
@@ -239,7 +229,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
                 Dim TextStrings() As String = Trivia.ToFullString.Split({vbCrLf}, StringSplitOptions.RemoveEmptyEntries)
                 For Each TriviaAsString In TextStrings
                     NewTriviaList.AddRange(LeadingTriviaList)
-                    NewTriviaList.Add(VBFactory.CommentTrivia($" ' {TriviaAsString}".Replace("  ", " ").TrimEnd))
+                    NewTriviaList.Add(VBFactory.CommentTrivia($" ' {TriviaAsString}".Replace("  ", " ", StringComparison.InvariantCulture).TrimEnd))
                     NewTriviaList.Add(VB_EOLTrivia)
                 Next
                 If NewTriviaList.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
@@ -272,7 +262,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
                 SpaceTrivia,
                 LineContinuation,
                 SpaceTrivia,
-                VBFactory.CommentTrivia($"{Msg}{TriviaAsString}".Replace("  ", " ").TrimEnd)
+                VBFactory.CommentTrivia($"{Msg}{TriviaAsString}".Replace("  ", " ", StringComparison.InvariantCulture).TrimEnd)
                 }
             Return NewTriviaList
         End Function
@@ -296,6 +286,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
 
         <Extension>
         Public Function GetPreviousTrivia(trivia As SyntaxTrivia, syntaxTree As SyntaxTree, cancellationToken As CancellationToken, Optional FindInsideTrivia As Boolean = False) As SyntaxTrivia
+            Contracts.Contract.Requires(syntaxTree IsNot Nothing)
             Dim span As Text.TextSpan = trivia.FullSpan
             If span.Start = 0 Then
                 Return Nothing
@@ -350,7 +341,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
 
         <Extension>
         Public Function IsDocumentationCommentTrivia(t As SyntaxTrivia) As Boolean
-            If t.IsKind(VisualBasic.SyntaxKind.DocumentationCommentTrivia) Then
+            If t.IsKind(VB.SyntaxKind.DocumentationCommentTrivia) Then
                 Return True
             End If
             Return False
@@ -364,7 +355,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
         <Extension>
         Public Function IsEndOfLine(trivia As SyntaxTrivia) As Boolean
             Return trivia.IsKind(CS.SyntaxKind.EndOfLineTrivia) OrElse
-                trivia.IsKind(VisualBasic.SyntaxKind.EndOfLineTrivia)
+                trivia.IsKind(VB.SyntaxKind.EndOfLineTrivia)
         End Function
 
         <Extension>
@@ -408,7 +399,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
 
         <Extension>
         Public Function IsSkippedTokensTrivia(t As SyntaxTrivia) As Boolean
-            If t.IsKind(VisualBasic.SyntaxKind.DocumentationCommentTrivia) Then
+            If t.IsKind(VB.SyntaxKind.DocumentationCommentTrivia) Then
                 Return True
             End If
             Return False
@@ -487,6 +478,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
         ''' <returns></returns>
         <Extension>
         Public Function RemoveDirectiveTrivia(Of T As VB.Syntax.ArgumentSyntax)(node As T, ByRef FoundEOL As Boolean) As T
+            Contracts.Contract.Requires(node IsNot Nothing)
             Dim NewLeadingTrivia As New List(Of SyntaxTrivia)
             Dim NewTrailingTrivia As New List(Of SyntaxTrivia)
             For Each trivia As SyntaxTrivia In node.GetLeadingTrivia

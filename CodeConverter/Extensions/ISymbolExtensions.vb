@@ -10,7 +10,7 @@ Imports System.Runtime.CompilerServices
 
 Imports Microsoft.CodeAnalysis
 
-Namespace IVisualBasicCode.CodeConverter.Util
+Namespace CSharpToVBCodeConverter.Util
 
     ' All type argument must be accessible.
 
@@ -65,8 +65,8 @@ Namespace IVisualBasicCode.CodeConverter.Util
         End Function
 
         Private Function IsNonNestedTypeAccessible(assembly As IAssemblySymbol, declaredAccessibility As Microsoft.CodeAnalysis.Accessibility, within As ISymbol) As Boolean
-            Contract.Requires(TypeOf within Is INamedTypeSymbol OrElse TypeOf within Is IAssemblySymbol)
-            Contract.ThrowIfNull(assembly)
+            Contracts.Contract.Requires(TypeOf within Is INamedTypeSymbol OrElse TypeOf within Is IAssemblySymbol)
+            Contracts.Contract.Requires(assembly IsNot Nothing)
             Dim withinAssembly As IAssemblySymbol = If((TryCast(within, IAssemblySymbol)), DirectCast(within, INamedTypeSymbol).ContainingAssembly)
 
             Select Case declaredAccessibility
@@ -94,7 +94,9 @@ Namespace IVisualBasicCode.CodeConverter.Util
             If _type IsNot Nothing Then
                 Return _type
             End If
-
+            If compilation Is Nothing Then
+                Throw New ArgumentNullException(NameOf(compilation))
+            End If
             Dim method As IMethodSymbol = TryCast(symbol, IMethodSymbol)
             If method IsNot Nothing AndAlso Not method.Parameters.Any(Function(p As IParameterSymbol) p.RefKind <> RefKind.None) Then
                 ' Convert the symbol to Func<...> or Action<...>
@@ -182,7 +184,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
         ''' Checks if 'symbol' is accessible from within 'within'.
         ''' </summary>
         <Extension>
-        Public Function IsAccessibleWithin(symbol As ISymbol, within As ISymbol, Optional throughTypeOpt As ITypeSymbol = Nothing) As Boolean
+        Friend Function IsAccessibleWithin(symbol As ISymbol, within As ISymbol, Optional throughTypeOpt As ITypeSymbol = Nothing) As Boolean
             Dim tempVar As Boolean = TypeOf within Is IAssemblySymbol
             Dim assembly As IAssemblySymbol = If(tempVar, CType(within, IAssemblySymbol), Nothing)
             If tempVar Then
@@ -193,7 +195,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
                 If tempVar2 Then
                     Return symbol.IsAccessibleWithin(namedType, throughTypeOpt)
                 Else
-                    Throw New ArgumentException()
+                    Throw New ArgumentException($"TypeOf {NameOf(within)} is not {NameOf(INamedTypeSymbol)}")
                 End If
             End If
         End Function
@@ -210,7 +212,9 @@ Namespace IVisualBasicCode.CodeConverter.Util
         ' an assembly.
         Public Function IsNamedTypeAccessible(type As INamedTypeSymbol, within As ISymbol) As Boolean
             Debug.Assert(TypeOf within Is INamedTypeSymbol OrElse TypeOf within Is IAssemblySymbol)
-            Contract.ThrowIfNull(type)
+            If type Is Nothing Then
+                Throw New ArgumentNullException(NameOf(type))
+            End If
 
             If type.IsErrorType() Then
                 ' Always assume that error types are accessible.

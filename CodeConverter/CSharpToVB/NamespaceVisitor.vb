@@ -8,7 +8,7 @@ Option Strict On
 Imports System.Collections.Immutable
 Imports System.Runtime.InteropServices
 Imports System.Threading
-Imports IVisualBasicCode.CodeConverter.Util
+Imports CSharpToVBCodeConverter.Util
 
 Imports Microsoft.CodeAnalysis
 
@@ -17,7 +17,7 @@ Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace IVisualBasicCode.CodeConverter.Visual_Basic
+Namespace CSharpToVBCodeConverter.Visual_Basic
 
     Partial Public Class CSharpConverter
 
@@ -108,7 +108,7 @@ End Function
             Private Iterator Function PatchInlineHelpers(node As CSS.BaseTypeDeclarationSyntax, IsModule As Boolean) As IEnumerable(Of VBS.StatementSyntax)
                 If inlineAssignHelperMarkers.Contains(node) Then
                     inlineAssignHelperMarkers.Remove(node)
-                    Yield TryCast(VB.SyntaxFactory.ParseSyntaxTree(InlineAssignHelperCode.Replace("Shared ", If(IsModule, "", "Shared "))).GetRoot().ChildNodes().FirstOrDefault(), VBS.StatementSyntax)
+                    Yield TryCast(VB.SyntaxFactory.ParseSyntaxTree(InlineAssignHelperCode.Replace("Shared ", If(IsModule, "", "Shared "), StringComparison.InvariantCulture)).GetRoot().ChildNodes().FirstOrDefault(), VBS.StatementSyntax)
                 End If
             End Function
 
@@ -137,12 +137,14 @@ End Function
                 Return False
             End Function
 
+            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitClassDeclaration(node As CSS.ClassDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim saveUsedIdentifiers As Dictionary(Of String, SymbolTableEntry) = UsedIdentifiers
                 SyncLock UsedStacks
                     UsedStacks.Push(UsedIdentifiers)
+                    UsedIdentifiers.Clear()
                     IsModuleStack.Push(node.Modifiers.Any(CS.SyntaxKind.StaticKeyword) And node.TypeParameterList Is Nothing)
-                    If ImplementedMembers.Count > 0 Then
+                    If ImplementedMembers.Any Then
                         ImplementedMembersStack.Push(ImplementedMembers)
                         ImplementedMembers = (New List(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))).ToImmutableArray
                     End If
@@ -248,8 +250,40 @@ End Function
                     If [inherits].Count = 0 AndAlso [implements].Count = 0 Then
                         ClassStatement = ClassStatement.WithTrailingEOL
                     Else
-                        If ClassStatement.GetTrailingTrivia.ContainsCommentTrivia Then
-                            Stop
+                        If ClassStatement.GetTrailingTrivia.ContainsCommentOrDirectiveTrivia Then
+                            Dim OldTrailingTrivia As SyntaxTriviaList = ClassStatement.GetTrailingTrivia
+                            Dim NewTrailingTrivia As New List(Of SyntaxTrivia)
+                            For i As Integer = 0 To OldTrailingTrivia.Count - 1
+                                Dim Trivia As SyntaxTrivia = OldTrailingTrivia(i)
+                                Dim NextTrivia As SyntaxTrivia = If(i < OldTrailingTrivia.Count - 2, OldTrailingTrivia(i + 1), Nothing)
+                                Dim FoundSpace As Boolean = False
+                                Select Case Trivia.RawKind
+                                    Case VB.SyntaxKind.WhitespaceTrivia
+                                        If NextTrivia.IsKind(VB.SyntaxKind.None) OrElse NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                                            Continue For
+                                        End If
+                                        NewTrailingTrivia.Add(SpaceTrivia)
+                                        FoundSpace = True
+                                    Case VB.SyntaxKind.EndOfLineTrivia
+                                        FoundSpace = False
+                                    Case VB.SyntaxKind.EndIfDirectiveTrivia
+                                        NewTrailingTrivia.Add(Trivia)
+                                        If NextTrivia.IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
+                                            NewTrailingTrivia.Add(VB_EOLTrivia)
+                                            NewTrailingTrivia.Add(NextTrivia)
+                                            i += 1
+                                        End If
+                                    Case VB.SyntaxKind.CommentTrivia
+                                        If Not FoundSpace Then
+                                            NewTrailingTrivia.Add(SpaceTrivia)
+                                        End If
+                                        NewTrailingTrivia.Add(LineContinuation)
+                                        NewTrailingTrivia.Add(SpaceTrivia)
+                                        NewTrailingTrivia.Add(Trivia)
+                                    Case Else
+                                End Select
+                            Next
+                            ClassStatement = ClassStatement.WithTrailingTrivia(NewTrailingTrivia)
                         Else
                             ClassStatement = ClassStatement.WithTrailingTrivia(SpaceTrivia)
                         End If
@@ -276,6 +310,7 @@ End Function
                 End If
             End Function
 
+            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitDelegateDeclaration(node As CSS.DelegateDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim Identifier As SyntaxToken = GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False)
                 Dim methodInfo As INamedTypeSymbol = TryCast(ModelExtensions.GetDeclaredSymbol(mSemanticModel, node), INamedTypeSymbol)
@@ -293,6 +328,7 @@ End Function
                 End If
             End Function
 
+            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitEnumDeclaration(node As CSS.EnumDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim members As New List(Of VBS.StatementSyntax)
                 Dim CS_Members As SeparatedSyntaxList(Of CSS.EnumMemberDeclarationSyntax) = node.Members
@@ -394,29 +430,33 @@ End Function
                 Return PrependStatementWithMarkedStatementTrivia(node, EnumBlock)
             End Function
 
+            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitEnumMemberDeclaration(node As CSS.EnumMemberDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim initializer As VBS.ExpressionSyntax = DirectCast(node.EqualsValue?.Value.Accept(Me), VBS.ExpressionSyntax)
                 Return VB.SyntaxFactory.EnumMemberDeclaration(VB.SyntaxFactory.List(node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) DirectCast(a.Accept(Me), VBS.AttributeListSyntax))), GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False), initializer:=If(initializer Is Nothing, Nothing, VB.SyntaxFactory.EqualsValue(initializer))).WithConvertedTriviaFrom(node)
             End Function
 
+            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitExplicitInterfaceSpecifier(node As CSS.ExplicitInterfaceSpecifierSyntax) As VB.VisualBasicSyntaxNode
                 Return node.Name.Accept(Me)
             End Function
 
+            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitExternAliasDirective(node As CSS.ExternAliasDirectiveSyntax) As VB.VisualBasicSyntaxNode
                 Return FlagUnsupportedStatements(node, "Extern Alias", CommentOutOriginalStatements:=True)
             End Function
 
+            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitInterfaceDeclaration(node As CSS.InterfaceDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 SyncLock UsedStacks
-                    If ImplementedMembers.Count > 0 Then
+                    If ImplementedMembers.Any Then
                         ImplementedMembersStack.Push(ImplementedMembers)
                         ImplementedMembers = (New List(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))).ToImmutableArray
                     End If
                 End SyncLock
                 Dim ListOfAttributes As SyntaxList(Of VBS.AttributeListSyntax) = VB.SyntaxFactory.List(node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))
                 Dim Modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, IsModule, TokenContext.InterfaceOrModule)
-                If node.Modifiers.ToString.Contains("unsafe") Then
+                If node.Modifiers.ToString.Contains("unsafe", StringComparison.InvariantCulture) Then
                     Return FlagUnsupportedStatements(node, "unsafe interfaces", CommentOutOriginalStatements:=True)
                 End If
                 Dim members As New List(Of VBS.StatementSyntax)
@@ -460,6 +500,7 @@ End Function
                                                     ).WithConvertedTriviaFrom(node)
             End Function
 
+            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitNamespaceDeclaration(node As CSS.NamespaceDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 SyncLock UsedStacks
                     If UsedStacks.Count > 0 Then
@@ -498,10 +539,11 @@ End Function
                 Return namespaceBlock
             End Function
 
+            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitStructDeclaration(node As CSS.StructDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim [inherits] As List(Of VBS.InheritsStatementSyntax) = New List(Of VBS.InheritsStatementSyntax)
                 Dim [implements] As List(Of VBS.ImplementsStatementSyntax) = New List(Of VBS.ImplementsStatementSyntax)
-                If ImplementedMembers.Count > 0 Then
+                If ImplementedMembers.Any Then
                     ImplementedMembersStack.Push(ImplementedMembers)
                     ImplementedMembers = (New List(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))).ToImmutableArray
                 End If
@@ -559,6 +601,7 @@ End Function
                 Return StructureBlock
             End Function
 
+            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitUsingDirective(node As CSS.UsingDirectiveSyntax) As VB.VisualBasicSyntaxNode
                 SyncLock UsedStacks
                     UsedStacks.Push(UsedIdentifiers)

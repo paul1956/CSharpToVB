@@ -5,7 +5,7 @@ Option Explicit On
 Option Infer Off
 Option Strict On
 
-Imports IVisualBasicCode.CodeConverter.Util
+Imports CSharpToVBCodeConverter.Util
 
 Imports Microsoft.CodeAnalysis
 
@@ -15,7 +15,7 @@ Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace IVisualBasicCode.CodeConverter.Visual_Basic
+Namespace CSharpToVBCodeConverter.Visual_Basic
 
     Partial Public Class CSharpConverter
 
@@ -23,28 +23,33 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             Inherits CS.CSharpSyntaxVisitor(Of VB.VisualBasicSyntaxNode)
 
             Public Shared Function ConvertNamedTypeToTypeString(TypeString As String) As String
-                Dim SplitTypeString() As String = TypeString.Trim.Split(" "c)
+                Contracts.Contract.Requires(TypeString IsNot Nothing)
+                Dim SplitTypeString() As String = TypeString.Trim.Split(" "c, StringComparison.InvariantCulture)
                 If SplitTypeString.Count > 2 Then
                     Stop
                 End If
-                Dim IndexOfLessThan As Integer = TypeString.IndexOf("<")
+                Dim IndexOfLessThan As Integer = TypeString.IndexOf("<", StringComparison.InvariantCulture)
                 Dim TypeName As String = SplitTypeString(0)
                 Dim Name As String = If(SplitTypeString.Count = 1, "", SplitTypeString(1) & " As ")
                 If IndexOfLessThan > 0 Then
-                    Return $"{Name}{TypeName.Left(IndexOfLessThan)}{TypeName.Substring(IndexOfLessThan).Replace("<", "(Of ").Replace(">", ")")}"
+                    Return $"{Name}{TypeName.Left(IndexOfLessThan)}{TypeName.Substring(IndexOfLessThan).
+                                    Replace("<", "(Of ", StringComparison.InvariantCulture).
+                                    Replace(">", ")", StringComparison.InvariantCulture)}"
                 End If
                 Return Name & ConvertToType(TypeName).ToString
             End Function
 
             Private Shared Function ConvertTupleToTypeStrings(TypeString As String) As List(Of String)
                 Dim RetList As New List(Of String)
-                Dim IndexOfLessThan As Integer = TypeString.IndexOf("<")
+                Dim IndexOfLessThan As Integer = TypeString.IndexOf("<", StringComparison.InvariantCulture)
                 If IndexOfLessThan > 0 Then
-                    Dim CShar_Types() As String = TypeString.Substring(IndexOfLessThan).Replace("<", "").Replace(">", "").Split(","c)
+                    Dim CShar_Types() As String = TypeString.Substring(IndexOfLessThan).
+                        Replace("<", "", StringComparison.InvariantCulture).
+                        Replace(">", "", StringComparison.InvariantCulture).Split(","c)
                     For Each t As String In CShar_Types
                         RetList.Add(ConvertToType(ConvertToType(t).ToString).ToString)
                     Next
-                ElseIf TypeString.EndsWith("DictionaryEntry") Then
+                ElseIf TypeString.EndsWith("DictionaryEntry", StringComparison.InvariantCulture) Then
                     RetList.Add(ConvertToType("Key").ToString)
                     RetList.Add(ConvertToType("Value").ToString)
                 Else
@@ -74,20 +79,21 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             End Function
 
             Public Shared Function ConvertToType(_TypeString As String) As VBS.TypeSyntax
+                Contracts.Contract.Requires(_TypeString IsNot Nothing)
                 Dim TypeString As String = _TypeString.Trim
-                Dim IndexOf As Integer = TypeString.IndexOf("(Of ")
+                Dim IndexOf As Integer = TypeString.IndexOf("(Of ", StringComparison.InvariantCulture)
                 If IndexOf >= 0 Then
                     Dim Name As String = TypeString.Substring(0, IndexOf)
                     TypeString = TypeString.Substring(IndexOf + 3)
-                    Dim IndexOfLastCloseParen As Integer = TypeString.LastIndexOf(")")
+                    Dim IndexOfLastCloseParen As Integer = TypeString.LastIndexOf(")", StringComparison.InvariantCulture)
                     TypeString = TypeString.Substring(0, IndexOfLastCloseParen)
                     Dim TypeList As New List(Of VBS.TypeSyntax)
                     Dim PossibleTypes As String = TypeString.Trim
                     While PossibleTypes.Length > 0
                         Dim EndIndex As Integer
                         ' Type
-                        EndIndex = PossibleTypes.IndexOf(",")
-                        Dim FirstLessThan As Integer = PossibleTypes.IndexOf("(")
+                        EndIndex = PossibleTypes.IndexOf(",", StringComparison.InvariantCulture)
+                        Dim FirstLessThan As Integer = PossibleTypes.IndexOf("(", StringComparison.InvariantCulture)
                         If EndIndex = -1 OrElse FirstLessThan = -1 Then
                             EndIndex = PossibleTypes.Length
                         ElseIf EndIndex > FirstLessThan Then
@@ -117,54 +123,59 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     Dim TypeArguemntList As VBS.TypeArgumentListSyntax = VBFactory.TypeArgumentList(VBFactory.SeparatedList(TypeList))
                     Return VBFactory.GenericName(Name, TypeArguemntList)
                 End If
-                Select Case TypeString.ToLower
-                    Case "byte"
+                Select Case TypeString.ToUpperInvariant
+                    Case "BYTE"
                         Return PredefinedTypeByte
-                    Case "sbyte"
+                    Case "SBYTE"
                         Return PredefinedTypeSByte
-                    Case "int"
+                    Case "INT"
                         Return PredefinedTypeInteger
-                    Case "uint"
+                    Case "UINT"
                         Return PredefinedTypeUInteger
-                    Case "short"
+                    Case "SHORT"
                         Return PredefinedTypeShort
-                    Case "ushort"
+                    Case "USHORT"
                         Return PredefinedTypeUShort
-                    Case "long"
+                    Case "LONG"
                         Return PredefinedTypeLong
-                    Case "ulong"
+                    Case "ULONG"
                         Return PredefinedTypeULong
-                    Case "float"
+                    Case "FLOAT"
                         Return PredefinedTypeSingle
-                    Case "double"
+                    Case "DOUBLE"
                         Return PredefinedTypeDouble
-                    Case "char"
+                    Case "CHAR"
                         Return PredefinedTypeChar
-                    Case "bool"
+                    Case "BOOL"
                         Return PredefinedTypeBoolean
-                    Case "object", "var"
+                    Case "OBJECT", "VAR"
                         Return PredefinedTypeObject
-                    Case "string"
+                    Case "STRING"
                         Return PredefinedTypeString
-                    Case "decimal"
+                    Case "DECIMAL"
                         Return PredefinedTypeDecimal
-                    Case "datetime"
+                    Case "DATETIME"
                         Return PredefinedTypeDate
                     Case "?", "_"
                         Return PredefinedTypeObject
                     Case Else
-                        Return VBFactory.ParseTypeName(AddBracketsIfRequired(TypeString.Replace("[", "(").Replace("]", ")")))
+                        Return VBFactory.ParseTypeName(AddBracketsIfRequired(TypeString.
+                                                                             Replace("[", "(", StringComparison.InvariantCulture).
+                                                                             Replace("]", ")", StringComparison.InvariantCulture)))
                 End Select
             End Function
 
+            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitArrayRankSpecifier(node As CSS.ArrayRankSpecifierSyntax) As VB.VisualBasicSyntaxNode
                 Return VBFactory.ArrayRankSpecifier(OpenParenToken, VBFactory.TokenList(Enumerable.Repeat(CommaToken, node.Rank - 1)), CloseParenToken)
             End Function
 
+            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitArrayType(node As CSS.ArrayTypeSyntax) As VB.VisualBasicSyntaxNode
                 Return VBFactory.ArrayType(DirectCast(node.ElementType.Accept(Me), VBS.TypeSyntax), VBFactory.List(node.RankSpecifiers.Select(Function(rs As CSS.ArrayRankSpecifierSyntax) DirectCast(rs.Accept(Me), VBS.ArrayRankSpecifierSyntax)))).WithConvertedTriviaFrom(node)
             End Function
 
+            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitClassOrStructConstraint(node As CSS.ClassOrStructConstraintSyntax) As VB.VisualBasicSyntaxNode
                 If node.IsKind(CS.SyntaxKind.ClassConstraint) Then
                     Return VBFactory.ClassConstraint(ClassKeyWord).WithConvertedTriviaFrom(node)
@@ -179,6 +190,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return VBFactory.NewConstraint(NewKeyword).WithConvertedTriviaFrom(node)
             End Function
 
+            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitNullableType(node As CSS.NullableTypeSyntax) As VB.VisualBasicSyntaxNode
                 Dim TypeSyntax As VB.VisualBasicSyntaxNode = node.ElementType.Accept(Me)
                 If TypeOf TypeSyntax Is VBS.ArrayTypeSyntax Then
@@ -189,6 +201,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return VBFactory.NullableType(DirectCast(TypeSyntax, VBS.TypeSyntax)).WithConvertedTriviaFrom(node)
             End Function
 
+            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitPointerType(node As CSS.PointerTypeSyntax) As VB.VisualBasicSyntaxNode
                 If node.ToString = "void*" Then
                     Return PredefinedTypeObject.WithConvertedTriviaFrom(node.Parent)
@@ -216,6 +229,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return IntPtrType
             End Function
 
+            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitPredefinedType(node As CSS.PredefinedTypeSyntax) As VB.VisualBasicSyntaxNode
                 Dim PredefinedType As VBS.PredefinedTypeSyntax = Nothing
                 Try
@@ -229,16 +243,19 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return PredefinedType
             End Function
 
+            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitSimpleBaseType(node As CSS.SimpleBaseTypeSyntax) As VB.VisualBasicSyntaxNode
                 Dim TypeString As String = node.NormalizeWhitespace.ToString
 
                 Return ConvertToType(TypeString).WithConvertedTriviaFrom(node)
             End Function
 
+            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitTypeConstraint(node As CSS.TypeConstraintSyntax) As VB.VisualBasicSyntaxNode
                 Return VBFactory.TypeConstraint(DirectCast(node.Type.Accept(Me), VBS.TypeSyntax)).WithConvertedTriviaFrom(node)
             End Function
 
+            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitTypeParameter(node As CSS.TypeParameterSyntax) As VB.VisualBasicSyntaxNode
                 Dim variance As SyntaxToken = Nothing
                 If Not node.VarianceKeyword.IsKind(CS.SyntaxKind.None) Then
@@ -258,6 +275,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return TypeParameterSyntax
             End Function
 
+            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitTypeParameterConstraintClause(node As CSS.TypeParameterConstraintClauseSyntax) As VB.VisualBasicSyntaxNode
                 Dim Braces As (OpenBrace As SyntaxToken, CloseBrace As SyntaxToken) = node.GetBraces
                 Dim OpenBraceTokenWithTrivia As SyntaxToken = OpenBraceToken.WithConvertedTriviaFrom(Braces.OpenBrace)
@@ -269,6 +287,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return VBFactory.TypeParameterMultipleConstraintClause(AsKeyword, OpenBraceTokenWithTrivia, Constraints, CloseBraceTokenWithTrivia)
             End Function
 
+            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitTypeParameterList(node As CSS.TypeParameterListSyntax) As VB.VisualBasicSyntaxNode
                 Dim Nodes As New List(Of VBS.TypeParameterSyntax)
                 Dim Separators As New List(Of SyntaxToken)

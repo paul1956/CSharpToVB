@@ -8,12 +8,12 @@ Imports Microsoft.CodeAnalysis
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 
-Namespace IVisualBasicCode.CodeConverter.Visual_Basic
+Namespace CSharpToVBCodeConverter.Visual_Basic
 
     Public Module DirectiveSupport
 
         <Flags>
-        Public Enum DirectiveState
+        Public Enum DirectiveStates
             None = 0
             IfFound = 1
             ElseFound = 2
@@ -26,7 +26,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
         End Enum
 
         <Extension>
-        Public Function ContainsConditionalDirective(ArgumentList As CSS.ArgumentListSyntax) As Boolean
+        Friend Function ContainsConditionalDirective(ArgumentList As CSS.ArgumentListSyntax) As Boolean
             If ArgumentList.Arguments.Count = 0 Then
                 Return False
             End If

@@ -10,7 +10,7 @@ Imports Microsoft.CodeAnalysis.Text
 
 Public Class Range
 
-    Public Sub New(classification As String, span As TextSpan, text As SourceText)
+    Friend Sub New(classification As String, span As TextSpan, text As SourceText)
         Me.New(classification, span, text.GetSubText(span).ToString())
     End Sub
 

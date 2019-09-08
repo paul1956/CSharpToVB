@@ -13,8 +13,10 @@ Imports Microsoft.CodeAnalysis
 Public Module IParameterSymbolExtensions
 
     <Extension>
-    <ExcludeFromCodeCoverage>
     Public Function IsRefOrOut(symbol As IParameterSymbol) As Boolean
+        If symbol Is Nothing Then
+            Throw New ArgumentNullException(NameOf(symbol))
+        End If
         Return symbol.RefKind <> RefKind.None
     End Function
 

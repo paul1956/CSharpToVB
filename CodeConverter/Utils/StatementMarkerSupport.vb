@@ -8,8 +8,8 @@ Option Strict On
 Imports System.Runtime.CompilerServices
 Imports System.Text
 
-Imports IVisualBasicCode.CodeConverter.Util
-Imports IVisualBasicCode.CodeConverter.Visual_Basic
+Imports CSharpToVBCodeConverter.Util
+Imports CSharpToVBCodeConverter.Visual_Basic
 
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
@@ -29,7 +29,15 @@ Public Module StatementMarker
     End Enum
 
     Private Function CompareWithoutTrivia(Statement1 As VisualBasic.VisualBasicSyntaxNode, Statement2 As VisualBasic.VisualBasicSyntaxNode) As Boolean
-        Return Statement1.WithoutTrivia.ToFullString.Replace(vbCrLf, "").Replace(" ", "") = Statement2.WithoutTrivia.ToFullString.Replace(vbCrLf, "").Replace(" ", "")
+        Return Statement1.
+                    WithoutTrivia.
+                    ToFullString.
+                    Replace(vbCrLf, "", StringComparison.InvariantCulture).
+                    Replace(" ", "", StringComparison.InvariantCulture) =
+                Statement2.
+                    WithoutTrivia.
+                    ToFullString.Replace(vbCrLf, "", StringComparison.InvariantCulture).
+                    Replace(" ", "", StringComparison.InvariantCulture)
     End Function
 
     ''' <summary>
@@ -96,7 +104,7 @@ Public Module StatementMarker
     ''' otherwise we just add the statement BEFORE the node</param>
     ''' <param name="AllowDuplicates">True if we can put do multiple replacements</param>
     <Extension>
-    Public Sub AddMarker(Node As CS.CSharpSyntaxNode, Statement As VisualBasic.VisualBasicSyntaxNode, StatementHandling As StatementHandlingOption, AllowDuplicates As Boolean)
+    Friend Sub AddMarker(Node As CS.CSharpSyntaxNode, Statement As VisualBasic.VisualBasicSyntaxNode, StatementHandling As StatementHandlingOption, AllowDuplicates As Boolean)
         If StatementDictionary.ContainsKey(Node) Then
             If Not AllowDuplicates Then
                 Return
@@ -123,6 +131,7 @@ Public Module StatementMarker
     End Sub
 
     Public Function AddSpecialCommentToField(node As CSS.FieldDeclarationSyntax, FieldDeclaration As FieldDeclarationSyntax) As FieldDeclarationSyntax
+        Contracts.Contract.Requires(FieldDeclaration IsNot Nothing)
         If Not StatementDictionary.ContainsKey(node) Then
             Return FieldDeclaration
         End If
@@ -162,6 +171,7 @@ Public Module StatementMarker
     End Sub
 
     Public Function FlagUnsupportedStatements(node As CS.CSharpSyntaxNode, UnsupportedFeature As String, CommentOutOriginalStatements As Boolean) As EmptyStatementSyntax
+        Contracts.Contract.Requires(node IsNot Nothing)
         Dim NewLeadingTrivia As New List(Of SyntaxTrivia)
         Dim NewTrailingTrivia As New List(Of SyntaxTrivia)
         If CommentOutOriginalStatements Then
@@ -183,7 +193,7 @@ Public Module StatementMarker
             Dim NodeSplit() As String = node.ToString.SplitLines
             ' Match #
             For i As Integer = 0 To NodeSplit.Count - 1
-                If NodeSplit(i).TrimStart(" "c).StartsWith("#") Then
+                If NodeSplit(i).TrimStart(" "c).StartsWith("#", StringComparison.InvariantCulture) Then
                     NewLeadingTrivia.AddRange(ConvertDirectiveTrivia(NodeSplit(i)))
                 Else
                     NewLeadingTrivia.Add(VisualBasic.SyntaxFactory.CommentTrivia($"' {NodeSplit(i)}"))
@@ -203,7 +213,7 @@ Public Module StatementMarker
         Return builder.ToString()
     End Function
 
-    Public Function GetStatementwithIssues(node As CS.CSharpSyntaxNode) As CS.CSharpSyntaxNode
+    Friend Function GetStatementwithIssues(node As CS.CSharpSyntaxNode) As CS.CSharpSyntaxNode
         Dim StatementWithIssues As CS.CSharpSyntaxNode = node
         While StatementWithIssues IsNot Nothing
             If TypeOf StatementWithIssues Is CSS.FieldDeclarationSyntax Then
@@ -262,7 +272,7 @@ Public Module StatementMarker
     End Function
 
     ''' <summary>
-    ''' Allow access to Marker Errors with exposing implemmentation
+    ''' Allow access to Marker Errors with exposing implementation
     ''' </summary>
     ''' <returns>True if there are statements left out of translation</returns>
     Public Function HasMarkerError() As Boolean
@@ -273,6 +283,7 @@ Public Module StatementMarker
     End Function
 
     Public Function PrependStatementWithMarkedStatementTrivia(node As CS.CSharpSyntaxNode, Statement As StatementSyntax) As StatementSyntax
+        Contracts.Contract.Requires(Statement IsNot Nothing)
         Dim NewNodesList As New SyntaxList(Of StatementSyntax)
         Dim RemoveStatement As Boolean = False
         If Not StatementDictionary.ContainsKey(node) Then

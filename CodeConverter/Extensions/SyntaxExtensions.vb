@@ -11,7 +11,7 @@ Imports Microsoft.CodeAnalysis
 
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace IVisualBasicCode.CodeConverter.Util
+Namespace CSharpToVBCodeConverter.Util
 
     Partial Public Module SyntaxExtensions
 
@@ -32,6 +32,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
                                                                       Optional eol As String = vbCrLf,
                                                                       Optional PreserveCRLF As Boolean = False
                                                                       ) As TNode
+            Contracts.Contract.Requires(node IsNot Nothing)
             Return DirectCast(VBS.SyntaxNormalizer.Normalize(node, indentation, eol, useElasticTrivia:=False, useDefaultCasing, PreserveCRLF), TNode)
         End Function
 

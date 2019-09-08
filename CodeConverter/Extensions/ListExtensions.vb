@@ -13,6 +13,7 @@ Public Module ListExtensions
 
     <Extension>
     Public Function ContainsName(ImportList As List(Of VBS.ImportsStatementSyntax), ImportName As String) As Boolean
+        Contracts.Contract.Requires(ImportList IsNot Nothing)
         For Each ImportToCheck As VBS.ImportsStatementSyntax In ImportList
             For Each Clause As VBS.ImportsClauseSyntax In ImportToCheck.ImportsClauses
                 If Clause.ToString = ImportName Then

@@ -7,8 +7,8 @@ Option Strict On
 
 Imports System.Collections.Immutable
 Imports System.Reflection
-Imports IVisualBasicCode.CodeConverter.Util
-Imports IVisualBasicCode.CodeConverter.Visual_Basic
+Imports CSharpToVBCodeConverter.Util
+Imports CSharpToVBCodeConverter.Visual_Basic
 
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.CSharp
@@ -113,7 +113,7 @@ Namespace CodeConverter.Tests
             doc = workspace.CurrentSolution.GetProject(ProjectId).GetDocument(DocumentID)
         End Sub
 
-        Public Shared Sub TestConversionCSharpToVisualBasic(csharpCode As String, DesiredResult As String, Optional csharpOptions As CSharpParseOptions = Nothing, Optional vbOptions As VisualBasicParseOptions = Nothing)
+        Friend Shared Sub TestConversionCSharpToVisualBasic(csharpCode As String, DesiredResult As String, Optional csharpOptions As CSharpParseOptions = Nothing, Optional vbOptions As VisualBasicParseOptions = Nothing)
             Dim csharpWorkspace As TestWorkspace = Nothing
             Dim vbWorkspace As TestWorkspace = Nothing
             Dim inputDocument As Document = Nothing
@@ -160,11 +160,13 @@ Namespace CodeConverter.Tests
 
             ActualResult = HomogenizeEol(ActualResult).TrimEnd()
             DesiredResult = HomogenizeEol(DesiredResult).TrimEnd()
-            Call New VisualBasicFormattingTestBase().AssertFormatSpanAsync(ActualResult, DesiredResult)
+            Dim VBTestBase As New VisualBasicFormattingTestBase()
+            Call VBTestBase.AssertFormatSpanAsync(ActualResult, DesiredResult)
             Dim ErrorMessage As String = FindFirstDifferenceLine(DesiredResult, ActualResult)
             If ErrorMessage <> "Files identical" Then
                 Assert.AreEqual(DesiredResult, ActualResult, ErrorMessage)
             End If
+            VBTestBase.Dispose()
             csharpWorkspace.Dispose()
             vbWorkspace.Dispose()
         End Sub
@@ -199,9 +201,10 @@ Namespace CodeConverter.Tests
             Return "Files identical"
         End Function
 
-        Protected Shared Function WorkspaceFormat(workspace As Workspace, root As SyntaxNode, spans As IEnumerable(Of TextSpan), _OptionSet As OptionSet, _SourceText As SourceText) As String
-            Dim result As IList(Of TextChange) = Formatter.GetFormattedTextChanges(root, spans, workspace, _OptionSet)
-            Return _SourceText.WithChanges(result).ToString()
+        Protected Shared Function WorkspaceFormat(workspace As Workspace, root As SyntaxNode, spans As IEnumerable(Of TextSpan), OptionSet As OptionSet, SourceText As SourceText) As String
+            Contracts.Contract.Requires(SourceText IsNot Nothing)
+            Dim result As IList(Of TextChange) = Formatter.GetFormattedTextChanges(root, spans, workspace, OptionSet)
+            Return SourceText.WithChanges(result).ToString()
         End Function
 
     End Class

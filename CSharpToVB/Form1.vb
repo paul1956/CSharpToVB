@@ -12,9 +12,9 @@ Imports System.Text
 Imports System.Xml
 Imports CSharpToVBApp
 
-Imports IVisualBasicCode.CodeConverter
-Imports IVisualBasicCode.CodeConverter.ConversionResult
-Imports IVisualBasicCode.CodeConverter.Util
+Imports CSharpToVBCodeConverter
+Imports CSharpToVBCodeConverter.ConversionResult
+Imports CSharpToVBCodeConverter.Util
 
 Imports ManageProgressBar
 
@@ -65,10 +65,10 @@ Public Class Form1
     Property StopRequested As Boolean = False
 
     Private Shared Function ConvertSourceFileToDestinationFile(ProjectDirectory As String, ProjectSavePath As String, DocumentName As Document) As String
-        If ProjectSavePath.IsEmptyNullOrWhitespace Then
+        If String.IsNullOrWhiteSpace(ProjectSavePath) Then
             Return String.Empty
         End If
-        Dim SubPathFromProject As String = Path.GetDirectoryName(DocumentName.FilePath).Replace(ProjectDirectory, "").Trim("\"c)
+        Dim SubPathFromProject As String = Path.GetDirectoryName(DocumentName.FilePath).Replace(ProjectDirectory, "", StringComparison.InvariantCultureIgnoreCase).Trim("\"c)
         Dim PathToSaveDirectory As String = Path.Combine(ProjectSavePath, SubPathFromProject)
         If Not Directory.Exists(PathToSaveDirectory) Then
             Directory.CreateDirectory(PathToSaveDirectory)
@@ -116,7 +116,7 @@ Public Class Form1
                     .Select(.TextLength, 0)
                     .SelectionColor = ColorSelector.GetColorFromName(range.ClassificationType)
                     .AppendText(range.Text)
-                    If range.Text.Contains(vbLf) Then
+                    If range.Text.Contains(vbLf, StringComparison.InvariantCultureIgnoreCase) Then
                         Progress.UpdateProgress(range.Text.Count(CType(vbLf, Char)))
                         Application.DoEvents()
                     End If
@@ -153,19 +153,19 @@ Public Class Form1
     Private Sub Compile_Colorize(TextToCompile As String)
         Dim CompileResult As EmitResult = CompileVisualBasicString(StringToBeCompiled:=TextToCompile, ErrorsToBeIgnored, DiagnosticSeverity.Error, ResultOfConversion)
 
-        LabelErrorCount.Text = $"Number of Errors: {ResultOfConversion.FilteredListOfFailures.Count}"
+        LabelErrorCount.Text = $"Number of Errors: {ResultOfConversion.GetFilteredListOfFailures().Count}"
         Dim FragmentRange As IEnumerable(Of Range) = GetClassifiedRanges(TextToCompile, LanguageNames.VisualBasic)
 
         If Not CompileResult?.Success Then
-            If ResultOfConversion.FilteredListOfFailures.Count = 0 Then
+            If Not ResultOfConversion.GetFilteredListOfFailures().Any Then
                 ResultOfConversion.ResultStatus = ResultTriState.Success
                 If My.Settings.ColorizeOutput Then
-                    Colorize(FragmentRange, RichTextBoxConversionOutput, TextToCompile.SplitLines.Length, ResultOfConversion.FilteredListOfFailures)
+                    Colorize(FragmentRange, RichTextBoxConversionOutput, TextToCompile.SplitLines.Length, ResultOfConversion.GetFilteredListOfFailures())
                 Else
                     RichTextBoxConversionOutput.Text = ResultOfConversion.ConvertedCode
                 End If
             Else
-                Colorize(FragmentRange, RichTextBoxConversionOutput, TextToCompile.SplitLines.Length, ResultOfConversion.FilteredListOfFailures)
+                Colorize(FragmentRange, RichTextBoxConversionOutput, TextToCompile.SplitLines.Length, ResultOfConversion.GetFilteredListOfFailures())
             End If
         Else
             If My.Settings.ColorizeOutput Then
@@ -195,7 +195,7 @@ Public Class Form1
         Select Case ResultOfConversion.ResultStatus
             Case ResultTriState.Success
                 Compile_Colorize(ResultOfConversion.ConvertedCode)
-                Dim FilteredErrorCount As Integer = ResultOfConversion.FilteredListOfFailures.Count
+                Dim FilteredErrorCount As Integer = ResultOfConversion.GetFilteredListOfFailures().Count
                 LabelErrorCount.Text = $"Number of Errors: {FilteredErrorCount}"
                 Return FilteredErrorCount = 0
             Case ResultTriState.Failure
@@ -276,7 +276,7 @@ Public Class Form1
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles Me.Load
         Dim items(ImageList1.Images.Count - 1) As String
         For i As Integer = 0 To ImageList1.Images.Count - 1
-            items(i) = "Item " & i.ToString
+            items(i) = "Item " & i.ToString(Globalization.CultureInfo.InvariantCulture)
         Next
         SearchDirection.Items.AddRange(items)
         SearchDirection.DropDownStyle = ComboBoxStyle.DropDownList
@@ -327,7 +327,7 @@ Public Class Form1
         mnuViewShowSourceLineNumbers.Checked = My.Settings.ShowSourceLineNumbers
         LineNumbers_For_RichTextBoxInput.Visible = My.Settings.ShowSourceLineNumbers
 
-        If My.Settings.DefaultProjectDirectory.IsEmptyNullOrWhitespace Then
+        If String.IsNullOrWhiteSpace(My.Settings.DefaultProjectDirectory) Then
             My.Settings.DefaultProjectDirectory = GetLatestVisualStudioProjectPath()
             My.Settings.Save()
             Application.DoEvents()
@@ -344,13 +344,13 @@ Public Class Form1
 
     <ExcludeFromCodeCoverage>
     Private Shared Function GetExceptionsAsString(Exceptions As IReadOnlyList(Of Exception)) As String
-        If Exceptions Is Nothing OrElse Exceptions.Count = 0 Then
+        If Exceptions Is Nothing OrElse Not Exceptions.Any Then
             Return String.Empty
         End If
 
         Dim builder As New StringBuilder()
         For i As Integer = 0 To Exceptions.Count - 1
-            builder.AppendFormat("----- Exception {0} of {1} -----" & Environment.NewLine, i + 1, Exceptions.Count)
+            builder.AppendFormat(Globalization.CultureInfo.InvariantCulture, "----- Exception {0} of {1} -----" & Environment.NewLine, i + 1, Exceptions.Count)
             builder.AppendLine(Exceptions(i).ToString())
         Next i
         Return builder.ToString()
@@ -363,7 +363,7 @@ Public Class Form1
     ''' <param name="SourceLanguageExtension"></param>
     ''' <returns>Path to new solution that mirrors the DirectoryToBeTranslated, new solution folder is rename with _SourceLanguageExtension</returns>
     Private Function GetFoldertSavePath(DirectoryToBeTranslatedWithPath As String, SourceLanguageExtension As String, ConvertingProject As Boolean) As String
-        Dim TargetLanguageExtension As String = If(SourceLanguageExtension.ToLower = "vb", "_cs", "_vb")
+        Dim TargetLanguageExtension As String = If(SourceLanguageExtension.ToUpperInvariant = "VB", "_cs", "_vb")
         Debug.Assert(Directory.Exists(DirectoryToBeTranslatedWithPath), $"{DirectoryToBeTranslatedWithPath} does Not exist")
         Debug.Assert(Directory.GetDirectoryRoot(DirectoryToBeTranslatedWithPath) <> DirectoryToBeTranslatedWithPath, $"{DirectoryToBeTranslatedWithPath} does Not exist")
 
@@ -372,7 +372,7 @@ Public Class Form1
         Dim SystemtRootDirectory As String = Directory.GetDirectoryRoot(CurrentDirectory)
 
         While SystemtRootDirectory <> CurrentDirectory
-            If Directory.GetFiles(CurrentDirectory, "*.sln").Count > 0 OrElse Directory.GetFiles(CurrentDirectory, "*.gitignore").Count > 0 Then
+            If Directory.GetFiles(CurrentDirectory, "*.sln").Any OrElse Directory.GetFiles(CurrentDirectory, "*.gitignore").Any Then
                 If ConvertingProject Then
                     SolutionRoot = CurrentDirectory
                     Exit While
@@ -383,7 +383,9 @@ Public Class Form1
             CurrentDirectory = Directory.GetParent(CurrentDirectory).FullName
         End While
         ' At this point Solution Directory is the remainder of the path from SolutionRoot
-        Dim PathFromSolutionRoot As List(Of String) = DirectoryToBeTranslatedWithPath.Replace(SolutionRoot, "").Trim(Path.DirectorySeparatorChar).Split(Path.DirectorySeparatorChar).ToList
+        Dim PathFromSolutionRoot As List(Of String) = DirectoryToBeTranslatedWithPath.Replace(SolutionRoot, "", StringComparison.InvariantCultureIgnoreCase) _
+                                                                                     .Trim(Path.DirectorySeparatorChar) _
+                                                                                     .Split(Path.DirectorySeparatorChar).ToList
         SolutionRoot = $"{SolutionRoot}{Path.DirectorySeparatorChar}{PathFromSolutionRoot(0)}{TargetLanguageExtension}"
         PathFromSolutionRoot.RemoveAt(0)
         If File.Exists(SolutionRoot) Then
@@ -404,9 +406,6 @@ Public Class Form1
                 Case Else
                     Stop
             End Select
-        End If
-        If PathFromSolutionRoot.Count = 0 Then
-            CreateDirectoryIfNonexistent(SolutionRoot)
         End If
         Return CreateDirectoryIfNonexistent(Path.Combine(SolutionRoot, PathFromSolutionRoot.Join(Path.DirectorySeparatorChar)))
     End Function
@@ -451,7 +450,7 @@ Public Class Form1
         LineNumbers_For_RichTextBoxInput.Visible = False
         LineNumbers_For_RichTextBoxOutput.Visible = False
 
-        If RichTextBoxConversionOutput.Text.IsEmptyNullOrWhitespace Then
+        If String.IsNullOrWhiteSpace(RichTextBoxConversionOutput.Text) Then
             Exit Sub
         End If
         RichTextBoxErrorList.Text = ""
@@ -465,7 +464,7 @@ Public Class Form1
         LineNumbers_For_RichTextBoxOutput.Visible = False
         ResizeRichTextBuffers()
         RequestToConvert.SourceCode = RichTextBoxConversionInput.Text
-        Convert_Compile_Colorize(RequestToConvert, VisualBasicReferences(Assembly.Load("System.Windows.Forms").Location).ToArray)
+        Convert_Compile_Colorize(RequestToConvert, CSharpReferences(Assembly.Load("System.Windows.Forms").Location, Nothing).ToArray)
         mnuConvertConvertFolder.Enabled = True
         SetButtonStopAndCursor(MeForm:=Me, StopButton:=ButtonStop, StopButtonVisible:=False)
     End Sub
@@ -484,7 +483,7 @@ Public Class Form1
                     If Directory.Exists(SourceFolderName) Then
                         Dim SourceLanguageExtension As String = RequestToConvert.GetSourceExtension
                         Dim ProjectSavePath As String = GetFoldertSavePath((.SelectedPath), SourceLanguageExtension, ConvertingProject:=False)
-                        If ProjectSavePath.IsEmptyNullOrWhitespace Then
+                        If String.IsNullOrWhiteSpace(ProjectSavePath) Then
                             MsgBox($"Conversion aborted.", Title:="C# to VB")
                             Exit Sub
                         End If
@@ -536,7 +535,7 @@ Public Class Form1
         SaveFileDialog1.FilterIndex = 0
         SaveFileDialog1.OverwritePrompt = True
         SaveFileDialog1.SupportMultiDottedExtensions = False
-        SaveFileDialog1.Title = $"Save {Extension.ToUpper} Output..."
+        SaveFileDialog1.Title = $"Save {Extension.ToUpperInvariant} Output..."
         SaveFileDialog1.ValidateNames = True
         Dim FileSaveResult As DialogResult = SaveFileDialog1.ShowDialog
         If FileSaveResult = DialogResult.OK Then
@@ -591,7 +590,7 @@ Public Class Form1
             SaveFileDialog1.FilterIndex = 0
             .Multiselect = False
             .ReadOnlyChecked = True
-            .Title = $"Open {LanguageExtension.ToUpper} Source file"
+            .Title = $"Open {LanguageExtension.ToUpperInvariant} Source file"
             .ValidateNames = True
             If .ShowDialog = DialogResult.OK Then
                 mnuConvertConvertFolder.Enabled = False
@@ -612,7 +611,7 @@ Public Class Form1
             .FilterIndex = 0
             .Multiselect = False
             .ReadOnlyChecked = True
-            .Title = $"Open {SourceLanguageExtension.ToUpper} Project file"
+            .Title = $"Open {SourceLanguageExtension.ToUpperInvariant} Project file"
             .ValidateNames = True
             ' InputLines is used for future progress bar
             If .ShowDialog = DialogResult.OK Then
@@ -662,7 +661,7 @@ Public Class Form1
                                 Continue For
                             Else
                                 FilesProcessed += 1
-                                RichTextBoxFileList.AppendText($"{FilesProcessed.ToString.PadLeft(5)} {document.FilePath}{vbCrLf}")
+                                RichTextBoxFileList.AppendText($"{FilesProcessed.ToString(Globalization.CultureInfo.InvariantCulture).PadLeft(5)} {document.FilePath}{vbCrLf}")
                                 RichTextBoxFileList.Select(RichTextBoxFileList.TextLength, 0)
                                 RichTextBoxFileList.ScrollToCaret()
                                 FilesConversionProgress.Text = $"Processed {FilesProcessed:N0} of {TotalFilesToProcess:N0} Files"
@@ -722,7 +721,7 @@ Public Class Form1
                                             LeadingXMLSpace.InnerXml = PropertyGroupChildNode.InnerXml
                                         End If
                                     Case "#comment"
-                                        root.ChildNodes(i).ChildNodes(J).Value = PropertyGroupChildNode.Value.Replace(".cs", ".vb")
+                                        root.ChildNodes(i).ChildNodes(J).Value = PropertyGroupChildNode.Value.Replace(".cs", ".vb", StringComparison.InvariantCultureIgnoreCase)
                                     Case Else
                                         Stop
                                 End Select
@@ -742,7 +741,7 @@ Public Class Form1
                                     Case "#whitespace"
                                                             ' Ignore
                                     Case "#comment"
-                                        root.ChildNodes(i).ChildNodes(J).Value = xmlNode.Value.Replace(".cs", ".vb")
+                                        root.ChildNodes(i).ChildNodes(J).Value = xmlNode.Value.Replace(".cs", ".vb", StringComparison.InvariantCultureIgnoreCase)
                                     Case "Compile"
                                         Dim CompileValue As String = ""
                                         For k As Integer = 0 To xmlNode.Attributes.Count - 1
@@ -753,7 +752,7 @@ Public Class Form1
                                             Select Case root.ChildNodes(i).ChildNodes(J).ChildNodes(k).Name
                                                 Case "DependentUpon"
                                                     Dim DependentUponNodeValue As String = xmlNode.ChildNodes(k).ChildNodes(0).Value
-                                                    If DependentUponNodeValue.ToLower.EndsWith(".cs") Then
+                                                    If DependentUponNodeValue.EndsWith(".cs", StringComparison.InvariantCultureIgnoreCase) Then
                                                         root.ChildNodes(i).ChildNodes(J).ChildNodes(k).ChildNodes(0).Value = ChangeExtension(DependentUponNodeValue, "cs", "vb")
                                                     Else
                                                         CopyFile(ProjectSavePath, currentProject, Path.Combine(Path.GetDirectoryName(CompileValue), DependentUponNodeValue))
@@ -765,7 +764,7 @@ Public Class Form1
                                             End Select
                                         Next k
                                     Case "EmbeddedResource"
-                                        If xmlNode.Attributes(0).Value.ToLower.EndsWith(".resx") Then
+                                        If xmlNode.Attributes(0).Value.EndsWith(".resx", StringComparison.InvariantCultureIgnoreCase) Then
                                             CopyFile(ProjectSavePath, currentProject, xmlNode.Attributes(0).Value)
                                         End If
                                         For k As Integer = 0 To xmlNode.ChildNodes.Count - 1
@@ -783,12 +782,12 @@ Public Class Form1
                                     Case "PackageReference"
                                         ' Ignore
                                     Case "Content"
-                                        If xmlNode.Attributes(0).Name.ToLower = "include" Then
+                                        If xmlNode.Attributes(0).Name.ToUpperInvariant = "INCLUDE" Then
                                             Dim SourceFileName As String = Path.Combine((New FileInfo(currentProject.FilePath)).Directory.FullName, xmlNode.Attributes(0).Value)
                                             If File.Exists(SourceFileName) Then
                                                 File.Copy(SourceFileName, Path.Combine(ProjectSavePath, xmlNode.Attributes(0).Value), overwrite:=True)
                                             Else
-                                                If (Path.GetExtension(SourceFileName).ToLower = ".txt") Then
+                                                If (Path.GetExtension(SourceFileName).ToUpperInvariant = ".TXT") Then
                                                     Dim NewValue As String = ChangeExtension(xmlNode.Attributes(0).Value, "txt", "md")
                                                     SourceFileName = Path.ChangeExtension(SourceFileName, "md")
                                                     If File.Exists(SourceFileName) Then
@@ -805,7 +804,7 @@ Public Class Form1
                             Next J
                         Case "#whitespace"
                         Case "#comment"
-                            root.ChildNodes(i).Value = RootChildNode.Value.Replace(".cs", ".vb")
+                            root.ChildNodes(i).Value = RootChildNode.Value.Replace(".cs", ".vb", StringComparison.InvariantCultureIgnoreCase)
                         Case Else
                             Stop
                     End Select
@@ -825,7 +824,7 @@ Public Class Form1
                 root.ChildNodes(PropertyGroupIndex).AppendChild(xmlDocFragment)
             End If
 
-            xmlDoc.Save(Path.Combine(ProjectSavePath, New FileInfo(currentProject.FilePath).Name.ToLower.Replace(".csproj", "_VB.vbproj")))
+            xmlDoc.Save(Path.Combine(ProjectSavePath, New FileInfo(currentProject.FilePath).Name.Replace(".csproj", "_VB.vbproj", StringComparison.InvariantCultureIgnoreCase)))
         End If
     End Sub
 
@@ -836,7 +835,7 @@ Public Class Form1
     End Sub
 
     Private Shared Function ChangeExtension(AttributeValue As String, OldExtension As String, NewExtension As String) As String
-        If AttributeValue.EndsWith($".{OldExtension}") Then
+        If AttributeValue.EndsWith($".{OldExtension}", StringComparison.InvariantCultureIgnoreCase) Then
             Return Path.ChangeExtension(AttributeValue, NewExtension)
         End If
         Return AttributeValue
@@ -989,7 +988,7 @@ Public Class Form1
         ' (identified by the tag text when added to the list)...
         For Each clsMenu As ToolStripItem In mnuFile.DropDownItems
             If Not clsMenu.Tag Is Nothing Then
-                If (clsMenu.Tag.ToString().StartsWith("MRU:")) Then
+                If (clsMenu.Tag.ToString().StartsWith("MRU:", StringComparison.InvariantCulture)) Then
                     clsItems.Add(clsMenu)
                 End If
             End If
@@ -1043,7 +1042,7 @@ Public Class Form1
     End Sub
 
     Private Sub PictureBox1_Click(sender As Object, e As EventArgs) Handles PictureBox1.Click
-        If SearchInput.Text.IsEmptyNullOrWhitespace Then
+        If String.IsNullOrWhiteSpace(SearchInput.Text) Then
             Exit Sub
         End If
         Select Case SearchWhere.SelectedIndex
@@ -1201,13 +1200,13 @@ Public Class Form1
         Dim lineStart As Integer = box.GetFirstCharIndexFromLine(line)
         Dim AfterEquals As Integer = box.GetFirstCharIndexFromLine(line) + 15
         Dim LineText As String = box.Text.Substring(box.GetFirstCharIndexFromLine(line))
-        If Not LineText.StartsWith("BC") Then
+        If Not LineText.StartsWith("BC", StringComparison.InvariantCulture) Then
             Exit Sub
         End If
-        If Not LineText.Contains(" Line = ") Then
+        If Not LineText.Contains(" Line = ", StringComparison.InvariantCulture) Then
             Exit Sub
         End If
-        Dim NumberCount As Integer = LineText.Substring(15).IndexOf(" ")
+        Dim NumberCount As Integer = LineText.Substring(15).IndexOf(" ", StringComparison.InvariantCulture)
         Dim ErrorLine As Integer = CInt(Val(box.Text.Substring(AfterEquals, NumberCount)))
         If ErrorLine <= 0 Then
             Exit Sub

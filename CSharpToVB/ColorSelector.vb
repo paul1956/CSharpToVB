@@ -79,9 +79,9 @@ Public Class ColorSelector
         WriteColorDictionaryToFile(FullPath)
     End Sub
 
-    Public Shared Function GetColorFromName(Name As String) As Color
+    Friend Shared Function GetColorFromName(Name As String) As Color
         Try
-            If Name.IsEmptyNullOrWhitespace Then
+            If String.IsNullOrWhiteSpace(Name) Then
                 Return ColorMappingDictionary("default")
             End If
             Return ColorMappingDictionary(Name)
@@ -120,9 +120,9 @@ Public Class ColorSelector
             Dim line As String = sr.ReadLine()
             Dim Split() As String = line.Split(","c)
             Dim key As String = Split(0)
-            Dim R As Integer = Convert.ToInt32(Split(1))
-            Dim G As Integer = Convert.ToInt32(Split(2))
-            Dim B As Integer = Convert.ToInt32(Split(3))
+            Dim R As Integer = Convert.ToInt32(Split(1), Globalization.CultureInfo.InvariantCulture)
+            Dim G As Integer = Convert.ToInt32(Split(2), Globalization.CultureInfo.InvariantCulture)
+            Dim B As Integer = Convert.ToInt32(Split(3), Globalization.CultureInfo.InvariantCulture)
             ColorMappingDictionary(key) = Color.FromArgb(R, G, B)
         End While
         sr.Close()

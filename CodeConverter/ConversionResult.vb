@@ -14,24 +14,19 @@ Imports Microsoft.CodeAnalysis.Text
 
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
-Namespace IVisualBasicCode.CodeConverter
+Namespace CSharpToVBCodeConverter
 
     Public Class ConversionResult
-
         '
         ' Summary:
         '     Indicates File Conversion succeeded, failed or wasn't attempted (ignored)
         Public Enum ResultTriState
-
             '     This file was ignored setting.
             Ignore = -2
-
             '     Conversion succeeded.
             Success = -1
-
             '     Conversion failed.
             Failure = 0
-
         End Enum
 
         Public Sub New(_ConvertedTree As SyntaxNode, InputLanguage As String, OutputLanguage As String)
@@ -58,7 +53,7 @@ Namespace IVisualBasicCode.CodeConverter
 
         <ExcludeFromCodeCoverage>
         Public Sub New(ParamArray exceptions() As Exception)
-            ResultStatus = If(exceptions.Count = 0, ResultTriState.Ignore, ResultTriState.Failure)
+            ResultStatus = If(exceptions.Any, ResultTriState.Failure, ResultTriState.Ignore)
             Me.Exceptions = exceptions
         End Sub
 
@@ -67,8 +62,15 @@ Namespace IVisualBasicCode.CodeConverter
         Public Property ConvertedTree As VB.VisualBasicSyntaxNode
 
         Public Property Exceptions As IReadOnlyList(Of Exception)
+        Private _FilteredListOfFailures As List(Of Diagnostic)
 
-        Public Property FilteredListOfFailures As List(Of Diagnostic)
+        Public Function GetFilteredListOfFailures() As List(Of Diagnostic)
+            Return _FilteredListOfFailures
+        End Function
+
+        Public Sub SetFilteredListOfFailures(AutoPropertyValue As List(Of Diagnostic))
+            _FilteredListOfFailures = AutoPropertyValue
+        End Sub
 
         Public Property ResultStatus As ResultTriState
 
@@ -78,7 +80,7 @@ Namespace IVisualBasicCode.CodeConverter
 
         Protected Shared Function WorkspaceFormat(workspace As Workspace, root As SyntaxNode, spans As IEnumerable(Of TextSpan), _OptionSet As OptionSet, _SourceText As SourceText) As String
             Dim result As IList(Of TextChange) = Formatter.GetFormattedTextChanges(root, spans, workspace, _OptionSet)
-            Return _SourceText.WithChanges(result).ToString()
+            Return _SourceText?.WithChanges(result).ToString()
         End Function
 
     End Class

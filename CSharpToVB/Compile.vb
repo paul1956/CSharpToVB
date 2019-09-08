@@ -8,8 +8,8 @@ Option Strict On
 Imports System.Collections.Immutable
 Imports System.IO
 Imports System.Reflection
-Imports IVisualBasicCode.CodeConverter
-Imports IVisualBasicCode.CodeConverter.ConversionResult
+Imports CSharpToVBCodeConverter
+Imports CSharpToVBCodeConverter.ConversionResult
 
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Emit
@@ -17,9 +17,10 @@ Imports Microsoft.CodeAnalysis.VisualBasic
 
 Public Module Compile
 
-    Public Function CompileVisualBasicString(StringToBeCompiled As String, ErrorsToBeIgnored() As String, SeverityToReport As DiagnosticSeverity, ByRef ResultOfConversion As ConversionResult) As EmitResult
-        If StringToBeCompiled.IsEmptyNullOrWhitespace Then
-            ResultOfConversion.FilteredListOfFailures = New List(Of Diagnostic)
+    Public Function CompileVisualBasicString(StringToBeCompiled As String, ErrorsToBeIgnored As List(Of String), SeverityToReport As DiagnosticSeverity, ByRef ResultOfConversion As ConversionResult) As EmitResult
+        Contracts.Contract.Requires(ResultOfConversion IsNot Nothing)
+        If String.IsNullOrWhiteSpace(StringToBeCompiled) Then
+            ResultOfConversion?.GetFilteredListOfFailures().Clear()
             ResultOfConversion.ResultStatus = ResultTriState.Success
             Return Nothing
         End If
@@ -60,15 +61,16 @@ Public Module Compile
                 ' Ignore fatal compiler errors
             End Try
         End Using
-        ResultOfConversion.FilteredListOfFailures = FilterDiagnostics(Diags:=compilation.GetParseDiagnostics(), Severity:=SeverityToReport, ErrorsToBeIgnored:=ErrorsToBeIgnored)
+        ResultOfConversion.SetFilteredListOfFailures(FilterDiagnostics(Diags:=compilation.GetParseDiagnostics(), Severity:=SeverityToReport, ErrorsToBeIgnored))
         Return CompileResult
     End Function
 
-    Private Function FilterDiagnostics(Diags As ImmutableArray(Of Diagnostic), Severity As DiagnosticSeverity, ErrorsToBeIgnored As String()) As List(Of Diagnostic)
+    Private Function FilterDiagnostics(Diags As ImmutableArray(Of Diagnostic), Severity As DiagnosticSeverity, ErrorsToBeIgnored As List(Of String)) As List(Of Diagnostic)
+        Contracts.Contract.Requires(ErrorsToBeIgnored IsNot Nothing)
         Dim FilteredDiagnostics As New List(Of Diagnostic)
         For Each Diag As Diagnostic In Diags
             If Diag.Location.IsInSource = True AndAlso Diag.Severity >= Severity Then
-                If ErrorsToBeIgnored.Contains(Diag.Id.ToString) Then
+                If ErrorsToBeIgnored.Contains(Diag.Id.ToString(Globalization.CultureInfo.InvariantCulture), StringComparer.InvariantCultureIgnoreCase) Then
                     Continue For
                 End If
                 FilteredDiagnostics.Add(Diag)

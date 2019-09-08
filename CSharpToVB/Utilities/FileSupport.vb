@@ -35,9 +35,9 @@ Public Module FileSupport
         Dim LatestVersion As Integer = 0
         For Each dir As String In DirectoryEntries
             Dim DirectoryFileName As String = Path.GetFileName(dir)
-            If DirectoryFileName.StartsWith(VisualStudioBaseName) Then
+            If DirectoryFileName.StartsWith(VisualStudioBaseName, StringComparison.InvariantCultureIgnoreCase) Then
                 If Directory.Exists(Path.Combine(dir, "Projects")) Then
-                    Dim VSVersion As Integer = CInt(DirectoryFileName.Replace(VisualStudioBaseName, ""))
+                    Dim VSVersion As Integer = CInt(DirectoryFileName.Replace(VisualStudioBaseName, "", StringComparison.InvariantCultureIgnoreCase))
                     If VSVersion > LatestVersion Then
                         LatestVersion = VSVersion
                     End If

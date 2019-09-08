@@ -10,7 +10,7 @@ Imports System.Runtime.CompilerServices
 Imports Microsoft.CodeAnalysis
 Imports CS = Microsoft.CodeAnalysis.CSharp
 
-Namespace IVisualBasicCode.CodeConverter.Util
+Namespace CSharpToVBCodeConverter.Util
     Public Module SyntaxExtensions
 
         <Extension()>

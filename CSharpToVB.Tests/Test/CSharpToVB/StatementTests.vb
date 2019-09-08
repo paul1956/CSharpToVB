@@ -11,7 +11,7 @@ Namespace CSharpToVB.Tests
         Inherits ConverterTestBase
 
         <Fact>
-        Public Shared Sub CSharpToVB_EmptyStatement()
+        Public Shared Sub CSharpToVBEmptyStatement()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()
@@ -44,7 +44,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_AssignmentStatement()
+        Public Shared Sub CSharpToVBAssignmentStatement()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()
@@ -66,7 +66,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_AssignmentStatementInDeclaration()
+        Public Shared Sub CSharpToVBAssignmentStatementInDeclaration()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()
@@ -86,7 +86,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_AssignmentStatementInVarDeclaration()
+        Public Shared Sub CSharpToVBAssignmentStatementInVarDeclaration()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()
@@ -106,7 +106,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_ObjectInitializationStatement()
+        Public Shared Sub CSharpToVBObjectInitializationStatement()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()
@@ -128,7 +128,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_ObjectInitializationStatementInDeclaration()
+        Public Shared Sub CSharpToVBObjectInitializationStatementInDeclaration()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()
@@ -148,7 +148,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_ObjectInitializationStatementInVarDeclaration()
+        Public Shared Sub CSharpToVBObjectInitializationStatementInVarDeclaration()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()
@@ -168,7 +168,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_ArrayDeclarationStatement()
+        Public Shared Sub CSharpToVBArrayDeclarationStatement()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()
@@ -188,7 +188,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_ArrayInitializationStatement()
+        Public Shared Sub CSharpToVBArrayInitializationStatement()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()
@@ -208,7 +208,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_ArrayInitializationStatementInVarDeclaration()
+        Public Shared Sub CSharpToVBArrayInitializationStatementInVarDeclaration()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()
@@ -228,7 +228,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_ArrayInitializationStatementWithType()
+        Public Shared Sub CSharpToVBArrayInitializationStatementWithType()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()
@@ -248,7 +248,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_ArrayInitializationStatementWithLength()
+        Public Shared Sub CSharpToVBArrayInitializationStatementWithLength()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()
@@ -268,7 +268,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_MultidimensionalArrayDeclarationStatement()
+        Public Shared Sub CSharpToVBMultidimensionalArrayDeclarationStatement()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()
@@ -288,7 +288,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_MultidimensionalArrayInitializationStatement()
+        Public Shared Sub CSharpToVBMultidimensionalArrayInitializationStatement()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()
@@ -308,7 +308,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_MultidimensionalArrayInitializationStatementWithType()
+        Public Shared Sub CSharpToVBMultidimensionalArrayInitializationStatementWithType()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()
@@ -328,7 +328,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_MultidimensionalArrayInitializationStatementWithLengths()
+        Public Shared Sub CSharpToVBMultidimensionalArrayInitializationStatementWithLengths()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()
@@ -348,7 +348,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_JaggedArrayDeclarationStatement()
+        Public Shared Sub CSharpToVBJaggedArrayDeclarationStatement()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()
@@ -368,7 +368,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_JaggedArrayInitializationStatement()
+        Public Shared Sub CSharpToVBJaggedArrayInitializationStatement()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()
@@ -388,7 +388,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_JaggedArrayInitializationStatementWithType()
+        Public Shared Sub CSharpToVBJaggedArrayInitializationStatementWithType()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()
@@ -408,7 +408,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_JaggedArrayInitializationStatementWithLength()
+        Public Shared Sub CSharpToVBJaggedArrayInitializationStatementWithLength()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()
@@ -428,7 +428,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_DeclarationStatements()
+        Public Shared Sub CSharpToVBDeclarationStatements()
             TestConversionCSharpToVisualBasic("class Test {
     void TestMethod()
     {
@@ -455,7 +455,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_IfStatement()
+        Public Shared Sub CSharpToVBIfStatement()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod (int a)
@@ -494,7 +494,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_WhileStatement()
+        Public Shared Sub CSharpToVBWhileStatement()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()
@@ -536,7 +536,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_DoWhileStatement()
+        Public Shared Sub CSharpToVBDoWhileStatement()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()
@@ -578,7 +578,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_ForEachStatementWithExplicitType()
+        Public Shared Sub CSharpToVBForEachStatementWithExplicitType()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod(int[] values)
@@ -612,7 +612,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_ForEachStatementWithVar()
+        Public Shared Sub CSharpToVBForEachStatementWithVar()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod(int[] values)
@@ -646,7 +646,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_SyncLockStatement()
+        Public Shared Sub CSharpToVBSyncLockStatement()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod(object nullObject)
@@ -676,7 +676,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_ForWithUnknownConditionAndSingleStatement()
+        Public Shared Sub CSharpToVBForWithUnknownConditionAndSingleStatement()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()
@@ -701,7 +701,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_ForWithUnknownConditionAndBlock()
+        Public Shared Sub CSharpToVBForWithUnknownConditionAndBlock()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()
@@ -727,7 +727,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_ForWithSingleStatement()
+        Public Shared Sub CSharpToVBForWithSingleStatement()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()
@@ -749,7 +749,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_ForWithBlock()
+        Public Shared Sub CSharpToVBForWithBlock()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()
@@ -773,7 +773,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_LabeledAndForStatement()
+        Public Shared Sub CSharpToVBLabeledAndForStatement()
             TestConversionCSharpToVisualBasic("class GotoTest1
 {
     static void Main()
@@ -858,7 +858,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_ThrowStatement()
+        Public Shared Sub CSharpToVBThrowStatement()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod(object nullObject)
@@ -881,7 +881,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_AddRemoveHandler()
+        Public Shared Sub CSharpToVBAddRemoveHandler()
             TestConversionCSharpToVisualBasic("using System;
 
 class TestClass
@@ -949,7 +949,7 @@ End Class")
         '    End Function
         'End Class
         <Fact>
-        Public Shared Sub CSharpToVB_AddHandler()
+        Public Shared Sub CSharpToVBAddHandler()
             TestConversionCSharpToVisualBasic("using System;
 
     class RemoteAnalyzerFileReferenceTest : MarshalByRefObject
@@ -999,7 +999,7 @@ End Class
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_SelectCase1()
+        Public Shared Sub CSharpToVBSelectCase1()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod(int number)
@@ -1055,7 +1055,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_TryCatch()
+        Public Shared Sub CSharpToVBTryCatch()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     static bool Log(string message)
@@ -1131,7 +1131,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_Yield()
+        Public Shared Sub CSharpToVBYield()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     IEnumerable<int> TestMethod(int number)

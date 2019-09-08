@@ -14,10 +14,10 @@ Public Module EnumExtensions
 
     Private Sub CheckIsEnum(Of T)(withFlags As Boolean)
         If Not GetType(T).IsEnum Then
-            Throw New ArgumentException(String.Format("Type '{0}' is not an enum", GetType(T).FullName))
+            Throw New ArgumentException(String.Format(Globalization.CultureInfo.InvariantCulture, "Type '{0}' is not an enum", GetType(T).FullName))
         End If
         If withFlags AndAlso Not Attribute.IsDefined(GetType(T), GetType(FlagsAttribute)) Then
-            Throw New ArgumentException(String.Format("Type '{0}' doesn't have the 'Flags' attribute", GetType(T).FullName))
+            Throw New ArgumentException(String.Format(Globalization.CultureInfo.InvariantCulture, "Type '{0}' doesn't have the 'Flags' attribute", GetType(T).FullName))
         End If
     End Sub
 
@@ -37,10 +37,13 @@ Public Module EnumExtensions
 
     <Extension>
     Public Function CombineFlags(Of T As Structure)(flags As IEnumerable(Of T)) As T
+        If flags Is Nothing Then
+            Throw New ArgumentNullException(NameOf(flags))
+        End If
         CheckIsEnum(Of T)(withFlags:=True)
         Dim lValue As Long = 0
         For Each flag As T In flags
-            Dim lFlag As Long = Convert.ToInt64(flag)
+            Dim lFlag As Long = Convert.ToInt64(flag, Globalization.CultureInfo.InvariantCulture)
             lValue = lValue Or lFlag
         Next flag
         Return DirectCast([Enum].ToObject(GetType(T), lValue), T)
@@ -75,16 +78,16 @@ Public Module EnumExtensions
     <Extension>
     Public Function IsFlagSet(Of T As Structure)(value As T, flag As T) As Boolean
         CheckIsEnum(Of T)(withFlags:=True)
-        Dim lValue As Long = Convert.ToInt64(value)
-        Dim lFlag As Long = Convert.ToInt64(flag)
+        Dim lValue As Long = Convert.ToInt64(value, Globalization.CultureInfo.InvariantCulture)
+        Dim lFlag As Long = Convert.ToInt64(flag, Globalization.CultureInfo.InvariantCulture)
         Return (lValue And lFlag) <> 0
     End Function
 
     <Extension>
     Public Function SetFlags(Of T As Structure)(value As T, flags As T, [on] As Boolean) As T
         CheckIsEnum(Of T)(withFlags:=True)
-        Dim lValue As Long = Convert.ToInt64(value)
-        Dim lFlag As Long = Convert.ToInt64(flags)
+        Dim lValue As Long = Convert.ToInt64(value, Globalization.CultureInfo.InvariantCulture)
+        Dim lFlag As Long = Convert.ToInt64(flags, Globalization.CultureInfo.InvariantCulture)
         If [on] Then
             lValue = lValue Or lFlag
         Else

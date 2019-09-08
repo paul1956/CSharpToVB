@@ -8,9 +8,21 @@ Option Strict On
 Imports System.Runtime.CompilerServices
 Imports System.Runtime.InteropServices
 
+Imports PInvoke
+
 Friend Module NativeMethods
 
 #Region "Constants"
+
+    <FlagsAttribute()>
+    Public Enum EXECUTION_STATE As UInteger ' Determine Monitor State
+        ES_AWAYMODE_REQUIRED = &H40
+        ES_CONTINUOUS = &H80000000UI
+        ES_DISPLAY_REQUIRED = &H2
+        ES_SYSTEM_REQUIRED = &H1
+        ' Legacy flag, should not be used.
+        ' ES_USER_PRESENT = 0x00000004
+    End Enum
 
     <Flags>
     Public Enum FILEOPENDIALOGOPTIONS As UInteger
@@ -38,20 +50,60 @@ Friend Module NativeMethods
         FOS_SUPPORTSTREAMABLEITEMS = &H80000000UI
     End Enum
 
-    Friend Enum HRESULT As Long
-        S_FALSE = &H1
-        S_OK = &H0
-        E_INVALIDARG = &H80070057UI
-        E_OUTOFMEMORY = &H8007000EUI
+    Public Enum SBOrientation As Integer
+        HORZ = &H0
+        VERT = &H1
+        CTL = &H2
+        BOTH = &H3
     End Enum
 
+    <Flags>
+    Public Enum ScrollInfoMasks As Integer
+        RANGE = &H1
+        PAGE = &H2
+        POS = &H4
+        DISABLENOSCROLL = &H8
+        TRACKPOS = &H10
+        ALL = (RANGE Or PAGE Or POS Or TRACKPOS)
+    End Enum
+
+    <StructLayout(LayoutKind.Sequential)>
+    Friend Structure RECT
+        Public Left, Top, Right, Bottom As Integer
+
+        Public Function ToRectangle() As Rectangle
+            Return New Rectangle(Left, Top, Right - Left, Bottom - Top)
+        End Function
+
+    End Structure
+
+    <Serializable, StructLayout(LayoutKind.Sequential)>
+    Friend Structure SCROLLINFO
+        Public CB_Size As UInteger
+        <MarshalAs(UnmanagedType.U4)> Public F_Mask As ScrollInfoMasks
+        Public N_Min As Integer
+        Public N_Max As Integer
+        Public N_Page As UInteger
+        Public N_Pos As Integer
+        Public N_TrackPos As Integer
+    End Structure
+
+    <StructLayout(LayoutKind.Sequential)>
+    Public Structure SCROLLBARINFO
+        Public CB_Size As Integer
+        Public RC_ScrollBar As RECT
+        Public DXY_LineButton As Integer
+        Public XY_ThumbTop As Integer
+        Public XY_ThumbBottom As Integer
+        Public Reserved As Integer
+
+        <MarshalAs(UnmanagedType.ByValArray, SizeConst:=6, ArraySubType:=UnmanagedType.U4)>
+        Public RgState() As Integer
+
+    End Structure
 #End Region
 
 #Region "COM"
-
-    <ComImport(), ClassInterface(ClassInterfaceType.None), TypeLibType(TypeLibTypeFlags.FCanCreate), Guid(CLSIDGuid.FileOpenDialog)>
-    Friend Class FileOpenDialogRCW
-    End Class
 
     <ComImport(), Guid(ComGuids.IFileDialog), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)>
     Friend Interface IFileDialog
@@ -135,15 +187,15 @@ Friend Module NativeMethods
     <ComImport(), Guid(ComGuids.IFileDialogEvents), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)>
     Friend Interface IFileDialogEvents
 
-        ' NOTE: some of these callbacks are cancelable - returning S_FALSE means that
+        ' NOTE: some of these callbacks are cancel-able - returning S_FALSE means that
         ' the dialog should not proceed (e.g. with closing, changing folder); to
         ' support this, we need to use the PreserveSig attribute to enable us to return
         ' the proper HRESULT
         <MethodImpl(MethodImplOptions.InternalCall, MethodCodeType:=MethodCodeType.Runtime), PreserveSig()>
-        Function OnFileOk(<[In](), MarshalAs(UnmanagedType.[Interface])> pfd As IFileDialog) As HRESULT
+        Function OnFileOk(<[In](), MarshalAs(UnmanagedType.[Interface])> pfd As IFileDialog) As HResult
 
         <MethodImpl(MethodImplOptions.InternalCall, MethodCodeType:=MethodCodeType.Runtime), PreserveSig()>
-        Function OnFolderChanging(<[In](), MarshalAs(UnmanagedType.[Interface])> pfd As IFileDialog, <[In](), MarshalAs(UnmanagedType.[Interface])> psiFolder As IShellItem) As HRESULT
+        Function OnFolderChanging(<[In](), MarshalAs(UnmanagedType.[Interface])> pfd As IFileDialog, <[In](), MarshalAs(UnmanagedType.[Interface])> psiFolder As IShellItem) As HResult
 
         <MethodImpl(MethodImplOptions.InternalCall, MethodCodeType:=MethodCodeType.Runtime)>
         Sub OnFolderChange(<[In](), MarshalAs(UnmanagedType.[Interface])> pfd As IFileDialog)
@@ -182,6 +234,45 @@ Friend Module NativeMethods
 
     End Interface
 
+    'Enables an application to inform the system that it is in use, thereby preventing the system from entering sleep or turning off the display while the application is running.
+    <DllImport("kernel32.dll", CharSet:=CharSet.Auto, SetLastError:=True)>
+    Private Function SetThreadExecutionState(ByVal esFlags As EXECUTION_STATE) As EXECUTION_STATE
+    End Function
+
+    <DllImport("user32.dll", EntryPoint:=NameOf(GetScrollBarInfo))>
+    Friend Function GetScrollBarInfo(ByVal hwnd As IntPtr,
+                                            ByVal idObject As Integer,
+                                            ByRef psbi As SCROLLBARINFO) As <MarshalAs(UnmanagedType.Bool)> Boolean
+    End Function
+
+    <DllImport("user32.dll", SetLastError:=True)>
+    Friend Function GetScrollInfo(
+                                         hWnd As IntPtr,
+                                         <MarshalAs(UnmanagedType.I4)> fnBar As SBOrientation,
+                                         ByRef lpsi As SCROLLINFO) As Integer
+    End Function
+
+    <DllImport("user32.dll", SetLastError:=True, ThrowOnUnmappableChar:=True, CharSet:=CharSet.Auto)>
+    Friend Function SetScrollInfo(
+                                        hWnd As IntPtr,
+                                        <MarshalAs(UnmanagedType.I4)> nBar As SBOrientation,
+                                        <MarshalAs(UnmanagedType.Struct)> ByRef lpsi As SCROLLINFO,
+                                        <MarshalAs(UnmanagedType.Bool)> bRepaint As Boolean) As Integer
+    End Function
+    'This function queries or sets system-wide parameters, and updates the user profile during the process.
+    <DllImport("user32", EntryPoint:=NameOf(SystemParametersInfo), CharSet:=CharSet.Unicode, SetLastError:=True)>
+    Public Function SystemParametersInfo(
+            ByVal intAction As Integer,
+            ByVal intParam As Integer,
+            ByVal strParam As String,
+            ByVal intWinIniFlag As Integer) As Integer
+        ' returns non-zero value if function succeeds
+    End Function
+
+    <ComImport(), ClassInterface(ClassInterfaceType.None), TypeLibType(TypeLibTypeFlags.FCanCreate), Guid(CLSIDGuid.FileOpenDialog)>
+    Friend Class FileOpenDialogRCW
+    End Class
+
 #End Region
 
     <DllImport("shell32.dll", CharSet:=CharSet.Unicode, PreserveSig:=False)>
@@ -194,32 +285,27 @@ Friend Module NativeMethods
 
 #Region "File Operations Definitions"
 
-    <StructLayout(LayoutKind.Sequential, CharSet:=CharSet.Unicode, Pack:=4)>
-    Friend Structure COMDLG_FILTERSPEC
-
-        <MarshalAs(UnmanagedType.LPWStr)>
-        Friend pszName As String
-
-        <MarshalAs(UnmanagedType.LPWStr)>
-        Friend pszSpec As String
-
-    End Structure
+    Friend Enum CDCONTROLSTATE
+        CDCS_INACTIVE = &H0
+        CDCS_ENABLED = &H1
+        CDCS_VISIBLE = &H2
+    End Enum
 
     Friend Enum FDAP
         FDAP_BOTTOM = &H0
         FDAP_TOP = &H1
     End Enum
 
-    Friend Enum FDE_SHAREVIOLATION_RESPONSE
-        FDESVR_DEFAULT = &H0
-        FDESVR_ACCEPT = &H1
-        FDESVR_REFUSE = &H2
-    End Enum
-
     Friend Enum FDE_OVERWRITE_RESPONSE
         FDEOR_DEFAULT = &H0
         FDEOR_ACCEPT = &H1
         FDEOR_REFUSE = &H2
+    End Enum
+
+    Friend Enum FDE_SHAREVIOLATION_RESPONSE
+        FDESVR_DEFAULT = &H0
+        FDESVR_ACCEPT = &H1
+        FDESVR_REFUSE = &H2
     End Enum
 
     Friend Enum SIGDN As UInteger
@@ -252,11 +338,16 @@ Friend Module NativeMethods
         ' SHGDN_INFOLDER
     End Enum
 
-    Friend Enum CDCONTROLSTATE
-        CDCS_INACTIVE = &H0
-        CDCS_ENABLED = &H1
-        CDCS_VISIBLE = &H2
-    End Enum
+    <StructLayout(LayoutKind.Sequential, CharSet:=CharSet.Unicode, Pack:=4)>
+    Friend Structure COMDLG_FILTERSPEC
+
+        <MarshalAs(UnmanagedType.LPWStr)>
+        Friend pszName As String
+
+        <MarshalAs(UnmanagedType.LPWStr)>
+        Friend pszSpec As String
+
+    End Structure
 
 #End Region
 

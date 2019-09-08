@@ -105,7 +105,7 @@ Namespace Roslyn.Test.Utilities
                 Select Case matchString.Substring(0, 2)
                     Case PositionString
                         If position.HasValue Then
-                            Throw New ArgumentException(String.Format("Saw multiple occurrences of {0}", PositionString))
+                            Throw New ArgumentException(String.Format(Globalization.CultureInfo.CurrentCulture, "Saw multiple occurrences of {0}", PositionString))
                         End If
 
                         position = matchIndexInOutput
@@ -115,11 +115,11 @@ Namespace Roslyn.Test.Utilities
 
                     Case SpanEndString
                         If spanStartStack.Count = 0 Then
-                            Throw New ArgumentException(String.Format("Saw {0} without matching {1}", SpanEndString, SpanStartString))
+                            Throw New ArgumentException(String.Format(Globalization.CultureInfo.CurrentCulture, "Saw {0} without matching {1}", SpanEndString, SpanStartString))
                         End If
 
                         If spanStartStack.Peek().Item2.Length > 0 Then
-                            Throw New ArgumentException(String.Format("Saw {0} without matching {1}", NamedSpanStartString, NamedSpanEndString))
+                            Throw New ArgumentException(String.Format(Globalization.CultureInfo.CurrentCulture, "Saw {0} without matching {1}", NamedSpanStartString, NamedSpanEndString))
                         End If
 
                         PopSpan(spanStartStack, tempSpans, matchIndexInOutput)
@@ -130,11 +130,11 @@ Namespace Roslyn.Test.Utilities
 
                     Case NamedSpanEndString
                         If spanStartStack.Count = 0 Then
-                            Throw New ArgumentException(String.Format("Saw {0} without matching {1}", NamedSpanEndString, NamedSpanStartString))
+                            Throw New ArgumentException(String.Format(Globalization.CultureInfo.CurrentCulture, "Saw {0} without matching {1}", NamedSpanEndString, NamedSpanStartString))
                         End If
 
                         If spanStartStack.Peek().Item2.Length = 0 Then
-                            Throw New ArgumentException(String.Format("Saw {0} without matching {1}", SpanStartString, SpanEndString))
+                            Throw New ArgumentException(String.Format(Globalization.CultureInfo.CurrentCulture, "Saw {0} without matching {1}", SpanStartString, SpanEndString))
                         End If
 
                         PopSpan(spanStartStack, tempSpans, matchIndexInOutput)
@@ -144,7 +144,7 @@ Namespace Roslyn.Test.Utilities
             End While
 
             If spanStartStack.Count > 0 Then
-                Throw New ArgumentException(String.Format("Saw {0} without matching {1}", SpanStartString, SpanEndString))
+                Throw New ArgumentException(String.Format(Globalization.CultureInfo.CurrentCulture, "Saw {0} without matching {1}", SpanStartString, SpanEndString))
             End If
 
             ' Append the remainder of the string.
@@ -206,7 +206,7 @@ Namespace Roslyn.Test.Utilities
         End Sub
 
         Private Sub AddMatch(input As String, value As String, currentIndex As Integer, matches As List(Of Tuple(Of Integer, String)))
-            Dim index As Integer = input.IndexOf(value, currentIndex, StringComparison.Ordinal)
+            Dim index As Integer = input.IndexOf(value, currentIndex, StringComparison.InvariantCulture)
             If index >= 0 Then
                 matches.Add(Tuple.Create(index, value))
             End If

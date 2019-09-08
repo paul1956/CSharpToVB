@@ -12,13 +12,13 @@ Imports System.Threading
 
 Imports Microsoft.CodeAnalysis
 
-Namespace IVisualBasicCode.CodeConverter.Util
+Namespace CSharpToVBCodeConverter.Util
 
     <EditorBrowsable(EditorBrowsableState.Never)>
     Partial Public Module ITypeSymbolExtensions
 
         <Extension>
-        Public Function GetAllInterfacesIncludingThis(type As ITypeSymbol) As IList(Of INamedTypeSymbol)
+        Friend Function GetAllInterfacesIncludingThis(type As ITypeSymbol) As IList(Of INamedTypeSymbol)
             Dim allInterfaces As ImmutableArray(Of INamedTypeSymbol) = type.AllInterfaces
             Dim tempVar As Boolean = TypeOf type Is INamedTypeSymbol
             Dim namedType As INamedTypeSymbol = If(tempVar, CType(type, INamedTypeSymbol), Nothing)
@@ -94,7 +94,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
             ' A protected symbol is accessible if we're (optionally nested) inside the type that it
             ' was defined in.
 
-            ' NOTE(ericli): It is helpful to consider 'protected' as *increasing* the
+            ' NOTE: It is helpful to consider 'protected' as *increasing* the
             ' accessibility domain of a private member, rather than *decreasing* that of a public
             ' member. Members are naturally private; the protected, internal and public access
             ' modifiers all increase the accessibility domain. Since private members are accessible
@@ -137,7 +137,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
         End Function
 
         <Extension>
-        Public Function ActionType(ByVal compilation As Compilation) As INamedTypeSymbol
+        Friend Function ActionType(ByVal compilation As Compilation) As INamedTypeSymbol
             Return compilation.GetTypeByMetadataName(GetType(Action).FullName)
         End Function
 
@@ -153,7 +153,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
         ' Determine if "type" inherits from "baseType", ignoring constructed types, and dealing
         ' only with original types.
         <Extension>
-        Public Function InheritsFromOrEqualsIgnoringConstruction(type As ITypeSymbol, baseType As ITypeSymbol) As Boolean
+        Friend Function InheritsFromOrEqualsIgnoringConstruction(type As ITypeSymbol, baseType As ITypeSymbol) As Boolean
             Dim originalBaseType As ITypeSymbol = baseType.OriginalDefinition
             Return type.GetBaseTypesAndThis.Contains(Function(t As ITypeSymbol) SymbolEquivalenceComparer.Instance.Equals(t.OriginalDefinition, originalBaseType))
         End Function
@@ -167,7 +167,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
         End Function
 
         <Extension()>
-        Public Function IsErrorType(symbol As ITypeSymbol) As Boolean
+        Friend Function IsErrorType(symbol As ITypeSymbol) As Boolean
             Return symbol.TypeKind = TypeKind.[Error]
         End Function
 
@@ -182,7 +182,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
 
         ' Is a member with declared accessibility "declaredAccessiblity" accessible from within
         ' "within", which must be a named type or an assembly.
-        Public Function IsMemberAccessible(containingType As INamedTypeSymbol, declaredAccessibility As Microsoft.CodeAnalysis.Accessibility, within As ISymbol, throughTypeOpt As ITypeSymbol, ByRef failedThroughTypeCheck As Boolean) As Boolean
+        Friend Function IsMemberAccessible(containingType As INamedTypeSymbol, declaredAccessibility As Microsoft.CodeAnalysis.Accessibility, within As ISymbol, throughTypeOpt As ITypeSymbol, ByRef failedThroughTypeCheck As Boolean) As Boolean
             '			Contract.Requires(within is INamedTypeSymbol || within is IAssemblySymbol);
             '			Contract.ThrowIfNull(containingType);
 
@@ -257,7 +257,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
         End Function
 
         <Extension>
-        Public Function IsSameAssemblyOrHasFriendAccessTo(assembly As IAssemblySymbol, toAssembly As IAssemblySymbol) As Boolean
+        Friend Function IsSameAssemblyOrHasFriendAccessTo(assembly As IAssemblySymbol, toAssembly As IAssemblySymbol) As Boolean
             Return Equals(assembly, toAssembly) OrElse (assembly.IsInteractive AndAlso toAssembly.IsInteractive) OrElse toAssembly.GivesAccessTo(assembly)
         End Function
 

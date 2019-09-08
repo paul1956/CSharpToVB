@@ -5,9 +5,9 @@ Imports System.Runtime.CompilerServices
 
 Partial Public Module SpecializedCollection
     <Extension>
-    Public Function Last(ByVal _StringCollection As Specialized.StringCollection) As String
+    Public Function Last(ByVal StringCollection As Specialized.StringCollection) As String
 
-        Return If(_StringCollection Is Nothing OrElse _StringCollection.Count = 0, "", _StringCollection.Item(_StringCollection.Count - 1))
+        Return If(StringCollection Is Nothing OrElse StringCollection.Count = 0, "", StringCollection.Item(StringCollection.Count - 1))
     End Function
 
 End Module

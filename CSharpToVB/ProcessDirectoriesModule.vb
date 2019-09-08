@@ -18,7 +18,7 @@ Public Module ProcessDirectoriesModule
     ''' <param name="SubdirectoryName"></param>
     ''' <returns></returns>
     Private Function ConvertSourceToTargetDirectory(TargetDirectory As String, SubdirectoryName As String) As String
-        If TargetDirectory.IsEmptyNullOrWhitespace Then
+        If String.IsNullOrWhiteSpace(TargetDirectory) Then
             Return ""
         End If
         Return Path.Combine(TargetDirectory, New DirectoryInfo(SubdirectoryName).Name)
@@ -55,7 +55,7 @@ Public Module ProcessDirectoriesModule
     ''' False if error and user wants to stop, True if success or user wants to ignore error
     ''' </returns>
     Public Function ProcessDirectory(SourceDirectory As String, TargetDirectory As String, MeForm As Form1, StopButton As Button, RichTextBoxFileList As RichTextBox, ByRef LastFileNameWithPath As String, SourceLanguageExtension As String, ByRef FilesProcessed As Long, ByRef TotalFilesToProcess As Long, ProcessFile As Func(Of String, String, String, MetadataReference(), Boolean)) As Boolean
-        If SourceDirectory.IsEmptyNullOrWhitespace OrElse Not Directory.Exists(SourceDirectory) Then
+        If String.IsNullOrWhiteSpace(SourceDirectory) OrElse Not Directory.Exists(SourceDirectory) Then
             Return True
         End If
         ' Process the list of files found in the directory.
@@ -66,7 +66,7 @@ Public Module ProcessDirectoriesModule
             If LastFileNameWithPath.Length = 0 OrElse LastFileNameWithPath = PathWithFileName Then
                 LastFileNameWithPath = ""
                 If RichTextBoxFileList IsNot Nothing Then
-                    RichTextBoxFileList.AppendText($"{FilesProcessed.ToString.PadLeft(5)} {PathWithFileName}{vbCrLf}")
+                    RichTextBoxFileList.AppendText($"{FilesProcessed.ToString(Globalization.CultureInfo.InvariantCulture).PadLeft(5)} {PathWithFileName}{vbCrLf}")
                     RichTextBoxFileList.Select(RichTextBoxFileList.TextLength, 0)
                     RichTextBoxFileList.ScrollToCaret()
                     Application.DoEvents()
@@ -85,12 +85,13 @@ Public Module ProcessDirectoriesModule
         Dim subdirectoryEntries As String() = Directory.GetDirectories(path:=SourceDirectory)
         ' Recurse into subdirectories of this directory.
         For Each Subdirectory As String In subdirectoryEntries
-            Dim DirName As String = New DirectoryInfo(Subdirectory).Name.ToLower
-            If (DirName = "bin" OrElse DirName = "obj" OrElse DirName = "g") AndAlso (MeForm Is Nothing OrElse My.Settings.SkipBinAndObjFolders) Then
+            Dim DirName As String = New DirectoryInfo(Subdirectory).Name.ToUpperInvariant
+            If (DirName = "BIN" OrElse DirName = "OBJ" OrElse DirName = "G") AndAlso
+                (MeForm Is Nothing OrElse My.Settings.SkipBinAndObjFolders) Then
                 Continue For
             End If
 
-            If (Subdirectory.EndsWith("Test\Resources") OrElse Subdirectory.EndsWith("Setup\Templates")) AndAlso (MeForm Is Nothing OrElse My.Settings.SkipTestResourceFiles) Then
+            If (Subdirectory.EndsWith("Test\Resources", StringComparison.InvariantCultureIgnoreCase) OrElse Subdirectory.EndsWith("Setup\Templates", StringComparison.InvariantCultureIgnoreCase)) AndAlso (MeForm Is Nothing OrElse My.Settings.SkipTestResourceFiles) Then
                 Continue For
             End If
             If Not ProcessDirectory(Subdirectory, ConvertSourceToTargetDirectory(TargetDirectory, Subdirectory), MeForm, StopButton, RichTextBoxFileList, LastFileNameWithPath, SourceLanguageExtension, FilesProcessed, TotalFilesToProcess, ProcessFile) Then
@@ -101,7 +102,7 @@ Public Module ProcessDirectoriesModule
         Return True
     End Function
 
-    Public Sub SetButtonStopAndCursor(MeForm As Form1, StopButton As Button, StopButtonVisible As Boolean)
+    Friend Sub SetButtonStopAndCursor(MeForm As Form1, StopButton As Button, StopButtonVisible As Boolean)
         If StopButton IsNot Nothing Then
             StopButton.Visible = StopButtonVisible
             MeForm.StopRequested = False

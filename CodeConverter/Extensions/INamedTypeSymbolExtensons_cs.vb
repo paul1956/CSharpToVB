@@ -8,18 +8,23 @@ Option Strict On
 Imports System.Collections.Immutable
 Imports System.Runtime.CompilerServices
 Imports System.Threading
-Imports IVisualBasicCode.CodeConverter.Visual_Basic.CSharpConverter
+
+Imports CSharpToVBCodeConverter.Visual_Basic.CSharpConverter
+
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace IVisualBasicCode.CodeConverter.Util
+Namespace CSharpToVBCodeConverter.Util
 
     Public Module INamedTypeSymbolExtensons
 
         Private Function ConvertISymbolToNameSyntaxInterfaceName(interfaceMethod As ISymbol) As NameSyntax
             Dim TypeString As String = interfaceMethod.ContainingSymbol.ToString
-            TypeString = TypeString.Replace("<", "(Of ").Replace(">", ")").Replace("[", "(").Replace("]", ")")
-            Dim FirstTupleIndex As Integer = TypeString.IndexOf("(Of (")
+            TypeString = TypeString.Replace("<", "(Of ", StringComparison.InvariantCulture).
+                                    Replace(">", ")", StringComparison.InvariantCulture).
+                                    Replace("[", "(", StringComparison.InvariantCulture).
+                                    Replace("]", ")", StringComparison.InvariantCulture)
+            Dim FirstTupleIndex As Integer = TypeString.IndexOf("(Of (", StringComparison.InvariantCulture)
             If FirstTupleIndex < 0 Then
                 Return VisualBasic.SyntaxFactory.ParseName(TypeString)
             End If
@@ -57,16 +62,16 @@ Namespace IVisualBasicCode.CodeConverter.Util
             For Each t As String In TupleString.Substring(1, TupleString.Length - 2).Split(","c)
                 Dim TuplePart() As String = t.Trim.Split(" "c)
                 If TuplePart.Count = 1 Then
-                    TupleElements.Add(NodesVisitor.ConvertToType(TuplePart(0).ToString).ToString)
+                    TupleElements.Add(NodesVisitor.ConvertToType(TuplePart(0).ToString(Globalization.CultureInfo.InvariantCulture)).ToString)
                 Else
                     Dim Identifier As SyntaxToken = CSharp.SyntaxFactory.Identifier(TuplePart(1))
-                    TupleElements.Add($"{GenerateSafeVBToken(Identifier, IsQualifiedName:=False, IsTypeName:=False).ValueText} As {NodesVisitor.ConvertToType(TuplePart(0).ToString)}")
+                    TupleElements.Add($"{GenerateSafeVBToken(Identifier, IsQualifiedName:=False, IsTypeName:=False).ValueText} As {NodesVisitor.ConvertToType(TuplePart(0).ToString(Globalization.CultureInfo.InvariantCulture))}")
                 End If
             Next
             Return $"({String.Join(", ", TupleElements)})"
         End Function
 
-        Private Function GetAbstractClassesToImplement(_classOrStructType As INamedTypeSymbol, abstractClasses As IEnumerable(Of INamedTypeSymbol)) As ImmutableArray(Of INamedTypeSymbol)
+        Private Function GetAbstractClassesToImplement(abstractClasses As IEnumerable(Of INamedTypeSymbol)) As ImmutableArray(Of INamedTypeSymbol)
             Return abstractClasses.SelectMany(Function(a) a.GetBaseTypesAndThis()).Where(Function(t) t.IsAbstractClass()).ToImmutableArray()
         End Function
 
@@ -80,9 +85,9 @@ Namespace IVisualBasicCode.CodeConverter.Util
                                                     interfaceMemberGetter As Func(Of INamedTypeSymbol, ISymbol, ImmutableArray(Of ISymbol)),
                                                     allowReimplementation As Boolean,
                                                     cancellationToken As CancellationToken) As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))
-            Contract.ThrowIfNull(classOrStructType)
-            Contract.ThrowIfNull(interfacesOrAbstractClasses)
-            Contract.ThrowIfNull(isImplemented)
+            Contracts.Contract.Requires(classOrStructType IsNot Nothing)
+            Contracts.Contract.Requires(interfacesOrAbstractClasses IsNot Nothing)
+            Contracts.Contract.Requires(isImplemented IsNot Nothing)
 
             If classOrStructType.TypeKind <> TypeKind.Class AndAlso classOrStructType.TypeKind <> TypeKind.Struct Then
                 Return ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))).Empty
@@ -110,9 +115,9 @@ Namespace IVisualBasicCode.CodeConverter.Util
                                                     interfaceMemberGetter As Func(Of INamedTypeSymbol, ISymbol, ImmutableArray(Of ISymbol)),
                                                     allowReimplementation As Boolean,
                                                     cancellationToken As CancellationToken) As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))
-            Contract.ThrowIfNull(classOrStructType)
-            Contract.ThrowIfNull(interfacesOrAbstractClasses)
-            Contract.ThrowIfNull(isImplemented)
+            Contracts.Contract.Requires(classOrStructType IsNot Nothing)
+            Contracts.Contract.Requires(interfacesOrAbstractClasses IsNot Nothing)
+            Contracts.Contract.Requires(isImplemented IsNot Nothing)
 
             If classOrStructType.TypeKind <> TypeKind.Class AndAlso classOrStructType.TypeKind <> TypeKind.Struct Then
                 Return ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))).Empty
@@ -158,14 +163,8 @@ Namespace IVisualBasicCode.CodeConverter.Util
             Return interfacesToImplement.ToImmutableArray()
         End Function
 
-#Disable Warning IDE0051 ' Remove unused private members
-        Private Function GetMembers(type As INamedTypeSymbol, _within As ISymbol) As ImmutableArray(Of ISymbol)
-#Enable Warning IDE0051 ' Remove unused private members
-            Return type.GetMembers()
-        End Function
-
         Private Function GetTypesToImplement(classOrStructType As INamedTypeSymbol, interfacesOrAbstractClasses As IEnumerable(Of INamedTypeSymbol), allowReimplementation As Boolean, cancellationToken As CancellationToken) As ImmutableArray(Of INamedTypeSymbol)
-            Return If(interfacesOrAbstractClasses.First().TypeKind = TypeKind.Interface, GetInterfacesToImplement(classOrStructType, interfacesOrAbstractClasses, allowReimplementation, cancellationToken), GetAbstractClassesToImplement(classOrStructType, interfacesOrAbstractClasses))
+            Return If(interfacesOrAbstractClasses.First().TypeKind = TypeKind.Interface, GetInterfacesToImplement(classOrStructType, interfacesOrAbstractClasses, allowReimplementation, cancellationToken), GetAbstractClassesToImplement(interfacesOrAbstractClasses))
         End Function
 
         Private Function GetUnimplementedMembers(classOrStructType As INamedTypeSymbol, interfaceType As INamedTypeSymbol, isImplemented As Func(Of INamedTypeSymbol, ISymbol, Func(Of INamedTypeSymbol, ISymbol, Boolean), CancellationToken, Boolean), isValidImplementation As Func(Of INamedTypeSymbol, ISymbol, Boolean), interfaceMemberGetter As Func(Of INamedTypeSymbol, ISymbol, ImmutableArray(Of ISymbol)), cancellationToken As CancellationToken) As ImmutableArray(Of ISymbol)
@@ -226,38 +225,6 @@ Namespace IVisualBasicCode.CodeConverter.Util
             Return accessor Is Nothing OrElse Not IsImplementable(accessor) OrElse classOrStructType.FindImplementationForInterfaceMember(accessor) IsNot Nothing
         End Function
 
-#Disable Warning IDE0051 ' Remove unused private members
-        Private Function IsExplicitlyImplemented(
-            classOrStructType As INamedTypeSymbol,
-            member As ISymbol,
-            _isValid As Func(Of INamedTypeSymbol, ISymbol, Boolean)) As Boolean
-#Enable Warning IDE0051 ' Remove unused private members
-
-            Dim implementation As ISymbol = classOrStructType.FindImplementationForInterfaceMember(member)
-
-            If implementation?.ContainingType.TypeKind = TypeKind.[Interface] Then
-                ' Treat all implementations in interfaces as explicit, even the original declaration with implementation.
-                ' There are no implicit interface implementations in derived interfaces and it feels reasonable to treat
-                ' original declaration with implementation as an explicit implementation as well, the implementation is
-                ' explicitly provided after all. All implementations in interfaces will be treated uniformly.
-                Return True
-            End If
-
-            Select Case True
-                Case TypeOf implementation Is IEventSymbol
-                    Dim [event] As IEventSymbol = CType(implementation, IEventSymbol)
-                    Return [event].ExplicitInterfaceImplementations.Length > 0
-                Case TypeOf implementation Is IMethodSymbol
-                    Dim method As IMethodSymbol = CType(implementation, IMethodSymbol)
-                    Return method.ExplicitInterfaceImplementations.Length > 0
-                Case TypeOf implementation Is IPropertySymbol
-                    Dim [property] As IPropertySymbol = CType(implementation, IPropertySymbol)
-                    Return [property].ExplicitInterfaceImplementations.Length > 0
-                Case Else
-                    Return False
-            End Select
-        End Function
-
         Private Function IsImplementable(m As ISymbol) As Boolean
             Return m.IsVirtual OrElse m.IsAbstract
         End Function
@@ -298,6 +265,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
         End Function
 
 #Disable Warning IDE0051 ' Remove unused private members
+
         Private Function IsPropertyWithInaccessibleImplementableAccessor(member As ISymbol, within As ISymbol) As Boolean
 #Enable Warning IDE0051 ' Remove unused private members
             If member.Kind <> SymbolKind.Property Then
@@ -337,7 +305,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
         End Function
 
         <Extension>
-        Public Function FindImplementationForAbstractMember(type As INamedTypeSymbol, symbol As ISymbol) As ISymbol
+        Friend Function FindImplementationForAbstractMember(type As INamedTypeSymbol, symbol As ISymbol) As ISymbol
             If symbol.IsAbstract Then
                 Return type.GetBaseTypesAndThis().SelectMany(Function(t) t.GetMembers(symbol.Name)).FirstOrDefault(Function(s) DirectCast(symbol, Object).Equals(GetOverriddenMember(s)))
             End If
@@ -346,7 +314,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
         End Function
 
         <Extension>
-        Public Function GetAllImplementedMembers(classOrStructType As INamedTypeSymbol,
+        Friend Function GetAllImplementedMembers(classOrStructType As INamedTypeSymbol,
                                                interfacesOrAbstractClasses As IEnumerable(Of INamedTypeSymbol),
                                                cancellationToken As CancellationToken) As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))
             Return classOrStructType.GetAllImplementedMembers(
@@ -390,7 +358,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
         'End Function
 
         <Extension>
-        Public Function GetAllUnimplementedMembers(classOrStructType As INamedTypeSymbol,
+        Friend Function GetAllUnimplementedMembers(classOrStructType As INamedTypeSymbol,
                                                interfacesOrAbstractClasses As IEnumerable(Of INamedTypeSymbol),
                                                cancellationToken As CancellationToken) As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))
             Return classOrStructType.GetAllUnimplementedMembers(
@@ -455,8 +423,8 @@ Namespace IVisualBasicCode.CodeConverter.Util
         End Function
 
         <Extension>
-        Public Function GetImplementsClauseForMethod(ListOfRequiredInterfaces As ImmutableArray(Of (InterfaceName As INamedTypeSymbol, MethodList As ImmutableArray(Of ISymbol))), CS_Method As IMethodSymbol) As ImplementsClauseSyntax
-            If ListOfRequiredInterfaces.Count = 0 Then
+        Friend Function GetImplementsClauseForMethod(ListOfRequiredInterfaces As ImmutableArray(Of (InterfaceName As INamedTypeSymbol, MethodList As ImmutableArray(Of ISymbol))), CS_Method As IMethodSymbol) As ImplementsClauseSyntax
+            If Not ListOfRequiredInterfaces.Any Then
                 Return Nothing
             End If
             Dim SeparatedList As New List(Of QualifiedNameSyntax)
@@ -478,9 +446,10 @@ Namespace IVisualBasicCode.CodeConverter.Util
             End If
             Return VisualBasic.SyntaxFactory.ImplementsClause(VisualBasic.SyntaxFactory.SeparatedList(SeparatedList))
         End Function
+
         <Extension>
-        Public Function GetImplementsClauseForProperty(ListOfRequiredInterfaces As ImmutableArray(Of (InterfaceName As INamedTypeSymbol, MethodList As ImmutableArray(Of ISymbol))), CS_Property As IPropertySymbol) As ImplementsClauseSyntax
-            If ListOfRequiredInterfaces.Count = 0 Then
+        Friend Function GetImplementsClauseForProperty(ListOfRequiredInterfaces As ImmutableArray(Of (InterfaceName As INamedTypeSymbol, MethodList As ImmutableArray(Of ISymbol))), CS_Property As IPropertySymbol) As ImplementsClauseSyntax
+            If Not ListOfRequiredInterfaces.Any Then
                 Return Nothing
             End If
             Dim SeparatedList As New List(Of QualifiedNameSyntax)
@@ -502,8 +471,12 @@ Namespace IVisualBasicCode.CodeConverter.Util
             End If
             Return VisualBasic.SyntaxFactory.ImplementsClause(VisualBasic.SyntaxFactory.SeparatedList(SeparatedList))
         End Function
+
         <Extension>
         Public Function GetValidAnonymousTypeProperties(symbol As INamedTypeSymbol) As IEnumerable(Of IPropertySymbol)
+            If symbol Is Nothing Then
+                Throw New ArgumentNullException(NameOf(symbol))
+            End If
             Return symbol.GetMembers().OfType(Of IPropertySymbol)().Where(Function(p As IPropertySymbol) p.CanBeReferencedByName)
         End Function
 

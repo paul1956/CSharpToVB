@@ -97,9 +97,9 @@ Partial Class Form1
         Me.RichTextBoxFileList = New System.Windows.Forms.RichTextBox()
         Me.RichTextBoxErrorList = New System.Windows.Forms.RichTextBox()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
-        Me.LineNumbers_For_RichTextBoxInput = New CSharpToVBApp.LineNumbers_For_RichTextBox()
+        Me.LineNumbers_For_RichTextBoxInput = New CSharpToVBApp.LineNumbersForRichTextBox()
         Me.RichTextBoxConversionOutput = New CSharpToVBApp.AdvancedRTB()
-        Me.LineNumbers_For_RichTextBoxOutput = New CSharpToVBApp.LineNumbers_For_RichTextBox()
+        Me.LineNumbers_For_RichTextBoxOutput = New CSharpToVBApp.LineNumbersForRichTextBox()
         Me.MenuStrip1.SuspendLayout()
         Me.ContextMenuStrip1.SuspendLayout()
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -681,38 +681,38 @@ Partial Class Form1
         'LineNumbers_For_RichTextBoxInput
         '
         Me.LineNumbers_For_RichTextBoxInput.AutoSizing = True
-        Me.LineNumbers_For_RichTextBoxInput.BackgroundGradient_AlphaColor = System.Drawing.Color.FromArgb(CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer))
-        Me.LineNumbers_For_RichTextBoxInput.BackgroundGradient_BetaColor = System.Drawing.Color.LightSteelBlue
-        Me.LineNumbers_For_RichTextBoxInput.BackgroundGradient_Direction = System.Drawing.Drawing2D.LinearGradientMode.Horizontal
-        Me.LineNumbers_For_RichTextBoxInput.BorderLines_Color = System.Drawing.Color.SlateGray
-        Me.LineNumbers_For_RichTextBoxInput.BorderLines_Style = System.Drawing.Drawing2D.DashStyle.Dot
-        Me.LineNumbers_For_RichTextBoxInput.BorderLines_Thickness = 1.0!
+        Me.LineNumbers_For_RichTextBoxInput.BackgroundGradientAlphaColor = System.Drawing.Color.FromArgb(CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer))
+        Me.LineNumbers_For_RichTextBoxInput.BackgroundGradientBetaColor = System.Drawing.Color.LightSteelBlue
+        Me.LineNumbers_For_RichTextBoxInput.BackgroundGradientDirection = System.Drawing.Drawing2D.LinearGradientMode.Horizontal
+        Me.LineNumbers_For_RichTextBoxInput.BorderLinesColor = System.Drawing.Color.SlateGray
+        Me.LineNumbers_For_RichTextBoxInput.BorderLinesStyle = System.Drawing.Drawing2D.DashStyle.Dot
+        Me.LineNumbers_For_RichTextBoxInput.BorderLinesThickness = 1.0!
         Me.LineNumbers_For_RichTextBoxInput.Dock = System.Windows.Forms.DockStyle.Left
-        Me.LineNumbers_For_RichTextBoxInput.DockSide = CSharpToVBApp.LineNumbers_For_RichTextBox.LineNumberDockSide.Left
-        Me.LineNumbers_For_RichTextBoxInput.GridLines_Color = System.Drawing.Color.SlateGray
-        Me.LineNumbers_For_RichTextBoxInput.GridLines_Style = System.Drawing.Drawing2D.DashStyle.Dot
-        Me.LineNumbers_For_RichTextBoxInput.GridLines_Thickness = 1.0!
-        Me.LineNumbers_For_RichTextBoxInput.LineNrs_Alignment = System.Drawing.ContentAlignment.TopRight
-        Me.LineNumbers_For_RichTextBoxInput.LineNrs_AntiAlias = True
-        Me.LineNumbers_For_RichTextBoxInput.LineNrs_AsHexadecimal = False
-        Me.LineNumbers_For_RichTextBoxInput.LineNrs_ClippedByItemRectangle = True
-        Me.LineNumbers_For_RichTextBoxInput.LineNrs_LeadingZeroes = True
-        Me.LineNumbers_For_RichTextBoxInput.LineNrs_Offset = New System.Drawing.Size(0, 0)
+        Me.LineNumbers_For_RichTextBoxInput.DockSide = CSharpToVBApp.LineNumbersForRichTextBox.LineNumberDockSides.Left
+        Me.LineNumbers_For_RichTextBoxInput.GridLinesColor = System.Drawing.Color.SlateGray
+        Me.LineNumbers_For_RichTextBoxInput.GridLinesStyle = System.Drawing.Drawing2D.DashStyle.Dot
+        Me.LineNumbers_For_RichTextBoxInput.GridLinesThickness = 1.0!
+        Me.LineNumbers_For_RichTextBoxInput.LineNrsAlignment = System.Drawing.ContentAlignment.TopRight
+        Me.LineNumbers_For_RichTextBoxInput.LineNrsAntiAlias = True
+        Me.LineNumbers_For_RichTextBoxInput.LineNrsAsHexadecimal = False
+        Me.LineNumbers_For_RichTextBoxInput.LineNrsClippedByItemRectangle = True
+        Me.LineNumbers_For_RichTextBoxInput.LineNrsLeadingZeroes = True
+        Me.LineNumbers_For_RichTextBoxInput.LineNrsOffset = New System.Drawing.Size(0, 0)
         Me.LineNumbers_For_RichTextBoxInput.Location = New System.Drawing.Point(0, 0)
         Me.LineNumbers_For_RichTextBoxInput.Margin = New System.Windows.Forms.Padding(0)
-        Me.LineNumbers_For_RichTextBoxInput.MarginLines_Color = System.Drawing.Color.SlateGray
-        Me.LineNumbers_For_RichTextBoxInput.MarginLines_Side = CSharpToVBApp.LineNumbers_For_RichTextBox.LineNumberDockSide.Right
-        Me.LineNumbers_For_RichTextBoxInput.MarginLines_Style = System.Drawing.Drawing2D.DashStyle.Solid
-        Me.LineNumbers_For_RichTextBoxInput.MarginLines_Thickness = 1.0!
+        Me.LineNumbers_For_RichTextBoxInput.MarginLinesColor = System.Drawing.Color.SlateGray
+        Me.LineNumbers_For_RichTextBoxInput.MarginLinesSide = CSharpToVBApp.LineNumbersForRichTextBox.LineNumberDockSides.Right
+        Me.LineNumbers_For_RichTextBoxInput.MarginLinesStyle = System.Drawing.Drawing2D.DashStyle.Solid
+        Me.LineNumbers_For_RichTextBoxInput.MarginLinesThickness = 1.0!
         Me.LineNumbers_For_RichTextBoxInput.Name = "LineNumbers_For_RichTextBoxInput"
         Me.LineNumbers_For_RichTextBoxInput.Padding = New System.Windows.Forms.Padding(0, 0, 2, 0)
         Me.LineNumbers_For_RichTextBoxInput.ParentRichTextBox = Me.RichTextBoxConversionInput
-        Me.LineNumbers_For_RichTextBoxInput.SeeThroughMode_ = False
-        Me.LineNumbers_For_RichTextBoxInput.Show_BackgroundGradient = True
-        Me.LineNumbers_For_RichTextBoxInput.Show_BorderLines = True
-        Me.LineNumbers_For_RichTextBoxInput.Show_GridLines = True
-        Me.LineNumbers_For_RichTextBoxInput.Show_LineNrs = True
-        Me.LineNumbers_For_RichTextBoxInput.Show_MarginLines = True
+        Me.LineNumbers_For_RichTextBoxInput.SeeThroughMode = False
+        Me.LineNumbers_For_RichTextBoxInput.ShowBackgroundGradient = True
+        Me.LineNumbers_For_RichTextBoxInput.ShowBorderLines = True
+        Me.LineNumbers_For_RichTextBoxInput.ShowGridLines = True
+        Me.LineNumbers_For_RichTextBoxInput.ShowLineNrs = True
+        Me.LineNumbers_For_RichTextBoxInput.ShowMarginLines = True
         Me.LineNumbers_For_RichTextBoxInput.Size = New System.Drawing.Size(23, 163)
         Me.LineNumbers_For_RichTextBoxInput.TabIndex = 23
         Me.LineNumbers_For_RichTextBoxInput.Visible = False
@@ -735,37 +735,37 @@ Partial Class Form1
         'LineNumbers_For_RichTextBoxOutput
         '
         Me.LineNumbers_For_RichTextBoxOutput.AutoSizing = True
-        Me.LineNumbers_For_RichTextBoxOutput.BackgroundGradient_AlphaColor = System.Drawing.Color.FromArgb(CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer))
-        Me.LineNumbers_For_RichTextBoxOutput.BackgroundGradient_BetaColor = System.Drawing.Color.LightSteelBlue
-        Me.LineNumbers_For_RichTextBoxOutput.BackgroundGradient_Direction = System.Drawing.Drawing2D.LinearGradientMode.Horizontal
-        Me.LineNumbers_For_RichTextBoxOutput.BorderLines_Color = System.Drawing.Color.SlateGray
-        Me.LineNumbers_For_RichTextBoxOutput.BorderLines_Style = System.Drawing.Drawing2D.DashStyle.Dot
-        Me.LineNumbers_For_RichTextBoxOutput.BorderLines_Thickness = 1.0!
-        Me.LineNumbers_For_RichTextBoxOutput.DockSide = CSharpToVBApp.LineNumbers_For_RichTextBox.LineNumberDockSide.Left
-        Me.LineNumbers_For_RichTextBoxOutput.GridLines_Color = System.Drawing.Color.SlateGray
-        Me.LineNumbers_For_RichTextBoxOutput.GridLines_Style = System.Drawing.Drawing2D.DashStyle.Dot
-        Me.LineNumbers_For_RichTextBoxOutput.GridLines_Thickness = 1.0!
-        Me.LineNumbers_For_RichTextBoxOutput.LineNrs_Alignment = System.Drawing.ContentAlignment.TopRight
-        Me.LineNumbers_For_RichTextBoxOutput.LineNrs_AntiAlias = True
-        Me.LineNumbers_For_RichTextBoxOutput.LineNrs_AsHexadecimal = False
-        Me.LineNumbers_For_RichTextBoxOutput.LineNrs_ClippedByItemRectangle = True
-        Me.LineNumbers_For_RichTextBoxOutput.LineNrs_LeadingZeroes = True
-        Me.LineNumbers_For_RichTextBoxOutput.LineNrs_Offset = New System.Drawing.Size(0, 0)
+        Me.LineNumbers_For_RichTextBoxOutput.BackgroundGradientAlphaColor = System.Drawing.Color.FromArgb(CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer))
+        Me.LineNumbers_For_RichTextBoxOutput.BackgroundGradientBetaColor = System.Drawing.Color.LightSteelBlue
+        Me.LineNumbers_For_RichTextBoxOutput.BackgroundGradientDirection = System.Drawing.Drawing2D.LinearGradientMode.Horizontal
+        Me.LineNumbers_For_RichTextBoxOutput.BorderLinesColor = System.Drawing.Color.SlateGray
+        Me.LineNumbers_For_RichTextBoxOutput.BorderLinesStyle = System.Drawing.Drawing2D.DashStyle.Dot
+        Me.LineNumbers_For_RichTextBoxOutput.BorderLinesThickness = 1.0!
+        Me.LineNumbers_For_RichTextBoxOutput.DockSide = CSharpToVBApp.LineNumbersForRichTextBox.LineNumberDockSides.Left
+        Me.LineNumbers_For_RichTextBoxOutput.GridLinesColor = System.Drawing.Color.SlateGray
+        Me.LineNumbers_For_RichTextBoxOutput.GridLinesStyle = System.Drawing.Drawing2D.DashStyle.Dot
+        Me.LineNumbers_For_RichTextBoxOutput.GridLinesThickness = 1.0!
+        Me.LineNumbers_For_RichTextBoxOutput.LineNrsAlignment = System.Drawing.ContentAlignment.TopRight
+        Me.LineNumbers_For_RichTextBoxOutput.LineNrsAntiAlias = True
+        Me.LineNumbers_For_RichTextBoxOutput.LineNrsAsHexadecimal = False
+        Me.LineNumbers_For_RichTextBoxOutput.LineNrsClippedByItemRectangle = True
+        Me.LineNumbers_For_RichTextBoxOutput.LineNrsLeadingZeroes = True
+        Me.LineNumbers_For_RichTextBoxOutput.LineNrsOffset = New System.Drawing.Size(0, 0)
         Me.LineNumbers_For_RichTextBoxOutput.Location = New System.Drawing.Point(977, 0)
         Me.LineNumbers_For_RichTextBoxOutput.Margin = New System.Windows.Forms.Padding(0)
-        Me.LineNumbers_For_RichTextBoxOutput.MarginLines_Color = System.Drawing.Color.SlateGray
-        Me.LineNumbers_For_RichTextBoxOutput.MarginLines_Side = CSharpToVBApp.LineNumbers_For_RichTextBox.LineNumberDockSide.Right
-        Me.LineNumbers_For_RichTextBoxOutput.MarginLines_Style = System.Drawing.Drawing2D.DashStyle.Solid
-        Me.LineNumbers_For_RichTextBoxOutput.MarginLines_Thickness = 1.0!
+        Me.LineNumbers_For_RichTextBoxOutput.MarginLinesColor = System.Drawing.Color.SlateGray
+        Me.LineNumbers_For_RichTextBoxOutput.MarginLinesSide = CSharpToVBApp.LineNumbersForRichTextBox.LineNumberDockSides.Right
+        Me.LineNumbers_For_RichTextBoxOutput.MarginLinesStyle = System.Drawing.Drawing2D.DashStyle.Solid
+        Me.LineNumbers_For_RichTextBoxOutput.MarginLinesThickness = 1.0!
         Me.LineNumbers_For_RichTextBoxOutput.Name = "LineNumbers_For_RichTextBoxOutput"
         Me.LineNumbers_For_RichTextBoxOutput.Padding = New System.Windows.Forms.Padding(0, 0, 2, 0)
         Me.LineNumbers_For_RichTextBoxOutput.ParentRichTextBox = Me.RichTextBoxConversionOutput
-        Me.LineNumbers_For_RichTextBoxOutput.SeeThroughMode_ = False
-        Me.LineNumbers_For_RichTextBoxOutput.Show_BackgroundGradient = True
-        Me.LineNumbers_For_RichTextBoxOutput.Show_BorderLines = True
-        Me.LineNumbers_For_RichTextBoxOutput.Show_GridLines = True
-        Me.LineNumbers_For_RichTextBoxOutput.Show_LineNrs = True
-        Me.LineNumbers_For_RichTextBoxOutput.Show_MarginLines = True
+        Me.LineNumbers_For_RichTextBoxOutput.SeeThroughMode = False
+        Me.LineNumbers_For_RichTextBoxOutput.ShowBackgroundGradient = True
+        Me.LineNumbers_For_RichTextBoxOutput.ShowBorderLines = True
+        Me.LineNumbers_For_RichTextBoxOutput.ShowGridLines = True
+        Me.LineNumbers_For_RichTextBoxOutput.ShowLineNrs = True
+        Me.LineNumbers_For_RichTextBoxOutput.ShowMarginLines = True
         Me.LineNumbers_For_RichTextBoxOutput.Size = New System.Drawing.Size(21, 163)
         Me.LineNumbers_For_RichTextBoxOutput.TabIndex = 22
         Me.LineNumbers_For_RichTextBoxOutput.Visible = False
@@ -848,8 +848,8 @@ Partial Class Form1
     Friend WithEvents RichTextBoxConversionOutput As AdvancedRTB = Nothing
     Friend WithEvents RichTextBoxConversionInput As RichTextBox
     Friend WithEvents RichTextBoxErrorList As RichTextBox
-    Friend WithEvents LineNumbers_For_RichTextBoxInput As LineNumbers_For_RichTextBox = Nothing
-    Friend WithEvents LineNumbers_For_RichTextBoxOutput As LineNumbers_For_RichTextBox = Nothing
+    Friend WithEvents LineNumbers_For_RichTextBoxInput As LineNumbersForRichTextBox = Nothing
+    Friend WithEvents LineNumbers_For_RichTextBoxOutput As LineNumbersForRichTextBox = Nothing
     Friend WithEvents RichTextBoxFileList As RichTextBox
     Friend WithEvents mnuOptionsStartFolderConvertFromLastFile As ToolStripMenuItem
     Friend WithEvents mnuFileExit As ToolStripMenuItem

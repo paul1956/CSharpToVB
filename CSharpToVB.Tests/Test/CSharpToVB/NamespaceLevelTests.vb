@@ -11,7 +11,7 @@ Namespace CSharpToVB.Tests
         Inherits ConverterTestBase
 
         <Fact>
-        Public Shared Sub CSharpToVB_AbstractClass()
+        Public Shared Sub CSharpToVBAbstractClass()
             TestConversionCSharpToVisualBasic("namespace Test.@class
 {
     abstract class TestClass
@@ -29,7 +29,7 @@ End Namespace")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_Class()
+        Public Shared Sub CSharpToVBClass()
             TestConversionCSharpToVisualBasic("namespace Test.@class
 {
     class TestClass<T>
@@ -47,7 +47,7 @@ End Namespace")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_ClassImplementsInterface()
+        Public Shared Sub CSharpToVBClassImplementsInterface()
             TestConversionCSharpToVisualBasic("using System; class test : IComparable { }",
                                               "Option Explicit Off
 Option Infer On
@@ -62,7 +62,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_ClassImplementsInterface2()
+        Public Shared Sub CSharpToVBClassImplementsInterface2()
             TestConversionCSharpToVisualBasic("class test : System.IComparable { }",
                                               "Option Explicit Off
 Option Infer On
@@ -75,7 +75,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_ClassInheritanceList()
+        Public Shared Sub CSharpToVBClassInheritanceList()
             TestConversionCSharpToVisualBasic("abstract class ClassA : System.IDisposable
 {
     protected abstract void Test();
@@ -104,7 +104,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_ClassInheritsClass()
+        Public Shared Sub CSharpToVBClassInheritsClass()
             TestConversionCSharpToVisualBasic("using System.IO; class test : InvalidDataException { }", "Option Explicit Off
 Option Infer On
 Option Strict Off
@@ -118,7 +118,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_ClassInheritsClass2()
+        Public Shared Sub CSharpToVBClassInheritsClass2()
             TestConversionCSharpToVisualBasic("class test : System.IO.InvalidDataException { }", "Option Explicit Off
 Option Infer On
 Option Strict Off
@@ -130,7 +130,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_Delegate1()
+        Public Shared Sub CSharpToVBDelegate1()
             TestConversionCSharpToVisualBasic("public delegate void Test();",
                                               "Option Explicit Off
 Option Infer On
@@ -140,7 +140,7 @@ Public Delegate Sub Test()")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_Delegate2()
+        Public Shared Sub CSharpToVBDelegate2()
             TestConversionCSharpToVisualBasic("public delegate int Test();",
                                               "Option Explicit Off
 Option Infer On
@@ -150,7 +150,7 @@ Public Delegate Function Test() As Integer")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_Delegate3()
+        Public Shared Sub CSharpToVBDelegate3()
             TestConversionCSharpToVisualBasic("public delegate void Test(int x);",
                                               "Option Explicit Off
 Option Infer On
@@ -160,7 +160,7 @@ Public Delegate Sub Test(x As Integer)")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_Delegate4()
+        Public Shared Sub CSharpToVBDelegate4()
             TestConversionCSharpToVisualBasic("public delegate void Test(ref int x);",
                                               "Option Explicit Off
 Option Infer On
@@ -170,7 +170,7 @@ Public Delegate Sub Test(ByRef x As Integer)")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_Enum()
+        Public Shared Sub CSharpToVBEnum()
             TestConversionCSharpToVisualBasic("internal enum ExceptionResource
 {
     Argument_ImplementIComparable,
@@ -190,7 +190,7 @@ End Enum")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_Imports()
+        Public Shared Sub CSharpToVBImports()
             TestConversionCSharpToVisualBasic("using SomeNamespace;
 using VB = Microsoft.VisualBasic;", "Option Explicit Off
 Option Infer On
@@ -201,7 +201,7 @@ Imports VB = Microsoft.VisualBasic")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_Interface()
+        Public Shared Sub CSharpToVBInterface()
             TestConversionCSharpToVisualBasic("interface ITest : System.IDisposable
 {
     void Test ();
@@ -218,7 +218,7 @@ End Interface")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_InternalStaticClass()
+        Public Shared Sub CSharpToVBInternalStaticClass()
             TestConversionCSharpToVisualBasic("namespace Test.@class
 {
     internal static class TestClass
@@ -244,7 +244,7 @@ End Namespace")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_MoveImportsStatement()
+        Public Shared Sub CSharpToVBMoveImportsStatement()
             TestConversionCSharpToVisualBasic("namespace test { using SomeNamespace; }",
                                               "Option Explicit Off
 Option Infer On
@@ -257,7 +257,7 @@ End Namespace")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_Namespace()
+        Public Shared Sub CSharpToVBNamespace()
             TestConversionCSharpToVisualBasic("namespace Test
 {
 
@@ -270,7 +270,7 @@ End Namespace")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_SealedClass()
+        Public Shared Sub CSharpToVBSealedClass()
             TestConversionCSharpToVisualBasic("namespace Test.@class
 {
     sealed class TestClass
@@ -288,7 +288,7 @@ End Namespace")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_Struct()
+        Public Shared Sub CSharpToVBStruct()
             TestConversionCSharpToVisualBasic("struct MyType : System.IComparable<MyType>
 {
     void Test() {}
@@ -306,7 +306,7 @@ End Structure")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_TopLevelAttribute()
+        Public Shared Sub CSharpToVBTopLevelAttribute()
             TestConversionCSharpToVisualBasic("[assembly: CLSCompliant(true)]",
                                               "Option Explicit Off
 Option Infer On

@@ -11,7 +11,7 @@ Namespace CSharpToVB.Tests
         Inherits ConverterTestBase
 
         <Fact>
-        Public Shared Sub CSharpToVB_CastObjectToInteger()
+        Public Shared Sub CSharpToVBCastObjectToInteger()
             TestConversionCSharpToVisualBasic("void Test()
 {
     object o = 5;
@@ -29,7 +29,7 @@ End Sub
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_CastObjectToString()
+        Public Shared Sub CSharpToVBCastObjectToString()
             TestConversionCSharpToVisualBasic("void Test()
 {
     object o = ""Test"";
@@ -47,7 +47,7 @@ End Sub
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_CastObjectToGenericList()
+        Public Shared Sub CSharpToVBCastObjectToGenericList()
             TestConversionCSharpToVisualBasic("void Test()
 {
     object o = new System.Collections.Generic.List<int>();
@@ -65,7 +65,7 @@ End Sub
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_TryCastObjectToInteger()
+        Public Shared Sub CSharpToVBTryCastObjectToInteger()
             TestConversionCSharpToVisualBasic("void Test()
 {
     object o = 5;
@@ -83,7 +83,7 @@ End Sub
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_TryCastObjectToGenericList()
+        Public Shared Sub CSharpToVBTryCastObjectToGenericList()
             TestConversionCSharpToVisualBasic("void Test()
 {
     object o = new System.Collections.Generic.List<int>();
@@ -101,7 +101,7 @@ End Sub
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_CastConstantNumberToLong()
+        Public Shared Sub CSharpToVBCastConstantNumberToLong()
             TestConversionCSharpToVisualBasic("void Test()
 {
     object o = 5L;
@@ -117,7 +117,7 @@ End Sub
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_CastConstantNumberToFloat()
+        Public Shared Sub CSharpToVBCastConstantNumberToFloat()
             TestConversionCSharpToVisualBasic("void Test()
 {
     object o = 5.0f;
@@ -133,7 +133,7 @@ End Sub
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_CastConstantNumberToDecimal()
+        Public Shared Sub CSharpToVBCastConstantNumberToDecimal()
             TestConversionCSharpToVisualBasic("void Test()
 {
     object o = 5.0m;

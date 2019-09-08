@@ -7,14 +7,14 @@ Option Strict On
 
 Imports System.Runtime.CompilerServices
 
-Imports IVisualBasicCode.CodeConverter.Visual_Basic
+Imports CSharpToVBCodeConverter.Visual_Basic
 
 Imports Microsoft.CodeAnalysis
 
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
-Namespace IVisualBasicCode.CodeConverter.Util
+Namespace CSharpToVBCodeConverter.Util
     Public Module VBUtil
 
         Public Function ConvertCSExpressionsKindToVBKind(t As CS.SyntaxKind) As VB.SyntaxKind

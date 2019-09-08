@@ -7,6 +7,7 @@ Imports Microsoft.CodeAnalysis.CSharp
 Imports Xunit
 
 Namespace MSCoreReference.Tests
+    <CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification:="Source Code for Tests")>
     Public NotInheritable Class MSCoreReferenceTest
 
         Shared Sub VerifyReferencesExist()

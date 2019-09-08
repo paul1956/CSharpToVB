@@ -5,7 +5,7 @@ Option Explicit On
 Option Infer Off
 Option Strict On
 
-Imports IVisualBasicCode.CodeConverter.Util
+Imports CSharpToVBCodeConverter.Util
 
 Imports Microsoft.CodeAnalysis
 
@@ -14,13 +14,14 @@ Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace IVisualBasicCode.CodeConverter.Visual_Basic
+Namespace CSharpToVBCodeConverter.Visual_Basic
 
     Partial Public Class CSharpConverter
 
         Partial Protected Friend Class NodesVisitor
             Inherits CS.CSharpSyntaxVisitor(Of VB.VisualBasicSyntaxNode)
 
+            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitBracketedParameterList(node As CSS.BracketedParameterListSyntax) As VB.VisualBasicSyntaxNode
                 Dim CS_Separators As IEnumerable(Of SyntaxToken) = node.Parameters.GetSeparators
                 Dim OpenParenTokenWithTrivia As SyntaxToken = OpenParenToken.WithConvertedTriviaFrom(node.OpenBracketToken)
@@ -46,18 +47,19 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return VB.SyntaxFactory.ParameterList(OpenParenTokenWithTrivia, VB.SyntaxFactory.SeparatedList(Items, Separators), CloseParenToken).WithConvertedTriviaFrom(node)
             End Function
 
+            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitParameter(node As CSS.ParameterSyntax) As VB.VisualBasicSyntaxNode
                 Dim returnType As VBS.TypeSyntax = DirectCast(node.Type?.Accept(Me), VBS.TypeSyntax)
                 Dim EqualsLeadingTrivia As New List(Of SyntaxTrivia)
                 If returnType IsNot Nothing Then
-                    If returnType.ToString.StartsWith("[") Then
-                        Dim TReturnType As VBS.TypeSyntax = VB.SyntaxFactory.ParseTypeName(returnType.ToString.Substring(1).Replace("]", "")).WithTriviaFrom(returnType)
+                    If returnType.ToString.StartsWith("[", StringComparison.InvariantCulture) Then
+                        Dim TReturnType As VBS.TypeSyntax = VB.SyntaxFactory.ParseTypeName(returnType.ToString.Substring(1).Replace("]", "", StringComparison.InvariantCulture)).WithTriviaFrom(returnType)
                         If Not TReturnType.IsMissing Then
                             returnType = TReturnType
                         End If
 
                     End If
-                    If returnType.GetTrailingTrivia.LastOrDefault.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                    If returnType.GetTrailingTrivia.Count > 0 AndAlso returnType.GetTrailingTrivia.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
                         Dim TrailingTrivia As New List(Of SyntaxTrivia)
                         TrailingTrivia.AddRange(returnType.GetTrailingTrivia)
                         Dim Index As Integer = TrailingTrivia.Count - 1
@@ -84,7 +86,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     modifiers = VB.SyntaxFactory.TokenList(ByValKeyword).ToList
                     newAttributes = Array.Empty(Of VBS.AttributeListSyntax)
                 ElseIf node.Modifiers.Any(CS.SyntaxKind.OutKeyword) Then
-                    newAttributes = {VB.SyntaxFactory.AttributeList(VB.SyntaxFactory.SingletonSeparatedList(VB.SyntaxFactory.Attribute(VB.SyntaxFactory.ParseTypeName("Runtime.InteropServices.Out"))))}
+                    newAttributes = {VB.SyntaxFactory.AttributeList(VB.SyntaxFactory.SingletonSeparatedList(VB.SyntaxFactory.Attribute(RuntimeInteropServicesOut)))}
                 Else
                     newAttributes = Array.Empty(Of VBS.AttributeListSyntax)
                 End If
@@ -161,9 +163,9 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                     End If
                                     NeedEOL = False
                                 Case VB.SyntaxKind.DisableWarningDirectiveTrivia
-                                    GetStatementwithIssues(node).AddMarker(VB.SyntaxFactory.EmptyStatement.WithLeadingTrivia(trivia), StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
+                                    GetStatementwithIssues(node).AddMarker(VB.SyntaxFactory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
                                 Case VB.SyntaxKind.EnableWarningDirectiveTrivia
-                                    GetStatementwithIssues(node).AddMarker(VB.SyntaxFactory.EmptyStatement.WithLeadingTrivia(trivia), StatementHandlingOption.AppendEmptyStatement, AllowDuplicates:=True)
+                                    GetStatementwithIssues(node).AddMarker(VB.SyntaxFactory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.AppendEmptyStatement, AllowDuplicates:=True)
                                 Case Else
                                     Stop
                             End Select
@@ -294,6 +296,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return parameterSyntax1
             End Function
 
+            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitParameterList(node As CSS.ParameterListSyntax) As VB.VisualBasicSyntaxNode
                 Dim CS_Separators As IEnumerable(Of SyntaxToken) = node.Parameters.GetSeparators
                 Dim OpenParenTokenWithTrivia As SyntaxToken = OpenParenToken.WithConvertedTriviaFrom(node.OpenParenToken)

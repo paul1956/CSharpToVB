@@ -9,7 +9,7 @@ Imports System.Diagnostics.CodeAnalysis
 Imports System.Runtime.InteropServices
 Imports System.Text
 
-Imports IVisualBasicCode.CodeConverter.Util
+Imports CSharpToVBCodeConverter.Util
 
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.CSharp
@@ -25,12 +25,12 @@ Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace IVisualBasicCode.CodeConverter.Visual_Basic
+Namespace CSharpToVBCodeConverter.Visual_Basic
 
     Partial Public NotInheritable Class CSharpConverter
 
         Friend Class MethodBodyVisitor
-            Inherits CS.CSharpSyntaxVisitor(Of SyntaxList(Of VBS.StatementSyntax))
+            Inherits CSharpSyntaxVisitor(Of SyntaxList(Of VBS.StatementSyntax))
 
             Private ReadOnly LiteralExpression_1 As VBS.ExpressionSyntax = VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(1))
             Private ReadOnly mBlockInfo As Stack(Of BlockInfo) = New Stack(Of BlockInfo)()
@@ -70,12 +70,12 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     TypeOf statement Is CSS.ThrowStatementSyntax
             End Function
 
-            Private Iterator Function AddLabels(blocks As VBS.CaseBlockSyntax(), gotoLabels As List(Of VB.VisualBasicSyntaxNode)) As IEnumerable(Of VBS.CaseBlockSyntax)
+            Private Iterator Function AddLabels(blocks As VBS.CaseBlockSyntax(), gotoLabels As List(Of VisualBasicSyntaxNode)) As IEnumerable(Of VBS.CaseBlockSyntax)
                 For Each _block As VBS.CaseBlockSyntax In blocks
                     Dim block As VBS.CaseBlockSyntax = _block
                     For Each caseClause As VBS.CaseClauseSyntax In block.CaseStatement.Cases
-                        Dim expression As VB.VisualBasicSyntaxNode = If(TypeOf caseClause Is VBS.ElseCaseClauseSyntax, DirectCast(caseClause, VB.VisualBasicSyntaxNode), (DirectCast(caseClause, VBS.SimpleCaseClauseSyntax)).Value)
-                        If gotoLabels.Any(Function(label As VB.VisualBasicSyntaxNode) label.IsEquivalentTo(expression.WithoutTrivia)) Then
+                        Dim expression As VisualBasicSyntaxNode = If(TypeOf caseClause Is VBS.ElseCaseClauseSyntax, DirectCast(caseClause, VisualBasicSyntaxNode), (DirectCast(caseClause, VBS.SimpleCaseClauseSyntax)).Value)
+                        If gotoLabels.Any(Function(label As VisualBasicSyntaxNode) label.IsEquivalentTo(expression.WithoutTrivia)) Then
                             block = block.WithStatements(block.Statements.Insert(0, VBFactory.LabelStatement(MakeGotoSwitchLabel(expression))))
                         End If
                     Next
@@ -199,7 +199,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 If node.Incrementors.Count <> 1 Then
                     Return False
                 End If
-                Dim Incrementors As VB.VisualBasicSyntaxNode = node.Incrementors.FirstOrDefault()?.Accept(mNodesVisitor)
+                Dim Incrementors As VisualBasicSyntaxNode = node.Incrementors.FirstOrDefault()?.Accept(mNodesVisitor)
                 Dim iterator As VBS.AssignmentStatementSyntax = TryCast(Incrementors, VBS.AssignmentStatementSyntax)
                 If iterator Is Nothing OrElse Not iterator.IsKind(VB.SyntaxKind.AddAssignmentStatement, VB.SyntaxKind.SubtractAssignmentStatement) Then
                     Return False
@@ -246,7 +246,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     End If
                 End If
 
-                Dim ControlVariable As VB.VisualBasicSyntaxNode
+                Dim ControlVariable As VisualBasicSyntaxNode
                 Dim FromValue As VBS.ExpressionSyntax
                 If HasVariable Then
                     Dim v As CSS.VariableDeclaratorSyntax = node.Declaration.Variables(0)
@@ -320,7 +320,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             End Function
 
             Private Function ConvertSingleExpression(node As CSS.ExpressionSyntax) As VBS.StatementSyntax
-                Dim exprNode As VB.VisualBasicSyntaxNode = Nothing
+                Dim exprNode As VisualBasicSyntaxNode = Nothing
                 Dim NewLeadingTrivia As New List(Of SyntaxTrivia)
 
                 If TypeOf node Is CSS.AssignmentExpressionSyntax Then
@@ -372,7 +372,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                             Dim SeparatedListOfvariableDeclarations As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(variable)
                             exprNode = VBFactory.LocalDeclarationStatement(DimModifier, SeparatedListOfvariableDeclarations)
                         Case TypeOf exprNode Is VBS.InvocationExpressionSyntax
-                            exprNode = If(exprNode.GetFirstToken.IsKind(VB.SyntaxKind.NewKeyword), VBFactory.CallStatement(DirectCast(exprNode, VBS.ExpressionSyntax)), DirectCast(VBFactory.ExpressionStatement(DirectCast(exprNode, VBS.ExpressionSyntax)), VB.VisualBasicSyntaxNode))
+                            exprNode = If(exprNode.GetFirstToken.IsKind(VB.SyntaxKind.NewKeyword), VBFactory.CallStatement(DirectCast(exprNode, VBS.ExpressionSyntax)), DirectCast(VBFactory.ExpressionStatement(DirectCast(exprNode, VBS.ExpressionSyntax)), VisualBasicSyntaxNode))
                         Case Else
                             exprNode = VBFactory.ExpressionStatement(DirectCast(exprNode, VBS.ExpressionSyntax))
                     End Select
@@ -524,14 +524,19 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return VBFactory.List(Statements)
             End Function
 
-            Private Function MakeGotoSwitchLabel(Expression As VB.VisualBasicSyntaxNode) As String
+            Private Function MakeGotoSwitchLabel(Expression As VisualBasicSyntaxNode) As String
                 If TypeOf Expression Is VBS.ElseCaseClauseSyntax Then
                     Return $"_Select{switchCount}_CaseDefault"
                 End If
                 Dim ExpressionBuilder As New StringBuilder
-                Dim ExpressionText As String = Expression.ToString.Replace(".", "Dot").Replace("""", "Quote").Replace("[", "OpenBracket").Replace("]", "CloseBracket").Replace(" ", "_")
+                Dim ExpressionText As String = Expression.ToString.
+                                                    Replace(".", "Dot", StringComparison.InvariantCulture).
+                                                    Replace("""", "Quote", StringComparison.InvariantCulture).
+                                                    Replace("[", "OpenBracket", StringComparison.InvariantCulture).
+                                                    Replace("]", "CloseBracket", StringComparison.InvariantCulture).
+                                                    Replace(" ", "_", StringComparison.InvariantCulture)
                 Dim c As Char = ExpressionText(0)
-                If VisualBasic.SyntaxFacts.IsIdentifierStartCharacter(c) Then
+                If VB.SyntaxFacts.IsIdentifierStartCharacter(c) Then
                     ExpressionBuilder.Append("_")
                 Else
                     If IsNumeric(c) Then
@@ -542,7 +547,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 End If
                 For i As Integer = 1 To ExpressionText.Length - 1
                     c = ExpressionText(i)
-                    If VisualBasic.SyntaxFacts.IsIdentifierPartCharacter(c) Then
+                    If VB.SyntaxFacts.IsIdentifierPartCharacter(c) Then
                         ExpressionBuilder.Append(c)
                     Else
                         ExpressionBuilder.Append("_")
@@ -593,7 +598,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 If node.Incrementors.Count <> 1 Then
                     Return False
                 End If
-                Dim Incrementors As VB.VisualBasicSyntaxNode = node.Incrementors.FirstOrDefault()?.Accept(mNodesVisitor)
+                Dim Incrementors As VisualBasicSyntaxNode = node.Incrementors.FirstOrDefault()?.Accept(mNodesVisitor)
                 Dim iterator As VBS.AssignmentStatementSyntax = TryCast(Incrementors, VBS.AssignmentStatementSyntax)
                 If iterator Is Nothing OrElse Not iterator.IsKind(VB.SyntaxKind.AddAssignmentStatement, VB.SyntaxKind.SubtractAssignmentStatement) Then
                     Return False
@@ -649,10 +654,10 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return True
             End Function
 
-            Public Shared Function GetUniqueVariableNameInScope(node As CS.CSharpSyntaxNode, variableNameBase As String, lSemanticModel As SemanticModel) As String
-                Dim mWithBlockTempVariableNames As New List(Of String)
-                Dim reservedNames As IEnumerable(Of String) = mWithBlockTempVariableNames.Concat(node.DescendantNodesAndSelf().SelectMany(Function(lSyntaxNode As SyntaxNode) lSemanticModel.LookupSymbols(lSyntaxNode.SpanStart).Select(Function(s As ISymbol) s.Name))).Distinct
-                Dim UniqueVariableName As String = EnsureUniqueness(variableNameBase, reservedNames, isCaseSensitive:=False)
+            Public Shared Function GetUniqueVariableNameInScope(node As CSharpSyntaxNode, variableNameBase As String, lSemanticModel As SemanticModel) As String
+                Dim reservedNames As New List(Of String)
+                reservedNames.AddRange(node.DescendantNodesAndSelf().SelectMany(Function(lSyntaxNode As SyntaxNode) lSemanticModel.LookupSymbols(lSyntaxNode.SpanStart).Select(Function(s As ISymbol) s.Name)).Distinct)
+                Dim UniqueVariableName As String = EnsureUniqueness(variableNameBase, reservedNames)
                 UsedIdentifiers.Add(UniqueVariableName, value:=New SymbolTableEntry(_Name:=UniqueVariableName, _IsType:=False))
                 Return UniqueVariableName
             End Function
@@ -783,7 +788,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Dim Declarator As VBS.VariableDeclaratorSyntax = Nothing
                 Dim Statement As VBS.StatementSyntax = Nothing
                 Dim TrailingTrivia As New List(Of SyntaxTrivia)
-                Dim Names As SeparatedSyntaxList(Of VBS.ModifiedIdentifierSyntax) = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(GetUniqueVariableNameInScope(node, "TempVar", mSemanticModel)))
+                Dim Names As SeparatedSyntaxList(Of VBS.ModifiedIdentifierSyntax)
 
                 If node.GetFirstToken.IsKind(CS.SyntaxKind.NewKeyword) AndAlso CS_Expression.IsKind(CS.SyntaxKind.SimpleAssignmentExpression) Then
                     ' Handle this case
@@ -823,10 +828,11 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                             Stop
                         End If
                         Dim AsNewClause As VBS.AsNewClauseSyntax = VBFactory.AsNewClause(newExpression:=NewObject.WithLeadingTrivia(SpaceTrivia))
+                        Names = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(GetUniqueVariableNameInScope(node, "TempVar", mSemanticModel)))
                         Dim Declarators As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(Names, AsNewClause, initializer:=Nothing))
                         Statement = VBFactory.LocalDeclarationStatement(DimModifier, Declarators)
                     End If
-                ElseIf node.ToString.StartsWith("(") AndAlso CS_Expression.IsKind(CS.SyntaxKind.InvocationExpression) Then
+                ElseIf node.ToString.StartsWith("(", StringComparison.InvariantCulture) AndAlso CS_Expression.IsKind(CS.SyntaxKind.InvocationExpression) Then
                     Dim InvovationExpression As CSS.InvocationExpressionSyntax = DirectCast(CS_Expression, CSS.InvocationExpressionSyntax)
                     Dim CS_InvocationExpression As CSS.InvocationExpressionSyntax = InvovationExpression
                     Dim exprNode As VBS.InvocationExpressionSyntax
@@ -845,6 +851,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                             Dim Type As VBS.TypeSyntax = CTypeExpression.Type
                             Initializer = VBFactory.EqualsValue(CTypeExpression.WithLeadingTrivia(SpaceTrivia))
                             Dim AsClause As VBS.AsClauseSyntax = VBFactory.SimpleAsClause(Type)
+                            Names = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(GetUniqueVariableNameInScope(node, "TempVar", mSemanticModel)))
                             Declarator = VBFactory.VariableDeclarator(Names, AsClause, Initializer)
                         Else
                             Stop
@@ -855,8 +862,12 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         Stop
                     End If
                     Dim StmtList As New SyntaxList(Of VBS.StatementSyntax)
-                    Dim IdentifierString As String = Names.ToString
+                    Dim IdentifierString As String = Nothing
                     If Declarator Is Nothing Then
+                        If Names.Count = 0 Then
+                            IdentifierString = GetUniqueVariableNameInScope(node, "TempVar", mSemanticModel)
+                            Names = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(IdentifierString))
+                        End If
                         ' Handle this case
                         ' (new Exception("RequestServiceAsync Timeout")).ReportServiceHubNFW("RequestServiceAsync Timeout");
                         Select Case AccessExpression.Expression.Kind
@@ -928,8 +939,11 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     End If
                     If AccessExpression IsNot Nothing Then
                         With AccessExpression
+                            If String.IsNullOrWhiteSpace(IdentifierString) Then
+                                IdentifierString = GetUniqueVariableNameInScope(node, "TempVar", mSemanticModel)
+                            End If
                             Dim Identifier As VBS.ExpressionSyntax = VBFactory.IdentifierName(IdentifierString)
-                            Dim MemberAccessExpression As VBS.ExpressionSyntax = VBFactory.MemberAccessExpression(kind:= .Kind, expression:=Identifier, operatorToken:= .OperatorToken, name:= .Name)
+                            Dim MemberAccessExpression As VBS.ExpressionSyntax = VBFactory.MemberAccessExpression(kind:= .Kind, expression:=Identifier, .OperatorToken, .Name)
                             Dim AgrumentList As VBS.ArgumentListSyntax = DirectCast(CS_InvocationExpression.ArgumentList.Accept(mNodesVisitor), VBS.ArgumentListSyntax)
                             Dim InvocationExpression As VBS.InvocationExpressionSyntax = VBFactory.InvocationExpression(MemberAccessExpression, AgrumentList).WithConvertedTriviaFrom(node)
                             StmtList = StmtList.Add(VBFactory.ExpressionStatement(InvocationExpression))
@@ -950,7 +964,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             End Function
 
             Public Overrides Function VisitForEachStatement(node As CSS.ForEachStatementSyntax) As SyntaxList(Of VBS.StatementSyntax)
-                Dim variable As VB.VisualBasicSyntaxNode
+                Dim variable As VisualBasicSyntaxNode
                 If node.Type.IsVar Then
                     variable = VBFactory.IdentifierName(GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False))
 
@@ -976,7 +990,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                                                     initializer:=Nothing)
                 End If
 
-                    Dim expression As VBS.ExpressionSyntax = DirectCast(node.Expression.Accept(mNodesVisitor), VBS.ExpressionSyntax).WithConvertedTrailingTriviaFrom(node.CloseParenToken)
+                Dim expression As VBS.ExpressionSyntax = DirectCast(node.Expression.Accept(mNodesVisitor), VBS.ExpressionSyntax).WithConvertedTrailingTriviaFrom(node.CloseParenToken)
                 Dim OpenBraceTrailingTrivia As New List(Of SyntaxTrivia)
                 Dim ClosingBraceLeadingTrivia As New List(Of SyntaxTrivia)
                 Dim stmt As SyntaxList(Of VBS.StatementSyntax) = ConvertBlock(node.Statement, OpenBraceTrailingTrivia, ClosingBraceLeadingTrivia)
@@ -1034,7 +1048,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Dim label As VBS.LabelSyntax
                 If node.IsKind(CS.SyntaxKind.GotoCaseStatement, CS.SyntaxKind.GotoDefaultStatement) Then
                     If mBlockInfo.Count = 0 Then Throw New InvalidOperationException("GoTo Case/GoTo Default outside switch Is illegal!")
-                    Dim labelExpression As VB.VisualBasicSyntaxNode = If(node.Expression?.Accept(mNodesVisitor), VBFactory.ElseCaseClause())
+                    Dim labelExpression As VisualBasicSyntaxNode = If(node.Expression?.Accept(mNodesVisitor), VBFactory.ElseCaseClause())
                     mBlockInfo.Peek().GotoCaseExpressions.Add(labelExpression)
                     label = VBFactory.Label(VB.SyntaxKind.IdentifierLabel, MakeGotoSwitchLabel(labelExpression))
                 Else
@@ -1374,7 +1388,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     LeadingTrivia.AddRange(ConvertTrivia(node.GetLeadingTrivia))
                     If node.Expression IsNot Nothing AndAlso node.Expression.IsKind(CS.SyntaxKind.ConditionalAccessExpression) Then
                         Dim CS_ConditionalAccessExpression As CSS.ConditionalAccessExpressionSyntax = DirectCast(node.Expression, CSS.ConditionalAccessExpressionSyntax)
-                        Dim VB_ConditionalAccessExpression As VB.VisualBasicSyntaxNode = CS_ConditionalAccessExpression.Expression.Accept(mNodesVisitor)
+                        Dim VB_ConditionalAccessExpression As VisualBasicSyntaxNode = CS_ConditionalAccessExpression.Expression.Accept(mNodesVisitor)
                         Dim Condition As VBS.BinaryExpressionSyntax = VBFactory.IsNotExpression(left:=CType(VB_ConditionalAccessExpression, VBS.ExpressionSyntax),
                                                                                                 right:=NothingExpression)
                         Dim IfStatement As VBS.IfStatementSyntax = VBFactory.IfStatement(Condition)
@@ -1403,7 +1417,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Dim Type As VBS.TypeSyntax = DirectCast(node.Type.Accept(mNodesVisitor), VBS.TypeSyntax)
                 If Type.HasLeadingTrivia Then
                     LeadingTrivia.AddRange(Type.GetLeadingTrivia)
-                    Type = Type.WithLeadingTrivia(VBFactory.Whitespace(" "))
+                    Type = Type.WithLeadingTrivia(SpaceTrivia)
                 End If
                 Dim CollectedCommentTrivia As New List(Of SyntaxTrivia)
                 Dim declaratorsWithoutInitializers As New List(Of CSS.VariableDeclaratorSyntax)()
@@ -1504,7 +1518,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             End Function
 
             Private Class BlockInfo
-                Public ReadOnly GotoCaseExpressions As List(Of VB.VisualBasicSyntaxNode) = New List(Of VB.VisualBasicSyntaxNode)()
+                Public ReadOnly GotoCaseExpressions As List(Of VisualBasicSyntaxNode) = New List(Of VisualBasicSyntaxNode)()
             End Class
 
         End Class

@@ -213,6 +213,6 @@ Public Module VisualBasicSyntaxFactory
     Public ReadOnly DimModifier As SyntaxTokenList = SyntaxFactory.TokenList(DimKeyword)
     Public ReadOnly Value_ModifiedIdentifier As Syntax.ModifiedIdentifierSyntax = SyntaxFactory.ModifiedIdentifier("Value")
     Public ReadOnly PublicModifier As SyntaxTokenList = SyntaxFactory.TokenList(PublicKeyword)
-
+    Public ReadOnly RuntimeInteropServicesOut As Syntax.TypeSyntax = SyntaxFactory.ParseTypeName("Runtime.InteropServices.Out")
 #End If
 End Module

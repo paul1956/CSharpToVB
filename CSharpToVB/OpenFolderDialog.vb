@@ -6,6 +6,7 @@ Option Infer Off
 Option Strict On
 
 Imports System.Runtime.InteropServices
+Imports PInvoke
 
 Public Class OpenFolderDialog
     Implements IDisposable
@@ -13,7 +14,7 @@ Public Class OpenFolderDialog
     ''' <summary>
     ''' Gets of Sets the descriptive text displayed above the tree view control in the dialog box
     ''' </summary>
-    Public Description As String
+    Private _description As String
 
     ''' <summary>
     ''' Gets/sets directory in which dialog will be open if there is no recent directory available.
@@ -38,7 +39,16 @@ Public Class OpenFolderDialog
     ''' <returns></returns>
     Public Property ShowNewFolderButton As Boolean
 
-    Public Function ShowDialog(ByVal owner As IWin32Window) As DialogResult
+    Public Property Description As String
+        Get
+            Return _description
+        End Get
+        Set(value As String)
+            _description = value
+        End Set
+    End Property
+
+    Friend Function ShowDialog(ByVal owner As IWin32Window) As DialogResult
         Dim frm As IFileDialog = DirectCast(New FileOpenDialogRCW(), IFileDialog)
         Dim Options As FILEOPENDIALOGOPTIONS
         frm.GetOptions(Options)
@@ -52,7 +62,7 @@ Public Class OpenFolderDialog
             Dim directoryShellItem As IShellItem = Nothing
             Dim riid As New Guid(ComGuids.IShellItem)
             'IShellItem
-            If SHCreateItemFromParsingName(InitialFolder, IntPtr.Zero, riid, directoryShellItem) = HRESULT.S_OK Then
+            If SHCreateItemFromParsingName(InitialFolder, IntPtr.Zero, riid, directoryShellItem) = HResult.Code.S_OK Then
                 frm.SetFolder(directoryShellItem)
             End If
         End If
@@ -60,16 +70,16 @@ Public Class OpenFolderDialog
             Dim directoryShellItem As IShellItem = Nothing
             Dim riid As New Guid(ComGuids.IShellItem)
             'IShellItem
-            If SHCreateItemFromParsingName(DefaultFolder, IntPtr.Zero, riid, directoryShellItem) = HRESULT.S_OK Then
+            If SHCreateItemFromParsingName(DefaultFolder, IntPtr.Zero, riid, directoryShellItem) = HResult.Code.S_OK Then
                 frm.SetDefaultFolder(directoryShellItem)
             End If
         End If
 
-        If frm.Show(owner.Handle) = HRESULT.S_OK Then
+        If frm.Show(owner.Handle) = HResult.Code.S_OK Then
             Dim shellItem As IShellItem = Nothing
-            If frm.GetResult(shellItem) = HRESULT.S_OK Then
+            If frm.GetResult(shellItem) = HResult.Code.S_OK Then
                 Dim pszString As IntPtr
-                If shellItem.GetDisplayName(SIGDN.FILESYSPATH, pszString) = HRESULT.S_OK Then
+                If shellItem.GetDisplayName(SIGDN.FILESYSPATH, pszString) = HResult.Code.S_OK Then
                     If pszString <> IntPtr.Zero Then
                         Try
                             SelectedPath = Marshal.PtrToStringAuto(pszString)
@@ -112,7 +122,7 @@ Public Class OpenFolderDialog
         ' Do not change this code.  Put cleanup code in Dispose(disposing As Boolean) above.
         Dispose(True)
         ' TODO: uncomment the following line if Finalize() is overridden above.
-        ' GC.SuppressFinalize(Me)
+        GC.SuppressFinalize(Me)
     End Sub
 #End Region
 

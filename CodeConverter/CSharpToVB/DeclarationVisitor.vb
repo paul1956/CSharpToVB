@@ -7,7 +7,7 @@ Option Strict On
 
 Imports System.Runtime.InteropServices
 
-Imports IVisualBasicCode.CodeConverter.Util
+Imports CSharpToVBCodeConverter.Util
 
 Imports Microsoft.CodeAnalysis
 
@@ -17,7 +17,7 @@ Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace IVisualBasicCode.CodeConverter.Visual_Basic
+Namespace CSharpToVBCodeConverter.Visual_Basic
 
     Partial Public Class CSharpConverter
 
@@ -233,7 +233,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             End Function
 
             Public Overrides Function VisitAnonymousObjectMemberDeclarator(node As CSS.AnonymousObjectMemberDeclaratorSyntax) As VB.VisualBasicSyntaxNode
-                If node.NameEquals Is Nothing Then
+                If node?.NameEquals Is Nothing Then
                     Return VBFactory.InferredFieldInitializer(DirectCast(node.Expression.Accept(Me), VBS.ExpressionSyntax)).WithConvertedTriviaFrom(node)
                 Else
                     Return VBFactory.NamedFieldInitializer(KeyKeyword,
@@ -246,12 +246,12 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             End Function
 
             Public Overrides Function VisitArrowExpressionClause(node As CSS.ArrowExpressionClauseSyntax) As VB.VisualBasicSyntaxNode
-                Return node.Expression.Accept(Me)
+                Return node?.Expression.Accept(Me)
             End Function
 
             Public Overrides Function VisitConstructorDeclaration(node As CSS.ConstructorDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim Attributes As SyntaxList(Of VBS.AttributeListSyntax) = VBFactory.List(
-                        node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))
+                        node?.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))
                 Dim Initializer As VBS.ExpressionStatementSyntax = Nothing
                 If node.Initializer IsNot Nothing Then
                     Initializer = DirectCast(node.Initializer.Accept(Me), VBS.ExpressionStatementSyntax)
@@ -317,7 +317,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             End Function
 
             Public Overrides Function VisitConstructorInitializer(node As CSS.ConstructorInitializerSyntax) As VB.VisualBasicSyntaxNode
-                Dim ArgumentList As VBS.ArgumentListSyntax = DirectCast((node.ArgumentList.Accept(Me)), VBS.ArgumentListSyntax)
+                Dim ArgumentList As VBS.ArgumentListSyntax = DirectCast((node?.ArgumentList.Accept(Me)), VBS.ArgumentListSyntax)
                 Dim SimpleMemberAccessExpression As VBS.MemberAccessExpressionSyntax
                 Dim MeOrMyExpression As VBS.ExpressionSyntax = If(TypeOf node.Parent.Parent Is CSS.StructDeclarationSyntax,
                                                             DirectCast(VBFactory.MeExpression(), VBS.ExpressionSyntax),
@@ -338,6 +338,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             'Public Shared Widening Operator DirectCast(value As T) As [Optional]
             '    Return New [Optional](Of T)(value)
             'End Operator
+            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitConversionOperatorDeclaration(node As CSS.ConversionOperatorDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim AttributeLists As New List(Of VBS.AttributeListSyntax)
                 Dim ReturnAttributes As SyntaxList(Of VBS.AttributeListSyntax) = Nothing
@@ -364,6 +365,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return PrependStatementWithMarkedStatementTrivia(node, OperatorBlock)
             End Function
 
+            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitDestructorDeclaration(node As CSS.DestructorDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim AttributeLists As SyntaxList(Of VBS.AttributeListSyntax) = VBFactory.List(node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))
                 Dim Modifiers As SyntaxTokenList = VBFactory.TokenList(ProtectedKeyword, OverridesKeyword)
@@ -401,6 +403,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                               VBFactory.List(Statements)).WithConvertedTriviaFrom(node)
             End Function
 
+            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitEventDeclaration(node As CSS.EventDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim Attributes As New List(Of VBS.AttributeListSyntax)
                 Dim ReturnAttributes As SyntaxList(Of VBS.AttributeListSyntax) = Nothing
@@ -427,6 +430,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return VBFactory.EventBlock(stmt, VBFactory.List(accessors)).WithConvertedTriviaFrom(node)
             End Function
 
+            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitEventFieldDeclaration(node As CSS.EventFieldDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim id As SyntaxToken = VBFactory.Identifier(AddBracketsIfRequired(node.Declaration.Variables.Single().Identifier.ValueText))
                 Dim ReturnAttributes As New SyntaxList(Of VBS.AttributeListSyntax)
@@ -440,6 +444,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                                     implementsClause:=Nothing).WithConvertedTriviaFrom(node)
             End Function
 
+            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitFieldDeclaration(node As CSS.FieldDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim _TypeInfo As TypeInfo = ModelExtensions.GetTypeInfo(mSemanticModel, node.Declaration.Type)
                 Dim variableOrConstOrReadonly As TokenContext = TokenContext.VariableOrConst
@@ -495,6 +500,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     WithMergedTrailingTrivia(GetTriviaFromUnneededToken(node.SemicolonToken)).WithTrailingEOL
             End Function
 
+            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitIndexerDeclaration(node As CSS.IndexerDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim id As SyntaxToken = VBFactory.Identifier("Item")
                 Dim Attributes As New List(Of VBS.AttributeListSyntax)
@@ -584,6 +590,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return VBFactory.PropertyBlock(stmt, VBFactory.List(accessors), EndPropertyStatement).WithConvertedLeadingTriviaFrom(node.Type)
             End Function
 
+            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitMethodDeclaration(node As CSS.MethodDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 If node.Modifiers.Any(Function(m As SyntaxToken) m.IsKind(CS.SyntaxKind.UnsafeKeyword)) Then
                     Return FlagUnsupportedStatements(node, "unsafe Functions", CommentOutOriginalStatements:=True)
@@ -861,11 +868,13 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         type = VBFactory.ParseTypeName("System.Delegate")
                     ElseIf type.ToString = "[Enum]" Then
                         type = VBFactory.ParseTypeName("System.Enum")
-                    ElseIf type.ToString.StartsWith("[") Then
+                    ElseIf type.ToString.StartsWith("[", StringComparison.InvariantCulture) Then
                         Dim S As String() = type.ToString.Split({"["c, "]"}, StringSplitOptions.RemoveEmptyEntries)
                         If Not (IsSpecialReservedWord(S(0)) OrElse
                                 VB.SyntaxFacts.IsKeywordKind(VB.SyntaxFacts.GetKeywordKind(S(0)))) Then
-                            type = VBFactory.ParseTypeName(type.ToString.Replace("]", "").Replace("[", ""))
+                            type = VBFactory.ParseTypeName(type.ToString().
+                                                                   Replace("]", "", StringComparison.InvariantCulture).
+                                                                   Replace("[", "", StringComparison.InvariantCulture))
                         End If
                     End If
                 End If
@@ -878,18 +887,20 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 If TypeParameterList IsNot Nothing OrElse ParameterList IsNot Nothing Then
                     id = id.WithTrailingTrivia(SpaceTrivia)
                 End If
-
-                SubOrFunctionStatement = DirectCast(VBFactory.FunctionStatement(
-                                                            VBFactory.List(Attributes),
-                                                            VBFactory.TokenList(Modifiers),
-                                                            id,
-                                                            TypeParameterList,
-                                                            ParameterList,
-                                                            AsClause,
-                                                            handlesClause:=Nothing,
-                                                            ImplementsClause).
-                                                            With(FunctionStatementLeadingTrivia, FunctionStatementTrailingTrivia).
-                                                                 RestructureAttributesAndModifiers(Attributes.Count > 0, Modifiers.Count > 0), VBS.MethodStatementSyntax)
+                If AsClause.GetTrailingTrivia.ContainsCommentTrivia Then
+                    FunctionStatementTrailingTrivia.InsertRange(0, AsClause.GetTrailingTrivia.ToList)
+                    AsClause = AsClause.WithTrailingTrivia(SpaceTrivia)
+                End If
+                SubOrFunctionStatement = VBFactory.FunctionStatement(
+                                            VBFactory.List(Attributes),
+                                            VBFactory.TokenList(Modifiers),
+                                            id,
+                                            TypeParameterList,
+                                            ParameterList,
+                                            AsClause,
+                                            handlesClause:=Nothing,
+                                            implementsClause:=ImplementsClause).
+                                            With(FunctionStatementLeadingTrivia, FunctionStatementTrailingTrivia)
                 SubOrFunctionStatement = DirectCast(PrependStatementWithMarkedStatementTrivia(node, SubOrFunctionStatement), VBS.MethodStatementSyntax)
                 UsedIdentifiers = DirectCast(UsedStacks.Pop, Dictionary(Of String, SymbolTableEntry))
 
@@ -901,6 +912,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                                     EndSubOrFunctionStatement)
             End Function
 
+            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitOperatorDeclaration(node As CSS.OperatorDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim Attributes As New List(Of VBS.AttributeListSyntax)
                 Dim ReturnAttributes As SyntaxList(Of VBS.AttributeListSyntax) = Nothing
@@ -937,6 +949,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 End Select
             End Function
 
+            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitPropertyDeclaration(node As CSS.PropertyDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim Identifier As SyntaxToken
                 Dim IdString As String = ""
@@ -952,7 +965,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     If TypeOf VisualBasicSyntaxNode1 Is VBS.QualifiedNameSyntax Then
                         ExplicitInterfaceIdentifier = DirectCast(VisualBasicSyntaxNode1, VBS.QualifiedNameSyntax)
                         IdString = ExplicitInterfaceIdentifier.Right.ToString
-                        Dim OpenParenIndex As Integer = IdString.IndexOf("("c)
+                        Dim OpenParenIndex As Integer = IdString.IndexOf("("c, StringComparison.InvariantCulture)
                         If OpenParenIndex > 0 Then
                             IdString = IdString.Left(OpenParenIndex)
                         End If

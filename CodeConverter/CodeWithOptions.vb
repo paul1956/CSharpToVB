@@ -9,11 +9,14 @@ Imports Microsoft.CodeAnalysis
 
 Imports CS = Microsoft.CodeAnalysis.CSharp
 
-Namespace IVisualBasicCode.CodeConverter
+Namespace CSharpToVBCodeConverter
 
     Public Class CodeWithOptions
 
         Public Sub New(_Request As ConvertRequest)
+            If _Request Is Nothing Then
+                Throw New ArgumentNullException(NameOf(_Request))
+            End If
             Text = _Request.SourceCode
             FromLanguage = LanguageNames.CSharp
             ToLanguage = LanguageNames.VisualBasic

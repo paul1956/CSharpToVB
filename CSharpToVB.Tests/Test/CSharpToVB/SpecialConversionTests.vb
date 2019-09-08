@@ -11,7 +11,7 @@ Namespace CSharpToVB.Tests
         Inherits ConverterTestBase
 
         <Fact>
-        Public Shared Sub CSharpToVB_IfStatementSimilarToRaiseEvent1()
+        Public Shared Sub CSharpToVBIfStatementSimilarToRaiseEvent1()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()
@@ -33,7 +33,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_IfStatementSimilarToRaiseEvent2()
+        Public Shared Sub CSharpToVBIfStatementSimilarToRaiseEvent2()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()
@@ -55,7 +55,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_IfStatementSimilarToRaiseEvent3()
+        Public Shared Sub CSharpToVBIfStatementSimilarToRaiseEvent3()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()
@@ -77,7 +77,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_IfStatementSimilarToRaiseEvent4()
+        Public Shared Sub CSharpToVBIfStatementSimilarToRaiseEvent4()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()
@@ -99,7 +99,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_IfStatementSimilarToRaiseEvent5()
+        Public Shared Sub CSharpToVBIfStatementSimilarToRaiseEvent5()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()
@@ -123,7 +123,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_RaiseEvent1()
+        Public Shared Sub CSharpToVBRaiseEvent1()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     event EventHandler MyEvent;
@@ -147,7 +147,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_RaiseEvent2()
+        Public Shared Sub CSharpToVBRaiseEvent2()
 
             TestConversionCSharpToVisualBasic("class TestClass
 {
@@ -168,7 +168,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_RaiseEvent3()
+        Public Shared Sub CSharpToVBRaiseEvent3()
 
             TestConversionCSharpToVisualBasic("class TestClass
 {
@@ -189,7 +189,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_RaiseEvent4()
+        Public Shared Sub CSharpToVBRaiseEvent4()
 
             TestConversionCSharpToVisualBasic("class TestClass
 {
@@ -213,7 +213,7 @@ End Class
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_RaiseEvent5()
+        Public Shared Sub CSharpToVBRaiseEvent5()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()
@@ -236,7 +236,7 @@ End Class
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_RaiseEvent6()
+        Public Shared Sub CSharpToVBRaiseEvent6()
 
             TestConversionCSharpToVisualBasic("class TestClass
 {
@@ -260,7 +260,7 @@ End Class
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_SimpleInlineAssign()
+        Public Shared Sub CSharpToVBSimpleInlineAssign()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()
@@ -288,7 +288,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_SimplePostIncrementAssign()
+        Public Shared Sub CSharpToVBSimplePostIncrementAssign()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()

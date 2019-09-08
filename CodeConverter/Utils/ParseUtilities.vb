@@ -7,7 +7,7 @@ Option Strict On
 
 Imports System.IO
 
-Imports IVisualBasicCode.CodeConverter.Util
+Imports CSharpToVBCodeConverter.Util
 
 Imports Microsoft.CodeAnalysis
 
@@ -37,7 +37,9 @@ Public Module ParseUtilities
         Dim TotalFilesToProcess As Long = 0L
         Try
             For Each Subdirectory As String In Directory.GetDirectories(DirPath)
-                If SkipTestResourceFiles AndAlso (Subdirectory.EndsWith("Test\Resources") OrElse Subdirectory.EndsWith("Setup\Templates")) Then
+                If SkipTestResourceFiles AndAlso
+                        (Subdirectory.EndsWith("Test\Resources", StringComparison.InvariantCultureIgnoreCase) OrElse
+                         Subdirectory.EndsWith("Setup\Templates", StringComparison.InvariantCultureIgnoreCase)) Then
                     Continue For
                 End If
                 If SkipBinAndObjFolders AndAlso (Subdirectory = "bin" OrElse Subdirectory = "obj" OrElse Subdirectory = "g") Then

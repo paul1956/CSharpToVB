@@ -5,7 +5,7 @@ Option Explicit On
 Option Infer Off
 Option Strict On
 
-Imports IVisualBasicCode.CodeConverter.Util
+Imports CSharpToVBCodeConverter.Util
 
 Imports Microsoft.CodeAnalysis
 
@@ -13,11 +13,11 @@ Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 
-Namespace IVisualBasicCode.CodeConverter.Visual_Basic
+Namespace CSharpToVBCodeConverter.Visual_Basic
 
     Public Module TriviaListSupport
 
-        Public Sub RelocateAttributeDirectiveDisabledTrivia(TriviaList As SyntaxTriviaList, FoundDirective As Boolean, IsTheory As Boolean, ByRef StatementLeadingTrivia As List(Of SyntaxTrivia), ByRef StatementTrailingTrivia As List(Of SyntaxTrivia))
+        Friend Sub RelocateAttributeDirectiveDisabledTrivia(TriviaList As SyntaxTriviaList, FoundDirective As Boolean, IsTheory As Boolean, ByRef StatementLeadingTrivia As List(Of SyntaxTrivia), ByRef StatementTrailingTrivia As List(Of SyntaxTrivia))
             If IsTheory Then
                 Return
             End If
@@ -43,7 +43,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             Next
         End Sub
 
-        Public Function RelocateDirectiveDisabledTrivia(TriviaList As SyntaxTriviaList, ByRef StatementTrivia As List(Of SyntaxTrivia), RemoveEOL As Boolean) As SyntaxTriviaList
+        Friend Function RelocateDirectiveDisabledTrivia(TriviaList As SyntaxTriviaList, ByRef StatementTrivia As List(Of SyntaxTrivia), RemoveEOL As Boolean) As SyntaxTriviaList
             Dim NewTrivia As New SyntaxTriviaList
             Dim FoundDirective As Boolean = False
             For Each t As SyntaxTrivia In TriviaList
@@ -66,7 +66,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             Return NewTrivia
         End Function
 
-        Public Function RelocateLeadingCommentTrivia(TriviaList As SyntaxTriviaList, ByRef StatementLeadingTrivia As List(Of SyntaxTrivia)) As SyntaxTriviaList
+        Friend Function RelocateLeadingCommentTrivia(TriviaList As SyntaxTriviaList, ByRef StatementLeadingTrivia As List(Of SyntaxTrivia)) As SyntaxTriviaList
             Dim NewLeadingTrivia As New SyntaxTriviaList
             Dim FoundComment As Boolean = False
             For Each t As SyntaxTrivia In TriviaList
@@ -89,7 +89,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             Return NewLeadingTrivia
         End Function
 
-        Public Function TranslateTokenList(ChildTokens As IEnumerable(Of SyntaxToken)) As SyntaxTokenList
+        Friend Function TranslateTokenList(ChildTokens As IEnumerable(Of SyntaxToken)) As SyntaxTokenList
             Dim NewTokenList As New SyntaxTokenList
             For Each token As SyntaxToken In ChildTokens
                 Dim NewLeadingTriviaList As New SyntaxTriviaList
@@ -100,8 +100,10 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 If token.HasLeadingTrivia Then
                     For Each t As SyntaxTrivia In token.LeadingTrivia
                         If t.IsKind(CS.SyntaxKind.DocumentationCommentExteriorTrivia) Then
-                            NewLeadingTriviaList = NewLeadingTriviaList.Add(VBFactory.DocumentationCommentExteriorTrivia(token.LeadingTrivia(0).ToString.Replace("///", "'''")))
-                            If Not TokenText.StartsWith(" ") Then
+                            NewLeadingTriviaList = NewLeadingTriviaList.Add(VBFactory.DocumentationCommentExteriorTrivia(token.LeadingTrivia(0).
+                                                                                                                         ToString().
+                                                                                                                         Replace("///", "'''", StringComparison.InvariantCulture)))
+                            If Not TokenText.StartsWith(" ", StringComparison.InvariantCulture) Then
                                 TokenText = " " & TokenText
                                 ValueText = " " & ValueText
                             End If
@@ -124,7 +126,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             Return NewTokenList
         End Function
 
-        Public Function TriviaIsIdentical(LeadingTrivia As SyntaxTriviaList, NodeLeadingTrivia As List(Of SyntaxTrivia)) As Boolean
+        Friend Function TriviaIsIdentical(LeadingTrivia As SyntaxTriviaList, NodeLeadingTrivia As List(Of SyntaxTrivia)) As Boolean
             If LeadingTrivia.Count <> NodeLeadingTrivia.Count Then Return False
             For i As Integer = 0 To LeadingTrivia.Count - 1
                 If LeadingTrivia(i).ToFullString.Trim <> NodeLeadingTrivia(i).ToFullString.Trim Then

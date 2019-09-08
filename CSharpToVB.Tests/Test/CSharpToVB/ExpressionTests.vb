@@ -10,7 +10,7 @@ Namespace CSharpToVB.Tests
         Inherits ConverterTestBase
 
         <Fact>
-        Public Shared Sub CSharpToVB_Await()
+        Public Shared Sub CSharpToVBAwait()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     Task<int> SomeAsyncMethod()
@@ -41,7 +41,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_BaseMemberAccessExpression()
+        Public Shared Sub CSharpToVBBaseMemberAccessExpression()
             TestConversionCSharpToVisualBasic("class BaseTestClass
 {
     public int member;
@@ -76,7 +76,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_Comment()
+        Public Shared Sub CSharpToVBComment()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     /// <summary>
@@ -100,7 +100,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_Comment1()
+        Public Shared Sub CSharpToVBComment1()
             TestConversionCSharpToVisualBasic("class TestClass
 {
         /// <summary>
@@ -126,7 +126,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_CommentAfterSemicolon()
+        Public Shared Sub CSharpToVBCommentAfterSemicolon()
             TestConversionCSharpToVisualBasic("static void SimpleQuery()
 {
     int[] numbers = { 7, 9, 5, 3, 6 };           // Test
@@ -142,7 +142,7 @@ End Sub")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_ConcatinateComplexString()
+        Public Shared Sub CSharpToVBConcatinateComplexString()
             TestConversionCSharpToVisualBasic("using System;
 using System.Globalization;
 using System.Text.RegularExpressions;
@@ -206,7 +206,7 @@ End Module
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_ConcatinateComplexString2()
+        Public Shared Sub CSharpToVBConcatinateComplexString2()
             TestConversionCSharpToVisualBasic("using System;
 using System.Globalization;
 using System.Text.RegularExpressions;
@@ -268,7 +268,7 @@ End Module
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_ConcatinateManyString()
+        Public Shared Sub CSharpToVBConcatinateManyString()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()
@@ -292,7 +292,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_ConditionalExpression()
+        Public Shared Sub CSharpToVBConditionalExpression()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod(string str)
@@ -312,7 +312,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_DelegateExpression()
+        Public Shared Sub CSharpToVBDelegateExpression()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()
@@ -336,7 +336,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_ElvisOperatorExpression()
+        Public Shared Sub CSharpToVBElvisOperatorExpression()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod(string str)
@@ -362,7 +362,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_LambdaBodyExpression()
+        Public Shared Sub CSharpToVBLambdaBodyExpression()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()
@@ -396,7 +396,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_LineCOntinuationComment()
+        Public Shared Sub CSharpToVBLineCOntinuationComment()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     /// <summary>
@@ -420,7 +420,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_Linq1()
+        Public Shared Sub CSharpToVBLinq1()
             TestConversionCSharpToVisualBasic("static void SimpleQuery()
 {
     int[] numbers = { 7, 9, 5, 3, 6 };
@@ -449,7 +449,7 @@ End Sub")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_Linq2()
+        Public Shared Sub CSharpToVBLinq2()
             TestConversionCSharpToVisualBasic("public static void Linq40()
     {
         int[] numbers = { 5, 4, 1, 3, 9, 8, 6, 7, 2, 0 };
@@ -487,7 +487,7 @@ End Sub")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_Linq3()
+        Public Shared Sub CSharpToVBLinq3()
             TestConversionCSharpToVisualBasic("class Product {
     public string Category;
     public string ProductName;
@@ -550,7 +550,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_Linq4()
+        Public Shared Sub CSharpToVBLinq4()
             TestConversionCSharpToVisualBasic("public void Linq103()
 {
     string[] categories = new string[]{
@@ -603,7 +603,7 @@ End Sub")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_MemberAccessAndInvocationExpression()
+        Public Shared Sub CSharpToVBMemberAccessAndInvocationExpression()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod(string str)
@@ -631,7 +631,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_MultilineString()
+        Public Shared Sub CSharpToVBMultilineString()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()
@@ -652,7 +652,7 @@ World!""
 End Class")
         End Sub
         <Fact>
-        Public Shared Sub CSharpToVB_NullCoalescingExpression()
+        Public Shared Sub CSharpToVBNullCoalescingExpression()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod(string str)
@@ -671,7 +671,7 @@ Class TestClass
 End Class")
         End Sub
         <Fact>
-        Public Shared Sub CSharpToVB_ObjectInitializerExpression()
+        Public Shared Sub CSharpToVBObjectInitializerExpression()
             TestConversionCSharpToVisualBasic("class StudentName
 {
     public string LastName, FirstName;
@@ -708,7 +708,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_ObjectInitializerExpression2()
+        Public Shared Sub CSharpToVBObjectInitializerExpression2()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod(string str)
@@ -731,7 +731,7 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVB_ThisMemberAccessExpression()
+        Public Shared Sub CSharpToVBThisMemberAccessExpression()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     private int member;

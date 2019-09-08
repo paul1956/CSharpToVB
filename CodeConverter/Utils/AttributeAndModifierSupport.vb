@@ -3,7 +3,7 @@
 ' See the LICENSE file in the project root for more information.
 Imports System.Runtime.CompilerServices
 
-Imports IVisualBasicCode.CodeConverter.Util
+Imports CSharpToVBCodeConverter.Util
 
 Imports Microsoft.CodeAnalysis
 
@@ -12,7 +12,7 @@ Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 
-Namespace IVisualBasicCode.CodeConverter.Visual_Basic
+Namespace CSharpToVBCodeConverter.Visual_Basic
 
     Public Module AttributeAndModifierSupport
 
@@ -41,7 +41,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             Dim FoundVisibility As Boolean = False
             Dim LeadingTrivia As New List(Of SyntaxTrivia)
             Dim FirstModifier As Boolean = True
-            If CS_Modifiers.Count > 0 Then
+            If CS_Modifiers.Any Then
                 LeadingTrivia.AddRange(ConvertTrivia(CS_Modifiers(0).LeadingTrivia))
             End If
 

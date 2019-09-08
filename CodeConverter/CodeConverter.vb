@@ -6,15 +6,15 @@ Option Infer Off
 Option Strict On
 
 Imports System.Collections.Immutable
-Imports IVisualBasicCode.CodeConverter.Util
-Imports IVisualBasicCode.CodeConverter.Visual_Basic
+Imports CSharpToVBCodeConverter.Util
+Imports CSharpToVBCodeConverter.Visual_Basic
 
 Imports Microsoft.CodeAnalysis
 
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
-Namespace IVisualBasicCode.CodeConverter
+Namespace CSharpToVBCodeConverter
     Public Module CodeConverter
         Friend OriginalRequest As ConvertRequest
         Friend ImplementedMembersStack As New Stack(ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))).Empty)
@@ -28,10 +28,10 @@ Namespace IVisualBasicCode.CodeConverter
                 Throw New ArgumentNullException(NameOf(language))
             End If
             If language.StartsWith("cs", StringComparison.OrdinalIgnoreCase) Then
-                Return CSharp.LanguageVersion.Latest
+                Return CS.LanguageVersion.Latest
             End If
             If language.StartsWith("vb", StringComparison.OrdinalIgnoreCase) Then
-                Return VisualBasic.LanguageVersion.Latest
+                Return VB.LanguageVersion.Latest
             End If
             Throw New ArgumentException($"{language} not supported!")
         End Function
@@ -50,6 +50,9 @@ Namespace IVisualBasicCode.CodeConverter
         End Function
 
         Public Function ConvertInputRequest(RequestToConvert As ConvertRequest, OptionalReferences() As MetadataReference) As ConversionResult
+            If RequestToConvert Is Nothing Then
+                Throw New ArgumentNullException(NameOf(RequestToConvert))
+            End If
             Dim languages As String() = {RequestToConvert.GetSourceExtension, RequestToConvert.GetTargetExtension}
             Debug.Assert(languages.Length = 2)
             Dim fromLanguage As String = ParseLanguage(languages(0))
@@ -63,7 +66,7 @@ Namespace IVisualBasicCode.CodeConverter
                 UsedIdentifiers.Clear()
             End SyncLock
             If RequestToConvert.SourceCode Is Nothing Then
-                Throw New ArgumentNullException(NameOf(RequestToConvert.SourceCode))
+                Throw New Exception($"{NameOf(RequestToConvert.SourceCode)} should not be Nothing")
             End If
             If OptionalReferences Is Nothing Then
                 Throw New ArgumentNullException(NameOf(OptionalReferences))

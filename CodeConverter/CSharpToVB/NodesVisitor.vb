@@ -6,7 +6,7 @@ Option Infer Off
 Option Strict On
 
 Imports System.Diagnostics.CodeAnalysis
-Imports IVisualBasicCode.CodeConverter.Util
+Imports CSharpToVBCodeConverter.Util
 
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.CSharp.Syntax
@@ -17,7 +17,7 @@ Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace IVisualBasicCode.CodeConverter.Visual_Basic
+Namespace CSharpToVBCodeConverter.Visual_Basic
 
     Partial Public Class CSharpConverter
 
@@ -46,11 +46,13 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 End Get
             End Property
 
+            <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             <ExcludeFromCodeCoverage>
             Public Overrides Function DefaultVisit(node As SyntaxNode) As VisualBasicSyntaxNode
                 Throw New NotImplementedException(node.[GetType]().ToString & " not implemented!")
             End Function
 
+            <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitCompilationUnit(node As CompilationUnitSyntax) As VisualBasicSyntaxNode
 
                 For Each [using] As UsingDirectiveSyntax In node.Usings
@@ -80,7 +82,8 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         Members).WithTriviaFrom(externList(0))
                 ElseIf allImports.Count > 0 Then
                     If Members.Count > 0 AndAlso Members(0).HasLeadingTrivia Then
-                        If (TypeOf Members(0) IsNot VBS.NamespaceBlockSyntax AndAlso TypeOf Members(0) IsNot VBS.ModuleBlockSyntax) OrElse Members(0).GetLeadingTrivia.ToFullString.Contains("auto-generated") Then
+                        If (TypeOf Members(0) IsNot VBS.NamespaceBlockSyntax AndAlso TypeOf Members(0) IsNot VBS.ModuleBlockSyntax) OrElse
+                            Members(0).GetLeadingTrivia.ToFullString.Contains("auto-generated", StringComparison.InvariantCultureIgnoreCase) Then
                             Dim HeadingTriviaList As New List(Of SyntaxTrivia)
                             HeadingTriviaList.AddRange(Members(0).GetLeadingTrivia)
                             If HeadingTriviaList(0).IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
@@ -155,6 +158,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return value
             End Function
 
+            <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitImplicitElementAccess(node As ImplicitElementAccessSyntax) As VisualBasicSyntaxNode
                 If node.ArgumentList.Arguments.Count > 1 Then
                     Throw New NotSupportedException("ImplicitElementAccess can only have one argument!")
@@ -202,6 +206,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             ''' <param name="Node"></param>
             ''' <returns></returns>
             ''' <remarks>Added by PC</remarks>
+            <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitSingleVariableDesignation(Node As SingleVariableDesignationSyntax) As VisualBasicSyntaxNode
                 Dim Identifier As SyntaxToken = GenerateSafeVBToken(Node.Identifier, IsQualifiedName:=False, IsTypeName:=False)
                 Dim IdentifierExpression As VBS.IdentifierNameSyntax = VBFactory.IdentifierName(Identifier)
@@ -245,11 +250,13 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return IdentifierExpression
             End Function
 
+            <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitStackAllocArrayCreationExpression(node As StackAllocArrayCreationExpressionSyntax) As VisualBasicSyntaxNode
                 node.FirstAncestorOrSelf(Of StatementSyntax).AddMarker(FlagUnsupportedStatements(node.FirstAncestorOrSelf(Of StatementSyntax), "StackAlloc", CommentOutOriginalStatements:=True), StatementHandlingOption.ReplaceStatement, AllowDuplicates:=True)
                 Return PredefinedTypeObject
             End Function
 
+            <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitSwitchExpression(node As SwitchExpressionSyntax) As VisualBasicSyntaxNode
                 Dim StatementWithIssue As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
 
@@ -286,10 +293,10 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         End If
                         Blocks = Blocks.Add(VBFactory.CaseElseBlock(VBFactory.CaseElseStatement(VBFactory.ElseCaseClause).WithTrailingEOL, Statements))
                     ElseIf TypeOf arm.Pattern Is RecursivePatternSyntax Then
-                        StatementWithIssue.AddMarker(FlagUnsupportedStatements(node, "Swith Expression with Recursive Pattern Syntax", CommentOutOriginalStatements:=True), StatementHandlingOption.ReplaceStatement, AllowDuplicates:=True)
+                        StatementWithIssue.AddMarker(FlagUnsupportedStatements(node, "Switch Expression with Recursive Pattern Syntax", CommentOutOriginalStatements:=True), StatementHandlingOption.ReplaceStatement, AllowDuplicates:=True)
                         Return TempIdentifier
                     ElseIf TypeOf arm.Pattern Is DeclarationPatternSyntax Then
-                        StatementWithIssue.AddMarker(FlagUnsupportedStatements(node, "Swith Expression with Declaration Pattern Syntax", CommentOutOriginalStatements:=True), StatementHandlingOption.ReplaceStatement, AllowDuplicates:=True)
+                        StatementWithIssue.AddMarker(FlagUnsupportedStatements(node, "Switch Expression with Declaration Pattern Syntax", CommentOutOriginalStatements:=True), StatementHandlingOption.ReplaceStatement, AllowDuplicates:=True)
                         Return TempIdentifier
                     ElseIf TypeOf arm.Pattern Is VarPatternSyntax Then
                         Dim VarPattern As VarPatternSyntax = DirectCast(arm.Pattern, VarPatternSyntax)
@@ -341,12 +348,14 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return TempIdentifier
             End Function
 
+            <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitVariableDeclaration(node As VariableDeclarationSyntax) As VisualBasicSyntaxNode
                 Dim StatementWithIssue As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
                 Dim LeadingTrivia As SyntaxTriviaList = CheckCorrectnessLeadingTrivia(StatementWithIssue, "VB has no direct equivalent To C# var pattern expressions")
                 Return MyBase.VisitVariableDeclaration(node)
             End Function
 
+            <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitVariableDeclarator(node As VariableDeclaratorSyntax) As VisualBasicSyntaxNode
                 Dim Identifier As SyntaxToken = GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False)
                 Dim ArgumentList As New List(Of VBS.ArgumentSyntax)
@@ -380,6 +389,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return VBFactory.ModifiedIdentifier(Identifier.WithTrailingTrivia(SpaceTrivia), Nullable, ArrayBounds, arrayRankSpecifiers:=Nothing)
             End Function
 
+            <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitWhenClause(node As WhenClauseSyntax) As VisualBasicSyntaxNode
                 Return node.Condition.Accept(Me)
             End Function

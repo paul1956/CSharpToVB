@@ -1,6 +1,6 @@
 ﻿Imports Microsoft.CodeAnalysis
 
-Namespace IVisualBasicCode.CodeConverter.Util
+Namespace CSharpToVBCodeConverter.Util
 
     Partial Public Module ISymbolExtensions
 
@@ -15,9 +15,9 @@ Namespace IVisualBasicCode.CodeConverter.Util
         '// that certain helper functions that we'd like to call are inlined in this method to
         '// prevent the overhead of returning collections or enumerators.
         Private Function IsSymbolAccessibleCore(symbol As ISymbol, Within As ISymbol, throughTypeOpt As ITypeSymbol, ByRef failedThroughTypeCheck As Boolean) As Boolean ' must be assembly or named type symbol
-            Contract.ThrowIfNull(symbol)
-            Contract.ThrowIfNull(Within)
-            Debug.Assert(TypeOf Within Is INamedTypeSymbol OrElse TypeOf Within Is IAssemblySymbol)
+            Contracts.Contract.Requires(symbol IsNot Nothing)
+            Contracts.Contract.Requires(Within IsNot Nothing)
+            Contracts.Contract.Assume(TypeOf Within Is INamedTypeSymbol OrElse TypeOf Within Is IAssemblySymbol)
 
             failedThroughTypeCheck = False
             Dim withinAssembly As IAssemblySymbol = If((TryCast(Within, IAssemblySymbol)), DirectCast(Within, INamedTypeSymbol).ContainingAssembly)

@@ -12,7 +12,8 @@ Imports Xunit
 
 Public Module TestUtilities
 
-    Private _roslynRootDirectory As String = ""
+    Private RoslynRootDirectory As String = String.Empty
+    Private ReadOnly _LockRoslynRootDirectory As Object = New Object
 
     Private Sub GetOccurrenceCount(kind As SyntaxKind, node As SyntaxNodeOrToken,
                                       ByRef actualCount As Integer)
@@ -63,29 +64,29 @@ Public Module TestUtilities
     End Function
 
     Public Function GetRoslynRootDirectory() As String
-        SyncLock _roslynRootDirectory
-            If _roslynRootDirectory.IsEmptyNullOrWhitespace Then
-                _roslynRootDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Source")
-                If Not Directory.Exists(_roslynRootDirectory) Then
+        SyncLock _LockRoslynRootDirectory
+            If String.IsNullOrWhiteSpace(RoslynRootDirectory) Then
+                RoslynRootDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Source")
+                If Not Directory.Exists(RoslynRootDirectory) Then
                     Return ""
                 End If
-                _roslynRootDirectory = Path.Combine(_roslynRootDirectory, "Repos")
-                If Not Directory.Exists(_roslynRootDirectory) Then
+                RoslynRootDirectory = Path.Combine(RoslynRootDirectory, "Repos")
+                If Not Directory.Exists(RoslynRootDirectory) Then
                     Return ""
                 End If
-                _roslynRootDirectory = Path.Combine(_roslynRootDirectory, "Roslyn")
-                If Not Directory.Exists(_roslynRootDirectory) Then
+                RoslynRootDirectory = Path.Combine(RoslynRootDirectory, "Roslyn")
+                If Not Directory.Exists(RoslynRootDirectory) Then
                     Return ""
                 End If
             End If
         End SyncLock
-        Return _roslynRootDirectory
+        Return RoslynRootDirectory
     End Function
 
     <Extension()>
     Public Function VerifyOccurrenceCount(tree As SyntaxTree, kind As SyntaxKind, expectedCount As Integer) As SyntaxTree
         Dim actualCount As Integer = 0
-        GetOccurrenceCount(kind, tree.GetRoot(), actualCount)
+        GetOccurrenceCount(kind, tree?.GetRoot(), actualCount)
         Assert.Equal(expectedCount, actualCount)
         Return tree
     End Function

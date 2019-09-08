@@ -7,12 +7,12 @@ Option Strict On
 
 Imports System.Runtime.CompilerServices
 
-Namespace IVisualBasicCode.CodeConverter.Util
+Namespace CSharpToVBCodeConverter.Util
 
     Partial Public Module EnumerableExtensions
 
         <Extension>
-        Public Function Contains(Of T)(sequence As IEnumerable(Of T), predicate As Func(Of T, Boolean)) As Boolean
+        Friend Function Contains(Of T)(sequence As IEnumerable(Of T), predicate As Func(Of T, Boolean)) As Boolean
             Return sequence.Any(predicate)
         End Function
     End Module

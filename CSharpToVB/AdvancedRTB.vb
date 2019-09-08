@@ -18,10 +18,9 @@ Public Class AdvancedRTB
     Public Event VertScrollBarRightClicked(ByVal sender As Object, ByVal loc As Point)
     Public Event HorizScrollBarRightClicked(ByVal sender As Object, ByVal loc As Point)
 
-    'Private Const OBJID_CLIENT As Long = &HFFFFFFFC 'the hwnd parm is a handle to a scroll bar control
-    'Private Const OBJID_HSCROLL As Long = &HFFFFFFFA 'the horizontal scroll bar of the hwnd window
     Private Const OBJID_VSCROLL As Long = &HFFFFFFFB 'the vertical scroll bar of the hwnd window
     Friend WithEvents ContextMenuStrip1 As ContextMenuStrip
+    <CodeAnalysis.SuppressMessage("Code Quality", "IDE0069:Disposable fields should be disposed", Justification:="Can't figure out how to dispose")>
     Private components As System.ComponentModel.IContainer
     Friend WithEvents ToolStripMenuItem1 As ToolStripMenuItem
     Friend WithEvents ToolStripSeparator1 As ToolStripSeparator
@@ -29,97 +28,15 @@ Public Class AdvancedRTB
     Friend WithEvents ToolStripMenuItem3 As ToolStripMenuItem
     Private Const WM_NCRBUTTONDOWN As Integer = &HA4
 
-    Protected Overloads Sub Dispose(disposing As Boolean)
-        If disposing Then
-            components.Dispose()
-        End If
-
-        ' Free native resources
-    End Sub
-
-    Protected Overloads Sub Dispose()
-        components.Dispose()
-        Dispose(True)
-        GC.SuppressFinalize(Me)
-    End Sub
-
-    <DllImport("user32.dll", SetLastError:=True, ThrowOnUnmappableChar:=True, CharSet:=CharSet.Auto)>
-    Private Shared Function SetScrollInfo(
-                                        hWnd As IntPtr,
-                                        <MarshalAs(UnmanagedType.I4)> nBar As SBOrientation,
-                                        <MarshalAs(UnmanagedType.Struct)> ByRef lpsi As SCROLLINFO,
-                                        <MarshalAs(UnmanagedType.Bool)> bRepaint As Boolean) As Integer
-    End Function
-
-    <DllImport("user32.dll", SetLastError:=True)>
-    Private Shared Function GetScrollInfo(
-                                         hWnd As IntPtr,
-                                         <MarshalAs(UnmanagedType.I4)> fnBar As SBOrientation,
-                                         ByRef lpsi As SCROLLINFO) As Integer
-    End Function
-
-    <DllImport("user32.dll", EntryPoint:=NameOf(GetScrollBarInfo))>
-    Private Shared Function GetScrollBarInfo(ByVal hwnd As IntPtr,
-                                            ByVal idObject As Integer,
-                                            ByRef psbi As SCROLLBARINFO) As <MarshalAs(UnmanagedType.Bool)> Boolean
-    End Function
-
     Private VertRightClicked As Boolean = False
     Private sbi As SCROLLBARINFO
-    Public Enum SBOrientation As Integer
-        SB_HORZ = &H0
-        SB_VERT = &H1
-        SB_CTL = &H2
-        SB_BOTH = &H3
-    End Enum
-
-    <Flags>
-    Public Enum ScrollInfoMask As UInteger
-        SIF_RANGE = &H1
-        SIF_PAGE = &H2
-        SIF_POS = &H4
-        SIF_DISABLENOSCROLL = &H8
-        SIF_TRACKPOS = &H10
-        SIF_ALL = (SIF_RANGE Or SIF_PAGE Or SIF_POS Or SIF_TRACKPOS)
-    End Enum
-
-    <Serializable, StructLayout(LayoutKind.Sequential)>
-    Private Structure SCROLLINFO
-        Public CB_Size As UInteger
-        <MarshalAs(UnmanagedType.U4)> Public F_Mask As ScrollInfoMask
-        Public N_Min As Integer
-        Public N_Max As Integer
-        Public N_Page As UInteger
-        Public N_Pos As Integer
-        Public N_TrackPos As Integer
-    End Structure
-
-    <StructLayout(LayoutKind.Sequential)>
-    Private Structure SCROLLBARINFO
-        Public CB_Size As Integer
-        Public RC_ScrollBar As RECT
-        Public DXY_LineButton As Integer
-        Public XY_ThumbTop As Integer
-        Public XY_ThumbBottom As Integer
-        Public Reserved As Integer
-        <MarshalAs(UnmanagedType.ByValArray, SizeConst:=6, ArraySubType:=UnmanagedType.U4)>
-        Public RgState() As Integer
-    End Structure
-
-    <StructLayout(LayoutKind.Sequential)>
-    Private Structure RECT
-        Public Left, Top, Right, Bottom As Integer
-        Public Function ToRectangle() As Rectangle
-            Return New Rectangle(Left, Top, Right - Left, Bottom - Top)
-        End Function
-    End Structure
 
     Private Shared Sub SetScrollPos(handle As IntPtr, SB_Orientation As SBOrientation, v As Boolean)
         Dim scrollinfo As New SCROLLINFO With {
             .CB_Size = CUInt(Marshal.SizeOf(GetType(SCROLLINFO))),
-            .F_Mask = ScrollInfoMask.SIF_POS
+            .F_Mask = ScrollInfoMasks.POS
         }
-        SetScrollInfo(hWnd:=handle, nBar:=SB_Orientation, lpsi:=scrollinfo, bRepaint:=v)
+        Dim unused As Integer = SetScrollInfo(hWnd:=handle, nBar:=SB_Orientation, lpsi:=scrollinfo, bRepaint:=v)
     End Sub
     ''' <summary>
     ''' Returns the Position of the Scroll Bar Thumb
@@ -131,7 +48,7 @@ Public Class AdvancedRTB
         Dim si As New SCROLLINFO
         With si
             .CB_Size = CUInt(Marshal.SizeOf(si))
-            .F_Mask = ScrollInfoMask.SIF_ALL
+            .F_Mask = ScrollInfoMasks.ALL
         End With
         Dim lRet As Integer = GetScrollInfo(handle, SB_Orientation, si)
         Return If(lRet <> 0, si.N_Pos, -1)
@@ -142,11 +59,11 @@ Public Class AdvancedRTB
     ''' </summary>
     Public Property HScrollPos() As Integer
         Get
-            Return GetScrollPos(Handle, SBOrientation.SB_HORZ)
+            Return GetScrollPos(Handle, SBOrientation.HORZ)
 
         End Get
         Set(ByVal value As Integer)
-            SetScrollPos(Handle, SBOrientation.SB_HORZ, True)
+            SetScrollPos(Handle, SBOrientation.HORZ, True)
         End Set
     End Property
 
@@ -155,10 +72,10 @@ Public Class AdvancedRTB
     ''' </summary>
     Public Property VScrollPos() As Integer
         Get
-            Return GetScrollPos(Handle, SBOrientation.SB_VERT)
+            Return GetScrollPos(Handle, SBOrientation.VERT)
         End Get
         Set(ByVal value As Integer)
-            SetScrollPos(Handle, SBOrientation.SB_VERT, True)
+            SetScrollPos(Handle, SBOrientation.VERT, True)
         End Set
     End Property
 
@@ -245,4 +162,23 @@ Public Class AdvancedRTB
 
     End Sub
 
+#Region "IDisposable Support"
+
+    Private disposedValue As Boolean ' To detect redundant calls
+
+    ' IDisposable
+    Protected Overrides Sub Dispose(disposing As Boolean)
+        If Not disposedValue Then
+            If disposing Then
+                components.Dispose()
+                ' TODO: dispose managed state (managed objects).
+            End If
+
+            ' TODO: free unmanaged resources (unmanaged objects) and override Finalize() below.
+            ' TODO: set large fields to null.
+        End If
+        disposedValue = True
+    End Sub
+
+#End Region
 End Class

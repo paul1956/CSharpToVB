@@ -16,15 +16,6 @@ Namespace Microsoft.CodeAnalysis.UnitTests.Formatting
     '<UseExportProvider>
     Public MustInherit Class FormattingTestBase
 
-        Protected Function AssertFormatAsync(
-            expected As String,
-            code As String,
-            language As String,
-            ByVal Optional changedOptionSet As Dictionary(Of OptionKey, Object) = Nothing,
-            ByVal Optional testWithTransformation As Boolean = True) As Task
-            Return AssertFormatAsync(expected, code, {New TextSpan(0, code.Length)}, language, changedOptionSet, testWithTransformation)
-        End Function
-
         Protected Async Function AssertFormatAsync(
             expected As String,
             code As String,
@@ -32,16 +23,16 @@ Namespace Microsoft.CodeAnalysis.UnitTests.Formatting
             language As String,
             ByVal Optional ChangedOptionSet As Dictionary(Of OptionKey, Object) = Nothing,
             ByVal Optional treeCompare As Boolean = True,
-            ByVal Optional _ParseOptions As ParseOptions = Nothing) As Task
+            ByVal Optional parseOptions As ParseOptions = Nothing) As Task
             Using Workspace As AdhocWorkspace = New AdhocWorkspace()
                 Dim project As Project = Workspace.CurrentSolution.AddProject("Project", "Project.dll", language)
-                If _ParseOptions IsNot Nothing Then
-                    project = project.WithParseOptions(_ParseOptions)
+                If parseOptions IsNot Nothing Then
+                    project = project.WithParseOptions(parseOptions)
                 End If
 
                 Dim _Document As Document = project.AddDocument("Document", SourceText.From(code))
 
-                Dim _SyntaxTree As SyntaxTree = Await _Document.GetSyntaxTreeAsync()
+                Dim _SyntaxTree As SyntaxTree = Await _Document.GetSyntaxTreeAsync().ConfigureAwait(False)
 
                 Dim Options As OptionSet = Workspace.Options
                 If ChangedOptionSet IsNot Nothing Then
@@ -50,15 +41,13 @@ Namespace Microsoft.CodeAnalysis.UnitTests.Formatting
                     Next
                 End If
 
-                Dim Root As SyntaxNode = Await _SyntaxTree.GetRootAsync()
-                AssertFormat(Workspace, expected, Root, spans, Options, Await _Document.GetTextAsync())
+                Dim Root As SyntaxNode = Await _SyntaxTree.GetRootAsync().ConfigureAwait(False)
+                AssertFormat(Workspace, expected, Root, spans, Options, Await _Document.GetTextAsync().ConfigureAwait(False))
 
                 ' format with node and transform
-                AssertFormatWithTransformation(Workspace, expected, Root, spans, Options, treeCompare, _ParseOptions)
+                AssertFormatWithTransformation(Workspace, expected, Root, spans, Options, treeCompare, parseOptions)
             End Using
         End Function
-
-        Protected MustOverride Function ParseCompilation(text As String, parseOptions As ParseOptions) As SyntaxNode
 
         Protected Sub AssertFormatWithTransformation(
             workspace As Workspace, expected As String, root As SyntaxNode, spans As IEnumerable(Of TextSpan), optionSet As OptionSet, ByVal Optional treeCompare As Boolean = True, ByVal Optional parseOptions As ParseOptions = Nothing)
@@ -74,13 +63,15 @@ Namespace Microsoft.CodeAnalysis.UnitTests.Formatting
             End If
         End Sub
 
-        Protected Shared Sub AssertFormat(workspace As Workspace, expected As String, root As SyntaxNode, spans As IEnumerable(Of TextSpan), _OptionSet As OptionSet, _SourceText As SourceText)
-            Dim result As IList(Of TextChange) = Formatter.GetFormattedTextChanges(root, spans, workspace, _OptionSet)
-            AssertResult(expected, _SourceText, result)
+        Protected MustOverride Function ParseCompilation(text As String, parseOptions As ParseOptions) As SyntaxNode
+
+        Friend Shared Sub AssertFormat(workspace As Workspace, expected As String, root As SyntaxNode, spans As IEnumerable(Of TextSpan), OptionSet As OptionSet, SourceText As SourceText)
+            Dim result As IList(Of TextChange) = Formatter.GetFormattedTextChanges(root, spans, workspace, OptionSet)
+            AssertResult(expected, SourceText, result)
         End Sub
 
-        Protected Shared Sub AssertResult(expected As String, sourceText_Renamed As SourceText, result As IList(Of TextChange))
-            Dim actual As String = sourceText_Renamed.WithChanges(result).ToString()
+        Friend Shared Sub AssertResult(expected As String, sourceText As SourceText, result As IList(Of TextChange))
+            Dim actual As String = sourceText.WithChanges(result).ToString()
             AssertEx.EqualOrDiff(expected, actual)
         End Sub
 

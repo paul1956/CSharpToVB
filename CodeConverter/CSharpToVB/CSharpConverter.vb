@@ -5,7 +5,7 @@ Option Explicit On
 Option Infer Off
 Option Strict On
 
-Imports IVisualBasicCode.CodeConverter.Util
+Imports CSharpToVBCodeConverter.Util
 
 Imports Microsoft.CodeAnalysis
 
@@ -14,7 +14,7 @@ Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace IVisualBasicCode.CodeConverter.Visual_Basic
+Namespace CSharpToVBCodeConverter.Visual_Basic
 
     Partial Public Class CSharpConverter
 
@@ -73,8 +73,8 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             If id.Parent?.IsParentKind(CS.SyntaxKind.Parameter) Then
                 Dim Param As CSS.ParameterSyntax = DirectCast(id.Parent.Parent, CSS.ParameterSyntax)
                 Dim MethodDeclaration As CSS.MethodDeclarationSyntax = TryCast(Param.Parent?.Parent, CSS.MethodDeclarationSyntax)
-                IsQualifiedName = If(MethodDeclaration IsNot Nothing AndAlso String.Compare(MethodDeclaration.Identifier.ValueText, id.ValueText, ignoreCase:=True) <> 0, False, True)
-                IsQualifiedName = IsQualifiedName Or String.Compare(Param.Type.ToString, id.ValueText, ignoreCase:=False) = 0
+                IsQualifiedName = If(MethodDeclaration IsNot Nothing AndAlso String.Compare(MethodDeclaration.Identifier.ValueText, id.ValueText, ignoreCase:=True, Globalization.CultureInfo.InvariantCulture) <> 0, False, True)
+                IsQualifiedName = IsQualifiedName Or String.Compare(Param.Type.ToString, id.ValueText, ignoreCase:=False, Globalization.CultureInfo.InvariantCulture) = 0
             End If
             Return MakeIdentifierUnique(id, BracketNeeded:=False, QualifiedNameOrTypeName:=IsQualifiedName)
         End Function
@@ -83,7 +83,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             Select Case Token.RawKind
                 Case CS.SyntaxKind.NumericLiteralToken
                     Dim TokenToString As String = Token.ToString
-                    If TokenToString.StartsWith("0x") Then
+                    If TokenToString.StartsWith("0x", StringComparison.InvariantCultureIgnoreCase) Then
                         Dim HEXValueString As String = $"&H{TokenToString.Substring(2)}".Replace("ul", "", StringComparison.OrdinalIgnoreCase).Replace("u", "", StringComparison.OrdinalIgnoreCase).Replace("l", "", StringComparison.OrdinalIgnoreCase)
                         If TypeOf value Is Integer Then Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VB.SyntaxFactory.Literal(HEXValueString, CInt(value)))
                         If TypeOf value Is SByte Then Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VB.SyntaxFactory.Literal(HEXValueString, CSByte(value)))
@@ -92,7 +92,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         If TypeOf value Is UInteger Then Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VB.SyntaxFactory.Literal(HEXValueString & "UI", CUInt(value)))
                         If TypeOf value Is Long Then Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VB.SyntaxFactory.Literal(HEXValueString, CLng(value)))
                         If TypeOf value Is ULong Then Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VB.SyntaxFactory.Literal(HEXValueString & "UL", CULng(value)))
-                    ElseIf TokenToString.StartsWith("0b") Then
+                    ElseIf TokenToString.StartsWith("0b", StringComparison.InvariantCultureIgnoreCase) Then
                         If TypeOf value Is Integer Then Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VB.SyntaxFactory.Literal(($"{Binary(CInt(value))}"), CInt(value)))
                         If TypeOf value Is Byte Then Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VB.SyntaxFactory.Literal(($"{Binary(CByte(value))}"), CByte(value)))
                         If TypeOf value Is SByte Then Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VB.SyntaxFactory.Literal($"{Binary(CSByte(value))}", CSByte(value)))
@@ -117,16 +117,16 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Case CS.SyntaxKind.StringLiteralToken
                     If TypeOf value Is String Then
                         Dim StrValue As String = DirectCast(value, String)
-                        If StrValue.Contains("\") Then
+                        If StrValue.Contains("\", StringComparison.InvariantCulture) Then
                             StrValue = ConvertCSharpEscapes(StrValue)
                         End If
-                        If StrValue.Contains(UnicodeOpenQuote) Then
+                        If StrValue.Contains(UnicodeOpenQuote, StringComparison.InvariantCulture) Then
                             StrValue = StrValue.ConverUnicodeQuotes(UnicodeOpenQuote)
                         End If
-                        If StrValue.Contains(UnicodeCloseQuote) Then
+                        If StrValue.Contains(UnicodeCloseQuote, StringComparison.InvariantCulture) Then
                             StrValue = StrValue.ConverUnicodeQuotes(UnicodeCloseQuote)
                         End If
-                        If StrValue.Contains(UnicodeFullWidthQuoationMark) Then
+                        If StrValue.Contains(UnicodeFullWidthQuoationMark, StringComparison.InvariantCulture) Then
                             StrValue = StrValue.ConverUnicodeQuotes(UnicodeFullWidthQuoationMark)
                         End If
                         Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.StringLiteralExpression, VB.SyntaxFactory.Literal(StrValue))
@@ -144,8 +144,8 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     If AscW(CChar(value)) = &H201D Then
                         Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.CharacterLiteralExpression, VB.SyntaxFactory.Literal($"{UnicodeCloseQuote}{UnicodeCloseQuote}"))
                     End If
-                    If Token.Text.StartsWith("'\u") Then
-                        Return VB.SyntaxFactory.ParseExpression($"ChrW(&H{Token.Text.Replace("'", "").Substring(2)})")
+                    If Token.Text.StartsWith("'\u", StringComparison.InvariantCultureIgnoreCase) Then
+                        Return VB.SyntaxFactory.ParseExpression($"ChrW(&H{Token.Text.Replace("'", "", StringComparison.InvariantCulture).Substring(2)})")
                     End If
                     Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.CharacterLiteralExpression, VB.SyntaxFactory.Literal(CChar(value)))
                 Case CS.SyntaxKind.DefaultKeyword
@@ -264,24 +264,25 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 End If
             End If
             For Each ident As KeyValuePair(Of String, SymbolTableEntry) In UsedIdentifiers
-                If String.Compare(ident.Key, ConvertedIdentifier, ignoreCase:=False) = 0 Then
+                If String.Compare(ident.Key, ConvertedIdentifier, ignoreCase:=False, Globalization.CultureInfo.InvariantCulture) = 0 Then
                     ' We have an exact match keep looking
                     Continue For
                 End If
-                If String.Compare(ident.Key, ConvertedIdentifier, ignoreCase:=True) = 0 Then
+                If String.Compare(ident.Key, ConvertedIdentifier, ignoreCase:=True, Globalization.CultureInfo.InvariantCulture) = 0 Then
                     ' If we are here we have seen the variable in a different case so fix it
                     If UsedIdentifiers(ident.Key).IsType Then
                         UsedIdentifiers.Add(ConvertedIdentifier, New SymbolTableEntry(_Name:=ConvertedIdentifier, _IsType:=False))
                     Else
                         Dim NewUniqueName As String
-                        If ident.Value.Name.StartsWith("_") Then
+                        If ident.Value.Name.StartsWith("_", StringComparison.InvariantCulture) Then
                             NewUniqueName = ConvertedIdentifier
                         Else
-                            NewUniqueName = If(ConvertedIdentifier.StartsWith("["),
-                                                ConvertedIdentifier.Replace("[", "_").Replace("]", ""),
-                                                If(Char.IsLower(CChar(ConvertedIdentifier.Substring(0, 1))),
-                                                    $"_{ConvertedIdentifier}",
-                                                    $"{ConvertedIdentifier}_Renamed"))
+                            NewUniqueName = If(ConvertedIdentifier.StartsWith("[", StringComparison.InvariantCulture),
+                                                    ConvertedIdentifier.Replace("[", "_", StringComparison.InvariantCulture).
+                                                                        Replace("]", "", StringComparison.InvariantCulture),
+                                                    If(Char.IsLower(CChar(ConvertedIdentifier.Substring(0, 1))),
+                                                        $"_{ConvertedIdentifier}",
+                                                        $"{ConvertedIdentifier}_Renamed"))
                         End If
                         UsedIdentifiers.Add(ConvertedIdentifier, New SymbolTableEntry(_Name:=NewUniqueName, _IsType:=QualifiedNameOrTypeName))
                     End If
@@ -305,7 +306,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             Dim TypeOrAddressOf As VB.VisualBasicSyntaxNode = DeclarationType.WithConvertedLeadingTriviaFrom(VariableDeclaration.Type)
             Dim TypeLeadingTrivia As SyntaxTriviaList = TypeOrAddressOf.GetLeadingTrivia
 
-            If TypeLeadingTrivia.Count > 0 Then
+            If TypeLeadingTrivia.Any Then
                 If TypeLeadingTrivia.Last.RawKind = VB.SyntaxKind.WhitespaceTrivia Then
                     TypeOrAddressOf = TypeOrAddressOf.WithLeadingTrivia(TypeLeadingTrivia.Last)
                 Else
@@ -415,7 +416,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 ClearMarker()
                 UsedStacks.Push(UsedIdentifiers)
                 UsedIdentifiers.Clear()
-                visualBasicSyntaxNode1 = SourceTree.Accept(New NodesVisitor(_SemanticModel))
+                visualBasicSyntaxNode1 = SourceTree?.Accept(New NodesVisitor(_SemanticModel))
                 If UsedStacks.Count > 0 Then
                     UsedIdentifiers = DirectCast(UsedStacks.Pop, Dictionary(Of String, SymbolTableEntry))
                 End If

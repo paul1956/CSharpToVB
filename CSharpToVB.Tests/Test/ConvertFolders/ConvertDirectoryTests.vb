@@ -3,12 +3,11 @@
 ' See the LICENSE file in the project root for more information.
 Imports System.IO
 Imports System.Reflection
-Imports CodeConverter.Tests
 
 Imports CSharpToVBApp
 
-Imports IVisualBasicCode.CodeConverter
-Imports IVisualBasicCode.CodeConverter.ConversionResult
+Imports CSharpToVBCodeConverter
+Imports CSharpToVBCodeConverter.ConversionResult
 
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Emit
@@ -249,7 +248,7 @@ Namespace ConvertDirectory.Tests
 
         Public Function ProcessFile(PathWithFileName As String, TargetDirectory As String, LanguageExtension As String, OptionalReferences() As MetadataReference) As Boolean
             ' Save to TargetDirectory not supported
-            Assert.True(TargetDirectory.IsEmptyNullOrWhitespace)
+            Assert.True(String.IsNullOrWhiteSpace(TargetDirectory))
             ' Do not delete the next line or the parameter it is needed by other versions of this routine
             LastFileProcessed = PathWithFileName
             Using fs As FileStream = File.OpenRead(PathWithFileName)
@@ -260,9 +259,9 @@ Namespace ConvertDirectory.Tests
                 If ResultOfConversion.ResultStatus = ResultTriState.Failure Then
                     Return False
                 End If
-                Dim CompileResult As EmitResult = CompileVisualBasicString(StringToBeCompiled:=ResultOfConversion.ConvertedCode, ErrorsToBeIgnored, DiagnosticSeverity.Error, ResultOfConversion:=ResultOfConversion)
-                If ResultOfConversion.FilteredListOfFailures.Count > 0 Then
-                    Dim Msg As String = ResultOfConversion.FilteredListOfFailures(0).GetMessage
+                Dim CompileResult As EmitResult = CompileVisualBasicString(StringToBeCompiled:=ResultOfConversion.ConvertedCode, ErrorsToBeIgnored, DiagnosticSeverity.Error, ResultOfConversion)
+                If ResultOfConversion.GetFilteredListOfFailures().Any Then
+                    Dim Msg As String = ResultOfConversion.GetFilteredListOfFailures()(0).GetMessage
                     Throw New ApplicationException($"{PathWithFileName} failed to compile with error :{vbCrLf}{Msg}")
                     Return False
                 End If

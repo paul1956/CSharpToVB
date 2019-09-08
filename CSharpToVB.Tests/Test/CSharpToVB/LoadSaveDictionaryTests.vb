@@ -11,13 +11,13 @@ Namespace DictionaryLoadSave.Tests
     <TestClass()> Public NotInheritable Class LoadSaveDictionaryTests
 
         <Fact>
-        Public Shared Sub VB_DictionaryWriteTest()
+        Public Shared Sub VBDictionaryWriteTest()
             Dim filePath As String = IO.Path.Combine(FileIO.SpecialDirectories.MyDocuments, "ColorDictionary.csv")
             ColorSelector.WriteColorDictionaryToFile(filePath)
         End Sub
 
         <Fact>
-        Public Shared Sub VB_TestRenoveNewLine()
+        Public Shared Sub VBTestRenoveNewLine()
             Dim OriginalString As String = "This is a 2 Line
 String"
             Dim ResultlString As String = "This is a 2 LineString"

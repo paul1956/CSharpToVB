@@ -5,7 +5,7 @@ Option Explicit On
 Option Infer Off
 Option Strict On
 
-Imports IVisualBasicCode.CodeConverter.Util
+Imports CSharpToVBCodeConverter.Util
 
 Imports Microsoft.CodeAnalysis
 
@@ -14,7 +14,7 @@ Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace IVisualBasicCode.CodeConverter.Visual_Basic
+Namespace CSharpToVBCodeConverter.Visual_Basic
 
     Partial Public Class CSharpConverter
 
@@ -46,14 +46,14 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
 
             Public Overrides Function VisitArgument(node As CSS.ArgumentSyntax) As VB.VisualBasicSyntaxNode
                 Dim name As VBS.NameColonEqualsSyntax = Nothing
-                Dim NodeExpression As CSS.ExpressionSyntax = node.Expression
+                Dim NodeExpression As CSS.ExpressionSyntax = node?.Expression
                 Dim ArgumentWithTrivia As VBS.ExpressionSyntax = Nothing
                 Dim NewLeadingTrivia As New List(Of SyntaxTrivia)
                 Dim NewTrailingTrivia As New List(Of SyntaxTrivia)
                 Try
                     If node.RefKindKeyword.Text = "ref" Then
                         Dim Expression As VBS.ExpressionSyntax = DirectCast(node.Expression.Accept(Me), VBS.ExpressionSyntax)
-                        Dim IdentifierString As String = Expression.ToString.Replace("[", "").Replace("]", "")
+                        Dim IdentifierString As String = Expression.ToString.Replace("[", "", StringComparison.InvariantCulture).Replace("]", "", StringComparison.InvariantCulture)
                         Dim StatementWithIssues As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
                         StatementWithIssues.AddMarker(FlagUnsupportedStatements(StatementWithIssues, $"ref keyword, fix variables starting with 'HandleRef_' below", CommentOutOriginalStatements:=False), StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
                         ArgumentWithTrivia = VB.SyntaxFactory.ParseExpression($"HandleRef_{IdentifierString}")
@@ -89,9 +89,9 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
 
                     If node.NameColon IsNot Nothing Then
                         name = VB.SyntaxFactory.NameColonEquals(DirectCast(node.NameColon.Name.Accept(Me), VBS.IdentifierNameSyntax))
-                        Dim NameWithOutColon As String = name.Name.ToString.Replace(":=", "")
-                        If NameWithOutColon.EndsWith("_Renamed") Then
-                            name = VB.SyntaxFactory.NameColonEquals(VB.SyntaxFactory.IdentifierName(NameWithOutColon.Replace("_Renamed", "")))
+                        Dim NameWithOutColon As String = name.Name.ToString.Replace(":=", "", StringComparison.InvariantCulture)
+                        If NameWithOutColon.EndsWith("_Renamed", StringComparison.InvariantCulture) Then
+                            name = VB.SyntaxFactory.NameColonEquals(VB.SyntaxFactory.IdentifierName(NameWithOutColon.Replace("_Renamed", "", StringComparison.InvariantCulture)))
                         End If
                     End If
 
@@ -125,10 +125,12 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return VB.SyntaxFactory.SimpleArgument(name, ArgumentWithTrivia).WithTrailingTrivia(NewTrailingTrivia)
             End Function
 
+            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitArgumentList(node As CSS.ArgumentListSyntax) As VB.VisualBasicSyntaxNode
                 Return VisitCSArguments(node.OpenParenToken, node.Arguments, node.CloseParenToken)
             End Function
 
+            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitBracketedArgumentList(node As CSS.BracketedArgumentListSyntax) As VB.VisualBasicSyntaxNode
                 Return VisitCSArguments(node.OpenBracketToken, node.Arguments, node.CloseBracketToken)
             End Function
@@ -137,9 +139,11 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Return VB.SyntaxFactory.ParseTypeName("").WithConvertedTriviaFrom(node)
             End Function
 
+            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitTypeArgumentList(node As CSS.TypeArgumentListSyntax) As VB.VisualBasicSyntaxNode
+                Contracts.Contract.Requires(node IsNot Nothing)
                 Dim CS_VisitorArguments As SeparatedSyntaxList(Of CSS.TypeSyntax) = node.Arguments
-                Debug.Assert(CS_VisitorArguments.Count <> 0, "VisitTypeArgumentList CS_VisitorArguments.Count = 0")
+                Debug.Assert(CS_VisitorArguments.Any, "VisitTypeArgumentList CS_VisitorArguments.Count = 0")
                 Dim CS_Separators As IEnumerable(Of SyntaxToken) = CS_VisitorArguments.GetSeparators
                 Dim NodeList As New List(Of VBS.TypeSyntax)
                 Dim Separators As New List(Of SyntaxToken)

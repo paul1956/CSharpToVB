@@ -7,7 +7,7 @@ Option Infer Off
 
 Imports System.Runtime.CompilerServices
 
-Imports IVisualBasicCode.CodeConverter.Util
+Imports CSharpToVBCodeConverter.Util
 
 Imports Microsoft.CodeAnalysis
 
@@ -16,7 +16,7 @@ Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Public Module ExpressionSyntaxSupport
 
     <Extension>
-    Public Function DetermineType(expression As CSS.ExpressionSyntax, Model As SemanticModel) As (_ITypeSymbol As ITypeSymbol, _Error As Boolean)
+    Friend Function DetermineType(expression As CSS.ExpressionSyntax, Model As SemanticModel) As (_ITypeSymbol As ITypeSymbol, _Error As Boolean)
         ' If a parameter appears to have a void return type, then just use 'object' instead.
         Try
             If expression IsNot Nothing Then
@@ -36,7 +36,8 @@ Public Module ExpressionSyntaxSupport
                         If symbol.Kind = SymbolKind.PointerType Then
                             Return (_type, True)
                         End If
-                        If _type.ToString.Contains("<anonymous type") OrElse _type.ToString.StartsWith("(") Then
+                        If _type.ToString.Contains("<anonymous type", StringComparison.InvariantCulture) OrElse
+                            _type.ToString.StartsWith("(", StringComparison.InvariantCulture) Then
                             Return (_type, True)
                         End If
                         Return (_type, False)

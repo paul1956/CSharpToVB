@@ -12,7 +12,7 @@ Imports Microsoft.CodeAnalysis
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 
-Namespace IVisualBasicCode.CodeConverter.Util
+Namespace CSharpToVBCodeConverter.Util
     Public Module SyntaxTokenExtensions
 
         ''' <summary>
@@ -32,8 +32,8 @@ Namespace IVisualBasicCode.CodeConverter.Util
         End Function
 
         <Extension>
-        Public Function IsKind(token As SyntaxToken, ParamArray kinds() As Microsoft.CodeAnalysis.CSharp.SyntaxKind) As Boolean
-            Return kinds.Contains(CType(token.RawKind, Microsoft.CodeAnalysis.CSharp.SyntaxKind))
+        Public Function IsKind(token As SyntaxToken, ParamArray kinds() As CSharp.SyntaxKind) As Boolean
+            Return kinds.Contains(CType(token.RawKind, CSharp.SyntaxKind))
         End Function
 
         <Extension>
@@ -283,6 +283,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
 
         <Extension>
         Public Function WithPrependedLeadingTrivia(token As SyntaxToken, trivia As IEnumerable(Of SyntaxTrivia)) As SyntaxToken
+            Contracts.Contract.Requires(trivia IsNot Nothing)
             Return token.WithPrependedLeadingTrivia(trivia.ToSyntaxTriviaList())
         End Function
 
