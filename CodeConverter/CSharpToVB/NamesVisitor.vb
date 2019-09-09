@@ -41,9 +41,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                    TypeOf OriginalNameParent Is CSS.TypeArgumentListSyntax Then
                     Return name
                 End If
-                'If TypeOf OriginalNameParent Is CSS.InvocationExpressionSyntax Then
-                '    Return name
-                'End If
+
                 Dim OriginalNameParentArgumentList As SyntaxNode = OriginalNameParent.Parent
                 If OriginalNameParentArgumentList IsNot Nothing AndAlso TypeOf OriginalNameParentArgumentList Is CSS.ArgumentListSyntax Then
                     Dim OriginalNameParentArgumentListParentInvocationExpression As SyntaxNode = OriginalNameParentArgumentList.Parent

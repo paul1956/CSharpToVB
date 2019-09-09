@@ -102,8 +102,12 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                     Dim ThenKeywordWIthTrivia As SyntaxToken = ThenKeyword.WithTrailingTrivia(NewThenTrailingTrivia)
                     Dim ElseIfStatement As VBS.ElseIfStatementSyntax = VBFactory.ElseIfStatement(ElseIFKeywordWithTrivia, Condition.WithTrailingTrivia(SpaceTrivia), ThenKeywordWIthTrivia)
                     Dim ElseIfBlock As VBS.ElseIfBlockSyntax = VBFactory.ElseIfBlock(ElseIfStatement.WithTrailingEOL, ConvertBlock([elseIf].Statement, OpenBraceTrailingTrivia, CloseBraceLeadingTrivia))
-                    OpenBraceTrailingTrivia.Clear()
-                    CloseBraceLeadingTrivia.Clear()
+                    If Not OpenBraceTrailingTrivia.ContainsCommentOrDirectiveTrivia Then
+                        OpenBraceTrailingTrivia.Clear()
+                    End If
+                    If Not CloseBraceLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
+                        CloseBraceLeadingTrivia.Clear()
+                    End If
                     elseIfBlocks.Add(ElseIfBlock)
                     CollectElseBlocks([elseIf], elseIfBlocks, elseBlock, OpenBraceTrailingTrivia, CloseBraceLeadingTrivia)
                 Else
