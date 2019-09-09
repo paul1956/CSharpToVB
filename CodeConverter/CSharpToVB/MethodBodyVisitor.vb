@@ -102,6 +102,8 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                     Dim ThenKeywordWIthTrivia As SyntaxToken = ThenKeyword.WithTrailingTrivia(NewThenTrailingTrivia)
                     Dim ElseIfStatement As VBS.ElseIfStatementSyntax = VBFactory.ElseIfStatement(ElseIFKeywordWithTrivia, Condition.WithTrailingTrivia(SpaceTrivia), ThenKeywordWIthTrivia)
                     Dim ElseIfBlock As VBS.ElseIfBlockSyntax = VBFactory.ElseIfBlock(ElseIfStatement.WithTrailingEOL, ConvertBlock([elseIf].Statement, OpenBraceTrailingTrivia, CloseBraceLeadingTrivia))
+                    OpenBraceTrailingTrivia.Clear()
+                    CloseBraceLeadingTrivia.Clear()
                     elseIfBlocks.Add(ElseIfBlock)
                     CollectElseBlocks([elseIf], elseIfBlocks, elseBlock, OpenBraceTrailingTrivia, CloseBraceLeadingTrivia)
                 Else
@@ -148,8 +150,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                             End If
                             StatementList.Item(StatementList.Count - 1) = StatementList.Last.WithTrailingTrivia(ConvertTrivia(NodeBlock.Statements.Last.GetTrailingTrivia)).WithTrailingEOL
                         End If
-                        Dim OpenBraceToken As SyntaxToken = node.GetBraces.Item1
-                        Dim CloseBraceToken As SyntaxToken = node.GetBraces.Item2
                         Return VBFactory.List(StatementList)
                     Case TypeOf node Is CSS.EmptyStatementSyntax
                         Return VBFactory.List(Of VBS.StatementSyntax)()

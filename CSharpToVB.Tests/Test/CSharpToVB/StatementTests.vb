@@ -485,6 +485,7 @@ Class TestClass
             b = 1
         ElseIf a = 2 OrElse a = 3 Then
             b = 2
+
         Else
             b = 3
         End If
