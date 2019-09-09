@@ -209,7 +209,6 @@ Namespace CSharpToVBCodeConverter.Util
             Return compilation.ObjectType
         End Function
 
-        <ExcludeFromCodeCoverage>
         <Extension>
         Public Function GetReturnType(symbol As ISymbol) As ITypeSymbol
             If symbol Is Nothing Then

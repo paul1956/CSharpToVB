@@ -47,7 +47,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
             Dim NewTrivia As New SyntaxTriviaList
             Dim FoundDirective As Boolean = False
             For Each t As SyntaxTrivia In TriviaList
-                If Not (FoundDirective OrElse t.IsDirective OrElse t.MatchesKind(VB.SyntaxKind.DisabledTextTrivia)) Then
+                If Not (FoundDirective OrElse t.IsDirective OrElse t.IsKind(VB.SyntaxKind.DisabledTextTrivia)) Then
                     If t.IsEndOfLine AndAlso RemoveEOL Then
                         NewTrivia = NewTrivia.Add(SpaceTrivia)
                     Else

@@ -51,7 +51,6 @@ Namespace CSharpToVBCodeConverter
 
         End Sub
 
-        <ExcludeFromCodeCoverage>
         Public Sub New(ParamArray exceptions() As Exception)
             ResultStatus = If(exceptions.Any, ResultTriState.Failure, ResultTriState.Ignore)
             Me.Exceptions = exceptions

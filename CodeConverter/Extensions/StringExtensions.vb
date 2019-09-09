@@ -11,7 +11,6 @@ Imports System.Runtime.CompilerServices
 Imports System.Text
 Imports System.Text.RegularExpressions
 
-<ExcludeFromCodeCoverage>
 Public Module StringExtensions
 
     <Extension()>

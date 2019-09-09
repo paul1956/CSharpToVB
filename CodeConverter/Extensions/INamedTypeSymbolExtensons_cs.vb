@@ -264,10 +264,9 @@ Namespace CSharpToVBCodeConverter.Util
             Return accessor IsNot Nothing AndAlso IsImplementable(accessor) AndAlso accessor.DeclaredAccessibility <> Microsoft.CodeAnalysis.Accessibility.Public
         End Function
 
-#Disable Warning IDE0051 ' Remove unused private members
 
+        <CodeAnalysis.SuppressMessage("Code Quality", "IDE0051:Remove unused private members", Justification:="Used by functions that are currently commented out")>
         Private Function IsPropertyWithInaccessibleImplementableAccessor(member As ISymbol, within As ISymbol) As Boolean
-#Enable Warning IDE0051 ' Remove unused private members
             If member.Kind <> SymbolKind.Property Then
                 Return False
             End If

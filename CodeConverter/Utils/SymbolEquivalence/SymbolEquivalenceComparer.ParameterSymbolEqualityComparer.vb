@@ -10,8 +10,6 @@ Imports HashLibrary
 Imports Microsoft.CodeAnalysis
 
 ' Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
-
-<ExcludeFromCodeCoverage>
 Partial Friend Class SymbolEquivalenceComparer
 
     <ExcludeFromCodeCoverage>
@@ -26,13 +24,11 @@ Partial Friend Class SymbolEquivalenceComparer
         Private ReadOnly _distinguishRefFromOut As Boolean
         Private ReadOnly _symbolEqualityComparer As SymbolEquivalenceComparer
 
-        <ExcludeFromCodeCoverage>
         Public Sub New(symbolEqualityComparer As SymbolEquivalenceComparer, distinguishRefFromOut As Boolean)
             _symbolEqualityComparer = symbolEqualityComparer
             _distinguishRefFromOut = distinguishRefFromOut
         End Sub
 
-        <ExcludeFromCodeCoverage>
         Public Shadows Function Equals(x As IParameterSymbol, y As IParameterSymbol, equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol), compareParameterName As Boolean, isCaseSensitive As Boolean) As Boolean
             If ReferenceEquals(x, y) Then
                 Return True
@@ -53,17 +49,14 @@ Partial Friend Class SymbolEquivalenceComparer
             Return AreRefKindsEquivalent(x.RefKind, y.RefKind, _distinguishRefFromOut) AndAlso nameComparisonCheck AndAlso _symbolEqualityComparer.GetEquivalenceVisitor().AreEquivalent(x.CustomModifiers, y.CustomModifiers, equivalentTypesWithDifferingAssemblies) AndAlso _symbolEqualityComparer.SignatureTypeEquivalenceComparer.Equals(x.Type, y.Type, equivalentTypesWithDifferingAssemblies)
         End Function
 
-        <ExcludeFromCodeCoverage>
         Public Shadows Function Equals(x As IParameterSymbol, y As IParameterSymbol) As Boolean Implements IEqualityComparer(Of IParameterSymbol).Equals
             Return Equals(x, y, Nothing, False, False)
         End Function
 
-        <ExcludeFromCodeCoverage>
         Public Shadows Function Equals(x As IParameterSymbol, y As IParameterSymbol, compareParameterName As Boolean, isCaseSensitive As Boolean) As Boolean
             Return Equals(x, y, Nothing, compareParameterName, isCaseSensitive)
         End Function
 
-        <ExcludeFromCodeCoverage>
         Public Shadows Function GetHashCode(x As IParameterSymbol) As Integer Implements IEqualityComparer(Of IParameterSymbol).GetHashCode
             If x Is Nothing Then
                 Return 0

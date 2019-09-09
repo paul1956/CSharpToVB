@@ -440,7 +440,7 @@ Namespace CSharpToVBCodeConverter.Util
                         Case CS.SyntaxKind.NullableDirectiveTrivia
                             Dim StructuredTrivia As CSS.StructuredTriviaSyntax = DirectCast(Trivia.GetStructure, CSS.StructuredTriviaSyntax)
                             Dim NullableDirective As CSS.NullableDirectiveTriviaSyntax = CType(StructuredTrivia, CSS.NullableDirectiveTriviaSyntax)
-                            TriviaList.Add(VBFactory.CommentTrivia($"' TODO: Skipped Nullable Directive {NullableDirective.SettingToken.Text} {NullableDirective.TargetToken.Text}"))
+                            TriviaList.Add(VBFactory.CommentTrivia($"' TODO: Skipped Null-able Directive {NullableDirective.SettingToken.Text} {NullableDirective.TargetToken.Text}"))
                             TriviaList.AddRange(ConvertTrivia(NullableDirective.TargetToken.TrailingTrivia))
                             TriviaList.AddRange(ConvertTrivia(NullableDirective.EndOfDirectiveToken.TrailingTrivia))
                         Case CS.SyntaxKind.MultiLineDocumentationCommentTrivia
@@ -1052,7 +1052,7 @@ Namespace CSharpToVBCodeConverter.Util
                         Case VB.SyntaxKind.WhitespaceTrivia
                             Select Case TrailingTrivia.Last.RawKind
                                 Case VB.SyntaxKind.WhitespaceTrivia, VB.SyntaxKind.EndOfLineTrivia
-                                    ' Replace Whitespaces, Whitespaces and Whitespaces, EOL with just EOL
+                                    ' Replace Whitespace, Whitespace and Whitespace, EOL with just EOL
                                     TrailingTrivia = New List(Of SyntaxTrivia)
                                     ' EOL added below
                                 Case VB.SyntaxKind.CommentTrivia
@@ -1110,24 +1110,7 @@ Namespace CSharpToVBCodeConverter.Util
 #Region "WithConvertedTriviaFrom"
 
         <Extension>
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node is checked once and the second assignment will not make it Nothing")>
-        Public Function WithConvertedTriviaFrom(Of TSyntax As CSS.XmlNodeSyntax)(node As TSyntax, otherNode As CSS.XmlNodeSyntax) As TSyntax
-            Contracts.Contract.Requires(node IsNot Nothing)
-            If otherNode Is Nothing Then
-                Return node
-            End If
-            If otherNode.HasLeadingTrivia Then
-                node = node.WithLeadingTrivia(ConvertTrivia(otherNode.GetLeadingTrivia()))
-            End If
-            If Not otherNode.HasTrailingTrivia OrElse ParentHasSameTrailingTrivia(otherNode) Then
-                Return node
-            End If
-            Return node.WithTrailingTrivia(ConvertTrivia(otherNode.GetTrailingTrivia()))
-        End Function
-
-        <Extension>
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node is checked once and the second assignment will not make it Nothing")>
-        Public Function WithConvertedTriviaFrom(Of T As SyntaxNode)(node As T, otherNode As SyntaxNode) As T
+        Friend Function WithConvertedTriviaFrom(Of T As SyntaxNode)(node As T, otherNode As SyntaxNode) As T
             Contracts.Contract.Requires(node IsNot Nothing)
             If otherNode Is Nothing Then
                 Return node
@@ -1155,7 +1138,7 @@ Namespace CSharpToVBCodeConverter.Util
         End Function
 
         <Extension>
-        Public Function WithConvertedTriviaFrom(Token As SyntaxToken, otherNode As SyntaxNode) As SyntaxToken
+        Friend Function WithConvertedTriviaFrom(Token As SyntaxToken, otherNode As SyntaxNode) As SyntaxToken
             Contracts.Contract.Requires(otherNode IsNot Nothing)
             If otherNode.HasLeadingTrivia Then
                 Token = Token.WithLeadingTrivia(ConvertTrivia(otherNode.GetLeadingTrivia))
@@ -1167,7 +1150,7 @@ Namespace CSharpToVBCodeConverter.Util
         End Function
 
         <Extension>
-        Public Function WithConvertedTriviaFrom(Token As SyntaxToken, otherToken As SyntaxToken) As SyntaxToken
+        Friend Function WithConvertedTriviaFrom(Token As SyntaxToken, otherToken As SyntaxToken) As SyntaxToken
             Try
                 If otherToken.HasLeadingTrivia Then
                     Token = Token.WithLeadingTrivia(ConvertTrivia(otherToken.LeadingTrivia).ToList())
@@ -1176,21 +1159,6 @@ Namespace CSharpToVBCodeConverter.Util
             Catch ex As Exception
                 Stop
             End Try
-        End Function
-
-        ''' <summary>
-        ''' Allows for swapping trivia usually for cast or declarations
-        ''' </summary>
-        ''' <typeparam name="T"></typeparam>
-        ''' <param name="node"></param>
-        ''' <param name="LeadingNode"></param>
-        ''' <param name="TrailingNode"></param>
-        ''' <returns></returns>
-        <ExcludeFromCodeCoverage>
-        <Extension>
-        Public Function WithConvertedTriviaFrom(Of T As SyntaxNode)(node As T, LeadingNode As SyntaxNode, TrailingNode As SyntaxNode) As T
-            Contracts.Contract.Requires(node IsNot Nothing)
-            Return node.WithConvertedLeadingTriviaFrom(LeadingNode).WithConvertedTrailingTriviaFrom(TrailingNode)
         End Function
 
 #End Region

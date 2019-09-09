@@ -12,7 +12,6 @@ Imports Microsoft.CodeAnalysis
 
 Public Module MethodKindExtensions
 
-    <ExcludeFromCodeCoverage>
     <Extension>
     Public Function IsPropertyAccessor(kind As MethodKind) As Boolean
         Return kind = MethodKind.PropertyGet OrElse kind = MethodKind.PropertySet

@@ -9,7 +9,6 @@ Option Strict On
 Imports System.Diagnostics.CodeAnalysis
 Imports System.Runtime.CompilerServices
 
-<ExcludeFromCodeCoverage>
 Public Module ObjectExtensions
 
 #Region "TypeSwitch on Func<T>"

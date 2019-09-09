@@ -8,7 +8,6 @@ Option Strict On
 Imports System.Collections.Immutable
 Imports System.ComponentModel
 Imports System.Runtime.CompilerServices
-Imports System.Threading
 
 Imports Microsoft.CodeAnalysis
 

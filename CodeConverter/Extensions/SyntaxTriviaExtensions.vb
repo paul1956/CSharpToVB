@@ -7,8 +7,6 @@ Option Strict On
 
 Imports System.Diagnostics.CodeAnalysis
 Imports System.Runtime.CompilerServices
-Imports System.Text
-Imports System.Threading
 
 Imports Microsoft.CodeAnalysis
 
@@ -18,34 +16,6 @@ Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 
 Namespace CSharpToVBCodeConverter.Util
     Public Module SyntaxTriviaExtensions
-
-        <Extension()>
-        Public Function [Do](Of T)(source As IEnumerable(Of T), action As Action(Of T)) As IEnumerable(Of T)
-            If source Is Nothing Then
-                Throw New ArgumentNullException(NameOf(source))
-            End If
-
-            If action Is Nothing Then
-                Throw New ArgumentNullException(NameOf(action))
-            End If
-
-            ' perf optimization. try to not use enumerator if possible
-            Dim list As IList(Of T) = TryCast(source, IList(Of T))
-            If list IsNot Nothing Then
-                Dim i As Integer = 0
-                Dim count As Integer = list.Count
-                Do While i < count
-                    action(list(i))
-                    i += 1
-                Loop
-            Else
-                For Each value As T In source
-                    action(value)
-                Next value
-            End If
-
-            Return source
-        End Function
 
         <Extension>
         Public Function ContainsCommentOrDirectiveTrivia(TriviaList As List(Of SyntaxTrivia)) As Boolean
@@ -69,7 +39,7 @@ Namespace CSharpToVBCodeConverter.Util
                     Return True
                 End If
 
-                Stop
+                Throw UnexpectedValue(t.ToString)
             Next
             Return False
         End Function
@@ -200,19 +170,6 @@ Namespace CSharpToVBCodeConverter.Util
             Return False
         End Function
 
-        <Extension>
-        Public Function ContainsLineContinuation(TriviaList As SyntaxTriviaList) As Boolean
-            If TriviaList.Count = 0 Then
-                Return False
-            End If
-            For Each t As SyntaxTrivia In TriviaList
-                If t.IsKind(VB.SyntaxKind.LineContinuationTrivia) Then
-                    Return True
-                End If
-            Next
-            Return False
-        End Function
-
         Public Function DirectiveNotAllowedHere(Trivia As SyntaxTrivia) As List(Of SyntaxTrivia)
             Dim NewTriviaList As New List(Of SyntaxTrivia)
             Dim LeadingTriviaList As New List(Of SyntaxTrivia) From {
@@ -273,39 +230,6 @@ Namespace CSharpToVBCodeConverter.Util
         End Function
 
         <Extension>
-        Public Function GetLeadingDirective(node As SyntaxToken) As SyntaxTrivia
-            If node.HasLeadingTrivia Then
-                For Each t As SyntaxTrivia In node.LeadingTrivia
-                    If t.IsDirective Then
-                        Return t
-                    End If
-                Next
-            End If
-            Return New SyntaxTrivia
-        End Function
-
-        <Extension>
-        Public Function GetPreviousTrivia(trivia As SyntaxTrivia, syntaxTree As SyntaxTree, cancellationToken As CancellationToken, Optional FindInsideTrivia As Boolean = False) As SyntaxTrivia
-            Contracts.Contract.Requires(syntaxTree IsNot Nothing)
-            Dim span As Text.TextSpan = trivia.FullSpan
-            If span.Start = 0 Then
-                Return Nothing
-            End If
-
-            Return syntaxTree.GetRoot(cancellationToken).FindTrivia(position:=span.Start - 1, findInsideTrivia:=FindInsideTrivia)
-        End Function
-
-        <Extension>
-        Public Function GetTrailingDirective(node As SyntaxToken) As SyntaxTrivia
-            For Each t As SyntaxTrivia In node.TrailingTrivia
-                If t.IsDirective Then
-                    Return t
-                End If
-            Next
-            Return New SyntaxTrivia
-        End Function
-
-        <Extension>
         Public Function IsComment(trivia As SyntaxTrivia) As Boolean
             Return trivia.IsSingleLineComment OrElse trivia.IsMultiLineComment
         End Function
@@ -325,31 +249,8 @@ Namespace CSharpToVBCodeConverter.Util
         End Function
 
         <Extension>
-        Public Function IsCompleteMultiLineComment(trivia As SyntaxTrivia) As Boolean
-            If trivia.IsKind(CS.SyntaxKind.MultiLineCommentTrivia) Then
-                Return False
-            End If
-
-            Dim text As String = trivia.ToFullString()
-            Return text.Length >= 4 AndAlso text(text.Length - 1) = "/"c AndAlso text(text.Length - 2) = "*"c
-        End Function
-
-        <Extension>
         Public Function IsDocComment(trivia As SyntaxTrivia) As Boolean
             Return trivia.IsSingleLineDocComment() OrElse trivia.IsMultiLineDocComment()
-        End Function
-
-        <Extension>
-        Public Function IsDocumentationCommentTrivia(t As SyntaxTrivia) As Boolean
-            If t.IsKind(VB.SyntaxKind.DocumentationCommentTrivia) Then
-                Return True
-            End If
-            Return False
-        End Function
-
-        <Extension>
-        Public Function IsElastic(trivia As SyntaxTrivia) As Boolean
-            Return trivia.HasAnnotation(SyntaxAnnotation.ElasticAnnotation)
         End Function
 
         <Extension>
@@ -376,11 +277,6 @@ Namespace CSharpToVBCodeConverter.Util
         End Function
 
         <Extension>
-        Public Function IsRegularComment(trivia As SyntaxTrivia) As Boolean
-            Return trivia.IsSingleLineComment() OrElse trivia.IsMultiLineComment()
-        End Function
-
-        <Extension>
         Public Function IsRegularOrDocComment(trivia As SyntaxTrivia) As Boolean
             Return trivia.IsSingleLineComment() OrElse trivia.IsMultiLineComment() OrElse trivia.IsDocComment()
         End Function
@@ -395,14 +291,6 @@ Namespace CSharpToVBCodeConverter.Util
         <Extension>
         Public Function IsSingleLineDocComment(trivia As SyntaxTrivia) As Boolean
             Return trivia.IsKind(CS.SyntaxKind.SingleLineDocumentationCommentTrivia)
-        End Function
-
-        <Extension>
-        Public Function IsSkippedTokensTrivia(t As SyntaxTrivia) As Boolean
-            If t.IsKind(VB.SyntaxKind.DocumentationCommentTrivia) Then
-                Return True
-            End If
-            Return False
         End Function
 
         <Extension>
@@ -421,49 +309,9 @@ Namespace CSharpToVBCodeConverter.Util
                 trivia.IsKind(VB.SyntaxKind.WhitespaceTrivia)
         End Function
 
-        ' VB
-        <ExcludeFromCodeCoverage>
-        <Extension>
-        Public Function MatchesKind(trivia As SyntaxTrivia, kind As VB.SyntaxKind) As Boolean
-            Return trivia.IsKind(kind)
-        End Function
-
-        ' VB
-        <ExcludeFromCodeCoverage>
-        <Extension>
-        Public Function MatchesKind(trivia As SyntaxTrivia, kind1 As VB.SyntaxKind, kind2 As VB.SyntaxKind) As Boolean
-            Return trivia.IsKind(kind1) OrElse trivia.IsKind(kind2)
-        End Function
-
-        ' VB
-        <ExcludeFromCodeCoverage>
         <Extension>
         Public Function MatchesKind(trivia As SyntaxTrivia, ParamArray kinds() As VB.SyntaxKind) As Boolean
             For Each kind As VB.SyntaxKind In kinds
-                If trivia.IsKind(kind) Then
-                    Return True
-                End If
-            Next
-            Return False
-        End Function
-
-        ' C#
-        <Extension>
-        Public Function MatchesKind(trivia As SyntaxTrivia, kind As CS.SyntaxKind) As Boolean
-            Return trivia.IsKind(kind)
-        End Function
-
-        ' C#
-        <Extension>
-        Public Function MatchesKind(trivia As SyntaxTrivia, kind1 As CS.SyntaxKind, kind2 As CS.SyntaxKind) As Boolean
-            Return trivia.IsKind(kind1) OrElse trivia.IsKind(kind2)
-        End Function
-
-        ' C#
-        <ExcludeFromCodeCoverage>
-        <Extension>
-        Public Function MatchesKind(trivia As SyntaxTrivia, ParamArray kinds() As CS.SyntaxKind) As Boolean
-            For Each kind As CS.SyntaxKind In kinds
                 If trivia.IsKind(kind) Then
                     Return True
                 End If
@@ -581,37 +429,16 @@ Namespace CSharpToVBCodeConverter.Util
             Return Token.With(NewLeadingTrivia, NewTrailingTrivia)
         End Function
 
-        <ExcludeFromCodeCoverage>
         <Extension>
         Public Function ToSyntaxTriviaList(l As IEnumerable(Of SyntaxTrivia)) As SyntaxTriviaList
             Dim NewSyntaxTriviaList As New SyntaxTriviaList
             Return NewSyntaxTriviaList.AddRange(l)
         End Function
 
-        <ExcludeFromCodeCoverage>
         <Extension>
         Public Function ToSyntaxTriviaList(l As List(Of SyntaxTrivia)) As SyntaxTriviaList
             Dim NewSyntaxTriviaList As New SyntaxTriviaList
             Return NewSyntaxTriviaList.AddRange(l)
-        End Function
-
-        <Extension>
-        Public Function WithoutDirective(node As SyntaxToken) As SyntaxToken
-            Dim NewLeadingTrivia As New List(Of SyntaxTrivia)
-            For Each t As SyntaxTrivia In node.TrailingTrivia
-                If t.IsDirective Then
-                    Continue For
-                End If
-                NewLeadingTrivia.Add(t)
-            Next
-            Dim NewTrailingTrivia As New List(Of SyntaxTrivia)
-            For Each t As SyntaxTrivia In node.TrailingTrivia
-                If t.IsDirective Then
-                    Continue For
-                End If
-                NewTrailingTrivia.Add(t)
-            Next
-            Return node.With(NewLeadingTrivia, NewTrailingTrivia)
         End Function
 
     End Module
