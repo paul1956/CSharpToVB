@@ -6,6 +6,7 @@ Option Infer Off
 Option Strict On
 
 Imports System.Diagnostics.CodeAnalysis
+
 Imports CSharpToVBCodeConverter.Util
 
 Imports Microsoft.CodeAnalysis

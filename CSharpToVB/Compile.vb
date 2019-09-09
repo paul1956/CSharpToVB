@@ -8,6 +8,7 @@ Option Strict On
 Imports System.Collections.Immutable
 Imports System.IO
 Imports System.Reflection
+
 Imports CSharpToVBCodeConverter
 Imports CSharpToVBCodeConverter.ConversionResult
 

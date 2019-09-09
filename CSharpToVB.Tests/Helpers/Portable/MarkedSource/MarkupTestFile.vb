@@ -2,12 +2,12 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 Imports System.Collections.Immutable
+Imports System.Runtime.InteropServices
 Imports System.Text
 Imports System.Text.RegularExpressions
-Imports Microsoft.CodeAnalysis.Text
-Imports Roslyn.Utilities
-Imports System.Runtime.InteropServices
+
 Imports Microsoft.CodeAnalysis.PooledObjects1
+Imports Microsoft.CodeAnalysis.Text
 
 Namespace Roslyn.Test.Utilities
 

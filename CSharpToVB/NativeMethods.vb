@@ -101,6 +101,7 @@ Friend Module NativeMethods
         Public RgState() As Integer
 
     End Structure
+
 #End Region
 
 #Region "COM"
@@ -259,6 +260,7 @@ Friend Module NativeMethods
                                         <MarshalAs(UnmanagedType.Struct)> ByRef lpsi As SCROLLINFO,
                                         <MarshalAs(UnmanagedType.Bool)> bRepaint As Boolean) As Integer
     End Function
+
     'This function queries or sets system-wide parameters, and updates the user profile during the process.
     <DllImport("user32", EntryPoint:=NameOf(SystemParametersInfo), CharSet:=CharSet.Unicode, SetLastError:=True)>
     Public Function SystemParametersInfo(

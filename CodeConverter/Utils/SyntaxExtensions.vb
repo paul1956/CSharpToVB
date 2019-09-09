@@ -8,6 +8,7 @@ Option Strict On
 Imports System.Runtime.CompilerServices
 
 Imports Microsoft.CodeAnalysis
+
 Imports CS = Microsoft.CodeAnalysis.CSharp
 
 Namespace CSharpToVBCodeConverter.Util

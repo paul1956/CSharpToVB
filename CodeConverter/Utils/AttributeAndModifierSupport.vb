@@ -9,8 +9,8 @@ Imports Microsoft.CodeAnalysis
 
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
-Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
+Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace CSharpToVBCodeConverter.Visual_Basic
 

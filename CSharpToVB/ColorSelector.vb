@@ -4,10 +4,12 @@
 Option Explicit On
 Option Infer Off
 Option Strict On
+
 Imports System.IO
 
 Public Class ColorSelector
     Private Shared ReadOnly FullPath As String = Path.Combine(FileIO.SpecialDirectories.MyDocuments, "ColorDictionary.csv")
+
     Private Shared ReadOnly ColorMappingDictionary As New Dictionary(Of String, Color) From {
          {"class name", Color.FromArgb(0, 128, 128)},
          {"comment", Color.FromArgb(0, 100, 0)},
@@ -67,9 +69,11 @@ Public Class ColorSelector
          {"xml literal - processing instruction", Color.FromArgb(128, 128, 128)},
          {"xml literal - text", Color.FromArgb(85, 85, 85)}
      }
+
     Sub New()
         UpdateColorDictionaryFromFile(FullPath)
     End Sub
+
     Sub New(filePath As String)
         UpdateColorDictionaryFromFile(filePath)
     End Sub
@@ -91,12 +95,15 @@ Public Class ColorSelector
             Return ColorMappingDictionary("error")
         End Try
     End Function
+
     Public Shared Function GetColorNameList() As Dictionary(Of String, Color).KeyCollection
         Return ColorMappingDictionary.Keys
     End Function
+
     Public Shared Sub WriteColorDictionaryToFile()
         WriteColorDictionaryToFile(FullPath)
     End Sub
+
     Public Shared Sub WriteColorDictionaryToFile(FPath As String)
         Dim FileStream As FileStream = File.OpenWrite(FPath)
         Dim sw As New IO.StreamWriter(FileStream)
@@ -108,6 +115,7 @@ Public Class ColorSelector
         sw.Close()
         FileStream.Close()
     End Sub
+
     Public Shared Sub UpdateColorDictionaryFromFile(FPath As String)
         If Not File.Exists(FPath) Then
             WriteColorDictionaryToFile(FPath)

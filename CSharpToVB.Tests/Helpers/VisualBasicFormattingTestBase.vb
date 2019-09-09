@@ -2,12 +2,14 @@
 
 Imports System.Collections.Immutable
 Imports System.Threading
+
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Formatting
 Imports Microsoft.CodeAnalysis.Options
 Imports Microsoft.CodeAnalysis.Text
 Imports Microsoft.CodeAnalysis.UnitTests.Formatting
 Imports Microsoft.CodeAnalysis.VisualBasic
+
 Imports Roslyn.Test.Utilities
 
 Public NotInheritable Class VisualBasicFormattingTestBase
@@ -106,6 +108,7 @@ Public NotInheritable Class VisualBasicFormattingTestBase
     Protected Overrides Function ParseCompilation(text As String, parseOptions As ParseOptions) As SyntaxNode
         Return SyntaxFactory.ParseCompilationUnit(text, options:=DirectCast(parseOptions, VisualBasicParseOptions))
     End Function
+
     Friend Overloads Function AssertFormatAsync(
         code As String,
         expected As String,
@@ -122,9 +125,11 @@ Public NotInheritable Class VisualBasicFormattingTestBase
 
         Return AssertFormatAsync(expected, code, spans)
     End Function
+
     Public Sub Dispose() Implements IDisposable.Dispose
         If _ws IsNot Nothing Then
             _ws.Dispose()
         End If
     End Sub
+
 End Class

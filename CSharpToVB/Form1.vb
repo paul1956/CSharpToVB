@@ -11,6 +11,7 @@ Imports System.Reflection
 Imports System.Text
 Imports System.Threading
 Imports System.Xml
+
 Imports CSharpToVBApp
 
 Imports CSharpToVBCodeConverter
@@ -26,12 +27,15 @@ Imports Microsoft.CodeAnalysis.MSBuild
 Imports Microsoft.VisualBasic.FileIO
 
 #If NETCOREAPP3_0 Then
+
 Imports VBMsgBox
+
 #End If
 
 Public Class Form1
 
 #If NETCOREAPP3_0 Then
+
     <STAThread>
     Public Shared Sub Main()
         Application.EnableVisualStyles()
@@ -40,6 +44,7 @@ Public Class Form1
         Application.Run(f)
         f.Dispose()
     End Sub
+
 #End If
 
     Private Shared ReadOnly SnippetFileWithPath As String = Path.Combine(SpecialDirectories.MyDocuments, "CSharpToVBLastSnippet.RTF")

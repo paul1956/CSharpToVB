@@ -16,6 +16,7 @@ Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
+Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 
 Public Module StatementMarker
     Private NextIndex As Integer = 0
@@ -51,7 +52,7 @@ Public Module StatementMarker
         If Not String.IsNullOrWhiteSpace(LeadingComment) Then
             Dim LeadingCommentLines() As String = LeadingComment.SplitLines
             For Each Line As String In LeadingCommentLines
-                NewTrivia = NewTrivia.Add(VisualBasic.SyntaxFactory.CommentTrivia($"' {Line}"))
+                NewTrivia = NewTrivia.Add(VBFactory.CommentTrivia($"' {Line}"))
                 NewTrivia = NewTrivia.Add(VB_EOLTrivia)
             Next
         End If
@@ -59,7 +60,7 @@ Public Module StatementMarker
         For Each chr As String In FullString
             If chr.IsNewLine Then
                 If sb.Length > 0 Then
-                    NewTrivia = NewTrivia.Add(VisualBasic.SyntaxFactory.CommentTrivia($"' {sb.ToString}"))
+                    NewTrivia = NewTrivia.Add(VBFactory.CommentTrivia($"' {sb.ToString}"))
                     NewTrivia = NewTrivia.Add(VB_EOLTrivia)
                     sb.Clear()
                 End If
@@ -70,7 +71,7 @@ Public Module StatementMarker
             End If
         Next
         If sb.Length > 0 Then
-            NewTrivia = NewTrivia.Add(VisualBasic.SyntaxFactory.CommentTrivia($"' {sb.ToString}"))
+            NewTrivia = NewTrivia.Add(VBFactory.CommentTrivia($"' {sb.ToString}"))
             NewTrivia = NewTrivia.Add(VB_EOLTrivia)
         End If
 
@@ -153,13 +154,13 @@ Public Module StatementMarker
     <Extension>
     Public Function CheckCorrectnessLeadingTrivia(Of T As SyntaxNode)(NodeWithIssue As T, Optional MessageFragment As String = "") As SyntaxTriviaList
         Dim LeadingTrivia As New List(Of SyntaxTrivia) From {
-            VisualBasic.SyntaxFactory.CommentTrivia($"' TODO TASK: {MessageFragment}:")
+            VBFactory.CommentTrivia($"' TODO TASK: {MessageFragment}:")
         }
         If NodeWithIssue IsNot Nothing Then
-            LeadingTrivia.Add(VisualBasic.SyntaxFactory.CommentTrivia($"' Original Statement:"))
+            LeadingTrivia.Add(VBFactory.CommentTrivia($"' Original Statement:"))
             LeadingTrivia.AddRange(ConvertSourceTextToTriviaList(NodeWithIssue.ToFullString))
         End If
-        LeadingTrivia.Add(VisualBasic.SyntaxFactory.CommentTrivia($"' An attempt was made to correctly port the code, check the code below for correctness"))
+        LeadingTrivia.Add(VBFactory.CommentTrivia($"' An attempt was made to correctly port the code, check the code below for correctness"))
         LeadingTrivia.Add(VB_EOLTrivia)
         Return LeadingTrivia.ToSyntaxTriviaList
     End Function
@@ -184,11 +185,11 @@ Public Module StatementMarker
             End If
             ' NewTrailingTrivia.Add(VB_EOLTrivia)
         End If
-        NewLeadingTrivia.Add(VisualBasic.SyntaxFactory.CommentTrivia($"' TODO: VB does not support {UnsupportedFeature}."))
+        NewLeadingTrivia.Add(VBFactory.CommentTrivia($"' TODO: VB does not support {UnsupportedFeature}."))
         NewLeadingTrivia.Add(VB_EOLTrivia)
         If CommentOutOriginalStatements Then
             NewLeadingTrivia.Add(VB_EOLTrivia)
-            NewLeadingTrivia.Add(VisualBasic.SyntaxFactory.CommentTrivia($"' Original Statement:"))
+            NewLeadingTrivia.Add(VBFactory.CommentTrivia($"' Original Statement:"))
             NewLeadingTrivia.Add(VB_EOLTrivia)
             Dim NodeSplit() As String = node.ToString.SplitLines
             ' Match #
@@ -196,12 +197,12 @@ Public Module StatementMarker
                 If NodeSplit(i).TrimStart(" "c).StartsWith("#", StringComparison.InvariantCulture) Then
                     NewLeadingTrivia.AddRange(ConvertDirectiveTrivia(NodeSplit(i)))
                 Else
-                    NewLeadingTrivia.Add(VisualBasic.SyntaxFactory.CommentTrivia($"' {NodeSplit(i)}"))
+                    NewLeadingTrivia.Add(VBFactory.CommentTrivia($"' {NodeSplit(i)}"))
                 End If
                 NewLeadingTrivia.Add(VB_EOLTrivia)
             Next
         End If
-        Return VisualBasic.SyntaxFactory.EmptyStatement.With(NewLeadingTrivia, NewTrailingTrivia)
+        Return VBFactory.EmptyStatement.With(NewLeadingTrivia, NewTrailingTrivia)
     End Function
 
     Public Function GetMarkerErrorMessage() As String
@@ -343,7 +344,7 @@ Public Module StatementMarker
             NewNodesList.AddRange(Statements)
         End If
         NewNodesList.AddRange(TrailingNodesList)
-        Return VisualBasic.SyntaxFactory.List(NewNodesList)
+        Return VBFactory.List(NewNodesList)
     End Function
 
     ''' <summary>
@@ -354,8 +355,8 @@ Public Module StatementMarker
     ''' <returns></returns>
     Public Function WrapInComment(nodes As SyntaxList(Of StatementSyntax), NodeWithComments As CSS.StatementSyntax, comment As String) As SyntaxList(Of StatementSyntax)
         If nodes.Count > 0 Then
-            nodes = nodes.Replace(nodes(0), nodes(0).WithConvertedTriviaFrom(NodeWithComments).WithPrependedLeadingTrivia(VisualBasic.SyntaxFactory.CommentTrivia($"' BEGIN TODO: {comment}")))
-            nodes = nodes.Add(VisualBasic.SyntaxFactory.EmptyStatement.WithLeadingTrivia(VB_EOLTrivia, VisualBasic.SyntaxFactory.CommentTrivia($"' END TODO: {comment}")))
+            nodes = nodes.Replace(nodes(0), nodes(0).WithConvertedTriviaFrom(NodeWithComments).WithPrependedLeadingTrivia(VBFactory.CommentTrivia($"' BEGIN TODO: {comment}")))
+            nodes = nodes.Add(VBFactory.EmptyStatement.WithLeadingTrivia(VB_EOLTrivia, VBFactory.CommentTrivia($"' END TODO: {comment}")))
         End If
         Return nodes
     End Function

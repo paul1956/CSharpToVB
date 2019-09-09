@@ -6,13 +6,14 @@ Option Infer Off
 Option Strict On
 
 Imports CSharpToVBCodeConverter.Util
+
 Imports Microsoft.CodeAnalysis
 
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
-Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
+Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace CSharpToVBCodeConverter.Visual_Basic
 
@@ -20,6 +21,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
 
         Partial Protected Friend Class NodesVisitor
             Inherits CS.CSharpSyntaxVisitor(Of VB.VisualBasicSyntaxNode)
+
             Private Iterator Function ConvertQueryBody(body As CSS.QueryBodySyntax) As IEnumerable(Of VBS.QueryClauseSyntax)
                 'If TypeOf body.SelectOrGroup Is CSS.GroupClauseSyntax AndAlso body.Continuation Is Nothing Then
                 '    Throw New NotSupportedException("group by clause without into Not supported In VB")
@@ -51,6 +53,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                     End If
                 End If
             End Function
+
             Private Function GeneratePlaceholder(v As String) As String
                 Return $"__{v}{Math.Min(Threading.Interlocked.Increment(placeholder), placeholder - 1)}__"
             End Function
@@ -124,6 +127,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Dim Body As IEnumerable(Of VBS.QueryClauseSyntax) = ConvertQueryBody(node.Body)
                 Return VBFactory.QueryExpression(VBFactory.SingletonList(FromClause).AddRange(BodyClauses).AddRange(Body)).WithConvertedTriviaFrom(node)
             End Function
+
             <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitSelectClause(node As CSS.SelectClauseSyntax) As VB.VisualBasicSyntaxNode
                 Dim expression As VBS.ExpressionSyntax = DirectCast(node.Expression.Accept(Me), VBS.ExpressionSyntax).NormalizeWhitespace
@@ -135,6 +139,9 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Dim condition As VBS.ExpressionSyntax = DirectCast(node.Condition.Accept(Me), VBS.ExpressionSyntax)
                 Return VBFactory.WhereClause(condition).WithConvertedTriviaFrom(node)
             End Function
+
         End Class
+
     End Class
+
 End Namespace

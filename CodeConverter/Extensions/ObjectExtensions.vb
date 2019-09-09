@@ -6,7 +6,6 @@ Option Explicit On
 Option Infer Off
 Option Strict On
 
-Imports System.Diagnostics.CodeAnalysis
 Imports System.Runtime.CompilerServices
 
 Public Module ObjectExtensions

@@ -8,6 +8,7 @@ Option Strict On
 Imports CSharpToVBApp.Microsoft.CodeAnalysis.VisualBasic
 
 Public Module IgnoreErrorList
+
     Public ReadOnly Property ErrorsToBeIgnored As New List(Of String) From {
     $"BC{Convert.ToInt32(ERRID.ERRUndefinedType1)}", ' Type xxx is not defined
     $"BC{Convert.ToInt32(ERRID.ERRLbNoMatchingIf)}",
@@ -58,4 +59,5 @@ Public Module IgnoreErrorList
     $"BC{Convert.ToInt32(ERRID.ERRTypeInferenceFailureNoBest1)}",
     $"BC{Convert.ToInt32(ERRID.ERRExtensionMethodCannotBeLateBound)}"
     }
+
 End Module

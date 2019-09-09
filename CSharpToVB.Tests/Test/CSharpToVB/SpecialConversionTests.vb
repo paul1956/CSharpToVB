@@ -308,6 +308,7 @@ Class TestClass
     End Sub
 End Class")
         End Sub
+
     End Class
 
 End Namespace

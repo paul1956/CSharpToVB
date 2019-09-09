@@ -46,4 +46,5 @@ Public Class ReportProgress
             Application.DoEvents()
         End If
     End Sub
+
 End Class

@@ -17,6 +17,7 @@ Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
+Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace CSharpToVBCodeConverter.Util
     Public Module SyntaxNodeExtensions
@@ -136,8 +137,8 @@ Namespace CSharpToVBCodeConverter.Util
 
                 Dim Kind As VB.SyntaxKind = If(Text.StartsWith("#if", StringComparison.InvariantCulture), VB.SyntaxKind.IfDirectiveTrivia, VB.SyntaxKind.ElseIfDirectiveTrivia)
                 Dim IfOrElseIfKeyword As SyntaxToken = If(Text.StartsWith("#if", StringComparison.InvariantCulture), IfKeyword, ElseIfKeyword)
-                Dim Expr As VB.Syntax.ExpressionSyntax = VBFactory.ParseExpression(Expression1)
-                Dim IfDirectiveTrivia As VB.Syntax.IfDirectiveTriviaSyntax = VBFactory.IfDirectiveTrivia(IfOrElseIfKeyword, Expr)
+                Dim Expr As VBS.ExpressionSyntax = VBFactory.ParseExpression(Expression1)
+                Dim IfDirectiveTrivia As VBS.IfDirectiveTriviaSyntax = VBFactory.IfDirectiveTrivia(IfOrElseIfKeyword, Expr)
                 ResultTrivia.Add(VBFactory.Trivia(IfDirectiveTrivia))
                 Return ResultTrivia
             End If
@@ -176,6 +177,7 @@ Namespace CSharpToVBCodeConverter.Util
         Public Function ConvertTrivia(t As SyntaxTrivia) As SyntaxTrivia
 
 #Region "Non-structured Trivia"
+
             Select Case t.RawKind
                 Case CS.SyntaxKind.WhitespaceTrivia
                     Return VBFactory.WhitespaceTrivia(t.ToString)
@@ -220,14 +222,14 @@ Namespace CSharpToVBCodeConverter.Util
                 Case CS.SyntaxKind.DefineDirectiveTrivia
                     Dim DefineDirective As CSS.DefineDirectiveTriviaSyntax = DirectCast(StructuredTrivia, CSS.DefineDirectiveTriviaSyntax)
                     Dim Name As SyntaxToken = VBFactory.Identifier(DefineDirective.Name.ValueText)
-                    Dim value As VB.Syntax.ExpressionSyntax = VBFactory.TrueLiteralExpression(TrueKeyword)
+                    Dim value As VBS.ExpressionSyntax = VBFactory.TrueLiteralExpression(TrueKeyword)
                     Return VBFactory.Trivia(VBFactory.ConstDirectiveTrivia(Name, value).WithConvertedTriviaFrom(DefineDirective).
                                                     WithAppendedTriviaFromEndOfDirectiveToken(DefineDirective.EndOfDirectiveToken)
                                            )
                 Case CS.SyntaxKind.UndefDirectiveTrivia
                     Dim UndefineDirective As CSS.UndefDirectiveTriviaSyntax = DirectCast(StructuredTrivia, CSS.UndefDirectiveTriviaSyntax)
                     Dim Name As SyntaxToken = VBFactory.Identifier(UndefineDirective.Name.ValueText)
-                    Dim value As VB.Syntax.ExpressionSyntax = NothingExpression
+                    Dim value As VBS.ExpressionSyntax = NothingExpression
                     Return VBFactory.Trivia(VBFactory.ConstDirectiveTrivia(Name, value).WithConvertedTriviaFrom(UndefineDirective).
                                                     WithAppendedTriviaFromEndOfDirectiveToken(UndefineDirective.EndOfDirectiveToken)
                                             )
@@ -302,7 +304,7 @@ Namespace CSharpToVBCodeConverter.Util
                                             WithAppendedTriviaFromEndOfDirectiveToken(EndRegionDirective.EndOfDirectiveToken))
                 Case CS.SyntaxKind.PragmaWarningDirectiveTrivia
                     Dim PragmaWarningDirectiveTrivia As CSS.PragmaWarningDirectiveTriviaSyntax = DirectCast(StructuredTrivia, CSS.PragmaWarningDirectiveTriviaSyntax)
-                    Dim ErrorList As New List(Of VB.Syntax.IdentifierNameSyntax)
+                    Dim ErrorList As New List(Of VBS.IdentifierNameSyntax)
                     Dim TrailingTrivia As New List(Of SyntaxTrivia)
                     For Each i As CSS.ExpressionSyntax In PragmaWarningDirectiveTrivia.ErrorCodes
                         Dim ErrorCode As String = i.ToString
@@ -314,7 +316,7 @@ Namespace CSharpToVBCodeConverter.Util
                     Next
                     TrailingTrivia.AddRange(ConvertTrivia(PragmaWarningDirectiveTrivia.EndOfDirectiveToken.LeadingTrivia))
                     TrailingTrivia.AddRange(ConvertTrivia(PragmaWarningDirectiveTrivia.EndOfDirectiveToken.TrailingTrivia))
-                    Dim WarningDirectiveTrivia As VB.Syntax.DirectiveTriviaSyntax
+                    Dim WarningDirectiveTrivia As VBS.DirectiveTriviaSyntax
                     If PragmaWarningDirectiveTrivia.DisableOrRestoreKeyword.IsKind(CS.SyntaxKind.DisableKeyword) Then
                         WarningDirectiveTrivia = VBFactory.DisableWarningDirectiveTrivia(ErrorList.ToArray)
                     Else
@@ -327,7 +329,7 @@ Namespace CSharpToVBCodeConverter.Util
                     Dim RegionDirective As CSS.RegionDirectiveTriviaSyntax = CType(StructuredTrivia, CSS.RegionDirectiveTriviaSyntax)
                     Dim EndOfDirectiveToken As SyntaxToken = RegionDirective.EndOfDirectiveToken
                     Dim NameString As String = $"""{EndOfDirectiveToken.LeadingTrivia.ToString.Replace("""", "", StringComparison.InvariantCulture)}"""
-                    Dim RegionDirectiveTriviaNode As VB.Syntax.RegionDirectiveTriviaSyntax =
+                    Dim RegionDirectiveTriviaNode As VBS.RegionDirectiveTriviaSyntax =
                             VBFactory.RegionDirectiveTrivia(
                                                     HashToken,
                                                     RegionKeyword,
@@ -339,7 +341,7 @@ Namespace CSharpToVBCodeConverter.Util
                     Dim walker As New XMLVisitor()
                     walker.Visit(SingleLineDocumentationComment)
 
-                    Dim xmlNodes As New List(Of VB.Syntax.XmlNodeSyntax)
+                    Dim xmlNodes As New List(Of VBS.XmlNodeSyntax)
                     For i As Integer = 0 To SingleLineDocumentationComment.Content.Count - 1
                         Dim node As CSS.XmlNodeSyntax = SingleLineDocumentationComment.Content(i)
                         If (Not node.IsKind(CS.SyntaxKind.XmlText)) AndAlso node.GetLeadingTrivia.Count > 0 AndAlso node.GetLeadingTrivia.First.IsKind(CS.SyntaxKind.DocumentationCommentExteriorTrivia) Then
@@ -354,14 +356,14 @@ Namespace CSharpToVBCodeConverter.Util
                             node = node.WithoutLeadingTrivia
                         End If
                         Try
-                            Dim Item As VB.Syntax.XmlNodeSyntax = DirectCast(node.Accept(walker), VB.Syntax.XmlNodeSyntax)
+                            Dim Item As VBS.XmlNodeSyntax = DirectCast(node.Accept(walker), VBS.XmlNodeSyntax)
                             xmlNodes.Add(Item)
                         Catch ex As Exception
                             Stop
                             Throw
                         End Try
                     Next
-                    Dim DocumentationCommentTrivia As VB.Syntax.DocumentationCommentTriviaSyntax = VBFactory.DocumentationCommentTrivia(VBFactory.List(xmlNodes.ToArray))
+                    Dim DocumentationCommentTrivia As VBS.DocumentationCommentTriviaSyntax = VBFactory.DocumentationCommentTrivia(VBFactory.List(xmlNodes.ToArray))
                     If (Not DocumentationCommentTrivia.HasLeadingTrivia) OrElse (Not DocumentationCommentTrivia.GetLeadingTrivia(0).IsKind(VB.SyntaxKind.DocumentationCommentExteriorTrivia)) Then
                         DocumentationCommentTrivia = DocumentationCommentTrivia.WithLeadingTrivia(VBFactory.DocumentationCommentExteriorTrivia("''' "))
                     End If

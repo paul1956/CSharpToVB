@@ -9,7 +9,7 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
 {
     [DebuggerDisplay("Count = {Count,nq}")]
     [DebuggerTypeProxy(typeof(ArrayBuilder<>.DebuggerProxy))]
-   public partial class ArrayBuilder<T> : IReadOnlyCollection<T>, IReadOnlyList<T>
+    public partial class ArrayBuilder<T> : IReadOnlyCollection<T>, IReadOnlyList<T>
     {
         #region DebuggerProxy
 
@@ -38,7 +38,7 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
             }
         }
 
-        #endregion
+        #endregion DebuggerProxy
 
         private readonly ImmutableArray<T>.Builder _builder;
 
@@ -319,12 +319,12 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
             }
         }
 
-
         // 2) Expose the pool or the way to create a pool or the way to get an instance.
         //    for now we will expose both and figure which way works better
 #pragma warning disable RECS0108 // Warns about static fields in generic types
         private static readonly ObjectPool<ArrayBuilder<T>> s_poolInstance = CreatePool();
 #pragma warning restore RECS0108 // Warns about static fields in generic types
+
         public static ArrayBuilder<T> GetInstance()
         {
             var builder = s_poolInstance.Allocate();
@@ -364,7 +364,7 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
             return pool;
         }
 
-        #endregion
+        #endregion Poolable
 
         public Enumerator GetEnumerator()
         {

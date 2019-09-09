@@ -6,14 +6,18 @@ Option Infer Off
 Option Strict On
 
 Imports System.Diagnostics.CodeAnalysis
+
 Imports CSharpToVBCodeConverter.Util
 
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.CSharp.Syntax
 Imports Microsoft.CodeAnalysis.Simplification
 Imports Microsoft.CodeAnalysis.VisualBasic
+
 Imports CS = Microsoft.CodeAnalysis.CSharp
+
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
+
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
@@ -393,6 +397,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
             Public Overrides Function VisitWhenClause(node As WhenClauseSyntax) As VisualBasicSyntaxNode
                 Return node.Condition.Accept(Me)
             End Function
+
         End Class
 
     End Class

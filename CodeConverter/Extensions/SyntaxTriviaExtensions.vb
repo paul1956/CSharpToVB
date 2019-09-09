@@ -5,7 +5,6 @@ Option Explicit On
 Option Infer Off
 Option Strict On
 
-Imports System.Diagnostics.CodeAnalysis
 Imports System.Runtime.CompilerServices
 
 Imports Microsoft.CodeAnalysis
@@ -13,6 +12,7 @@ Imports Microsoft.CodeAnalysis
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
+Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace CSharpToVBCodeConverter.Util
     Public Module SyntaxTriviaExtensions
@@ -325,7 +325,7 @@ Namespace CSharpToVBCodeConverter.Util
         ''' <param name="node"></param>
         ''' <returns></returns>
         <Extension>
-        Public Function RemoveDirectiveTrivia(Of T As VB.Syntax.ArgumentSyntax)(node As T, ByRef FoundEOL As Boolean) As T
+        Public Function RemoveDirectiveTrivia(Of T As VBS.ArgumentSyntax)(node As T, ByRef FoundEOL As Boolean) As T
             Contracts.Contract.Requires(node IsNot Nothing)
             Dim NewLeadingTrivia As New List(Of SyntaxTrivia)
             Dim NewTrailingTrivia As New List(Of SyntaxTrivia)

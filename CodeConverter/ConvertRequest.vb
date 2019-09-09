@@ -6,7 +6,9 @@ Option Infer Off
 Option Strict On
 
 #If NETCOREAPP3_0 Then
+
 Imports ManageProgressBar
+
 #Else
 
 Imports ReportProgress = System.Object

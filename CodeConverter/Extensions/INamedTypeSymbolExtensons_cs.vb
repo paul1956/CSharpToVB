@@ -14,6 +14,8 @@ Imports CSharpToVBCodeConverter.Visual_Basic.CSharpConverter
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
+Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
+
 Namespace CSharpToVBCodeConverter.Util
 
     Public Module INamedTypeSymbolExtensons
@@ -26,7 +28,7 @@ Namespace CSharpToVBCodeConverter.Util
                                     Replace("]", ")", StringComparison.InvariantCulture)
             Dim FirstTupleIndex As Integer = TypeString.IndexOf("(Of (", StringComparison.InvariantCulture)
             If FirstTupleIndex < 0 Then
-                Return VisualBasic.SyntaxFactory.ParseName(TypeString)
+                Return VBFactory.ParseName(TypeString)
             End If
             FirstTupleIndex += 4
             Dim Result As String = TypeString.Substring(0, FirstTupleIndex)
@@ -54,7 +56,7 @@ Namespace CSharpToVBCodeConverter.Util
                 CloseIndex += 1
             End While
             Result = $"{Result})"
-            Return VisualBasic.SyntaxFactory.ParseName(Result)
+            Return VBFactory.ParseName(Result)
         End Function
 
         Private Function ExtractConvertedTuple(TupleString As String) As String
@@ -199,7 +201,7 @@ Namespace CSharpToVBCodeConverter.Util
                     End If
                 Next
             End If
-            SimpleName = VisualBasic.SyntaxFactory.IdentifierName(interfaceMethodOrProperty.Name)
+            SimpleName = VBFactory.IdentifierName(interfaceMethodOrProperty.Name)
             Return True
         End Function
 
@@ -263,7 +265,6 @@ Namespace CSharpToVBCodeConverter.Util
         Private Function IsNonPublicImplementableAccessor(accessor As IMethodSymbol) As Boolean
             Return accessor IsNot Nothing AndAlso IsImplementable(accessor) AndAlso accessor.DeclaredAccessibility <> Microsoft.CodeAnalysis.Accessibility.Public
         End Function
-
 
         <CodeAnalysis.SuppressMessage("Code Quality", "IDE0051:Remove unused private members", Justification:="Used by functions that are currently commented out")>
         Private Function IsPropertyWithInaccessibleImplementableAccessor(member As ISymbol, within As ISymbol) As Boolean
@@ -428,13 +429,13 @@ Namespace CSharpToVBCodeConverter.Util
             End If
             Dim SeparatedList As New List(Of QualifiedNameSyntax)
             For Each entry As (InterfaceName As INamedTypeSymbol, MethodList As ImmutableArray(Of ISymbol)) In ListOfRequiredInterfaces
-                Dim InterfaceName As NameSyntax = VisualBasic.SyntaxFactory.IdentifierName(entry.InterfaceName.ToString)
+                Dim InterfaceName As NameSyntax = VBFactory.IdentifierName(entry.InterfaceName.ToString)
                 For Each InterfaceMethod As ISymbol In entry.MethodList
                     Dim _Right As SimpleNameSyntax = Nothing
                     If TypeOf InterfaceMethod Is IMethodSymbol Then
                         If ImplementsMethodOrProperty(CS_Method, CType(InterfaceMethod, IMethodSymbol), _Right) Then
                             Dim QualifiedName As QualifiedNameSyntax = CType(ConvertISymbolToNameSyntaxInterfaceName(InterfaceMethod), QualifiedNameSyntax)
-                            SeparatedList.Add(VisualBasic.SyntaxFactory.QualifiedName(QualifiedName, _Right))
+                            SeparatedList.Add(VBFactory.QualifiedName(QualifiedName, _Right))
                             Exit For
                         End If
                     End If
@@ -443,7 +444,7 @@ Namespace CSharpToVBCodeConverter.Util
             If SeparatedList.Count = 0 Then
                 Return Nothing
             End If
-            Return VisualBasic.SyntaxFactory.ImplementsClause(VisualBasic.SyntaxFactory.SeparatedList(SeparatedList))
+            Return VBFactory.ImplementsClause(VBFactory.SeparatedList(SeparatedList))
         End Function
 
         <Extension>
@@ -453,13 +454,13 @@ Namespace CSharpToVBCodeConverter.Util
             End If
             Dim SeparatedList As New List(Of QualifiedNameSyntax)
             For Each entry As (InterfaceName As INamedTypeSymbol, MethodList As ImmutableArray(Of ISymbol)) In ListOfRequiredInterfaces
-                Dim InterfaceName As NameSyntax = VisualBasic.SyntaxFactory.IdentifierName(entry.InterfaceName.ToString)
+                Dim InterfaceName As NameSyntax = VBFactory.IdentifierName(entry.InterfaceName.ToString)
                 For Each InterfaceProperty As ISymbol In entry.MethodList
                     Dim _Right As SimpleNameSyntax = Nothing
                     If TypeOf InterfaceProperty Is IPropertySymbol Then
                         If ImplementsMethodOrProperty(CS_Property, CType(InterfaceProperty, IPropertySymbol), _Right) Then
                             Dim QualifiedName As QualifiedNameSyntax = CType(ConvertISymbolToNameSyntaxInterfaceName(InterfaceProperty), QualifiedNameSyntax)
-                            SeparatedList.Add(VisualBasic.SyntaxFactory.QualifiedName(QualifiedName, _Right))
+                            SeparatedList.Add(VBFactory.QualifiedName(QualifiedName, _Right))
                             Exit For
                         End If
                     End If
@@ -468,7 +469,7 @@ Namespace CSharpToVBCodeConverter.Util
             If SeparatedList.Count = 0 Then
                 Return Nothing
             End If
-            Return VisualBasic.SyntaxFactory.ImplementsClause(VisualBasic.SyntaxFactory.SeparatedList(SeparatedList))
+            Return VBFactory.ImplementsClause(VBFactory.SeparatedList(SeparatedList))
         End Function
 
         <Extension>

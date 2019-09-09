@@ -20,8 +20,6 @@ Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 
-Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
-
 Namespace CSharpToVBCodeConverter.Visual_Basic
 
     Partial Public Class CSharpConverter
@@ -2545,9 +2543,9 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                                         FinalLeadingTriviaList.Add(VB_EOLTrivia)
                                     End If
                                 Case VB.SyntaxKind.DisableWarningDirectiveTrivia
-                                    GetStatementwithIssues(node).AddMarker(VB.SyntaxFactory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
+                                    GetStatementwithIssues(node).AddMarker(VBFactory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
                                 Case VB.SyntaxKind.EnableWarningDirectiveTrivia
-                                    GetStatementwithIssues(node).AddMarker(VB.SyntaxFactory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.AppendEmptyStatement, AllowDuplicates:=True)
+                                    GetStatementwithIssues(node).AddMarker(VBFactory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.AppendEmptyStatement, AllowDuplicates:=True)
                                 Case VB.SyntaxKind.LineContinuationTrivia
                                     If FinalLeadingTriviaList.Last.IsKind(VB.SyntaxKind.LineContinuationTrivia) Then
                                         Continue For

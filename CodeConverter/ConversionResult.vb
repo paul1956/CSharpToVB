@@ -5,8 +5,6 @@ Option Explicit On
 Option Infer Off
 Option Strict On
 
-Imports System.Diagnostics.CodeAnalysis
-
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Formatting
 Imports Microsoft.CodeAnalysis.Options
@@ -17,16 +15,21 @@ Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Namespace CSharpToVBCodeConverter
 
     Public Class ConversionResult
+
         '
         ' Summary:
         '     Indicates File Conversion succeeded, failed or wasn't attempted (ignored)
         Public Enum ResultTriState
+
             '     This file was ignored setting.
             Ignore = -2
+
             '     Conversion succeeded.
             Success = -1
+
             '     Conversion failed.
             Failure = 0
+
         End Enum
 
         Public Sub New(_ConvertedTree As SyntaxNode, InputLanguage As String, OutputLanguage As String)

@@ -12,6 +12,7 @@ Imports Microsoft.CodeAnalysis
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
+Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace CSharpToVBCodeConverter.Visual_Basic
@@ -44,7 +45,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Next
                 RestructureNodesAndSeparators(OpenParenTokenWithTrivia, Items, Separators, CloseParenTokenWithTrivia)
 
-                Return VB.SyntaxFactory.ParameterList(OpenParenTokenWithTrivia, VB.SyntaxFactory.SeparatedList(Items, Separators), CloseParenToken).WithConvertedTriviaFrom(node)
+                Return VBFactory.ParameterList(OpenParenTokenWithTrivia, VBFactory.SeparatedList(Items, Separators), CloseParenToken).WithConvertedTriviaFrom(node)
             End Function
 
             <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
@@ -53,7 +54,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Dim EqualsLeadingTrivia As New List(Of SyntaxTrivia)
                 If returnType IsNot Nothing Then
                     If returnType.ToString.StartsWith("[", StringComparison.InvariantCulture) Then
-                        Dim TReturnType As VBS.TypeSyntax = VB.SyntaxFactory.ParseTypeName(returnType.ToString.Substring(1).Replace("]", "", StringComparison.InvariantCulture)).WithTriviaFrom(returnType)
+                        Dim TReturnType As VBS.TypeSyntax = VBFactory.ParseTypeName(returnType.ToString.Substring(1).Replace("]", "", StringComparison.InvariantCulture)).WithTriviaFrom(returnType)
                         If Not TReturnType.IsMissing Then
                             returnType = TReturnType
                         End If
@@ -77,16 +78,16 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 End If
                 Dim DefaultValue As VBS.EqualsValueSyntax = Nothing
                 If node.Default IsNot Nothing Then
-                    DefaultValue = VB.SyntaxFactory.EqualsValue(EqualsToken.WithLeadingTrivia(EqualsLeadingTrivia), DirectCast(node.Default?.Value.Accept(Me), VBS.ExpressionSyntax))
+                    DefaultValue = VBFactory.EqualsValue(EqualsToken.WithLeadingTrivia(EqualsLeadingTrivia), DirectCast(node.Default?.Value.Accept(Me), VBS.ExpressionSyntax))
                 End If
 
                 Dim newAttributes As VBS.AttributeListSyntax()
                 Dim modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, IsModule, TokenContext.Local)
                 If (modifiers.Count = 0 AndAlso returnType IsNot Nothing) OrElse node.Modifiers.Any(CS.SyntaxKind.ThisKeyword) Then
-                    modifiers = VB.SyntaxFactory.TokenList(ByValKeyword).ToList
+                    modifiers = VBFactory.TokenList(ByValKeyword).ToList
                     newAttributes = Array.Empty(Of VBS.AttributeListSyntax)
                 ElseIf node.Modifiers.Any(CS.SyntaxKind.OutKeyword) Then
-                    newAttributes = {VB.SyntaxFactory.AttributeList(VB.SyntaxFactory.SingletonSeparatedList(VB.SyntaxFactory.Attribute(RuntimeInteropServicesOut)))}
+                    newAttributes = {VBFactory.AttributeList(VBFactory.SingletonSeparatedList(VBFactory.Attribute(RuntimeInteropServicesOut)))}
                 Else
                     newAttributes = Array.Empty(Of VBS.AttributeListSyntax)
                 End If
@@ -163,9 +164,9 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                                     End If
                                     NeedEOL = False
                                 Case VB.SyntaxKind.DisableWarningDirectiveTrivia
-                                    GetStatementwithIssues(node).AddMarker(VB.SyntaxFactory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
+                                    GetStatementwithIssues(node).AddMarker(VBFactory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
                                 Case VB.SyntaxKind.EnableWarningDirectiveTrivia
-                                    GetStatementwithIssues(node).AddMarker(VB.SyntaxFactory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.AppendEmptyStatement, AllowDuplicates:=True)
+                                    GetStatementwithIssues(node).AddMarker(VBFactory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.AppendEmptyStatement, AllowDuplicates:=True)
                                 Case Else
                                     Stop
                             End Select
@@ -196,8 +197,8 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                         OriginalAttributeListWithTrivia(I) = OriginalAttributeListWithTrivia(I).With(AttributeLeadingTrivia, AttributeTrailingTrivia)
                     Next
                 End If
-                Dim AttributeLists As SyntaxList(Of VBS.AttributeListSyntax) = VB.SyntaxFactory.List(OriginalAttributeListWithTrivia)
-                Dim Identifier As VBS.ModifiedIdentifierSyntax = VB.SyntaxFactory.ModifiedIdentifier(id)
+                Dim AttributeLists As SyntaxList(Of VBS.AttributeListSyntax) = VBFactory.List(OriginalAttributeListWithTrivia)
+                Dim Identifier As VBS.ModifiedIdentifierSyntax = VBFactory.ModifiedIdentifier(id)
 
                 Dim NewModifiersWithoutComments As New List(Of SyntaxToken)
                 For Each m As SyntaxToken In modifiers
@@ -217,7 +218,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                     Next
                     NewModifiersWithoutComments.Add(m.With(ModifierLeadingTrivia, ModifierTrailingTrivia))
                 Next
-                modifiers = VB.SyntaxFactory.TokenList(NewModifiersWithoutComments).ToList
+                modifiers = VBFactory.TokenList(NewModifiersWithoutComments).ToList
                 Dim AsClause As VBS.SimpleAsClauseSyntax = Nothing
                 If returnType IsNot Nothing Then
                     For Each Trivia As SyntaxTrivia In returnType.GetLeadingTrivia
@@ -237,9 +238,9 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                             Case VB.SyntaxKind.ElseDirectiveTrivia
                                 ' TODO Ignore for now
                             Case VB.SyntaxKind.DisableWarningDirectiveTrivia
-                                GetStatementwithIssues(node).AddMarker(VB.SyntaxFactory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
+                                GetStatementwithIssues(node).AddMarker(VBFactory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
                             Case VB.SyntaxKind.EnableWarningDirectiveTrivia
-                                GetStatementwithIssues(node).AddMarker(VB.SyntaxFactory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.AppendEmptyStatement, AllowDuplicates:=True)
+                                GetStatementwithIssues(node).AddMarker(VBFactory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.AppendEmptyStatement, AllowDuplicates:=True)
                             Case Else
                                 Stop
                         End Select
@@ -271,9 +272,9 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                             Case VB.SyntaxKind.ElseDirectiveTrivia
                                 ' TODO Ignore for now
                             Case VB.SyntaxKind.DisableWarningDirectiveTrivia
-                                GetStatementwithIssues(node).AddMarker(VB.SyntaxFactory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
+                                GetStatementwithIssues(node).AddMarker(VBFactory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
                             Case VB.SyntaxKind.EnableWarningDirectiveTrivia
-                                GetStatementwithIssues(node).AddMarker(VB.SyntaxFactory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.AppendEmptyStatement, AllowDuplicates:=True)
+                                GetStatementwithIssues(node).AddMarker(VBFactory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.AppendEmptyStatement, AllowDuplicates:=True)
                             Case VB.SyntaxKind.LineContinuationTrivia
                                 ParameterTrailingTrivia.Add(Trivia)
                             Case Else
@@ -283,13 +284,13 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                     If FoundEOL Then
                         ParameterTrailingTrivia.Add(VB_EOLTrivia)
                     End If
-                    AsClause = VB.SyntaxFactory.SimpleAsClause(returnType.WithoutTrivia).WithTrailingTrivia(ParameterTrailingTrivia)
+                    AsClause = VBFactory.SimpleAsClause(returnType.WithoutTrivia).WithTrailingTrivia(ParameterTrailingTrivia)
                 Else
                     Identifier = Identifier.WithTrailingTrivia(ParameterTrailingTrivia)
                 End If
 
-                Dim parameterSyntax1 As VBS.ParameterSyntax = VB.SyntaxFactory.Parameter(AttributeLists,
-                                                                                VB.SyntaxFactory.TokenList(modifiers),
+                Dim parameterSyntax1 As VBS.ParameterSyntax = VBFactory.Parameter(AttributeLists,
+                                                                                VBFactory.TokenList(modifiers),
                                                                                 Identifier,
                                                                                 AsClause,
                                                                                 DefaultValue).WithLeadingTrivia(SpaceTrivia)
@@ -329,7 +330,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                     End If
                 Next
                 RestructureNodesAndSeparators(OpenParenTokenWithTrivia, Items, Separators, CloseParenTokenWithTrivia)
-                Return VB.SyntaxFactory.ParameterList(OpenParenTokenWithTrivia, VB.SyntaxFactory.SeparatedList(Items, Separators), CloseParenTokenWithTrivia)
+                Return VBFactory.ParameterList(OpenParenTokenWithTrivia, VBFactory.SeparatedList(Items, Separators), CloseParenTokenWithTrivia)
             End Function
 
         End Class

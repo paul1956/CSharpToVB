@@ -49,4 +49,5 @@ Public Module FileSupport
         End If
         Return Path.Combine(FileIO.SpecialDirectories.MyDocuments, $"{VisualStudioBaseName}{LatestVersion:0000}", "Projects")
     End Function
+
 End Module

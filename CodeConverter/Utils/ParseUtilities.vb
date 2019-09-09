@@ -7,6 +7,7 @@ Option Strict On
 
 Imports System.IO
 Imports System.Threading
+
 Imports CSharpToVBCodeConverter.Util
 
 Imports Microsoft.CodeAnalysis

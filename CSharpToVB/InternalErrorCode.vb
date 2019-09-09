@@ -9,6 +9,7 @@ Option Strict On
 ''' Values for ErrorCode/ERRID that are used internally by the compiler but are not exposed.
 ''' </summary>
 Friend Module InternalErrorCode
+
     ''' <summary>
     ''' The code has yet to be determined.
     ''' </summary>
@@ -18,4 +19,5 @@ Friend Module InternalErrorCode
     ''' The code was lazily determined and does not need to be reported.
     ''' </summary>
     Public Const Void As Integer = -2
+
 End Module

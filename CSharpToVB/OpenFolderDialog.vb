@@ -6,6 +6,7 @@ Option Infer Off
 Option Strict On
 
 Imports System.Runtime.InteropServices
+
 Imports PInvoke
 
 Public Class OpenFolderDialog
@@ -95,6 +96,7 @@ Public Class OpenFolderDialog
     End Function
 
 #Region "IDisposable Support"
+
     Private disposedValue As Boolean ' To detect redundant calls
 
     ' IDisposable
@@ -124,6 +126,7 @@ Public Class OpenFolderDialog
         ' TODO: uncomment the following line if Finalize() is overridden above.
         GC.SuppressFinalize(Me)
     End Sub
+
 #End Region
 
 End Class

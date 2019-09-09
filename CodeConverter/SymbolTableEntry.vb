@@ -6,6 +6,7 @@ Option Infer Off
 Option Strict On
 
 Public Class SymbolTableEntry
+
     Public Sub New(_Name As String, _IsType As Boolean)
         Name = _Name
         IsType = _IsType

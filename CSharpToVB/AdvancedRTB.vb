@@ -6,6 +6,7 @@ Option Infer Off
 Option Strict On
 
 Imports System.Runtime.InteropServices
+
 Imports CSharpToVBApp
 
 Public Class AdvancedRTB
@@ -16,12 +17,15 @@ Public Class AdvancedRTB
     End Sub
 
     Public Event VertScrollBarRightClicked(ByVal sender As Object, ByVal loc As Point)
+
     Public Event HorizScrollBarRightClicked(ByVal sender As Object, ByVal loc As Point)
 
     Private Const OBJID_VSCROLL As Long = &HFFFFFFFB 'the vertical scroll bar of the hwnd window
     Friend WithEvents ContextMenuStrip1 As ContextMenuStrip
+
     <CodeAnalysis.SuppressMessage("Code Quality", "IDE0069:Disposable fields should be disposed", Justification:="Can't figure out how to dispose")>
     Private components As System.ComponentModel.IContainer
+
     Friend WithEvents ToolStripMenuItem1 As ToolStripMenuItem
     Friend WithEvents ToolStripSeparator1 As ToolStripSeparator
     Friend WithEvents ToolStripMenuItem2 As ToolStripMenuItem
@@ -38,6 +42,7 @@ Public Class AdvancedRTB
         }
         Dim unused As Integer = SetScrollInfo(hWnd:=handle, nBar:=SB_Orientation, lpsi:=scrollinfo, bRepaint:=v)
     End Sub
+
     ''' <summary>
     ''' Returns the Position of the Scroll Bar Thumb
     ''' </summary>
@@ -181,4 +186,5 @@ Public Class AdvancedRTB
     End Sub
 
 #End Region
+
 End Class

@@ -67,6 +67,7 @@ Public Class OptionsDialog
     End Sub
 
     Private Class MyListItem
+
         Public Sub New(ByVal pText As String, ByVal pValue As String)
             _Text = pText
             _Value = pValue
@@ -79,6 +80,7 @@ Public Class OptionsDialog
         Public Overrides Function ToString() As String
             Return Text
         End Function
+
     End Class
 
 End Class

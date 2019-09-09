@@ -86,6 +86,7 @@ Partial Public Module SpecializedCollections
             End Sub
 
         End Class
+
         Friend Class Enumerator(Of T)
             Implements IEnumerator(Of T)
 

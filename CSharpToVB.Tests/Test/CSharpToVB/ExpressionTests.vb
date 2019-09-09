@@ -2,6 +2,7 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 Imports CodeConverter.Tests
+
 Imports Xunit
 
 Namespace CSharpToVB.Tests
@@ -163,7 +164,7 @@ internal static class CanonicalError
             + ""(?<SUBCATEGORY>(()|([^:]*? )))""
             // Match 'error' or 'warning'.
             + @""(?<CATEGORY>(error|warning))""
-            // Match anything starting with a space that's not a colon/space, followed by a colon. 
+            // Match anything starting with a space that's not a colon/space, followed by a colon.
             // Error code is optional in which case ""error""/""warning"" can be followed immediately by a colon.
             + @""( \s*(?<CODE>[^: ]*))?\s*:""
             // Whatever's left on this line, including colons.
@@ -193,7 +194,7 @@ Friend Module CanonicalError
     & ""(?<SUBCATEGORY>(()|([^:]*? )))"" _
  _ ' Match 'error' or 'warning'.
     & ""(?<CATEGORY>(error|warning))"" _
- _ ' Match anything starting with a space that's not a colon/space, followed by a colon. 
+ _ ' Match anything starting with a space that's not a colon/space, followed by a colon.
  _ ' Error code is optional in which case ""error""/""warning"" can be followed immediately by a colon.
     & ""( \s*(?<CODE>[^: ]*))?\s*:"" _
  _ ' Whatever's left on this line, including colons.
@@ -226,7 +227,7 @@ internal static class CanonicalError
             + ""(?<SUBCATEGORY>(()|([^:]*? )))""
             // Match 'error' or 'warning'.
             + @""(?<CATEGORY>(error|warning))""
-            // Match anything starting with a space that's not a colon/space, followed by a colon. 
+            // Match anything starting with a space that's not a colon/space, followed by a colon.
             // Error code is optional in which case ""error""/""warning"" can be followed immediately by a colon.
             + @""( \s*(?<CODE>[^: ]*))?\s*:""
             // Whatever's left on this line, including colons.
@@ -255,7 +256,7 @@ Friend Module CanonicalError
     & ""(?<SUBCATEGORY>(()|([^:]*? )))"" _
  _ ' Match 'error' or 'warning'.
     & ""(?<CATEGORY>(error|warning))"" _
- _ ' Match anything starting with a space that's not a colon/space, followed by a colon. 
+ _ ' Match anything starting with a space that's not a colon/space, followed by a colon.
  _ ' Error code is optional in which case ""error""/""warning"" can be followed immediately by a colon.
     & ""( \s*(?<CODE>[^: ]*))?\s*:"" _
  _ ' Whatever's left on this line, including colons.
@@ -651,6 +652,7 @@ World!""
     End Sub
 End Class")
         End Sub
+
         <Fact>
         Public Shared Sub CSharpToVBNullCoalescingExpression()
             TestConversionCSharpToVisualBasic("class TestClass
@@ -670,6 +672,7 @@ Class TestClass
     End Sub
 End Class")
         End Sub
+
         <Fact>
         Public Shared Sub CSharpToVBObjectInitializerExpression()
             TestConversionCSharpToVisualBasic("class StudentName
@@ -753,6 +756,7 @@ Class TestClass
     End Sub
 End Class")
         End Sub
+
     End Class
 
 End Namespace

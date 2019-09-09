@@ -10,6 +10,7 @@ Imports Microsoft.Build.Locator
 Public Class VS_Selector_Dialog1
     Private m_instance As VisualStudioInstance = Nothing
     Private ReadOnly visualStudioInstances() As VisualStudioInstance = MSBuildLocator.QueryVisualStudioInstances().ToArray()
+
     Public ReadOnly Property MSBuildInstance As VisualStudioInstance
         Get
             Return m_instance
@@ -60,4 +61,5 @@ Public Class VS_Selector_Dialog1
             Close()
         End If
     End Sub
+
 End Class

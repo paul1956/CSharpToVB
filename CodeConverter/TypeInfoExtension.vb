@@ -2,9 +2,11 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 Imports System.Runtime.CompilerServices
+
 Imports Microsoft.CodeAnalysis
 
 Public Module TypeInfoExtension
+
     <Extension>
     Public Function IsErrorType(ByVal symbol As ITypeSymbol) As Boolean
         Return CBool(symbol?.TypeKind = TypeKind.Error)

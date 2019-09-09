@@ -4,10 +4,7 @@
 Option Explicit On
 Option Strict On
 
-Imports VBMsgBox
-
 Imports Xunit
-
 
 Namespace VBMsgBox.Test
 

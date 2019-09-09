@@ -34,6 +34,5 @@ namespace Roslyn.Utilities
 
             return true;
         }
-
-     }
+    }
 }

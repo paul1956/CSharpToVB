@@ -15,11 +15,13 @@ Imports Microsoft.CodeAnalysis.Emit
 Imports Xunit
 
 Namespace ConvertDirectory.Tests
+
     ''' <summary>
     ''' Return False to skip test
     ''' </summary>
     <TestClass()> Public Class TestCompile
         Private LastFileProcessed As String
+
         Public Shared ReadOnly Property EnableRoslynTests() As Boolean
             Get
                 Return Directory.Exists(GetRoslynRootDirectory)
