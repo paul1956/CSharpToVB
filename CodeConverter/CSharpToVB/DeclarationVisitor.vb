@@ -203,11 +203,11 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
             Private Sub ConvertAndSplitAttributes(attributeLists As SyntaxList(Of CSS.AttributeListSyntax), <Out> ByRef Attributes As List(Of VBS.AttributeListSyntax), <Out> ByRef ReturnAttributes As SyntaxList(Of VBS.AttributeListSyntax))
                 Dim retAttr As List(Of VBS.AttributeListSyntax) = New List(Of VBS.AttributeListSyntax)()
                 For Each attrList As CSS.AttributeListSyntax In attributeLists
-                    If attrList.Target IsNot Nothing AndAlso attrList.Target.Identifier.IsKind(CS.SyntaxKind.ReturnKeyword) Then
+                    If attrList.Target Is Nothing OrElse Not attrList.Target.Identifier.IsKind(CS.SyntaxKind.ReturnKeyword) Then
+                        Attributes.Add(DirectCast(attrList.Accept(Me), VBS.AttributeListSyntax))
+                    Else
                         ' Remove trailing CRLF from return attributes
                         retAttr.Add(DirectCast(attrList.Accept(Me).With({SpaceTrivia}, {SpaceTrivia}), VBS.AttributeListSyntax))
-                    Else
-                        Attributes.Add(DirectCast(attrList.Accept(Me), VBS.AttributeListSyntax))
                     End If
                 Next
 

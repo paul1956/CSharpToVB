@@ -22,8 +22,27 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
         Partial Protected Friend Class NodesVisitor
             Inherits CS.CSharpSyntaxVisitor(Of VB.VisualBasicSyntaxNode)
 
-            Public Shared Function ConvertNamedTypeToTypeString(TypeString As String) As String
-                Contracts.Contract.Requires(TypeString IsNot Nothing)
+            Private Shared Function FindClauseForParameter(node As CSS.TypeParameterSyntax) As CSS.TypeParameterConstraintClauseSyntax
+                Dim clauses As SyntaxList(Of CSS.TypeParameterConstraintClauseSyntax)
+                Dim parentBlock As SyntaxNode = node.Parent.Parent
+                If TypeOf parentBlock Is CSS.StructDeclarationSyntax Then
+                    Dim s As CSS.StructDeclarationSyntax = DirectCast(parentBlock, CSS.StructDeclarationSyntax)
+                    Return CS.SyntaxFactory.TypeParameterConstraintClause(CS.SyntaxFactory.IdentifierName(s.TypeParameterList.Parameters(0).Identifier.Text), Nothing)
+                Else
+                    clauses = parentBlock.TypeSwitch(
+                    Function(m As CSS.MethodDeclarationSyntax) m.ConstraintClauses,
+                    Function(c As CSS.ClassDeclarationSyntax) c.ConstraintClauses,
+                    Function(d As CSS.DelegateDeclarationSyntax) d.ConstraintClauses,
+                    Function(i As CSS.InterfaceDeclarationSyntax) i.ConstraintClauses,
+                    Function(Underscore As SyntaxNode) As SyntaxList(Of CSS.TypeParameterConstraintClauseSyntax)
+                        Throw New NotImplementedException($"{Underscore.[GetType]().FullName} not implemented!")
+                    End Function)
+                    Return clauses.FirstOrDefault(Function(c As CSS.TypeParameterConstraintClauseSyntax) c.Name.ToString() = node.ToString())
+                End If
+
+            End Function
+
+            Friend Shared Function ConvertNamedTypeToTypeString(TypeString As String) As String
                 Dim SplitTypeString() As String = TypeString.Trim.Split(" "c, StringComparison.InvariantCulture)
                 If SplitTypeString.Count > 2 Then
                     Stop
@@ -56,26 +75,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                     Stop
                 End If
                 Return RetList
-            End Function
-
-            Private Shared Function FindClauseForParameter(node As CSS.TypeParameterSyntax) As CSS.TypeParameterConstraintClauseSyntax
-                Dim clauses As SyntaxList(Of CSS.TypeParameterConstraintClauseSyntax)
-                Dim parentBlock As SyntaxNode = node.Parent.Parent
-                If TypeOf parentBlock Is CSS.StructDeclarationSyntax Then
-                    Dim s As CSS.StructDeclarationSyntax = DirectCast(parentBlock, CSS.StructDeclarationSyntax)
-                    Return CS.SyntaxFactory.TypeParameterConstraintClause(CS.SyntaxFactory.IdentifierName(s.TypeParameterList.Parameters(0).Identifier.Text), Nothing)
-                Else
-                    clauses = parentBlock.TypeSwitch(
-                    Function(m As CSS.MethodDeclarationSyntax) m.ConstraintClauses,
-                    Function(c As CSS.ClassDeclarationSyntax) c.ConstraintClauses,
-                    Function(d As CSS.DelegateDeclarationSyntax) d.ConstraintClauses,
-                    Function(i As CSS.InterfaceDeclarationSyntax) i.ConstraintClauses,
-                    Function(Underscore As SyntaxNode) As SyntaxList(Of CSS.TypeParameterConstraintClauseSyntax)
-                        Throw New NotImplementedException($"{Underscore.[GetType]().FullName} not implemented!")
-                    End Function)
-                    Return clauses.FirstOrDefault(Function(c As CSS.TypeParameterConstraintClauseSyntax) c.Name.ToString() = node.ToString())
-                End If
-
             End Function
 
             Public Shared Function ConvertToType(_TypeString As String) As VBS.TypeSyntax

@@ -757,6 +757,25 @@ Class TestClass
 End Class")
         End Sub
 
+        <Fact>
+        Public Shared Sub CSharpToVBTupleAssignment()
+            TestConversionCSharpToVisualBasic("class TestClass
+{
+    void TestMethod()
+    {
+        var x = (true, 1, 2.2, ""3"");
+    }
+}", "Option Explicit Off
+Option Infer On
+Option Strict Off
+
+Class TestClass
+
+    Private Sub TestMethod()
+        Dim x As (Boolean, Integer, Double, String) = (True, 1, 2.2, ""3"")
+    End Sub
+End Class")
+        End Sub
     End Class
 
 End Namespace

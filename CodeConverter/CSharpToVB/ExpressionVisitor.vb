@@ -666,10 +666,32 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
 
                 If _TypeSyntax.IsKind(VB.SyntaxKind.PredefinedType) Then
                     Select Case DirectCast(_TypeSyntax, PredefinedTypeSyntax).Keyword.ValueText.ToUpperInvariant
+                        Case "BOOL", "BOOLEAN"
+                            Return PredefinedTypeBoolean
+                        Case "BYTE"
+                            Return PredefinedTypeByte
+                        Case "CHAR"
+                            Return PredefinedTypeChar
+                        Case "DECIMAL"
+                            Return PredefinedTypeDecimal
+                        Case "DOUBLE"
+                            Return PredefinedTypeDouble
+                        Case "INT", "Integer"
+                            Return PredefinedTypeInteger
+                        Case "SBYTE"
+                            Return PredefinedTypeSByte
+                        Case "SHORT"
+                            Return PredefinedTypeShort
+                        Case "UINT"
+                            Return PredefinedTypeUInteger
+                        Case "ULONG"
+                            Return PredefinedTypeULong
+                        Case "USHORT"
+                            Return PredefinedTypeUShort
                         Case "STRING"
-                            Return VBFactory.PredefinedType(CharKeyword)
+                            Return PredefinedTypeString
                         Case "OBJECT"
-                            Return VBFactory.PredefinedType(ObjectKeyword)
+                            Return PredefinedTypeObject
                         Case Else
                             Stop
                     End Select
@@ -939,7 +961,8 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                             builder.Append(TupleList.Last & ")")
                             Dim TupleType As String = builder.ToString
 
-                            Dim SimpleAs As SimpleAsClauseSyntax = VBFactory.SimpleAsClause(AsKeyword.WithTrailingTrivia(SpaceTrivia), attributeLists:=Nothing, type:=VBFactory.ParseTypeName(TupleType).WithLeadingTrivia(SpaceTrivia)).WithLeadingTrivia(SpaceTrivia)
+                            Dim TupleType2 As TypeSyntax = VBFactory.ParseTypeName(TupleType).WithLeadingTrivia(SpaceTrivia)
+                            Dim SimpleAs As SimpleAsClauseSyntax = VBFactory.SimpleAsClause(AsKeyword.WithTrailingTrivia(SpaceTrivia), attributeLists:=Nothing, TupleType2).WithLeadingTrivia(SpaceTrivia)
                             Dim Names As SeparatedSyntaxList(Of ModifiedIdentifierSyntax) = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(TupleName))
                             Dim VariableDeclaration As SeparatedSyntaxList(Of VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(Names, SimpleAs, Initializer))
                             Dim DimStatement As LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(DimModifiersTokenList, VariableDeclaration)
@@ -2509,14 +2532,15 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
             Public Overrides Function VisitTupleExpression(node As CSS.TupleExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Dim lArgumentSyntax As New List(Of SimpleArgumentSyntax)
                 If TypeOf node.Arguments(0).Expression IsNot CSS.DeclarationExpressionSyntax Then
-                    For Each a As CSS.ArgumentSyntax In node.Arguments
+                    For i As Integer = 0 To node.Arguments.Count - 1
+                        Dim a As CSS.ArgumentSyntax = node.Arguments(i)
                         Dim Argument As SimpleArgumentSyntax = DirectCast(a.Accept(Me), SimpleArgumentSyntax)
                         Dim AfterWhiteSpace As Boolean = False
                         Dim InitialTriviaList As List(Of SyntaxTrivia) = Argument.GetLeadingTrivia.ToList
                         Dim TriviaListUBound As Integer = InitialTriviaList.Count - 1
                         Dim FinalLeadingTriviaList As New List(Of SyntaxTrivia)
-                        For i As Integer = 0 To TriviaListUBound
-                            Dim Trivia As SyntaxTrivia = InitialTriviaList(i)
+                        For j As Integer = 0 To TriviaListUBound
+                            Dim Trivia As SyntaxTrivia = InitialTriviaList(j)
                             Select Case Trivia.RawKind
                                 Case VB.SyntaxKind.WhitespaceTrivia
                                     AfterWhiteSpace = True
@@ -2524,7 +2548,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                                 Case VB.SyntaxKind.EndOfLineTrivia
                                     FinalLeadingTriviaList.Add(Trivia)
                                     AfterWhiteSpace = False
-                                    If i < TriviaListUBound Then
+                                    If j < TriviaListUBound Then
                                         If FinalLeadingTriviaList.Count = 0 Then
                                             FinalLeadingTriviaList.Add(SpaceTrivia)
                                             FinalLeadingTriviaList.Add(LineContinuation)
@@ -2539,7 +2563,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                                     End If
 
                                     FinalLeadingTriviaList.Add(Trivia)
-                                    If i < TriviaListUBound AndAlso Not InitialTriviaList(i + 1).IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                                    If j < TriviaListUBound AndAlso Not InitialTriviaList(j + 1).IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
                                         FinalLeadingTriviaList.Add(VB_EOLTrivia)
                                     End If
                                 Case VB.SyntaxKind.DisableWarningDirectiveTrivia

@@ -15,7 +15,6 @@ Imports Microsoft.CodeAnalysis.Shared.Extensions
 
 Partial Friend Class SymbolEquivalenceComparer
 
-    <ExcludeFromCodeCoverage>
     Private Class EquivalenceVisitor
         Private ReadOnly _compareMethodTypeParametersByIndex As Boolean
         Private ReadOnly _objectAndDynamicCompareEqually As Boolean

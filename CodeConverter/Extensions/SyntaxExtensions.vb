@@ -9,11 +9,17 @@ Imports System.Runtime.CompilerServices
 
 Imports Microsoft.CodeAnalysis
 
+Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace CSharpToVBCodeConverter.Util
 
-    Partial Public Module SyntaxExtensions
+    Public Module SyntaxExtensions
+
+        <Extension()>
+        Public Function IsParentKind(node As SyntaxNode, kind As CS.SyntaxKind) As Boolean
+            Return node IsNot Nothing AndAlso node.Parent.IsKind(kind)
+        End Function
 
         ''' <summary>
         ''' Creates a new syntax node with all whitespace and end of line trivia replaced with
