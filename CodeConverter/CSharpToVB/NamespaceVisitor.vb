@@ -84,8 +84,8 @@ End Function
                                 Dim classOrStructType As INamedTypeSymbol = Nothing
                                 Dim interfaceTypes As IEnumerable(Of INamedTypeSymbol) = Nothing
 
-                                If TryInitializeState(mSemanticModel, ImplementsClause, CancellationToken.None, classOrStructDecl, classOrStructType, interfaceTypes) Then
-                                    Dim items As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))) = classOrStructType.GetAllImplementedMembers(interfaceTypes, CancellationToken.None)
+                                If TryInitializeState(mSemanticModel, ImplementsClause, OriginalRequest.CancelToken, classOrStructDecl, classOrStructType, interfaceTypes) Then
+                                    Dim items As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))) = classOrStructType.GetAllImplementedMembers(interfaceTypes, OriginalRequest.CancelToken)
                                     ImplementedMembers = ImplementedMembers.AddRange(items)
                                 End If
                             Next
@@ -113,18 +113,18 @@ End Function
                 End If
             End Function
 
-            Private Shared Function TryInitializeState(model As SemanticModel, node As SyntaxNode, cancellationToken As CancellationToken,
+            Private Shared Function TryInitializeState(model As SemanticModel, node As SyntaxNode, CancelToken As CancellationToken,
                                                        <Out()> ByRef classOrStructDecl As SyntaxNode, <Out()> ByRef classOrStructType As INamedTypeSymbol, <Out()> ByRef interfaceTypes As IEnumerable(Of INamedTypeSymbol)) As Boolean
                 Dim NodeTypeIsTypeSyntax As Boolean = TypeOf node Is CSS.TypeSyntax
                 Dim interfaceNode As CSS.TypeSyntax = If(NodeTypeIsTypeSyntax, CType(node, CSS.TypeSyntax), Nothing)
                 If NodeTypeIsTypeSyntax AndAlso TypeOf interfaceNode.Parent Is CSS.BaseTypeSyntax AndAlso interfaceNode.Parent.IsParentKind(CS.SyntaxKind.BaseList) AndAlso CType(interfaceNode.Parent, CSS.BaseTypeSyntax).Type Is interfaceNode Then
                     If interfaceNode.Parent.Parent.IsParentKind(CS.SyntaxKind.ClassDeclaration) OrElse interfaceNode.Parent.Parent.IsParentKind(CS.SyntaxKind.StructDeclaration) Then
-                        Dim interfaceSymbolInfo As SymbolInfo = model.GetSymbolInfo(interfaceNode, cancellationToken)
+                        Dim interfaceSymbolInfo As SymbolInfo = model.GetSymbolInfo(interfaceNode, CancelToken)
                         If interfaceSymbolInfo.CandidateReason <> CandidateReason.WrongArity Then
                             Dim interfaceType As INamedTypeSymbol = TryCast(interfaceSymbolInfo.GetAnySymbol(), INamedTypeSymbol)
                             If interfaceType IsNot Nothing AndAlso interfaceType.TypeKind = TypeKind.Interface Then
                                 classOrStructDecl = TryCast(interfaceNode.Parent.Parent.Parent, CSS.TypeDeclarationSyntax)
-                                classOrStructType = TryCast(model.GetDeclaredSymbol(classOrStructDecl, cancellationToken), INamedTypeSymbol)
+                                classOrStructType = TryCast(model.GetDeclaredSymbol(classOrStructDecl, CancelToken), INamedTypeSymbol)
                                 interfaceTypes = SpecializedCollection.SingletonEnumerable(interfaceType)
                                 Return interfaceTypes IsNot Nothing AndAlso classOrStructType IsNot Nothing
                             End If

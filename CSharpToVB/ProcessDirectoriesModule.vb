@@ -7,7 +7,7 @@ Option Strict On
 
 Imports System.IO
 Imports System.Reflection
-
+Imports System.Threading
 Imports Microsoft.CodeAnalysis
 
 Public Module ProcessDirectoriesModule
@@ -33,12 +33,12 @@ Public Module ProcessDirectoriesModule
         End Using
     End Function
 
-    Public Sub LocalUseWaitCutsor(MeForm As Form1, Enable As Boolean)
+    Public Sub LocalUseWaitCutsor(MeForm As Form1, WaitCursorEnable As Boolean)
         If MeForm Is Nothing Then
             Exit Sub
         End If
-        If MeForm.UseWaitCursor <> Enable Then
-            MeForm.UseWaitCursor = Enable
+        If MeForm.UseWaitCursor <> WaitCursorEnable Then
+            MeForm.UseWaitCursor = WaitCursorEnable
             Application.DoEvents()
         End If
     End Sub
@@ -55,60 +55,66 @@ Public Module ProcessDirectoriesModule
     ''' <returns>
     ''' False if error and user wants to stop, True if success or user wants to ignore error
     ''' </returns>
-    Public Function ProcessDirectory(SourceDirectory As String, TargetDirectory As String, MeForm As Form1, StopButton As Button, RichTextBoxFileList As RichTextBox, ByRef LastFileNameWithPath As String, SourceLanguageExtension As String, ByRef FilesProcessed As Long, ByRef TotalFilesToProcess As Long, ProcessFile As Func(Of String, String, String, MetadataReference(), Boolean)) As Boolean
+    Public Function ProcessDirectory(SourceDirectory As String, TargetDirectory As String, MeForm As Form1, StopButton As Button, RichTextBoxFileList As RichTextBox, ByRef LastFileNameWithPath As String, SourceLanguageExtension As String, ByRef FilesProcessed As Long, ByRef TotalFilesToProcess As Long, ProcessFile As Func(Of String, String, String, MetadataReference(), CancellationToken, Boolean), CancelToken As CancellationToken) As Boolean
         If String.IsNullOrWhiteSpace(SourceDirectory) OrElse Not Directory.Exists(SourceDirectory) Then
             Return True
         End If
         ' Process the list of files found in the directory.
-        Dim DirectoryList As String() = Directory.GetFiles(path:=SourceDirectory, searchPattern:=$"*.{SourceLanguageExtension}")
-        Dim TargetExtension As String = If(SourceLanguageExtension = "vb", "cs", "vb")
-        For Each PathWithFileName As String In DirectoryList
-            FilesProcessed += 1
-            If LastFileNameWithPath.Length = 0 OrElse LastFileNameWithPath = PathWithFileName Then
-                LastFileNameWithPath = ""
-                If RichTextBoxFileList IsNot Nothing Then
-                    RichTextBoxFileList.AppendText($"{FilesProcessed.ToString(Globalization.CultureInfo.InvariantCulture).PadLeft(5)} {PathWithFileName}{vbCrLf}")
-                    RichTextBoxFileList.Select(RichTextBoxFileList.TextLength, 0)
-                    RichTextBoxFileList.ScrollToCaret()
-                    Application.DoEvents()
+        Try
+            Dim DirectoryList As String() = Directory.GetFiles(path:=SourceDirectory, searchPattern:=$"*.{SourceLanguageExtension}")
+            For Each PathWithFileName As String In DirectoryList
+                FilesProcessed += 1
+                If LastFileNameWithPath.Length = 0 OrElse LastFileNameWithPath = PathWithFileName Then
+                    LastFileNameWithPath = ""
+                    If RichTextBoxFileList IsNot Nothing Then
+                        RichTextBoxFileList.AppendText($"{FilesProcessed.ToString(Globalization.CultureInfo.InvariantCulture).PadLeft(5)} {PathWithFileName}{vbCrLf}")
+                        RichTextBoxFileList.Select(RichTextBoxFileList.TextLength, 0)
+                        RichTextBoxFileList.ScrollToCaret()
+                        Application.DoEvents()
+                    End If
+
+                    If Not ProcessFile(PathWithFileName, TargetDirectory, SourceLanguageExtension, CSharpReferences(Assembly.Load("System.Windows.Forms").Location, OptionalReference:=Nothing).ToArray, CancelToken) Then
+                        SetButtonStopAndCursor(MeForm:=MeForm, StopButton:=StopButton, StopButtonVisible:=False)
+                        Return False
+                    End If
+                    If MeForm IsNot Nothing Then
+                        MeForm.FilesConversionProgress.Text = $"Processed {FilesProcessed:N0} of {TotalFilesToProcess:N0} Files"
+                        Application.DoEvents()
+                    End If
+                End If
+            Next PathWithFileName
+        Catch ex As Exception
+            Stop
+        End Try
+        Dim subdirectoryEntries As String() = Directory.GetDirectories(path:=SourceDirectory)
+        Try
+            ' Recurse into subdirectories of this directory.
+            For Each Subdirectory As String In subdirectoryEntries
+                Dim DirName As String = New DirectoryInfo(Subdirectory).Name.ToUpperInvariant
+                If (DirName = "BIN" OrElse DirName = "OBJ" OrElse DirName = "G") AndAlso
+                    (MeForm Is Nothing OrElse My.Settings.SkipBinAndObjFolders) Then
+                    Continue For
                 End If
 
-                If Not ProcessFile(PathWithFileName, TargetDirectory, SourceLanguageExtension, CSharpReferences(Assembly.Load("System.Windows.Forms").Location, Nothing).ToArray) Then
+                If (Subdirectory.EndsWith("Test\Resources", StringComparison.InvariantCultureIgnoreCase) OrElse Subdirectory.EndsWith("Setup\Templates", StringComparison.InvariantCultureIgnoreCase)) AndAlso (MeForm Is Nothing OrElse My.Settings.SkipTestResourceFiles) Then
+                    Continue For
+                End If
+                If Not ProcessDirectory(Subdirectory, ConvertSourceToTargetDirectory(TargetDirectory, Subdirectory), MeForm, StopButton, RichTextBoxFileList, LastFileNameWithPath, SourceLanguageExtension, FilesProcessed, TotalFilesToProcess, ProcessFile, CancelToken) Then
                     SetButtonStopAndCursor(MeForm:=MeForm, StopButton:=StopButton, StopButtonVisible:=False)
                     Return False
                 End If
-                If MeForm IsNot Nothing Then
-                    MeForm.FilesConversionProgress.Text = $"Processed {FilesProcessed:N0} of {TotalFilesToProcess:N0} Files"
-                    Application.DoEvents()
-                End If
-            End If
-        Next PathWithFileName
-        Dim subdirectoryEntries As String() = Directory.GetDirectories(path:=SourceDirectory)
-        ' Recurse into subdirectories of this directory.
-        For Each Subdirectory As String In subdirectoryEntries
-            Dim DirName As String = New DirectoryInfo(Subdirectory).Name.ToUpperInvariant
-            If (DirName = "BIN" OrElse DirName = "OBJ" OrElse DirName = "G") AndAlso
-                (MeForm Is Nothing OrElse My.Settings.SkipBinAndObjFolders) Then
-                Continue For
-            End If
-
-            If (Subdirectory.EndsWith("Test\Resources", StringComparison.InvariantCultureIgnoreCase) OrElse Subdirectory.EndsWith("Setup\Templates", StringComparison.InvariantCultureIgnoreCase)) AndAlso (MeForm Is Nothing OrElse My.Settings.SkipTestResourceFiles) Then
-                Continue For
-            End If
-            If Not ProcessDirectory(Subdirectory, ConvertSourceToTargetDirectory(TargetDirectory, Subdirectory), MeForm, StopButton, RichTextBoxFileList, LastFileNameWithPath, SourceLanguageExtension, FilesProcessed, TotalFilesToProcess, ProcessFile) Then
-                SetButtonStopAndCursor(MeForm:=MeForm, StopButton:=StopButton, StopButtonVisible:=False)
-                Return False
-            End If
-        Next Subdirectory
+            Next Subdirectory
+        Catch ex As Exception
+            Stop
+        End Try
         Return True
     End Function
 
     Friend Sub SetButtonStopAndCursor(MeForm As Form1, StopButton As Button, StopButtonVisible As Boolean)
         If StopButton IsNot Nothing Then
             StopButton.Visible = StopButtonVisible
-            MeForm.StopRequested = False
         End If
-        LocalUseWaitCutsor(MeForm:=MeForm, Enable:=StopButtonVisible)
+        LocalUseWaitCutsor(MeForm:=MeForm, WaitCursorEnable:=StopButtonVisible)
     End Sub
 
     Public Sub WriteTextToStream(DirectoryName As String, FileName As String, SourceText As String)

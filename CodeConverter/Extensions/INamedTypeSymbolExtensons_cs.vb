@@ -86,7 +86,7 @@ Namespace CSharpToVBCodeConverter.Util
                                                     isValidImplementation As Func(Of INamedTypeSymbol, ISymbol, Boolean),
                                                     interfaceMemberGetter As Func(Of INamedTypeSymbol, ISymbol, ImmutableArray(Of ISymbol)),
                                                     allowReimplementation As Boolean,
-                                                    cancellationToken As CancellationToken) As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))
+                                                    CancelToken As CancellationToken) As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))
             Contracts.Contract.Requires(classOrStructType IsNot Nothing)
             Contracts.Contract.Requires(interfacesOrAbstractClasses IsNot Nothing)
             Contracts.Contract.Requires(isImplemented IsNot Nothing)
@@ -103,8 +103,8 @@ Namespace CSharpToVBCodeConverter.Util
                 Return ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))).Empty
             End If
 
-            Dim typesToImplement As ImmutableArray(Of INamedTypeSymbol) = GetTypesToImplement(classOrStructType, interfacesOrAbstractClasses, allowReimplementation, cancellationToken)
-            Return typesToImplement.SelectAsArray(Function(s) (s, members:=GetImplementedMembers(classOrStructType, s, isImplemented, isValidImplementation, interfaceMemberGetter, cancellationToken))).WhereAsArray(Function(t) t.members.Length > 0)
+            Dim typesToImplement As ImmutableArray(Of INamedTypeSymbol) = GetTypesToImplement(classOrStructType, interfacesOrAbstractClasses, allowReimplementation, CancelToken)
+            Return typesToImplement.SelectAsArray(Function(s) (s, members:=GetImplementedMembers(classOrStructType, s, isImplemented, isValidImplementation, interfaceMemberGetter, CancelToken))).WhereAsArray(Function(t) t.members.Length > 0)
         End Function
 
         <Extension>
@@ -116,7 +116,7 @@ Namespace CSharpToVBCodeConverter.Util
                                                     isValidImplementation As Func(Of INamedTypeSymbol, ISymbol, Boolean),
                                                     interfaceMemberGetter As Func(Of INamedTypeSymbol, ISymbol, ImmutableArray(Of ISymbol)),
                                                     allowReimplementation As Boolean,
-                                                    cancellationToken As CancellationToken) As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))
+                                                    CancelToken As CancellationToken) As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))
             Contracts.Contract.Requires(classOrStructType IsNot Nothing)
             Contracts.Contract.Requires(interfacesOrAbstractClasses IsNot Nothing)
             Contracts.Contract.Requires(isImplemented IsNot Nothing)
@@ -133,26 +133,26 @@ Namespace CSharpToVBCodeConverter.Util
                 Return ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))).Empty
             End If
 
-            Dim typesToImplement As ImmutableArray(Of INamedTypeSymbol) = GetTypesToImplement(classOrStructType, interfacesOrAbstractClasses, allowReimplementation, cancellationToken)
-            Return typesToImplement.SelectAsArray(Function(s) (s, members:=GetUnimplementedMembers(classOrStructType, s, isImplemented, isValidImplementation, interfaceMemberGetter, cancellationToken))).WhereAsArray(Function(t) t.members.Length > 0)
+            Dim typesToImplement As ImmutableArray(Of INamedTypeSymbol) = GetTypesToImplement(classOrStructType, interfacesOrAbstractClasses, allowReimplementation, CancelToken)
+            Return typesToImplement.SelectAsArray(Function(s) (s, members:=GetUnimplementedMembers(classOrStructType, s, isImplemented, isValidImplementation, interfaceMemberGetter, CancelToken))).WhereAsArray(Function(t) t.members.Length > 0)
         End Function
 
-        Private Function GetImplementedMembers(classOrStructType As INamedTypeSymbol, interfaceType As INamedTypeSymbol, isImplemented As Func(Of INamedTypeSymbol, ISymbol, Func(Of INamedTypeSymbol, ISymbol, Boolean), CancellationToken, Boolean), isValidImplementation As Func(Of INamedTypeSymbol, ISymbol, Boolean), interfaceMemberGetter As Func(Of INamedTypeSymbol, ISymbol, ImmutableArray(Of ISymbol)), cancellationToken As CancellationToken) As ImmutableArray(Of ISymbol)
+        Private Function GetImplementedMembers(classOrStructType As INamedTypeSymbol, interfaceType As INamedTypeSymbol, isImplemented As Func(Of INamedTypeSymbol, ISymbol, Func(Of INamedTypeSymbol, ISymbol, Boolean), CancellationToken, Boolean), isValidImplementation As Func(Of INamedTypeSymbol, ISymbol, Boolean), interfaceMemberGetter As Func(Of INamedTypeSymbol, ISymbol, ImmutableArray(Of ISymbol)), CancelToken As CancellationToken) As ImmutableArray(Of ISymbol)
             Dim q As IEnumerable(Of ISymbol) = From m In interfaceMemberGetter(interfaceType, classOrStructType)
                                                Where m.Kind <> SymbolKind.NamedType
                                                Where m.Kind <> SymbolKind.Method OrElse DirectCast(m, IMethodSymbol).MethodKind = MethodKind.Ordinary
                                                Where m.Kind <> SymbolKind.Property OrElse DirectCast(m, IPropertySymbol).IsIndexer OrElse DirectCast(m, IPropertySymbol).CanBeReferencedByName
                                                Where m.Kind <> SymbolKind.Event OrElse DirectCast(m, IEventSymbol).CanBeReferencedByName
-                                               Where isImplemented(classOrStructType, m, isValidImplementation, cancellationToken)
+                                               Where isImplemented(classOrStructType, m, isValidImplementation, CancelToken)
                                                Select m
 
             Return q.ToImmutableArray()
         End Function
 
-        Private Function GetInterfacesToImplement(classOrStructType As INamedTypeSymbol, interfaces As IEnumerable(Of INamedTypeSymbol), allowReimplementation As Boolean, cancellationToken As CancellationToken) As ImmutableArray(Of INamedTypeSymbol)
+        Private Function GetInterfacesToImplement(classOrStructType As INamedTypeSymbol, interfaces As IEnumerable(Of INamedTypeSymbol), allowReimplementation As Boolean, CancelToken As CancellationToken) As ImmutableArray(Of INamedTypeSymbol)
             ' We need to not only implement the specified interface, but also everything it
             ' inherits from.
-            cancellationToken.ThrowIfCancellationRequested()
+            CancelToken.ThrowIfCancellationRequested()
             Dim interfacesToImplement As New List(Of INamedTypeSymbol)(interfaces.SelectMany(Function(i) i.GetAllInterfacesIncludingThis()).Distinct())
 
             ' However, there's no need to re-implement any interfaces that our base types already
@@ -160,22 +160,22 @@ Namespace CSharpToVBCodeConverter.Util
             Dim baseType As INamedTypeSymbol = classOrStructType.BaseType
             Dim alreadyImplementedInterfaces As ImmutableArray(Of INamedTypeSymbol) = If(baseType Is Nothing OrElse allowReimplementation, New ImmutableArray(Of INamedTypeSymbol), baseType.AllInterfaces)
 
-            cancellationToken.ThrowIfCancellationRequested()
+            CancelToken.ThrowIfCancellationRequested()
             interfacesToImplement.RemoveRange(alreadyImplementedInterfaces)
             Return interfacesToImplement.ToImmutableArray()
         End Function
 
-        Private Function GetTypesToImplement(classOrStructType As INamedTypeSymbol, interfacesOrAbstractClasses As IEnumerable(Of INamedTypeSymbol), allowReimplementation As Boolean, cancellationToken As CancellationToken) As ImmutableArray(Of INamedTypeSymbol)
-            Return If(interfacesOrAbstractClasses.First().TypeKind = TypeKind.Interface, GetInterfacesToImplement(classOrStructType, interfacesOrAbstractClasses, allowReimplementation, cancellationToken), GetAbstractClassesToImplement(interfacesOrAbstractClasses))
+        Private Function GetTypesToImplement(classOrStructType As INamedTypeSymbol, interfacesOrAbstractClasses As IEnumerable(Of INamedTypeSymbol), allowReimplementation As Boolean, CancelToken As CancellationToken) As ImmutableArray(Of INamedTypeSymbol)
+            Return If(interfacesOrAbstractClasses.First().TypeKind = TypeKind.Interface, GetInterfacesToImplement(classOrStructType, interfacesOrAbstractClasses, allowReimplementation, CancelToken), GetAbstractClassesToImplement(interfacesOrAbstractClasses))
         End Function
 
-        Private Function GetUnimplementedMembers(classOrStructType As INamedTypeSymbol, interfaceType As INamedTypeSymbol, isImplemented As Func(Of INamedTypeSymbol, ISymbol, Func(Of INamedTypeSymbol, ISymbol, Boolean), CancellationToken, Boolean), isValidImplementation As Func(Of INamedTypeSymbol, ISymbol, Boolean), interfaceMemberGetter As Func(Of INamedTypeSymbol, ISymbol, ImmutableArray(Of ISymbol)), cancellationToken As CancellationToken) As ImmutableArray(Of ISymbol)
+        Private Function GetUnimplementedMembers(classOrStructType As INamedTypeSymbol, interfaceType As INamedTypeSymbol, isImplemented As Func(Of INamedTypeSymbol, ISymbol, Func(Of INamedTypeSymbol, ISymbol, Boolean), CancellationToken, Boolean), isValidImplementation As Func(Of INamedTypeSymbol, ISymbol, Boolean), interfaceMemberGetter As Func(Of INamedTypeSymbol, ISymbol, ImmutableArray(Of ISymbol)), CancelToken As CancellationToken) As ImmutableArray(Of ISymbol)
             Dim q As IEnumerable(Of ISymbol) = From m In interfaceMemberGetter(interfaceType, classOrStructType)
                                                Where m.Kind <> SymbolKind.NamedType
                                                Where m.Kind <> SymbolKind.Method OrElse DirectCast(m, IMethodSymbol).MethodKind = MethodKind.Ordinary
                                                Where m.Kind <> SymbolKind.Property OrElse DirectCast(m, IPropertySymbol).IsIndexer OrElse DirectCast(m, IPropertySymbol).CanBeReferencedByName
                                                Where m.Kind <> SymbolKind.Event OrElse DirectCast(m, IEventSymbol).CanBeReferencedByName
-                                               Where Not isImplemented(classOrStructType, m, isValidImplementation, cancellationToken)
+                                               Where Not isImplemented(classOrStructType, m, isValidImplementation, CancelToken)
                                                Select m
 
             Return q.ToImmutableArray()
@@ -231,7 +231,7 @@ Namespace CSharpToVBCodeConverter.Util
             Return m.IsVirtual OrElse m.IsAbstract
         End Function
 
-        Private Function IsImplemented(classOrStructType As INamedTypeSymbol, member As ISymbol, isValidImplementation As Func(Of INamedTypeSymbol, ISymbol, Boolean), cancellationToken As CancellationToken) As Boolean
+        Private Function IsImplemented(classOrStructType As INamedTypeSymbol, member As ISymbol, isValidImplementation As Func(Of INamedTypeSymbol, ISymbol, Boolean), CancelToken As CancellationToken) As Boolean
             If member.ContainingType.TypeKind = TypeKind.Interface Then
                 If member.Kind = SymbolKind.Property Then
                     Return IsInterfacePropertyImplemented(classOrStructType, DirectCast(member, IPropertySymbol))
@@ -316,7 +316,7 @@ Namespace CSharpToVBCodeConverter.Util
         <Extension>
         Friend Function GetAllImplementedMembers(classOrStructType As INamedTypeSymbol,
                                                interfacesOrAbstractClasses As IEnumerable(Of INamedTypeSymbol),
-                                               cancellationToken As CancellationToken) As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))
+                                               CancelToken As CancellationToken) As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))
             Return classOrStructType.GetAllImplementedMembers(
                             interfacesOrAbstractClasses,
                             AddressOf IsImplemented,
@@ -332,13 +332,13 @@ Namespace CSharpToVBCodeConverter.Util
                                 Return type.GetMembers()
                             End Function,
                             allowReimplementation:=False,
-                            cancellationToken)
+                            CancelToken)
         End Function
 
         '<Extension>
         'Public Function GetAllUnimplementedExplicitMembers(classOrStructType As INamedTypeSymbol,
         '                                               interfaces As IEnumerable(Of INamedTypeSymbol),
-        '                                               cancellationToken As CancellationToken) As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))
+        '                                               CancelToken As CancellationToken) As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))
         '    Return classOrStructType.GetAllUnimplementedMembers(
         '                    interfaces,
         '                    AddressOf IsExplicitlyImplemented,
@@ -353,14 +353,14 @@ Namespace CSharpToVBCodeConverter.Util
         '                        Return type.GetMembers()
         '                    End Function,
         '                    allowReimplementation:=False,
-        '                    cancellationToken)
+        '                    CancelToken)
 
         'End Function
 
         <Extension>
         Friend Function GetAllUnimplementedMembers(classOrStructType As INamedTypeSymbol,
                                                interfacesOrAbstractClasses As IEnumerable(Of INamedTypeSymbol),
-                                               cancellationToken As CancellationToken) As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))
+                                               CancelToken As CancellationToken) As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))
             Return classOrStructType.GetAllUnimplementedMembers(
                             interfacesOrAbstractClasses,
                             AddressOf IsImplemented,
@@ -376,13 +376,13 @@ Namespace CSharpToVBCodeConverter.Util
                                 Return type.GetMembers()
                             End Function,
                             allowReimplementation:=False,
-                            cancellationToken)
+                            CancelToken)
         End Function
 
         '<Extension>
         'Public Function GetAllUnimplementedMembersInThis(classOrStructType As INamedTypeSymbol,
         '                                             interfacesOrAbstractClasses As IEnumerable(Of INamedTypeSymbol),
-        '                                             cancellationToken As CancellationToken) As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))
+        '                                             CancelToken As CancellationToken) As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))
         '    Return classOrStructType.GetAllUnimplementedMembers(
         '    interfacesOrAbstractClasses,
         '    AddressOf IsImplemented,
@@ -393,14 +393,14 @@ Namespace CSharpToVBCodeConverter.Util
         '    End Function,
         '    AddressOf GetMembers,
         '    allowReimplementation:=True,
-        '    cancellationToken)
+        '    CancelToken)
         'End Function
 
         '<Extension>
         'Public Function GetAllUnimplementedMembersInThis(classOrStructType As INamedTypeSymbol,
         '                                             interfacesOrAbstractClasses As IEnumerable(Of INamedTypeSymbol),
         '                                             interfaceMemberGetter As Func(Of INamedTypeSymbol, ISymbol, ImmutableArray(Of ISymbol)),
-        '                                             cancellationToken As CancellationToken) As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))
+        '                                             CancelToken As CancellationToken) As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))
         '    Return classOrStructType.GetAllUnimplementedMembers(
         '    interfacesOrAbstractClasses,
         '    AddressOf IsImplemented,
@@ -410,7 +410,7 @@ Namespace CSharpToVBCodeConverter.Util
         '    End Function,
         '    interfaceMemberGetter,
         '    allowReimplementation:=True,
-        '    cancellationToken)
+        '    CancelToken)
         'End Function
 
         <Extension>

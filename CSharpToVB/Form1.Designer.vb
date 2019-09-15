@@ -6,8 +6,13 @@ Partial Class Form1
     <System.Diagnostics.DebuggerNonUserCode()>
     Protected Overrides Sub Dispose(ByVal disposing As Boolean)
         Try
-            If disposing AndAlso components IsNot Nothing Then
-                components.Dispose()
+            If disposing Then
+                If components IsNot Nothing Then
+                    components.Dispose()
+                End If
+                If CTS IsNot Nothing Then
+                    CTS.Dispose()
+                End If
             End If
         Finally
             MyBase.Dispose(disposing)
@@ -24,8 +29,6 @@ Partial Class Form1
     Private Sub InitializeComponent()
         Me.components = New System.ComponentModel.Container()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(Form1))
-        Me.CSharp2VB = New System.Windows.Forms.RadioButton()
-        Me.VB2CSharp = New System.Windows.Forms.RadioButton()
         Me.MenuStrip1 = New System.Windows.Forms.MenuStrip()
         Me.mnuFile = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuFileOpen = New System.Windows.Forms.ToolStripMenuItem()
@@ -109,30 +112,6 @@ Partial Class Form1
         Me.SplitContainer1.SuspendLayout()
         Me.StatusStrip1.SuspendLayout()
         Me.SuspendLayout()
-        '
-        'CSharp2VB
-        '
-        Me.CSharp2VB.AutoSize = True
-        Me.CSharp2VB.Checked = True
-        Me.CSharp2VB.Enabled = False
-        Me.CSharp2VB.Location = New System.Drawing.Point(1826, 1)
-        Me.CSharp2VB.Name = "CSharp2VB"
-        Me.CSharp2VB.Size = New System.Drawing.Size(73, 19)
-        Me.CSharp2VB.TabIndex = 3
-        Me.CSharp2VB.TabStop = True
-        Me.CSharp2VB.Text = "C# To VB"
-        Me.CSharp2VB.UseVisualStyleBackColor = True
-        '
-        'VB2CSharp
-        '
-        Me.VB2CSharp.AutoSize = True
-        Me.VB2CSharp.Location = New System.Drawing.Point(1716, 1)
-        Me.VB2CSharp.Name = "VB2CSharp"
-        Me.VB2CSharp.Size = New System.Drawing.Size(73, 19)
-        Me.VB2CSharp.TabIndex = 4
-        Me.VB2CSharp.Text = "VB To C#"
-        Me.VB2CSharp.UseVisualStyleBackColor = True
-        Me.VB2CSharp.Visible = False
         '
         'MenuStrip1
         '
@@ -781,8 +760,6 @@ Partial Class Form1
         Me.Controls.Add(Me.PictureBox1)
         Me.Controls.Add(Me.SearchDirection)
         Me.Controls.Add(Me.SearchInput)
-        Me.Controls.Add(Me.VB2CSharp)
-        Me.Controls.Add(Me.CSharp2VB)
         Me.Controls.Add(Me.SplitContainer1)
         Me.Controls.Add(Me.MenuStrip1)
         Me.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
@@ -806,8 +783,6 @@ Partial Class Form1
         Me.PerformLayout()
 
     End Sub
-    Friend WithEvents CSharp2VB As RadioButton
-    Friend WithEvents VB2CSharp As RadioButton
     Friend WithEvents MenuStrip1 As MenuStrip
     Friend WithEvents mnuFile As ToolStripMenuItem
     Friend WithEvents mnuEditSaveAs As ToolStripMenuItem

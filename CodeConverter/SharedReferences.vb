@@ -107,6 +107,8 @@ Public Module SharedReferences
                 End If
                 Return _CSharpReferences.ToList
             End SyncLock
+        Catch ex As OperationCanceledException
+            Stop
         Catch ex As Exception
             Throw
         End Try
@@ -124,6 +126,8 @@ Public Module SharedReferences
                 End If
                 Return _VisualBasicReferences.ToList
             End SyncLock
+        Catch ex As OperationCanceledException
+            Stop
         Catch ex As Exception
             Stop
         End Try
