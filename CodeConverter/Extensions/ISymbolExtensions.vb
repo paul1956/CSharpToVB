@@ -197,6 +197,8 @@ Namespace CSharpToVBCodeConverter.Util
                             Select(Function(t As ITypeSymbol) If(t Is Nothing OrElse t.IsErrorType, compilation.GetSpecialType(SpecialType.System_Object), t)).
                             ToArray()
                             Return functionType.Construct(CSharpTypes)
+                        Catch ex As OperationCanceledException
+                            Throw
                         Catch ex As Exception
                             Stop
                         End Try

@@ -119,6 +119,8 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                         Next
                     End If
                     NewTrailingTrivia.AddRange(ArgumentWithTrivia.GetTrailingTrivia)
+                Catch ex As OperationCanceledException
+                    Throw
                 Catch ex As Exception
                     Stop
                 End Try

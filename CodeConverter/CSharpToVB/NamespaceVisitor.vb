@@ -8,7 +8,7 @@ Option Strict On
 Imports System.Collections.Immutable
 Imports System.Runtime.InteropServices
 Imports System.Threading
-
+Imports System.Windows.Forms
 Imports CSharpToVBCodeConverter.Util
 
 Imports Microsoft.CodeAnalysis
@@ -160,6 +160,10 @@ End Function
                 Dim classType As ITypeSymbol = CType(mSemanticModel.GetDeclaredSymbol(node), ITypeSymbol)
 
                 For i As Integer = 0 To MembersLastIndex
+                    Application.DoEvents
+                    If OriginalRequest.CancelToken.IsCancellationRequested Then
+                        Throw New OperationCanceledException
+                    End If
                     Dim m As CSS.MemberDeclarationSyntax = node.Members(i)
                     Dim Statement As VBS.StatementSyntax = DirectCast(m.Accept(Me), VBS.StatementSyntax)
 
@@ -522,6 +526,10 @@ End Function
                 Dim LastMemberIndex As Integer = node.Members.Count - 1
 
                 For i As Integer = 0 To LastMemberIndex
+                    Application.DoEvents
+                    If OriginalRequest.CancelToken.IsCancellationRequested Then
+                        Throw New OperationCanceledException
+                    End If
                     members.Add(DirectCast(node.Members(i).Accept(Me), VBS.StatementSyntax))
                     If i = 0 AndAlso LeadingTrivia.Count > 0 Then
                         members(0) = members(0).WithPrependedLeadingTrivia(LeadingTrivia)

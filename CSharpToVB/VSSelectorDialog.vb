@@ -7,7 +7,7 @@ Option Strict On
 
 Imports Microsoft.Build.Locator
 
-Public Class VS_Selector_Dialog1
+Public Class VSSelectorDialog
     Private m_instance As VisualStudioInstance = Nothing
     Private ReadOnly visualStudioInstances() As VisualStudioInstance = MSBuildLocator.QueryVisualStudioInstances().ToArray()
 

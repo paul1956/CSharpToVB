@@ -219,6 +219,8 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                     Content = Content.Add(VBFactory.XmlText(NewTokenList))
                     EndTag = EndTag.WithoutLeadingTrivia
                 End If
+            Catch ex As OperationCanceledException
+                Throw
             Catch ex As Exception
                 Stop
             End Try
@@ -240,6 +242,8 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Dim Name As VBS.XmlNodeSyntax = DirectCast(node.Name.Accept(Me), VBS.XmlNodeSyntax)
                 Dim ListOfAttributes As SyntaxList(Of VBS.XmlNodeSyntax) = GatherAttributes(node.Attributes)
                 Return VBFactory.XmlEmptyElement(Name, ListOfAttributes).WithConvertedTriviaFrom(node)
+            Catch ex As OperationCanceledException
+                Throw
             Catch ex As Exception
                 Return VBFactory.XmlText(node.GetText.ToString)
             End Try

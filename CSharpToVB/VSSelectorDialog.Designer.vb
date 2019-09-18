@@ -1,5 +1,5 @@
 ﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()>
-Partial Class VS_Selector_Dialog1
+Partial Class VSSelectorDialog
     Inherits System.Windows.Forms.Form
 
     'Form overrides dispose to clean up the component list.

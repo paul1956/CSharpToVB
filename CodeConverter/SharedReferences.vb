@@ -10,7 +10,7 @@ Imports System.Reflection
 Imports System.Reflection.Metadata
 Imports System.Reflection.PortableExecutable
 Imports System.Runtime.CompilerServices
-
+Imports System.Windows.Forms
 Imports Microsoft.CodeAnalysis
 
 Public Module SharedReferences
@@ -36,7 +36,7 @@ Public Module SharedReferences
         Next
 
         ' ComponentModelEditorBrowsable
-        Location = GetType(ComponentModel.EditorBrowsableAttribute).GetAssemblyLocation
+        Location = GetType(System.ComponentModel.EditorBrowsableAttribute).GetAssemblyLocation
         AddReferences(_ReferencePath, Location)
 
         ' SystemCore
@@ -73,9 +73,11 @@ Public Module SharedReferences
             Return
         End If
         L.Add(FileNameWithPath)
+        Application.DoEvents()
         If hasMetadataOrIsAssembly.IsAssembly Then
             _CSharpReferences.Add(MetadataReference.CreateFromFile(FileNameWithPath))
         End If
+        Application.DoEvents()
         _VisualBasicReferences.Add(MetadataReference.CreateFromFile(FileNameWithPath))
     End Sub
 

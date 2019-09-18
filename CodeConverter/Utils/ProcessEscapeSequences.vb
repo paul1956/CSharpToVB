@@ -42,6 +42,8 @@ Public Module ProcessEscapeSequences
             End If
 
             TokenString = _Buffer
+        Catch ex As OperationCanceledException
+            Throw
         Catch ex As Exception
             Stop
         End Try

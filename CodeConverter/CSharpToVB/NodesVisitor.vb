@@ -6,7 +6,7 @@ Option Infer Off
 Option Strict On
 
 Imports System.Diagnostics.CodeAnalysis
-
+Imports System.Windows.Forms
 Imports CSharpToVBCodeConverter.Util
 
 Imports Microsoft.CodeAnalysis
@@ -60,6 +60,10 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
             Public Overrides Function VisitCompilationUnit(node As CompilationUnitSyntax) As VisualBasicSyntaxNode
 
                 For Each [using] As UsingDirectiveSyntax In node.Usings
+                    Application.DoEvents
+                    If OriginalRequest.CancelToken.IsCancellationRequested Then
+                        Throw New OperationCanceledException
+                    End If
                     [using].Accept(Me)
                 Next
                 Dim externList As New List(Of VisualBasicSyntaxNode)
@@ -74,7 +78,15 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Options = Options.Add(VBFactory.OptionStatement(StrictToken, OffToken).WithTrailingEOL)
 
                 Dim ListOfAttributes As SyntaxList(Of VBS.AttributesStatementSyntax) = VBFactory.List(node.AttributeLists.Select(Function(a As AttributeListSyntax) VBFactory.AttributesStatement(VBFactory.SingletonList(DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))))
-                Dim Members As SyntaxList(Of VBS.StatementSyntax) = VBFactory.List(node.Members.Select(Function(m As MemberDeclarationSyntax) DirectCast(m.Accept(Me), VBS.StatementSyntax)))
+                Dim MemberList As New List(Of VBS.StatementSyntax)
+                For Each m As MemberDeclarationSyntax In node.Members
+                    Application.DoEvents
+                    If OriginalRequest.CancelToken.IsCancellationRequested Then
+                        Throw New OperationCanceledException
+                    End If
+                    MemberList.Add(DirectCast(m.Accept(Me), VBS.StatementSyntax))
+                Next
+                Dim Members As SyntaxList(Of VBS.StatementSyntax) = VBFactory.List(MemberList)
                 Dim compilationUnitSyntax1 As VBS.CompilationUnitSyntax
                 Dim EndOfFIleTokenWithTrivia As SyntaxToken = EndOfFileToken.WithConvertedTriviaFrom(node.EndOfFileToken)
 

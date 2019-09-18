@@ -236,6 +236,8 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                         Return VBFactory.IdentifierName("void")
                     End If
                     PredefinedType = VBFactory.PredefinedType(ConvertTypesTokenToKind(CS.CSharpExtensions.Kind(node.Keyword)))
+                Catch ex As OperationCanceledException
+                    Throw
                 Catch ex As Exception
                     Stop
                 End Try

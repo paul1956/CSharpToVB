@@ -33,12 +33,12 @@ Public Module ProcessDirectoriesModule
         End Using
     End Function
 
-    Public Sub LocalUseWaitCutsor(MeForm As Form1, WaitCursorEnable As Boolean)
+    Public Sub LocalUseWaitCursor(MeForm As Object, WaitCursorEnable As Boolean)
         If MeForm Is Nothing Then
             Exit Sub
         End If
-        If MeForm.UseWaitCursor <> WaitCursorEnable Then
-            MeForm.UseWaitCursor = WaitCursorEnable
+        If DirectCast(MeForm, Form1).UseWaitCursor <> WaitCursorEnable Then
+            DirectCast(MeForm, Form1).UseWaitCursor = WaitCursorEnable
             Application.DoEvents()
         End If
     End Sub
@@ -114,7 +114,7 @@ Public Module ProcessDirectoriesModule
         If StopButton IsNot Nothing Then
             StopButton.Visible = StopButtonVisible
         End If
-        LocalUseWaitCutsor(MeForm:=MeForm, WaitCursorEnable:=StopButtonVisible)
+        LocalUseWaitCursor(MeForm:=MeForm, WaitCursorEnable:=StopButtonVisible)
     End Sub
 
     Public Sub WriteTextToStream(DirectoryName As String, FileName As String, SourceText As String)

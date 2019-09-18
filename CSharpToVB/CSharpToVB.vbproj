@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
-
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.0</TargetFramework>
@@ -44,7 +43,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CodeConverter\CodeConverter.vbproj" />
-    <ProjectReference Include="..\ManageProgressBar\ManageProgressBar.vbproj" />
   </ItemGroup>
 
   <ItemGroup>

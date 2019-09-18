@@ -8,7 +8,7 @@ Option Strict On
 Imports System.Diagnostics.CodeAnalysis
 Imports System.Runtime.CompilerServices
 Imports System.Text
-
+Imports System.Windows.Forms
 Imports CSharpToVBCodeConverter.Visual_Basic
 
 Imports Microsoft.CodeAnalysis
@@ -358,6 +358,8 @@ Namespace CSharpToVBCodeConverter.Util
                         Try
                             Dim Item As VBS.XmlNodeSyntax = DirectCast(node.Accept(walker), VBS.XmlNodeSyntax)
                             xmlNodes.Add(Item)
+                        Catch ex As OperationCanceledException
+                            Throw
                         Catch ex As Exception
                             Stop
                             Throw
@@ -412,7 +414,7 @@ Namespace CSharpToVBCodeConverter.Util
 
         <Extension>
         Public Function ConvertTrivia(TriviaToConvert As IReadOnlyCollection(Of SyntaxTrivia)) As IEnumerable(Of SyntaxTrivia)
-            OriginalRequest.MyDoEvents().Invoke
+            Application.DoEvents
             Dim TriviaList As New List(Of SyntaxTrivia)
             If TriviaToConvert Is Nothing Then
                 Return TriviaList
@@ -472,7 +474,9 @@ Namespace CSharpToVBCodeConverter.Util
                             End If
                     End Select
                 Next
-                OriginalRequest.MyDoEvents().Invoke
+                Application.DoEvents
+            Catch ex As OperationCanceledException
+                Throw
             Catch ex As Exception
                 Stop
                 Throw
@@ -1158,6 +1162,8 @@ Namespace CSharpToVBCodeConverter.Util
                     Token = Token.WithLeadingTrivia(ConvertTrivia(otherToken.LeadingTrivia).ToList())
                 End If
                 Return Token.WithTrailingTrivia(ConvertTrivia(otherToken.TrailingTrivia))
+            Catch ex As OperationCanceledException
+                Throw
             Catch ex As Exception
                 Stop
             End Try

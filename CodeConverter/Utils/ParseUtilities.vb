@@ -7,7 +7,7 @@ Option Strict On
 
 Imports System.IO
 Imports System.Threading
-
+Imports System.Windows.Forms
 Imports CSharpToVBCodeConverter.Util
 
 Imports Microsoft.CodeAnalysis
@@ -36,8 +36,11 @@ Public Module ParseUtilities
 
     Public Function GetFileCount(DirPath As String, SourceLanguageExtension As String, SkipBinAndObjFolders As Boolean, SkipTestResourceFiles As Boolean, Optional Depth As Integer = 0) As Long
         Dim TotalFilesToProcess As Long = 0L
+
         Try
             For Each Subdirectory As String In Directory.GetDirectories(DirPath)
+                Application.DoEvents()
+
                 If SkipTestResourceFiles AndAlso
                         (Subdirectory.EndsWith("Test\Resources", StringComparison.InvariantCultureIgnoreCase) OrElse
                          Subdirectory.EndsWith("Setup\Templates", StringComparison.InvariantCultureIgnoreCase)) Then
@@ -54,6 +57,7 @@ Public Module ParseUtilities
                 End If
             Next
             For Each File As String In Directory.GetFiles(path:=DirPath, searchPattern:=$"*.{SourceLanguageExtension}")
+                Application.DoEvents()
 
                 If Not ParseCSharpSource(File).GetRoot.SyntaxTree.IsGeneratedCode(Function(t As SyntaxTrivia) As Boolean
                                                                                       Return t.IsComment OrElse t.IsRegularOrDocComment
@@ -61,11 +65,14 @@ Public Module ParseUtilities
                     TotalFilesToProcess += 1
                 End If
             Next
+        Catch ex As OperationCanceledException
+            Throw
         Catch ua As UnauthorizedAccessException
-            'Stop
+            ' Ignore
         Catch ex As Exception
-            'Stop
+            Stop
         End Try
+
         Return TotalFilesToProcess
     End Function
 

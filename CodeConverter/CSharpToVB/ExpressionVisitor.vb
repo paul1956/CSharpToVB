@@ -6,6 +6,7 @@ Option Infer Off
 Option Strict On
 
 Imports System.Runtime.InteropServices
+Imports System.Windows.Forms
 
 Imports CSharpToVBCodeConverter.Util
 
@@ -189,6 +190,8 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Try
                     LeftNodeTypeInfo = ModelExtensions.GetTypeInfo(mSemanticModel, node.Left)
                     RightNodeTypeInfo = ModelExtensions.GetTypeInfo(mSemanticModel, node.Right)
+                Catch ex As OperationCanceledException
+                    Throw
                 Catch ex As Exception
                     ' ignore
                 End Try
@@ -1325,6 +1328,8 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Catch ex As InsufficientExecutionStackException
                     MsgBox(ex.Message, MsgBoxStyle.Critical, "Stack Overflow")
                     Return Nothing
+                Catch ex As OperationCanceledException
+                    Throw
                 Catch ex As Exception
                     Stop
                     Throw
@@ -1422,6 +1427,8 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                                 CTypeExpressionSyntax = VBFactory.CTypeExpression(Expression, DirectCast(TypeOrAddressOf, TypeSyntax))
                             End If
                     End Select
+                Catch ex As OperationCanceledException
+                    Throw
                 Catch ex As Exception
                     Stop
                     Throw
@@ -1684,6 +1691,8 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                         Else
                             ExpressionItems.Add(DirectCast(ItemWithTrivia, ExpressionSyntax))
                         End If
+                    Catch ex As OperationCanceledException
+                        Throw
                     Catch ex As Exception
                         Stop
                         Throw
@@ -1734,13 +1743,19 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                             OriginalRequest.ProgressBar?.UpdateProgress(1)
                         End If
 #End If
+                        Application.DoEvents
+                        If OriginalRequest.CancelToken.IsCancellationRequested Then
+                            Exit For
+                        End If
                         Dim Item As VB.VisualBasicSyntaxNode = node.Expressions(i).Accept(Me)
-                        Try
+                            Try
                             If ItemIsField Then
                                 Fields.Add(DirectCast(Item.RemoveExtraLeadingEOL, FieldInitializerSyntax))
                             Else
                                 Expressions.Add(DirectCast(Item.RemoveExtraLeadingEOL, ExpressionSyntax))
                             End If
+                        Catch ex As OperationCanceledException
+                            Throw
                         Catch ex As Exception
                             Stop
                         End Try
@@ -1817,6 +1832,8 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                         Return CollectionInitializer
                     End If
                     Return VBFactory.CollectionInitializer(OpenBraceTokenWithTrivia.RemoveExtraEOL, VBFactory.SeparatedList(Expressions, Separators), CloseBraceTokenWithTrivia)
+                Catch ex As OperationCanceledException
+                    Throw
                 Catch ex As Exception
                     Stop
                 End Try
@@ -1851,6 +1868,8 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                     Try
                         Dim IdentifierOrMember As String = node.ArgumentList.Arguments(0).Accept(Me).ToString
                         Return VBFactory.NameOfExpression(VBFactory.IdentifierName(IdentifierOrMember)).WithConvertedTriviaFrom(node)
+                    Catch ex As OperationCanceledException
+                        Throw
                     Catch ex As Exception
                         Stop
                     End Try
@@ -2517,6 +2536,8 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                     End If
                     Dim namedTupleElementSyntax1 As NamedTupleElementSyntax = VBFactory.NamedTupleElement(GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False).WithConvertedTriviaFrom(node.Type), VBFactory.SimpleAsClause(DirectCast(node.Type.Accept(Me).WithConvertedTriviaFrom(node.Identifier), TypeSyntax)))
                     Return namedTupleElementSyntax1
+                Catch ex As OperationCanceledException
+                    Throw
                 Catch ex As Exception
                     Stop
                 End Try

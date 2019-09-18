@@ -108,6 +108,8 @@ Public Module ExpressionSyntaxSupport
                 End If
 
             End If
+        Catch ex As OperationCanceledException
+            Throw
         Catch ex As Exception
             Stop
         End Try
@@ -146,6 +148,8 @@ Public Module ExpressionSyntaxSupport
                 End If
 
             End If
+        Catch ex As OperationCanceledException
+            Throw
         Catch ex As Exception
             Stop
         End Try

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 
   <PropertyGroup>
     <RootNamespace></RootNamespace>
@@ -6,12 +6,13 @@
     <OptionStrict>On</OptionStrict>
     <OptionInfer>Off</OptionInfer>
     <AssemblyName>VB.CodeConverter</AssemblyName>
+    <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
   <PropertyGroup>
     <LangVersion>16</LangVersion>
     <OptionExplicit>On</OptionExplicit>
     <NeutralLanguage>en-US</NeutralLanguage>
-    <Authors>Paul M COhen</Authors>
+    <Authors>Paul M Cohen</Authors>
     <Company>Travel By Paul</Company>
     <Product>VB Core Code Converter</Product>
     <RepositoryUrl>https://github.com/paul1956/CSharpToVB</RepositoryUrl>
