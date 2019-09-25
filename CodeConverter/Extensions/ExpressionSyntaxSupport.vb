@@ -7,9 +7,8 @@ Option Infer Off
 
 Imports System.Runtime.CompilerServices
 Imports System.Text
-
+Imports CSharpToVBCodeConverter
 Imports CSharpToVBCodeConverter.Util
-Imports CSharpToVBCodeConverter.Visual_Basic.CSharpConverter
 
 Imports Microsoft.CodeAnalysis
 
@@ -40,7 +39,7 @@ Public Module ExpressionSyntaxSupport
             If IndexOfLessThan = -1 OrElse IndexOfComma = -1 AndAlso IndexOfLessThan > IndexOfComma Then
                 Dim Item As String = TypeString.Substring(0, If(IndexOfComma = -1, TypeString.Length, IndexOfComma)).Trim
                 Dim SplitOnSpace() As String = Item.Split(" "c)
-                Dim VBType As VBS.TypeSyntax = NodesVisitor.ConvertToType(SplitOnSpace(0).Replace("<", "(Of ", StringComparison.InvariantCulture).Replace(">", ")", StringComparison.InvariantCulture).Trim).NormalizeWhitespaceEx(useDefaultCasing:=True)
+                Dim VBType As VBS.TypeSyntax = ConvertToType(SplitOnSpace(0).Replace("<", "(Of ", StringComparison.InvariantCulture).Replace(">", ")", StringComparison.InvariantCulture).Trim).NormalizeWhitespaceEx(useDefaultCasing:=True)
                 If SplitOnSpace.Count = 2 Then
                     ElementList.Add($"{SplitOnSpace(1).Trim} As {VBType.ToFullString}")
                 Else
@@ -57,7 +56,7 @@ Public Module ExpressionSyntaxSupport
                 If SplitOnSpace(0).Trim = "?" Then
                     ElementList.Add("Object")
                 Else
-                    ElementList.Add($"{VariableName}{NodesVisitor.ConvertToType(SplitOnSpace(0).Replace("<", "(Of ", StringComparison.InvariantCulture).Replace(">", ")", StringComparison.InvariantCulture).Trim).NormalizeWhitespaceEx(useDefaultCasing:=True)}")
+                    ElementList.Add($"{VariableName}{ConvertToType(SplitOnSpace(0).Replace("<", "(Of ", StringComparison.InvariantCulture).Replace(">", ")", StringComparison.InvariantCulture).Trim).NormalizeWhitespaceEx(useDefaultCasing:=True)}")
                 End If
                 If IndexOfComma = -1 Then
                     TypeString = String.Empty
@@ -144,7 +143,7 @@ Public Module ExpressionSyntaxSupport
                             Return (ConvertCSTupleToVBType(_type), _Error:=False)
                         End If
                     End If
-                    Return (NodesVisitor.ConvertToType(symbol.ConvertISymbolToType(Model.Compilation)), _Error:=False)
+                    Return (ConvertToType(symbol.ConvertISymbolToType(Model.Compilation)), _Error:=False)
                 End If
 
             End If

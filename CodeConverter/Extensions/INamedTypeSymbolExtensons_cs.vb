@@ -9,8 +9,6 @@ Imports System.Collections.Immutable
 Imports System.Runtime.CompilerServices
 Imports System.Threading
 
-Imports CSharpToVBCodeConverter.Visual_Basic.CSharpConverter
-
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
@@ -64,10 +62,10 @@ Namespace CSharpToVBCodeConverter.Util
             For Each t As String In TupleString.Substring(1, TupleString.Length - 2).Split(","c)
                 Dim TuplePart() As String = t.Trim.Split(" "c)
                 If TuplePart.Count = 1 Then
-                    TupleElements.Add(NodesVisitor.ConvertToType(TuplePart(0).ToString(Globalization.CultureInfo.InvariantCulture)).ToString)
+                    TupleElements.Add(ConvertToType(TuplePart(0).ToString(Globalization.CultureInfo.InvariantCulture)).ToString)
                 Else
                     Dim Identifier As SyntaxToken = CSharp.SyntaxFactory.Identifier(TuplePart(1))
-                    TupleElements.Add($"{GenerateSafeVBToken(Identifier, IsQualifiedName:=False, IsTypeName:=False).ValueText} As {NodesVisitor.ConvertToType(TuplePart(0).ToString(Globalization.CultureInfo.InvariantCulture))}")
+                    TupleElements.Add($"{GenerateSafeVBToken(Identifier, IsQualifiedName:=False, IsTypeName:=False).ValueText} As {ConvertToType(TuplePart(0).ToString(Globalization.CultureInfo.InvariantCulture))}")
                 End If
             Next
             Return $"({String.Join(", ", TupleElements)})"
@@ -87,10 +85,6 @@ Namespace CSharpToVBCodeConverter.Util
                                                     interfaceMemberGetter As Func(Of INamedTypeSymbol, ISymbol, ImmutableArray(Of ISymbol)),
                                                     allowReimplementation As Boolean,
                                                     CancelToken As CancellationToken) As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))
-            Contracts.Contract.Requires(classOrStructType IsNot Nothing)
-            Contracts.Contract.Requires(interfacesOrAbstractClasses IsNot Nothing)
-            Contracts.Contract.Requires(isImplemented IsNot Nothing)
-
             If classOrStructType.TypeKind <> TypeKind.Class AndAlso classOrStructType.TypeKind <> TypeKind.Struct Then
                 Return ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))).Empty
             End If
@@ -117,9 +111,6 @@ Namespace CSharpToVBCodeConverter.Util
                                                     interfaceMemberGetter As Func(Of INamedTypeSymbol, ISymbol, ImmutableArray(Of ISymbol)),
                                                     allowReimplementation As Boolean,
                                                     CancelToken As CancellationToken) As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))
-            Contracts.Contract.Requires(classOrStructType IsNot Nothing)
-            Contracts.Contract.Requires(interfacesOrAbstractClasses IsNot Nothing)
-            Contracts.Contract.Requires(isImplemented IsNot Nothing)
 
             If classOrStructType.TypeKind <> TypeKind.Class AndAlso classOrStructType.TypeKind <> TypeKind.Struct Then
                 Return ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))).Empty
@@ -251,10 +242,6 @@ Namespace CSharpToVBCodeConverter.Util
             Return True
         End Function
 
-        Private Function IsInaccessibleImplementableAccessor(accessor As IMethodSymbol, within As ISymbol) As Boolean
-            Return accessor IsNot Nothing AndAlso IsImplementable(accessor) AndAlso Not accessor.IsAccessibleWithin(within)
-        End Function
-
         Private Function IsInterfacePropertyImplemented(classOrStructType As INamedTypeSymbol, propertySymbol As IPropertySymbol) As Boolean
             ' A property is only fully implemented if both it's setter and getter is implemented.
 
@@ -266,17 +253,6 @@ Namespace CSharpToVBCodeConverter.Util
             Return accessor IsNot Nothing AndAlso IsImplementable(accessor) AndAlso accessor.DeclaredAccessibility <> Microsoft.CodeAnalysis.Accessibility.Public
         End Function
 
-        <CodeAnalysis.SuppressMessage("Code Quality", "IDE0051:Remove unused private members", Justification:="Used by functions that are currently commented out")>
-        Private Function IsPropertyWithInaccessibleImplementableAccessor(member As ISymbol, within As ISymbol) As Boolean
-            If member.Kind <> SymbolKind.Property Then
-                Return False
-            End If
-
-            Dim [property] As IPropertySymbol = DirectCast(member, IPropertySymbol)
-
-            Return IsInaccessibleImplementableAccessor([property].GetMethod, within) OrElse IsInaccessibleImplementableAccessor([property].SetMethod, within)
-        End Function
-
         Private Function IsPropertyWithNonPublicImplementableAccessor(member As ISymbol) As Boolean
             If member.Kind <> SymbolKind.Property Then
                 Return False
@@ -285,23 +261,6 @@ Namespace CSharpToVBCodeConverter.Util
             Dim [property] As IPropertySymbol = DirectCast(member, IPropertySymbol)
 
             Return IsNonPublicImplementableAccessor([property].GetMethod) OrElse IsNonPublicImplementableAccessor([property].SetMethod)
-        End Function
-
-        <Extension()>
-        Friend Function GetOverriddenMember(symbol As ISymbol) As ISymbol
-            Select Case True
-                Case TypeOf symbol Is IMethodSymbol
-                    Dim method As IMethodSymbol = CType(symbol, IMethodSymbol)
-                    Return method.OverriddenMethod
-                Case TypeOf symbol Is IPropertySymbol
-                    Dim [property] As IPropertySymbol = CType(symbol, IPropertySymbol)
-                    Return [property].OverriddenProperty
-                Case TypeOf symbol Is IEventSymbol
-                    Dim [event] As IEventSymbol = CType(symbol, IEventSymbol)
-                    Return [event].OverriddenEvent
-            End Select
-
-            Return Nothing
         End Function
 
         <Extension>
@@ -335,28 +294,6 @@ Namespace CSharpToVBCodeConverter.Util
                             CancelToken)
         End Function
 
-        '<Extension>
-        'Public Function GetAllUnimplementedExplicitMembers(classOrStructType As INamedTypeSymbol,
-        '                                               interfaces As IEnumerable(Of INamedTypeSymbol),
-        '                                               CancelToken As CancellationToken) As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))
-        '    Return classOrStructType.GetAllUnimplementedMembers(
-        '                    interfaces,
-        '                    AddressOf IsExplicitlyImplemented,
-        '                    AddressOf ImplementationExists,
-        '                    Function(type As INamedTypeSymbol, within As ISymbol)
-        '                        If type.TypeKind = TypeKind.Interface Then
-        '                            Return type.GetMembers().WhereAsArray(Function(m) m.Kind <> SymbolKind.NamedType AndAlso
-        '                                                                        IsImplementable(m) AndAlso
-        '                                                                        m.IsAccessibleWithin(within) AndAlso
-        '                                                                        Not IsPropertyWithInaccessibleImplementableAccessor(m, within))
-        '                        End If
-        '                        Return type.GetMembers()
-        '                    End Function,
-        '                    allowReimplementation:=False,
-        '                    CancelToken)
-
-        'End Function
-
         <Extension>
         Friend Function GetAllUnimplementedMembers(classOrStructType As INamedTypeSymbol,
                                                interfacesOrAbstractClasses As IEnumerable(Of INamedTypeSymbol),
@@ -377,49 +314,6 @@ Namespace CSharpToVBCodeConverter.Util
                             End Function,
                             allowReimplementation:=False,
                             CancelToken)
-        End Function
-
-        '<Extension>
-        'Public Function GetAllUnimplementedMembersInThis(classOrStructType As INamedTypeSymbol,
-        '                                             interfacesOrAbstractClasses As IEnumerable(Of INamedTypeSymbol),
-        '                                             CancelToken As CancellationToken) As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))
-        '    Return classOrStructType.GetAllUnimplementedMembers(
-        '    interfacesOrAbstractClasses,
-        '    AddressOf IsImplemented,
-        '    Function(t, m)
-        '        Dim implementation As ISymbol = classOrStructType.FindImplementationForInterfaceMember(m)
-        '        Return implementation IsNot Nothing AndAlso
-        '               Equals(implementation.ContainingType, classOrStructType)
-        '    End Function,
-        '    AddressOf GetMembers,
-        '    allowReimplementation:=True,
-        '    CancelToken)
-        'End Function
-
-        '<Extension>
-        'Public Function GetAllUnimplementedMembersInThis(classOrStructType As INamedTypeSymbol,
-        '                                             interfacesOrAbstractClasses As IEnumerable(Of INamedTypeSymbol),
-        '                                             interfaceMemberGetter As Func(Of INamedTypeSymbol, ISymbol, ImmutableArray(Of ISymbol)),
-        '                                             CancelToken As CancellationToken) As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))
-        '    Return classOrStructType.GetAllUnimplementedMembers(
-        '    interfacesOrAbstractClasses,
-        '    AddressOf IsImplemented,
-        '    Function(t, m)
-        '        Dim implementation As ISymbol = classOrStructType.FindImplementationForInterfaceMember(m)
-        '        Return implementation IsNot Nothing AndAlso Equals(implementation.ContainingType, classOrStructType)
-        '    End Function,
-        '    interfaceMemberGetter,
-        '    allowReimplementation:=True,
-        '    CancelToken)
-        'End Function
-
-        <Extension>
-        Public Iterator Function GetBaseTypesAndThis(namedType As INamedTypeSymbol) As IEnumerable(Of INamedTypeSymbol)
-            Dim current As INamedTypeSymbol = namedType
-            Do While current IsNot Nothing
-                Yield current
-                current = current.BaseType
-            Loop
         End Function
 
         <Extension>
@@ -470,6 +364,87 @@ Namespace CSharpToVBCodeConverter.Util
                 Return Nothing
             End If
             Return VBFactory.ImplementsClause(VBFactory.SeparatedList(SeparatedList))
+        End Function
+
+        <Extension()>
+        Friend Function GetOverriddenMember(symbol As ISymbol) As ISymbol
+            Select Case True
+                Case TypeOf symbol Is IMethodSymbol
+                    Dim method As IMethodSymbol = CType(symbol, IMethodSymbol)
+                    Return method.OverriddenMethod
+                Case TypeOf symbol Is IPropertySymbol
+                    Dim [property] As IPropertySymbol = CType(symbol, IPropertySymbol)
+                    Return [property].OverriddenProperty
+                Case TypeOf symbol Is IEventSymbol
+                    Dim [event] As IEventSymbol = CType(symbol, IEventSymbol)
+                    Return [event].OverriddenEvent
+            End Select
+
+            Return Nothing
+        End Function
+
+        '<Extension>
+        'Public Function GetAllUnimplementedExplicitMembers(classOrStructType As INamedTypeSymbol,
+        '                                               interfaces As IEnumerable(Of INamedTypeSymbol),
+        '                                               CancelToken As CancellationToken) As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))
+        '    Return classOrStructType.GetAllUnimplementedMembers(
+        '                    interfaces,
+        '                    AddressOf IsExplicitlyImplemented,
+        '                    AddressOf ImplementationExists,
+        '                    Function(type As INamedTypeSymbol, within As ISymbol)
+        '                        If type.TypeKind = TypeKind.Interface Then
+        '                            Return type.GetMembers().WhereAsArray(Function(m) m.Kind <> SymbolKind.NamedType AndAlso
+        '                                                                        IsImplementable(m) AndAlso
+        '                                                                        m.IsAccessibleWithin(within) AndAlso
+        '                                                                        Not IsPropertyWithInaccessibleImplementableAccessor(m, within))
+        '                        End If
+        '                        Return type.GetMembers()
+        '                    End Function,
+        '                    allowReimplementation:=False,
+        '                    CancelToken)
+
+        'End Function
+        '<Extension>
+        'Public Function GetAllUnimplementedMembersInThis(classOrStructType As INamedTypeSymbol,
+        '                                             interfacesOrAbstractClasses As IEnumerable(Of INamedTypeSymbol),
+        '                                             CancelToken As CancellationToken) As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))
+        '    Return classOrStructType.GetAllUnimplementedMembers(
+        '    interfacesOrAbstractClasses,
+        '    AddressOf IsImplemented,
+        '    Function(t, m)
+        '        Dim implementation As ISymbol = classOrStructType.FindImplementationForInterfaceMember(m)
+        '        Return implementation IsNot Nothing AndAlso
+        '               Equals(implementation.ContainingType, classOrStructType)
+        '    End Function,
+        '    AddressOf GetMembers,
+        '    allowReimplementation:=True,
+        '    CancelToken)
+        'End Function
+
+        '<Extension>
+        'Public Function GetAllUnimplementedMembersInThis(classOrStructType As INamedTypeSymbol,
+        '                                             interfacesOrAbstractClasses As IEnumerable(Of INamedTypeSymbol),
+        '                                             interfaceMemberGetter As Func(Of INamedTypeSymbol, ISymbol, ImmutableArray(Of ISymbol)),
+        '                                             CancelToken As CancellationToken) As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))
+        '    Return classOrStructType.GetAllUnimplementedMembers(
+        '    interfacesOrAbstractClasses,
+        '    AddressOf IsImplemented,
+        '    Function(t, m)
+        '        Dim implementation As ISymbol = classOrStructType.FindImplementationForInterfaceMember(m)
+        '        Return implementation IsNot Nothing AndAlso Equals(implementation.ContainingType, classOrStructType)
+        '    End Function,
+        '    interfaceMemberGetter,
+        '    allowReimplementation:=True,
+        '    CancelToken)
+        'End Function
+
+        <Extension>
+        Public Iterator Function GetBaseTypesAndThis(namedType As INamedTypeSymbol) As IEnumerable(Of INamedTypeSymbol)
+            Dim current As INamedTypeSymbol = namedType
+            Do While current IsNot Nothing
+                Yield current
+                current = current.BaseType
+            Loop
         End Function
 
         <Extension>

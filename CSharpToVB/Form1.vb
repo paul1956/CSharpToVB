@@ -17,7 +17,9 @@ Imports CSharpToVBApp
 Imports CSharpToVBCodeConverter
 Imports CSharpToVBCodeConverter.ConversionResult
 Imports CSharpToVBCodeConverter.Util
+
 Imports ManageProgressBar
+
 Imports Microsoft.Build.Locator
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Emit
@@ -67,6 +69,7 @@ Public Class Form1
 
     Property MSBuildInstance As VisualStudioInstance = Nothing
     Private CTS As CancellationTokenSource
+
     Private Shared Function ConvertSourceFileToDestinationFile(ProjectDirectory As String, ProjectSavePath As String, DocumentName As Document) As String
         If String.IsNullOrWhiteSpace(ProjectSavePath) Then
             Return String.Empty
@@ -100,6 +103,7 @@ Public Class Form1
         ButtonStop.BackColor = System.Drawing.SystemColors.Control
         LocalUseWaitCursor(MeForm:=Me, WaitCursorEnable:=ButtonStop.Visible)
     End Sub
+
     Private Sub ButtonStop_VisibleChanged(sender As Object, e As EventArgs) Handles ButtonStop.VisibleChanged
         LocalUseWaitCursor(MeForm:=Me, WaitCursorEnable:=ButtonStop.Visible)
     End Sub
@@ -655,7 +659,7 @@ Public Class Form1
                         }
                         xmlDoc.Load(currentProject.FilePath)
                         Dim root As XmlNode = xmlDoc.FirstChild
-                        If root.Attributes.Count > 0 AndAlso root.Attributes(0).Name = "Sdk" Then
+                        If root.Attributes.Count > 0 AndAlso root.Attributes(0).Name.Equals("SDK", StringComparison.InvariantCultureIgnoreCase) Then
                             ConvertProjectFile(ProjectSavePath, currentProject, xmlDoc, root)
                         End If
 
@@ -800,7 +804,7 @@ Public Class Form1
                                                 File.Copy(SourceFileName, Path.Combine(ProjectSavePath, xmlNode.Attributes(0).Value), overwrite:=True)
                                             Else
                                                 If (Path.GetExtension(SourceFileName).ToUpperInvariant = ".TXT") Then
-                                                    Dim NewValue As String = ChangeExtension(xmlNode.Attributes(0).Value, "txt", "md")
+                                                    Dim NewValue As String = ChangeExtension(xmlNode.Attributes(0).Value, "TXT", "md")
                                                     SourceFileName = Path.ChangeExtension(SourceFileName, "md")
                                                     If File.Exists(SourceFileName) Then
                                                         File.Copy(SourceFileName, Path.Combine(ProjectSavePath, NewValue), overwrite:=True)

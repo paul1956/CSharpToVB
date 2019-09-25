@@ -16,42 +16,16 @@ Namespace CSharpToVBCodeConverter.Util
     <EditorBrowsable(EditorBrowsableState.Never)>
     Partial Public Module ITypeSymbolExtensions
 
-        <Extension>
-        Friend Function GetAllInterfacesIncludingThis(type As ITypeSymbol) As IList(Of INamedTypeSymbol)
-            Dim allInterfaces As ImmutableArray(Of INamedTypeSymbol) = type.AllInterfaces
-            Dim tempVar As Boolean = TypeOf type Is INamedTypeSymbol
-            Dim namedType As INamedTypeSymbol = If(tempVar, CType(type, INamedTypeSymbol), Nothing)
-            If tempVar AndAlso namedType.TypeKind = TypeKind.Interface AndAlso Not allInterfaces.Contains(namedType) Then
-                Dim result As New List(Of INamedTypeSymbol)(allInterfaces.Length + 1) From {
-                    namedType
-                }
-                result.AddRange(allInterfaces)
-                Return result
-            End If
-
-            Return allInterfaces
-        End Function
-
-        <Extension>
-        Public Function IsAbstractClass(symbol As ITypeSymbol) As Boolean
-            Return CBool(symbol?.TypeKind = TypeKind.Class AndAlso symbol.IsAbstract)
-        End Function
-
         ' Is the type "withinType" nested within the original type "originalContainingType".
         Private Function IsNestedWithinOriginalContainingType(withinType As INamedTypeSymbol, originalContainingType As INamedTypeSymbol) As Boolean
-            '			Contract.ThrowIfNull(withinType);
-            '			Contract.ThrowIfNull(originalContainingType);
-
             ' Walk up my parent chain and see if I eventually hit the owner.  If so then I'm a
             ' nested type of that owner and I'm allowed access to everything inside of it.
             Dim current As INamedTypeSymbol = withinType.OriginalDefinition
             Do While current IsNot Nothing
-                'Contract.Requires(current.IsDefinition);
                 If current.Equals(originalContainingType) Then
                     Return True
                 End If
 
-                ' NOTE(cyrusn): The container of an 'original' type is always original.
                 current = current.ContainingType
             Loop
 
@@ -60,8 +34,6 @@ Namespace CSharpToVBCodeConverter.Util
 
         ' Is a private symbol access
         Private Function IsPrivateSymbolAccessible(within As ISymbol, originalContainingType As INamedTypeSymbol) As Boolean
-            'Contract.Requires(within is INamedTypeSymbol || within is IAssemblySymbol);
-
             Dim withinType As INamedTypeSymbol = TryCast(within, INamedTypeSymbol)
             If withinType Is Nothing Then
                 ' If we're not within a type, we can't access a private symbol
@@ -111,8 +83,6 @@ Namespace CSharpToVBCodeConverter.Util
                 Dim current As INamedTypeSymbol = withinType.OriginalDefinition
                 Dim originalThroughTypeOpt As ITypeSymbol = throughTypeOpt?.OriginalDefinition
                 Do While current IsNot Nothing
-                    '	Contract.Requires(current.IsDefinition);
-
                     If current.InheritsFromOrEqualsIgnoringConstruction(originalContainingType) Then
                         ' NOTE(cyrusn): We're continually walking up the 'throughType's inheritance
                         ' chain.  We could compute it up front and cache it in a set.  However, i
@@ -140,13 +110,20 @@ Namespace CSharpToVBCodeConverter.Util
             Return compilation.GetTypeByMetadataName(GetType(Action).FullName)
         End Function
 
-        <Extension()>
-        Public Iterator Function GetBaseTypesAndThis(type As ITypeSymbol) As IEnumerable(Of ITypeSymbol)
-            Dim current As ITypeSymbol = type
-            While current IsNot Nothing
-                Yield current
-                current = current.BaseType
-            End While
+        <Extension>
+        Friend Function GetAllInterfacesIncludingThis(type As ITypeSymbol) As IList(Of INamedTypeSymbol)
+            Dim allInterfaces As ImmutableArray(Of INamedTypeSymbol) = type.AllInterfaces
+            Dim tempVar As Boolean = TypeOf type Is INamedTypeSymbol
+            Dim namedType As INamedTypeSymbol = If(tempVar, CType(type, INamedTypeSymbol), Nothing)
+            If tempVar AndAlso namedType.TypeKind = TypeKind.Interface AndAlso Not allInterfaces.Contains(namedType) Then
+                Dim result As New List(Of INamedTypeSymbol)(allInterfaces.Length + 1) From {
+                    namedType
+                }
+                result.AddRange(allInterfaces)
+                Return result
+            End If
+
+            Return allInterfaces
         End Function
 
         ' Determine if "type" inherits from "baseType", ignoring constructed types, and dealing
@@ -158,33 +135,13 @@ Namespace CSharpToVBCodeConverter.Util
         End Function
 
         <Extension()>
-        Public Function IsDelegateType(symbol As ITypeSymbol) As Boolean
-            If symbol Is Nothing Then
-                Return False
-            End If
-            Return symbol.TypeKind = TypeKind.[Delegate]
-        End Function
-
-        <Extension()>
         Friend Function IsErrorType(symbol As ITypeSymbol) As Boolean
             Return symbol.TypeKind = TypeKind.[Error]
-        End Function
-
-        <Extension()>
-        Public Function IsInterfaceType(symbol As ITypeSymbol) As Boolean
-            If symbol Is Nothing Then
-                Return False
-            End If
-
-            Return symbol.TypeKind = TypeKind.[Interface]
         End Function
 
         ' Is a member with declared accessibility "declaredAccessiblity" accessible from within
         ' "within", which must be a named type or an assembly.
         Friend Function IsMemberAccessible(containingType As INamedTypeSymbol, declaredAccessibility As Microsoft.CodeAnalysis.Accessibility, within As ISymbol, throughTypeOpt As ITypeSymbol, ByRef failedThroughTypeCheck As Boolean) As Boolean
-            '			Contract.Requires(within is INamedTypeSymbol || within is IAssemblySymbol);
-            '			Contract.ThrowIfNull(containingType);
-
             failedThroughTypeCheck = False
 
             Dim originalContainingType As INamedTypeSymbol = containingType.OriginalDefinition
@@ -258,6 +215,37 @@ Namespace CSharpToVBCodeConverter.Util
         <Extension>
         Friend Function IsSameAssemblyOrHasFriendAccessTo(assembly As IAssemblySymbol, toAssembly As IAssemblySymbol) As Boolean
             Return Equals(assembly, toAssembly) OrElse (assembly.IsInteractive AndAlso toAssembly.IsInteractive) OrElse toAssembly.GivesAccessTo(assembly)
+        End Function
+
+        <Extension()>
+        Public Iterator Function GetBaseTypesAndThis(type As ITypeSymbol) As IEnumerable(Of ITypeSymbol)
+            Dim current As ITypeSymbol = type
+            While current IsNot Nothing
+                Yield current
+                current = current.BaseType
+            End While
+        End Function
+
+        <Extension>
+        Public Function IsAbstractClass(symbol As ITypeSymbol) As Boolean
+            Return CBool(symbol?.TypeKind = TypeKind.Class AndAlso symbol.IsAbstract)
+        End Function
+
+        <Extension()>
+        Public Function IsDelegateType(symbol As ITypeSymbol) As Boolean
+            If symbol Is Nothing Then
+                Return False
+            End If
+            Return symbol.TypeKind = TypeKind.[Delegate]
+        End Function
+
+        <Extension()>
+        Public Function IsInterfaceType(symbol As ITypeSymbol) As Boolean
+            If symbol Is Nothing Then
+                Return False
+            End If
+
+            Return symbol.TypeKind = TypeKind.[Interface]
         End Function
 
     End Module

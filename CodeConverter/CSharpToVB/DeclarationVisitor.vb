@@ -21,17 +21,10 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
 
     Partial Public Class CSharpConverter
 
-        Partial Protected Friend Class NodesVisitor
+        Partial Friend Class NodesVisitor
             Inherits CS.CSharpSyntaxVisitor(Of VB.VisualBasicSyntaxNode)
             Private Const CompilerServices As String = "System.Runtime.CompilerServices"
             Private ReadOnly ExtensionAttribute As VBS.AttributeSyntax = VBFactory.Attribute(Nothing, VBFactory.ParseTypeName("Extension"), VBFactory.ArgumentList())
-
-            Private Shared Function AddBracketsIfRequired(Id As String) As String
-                If IsSpecialReservedWord(Id) OrElse VB.SyntaxFacts.IsKeywordKind(VB.SyntaxFacts.GetKeywordKind(Id)) Then
-                    Return $"[{Id}]"
-                End If
-                Return Id
-            End Function
 
             Private Shared Function ConvertOperatorDeclarationToken(lSyntaxKind As CS.SyntaxKind) As SyntaxToken
                 Select Case lSyntaxKind
@@ -90,21 +83,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                     NewTrailingTrivia.AddRange(ConvertTrivia(_SemicolonToken.TrailingTrivia))
                 End If
                 Return NewTrailingTrivia
-            End Function
-
-            Private Shared Function IsSpecialReservedWord(ID As String) As Boolean
-                If ID.Equals("Alias", StringComparison.InvariantCultureIgnoreCase) OrElse
-                    ID.Equals("CType", StringComparison.InvariantCultureIgnoreCase) OrElse
-                    ID.Equals("End", StringComparison.InvariantCultureIgnoreCase) OrElse
-                    ID.Equals("Error", StringComparison.InvariantCultureIgnoreCase) OrElse
-                    ID.Equals("Event", StringComparison.InvariantCultureIgnoreCase) OrElse
-                    ID.Equals("Imports", StringComparison.InvariantCultureIgnoreCase) OrElse
-                    ID.Equals("Module", StringComparison.InvariantCultureIgnoreCase) OrElse
-                    ID.Equals("Option", StringComparison.InvariantCultureIgnoreCase) OrElse
-                    ID.Equals("Optional", StringComparison.InvariantCultureIgnoreCase) Then
-                    Return True
-                End If
-                Return False
             End Function
 
             Private Shared Function RelocateDirectivesInTrailingTrivia(ParameterList As VBS.ParameterListSyntax, StatementTrailingTrivia As List(Of SyntaxTrivia)) As VBS.ParameterListSyntax
@@ -338,7 +316,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
             'Public Shared Widening Operator DirectCast(value As T) As [Optional]
             '    Return New [Optional](Of T)(value)
             'End Operator
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitConversionOperatorDeclaration(node As CSS.ConversionOperatorDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim AttributeLists As New List(Of VBS.AttributeListSyntax)
                 Dim ReturnAttributes As SyntaxList(Of VBS.AttributeListSyntax) = Nothing
@@ -365,7 +342,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return PrependStatementWithMarkedStatementTrivia(node, OperatorBlock)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitDestructorDeclaration(node As CSS.DestructorDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim AttributeLists As SyntaxList(Of VBS.AttributeListSyntax) = VBFactory.List(node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))
                 Dim Modifiers As SyntaxTokenList = VBFactory.TokenList(ProtectedKeyword, OverridesKeyword)
@@ -403,7 +379,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                                               VBFactory.List(Statements)).WithConvertedTriviaFrom(node)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitEventDeclaration(node As CSS.EventDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim Attributes As New List(Of VBS.AttributeListSyntax)
                 Dim ReturnAttributes As SyntaxList(Of VBS.AttributeListSyntax) = Nothing
@@ -430,7 +405,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return VBFactory.EventBlock(stmt, VBFactory.List(accessors)).WithConvertedTriviaFrom(node)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitEventFieldDeclaration(node As CSS.EventFieldDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim id As SyntaxToken = VBFactory.Identifier(AddBracketsIfRequired(node.Declaration.Variables.Single().Identifier.ValueText))
                 Dim ReturnAttributes As New SyntaxList(Of VBS.AttributeListSyntax)
@@ -444,7 +418,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                                                     implementsClause:=Nothing).WithConvertedTriviaFrom(node)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitFieldDeclaration(node As CSS.FieldDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim _TypeInfo As TypeInfo = ModelExtensions.GetTypeInfo(mSemanticModel, node.Declaration.Type)
                 Dim variableOrConstOrReadonly As TokenContext = TokenContext.VariableOrConst
@@ -500,7 +473,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                     WithMergedTrailingTrivia(GetTriviaFromUnneededToken(node.SemicolonToken)).WithTrailingEOL
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitIndexerDeclaration(node As CSS.IndexerDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim id As SyntaxToken = VBFactory.Identifier("Item")
                 Dim Attributes As New List(Of VBS.AttributeListSyntax)
@@ -590,7 +562,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return VBFactory.PropertyBlock(stmt, VBFactory.List(accessors), EndPropertyStatement).WithConvertedLeadingTriviaFrom(node.Type)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitMethodDeclaration(node As CSS.MethodDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 If node.Modifiers.Any(Function(m As SyntaxToken) m.IsKind(CS.SyntaxKind.UnsafeKeyword)) Then
                     Return FlagUnsupportedStatements(node, "unsafe Functions", CommentOutOriginalStatements:=True)
@@ -912,7 +883,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                                                     EndSubOrFunctionStatement)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitOperatorDeclaration(node As CSS.OperatorDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim Attributes As New List(Of VBS.AttributeListSyntax)
                 Dim ReturnAttributes As SyntaxList(Of VBS.AttributeListSyntax) = Nothing
@@ -949,7 +919,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 End Select
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitPropertyDeclaration(node As CSS.PropertyDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim Identifier As SyntaxToken
                 Dim IdString As String = ""

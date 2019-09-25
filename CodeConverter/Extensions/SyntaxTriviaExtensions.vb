@@ -17,6 +17,92 @@ Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 Namespace CSharpToVBCodeConverter.Util
     Public Module SyntaxTriviaExtensions
 
+        ''' <summary>
+        '''
+        ''' </summary>
+        ''' <param name="node"></param>
+        ''' <returns>True if any Trivia is a Comment or a Directive</returns>
+        <Extension>
+        Friend Function ContainsCommentOrDirectiveTrivia(node As VB.VisualBasicSyntaxNode) As Boolean
+            Dim CurrentToken As SyntaxToken = node.GetFirstToken
+            While CurrentToken <> Nothing
+                If CurrentToken.LeadingTrivia.ContainsCommentOrDirectiveTrivia OrElse CurrentToken.TrailingTrivia.ContainsCommentOrDirectiveTrivia Then
+                    Return True
+                End If
+                CurrentToken = CurrentToken.GetNextToken
+            End While
+
+            Return False
+        End Function
+
+        <Extension>
+        Friend Function ContainsEOLTrivia(node As VB.VisualBasicSyntaxNode) As Boolean
+            If Not node.HasTrailingTrivia Then
+                Return False
+            End If
+            Dim TriviaList As SyntaxTriviaList = node.GetTrailingTrivia
+            For Each t As SyntaxTrivia In TriviaList
+                If t.IsEndOfLine Then
+                    Return True
+                End If
+            Next
+            Return False
+        End Function
+
+        ''' <summary>
+        ''' Remove directive trivia
+        ''' </summary>
+        ''' <param name="node"></param>
+        ''' <returns></returns>
+        <Extension>
+        Friend Function RemoveDirectiveTrivia(Of T As VBS.ArgumentSyntax)(node As T, ByRef FoundEOL As Boolean) As T
+            Dim NewLeadingTrivia As New List(Of SyntaxTrivia)
+            Dim NewTrailingTrivia As New List(Of SyntaxTrivia)
+            For Each trivia As SyntaxTrivia In node.GetLeadingTrivia
+                Select Case trivia.RawKind
+                    Case VB.SyntaxKind.WhitespaceTrivia, VB.SyntaxKind.CommentTrivia
+                        NewLeadingTrivia.Add(trivia)
+                        FoundEOL = False
+                    Case VB.SyntaxKind.EndOfLineTrivia
+                        If Not FoundEOL Then
+                            NewLeadingTrivia.Add(trivia)
+                        End If
+                        FoundEOL = True
+                    Case VB.SyntaxKind.DisabledTextTrivia,
+                         VB.SyntaxKind.IfDirectiveTrivia,
+                         VB.SyntaxKind.ElseDirectiveTrivia,
+                         VB.SyntaxKind.ElseIfDirectiveTrivia,
+                         VB.SyntaxKind.EndIfDirectiveTrivia
+                        ' skip
+                    Case Else
+                        Stop
+                End Select
+            Next
+            FoundEOL = False
+            For Each trivia As SyntaxTrivia In node.GetTrailingTrivia
+                Select Case trivia.RawKind
+                    Case VB.SyntaxKind.WhitespaceTrivia, VB.SyntaxKind.CommentTrivia
+                        NewTrailingTrivia.Add(trivia)
+                        FoundEOL = False
+                    Case VB.SyntaxKind.EndOfLineTrivia
+                        If Not FoundEOL Then
+                            NewTrailingTrivia.Add(trivia)
+                            FoundEOL = True
+                        End If
+                    Case VB.SyntaxKind.DisableWarningDirectiveTrivia,
+                         VB.SyntaxKind.IfDirectiveTrivia,
+                         VB.SyntaxKind.ElseDirectiveTrivia,
+                         VB.SyntaxKind.ElseIfDirectiveTrivia,
+                         VB.SyntaxKind.EndIfDirectiveTrivia
+                        ' skip
+                    Case Else
+                        Stop
+                End Select
+            Next
+
+            Return node.With(NewLeadingTrivia, NewTrailingTrivia)
+        End Function
+
         <Extension>
         Public Function ContainsCommentOrDirectiveTrivia(TriviaList As List(Of SyntaxTrivia)) As Boolean
             If TriviaList Is Nothing OrElse TriviaList.Count = 0 Then
@@ -76,25 +162,6 @@ Namespace CSharpToVBCodeConverter.Util
             Return False
         End Function
 
-        ''' <summary>
-        '''
-        ''' </summary>
-        ''' <param name="node"></param>
-        ''' <returns>True if any Trivia is a Comment or a Directive</returns>
-        <Extension>
-        Public Function ContainsCommentOrDirectiveTrivia(node As VB.VisualBasicSyntaxNode) As Boolean
-            Contracts.Contract.Requires(node IsNot Nothing)
-            Dim CurrentToken As SyntaxToken = node.GetFirstToken
-            While CurrentToken <> Nothing
-                If CurrentToken.LeadingTrivia.ContainsCommentOrDirectiveTrivia OrElse CurrentToken.TrailingTrivia.ContainsCommentOrDirectiveTrivia Then
-                    Return True
-                End If
-                CurrentToken = CurrentToken.GetNextToken
-            End While
-
-            Return False
-        End Function
-
         <Extension>
         Public Function ContainsCommentTrivia(TriviaList As SyntaxTriviaList) As Boolean
             If TriviaList.Count = 0 Then
@@ -130,22 +197,6 @@ Namespace CSharpToVBCodeConverter.Util
             Next
             Return False
         End Function
-
-        <Extension>
-        Public Function ContainsEOLTrivia(node As VB.VisualBasicSyntaxNode) As Boolean
-            Contracts.Contract.Requires(node IsNot Nothing)
-            If Not node.HasTrailingTrivia Then
-                Return False
-            End If
-            Dim TriviaList As SyntaxTriviaList = node.GetTrailingTrivia
-            For Each t As SyntaxTrivia In TriviaList
-                If t.IsEndOfLine Then
-                    Return True
-                End If
-            Next
-            Return False
-        End Function
-
         <Extension>
         Public Function ContainsEOLTrivia(Token As SyntaxToken) As Boolean
             If Not Token.HasTrailingTrivia Then
@@ -318,62 +369,6 @@ Namespace CSharpToVBCodeConverter.Util
             Next
             Return False
         End Function
-
-        ''' <summary>
-        ''' Remove directive trivia
-        ''' </summary>
-        ''' <param name="node"></param>
-        ''' <returns></returns>
-        <Extension>
-        Public Function RemoveDirectiveTrivia(Of T As VBS.ArgumentSyntax)(node As T, ByRef FoundEOL As Boolean) As T
-            Contracts.Contract.Requires(node IsNot Nothing)
-            Dim NewLeadingTrivia As New List(Of SyntaxTrivia)
-            Dim NewTrailingTrivia As New List(Of SyntaxTrivia)
-            For Each trivia As SyntaxTrivia In node.GetLeadingTrivia
-                Select Case trivia.RawKind
-                    Case VB.SyntaxKind.WhitespaceTrivia, VB.SyntaxKind.CommentTrivia
-                        NewLeadingTrivia.Add(trivia)
-                        FoundEOL = False
-                    Case VB.SyntaxKind.EndOfLineTrivia
-                        If Not FoundEOL Then
-                            NewLeadingTrivia.Add(trivia)
-                        End If
-                        FoundEOL = True
-                    Case VB.SyntaxKind.DisabledTextTrivia,
-                         VB.SyntaxKind.IfDirectiveTrivia,
-                         VB.SyntaxKind.ElseDirectiveTrivia,
-                         VB.SyntaxKind.ElseIfDirectiveTrivia,
-                         VB.SyntaxKind.EndIfDirectiveTrivia
-                        ' skip
-                    Case Else
-                        Stop
-                End Select
-            Next
-            FoundEOL = False
-            For Each trivia As SyntaxTrivia In node.GetTrailingTrivia
-                Select Case trivia.RawKind
-                    Case VB.SyntaxKind.WhitespaceTrivia, VB.SyntaxKind.CommentTrivia
-                        NewTrailingTrivia.Add(trivia)
-                        FoundEOL = False
-                    Case VB.SyntaxKind.EndOfLineTrivia
-                        If Not FoundEOL Then
-                            NewTrailingTrivia.Add(trivia)
-                            FoundEOL = True
-                        End If
-                    Case VB.SyntaxKind.DisableWarningDirectiveTrivia,
-                         VB.SyntaxKind.IfDirectiveTrivia,
-                         VB.SyntaxKind.ElseDirectiveTrivia,
-                         VB.SyntaxKind.ElseIfDirectiveTrivia,
-                         VB.SyntaxKind.EndIfDirectiveTrivia
-                        ' skip
-                    Case Else
-                        Stop
-                End Select
-            Next
-
-            Return node.With(NewLeadingTrivia, NewTrailingTrivia)
-        End Function
-
         ''' <summary>
         ''' Remove directive trivia
         ''' </summary>

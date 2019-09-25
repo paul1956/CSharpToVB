@@ -19,7 +19,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
 
     Partial Public Class CSharpConverter
 
-        Partial Protected Friend Class NodesVisitor
+        Partial Friend Class NodesVisitor
             Inherits CS.CSharpSyntaxVisitor(Of VB.VisualBasicSyntaxNode)
 
             Private Function VisitCSArguments(CS_OpenToken As SyntaxToken, CS_Arguments As SeparatedSyntaxList(Of CSS.ArgumentSyntax), CS_CloseToken As SyntaxToken) As VB.VisualBasicSyntaxNode
@@ -128,12 +128,10 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return VBFactory.SimpleArgument(name, ArgumentWithTrivia).WithTrailingTrivia(NewTrailingTrivia)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitArgumentList(node As CSS.ArgumentListSyntax) As VB.VisualBasicSyntaxNode
                 Return VisitCSArguments(node.OpenParenToken, node.Arguments, node.CloseParenToken)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitBracketedArgumentList(node As CSS.BracketedArgumentListSyntax) As VB.VisualBasicSyntaxNode
                 Return VisitCSArguments(node.OpenBracketToken, node.Arguments, node.CloseBracketToken)
             End Function
@@ -142,9 +140,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return VBFactory.ParseTypeName("").WithConvertedTriviaFrom(node)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitTypeArgumentList(node As CSS.TypeArgumentListSyntax) As VB.VisualBasicSyntaxNode
-                Contracts.Contract.Requires(node IsNot Nothing)
                 Dim CS_VisitorArguments As SeparatedSyntaxList(Of CSS.TypeSyntax) = node.Arguments
                 Debug.Assert(CS_VisitorArguments.Any, "VisitTypeArgumentList CS_VisitorArguments.Count = 0")
                 Dim CS_Separators As IEnumerable(Of SyntaxToken) = CS_VisitorArguments.GetSeparators

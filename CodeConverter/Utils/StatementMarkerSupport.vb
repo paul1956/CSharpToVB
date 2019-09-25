@@ -19,9 +19,9 @@ Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 
 Public Module StatementMarker
-    Private NextIndex As Integer = 0
     Private ReadOnly StatementDictionary As New Dictionary(Of CS.CSharpSyntaxNode, Integer)
     Private ReadOnly StatementSupportTupleList As New List(Of (Index As Integer, Statement As VisualBasic.VisualBasicSyntaxNode, RemoveStatement As StatementHandlingOption))
+    Private NextIndex As Integer = 0
 
     Public Enum StatementHandlingOption
         PrependStatement ' Perpend original statement
@@ -78,24 +78,6 @@ Public Module StatementMarker
         Return NewTrivia
     End Function
 
-    Public Function AddFinalTriviaToField(node As CSS.FieldDeclarationSyntax) As List(Of StatementSyntax)
-        Dim StatementList As New List(Of StatementSyntax)
-        If Not StatementDictionary.ContainsKey(node) Then
-            Return StatementList
-        End If
-        Dim Index As Integer = StatementDictionary(node)
-        For Each StatementTuple As (Index As Integer, Statement As StatementSyntax, StatementHandling As StatementHandlingOption) In StatementSupportTupleList
-            If StatementTuple.Index = Index AndAlso StatementTuple.StatementHandling = StatementHandlingOption.AppendEmptyStatement Then
-                StatementList.Add(StatementTuple.Statement)
-                StatementDictionary.Remove(node)
-            End If
-        Next
-        If StatementDictionary.Count = 0 Then
-            StatementSupportTupleList.Clear()
-        End If
-        Return StatementList
-    End Function
-
     ''' <summary>
     ''' Add a marker so we can add a statement higher up in the result tree
     ''' </summary>
@@ -131,8 +113,7 @@ Public Module StatementMarker
         StatementSupportTupleList.Add((Index, Statement, StatementHandling))
     End Sub
 
-    Public Function AddSpecialCommentToField(node As CSS.FieldDeclarationSyntax, FieldDeclaration As FieldDeclarationSyntax) As FieldDeclarationSyntax
-        Contracts.Contract.Requires(FieldDeclaration IsNot Nothing)
+    Friend Function AddSpecialCommentToField(node As CSS.FieldDeclarationSyntax, FieldDeclaration As FieldDeclarationSyntax) As FieldDeclarationSyntax
         If Not StatementDictionary.ContainsKey(node) Then
             Return FieldDeclaration
         End If
@@ -151,28 +132,7 @@ Public Module StatementMarker
         Return FieldDeclaration.WithLeadingTrivia(LeadingTrivia)
     End Function
 
-    <Extension>
-    Public Function CheckCorrectnessLeadingTrivia(Of T As SyntaxNode)(NodeWithIssue As T, Optional MessageFragment As String = "") As SyntaxTriviaList
-        Dim LeadingTrivia As New List(Of SyntaxTrivia) From {
-            VBFactory.CommentTrivia($"' TODO TASK: {MessageFragment}:")
-        }
-        If NodeWithIssue IsNot Nothing Then
-            LeadingTrivia.Add(VBFactory.CommentTrivia($"' Original Statement:"))
-            LeadingTrivia.AddRange(ConvertSourceTextToTriviaList(NodeWithIssue.ToFullString))
-        End If
-        LeadingTrivia.Add(VBFactory.CommentTrivia($"' An attempt was made to correctly port the code, check the code below for correctness"))
-        LeadingTrivia.Add(VB_EOLTrivia)
-        Return LeadingTrivia.ToSyntaxTriviaList
-    End Function
-
-    Public Sub ClearMarker()
-        NextIndex = 0
-        StatementDictionary.Clear()
-        StatementSupportTupleList.Clear()
-    End Sub
-
-    Public Function FlagUnsupportedStatements(node As CS.CSharpSyntaxNode, UnsupportedFeature As String, CommentOutOriginalStatements As Boolean) As EmptyStatementSyntax
-        Contracts.Contract.Requires(node IsNot Nothing)
+    Friend Function FlagUnsupportedStatements(node As CS.CSharpSyntaxNode, UnsupportedFeature As String, CommentOutOriginalStatements As Boolean) As EmptyStatementSyntax
         Dim NewLeadingTrivia As New List(Of SyntaxTrivia)
         Dim NewTrailingTrivia As New List(Of SyntaxTrivia)
         If CommentOutOriginalStatements Then
@@ -203,15 +163,6 @@ Public Module StatementMarker
             Next
         End If
         Return VBFactory.EmptyStatement.With(NewLeadingTrivia, NewTrailingTrivia)
-    End Function
-
-    Public Function GetMarkerErrorMessage() As String
-        Dim builder As New StringBuilder()
-        builder.Append($" Marker Error StatementDictionary.Count = {StatementDictionary.Count}{vbCrLf}")
-        For Each statement As CS.CSharpSyntaxNode In StatementDictionary.Keys
-            builder.Append(statement.ToFullString)
-        Next
-        Return builder.ToString()
     End Function
 
     Friend Function GetStatementwithIssues(node As CS.CSharpSyntaxNode) As CS.CSharpSyntaxNode
@@ -272,19 +223,7 @@ Public Module StatementMarker
         Return StatementWithIssues
     End Function
 
-    ''' <summary>
-    ''' Allow access to Marker Errors with exposing implementation
-    ''' </summary>
-    ''' <returns>True if there are statements left out of translation</returns>
-    Public Function HasMarkerError() As Boolean
-        If StatementDictionary.Count > 0 Then
-            Return True
-        End If
-        Return False
-    End Function
-
-    Public Function PrependStatementWithMarkedStatementTrivia(node As CS.CSharpSyntaxNode, Statement As StatementSyntax) As StatementSyntax
-        Contracts.Contract.Requires(Statement IsNot Nothing)
+    Friend Function PrependStatementWithMarkedStatementTrivia(node As CS.CSharpSyntaxNode, Statement As StatementSyntax) As StatementSyntax
         Dim NewNodesList As New SyntaxList(Of StatementSyntax)
         Dim RemoveStatement As Boolean = False
         If Not StatementDictionary.ContainsKey(node) Then
@@ -303,6 +242,64 @@ Public Module StatementMarker
             StatementSupportTupleList.Clear()
         End If
         Return Statement.WithPrependedLeadingTrivia(NewNodesList(0).GetLeadingTrivia)
+    End Function
+
+    Public Function AddFinalTriviaToField(node As CSS.FieldDeclarationSyntax) As List(Of StatementSyntax)
+        Dim StatementList As New List(Of StatementSyntax)
+        If Not StatementDictionary.ContainsKey(node) Then
+            Return StatementList
+        End If
+        Dim Index As Integer = StatementDictionary(node)
+        For Each StatementTuple As (Index As Integer, Statement As StatementSyntax, StatementHandling As StatementHandlingOption) In StatementSupportTupleList
+            If StatementTuple.Index = Index AndAlso StatementTuple.StatementHandling = StatementHandlingOption.AppendEmptyStatement Then
+                StatementList.Add(StatementTuple.Statement)
+                StatementDictionary.Remove(node)
+            End If
+        Next
+        If StatementDictionary.Count = 0 Then
+            StatementSupportTupleList.Clear()
+        End If
+        Return StatementList
+    End Function
+
+    <Extension>
+    Public Function CheckCorrectnessLeadingTrivia(Of T As SyntaxNode)(NodeWithIssue As T, Optional MessageFragment As String = "") As SyntaxTriviaList
+        Dim LeadingTrivia As New List(Of SyntaxTrivia) From {
+            VBFactory.CommentTrivia($"' TODO TASK: {MessageFragment}:")
+        }
+        If NodeWithIssue IsNot Nothing Then
+            LeadingTrivia.Add(VBFactory.CommentTrivia($"' Original Statement:"))
+            LeadingTrivia.AddRange(ConvertSourceTextToTriviaList(NodeWithIssue.ToFullString))
+        End If
+        LeadingTrivia.Add(VBFactory.CommentTrivia($"' An attempt was made to correctly port the code, check the code below for correctness"))
+        LeadingTrivia.Add(VB_EOLTrivia)
+        Return LeadingTrivia.ToSyntaxTriviaList
+    End Function
+
+    Public Sub ClearMarker()
+        NextIndex = 0
+        StatementDictionary.Clear()
+        StatementSupportTupleList.Clear()
+    End Sub
+
+    Public Function GetMarkerErrorMessage() As String
+        Dim builder As New StringBuilder()
+        builder.Append($" Marker Error StatementDictionary.Count = {StatementDictionary.Count}{vbCrLf}")
+        For Each statement As CS.CSharpSyntaxNode In StatementDictionary.Keys
+            builder.Append(statement.ToFullString)
+        Next
+        Return builder.ToString()
+    End Function
+
+    ''' <summary>
+    ''' Allow access to Marker Errors with exposing implementation
+    ''' </summary>
+    ''' <returns>True if there are statements left out of translation</returns>
+    Public Function HasMarkerError() As Boolean
+        If StatementDictionary.Count > 0 Then
+            Return True
+        End If
+        Return False
     End Function
 
     Public Function ReplaceStatementsWithMarkedStatements(node As CS.CSharpSyntaxNode, Statements As SyntaxList(Of StatementSyntax)) As SyntaxList(Of StatementSyntax)

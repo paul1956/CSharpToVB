@@ -19,7 +19,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
 
     Partial Public Class CSharpConverter
 
-        Partial Protected Friend Class NodesVisitor
+        Partial Friend Class NodesVisitor
             Inherits CS.CSharpSyntaxVisitor(Of VB.VisualBasicSyntaxNode)
 
             Private Shared Function FindClauseForParameter(node As CSS.TypeParameterSyntax) As CSS.TypeParameterConstraintClauseSyntax
@@ -77,104 +77,14 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return RetList
             End Function
 
-            Public Shared Function ConvertToType(_TypeString As String) As VBS.TypeSyntax
-                Contracts.Contract.Requires(_TypeString IsNot Nothing)
-                Dim TypeString As String = _TypeString.Trim
-                Dim IndexOf As Integer = TypeString.IndexOf("(Of ", StringComparison.InvariantCulture)
-                If IndexOf >= 0 Then
-                    Dim Name As String = TypeString.Substring(0, IndexOf)
-                    TypeString = TypeString.Substring(IndexOf + 3)
-                    Dim IndexOfLastCloseParen As Integer = TypeString.LastIndexOf(")", StringComparison.InvariantCulture)
-                    TypeString = TypeString.Substring(0, IndexOfLastCloseParen)
-                    Dim TypeList As New List(Of VBS.TypeSyntax)
-                    Dim PossibleTypes As String = TypeString.Trim
-                    While PossibleTypes.Length > 0
-                        Dim EndIndex As Integer
-                        ' Type
-                        EndIndex = PossibleTypes.IndexOf(",", StringComparison.InvariantCulture)
-                        Dim FirstLessThan As Integer = PossibleTypes.IndexOf("(", StringComparison.InvariantCulture)
-                        If EndIndex = -1 OrElse FirstLessThan = -1 Then
-                            EndIndex = PossibleTypes.Length
-                        ElseIf EndIndex > FirstLessThan Then
-                            Dim OpenParenCount As Integer = 0
-                            For i As Integer = FirstLessThan To PossibleTypes.Length - 1
-                                Select Case PossibleTypes.Substring(i, 1)
-                                    Case "("
-                                        OpenParenCount += 1
-                                    Case ")"
-                                        OpenParenCount -= 1
-                                        EndIndex = i + 1
-                                    Case ","
-                                        If OpenParenCount = 0 Then
-                                            EndIndex = i
-                                            Exit For
-                                        End If
-                                End Select
-                            Next
-                        End If
-                        TypeList.Add(ConvertToType(PossibleTypes.Substring(0, EndIndex).Trim))
-                        If EndIndex + 1 < PossibleTypes.Length Then
-                            PossibleTypes = PossibleTypes.Substring(EndIndex + 1).Trim
-                        Else
-                            Exit While
-                        End If
-                    End While
-                    Dim TypeArguemntList As VBS.TypeArgumentListSyntax = VBFactory.TypeArgumentList(VBFactory.SeparatedList(TypeList))
-                    Return VBFactory.GenericName(Name, TypeArguemntList)
-                End If
-                Select Case TypeString.ToUpperInvariant
-                    Case "BYTE"
-                        Return PredefinedTypeByte
-                    Case "SBYTE"
-                        Return PredefinedTypeSByte
-                    Case "INT"
-                        Return PredefinedTypeInteger
-                    Case "UINT"
-                        Return PredefinedTypeUInteger
-                    Case "SHORT"
-                        Return PredefinedTypeShort
-                    Case "USHORT"
-                        Return PredefinedTypeUShort
-                    Case "LONG"
-                        Return PredefinedTypeLong
-                    Case "ULONG"
-                        Return PredefinedTypeULong
-                    Case "FLOAT"
-                        Return PredefinedTypeSingle
-                    Case "DOUBLE"
-                        Return PredefinedTypeDouble
-                    Case "CHAR"
-                        Return PredefinedTypeChar
-                    Case "BOOL"
-                        Return PredefinedTypeBoolean
-                    Case "OBJECT", "VAR"
-                        Return PredefinedTypeObject
-                    Case "STRING"
-                        Return PredefinedTypeString
-                    Case "DECIMAL"
-                        Return PredefinedTypeDecimal
-                    Case "DATETIME"
-                        Return PredefinedTypeDate
-                    Case "?", "_"
-                        Return PredefinedTypeObject
-                    Case Else
-                        Return VBFactory.ParseTypeName(AddBracketsIfRequired(TypeString.
-                                                                             Replace("[", "(", StringComparison.InvariantCulture).
-                                                                             Replace("]", ")", StringComparison.InvariantCulture)))
-                End Select
-            End Function
-
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitArrayRankSpecifier(node As CSS.ArrayRankSpecifierSyntax) As VB.VisualBasicSyntaxNode
                 Return VBFactory.ArrayRankSpecifier(OpenParenToken, VBFactory.TokenList(Enumerable.Repeat(CommaToken, node.Rank - 1)), CloseParenToken)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitArrayType(node As CSS.ArrayTypeSyntax) As VB.VisualBasicSyntaxNode
                 Return VBFactory.ArrayType(DirectCast(node.ElementType.Accept(Me), VBS.TypeSyntax), VBFactory.List(node.RankSpecifiers.Select(Function(rs As CSS.ArrayRankSpecifierSyntax) DirectCast(rs.Accept(Me), VBS.ArrayRankSpecifierSyntax)))).WithConvertedTriviaFrom(node)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitClassOrStructConstraint(node As CSS.ClassOrStructConstraintSyntax) As VB.VisualBasicSyntaxNode
                 If node.IsKind(CS.SyntaxKind.ClassConstraint) Then
                     Return VBFactory.ClassConstraint(ClassKeyWord).WithConvertedTriviaFrom(node)
@@ -189,7 +99,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return VBFactory.NewConstraint(NewKeyword).WithConvertedTriviaFrom(node)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitNullableType(node As CSS.NullableTypeSyntax) As VB.VisualBasicSyntaxNode
                 Dim TypeSyntax As VB.VisualBasicSyntaxNode = node.ElementType.Accept(Me)
                 If TypeOf TypeSyntax Is VBS.ArrayTypeSyntax Then
@@ -200,7 +109,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return VBFactory.NullableType(DirectCast(TypeSyntax, VBS.TypeSyntax)).WithConvertedTriviaFrom(node)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitPointerType(node As CSS.PointerTypeSyntax) As VB.VisualBasicSyntaxNode
                 If node.ToString = "void*" Then
                     Return PredefinedTypeObject.WithConvertedTriviaFrom(node.Parent)
@@ -228,7 +136,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return IntPtrType
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitPredefinedType(node As CSS.PredefinedTypeSyntax) As VB.VisualBasicSyntaxNode
                 Dim PredefinedType As VBS.PredefinedTypeSyntax = Nothing
                 Try
@@ -244,19 +151,16 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return PredefinedType
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitSimpleBaseType(node As CSS.SimpleBaseTypeSyntax) As VB.VisualBasicSyntaxNode
                 Dim TypeString As String = node.NormalizeWhitespace.ToString
 
                 Return ConvertToType(TypeString).WithConvertedTriviaFrom(node)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitTypeConstraint(node As CSS.TypeConstraintSyntax) As VB.VisualBasicSyntaxNode
                 Return VBFactory.TypeConstraint(DirectCast(node.Type.Accept(Me), VBS.TypeSyntax)).WithConvertedTriviaFrom(node)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitTypeParameter(node As CSS.TypeParameterSyntax) As VB.VisualBasicSyntaxNode
                 Dim variance As SyntaxToken = Nothing
                 If Not node.VarianceKeyword.IsKind(CS.SyntaxKind.None) Then
@@ -276,7 +180,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return TypeParameterSyntax
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitTypeParameterConstraintClause(node As CSS.TypeParameterConstraintClauseSyntax) As VB.VisualBasicSyntaxNode
                 Dim Braces As (OpenBrace As SyntaxToken, CloseBrace As SyntaxToken) = node.GetBraces
                 Dim OpenBraceTokenWithTrivia As SyntaxToken = OpenBraceToken.WithConvertedTriviaFrom(Braces.OpenBrace)
@@ -288,7 +191,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return VBFactory.TypeParameterMultipleConstraintClause(AsKeyword, OpenBraceTokenWithTrivia, Constraints, CloseBraceTokenWithTrivia)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitTypeParameterList(node As CSS.TypeParameterListSyntax) As VB.VisualBasicSyntaxNode
                 Dim Nodes As New List(Of VBS.TypeParameterSyntax)
                 Dim Separators As New List(Of SyntaxToken)

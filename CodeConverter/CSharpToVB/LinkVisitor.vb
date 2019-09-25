@@ -19,13 +19,10 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
 
     Partial Public Class CSharpConverter
 
-        Partial Protected Friend Class NodesVisitor
+        Partial Friend Class NodesVisitor
             Inherits CS.CSharpSyntaxVisitor(Of VB.VisualBasicSyntaxNode)
 
             Private Iterator Function ConvertQueryBody(body As CSS.QueryBodySyntax) As IEnumerable(Of VBS.QueryClauseSyntax)
-                'If TypeOf body.SelectOrGroup Is CSS.GroupClauseSyntax AndAlso body.Continuation Is Nothing Then
-                '    Throw New NotSupportedException("group by clause without into Not supported In VB")
-                'End If
                 If TypeOf body.SelectOrGroup Is CSS.SelectClauseSyntax Then
                     Yield DirectCast(body.SelectOrGroup.Accept(Me), VBS.QueryClauseSyntax)
                 Else
@@ -58,7 +55,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return $"__{v}{Math.Min(Threading.Interlocked.Increment(placeholder), placeholder - 1)}__"
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitFromClause(node As CSS.FromClauseSyntax) As VB.VisualBasicSyntaxNode
                 Dim expression As VBS.ExpressionSyntax = DirectCast(node.Expression.Accept(Me), VBS.ExpressionSyntax).WithConvertedTriviaFrom(node.Expression)
                 If expression Is Nothing Then
@@ -69,7 +65,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return VBFactory.FromClause(CollectionRangevariable).WithConvertedTriviaFrom(node)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitJoinClause(node As CSS.JoinClauseSyntax) As VB.VisualBasicSyntaxNode
                 If node.Into IsNot Nothing Then
                     Return VBFactory.GroupJoinClause(
@@ -95,7 +90,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 End If
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitLetClause(node As CSS.LetClauseSyntax) As VB.VisualBasicSyntaxNode
                 Dim Identifier As SyntaxToken = GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False)
                 Dim ModifiedIdentifier As VBS.ModifiedIdentifierSyntax = VBFactory.ModifiedIdentifier(Identifier)
@@ -105,12 +99,10 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return VBFactory.LetClause(VBFactory.SingletonSeparatedList(ExpressionRangeVariable)).WithConvertedTriviaFrom(node)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitOrderByClause(node As CSS.OrderByClauseSyntax) As VB.VisualBasicSyntaxNode
                 Return VBFactory.OrderByClause(VBFactory.SeparatedList(node.Orderings.Select(Function(o As CSS.OrderingSyntax) DirectCast(o.Accept(Me), VBS.OrderingSyntax)))).WithConvertedTriviaFrom(node)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitOrdering(node As CSS.OrderingSyntax) As VB.VisualBasicSyntaxNode
                 If node.IsKind(CS.SyntaxKind.DescendingOrdering) Then
                     Return VBFactory.Ordering(VB.SyntaxKind.DescendingOrdering, DirectCast(node.Expression.Accept(Me), VBS.ExpressionSyntax)).WithConvertedTriviaFrom(node)
@@ -119,7 +111,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 End If
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitQueryExpression(node As CSS.QueryExpressionSyntax) As VB.VisualBasicSyntaxNode
                 ' From trivia handled in VisitFromClause
                 Dim FromClause As VBS.QueryClauseSyntax = DirectCast(node.FromClause.Accept(Me), VBS.QueryClauseSyntax)
@@ -128,13 +119,11 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return VBFactory.QueryExpression(VBFactory.SingletonList(FromClause).AddRange(BodyClauses).AddRange(Body)).WithConvertedTriviaFrom(node)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitSelectClause(node As CSS.SelectClauseSyntax) As VB.VisualBasicSyntaxNode
                 Dim expression As VBS.ExpressionSyntax = DirectCast(node.Expression.Accept(Me), VBS.ExpressionSyntax).NormalizeWhitespace
                 Return VBFactory.SelectClause(VBFactory.ExpressionRangeVariable(expression)).WithConvertedTriviaFrom(node)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitWhereClause(node As CSS.WhereClauseSyntax) As VB.VisualBasicSyntaxNode
                 Dim condition As VBS.ExpressionSyntax = DirectCast(node.Condition.Accept(Me), VBS.ExpressionSyntax)
                 Return VBFactory.WhereClause(condition).WithConvertedTriviaFrom(node)

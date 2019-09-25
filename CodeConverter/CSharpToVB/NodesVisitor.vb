@@ -25,7 +25,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
 
     Partial Public Class CSharpConverter
 
-        Partial Protected Friend Class NodesVisitor
+        Partial Friend Class NodesVisitor
             Inherits CS.CSharpSyntaxVisitor(Of VisualBasicSyntaxNode)
 
             ' This file contains all the stuff accessed by multiple Visitor functions in Class NodeVisitor and Visitors that
@@ -50,17 +50,15 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 End Get
             End Property
 
-            <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             <ExcludeFromCodeCoverage>
             Public Overrides Function DefaultVisit(node As SyntaxNode) As VisualBasicSyntaxNode
                 Throw New NotImplementedException(node.[GetType]().ToString & " not implemented!")
             End Function
 
-            <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitCompilationUnit(node As CompilationUnitSyntax) As VisualBasicSyntaxNode
-
                 For Each [using] As UsingDirectiveSyntax In node.Usings
-                    Application.DoEvents
+                    Application.DoEvents()
+
                     If OriginalRequest.CancelToken.IsCancellationRequested Then
                         Throw New OperationCanceledException
                     End If
@@ -80,7 +78,8 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Dim ListOfAttributes As SyntaxList(Of VBS.AttributesStatementSyntax) = VBFactory.List(node.AttributeLists.Select(Function(a As AttributeListSyntax) VBFactory.AttributesStatement(VBFactory.SingletonList(DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))))
                 Dim MemberList As New List(Of VBS.StatementSyntax)
                 For Each m As MemberDeclarationSyntax In node.Members
-                    Application.DoEvents
+                    Application.DoEvents()
+
                     If OriginalRequest.CancelToken.IsCancellationRequested Then
                         Throw New OperationCanceledException
                     End If
@@ -174,7 +173,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return value
             End Function
 
-            <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitImplicitElementAccess(node As ImplicitElementAccessSyntax) As VisualBasicSyntaxNode
                 If node.ArgumentList.Arguments.Count > 1 Then
                     Throw New NotSupportedException("ImplicitElementAccess can only have one argument!")
@@ -222,7 +220,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
             ''' <param name="Node"></param>
             ''' <returns></returns>
             ''' <remarks>Added by PC</remarks>
-            <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitSingleVariableDesignation(Node As SingleVariableDesignationSyntax) As VisualBasicSyntaxNode
                 Dim Identifier As SyntaxToken = GenerateSafeVBToken(Node.Identifier, IsQualifiedName:=False, IsTypeName:=False)
                 Dim IdentifierExpression As VBS.IdentifierNameSyntax = VBFactory.IdentifierName(Identifier)
@@ -266,13 +263,11 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return IdentifierExpression
             End Function
 
-            <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitStackAllocArrayCreationExpression(node As StackAllocArrayCreationExpressionSyntax) As VisualBasicSyntaxNode
                 node.FirstAncestorOrSelf(Of StatementSyntax).AddMarker(FlagUnsupportedStatements(node.FirstAncestorOrSelf(Of StatementSyntax), "StackAlloc", CommentOutOriginalStatements:=True), StatementHandlingOption.ReplaceStatement, AllowDuplicates:=True)
                 Return PredefinedTypeObject
             End Function
 
-            <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitSwitchExpression(node As SwitchExpressionSyntax) As VisualBasicSyntaxNode
                 Dim StatementWithIssue As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
 
@@ -364,14 +359,12 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return TempIdentifier
             End Function
 
-            <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitVariableDeclaration(node As VariableDeclarationSyntax) As VisualBasicSyntaxNode
                 Dim StatementWithIssue As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
                 Dim LeadingTrivia As SyntaxTriviaList = CheckCorrectnessLeadingTrivia(StatementWithIssue, "VB has no direct equivalent To C# var pattern expressions")
                 Return MyBase.VisitVariableDeclaration(node)
             End Function
 
-            <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitVariableDeclarator(node As VariableDeclaratorSyntax) As VisualBasicSyntaxNode
                 Dim Identifier As SyntaxToken = GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False)
                 Dim ArgumentList As New List(Of VBS.ArgumentSyntax)
@@ -405,7 +398,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return VBFactory.ModifiedIdentifier(Identifier.WithTrailingTrivia(SpaceTrivia), Nullable, ArrayBounds, arrayRankSpecifiers:=Nothing)
             End Function
 
-            <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitWhenClause(node As WhenClauseSyntax) As VisualBasicSyntaxNode
                 Return node.Condition.Accept(Me)
             End Function

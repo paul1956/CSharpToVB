@@ -6,7 +6,6 @@ Option Infer Off
 Option Strict On
 
 Imports System.Threading
-Imports System.Windows.Forms
 Imports CSharpToVBCodeConverter.Util
 Imports ManageProgressBar
 Imports Microsoft.CodeAnalysis
@@ -47,39 +46,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
 
         Private Shared Function Binary(Value As Long) As String
             Return $"&B{System.Convert.ToString(Value, 2).PadLeft(64, "0"c)}"
-        End Function
-
-        ''' <summary>
-        ''' Returns Safe VB Name
-        ''' </summary>
-        ''' <param name="id">Original Name</param>
-        ''' <param name="IsQualifiedName">True if name is part of a Qualified Name and should not be renamed</param>
-        ''' <param name="IsTypeName"></param>
-        ''' <returns></returns>
-        Public Shared Function GenerateSafeVBToken(id As SyntaxToken, IsQualifiedName As Boolean, IsTypeName As Boolean) As SyntaxToken
-            Debug.Assert(id.Language = "C#", $"In {NameOf(GenerateSafeVBToken)} Language of Token is not C#")
-            Debug.Assert((Not id.HasLeadingTrivia) OrElse id.LeadingTrivia(0).Language = "C#", $"In {NameOf(GenerateSafeVBToken)} Language of ID Token leading trivia is not VB")
-            Debug.Assert((Not id.HasTrailingTrivia) OrElse id.TrailingTrivia(0).Language = "C#", $"In {NameOf(GenerateSafeVBToken)} Language of ID Token trailing trivia is not VB")
-
-            Dim keywordKind As VB.SyntaxKind = VB.SyntaxFacts.GetKeywordKind(id.ValueText)
-            If VB.SyntaxFacts.IsKeywordKind(keywordKind) Then
-                Return MakeIdentifierUnique(id, BracketNeeded:=True, QualifiedNameOrTypeName:=IsQualifiedName)
-            End If
-            If IsTypeName Then
-                IsQualifiedName = True
-            Else
-                If VB.SyntaxFacts.IsPredefinedType(keywordKind) Then
-                    Return MakeIdentifierUnique(id, BracketNeeded:=True, QualifiedNameOrTypeName:=IsQualifiedName)
-                End If
-            End If
-
-            If id.Parent?.IsParentKind(CS.SyntaxKind.Parameter) Then
-                Dim Param As CSS.ParameterSyntax = DirectCast(id.Parent.Parent, CSS.ParameterSyntax)
-                Dim MethodDeclaration As CSS.MethodDeclarationSyntax = TryCast(Param.Parent?.Parent, CSS.MethodDeclarationSyntax)
-                IsQualifiedName = If(MethodDeclaration IsNot Nothing AndAlso String.Compare(MethodDeclaration.Identifier.ValueText, id.ValueText, ignoreCase:=True, Globalization.CultureInfo.InvariantCulture) <> 0, False, True)
-                IsQualifiedName = IsQualifiedName Or String.Compare(Param.Type.ToString, id.ValueText, ignoreCase:=False, Globalization.CultureInfo.InvariantCulture) = 0
-            End If
-            Return MakeIdentifierUnique(id, BracketNeeded:=False, QualifiedNameOrTypeName:=IsQualifiedName)
         End Function
 
         Private Shared Function GetLiteralExpression(value As Object, Token As SyntaxToken, _NodesVisitor As NodesVisitor) As VBS.ExpressionSyntax
@@ -238,63 +204,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
             End Select
             Stop
             Return NothingExpression
-        End Function
-
-        Private Shared Function MakeIdentifierUnique(id As SyntaxToken, BracketNeeded As Boolean, QualifiedNameOrTypeName As Boolean) As SyntaxToken
-            Dim ConvertedIdentifier As String = If(BracketNeeded, $"[{id.ValueText}]", id.ValueText)
-            If ConvertedIdentifier = "_" Then
-                ConvertedIdentifier = "underscore"
-            End If
-            ' Don't Change Qualified Names
-            If QualifiedNameOrTypeName Then
-                If Not UsedIdentifiers.ContainsKey(ConvertedIdentifier) Then
-                    UsedIdentifiers.Add(ConvertedIdentifier, New SymbolTableEntry(ConvertedIdentifier, True))
-                End If
-                Return VBFactory.Identifier(UsedIdentifiers(ConvertedIdentifier).Name).WithConvertedTriviaFrom(id)
-            End If
-            If UsedIdentifiers.ContainsKey(ConvertedIdentifier) Then
-                ' We have a case sensitive exact match so just return it
-                Return VBFactory.Identifier(UsedIdentifiers(ConvertedIdentifier).Name).WithConvertedTriviaFrom(id)
-            End If
-            Dim IsFieldIdentifier As Boolean = False
-            If TypeOf id.Parent Is CSS.VariableDeclaratorSyntax Then
-                Dim VarDecl As CSS.VariableDeclaratorSyntax = CType(id.Parent, CSS.VariableDeclaratorSyntax)
-                Dim FieldDeclatationOrNothing As CSS.FieldDeclarationSyntax = VarDecl.FirstAncestorOrSelf(Of CSS.FieldDeclarationSyntax)
-                If Char.IsLower(CChar(ConvertedIdentifier.Left(1))) AndAlso FieldDeclatationOrNothing IsNot Nothing Then
-                    If FieldDeclatationOrNothing.Modifiers.Count > 0 AndAlso FieldDeclatationOrNothing.Modifiers.Contains(Function(t As SyntaxToken) t.IsKind(CS.SyntaxKind.PrivateKeyword)) Then
-                        IsFieldIdentifier = True
-                    End If
-                End If
-            End If
-            For Each ident As KeyValuePair(Of String, SymbolTableEntry) In UsedIdentifiers
-                If String.Compare(ident.Key, ConvertedIdentifier, ignoreCase:=False, Globalization.CultureInfo.InvariantCulture) = 0 Then
-                    ' We have an exact match keep looking
-                    Continue For
-                End If
-                If String.Compare(ident.Key, ConvertedIdentifier, ignoreCase:=True, Globalization.CultureInfo.InvariantCulture) = 0 Then
-                    ' If we are here we have seen the variable in a different case so fix it
-                    If UsedIdentifiers(ident.Key).IsType Then
-                        UsedIdentifiers.Add(ConvertedIdentifier, New SymbolTableEntry(_Name:=ConvertedIdentifier, _IsType:=False))
-                    Else
-                        Dim NewUniqueName As String
-                        If ident.Value.Name.StartsWith("_", StringComparison.InvariantCulture) Then
-                            NewUniqueName = ConvertedIdentifier
-                        Else
-                            NewUniqueName = If(ConvertedIdentifier.StartsWith("[", StringComparison.InvariantCulture),
-                                                    ConvertedIdentifier.Replace("[", "_", StringComparison.InvariantCulture).
-                                                                        Replace("]", "", StringComparison.InvariantCulture),
-                                                    If(Char.IsLower(CChar(ConvertedIdentifier.Substring(0, 1))),
-                                                        $"_{ConvertedIdentifier}",
-                                                        $"{ConvertedIdentifier}_Renamed"))
-                        End If
-                        UsedIdentifiers.Add(ConvertedIdentifier, New SymbolTableEntry(_Name:=NewUniqueName, _IsType:=QualifiedNameOrTypeName))
-                    End If
-                    Return VBFactory.Identifier(UsedIdentifiers(ConvertedIdentifier).Name).WithConvertedTriviaFrom(id)
-                End If
-            Next
-            Dim _ConvertedIdentifier As String = $"{If(IsFieldIdentifier, "_", "")}{ConvertedIdentifier}"
-            UsedIdentifiers.Add(ConvertedIdentifier, New SymbolTableEntry(_ConvertedIdentifier, QualifiedNameOrTypeName))
-            Return VBFactory.Identifier(_ConvertedIdentifier)
         End Function
 
         ''' <summary>

@@ -25,11 +25,56 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
 
     Partial Public Class CSharpConverter
 
-        Partial Protected Friend Class NodesVisitor
+        Partial Friend Class NodesVisitor
             Inherits CS.CSharpSyntaxVisitor(Of VB.VisualBasicSyntaxNode)
             Private Const IDictionary As String = "IDictionary"
             Private Const IEnumerable As String = "IEnumerable"
             Private Const IEnumerableOf As String = "IEnumerable(Of "
+
+            Private Shared Function GetTypeSyntaxFromInterface(expressionConvertedType As ITypeSymbol) As TypeSyntax
+
+                If Not expressionConvertedType.AllInterfaces.Any Then
+                    If expressionConvertedType.ToString.EndsWith("IArityEnumerable", StringComparison.InvariantCulture) Then
+                        Return PredefinedTypeInteger
+                    End If
+                    Return PredefinedTypeObject
+                End If
+                For Each NamedType As INamedTypeSymbol In expressionConvertedType.AllInterfaces
+                    Dim index As Integer = NamedType.ToString.IndexOf(IEnumerableOf, StringComparison.InvariantCulture)
+                    Dim NewType As String
+                    If index > 0 Then
+                        NewType = NamedType.ToString.Substring(index + IEnumerableOf.Length)
+                        Return VBFactory.ParseName(NewType)
+                    End If
+                    index = NamedType.ToString.IndexOf(IDictionary, StringComparison.InvariantCulture)
+                    If index > 0 Then
+                        Return ConvertToType(NamedType)
+                    End If
+                    index = NamedType.ToString.IndexOf(IEnumerable, StringComparison.InvariantCulture)
+                    If index > 0 Then
+                        Return ConvertToType(NamedType)
+                    End If
+                Next
+
+                Dim index1 As Integer = expressionConvertedType.ToString.IndexOf(IEnumerableOf, StringComparison.InvariantCulture)
+                If index1 > 0 Then
+                    Dim NewType As String = expressionConvertedType.ToString.Substring(index1 + IEnumerableOf.Length)
+                    Return VBFactory.ParseName(NewType)
+                End If
+                Return Nothing
+            End Function
+
+            Private Shared Function UnpackExpressionFromStatement(statementSyntax As StatementSyntax, <Out> ByRef expression As ExpressionSyntax) As Boolean
+                If TypeOf statementSyntax Is ReturnStatementSyntax Then
+                    expression = (DirectCast(statementSyntax, ReturnStatementSyntax)).Expression
+                ElseIf TypeOf statementSyntax Is YieldStatementSyntax Then
+                    expression = (DirectCast(statementSyntax, YieldStatementSyntax)).Expression
+                Else
+                    expression = Nothing
+                End If
+
+                Return expression IsNot Nothing
+            End Function
 
             Private Function ConvertLambdaExpression(node As CSS.AnonymousFunctionExpressionSyntax, block As Object, parameters As SeparatedSyntaxList(Of CSS.ParameterSyntax), CS_Modifiers As SyntaxTokenList) As LambdaExpressionSyntax
                 Dim NodesList As New List(Of ParameterSyntax)
@@ -161,23 +206,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Dim TokenString As String = ConvertCSharpEscapes(CSharpToken.ValueText)
                 Return VBFactory.InterpolatedStringTextToken(TokenString, TokenString)
             End Function
-
-            Private Shared Function CovertStringToTupleType(TupleString As String) As TypeSyntax
-                Dim TupleElements As New List(Of TupleElementSyntax)
-                For Each t As String In TupleString.Substring(1, TupleString.Length - 2).Split(","c)
-                    Dim TuplePart() As String = t.Trim.Split(" "c)
-                    If TuplePart.Count = 1 Then
-                        Dim typedTupleElementSyntax1 As TypedTupleElementSyntax = VBFactory.TypedTupleElement(ConvertToType(TuplePart(0)))
-                        TupleElements.Add(typedTupleElementSyntax1)
-                    Else
-                        Dim Identifier As SyntaxToken = CS.SyntaxFactory.Identifier(TuplePart(1))
-                        Dim namedTupleElementSyntax1 As NamedTupleElementSyntax = VBFactory.NamedTupleElement(GenerateSafeVBToken(Identifier, IsQualifiedName:=False, IsTypeName:=False), VBFactory.SimpleAsClause(ConvertToType(TuplePart(0))))
-                        TupleElements.Add(namedTupleElementSyntax1)
-                    End If
-                Next
-                Return VBFactory.TupleType(TupleElements.ToArray)
-            End Function
-
             Private Function IsConcatenateStringsExpression(node As CSS.BinaryExpressionSyntax) As Boolean
                 If Not node.IsKind(CS.SyntaxKind.AddExpression) Then
                     Return False
@@ -310,20 +338,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
 
                 Return FoundEOL
             End Function
-
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
-            Private Shared Function UnpackExpressionFromStatement(statementSyntax As StatementSyntax, <Out> ByRef expression As ExpressionSyntax) As Boolean
-                If TypeOf statementSyntax Is ReturnStatementSyntax Then
-                    expression = (DirectCast(statementSyntax, ReturnStatementSyntax)).Expression
-                ElseIf TypeOf statementSyntax Is YieldStatementSyntax Then
-                    expression = (DirectCast(statementSyntax, YieldStatementSyntax)).Expression
-                Else
-                    expression = Nothing
-                End If
-
-                Return expression IsNot Nothing
-            End Function
-
             Public Shared Function ConvertAndModifyNodeTrivia(Node As VB.VisualBasicSyntaxNode, NodesOrTokens As List(Of SyntaxNodeOrToken), Index As Integer) As VB.VisualBasicSyntaxNode
                 If NodesOrTokens Is Nothing Then
                     Throw New ArgumentNullException(NameOf(NodesOrTokens))
@@ -544,96 +558,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Next
                 Return Token.With(FinalLeadingTriviaList, FinalTrailingTriviaList)
             End Function
-
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="TupleElement can't Be Nothing")>
-            Public Shared Function ConvertToTupleElement(TupleElement As IFieldSymbol) As TupleElementSyntax
-                If TupleElement.Type Is Nothing Then
-                    Return VBFactory.NamedTupleElement(TupleElement.Name.ToString(Globalization.CultureInfo.InvariantCulture))
-                End If
-                Dim AsClause As SimpleAsClauseSyntax = VBFactory.SimpleAsClause(ConvertToType(TupleElement.Type))
-                Return VBFactory.NamedTupleElement(VBFactory.Identifier(AddBracketsIfRequired(TupleElement.Name)), AsClause)
-            End Function
-
-            Public Shared Function ConvertToType(PossibleTupleType As ITypeSymbol) As TypeSyntax
-                If PossibleTupleType Is Nothing Then
-                    Throw New ArgumentNullException(NameOf(PossibleTupleType))
-                End If
-                If PossibleTupleType.IsKind(SymbolKind.ArrayType) Then
-                    Dim ElementType As TypeSyntax = ConvertToType(DirectCast(PossibleTupleType, IArrayTypeSymbol).ElementType)
-                    If TypeOf ElementType Is ArrayTypeSyntax Then
-                        Return ElementType
-                    End If
-                    Return VBFactory.ArrayType(ElementType)
-                End If
-                If PossibleTupleType.IsTupleType Then
-                    Dim TupleElementList As New List(Of TupleElementSyntax)
-                    For Each TupleElement As IFieldSymbol In DirectCast(PossibleTupleType, INamedTypeSymbol).TupleElements
-                        TupleElementList.Add(ConvertToTupleElement(TupleElement))
-                    Next
-                    Return VBFactory.TupleType(TupleElementList.ToArray)
-                End If
-                If PossibleTupleType.Name = "Tuple" Then
-                    Dim TupleElementList As New List(Of TypeSyntax)
-                    For Each TupleElement As ITypeSymbol In DirectCast(PossibleTupleType, INamedTypeSymbol).TypeArguments
-                        TupleElementList.Add(ConvertToType(TupleElement))
-                    Next
-                    Return VBFactory.GenericName("Tuple", VBFactory.TypeArgumentList(VBFactory.SeparatedList(TupleElementList)))
-                End If
-                Dim PossibleName As String = PossibleTupleType.ToString.Trim
-                Dim StartIndex As Integer = PossibleName.IndexOf("<", StringComparison.InvariantCulture)
-                If StartIndex > 0 Then
-                    Dim IndexOfLastGreaterThan As Integer = PossibleName.LastIndexOf(">", StringComparison.InvariantCulture)
-                    Dim Name As String = PossibleName.Substring(0, StartIndex)
-                    Dim PossibleTypes As String = PossibleName.Substring(StartIndex + 1, IndexOfLastGreaterThan - StartIndex - 1)
-                    If PossibleTupleType.ToString.StartsWith("System.Func", StringComparison.InvariantCulture) Then
-                        Dim DictionaryTypeElement As New List(Of TypeSyntax)
-                        While PossibleTypes.Length > 0
-                            Dim EndIndex As Integer
-                            ' Tuple
-                            If PossibleTypes.StartsWith("(", StringComparison.InvariantCulture) Then
-                                ' Tuple
-                                EndIndex = PossibleTypes.LastIndexOf(")", StringComparison.InvariantCulture)
-                                DictionaryTypeElement.Add(CovertStringToTupleType(PossibleTypes.Substring(0, EndIndex + 1).Trim))
-                                EndIndex += 1
-                            Else
-                                ' Type
-                                EndIndex = PossibleTypes.IndexOf(",", StringComparison.InvariantCulture)
-                                Dim FirstLessThan As Integer = PossibleTypes.IndexOf("<", StringComparison.InvariantCulture)
-                                EndIndex = If(EndIndex = -1 OrElse (FirstLessThan <> -1 AndAlso FirstLessThan < EndIndex), PossibleTypes.Length, EndIndex)
-                                DictionaryTypeElement.Add(ConvertToType(PossibleTypes.Substring(0, EndIndex) _
-                                                                                     .Replace("<", "(Of ", StringComparison.InvariantCulture) _
-                                                                                     .Replace(">", ")", StringComparison.InvariantCulture).Trim))
-                            End If
-                            If EndIndex + 1 < PossibleTypes.Length Then
-                                PossibleTypes = PossibleTypes.Substring(EndIndex + 1).Trim
-                            Else
-                                Exit While
-                            End If
-                        End While
-                        Return VBFactory.GenericName(Name, VBFactory.TypeArgumentList(VBFactory.SeparatedList(DictionaryTypeElement)))
-                    End If
-                    ' Could be dictionary or List
-                    If TypeOf PossibleTupleType Is INamedTypeSymbol AndAlso PossibleName.Contains(",", StringComparison.InvariantCulture) Then
-                        Dim NamedType As INamedTypeSymbol = CType(PossibleTupleType, INamedTypeSymbol)
-                        Dim DictionaryTypeElement As New List(Of TypeSyntax)
-                        If Not NamedType.TypeArguments.Any Then
-                            Return PredefinedTypeObject
-                        End If
-                        For Each Element As ITypeSymbol In NamedType.TypeArguments
-                            DictionaryTypeElement.Add(ConvertToType(Element))
-                        Next
-                        Return VBFactory.GenericName(Name,
-                                                     VBFactory.TypeArgumentList(OpenParenToken,
-                                                                                OfKeyword.WithTrailingTrivia(SpaceTrivia),
-                                                                                VBFactory.SeparatedList(DictionaryTypeElement),
-                                                                                CloseParenToken
-                                                                                )
-                                                    )
-                    End If
-                End If
-                Return ConvertToType(PossibleName.Replace("<", "(Of ", StringComparison.InvariantCulture).Replace(">", ")", StringComparison.InvariantCulture))
-            End Function
-
             Public Shared Function GetElementType(_ITypeSymbol As ITypeSymbol) As TypeSyntax
                 Dim _TypeSyntax As TypeSyntax = ConvertToType(_ITypeSymbol)
                 If _TypeSyntax.IsKind(VB.SyntaxKind.ArrayType) Then
@@ -701,41 +625,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 End If
                 Return VBFactory.PredefinedType(ObjectKeyword)
             End Function
-
-            Private Shared Function GetTypeSyntaxFromInterface(expressionConvertedType As ITypeSymbol) As TypeSyntax
-
-                If Not expressionConvertedType.AllInterfaces.Any Then
-                    If expressionConvertedType.ToString.EndsWith("IArityEnumerable", StringComparison.InvariantCulture) Then
-                        Return PredefinedTypeInteger
-                    End If
-                    Return PredefinedTypeObject
-                End If
-                For Each NamedType As INamedTypeSymbol In expressionConvertedType.AllInterfaces
-                    Dim index As Integer = NamedType.ToString.IndexOf(IEnumerableOf, StringComparison.InvariantCulture)
-                    Dim NewType As String
-                    If index > 0 Then
-                        NewType = NamedType.ToString.Substring(index + IEnumerableOf.Length)
-                        Return VBFactory.ParseName(NewType)
-                    End If
-                    index = NamedType.ToString.IndexOf(IDictionary, StringComparison.InvariantCulture)
-                    If index > 0 Then
-                        Return ConvertToType(NamedType)
-                    End If
-                    index = NamedType.ToString.IndexOf(IEnumerable, StringComparison.InvariantCulture)
-                    If index > 0 Then
-                        Return ConvertToType(NamedType)
-                    End If
-                Next
-
-                Dim index1 As Integer = expressionConvertedType.ToString.IndexOf(IEnumerableOf, StringComparison.InvariantCulture)
-                If index1 > 0 Then
-                    Dim NewType As String = expressionConvertedType.ToString.Substring(index1 + IEnumerableOf.Length)
-                    Return VBFactory.ParseName(NewType)
-                End If
-                Return Nothing
-            End Function
-
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="TupleElement can't Be Nothing")>
             Public Overrides Function VisitAnonymousMethodExpression(node As CSS.AnonymousMethodExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Dim Parameters As New SeparatedSyntaxList(Of CSS.ParameterSyntax)
                 If node.ParameterList IsNot Nothing Then
@@ -744,7 +633,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return ConvertLambdaExpression(node:=node, block:=node.Block.Statements, parameters:=Parameters, CS_Modifiers:=VBFactory.TokenList(node.AsyncKeyword)).WithConvertedTriviaFrom(node)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitAnonymousObjectCreationExpression(node As CSS.AnonymousObjectCreationExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Dim FieldInitializers As New List(Of FieldInitializerSyntax)
                 For i As Integer = 0 To node.Initializers.Count - 1
@@ -800,7 +688,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return VBFactory.AnonymousObjectCreationExpression(VBFactory.ObjectMemberInitializer(VBFactory.SeparatedList(FieldInitializers)))
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitArrayCreationExpression(node As CSS.ArrayCreationExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Dim upperBoundArguments As IEnumerable(Of ArgumentSyntax) = node.Type.RankSpecifiers.First()?.Sizes.Where(Function(s As CSS.ExpressionSyntax) Not (TypeOf s Is CSS.OmittedArraySizeExpressionSyntax)).Select(Function(s As CSS.ExpressionSyntax) DirectCast(VBFactory.SimpleArgument(ReduceArrayUpperBoundExpression(s)), ArgumentSyntax))
                 Dim cleanUpperBounds As New List(Of ArgumentSyntax)
@@ -833,9 +720,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                                                             ).WithConvertedTriviaFrom(node)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitAssignmentExpression(node As CSS.AssignmentExpressionSyntax) As VB.VisualBasicSyntaxNode
-                'Dim errorHandler As EventHandler(Of AnalyzerLoadFailureEventArgs) = Sub(o, e) errors.Add(e)
                 If TypeOf node.Parent Is CSS.ExpressionStatementSyntax OrElse TypeOf node.Parent Is CSS.ArrowExpressionClauseSyntax Then
                     Dim RightTypeInfo As TypeInfo = ModelExtensions.GetTypeInfo(mSemanticModel, node.Right)
                     Dim IsDelegate As Boolean
@@ -1051,7 +936,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return VBFactory.InvocationExpression(expression:=VBFactory.IdentifierName("__InlineAssignHelper"), argumentList:=VBFactory.ArgumentList(VBFactory.SeparatedList((New ArgumentSyntax() {VBFactory.SimpleArgument(LeftExpression), VBFactory.SimpleArgument(RightExpression)})))).WithConvertedTriviaFrom(node)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitAwaitExpression(node As CSS.AwaitExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Return VBFactory.AwaitExpression(expression:=DirectCast(node.Expression.Accept(Me), ExpressionSyntax)).WithConvertedTriviaFrom(node)
             End Function
@@ -1060,7 +944,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return VBFactory.MyBaseExpression()
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitBinaryExpression(node As CSS.BinaryExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Try
                     Dim FoundEOL As Boolean = False
@@ -1337,7 +1220,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Throw UnreachableException
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitCastExpression(node As CSS.CastExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Dim CTypeExpressionSyntax As VB.VisualBasicSyntaxNode
                 Dim NewTrailingTrivia As New List(Of SyntaxTrivia)
@@ -1436,7 +1318,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return CTypeExpressionSyntax.WithConvertedLeadingTriviaFrom(node).WithTrailingTrivia(NewTrailingTrivia)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitCheckedExpression(node As CSS.CheckedExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Dim Unchecked As Boolean = node.Keyword.ValueText <> "checked"
                 Dim msg As String = If(Unchecked, "VB has no direct equivalent to C# unchecked:", "VB default math is equivalent to C# checked:")
@@ -1474,7 +1355,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Throw UnreachableException
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitConditionalAccessExpression(node As CSS.ConditionalAccessExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Dim expression As ExpressionSyntax = DirectCast(node.Expression.Accept(Me), ExpressionSyntax)
                 Dim TrailingTriviaList As New List(Of SyntaxTrivia)
@@ -1485,7 +1365,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return VBFactory.ConditionalAccessExpression(expression, QuestionToken.WithTrailingTrivia(TrailingTriviaList), DirectCast(node.WhenNotNull.Accept(Me), ExpressionSyntax)).WithConvertedTriviaFrom(node)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitConditionalExpression(node As CSS.ConditionalExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Dim NodesOrTokens As New List(Of SyntaxNodeOrToken) From {
                     node.Condition,
@@ -1549,7 +1428,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return ResultExpression
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitDeclarationExpression(Node As CSS.DeclarationExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Dim Value As IdentifierNameSyntax
                 If Node.Designation.IsKind(CS.SyntaxKind.SingleVariableDesignation) Then
@@ -1584,12 +1462,10 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Throw UnreachableException
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitDefaultExpression(node As CSS.DefaultExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Return VBFactory.ParseExpression($"CType(Nothing, {node.Type.Accept(Me).WithoutLeadingTrivia})").WithConvertedTriviaFrom(node)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitDiscardDesignation(node As CSS.DiscardDesignationSyntax) As VB.VisualBasicSyntaxNode
                 Dim Identifier As SyntaxToken = GenerateSafeVBToken(node.UnderscoreToken, IsQualifiedName:=False, IsTypeName:=False)
                 Dim IdentifierExpression As IdentifierNameSyntax = VBFactory.IdentifierName(Identifier)
@@ -1631,7 +1507,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return IdentifierExpression
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitElementAccessExpression(node As CSS.ElementAccessExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Dim argumentList As ArgumentListSyntax = DirectCast(node.ArgumentList.Accept(Me), ArgumentListSyntax)
                 Dim expression As ExpressionSyntax
@@ -1662,7 +1537,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return VBFactory.InvocationExpression(expression, argumentList.WithoutLeadingTrivia)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitElementBindingExpression(node As CSS.ElementBindingExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Dim Arguments0 As VB.VisualBasicSyntaxNode = node.ArgumentList.Arguments(0).Accept(Me)
                 Dim expression As ExpressionSyntax = VBFactory.ParseExpression(Arguments0.ToString)
@@ -1670,7 +1544,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return VBFactory.InvocationExpression(ParenthesizedExpression)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitImplicitArrayCreationExpression(node As CSS.ImplicitArrayCreationExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Dim CS_Separators As IEnumerable(Of SyntaxToken) = node.Initializer.Expressions.GetSeparators
                 Dim ExpressionItems As New List(Of ExpressionSyntax)
@@ -1717,7 +1590,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 End If
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitInitializerExpression(node As CSS.InitializerExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Try
 
@@ -1728,27 +1600,24 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                     Dim ExpressionLastIndex As Integer = node.Expressions.Count - 1
                     Dim FinalSeparator As Boolean = CS_Separators.Any AndAlso ExpressionLastIndex <> CS_Separators.Count
                     Dim OpenBraceTokenWithTrivia As SyntaxToken = OpenBraceToken.WithConvertedTriviaFrom(node.OpenBraceToken)
-#If NETCOREAPP3_0 Then
                     Dim ReportProgress As Boolean = ExpressionLastIndex > 500
 
                     If ReportProgress Then
                         OriginalRequest.ProgressBar?.SetTotalItems(ExpressionLastIndex)
                     End If
-#End If
                     ' Figuring out this without using Accept is complicated below is safe but not fast
                     Dim ItemIsField As Boolean = node.Expressions.Any AndAlso TypeOf node.Expressions(0).Accept(Me) Is FieldInitializerSyntax
                     For i As Integer = 0 To ExpressionLastIndex
-#If NETCOREAPP3_0 Then
                         If ReportProgress Then
                             OriginalRequest.ProgressBar?.UpdateProgress(1)
                         End If
-#End If
-                        Application.DoEvents
+                        Application.DoEvents()
+
                         If OriginalRequest.CancelToken.IsCancellationRequested Then
                             Exit For
                         End If
                         Dim Item As VB.VisualBasicSyntaxNode = node.Expressions(i).Accept(Me)
-                            Try
+                        Try
                             If ItemIsField Then
                                 Fields.Add(DirectCast(Item.RemoveExtraLeadingEOL, FieldInitializerSyntax))
                             Else
@@ -1840,29 +1709,24 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Throw UnreachableException
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitInterpolatedStringExpression(node As CSS.InterpolatedStringExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Return VBFactory.InterpolatedStringExpression(node.Contents.Select(Function(c As CSS.InterpolatedStringContentSyntax) DirectCast(c.Accept(Me), InterpolatedStringContentSyntax)).ToArray()).WithConvertedTriviaFrom(node)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitInterpolatedStringText(node As CSS.InterpolatedStringTextSyntax) As VB.VisualBasicSyntaxNode
                 Dim CSharpToken As SyntaxToken = node.TextToken
                 Dim TextToken As SyntaxToken = ConvertToInterpolatedStringTextToken(CSharpToken)
                 Return VBFactory.InterpolatedStringText(TextToken).WithConvertedTriviaFrom(node)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitInterpolation(node As CSS.InterpolationSyntax) As VB.VisualBasicSyntaxNode
                 Return VBFactory.Interpolation(DirectCast(node.Expression.Accept(Me), ExpressionSyntax)).WithConvertedTriviaFrom(node)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitInterpolationFormatClause(node As CSS.InterpolationFormatClauseSyntax) As VB.VisualBasicSyntaxNode
                 Return MyBase.VisitInterpolationFormatClause(node).WithConvertedTriviaFrom(node)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitInvocationExpression(node As CSS.InvocationExpressionSyntax) As VB.VisualBasicSyntaxNode
                 If node.Expression.ToString() = "nameof" Then
                     Try
@@ -1915,7 +1779,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
             ''' <param name="node"></param>
             ''' <returns></returns>
             ''' <remarks>Added by PC</remarks>
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitIsPatternExpression(node As CSS.IsPatternExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Dim Pattern As CSS.PatternSyntax = node.Pattern
                 Dim VBExpression As ExpressionSyntax = DirectCast(node.Expression.Accept(Me), ExpressionSyntax)
@@ -2006,7 +1869,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Throw UnreachableException
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitLiteralExpression(node As CSS.LiteralExpressionSyntax) As VB.VisualBasicSyntaxNode
                 ' now this looks somehow like a hack... is there a better way?
                 If node.IsKind(CS.SyntaxKind.StringLiteralExpression) Then
@@ -2142,7 +2004,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return GetLiteralExpression(node.Token.Value, node.Token, Me).WithConvertedTriviaFrom(node.Token)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitMemberAccessExpression(node As CSS.MemberAccessExpressionSyntax) As VB.VisualBasicSyntaxNode
                 If node.IsKind(CS.SyntaxKind.PointerMemberAccessExpression) Then
                     Dim StatementWithIssues As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
@@ -2227,13 +2088,11 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return WrapTypedNameIfNecessary(name:=VBFactory.MemberAccessExpression(VB.SyntaxKind.SimpleMemberAccessExpression, Expression, OperatorToken, Name), originalName:=node).WithConvertedTriviaFrom(node)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitMemberBindingExpression(node As CSS.MemberBindingExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Dim name As SimpleNameSyntax = DirectCast(node.Name.Accept(Me), SimpleNameSyntax)
                 Return VBFactory.SimpleMemberAccessExpression(name:=name)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitObjectCreationExpression(node As CSS.ObjectCreationExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Dim type1 As TypeSyntax = DirectCast(node.Type.Accept(Me), TypeSyntax)
 
@@ -2284,7 +2143,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return VBFactory.ObjectCreationExpression(VBFactory.List(Of AttributeListSyntax)(), type1, argumentList, initializer)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitParenthesizedExpression(node As CSS.ParenthesizedExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Dim Expression As ExpressionSyntax = DirectCast(node.Expression.Accept(Me), ExpressionSyntax)
                 If TypeOf Expression Is CTypeExpressionSyntax OrElse
@@ -2392,12 +2250,10 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return parenthesizedExpressionSyntax1
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitParenthesizedLambdaExpression(node As CSS.ParenthesizedLambdaExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Return ConvertLambdaExpression(node, node.Body, node.ParameterList.Parameters, VBFactory.TokenList(node.AsyncKeyword))
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitParenthesizedVariableDesignation(node As CSS.ParenthesizedVariableDesignationSyntax) As VB.VisualBasicSyntaxNode
                 Dim Variables As New List(Of ModifiedIdentifierSyntax)
                 For i As Integer = 0 To node.Variables.Count - 1
@@ -2409,7 +2265,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return VBFactory.VariableDeclarator(Names, VBFactory.SimpleAsClause(PredefinedTypeObject), initializer:=Nothing)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitPostfixUnaryExpression(node As CSS.PostfixUnaryExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Dim CSExpressionKind As CS.SyntaxKind = CS.CSharpExtensions.Kind(node)
                 Dim OperandExpression As ExpressionSyntax = DirectCast(node.Operand.Accept(Me), ExpressionSyntax)
@@ -2454,7 +2309,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 End If
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitPrefixUnaryExpression(node As CSS.PrefixUnaryExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Dim kind As VB.SyntaxKind = ConvertCSExpressionsKindToVBKind(CS.CSharpExtensions.Kind(node))
                 If kind = CS.SyntaxKind.PointerIndirectionExpression Then
@@ -2498,7 +2352,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                                                      ).WithConvertedTriviaFrom(node)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitSimpleLambdaExpression(node As CSS.SimpleLambdaExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Return ConvertLambdaExpression(node, node.Body, VBFactory.SingletonSeparatedList(node.Parameter), VBFactory.TokenList(node.AsyncKeyword)).WithConvertedTriviaFrom(node)
             End Function
@@ -2509,17 +2362,14 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
             ''' <param name="node"></param>
             ''' <returns></returns>ThrowExpressionSyntax
             ''' <remarks>Added by PC</remarks>
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitSizeOfExpression(node As CSS.SizeOfExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Return VBFactory.ParseExpression($"Len(New {node.Type.ToString}()) ")
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitThisExpression(node As CSS.ThisExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Return VBFactory.MeExpression().WithConvertedTriviaFrom(node)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitThrowExpression(node As CSS.ThrowExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Dim Expression As ExpressionSyntax = DirectCast(node.Expression.Accept(Me), ExpressionSyntax)
                 Dim ThrowStatement As ThrowStatementSyntax = VBFactory.ThrowStatement(Expression).WithTrailingEOL
@@ -2527,7 +2377,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return ThrowStatement.WithTrailingEOL
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitTupleElement(node As CSS.TupleElementSyntax) As VB.VisualBasicSyntaxNode
                 Try
                     If String.IsNullOrWhiteSpace(node.Identifier.ValueText) Then
@@ -2549,7 +2398,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
             ''' </summary>
             ''' <param name="node"></param>
             ''' <returns></returns>
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitTupleExpression(node As CSS.TupleExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Dim lArgumentSyntax As New List(Of SimpleArgumentSyntax)
                 If TypeOf node.Arguments(0).Expression IsNot CSS.DeclarationExpressionSyntax Then
@@ -2618,14 +2466,12 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return VBFactory.TupleExpression(VBFactory.SeparatedList(lArgumentSyntax))
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitTupleType(node As CSS.TupleTypeSyntax) As VB.VisualBasicSyntaxNode
                 Dim SSList As New List(Of TupleElementSyntax)
                 SSList.AddRange(node.Elements.Select(Function(a As CSS.TupleElementSyntax) DirectCast(a.Accept(Me), TupleElementSyntax)))
                 Return VBFactory.TupleType(SSList.ToArray)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitTypeOfExpression(node As CSS.TypeOfExpressionSyntax) As VB.VisualBasicSyntaxNode
                 If TypeOf node.Type Is CSS.GenericNameSyntax Then
                     Dim NodeType As CSS.GenericNameSyntax = DirectCast(node.Type, CSS.GenericNameSyntax)

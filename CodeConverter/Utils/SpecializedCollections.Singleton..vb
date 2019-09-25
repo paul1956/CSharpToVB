@@ -3,10 +3,7 @@
 ' See the LICENSE file in the project root for more information.
 Partial Public Module SpecializedCollections
 
-    <CodeAnalysis.SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification:="I don't know how to fix issue")>
-    Partial Friend NotInheritable Class Singleton
-
-        Friend NotInheritable Class List(Of T)
+    Friend NotInheritable Class SingletonList(Of T)
             Implements IList(Of T), IReadOnlyCollection(Of T)
 
             Private ReadOnly _loneValue As T
@@ -146,7 +143,5 @@ Partial Public Module SpecializedCollections
 #End Region
 
         End Class
-
-    End Class
 
 End Module

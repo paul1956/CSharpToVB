@@ -19,10 +19,9 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
 
     Partial Public Class CSharpConverter
 
-        Partial Protected Friend Class NodesVisitor
+        Partial Friend Class NodesVisitor
             Inherits CS.CSharpSyntaxVisitor(Of VB.VisualBasicSyntaxNode)
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitAttribute(node As CSS.AttributeSyntax) As VB.VisualBasicSyntaxNode
                 Dim list As CSS.AttributeListSyntax = DirectCast(node.Parent, CSS.AttributeListSyntax)
                 Return VBFactory.Attribute(DirectCast(list.Target?.Accept(Me), VBS.AttributeTargetSyntax),
@@ -30,7 +29,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                                                DirectCast(node.ArgumentList?.Accept(Me), VBS.ArgumentListSyntax))
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitAttributeArgument(node As CSS.AttributeArgumentSyntax) As VB.VisualBasicSyntaxNode
                 Dim name As VBS.NameColonEqualsSyntax = Nothing
                 If node.NameColon IsNot Nothing Then
@@ -47,7 +45,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return VBFactory.SimpleArgument(name, value).WithConvertedTriviaFrom(node)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitAttributeArgumentList(node As CSS.AttributeArgumentListSyntax) As VB.VisualBasicSyntaxNode
                 Dim ArgumentNodes As New List(Of VBS.ArgumentSyntax)
                 Dim TrailingTriviaList As New List(Of SyntaxTrivia)
@@ -80,7 +77,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return VBFactory.ArgumentList(OpenParenToken, VBFactory.SeparatedList(ArgumentNodes), CloseParenToken).WithConvertedLeadingTriviaFrom(node).WithTrailingTrivia(TrailingTriviaList).WithAppendedTrailingTrivia(ConvertTrivia(node.GetTrailingTrivia))
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitAttributeList(node As CSS.AttributeListSyntax) As VB.VisualBasicSyntaxNode
                 Dim CS_Separators As IEnumerable(Of SyntaxToken) = node.Attributes.GetSeparators
                 Dim LessThanTokenWithTrivia As SyntaxToken = LessThanToken.WithConvertedTriviaFrom(node.OpenBracketToken)
@@ -103,7 +99,6 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return VBFactory.AttributeList(LessThanTokenWithTrivia, Attributes1, GreaterThenTokenWithTrivia)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitAttributeTargetSpecifier(node As CSS.AttributeTargetSpecifierSyntax) As VB.VisualBasicSyntaxNode
                 Dim id As SyntaxToken
                 Select Case CS.CSharpExtensions.Kind(node.Identifier)

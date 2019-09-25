@@ -17,7 +17,7 @@ Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
 Namespace CSharpToVBCodeConverter
-    Public Module CodeConverter
+    Public Module ConversionSupport
         Friend OriginalRequest As ConvertRequest
         Friend ImplementedMembersStack As New Stack(ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))).Empty)
         Friend ImplementedMembers As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))) = (New List(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))).ToImmutableArray

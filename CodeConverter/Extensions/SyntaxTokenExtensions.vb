@@ -15,6 +15,21 @@ Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Namespace CSharpToVBCodeConverter.Util
     Public Module SyntaxTokenExtensions
 
+        <Extension>
+        Friend Function WithPrependedLeadingTrivia(token As SyntaxToken, trivia As IEnumerable(Of SyntaxTrivia)) As SyntaxToken
+            Return token.WithPrependedLeadingTrivia(trivia.ToSyntaxTriviaList())
+        End Function
+
+        <Extension>
+        Public Function [With](token As SyntaxToken, leading As List(Of SyntaxTrivia), trailing As List(Of SyntaxTrivia)) As SyntaxToken
+            Return token.WithLeadingTrivia(leading).WithTrailingTrivia(trailing)
+        End Function
+
+        <Extension>
+        Public Function [With](token As SyntaxToken, leading As SyntaxTriviaList, trailing As SyntaxTriviaList) As SyntaxToken
+            Return token.WithLeadingTrivia(leading).WithTrailingTrivia(trailing)
+        End Function
+
         ''' <summary>
         ''' Returns the token after this token in the syntax tree.
         ''' </summary>
@@ -87,16 +102,6 @@ Namespace CSharpToVBCodeConverter.Util
             Next
 
             Return Token.WithLeadingTrivia(NewLeadingTrivia)
-        End Function
-
-        <Extension>
-        Public Function [With](token As SyntaxToken, leading As List(Of SyntaxTrivia), trailing As List(Of SyntaxTrivia)) As SyntaxToken
-            Return token.WithLeadingTrivia(leading).WithTrailingTrivia(trailing)
-        End Function
-
-        <Extension>
-        Public Function [With](token As SyntaxToken, leading As SyntaxTriviaList, trailing As SyntaxTriviaList) As SyntaxToken
-            Return token.WithLeadingTrivia(leading).WithTrailingTrivia(trailing)
         End Function
 
         <Extension>
@@ -279,12 +284,6 @@ Namespace CSharpToVBCodeConverter.Util
             End If
 
             Return token.WithLeadingTrivia(trivia.Concat(token.LeadingTrivia))
-        End Function
-
-        <Extension>
-        Public Function WithPrependedLeadingTrivia(token As SyntaxToken, trivia As IEnumerable(Of SyntaxTrivia)) As SyntaxToken
-            Contracts.Contract.Requires(trivia IsNot Nothing)
-            Return token.WithPrependedLeadingTrivia(trivia.ToSyntaxTriviaList())
         End Function
 
     End Module

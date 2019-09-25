@@ -8,12 +8,9 @@ Imports Xunit
 
 Namespace MSCoreReference.Tests
 
-    <CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification:="Source Code for Tests")>
     Public NotInheritable Class MSCoreReferenceTest
-
         Shared Sub VerifyReferencesExist()
-            Dim tree As SyntaxTree = CSharpSyntaxTree.ParseText("using System;
-class test : IComparable { }")
+            Dim tree As SyntaxTree = CSharpSyntaxTree.ParseText(My.Resources.Resource1.UsingSystemclasstestIComparable)
 
             Dim compilation As CSharpCompilation = CSharpCompilation.Create("MyCompilation", syntaxTrees:={tree}, CSharpReferences("", New List(Of MetadataReference)))
             Dim lSemanticModel As SemanticModel = compilation.GetSemanticModel(tree)

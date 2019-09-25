@@ -15,6 +15,7 @@ Namespace VBMsgBox.Test
 
         Public Shared ReadOnly Property ManualTestsEnabled() As Boolean
             Get
+                Return False
                 Return Not String.IsNullOrEmpty(Environment.GetEnvironmentVariable("MANUAL_TESTS"))
             End Get
         End Property

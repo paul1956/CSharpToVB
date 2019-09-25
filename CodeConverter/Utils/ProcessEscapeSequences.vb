@@ -9,8 +9,7 @@ Imports System.Runtime.CompilerServices
 
 Public Module ProcessEscapeSequences
 
-    Public Function ConvertCSharpEscapes(TokenString As String) As String
-        Contracts.Contract.Requires(TokenString IsNot Nothing)
+    Friend Function ConvertCSharpEscapes(TokenString As String) As String
         Dim _Buffer As String
         Try
             'Dim unescape1 As String = RegexParser.Unescape(TokenString)

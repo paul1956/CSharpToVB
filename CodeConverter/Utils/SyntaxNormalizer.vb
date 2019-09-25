@@ -14,7 +14,7 @@ Imports Microsoft.CodeAnalysis.Text
 
 Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-    Public Class SyntaxNormalizer
+    Friend Class SyntaxNormalizer
         Inherits VisualBasicSyntaxRewriter
 
         Private ReadOnly _consideredSpan As TextSpan
@@ -810,7 +810,6 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Return result
         End Function
 
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitAccessorBlock(node As AccessorBlockSyntax) As SyntaxNode
             AddLinebreaksAfterTokenIfNeeded(node.BlockStatement.GetLastToken(), 1)
 
@@ -828,7 +827,6 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Return result
         End Function
 
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitAttributeList(node As AttributeListSyntax) As SyntaxNode
             ' do not add line breaks for attributes of parameters or return types
             If node.Parent Is Nothing OrElse
@@ -841,14 +839,12 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         End Function
 
         <ExcludeFromCodeCoverage>
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitBadDirectiveTrivia(node As BadDirectiveTriviaSyntax) As SyntaxNode
             AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
 
             Return MyBase.VisitBadDirectiveTrivia(node)
         End Function
 
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitCaseBlock(node As CaseBlockSyntax) As SyntaxNode
             AddLinebreaksAfterTokenIfNeeded(node.CaseStatement.GetLastToken(), 1)
 
@@ -867,7 +863,6 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Return result
         End Function
 
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitCatchBlock(node As CatchBlockSyntax) As SyntaxNode
             AddLinebreaksAfterTokenIfNeeded(node.CatchStatement.GetLastToken(), 1)
 
@@ -884,7 +879,6 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Return result
         End Function
 
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitClassBlock(node As ClassBlockSyntax) As SyntaxNode
             VisitTypeBlockSyntax(node)
 
@@ -911,7 +905,6 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         ''' Namespace
         ''' [...]
         ''' </summary>
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitCompilationUnit(node As CompilationUnitSyntax) As SyntaxNode
             Dim hasImports As Boolean = node.Imports.Any
             Dim hasMembers As Boolean = node.Members.Any
@@ -941,14 +934,12 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         End Function
 
         <ExcludeFromCodeCoverage>
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitConstDirectiveTrivia(node As ConstDirectiveTriviaSyntax) As SyntaxNode
             AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
 
             Return MyBase.VisitConstDirectiveTrivia(node)
         End Function
 
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitConstructorBlock(node As ConstructorBlockSyntax) As SyntaxNode
             AddLinebreaksAfterTokenIfNeeded(node.BlockStatement.GetLastToken(), 1)
 
@@ -960,14 +951,12 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         End Function
 
         <ExcludeFromCodeCoverage>
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitDisableWarningDirectiveTrivia(node As DisableWarningDirectiveTriviaSyntax) As SyntaxNode
             AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
 
             Return MyBase.VisitDisableWarningDirectiveTrivia(node)
         End Function
 
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitDoLoopBlock(node As DoLoopBlockSyntax) As SyntaxNode
             AddLinebreaksAfterTokenIfNeeded(node.DoStatement.GetLastToken(), 1)
 
@@ -991,7 +980,6 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Return result
         End Function
 
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitElseBlock(node As ElseBlockSyntax) As SyntaxNode
             AddLinebreaksAfterTokenIfNeeded(node.ElseStatement.GetLastToken(), 1)
 
@@ -1003,14 +991,12 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         End Function
 
         <ExcludeFromCodeCoverage>
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitElseDirectiveTrivia(node As ElseDirectiveTriviaSyntax) As SyntaxNode
             AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
 
             Return MyBase.VisitElseDirectiveTrivia(node)
         End Function
 
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitElseIfBlock(node As ElseIfBlockSyntax) As SyntaxNode
             AddLinebreaksAfterTokenIfNeeded(node.ElseIfStatement.GetLastToken(), 1)
 
@@ -1038,7 +1024,6 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         End Function
 
         <ExcludeFromCodeCoverage>
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitEnableWarningDirectiveTrivia(node As EnableWarningDirectiveTriviaSyntax) As SyntaxNode
             AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
 
@@ -1052,7 +1037,6 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         End Function
 
         <ExcludeFromCodeCoverage>
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitEndExternalSourceDirectiveTrivia(node As EndExternalSourceDirectiveTriviaSyntax) As SyntaxNode
             AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
 
@@ -1060,7 +1044,6 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         End Function
 
         <ExcludeFromCodeCoverage>
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitEndIfDirectiveTrivia(node As EndIfDirectiveTriviaSyntax) As SyntaxNode
             AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
 
@@ -1068,7 +1051,6 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         End Function
 
         <ExcludeFromCodeCoverage>
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitEndRegionDirectiveTrivia(node As EndRegionDirectiveTriviaSyntax) As SyntaxNode
             AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
 
@@ -1078,7 +1060,6 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         ''' <summary>
         ''' Each statement and the begin will be displayed on a separate line. No empty lines.
         ''' </summary>
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitEnumBlock(node As EnumBlockSyntax) As SyntaxNode
             AddLinebreaksAfterTokenIfNeeded(node.EnumStatement.GetLastToken(), 1)
             AddLinebreaksAfterElementsIfNeeded(node.Members, 1, 1)
@@ -1093,17 +1074,12 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Return result
         End Function
 
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitEventBlock(node As EventBlockSyntax) As SyntaxNode
-
             AddLinebreaksAfterTokenIfNeeded(node.EventStatement.GetLastToken, 1)
-
             AddLinebreaksAfterElementsIfNeeded(node.Accessors, 2, 1)
-
             Return MyBase.VisitEventBlock(node)
         End Function
 
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitEventStatement(node As EventStatementSyntax) As SyntaxNode
             Dim result As SyntaxNode = MyBase.VisitEventStatement(node)
 
@@ -1116,7 +1092,6 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         End Function
 
         <ExcludeFromCodeCoverage>
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitExternalChecksumDirectiveTrivia(node As ExternalChecksumDirectiveTriviaSyntax) As SyntaxNode
             AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
 
@@ -1124,21 +1099,16 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         End Function
 
         <ExcludeFromCodeCoverage>
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitExternalSourceDirectiveTrivia(node As ExternalSourceDirectiveTriviaSyntax) As SyntaxNode
             AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
 
             Return MyBase.VisitExternalSourceDirectiveTrivia(node)
         End Function
 
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitFinallyBlock(node As FinallyBlockSyntax) As SyntaxNode
             AddLinebreaksAfterTokenIfNeeded(node.FinallyStatement.GetLastToken(), 1)
-
             AddLinebreaksAfterElementsIfNeeded(node.Statements, 1, 1)
-
             MarkLastStatementIfNeeded(node.Statements)
-
             Return MyBase.VisitFinallyBlock(node)
         End Function
 
@@ -1150,14 +1120,12 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Return result
         End Function
 
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitForBlock(node As ForBlockSyntax) As SyntaxNode
             VisitForOrForEachBlock(node)
 
             Return MyBase.VisitForBlock(node)
         End Function
 
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitForEachBlock(node As ForEachBlockSyntax) As SyntaxNode
             VisitForOrForEachBlock(node)
 
@@ -1179,7 +1147,6 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         End Function
 
         <ExcludeFromCodeCoverage>
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitIfDirectiveTrivia(node As IfDirectiveTriviaSyntax) As SyntaxNode
             AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
 
@@ -1199,7 +1166,6 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Return Result
         End Function
 
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitInterfaceBlock(node As InterfaceBlockSyntax) As SyntaxNode
             VisitTypeBlockSyntax(node)
 
@@ -1229,7 +1195,6 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Return MyBase.VisitLoopStatement(node)
         End Function
 
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitMethodBlock(node As MethodBlockSyntax) As SyntaxNode
             AddLinebreaksAfterTokenIfNeeded(node.BlockStatement.GetLastToken(), 1)
 
@@ -1240,7 +1205,6 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Return MyBase.VisitMethodBlock(node)
         End Function
 
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitMethodStatement(node As MethodStatementSyntax) As SyntaxNode
             Dim result As SyntaxNode = MyBase.VisitMethodStatement(node)
 
@@ -1253,7 +1217,6 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Return result
         End Function
 
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitModuleBlock(node As ModuleBlockSyntax) As SyntaxNode
             VisitTypeBlockSyntax(node)
 
@@ -1267,13 +1230,9 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Return result
         End Function
 
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitMultiLineIfBlock(node As MultiLineIfBlockSyntax) As SyntaxNode
-
             AddLinebreaksAfterTokenIfNeeded(node.IfStatement.GetLastToken(), 1)
-
             AddLinebreaksAfterElementsIfNeeded(node.Statements, 1, 1)
-
             MarkLastStatementIfNeeded(node.Statements)
 
             Dim previousNode As VisualBasicSyntaxNode
@@ -1302,15 +1261,11 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Return MyBase.VisitMultiLineIfBlock(node)
         End Function
 
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitMultiLineLambdaExpression(node As MultiLineLambdaExpressionSyntax) As SyntaxNode
             AddLinebreaksAfterTokenIfNeeded(node.SubOrFunctionHeader.GetLastToken(), 1)
-
             ' one statement per line
             AddLinebreaksAfterElementsIfNeeded(node.Statements, 1, 1)
-
             MarkLastStatementIfNeeded(node.Statements)
-
             _IndentationDepth += 1
             Dim result As SyntaxNode = MyBase.VisitMultiLineLambdaExpression(node)
 
@@ -1321,9 +1276,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         ''' Add an empty line after the begin, except the first member is a nested namespace.
         ''' Separate each member of a namespace with an empty line.
         ''' </summary>
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitNamespaceBlock(node As NamespaceBlockSyntax) As SyntaxNode
-
             If node.Members.Count > 0 Then
                 ' Add an empty line after the namespace begin if there
                 ' is not a namespace declaration as first member
@@ -1348,7 +1301,6 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Return result
         End Function
 
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitNextStatement(node As NextStatementSyntax) As SyntaxNode
             ' next statements with multiple control variables are attached to the inner most for statement,
             ' but it should be indented as it is attached to the outer most one.
@@ -1362,14 +1314,10 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         End Function
 
         <ExcludeFromCodeCoverage>
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitOperatorBlock(node As OperatorBlockSyntax) As SyntaxNode
             AddLinebreaksAfterTokenIfNeeded(node.BlockStatement.GetLastToken(), 1)
-
             AddLinebreaksAfterElementsIfNeeded(node.Statements, 1, 1)
-
             MarkLastStatementIfNeeded(node.Statements)
-
             Return MyBase.VisitOperatorBlock(node)
         End Function
 
@@ -1381,16 +1329,12 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Return result
         End Function
 
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitPropertyBlock(node As PropertyBlockSyntax) As SyntaxNode
             AddLinebreaksAfterTokenIfNeeded(node.PropertyStatement.GetLastToken(), 1)
-
             AddLinebreaksAfterElementsIfNeeded(node.Accessors, 2, 1)
-
             Return MyBase.VisitPropertyBlock(node)
         End Function
 
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitPropertyStatement(node As PropertyStatementSyntax) As SyntaxNode
             Dim result As SyntaxNode = MyBase.VisitPropertyStatement(node)
 
@@ -1403,7 +1347,6 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         End Function
 
         <ExcludeFromCodeCoverage>
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitReferenceDirectiveTrivia(node As ReferenceDirectiveTriviaSyntax) As SyntaxNode
             AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
 
@@ -1411,14 +1354,12 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         End Function
 
         <ExcludeFromCodeCoverage>
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitRegionDirectiveTrivia(node As RegionDirectiveTriviaSyntax) As SyntaxNode
             AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
 
             Return MyBase.VisitRegionDirectiveTrivia(node)
         End Function
 
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitSelectBlock(node As SelectBlockSyntax) As SyntaxNode
             AddLinebreaksAfterTokenIfNeeded(node.SelectStatement.GetLastToken(), 1)
 
@@ -1438,7 +1379,6 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Return result
         End Function
 
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitStructureBlock(node As StructureBlockSyntax) As SyntaxNode
             VisitTypeBlockSyntax(node)
 
@@ -1459,7 +1399,6 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Return result
         End Function
 
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitSyncLockBlock(node As SyncLockBlockSyntax) As SyntaxNode
             AddLinebreaksAfterTokenIfNeeded(node.SyncLockStatement.GetLastToken(), 1)
 
@@ -1567,15 +1506,10 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Return token
         End Function
 
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitTryBlock(node As TryBlockSyntax) As SyntaxNode
-
             AddLinebreaksAfterTokenIfNeeded(node.TryStatement.GetLastToken(), 1)
-
             AddLinebreaksAfterElementsIfNeeded(node.Statements, 1, 1)
-
             MarkLastStatementIfNeeded(node.Statements)
-
             If Not _lastStatementsInBlocks.Contains(node) Then
                 AddLinebreaksAfterTokenIfNeeded(node.EndTryStatement.GetLastToken(), 2)
             Else
@@ -1593,14 +1527,10 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         End Function
 
         <ExcludeFromCodeCoverage>
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitUsingBlock(node As UsingBlockSyntax) As SyntaxNode
             AddLinebreaksAfterTokenIfNeeded(node.UsingStatement.GetLastToken(), 1)
-
             AddLinebreaksAfterElementsIfNeeded(node.Statements, 1, 1)
-
             MarkLastStatementIfNeeded(node.Statements)
-
             If Not _lastStatementsInBlocks.Contains(node) Then
                 AddLinebreaksAfterTokenIfNeeded(node.EndUsingStatement.GetLastToken(), 2)
             Else
@@ -1618,14 +1548,10 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Return result
         End Function
 
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitWhileBlock(node As WhileBlockSyntax) As SyntaxNode
             AddLinebreaksAfterTokenIfNeeded(node.WhileStatement.GetLastToken(), 1)
-
             AddLinebreaksAfterElementsIfNeeded(node.Statements, 1, 1)
-
             MarkLastStatementIfNeeded(node.Statements)
-
             If Not _lastStatementsInBlocks.Contains(node) Then
                 AddLinebreaksAfterTokenIfNeeded(node.EndWhileStatement.GetLastToken(), 2)
             End If
@@ -1641,14 +1567,10 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         End Function
 
         <ExcludeFromCodeCoverage>
-        <SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't be nothing")>
         Public Overrides Function VisitWithBlock(node As WithBlockSyntax) As SyntaxNode
             AddLinebreaksAfterTokenIfNeeded(node.WithStatement.GetLastToken(), 1)
-
             AddLinebreaksAfterElementsIfNeeded(node.Statements, 1, 1)
-
             MarkLastStatementIfNeeded(node.Statements)
-
             Return MyBase.VisitWithBlock(node)
         End Function
 

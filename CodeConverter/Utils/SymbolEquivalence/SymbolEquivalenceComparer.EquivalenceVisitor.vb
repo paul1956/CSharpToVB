@@ -64,7 +64,6 @@ Partial Friend Class SymbolEquivalenceComparer
         End Function
 
         Private Function AreEquivalentWorker(x As ISymbol, y As ISymbol, k As SymbolKind, equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol)) As Boolean
-            Contracts.Contract.Requires(x.IsKind(y.Kind) AndAlso x.IsKind(k))
             Select Case k
                 Case SymbolKind.ArrayType
                     Return ArrayTypesAreEquivalent(DirectCast(x, IArrayTypeSymbol), DirectCast(y, IArrayTypeSymbol), equivalentTypesWithDifferingAssemblies)
@@ -365,9 +364,6 @@ Partial Friend Class SymbolEquivalenceComparer
         End Function
 
         Private Function TypeParametersAreEquivalent(x As ITypeParameterSymbol, y As ITypeParameterSymbol, equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol)) As Boolean
-            Contracts.Contract.Requires((x.TypeParameterKind = TypeParameterKind.Method AndAlso IsConstructedFromSelf(x.DeclaringMethod)) OrElse (x.TypeParameterKind = TypeParameterKind.Type AndAlso IsConstructedFromSelf(x.ContainingType)) OrElse x.TypeParameterKind = TypeParameterKind.Cref)
-            Contracts.Contract.Requires((y.TypeParameterKind = TypeParameterKind.Method AndAlso IsConstructedFromSelf(y.DeclaringMethod)) OrElse (y.TypeParameterKind = TypeParameterKind.Type AndAlso IsConstructedFromSelf(y.ContainingType)) OrElse y.TypeParameterKind = TypeParameterKind.Cref)
-
             If x.Ordinal <> y.Ordinal OrElse x.TypeParameterKind <> y.TypeParameterKind Then
                 Return False
             End If

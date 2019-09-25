@@ -22,10 +22,7 @@ Namespace CSharpToVBCodeConverter.Util
         End Enum
 
         Private Function IsNonNestedTypeAccessible(assembly As IAssemblySymbol, declaredAccessibility As Microsoft.CodeAnalysis.Accessibility, within As ISymbol) As Boolean
-            Contracts.Contract.Requires(TypeOf within Is INamedTypeSymbol OrElse TypeOf within Is IAssemblySymbol)
-            Contracts.Contract.Requires(assembly IsNot Nothing)
             Dim withinAssembly As IAssemblySymbol = If((TryCast(within, IAssemblySymbol)), DirectCast(within, INamedTypeSymbol).ContainingAssembly)
-
             Select Case declaredAccessibility
                 Case Microsoft.CodeAnalysis.Accessibility.NotApplicable, Microsoft.CodeAnalysis.Accessibility.Public
                     ' Public symbols are always accessible from any context
@@ -56,10 +53,6 @@ Namespace CSharpToVBCodeConverter.Util
         '// that certain helper functions that we'd like to call are in-lined in this method to
         '// prevent the overhead of returning collections or enumerators.
         Private Function IsSymbolAccessibleCore(symbol As ISymbol, Within As ISymbol, throughTypeOpt As ITypeSymbol, ByRef failedThroughTypeCheck As Boolean) As Boolean ' must be assembly or named type symbol
-            Contracts.Contract.Requires(symbol IsNot Nothing)
-            Contracts.Contract.Requires(Within IsNot Nothing)
-            Contracts.Contract.Assume(TypeOf Within Is INamedTypeSymbol OrElse TypeOf Within Is IAssemblySymbol)
-
             failedThroughTypeCheck = False
             Dim withinAssembly As IAssemblySymbol = If((TryCast(Within, IAssemblySymbol)), DirectCast(Within, INamedTypeSymbol).ContainingAssembly)
 

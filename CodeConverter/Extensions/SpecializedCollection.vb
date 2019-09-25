@@ -7,7 +7,7 @@ Partial Public Module SpecializedCollection
 
     <Extension>
     Public Function SingletonEnumerable(Of T)(value As T) As IEnumerable(Of T)
-        Return New Singleton.List(Of T)(value)
+        Return New SingletonList(Of T)(value)
     End Function
 
 End Module
