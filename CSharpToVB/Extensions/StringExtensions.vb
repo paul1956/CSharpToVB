@@ -13,7 +13,7 @@ Imports Microsoft.CodeAnalysis
 Public Module StringExtensions
 
     <Extension()>
-    Public Function Count(ByVal value As String, ByVal ch As Char) As Integer
+    Public Function Count(value As String, ch As Char) As Integer
         If value Is Nothing Then
             Return 0
         End If

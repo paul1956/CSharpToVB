@@ -2,7 +2,7 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 Public Class IgnoreFilesWithErrorsList
-    Dim _FileToLoad = ""
+    Dim _FileToLoad As String = ""
     Private ReadOnly list_string As IList(Of String) = New List(Of String)()
 
     Public ReadOnly Property FileToLoad As String
@@ -16,7 +16,7 @@ Public Class IgnoreFilesWithErrorsList
         UpdateGrid()
     End Sub
 
-    Private Sub Cancel_Button_Click(ByVal sender As Object, ByVal e As EventArgs) Handles Cancel_Button.Click
+    Private Sub Cancel_Button_Click(sender As Object, e As EventArgs) Handles Cancel_Button.Click
         DialogResult = DialogResult.Cancel
         Close()
     End Sub
@@ -69,7 +69,7 @@ Public Class IgnoreFilesWithErrorsList
 #Enable Warning IDE0067 ' Dispose objects before losing scope
     End Sub
 
-    Private Sub OK_Button_Click(ByVal sender As Object, ByVal e As EventArgs) Handles OK_Button.Click
+    Private Sub OK_Button_Click(sender As Object, e As EventArgs) Handles OK_Button.Click
         DialogResult = DialogResult.OK
         My.Settings.Save()
         Close()

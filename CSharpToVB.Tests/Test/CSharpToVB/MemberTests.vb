@@ -201,9 +201,9 @@ Option Strict Off
 
 Class TestClass
 
-    Default Public Property Item(ByVal index As Integer) As Integer
+    Default Public Property Item(index As Integer) As Integer
 
-    Default Public ReadOnly Property Item(ByVal index As String) As Integer
+    Default Public ReadOnly Property Item(index As String) As Integer
         Get
             Return 0
         End Get
@@ -211,7 +211,7 @@ Class TestClass
 
     Private m_test3 As Integer
 
-    Default Public Property Item(ByVal index As Double) As Integer
+    Default Public Property Item(index As Double) As Integer
         Get
             Return Me.m_test3
         End Get

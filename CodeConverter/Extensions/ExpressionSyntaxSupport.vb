@@ -40,7 +40,7 @@ Public Module ExpressionSyntaxSupport
                 Dim Item As String = TypeString.Substring(0, If(IndexOfComma = -1, TypeString.Length, IndexOfComma)).Trim
                 Dim SplitOnSpace() As String = Item.Split(" "c)
                 Dim VBType As VBS.TypeSyntax = ConvertToType(SplitOnSpace(0).Replace("<", "(Of ", StringComparison.InvariantCulture).Replace(">", ")", StringComparison.InvariantCulture).Trim).NormalizeWhitespaceEx(useDefaultCasing:=True)
-                If SplitOnSpace.Count = 2 Then
+                If SplitOnSpace.Length = 2 Then
                     ElementList.Add($"{SplitOnSpace(1).Trim} As {VBType.ToFullString}")
                 Else
                     ElementList.Add(VBType.ToFullString)
@@ -50,7 +50,7 @@ Public Module ExpressionSyntaxSupport
                 Dim Item As String = TypeString.Substring(0, Math.Min(IndexOfComma, IndexOfLessThan))
                 Dim SplitOnSpace() As String = Item.Split(" "c)
                 Dim VariableName As String = String.Empty
-                If SplitOnSpace.Count = 2 Then
+                If SplitOnSpace.Length = 2 Then
                     VariableName = SplitOnSpace(1).Trim
                 End If
                 If SplitOnSpace(0).Trim = "?" Then

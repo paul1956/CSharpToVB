@@ -106,7 +106,7 @@ Namespace CSharpToVBCodeConverter.Util
         End Function
 
         <Extension>
-        Friend Function ActionType(ByVal compilation As Compilation) As INamedTypeSymbol
+        Friend Function ActionType(compilation As Compilation) As INamedTypeSymbol
             Return compilation.GetTypeByMetadataName(GetType(Action).FullName)
         End Function
 

@@ -153,7 +153,7 @@ Public Module StatementMarker
             NewLeadingTrivia.Add(VB_EOLTrivia)
             Dim NodeSplit() As String = node.ToString.SplitLines
             ' Match #
-            For i As Integer = 0 To NodeSplit.Count - 1
+            For i As Integer = 0 To NodeSplit.Length - 1
                 If NodeSplit(i).TrimStart(" "c).StartsWith("#", StringComparison.InvariantCulture) Then
                     NewLeadingTrivia.AddRange(ConvertDirectiveTrivia(NodeSplit(i)))
                 Else

@@ -17,10 +17,20 @@
     <RepositoryUrl>https://github.com/paul1956/CSharpToVB</RepositoryUrl>
     <Description>Convert C# to VB</Description>
     <RepositoryType>GitHub</RepositoryType>
+    <ApplicationIcon>PureVisualBasicPackage.ico</ApplicationIcon>
+    <OptionInfer>Off</OptionInfer>
+    <OptionStrict>On</OptionStrict>
+    <Version>1.0.1</Version>
+    <Product>CSharp To VB Converter</Product>
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Remove="Utilities\SpecializedCollections.Singleton.Collection.vb" />
-  </ItemGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <NoWarn />
+    <WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <NoWarn />
+    <WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
+  </PropertyGroup>
 
   <ItemGroup>
     <Import Include="System.Data" />
@@ -31,7 +41,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Build.Locator" Version="1.2.6" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.3.1" />
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.4">
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.6">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

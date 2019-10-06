@@ -964,7 +964,7 @@ Namespace CSharpToVBCodeConverter.Util
                                     TriviaList.Add(VBFactory.CommentTrivia($"' {RemoveLeadingSpacesStar(line)}"))
                                     TriviaList.Add(VB_EOLTrivia)
                                 End If
-                                If Lines.Count = 1 AndAlso (i = TriviaCount OrElse Not TriviaToConvert(i + 1).IsEndOfLine) Then
+                                If Lines.Length = 1 AndAlso (i = TriviaCount OrElse Not TriviaToConvert(i + 1).IsEndOfLine) Then
                                     TriviaList.Add(VB_EOLTrivia)
                                 End If
                             Next

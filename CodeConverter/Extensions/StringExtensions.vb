@@ -54,7 +54,7 @@ Public Module StringExtensions
     End Function
 
     <Extension()>
-    Public Function Right(ByVal str As String, ByVal Length As Integer) As String
+    Public Function Right(str As String, Length As Integer) As String
         If str Is Nothing Then
             Return ""
         End If

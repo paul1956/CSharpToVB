@@ -110,7 +110,7 @@ Public Module SharedReferences
                 Return _CSharpReferences.ToList
             End SyncLock
         Catch ex As OperationCanceledException
-            Stop
+            Throw
         Catch ex As Exception
             Throw
         End Try

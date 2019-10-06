@@ -206,6 +206,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Dim TokenString As String = ConvertCSharpEscapes(CSharpToken.ValueText)
                 Return VBFactory.InterpolatedStringTextToken(TokenString, TokenString)
             End Function
+
             Private Function IsConcatenateStringsExpression(node As CSS.BinaryExpressionSyntax) As Boolean
                 If Not node.IsKind(CS.SyntaxKind.AddExpression) Then
                     Return False
@@ -825,7 +826,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                                     If Type.IsTupleType Then
                                         Dim NamedTypes As String = Type.TupleElements(0).ContainingType.ToString
                                         Dim TypeNames() As String = NamedTypes.Substring(1, NamedTypes.Length - 2).Split(","c)
-                                        For i As Integer = 0 To TypeNames.Count - 1
+                                        For i As Integer = 0 To TypeNames.Length - 1
                                             ' Need to convert Types !!!!!!!
                                             TupleList.Add(ConvertNamedTypeToTypeString(TypeNames(i).Trim))
 
@@ -2026,9 +2027,8 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                     Dim UniqueName As String = MethodBodyVisitor.GetUniqueVariableNameInScope(node, "tempVar", mSemanticModel)
                     Dim UniqueIdentifier As IdentifierNameSyntax = VBFactory.IdentifierName(VBFactory.Identifier(UniqueName))
                     Dim Names As SeparatedSyntaxList(Of ModifiedIdentifierSyntax) = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(UniqueName))
-                    Dim AsClause As AsClauseSyntax = Nothing
                     Dim Initializer As EqualsValueSyntax = VBFactory.EqualsValue(Expression)
-                    Dim VariableDeclaration As SeparatedSyntaxList(Of VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(Names, asClause:=AsClause, Initializer))
+                    Dim VariableDeclaration As SeparatedSyntaxList(Of VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(Names, asClause:=Nothing, Initializer))
                     Dim DimStatement As LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(DimModifier, VariableDeclaration).WithTrailingEOL
                     Dim StatementWithIssues As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
                     StatementWithIssues.AddMarker(DimStatement, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)

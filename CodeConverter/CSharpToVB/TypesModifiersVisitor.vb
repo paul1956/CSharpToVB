@@ -44,12 +44,12 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
 
             Friend Shared Function ConvertNamedTypeToTypeString(TypeString As String) As String
                 Dim SplitTypeString() As String = TypeString.Trim.Split(" "c, StringComparison.InvariantCulture)
-                If SplitTypeString.Count > 2 Then
+                If SplitTypeString.Length > 2 Then
                     Stop
                 End If
                 Dim IndexOfLessThan As Integer = TypeString.IndexOf("<", StringComparison.InvariantCulture)
                 Dim TypeName As String = SplitTypeString(0)
-                Dim Name As String = If(SplitTypeString.Count = 1, "", SplitTypeString(1) & " As ")
+                Dim Name As String = If(SplitTypeString.Length = 1, "", SplitTypeString(1) & " As ")
                 If IndexOfLessThan > 0 Then
                     Return $"{Name}{TypeName.Left(IndexOfLessThan)}{TypeName.Substring(IndexOfLessThan).
                                     Replace("<", "(Of ", StringComparison.InvariantCulture).

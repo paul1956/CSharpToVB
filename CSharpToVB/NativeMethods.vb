@@ -111,35 +111,35 @@ Friend Module NativeMethods
 
         <MethodImpl(MethodImplOptions.InternalCall, MethodCodeType:=MethodCodeType.Runtime)>
         <PreserveSig()>
-        Function Show(<[In](), [Optional]()> ByVal hwndOwner As IntPtr) As UInteger
+        Function Show(<[In](), [Optional]()> hwndOwner As IntPtr) As UInteger
 
         'IModalWindow
         <MethodImpl(MethodImplOptions.InternalCall, MethodCodeType:=MethodCodeType.Runtime)>
-        Function SetFileTypes(<[In]()> ByVal cFileTypes As UInteger, <[In](), MarshalAs(UnmanagedType.LPArray)> ByVal rgFilterSpec As IntPtr) As UInteger
+        Function SetFileTypes(<[In]()> cFileTypes As UInteger, <[In](), MarshalAs(UnmanagedType.LPArray)> rgFilterSpec As IntPtr) As UInteger
 
         <MethodImpl(MethodImplOptions.InternalCall, MethodCodeType:=MethodCodeType.Runtime)>
-        Function SetFileTypeIndex(<[In]()> ByVal iFileType As UInteger) As UInteger
+        Function SetFileTypeIndex(<[In]()> iFileType As UInteger) As UInteger
 
         <MethodImpl(MethodImplOptions.InternalCall, MethodCodeType:=MethodCodeType.Runtime)>
         Function GetFileTypeIndex(ByRef piFileType As UInteger) As UInteger
 
         <MethodImpl(MethodImplOptions.InternalCall, MethodCodeType:=MethodCodeType.Runtime)>
-        Function Advise(<[In](), MarshalAs(UnmanagedType.[Interface])> ByVal pfde As IntPtr, ByRef pdwCookie As UInteger) As UInteger
+        Function Advise(<[In](), MarshalAs(UnmanagedType.[Interface])> pfde As IntPtr, ByRef pdwCookie As UInteger) As UInteger
 
         <MethodImpl(MethodImplOptions.InternalCall, MethodCodeType:=MethodCodeType.Runtime)>
-        Function Unadvise(<[In]()> ByVal dwCookie As UInteger) As UInteger
+        Function Unadvise(<[In]()> dwCookie As UInteger) As UInteger
 
         <MethodImpl(MethodImplOptions.InternalCall, MethodCodeType:=MethodCodeType.Runtime)>
-        Function SetOptions(<[In]()> ByVal fos As FILEOPENDIALOGOPTIONS) As UInteger
+        Function SetOptions(<[In]()> fos As FILEOPENDIALOGOPTIONS) As UInteger
 
         <MethodImpl(MethodImplOptions.InternalCall, MethodCodeType:=MethodCodeType.Runtime)>
         Function GetOptions(ByRef fos As FILEOPENDIALOGOPTIONS) As UInteger
 
         <MethodImpl(MethodImplOptions.InternalCall, MethodCodeType:=MethodCodeType.Runtime)>
-        Sub SetDefaultFolder(<[In](), MarshalAs(UnmanagedType.[Interface])> ByVal psi As IShellItem)
+        Sub SetDefaultFolder(<[In](), MarshalAs(UnmanagedType.[Interface])> psi As IShellItem)
 
         <MethodImpl(MethodImplOptions.InternalCall, MethodCodeType:=MethodCodeType.Runtime)>
-        Function SetFolder(<[In](), MarshalAs(UnmanagedType.[Interface])> ByVal psi As IShellItem) As UInteger
+        Function SetFolder(<[In](), MarshalAs(UnmanagedType.[Interface])> psi As IShellItem) As UInteger
 
         <MethodImpl(MethodImplOptions.InternalCall, MethodCodeType:=MethodCodeType.Runtime)>
         Function GetFolder(<MarshalAs(UnmanagedType.[Interface])> ByRef ppsi As IShellItem) As UInteger
@@ -148,31 +148,31 @@ Friend Module NativeMethods
         Function GetCurrentSelection(<MarshalAs(UnmanagedType.[Interface])> ByRef ppsi As IShellItem) As UInteger
 
         <MethodImpl(MethodImplOptions.InternalCall, MethodCodeType:=MethodCodeType.Runtime)>
-        Function SetFileName(<[In](), MarshalAs(UnmanagedType.LPWStr)> ByVal pszName As String) As UInteger
+        Function SetFileName(<[In](), MarshalAs(UnmanagedType.LPWStr)> pszName As String) As UInteger
 
         <MethodImpl(MethodImplOptions.InternalCall, MethodCodeType:=MethodCodeType.Runtime)>
         Function GetFileName(<MarshalAs(UnmanagedType.LPWStr)> ByRef pszName As String) As UInteger
 
         <MethodImpl(MethodImplOptions.InternalCall, MethodCodeType:=MethodCodeType.Runtime)>
-        Function SetTitle(<[In](), MarshalAs(UnmanagedType.LPWStr)> ByVal pszTitle As String) As UInteger
+        Function SetTitle(<[In](), MarshalAs(UnmanagedType.LPWStr)> pszTitle As String) As UInteger
 
         <MethodImpl(MethodImplOptions.InternalCall, MethodCodeType:=MethodCodeType.Runtime)>
-        Function SetOkButtonLabel(<[In](), MarshalAs(UnmanagedType.LPWStr)> ByVal pszText As String) As UInteger
+        Function SetOkButtonLabel(<[In](), MarshalAs(UnmanagedType.LPWStr)> pszText As String) As UInteger
 
         <MethodImpl(MethodImplOptions.InternalCall, MethodCodeType:=MethodCodeType.Runtime)>
-        Function SetFileNameLabel(<[In](), MarshalAs(UnmanagedType.LPWStr)> ByVal pszLabel As String) As UInteger
+        Function SetFileNameLabel(<[In](), MarshalAs(UnmanagedType.LPWStr)> pszLabel As String) As UInteger
 
         <MethodImpl(MethodImplOptions.InternalCall, MethodCodeType:=MethodCodeType.Runtime)>
         Function GetResult(<MarshalAs(UnmanagedType.[Interface])> ByRef ppsi As IShellItem) As UInteger
 
         <MethodImpl(MethodImplOptions.InternalCall, MethodCodeType:=MethodCodeType.Runtime)>
-        Function AddPlace(<[In](), MarshalAs(UnmanagedType.[Interface])> ByVal psi As IShellItem, ByVal fdap As UInteger) As UInteger
+        Function AddPlace(<[In](), MarshalAs(UnmanagedType.[Interface])> psi As IShellItem, fdap As UInteger) As UInteger
 
         <MethodImpl(MethodImplOptions.InternalCall, MethodCodeType:=MethodCodeType.Runtime)>
-        Function SetDefaultExtension(<[In](), MarshalAs(UnmanagedType.LPWStr)> ByVal pszDefaultExtension As String) As UInteger
+        Function SetDefaultExtension(<[In](), MarshalAs(UnmanagedType.LPWStr)> pszDefaultExtension As String) As UInteger
 
         <MethodImpl(MethodImplOptions.InternalCall, MethodCodeType:=MethodCodeType.Runtime)>
-        Function Close(<MarshalAs(UnmanagedType.[Error])> ByVal hr As UInteger) As UInteger
+        Function Close(<MarshalAs(UnmanagedType.[Error])> hr As UInteger) As UInteger
 
         <MethodImpl(MethodImplOptions.InternalCall, MethodCodeType:=MethodCodeType.Runtime)>
         Function SetClientGuid(<[In]()> ByRef guid As Guid) As UInteger
@@ -181,7 +181,7 @@ Friend Module NativeMethods
         Function ClearClientData() As UInteger
 
         <MethodImpl(MethodImplOptions.InternalCall, MethodCodeType:=MethodCodeType.Runtime)>
-        Function SetFilter(<MarshalAs(UnmanagedType.[Interface])> ByVal pFilter As IntPtr) As UInteger
+        Function SetFilter(<MarshalAs(UnmanagedType.[Interface])> pFilter As IntPtr) As UInteger
 
     End Interface
 
@@ -219,30 +219,30 @@ Friend Module NativeMethods
     Friend Interface IShellItem
 
         <MethodImpl(MethodImplOptions.InternalCall, MethodCodeType:=MethodCodeType.Runtime)>
-        Function BindToHandler(<[In]()> ByVal pbc As IntPtr, <[In]()> ByRef rbhid As Guid, <[In]()> ByRef riid As Guid, <Out(), MarshalAs(UnmanagedType.[Interface])> ByRef ppvOut As IntPtr) As UInteger
+        Function BindToHandler(<[In]()> pbc As IntPtr, <[In]()> ByRef rbhid As Guid, <[In]()> ByRef riid As Guid, <Out(), MarshalAs(UnmanagedType.[Interface])> ByRef ppvOut As IntPtr) As UInteger
 
         <MethodImpl(MethodImplOptions.InternalCall, MethodCodeType:=MethodCodeType.Runtime)>
         Function GetParent(<MarshalAs(UnmanagedType.[Interface])> ByRef ppsi As IShellItem) As UInteger
 
         <MethodImpl(MethodImplOptions.InternalCall, MethodCodeType:=MethodCodeType.Runtime)>
-        Function GetDisplayName(<[In]()> ByVal sigdnName As UInteger, ByRef ppszName As IntPtr) As UInteger
+        Function GetDisplayName(<[In]()> sigdnName As UInteger, ByRef ppszName As IntPtr) As UInteger
 
         <MethodImpl(MethodImplOptions.InternalCall, MethodCodeType:=MethodCodeType.Runtime)>
-        Function GetAttributes(<[In]()> ByVal sfgaoMask As UInteger, ByRef psfgaoAttribs As UInteger) As UInteger
+        Function GetAttributes(<[In]()> sfgaoMask As UInteger, ByRef psfgaoAttribs As UInteger) As UInteger
 
         <MethodImpl(MethodImplOptions.InternalCall, MethodCodeType:=MethodCodeType.Runtime)>
-        Function Compare(<[In](), MarshalAs(UnmanagedType.[Interface])> ByVal psi As IShellItem, <[In]()> ByVal hint As UInteger, ByRef piOrder As Integer) As UInteger
+        Function Compare(<[In](), MarshalAs(UnmanagedType.[Interface])> psi As IShellItem, <[In]()> hint As UInteger, ByRef piOrder As Integer) As UInteger
 
     End Interface
 
     'Enables an application to inform the system that it is in use, thereby preventing the system from entering sleep or turning off the display while the application is running.
     <DllImport("kernel32.dll", CharSet:=CharSet.Auto, SetLastError:=True)>
-    Private Function SetThreadExecutionState(ByVal esFlags As EXECUTION_STATE) As EXECUTION_STATE
+    Private Function SetThreadExecutionState(esFlags As EXECUTION_STATE) As EXECUTION_STATE
     End Function
 
     <DllImport("user32.dll", EntryPoint:=NameOf(GetScrollBarInfo))>
-    Friend Function GetScrollBarInfo(ByVal hwnd As IntPtr,
-                                            ByVal idObject As Integer,
+    Friend Function GetScrollBarInfo(hwnd As IntPtr,
+                                            idObject As Integer,
                                             ByRef psbi As SCROLLBARINFO) As <MarshalAs(UnmanagedType.Bool)> Boolean
     End Function
 
@@ -264,10 +264,10 @@ Friend Module NativeMethods
     'This function queries or sets system-wide parameters, and updates the user profile during the process.
     <DllImport("user32", EntryPoint:=NameOf(SystemParametersInfo), CharSet:=CharSet.Unicode, SetLastError:=True)>
     Public Function SystemParametersInfo(
-            ByVal intAction As Integer,
-            ByVal intParam As Integer,
-            ByVal strParam As String,
-            ByVal intWinIniFlag As Integer) As Integer
+            intAction As Integer,
+            intParam As Integer,
+            strParam As String,
+            intWinIniFlag As Integer) As Integer
         ' returns non-zero value if function succeeds
     End Function
 
@@ -279,9 +279,9 @@ Friend Module NativeMethods
 
     <DllImport("shell32.dll", CharSet:=CharSet.Unicode, PreserveSig:=False)>
     Public Function SHCreateItemFromParsingName(
-         <MarshalAs(UnmanagedType.LPWStr)> ByVal pszPath As String,
-         ByVal pbc As IntPtr,
-         <MarshalAs(UnmanagedType.LPStruct)> ByVal riid As Guid,
+         <MarshalAs(UnmanagedType.LPWStr)> pszPath As String,
+         pbc As IntPtr,
+         <MarshalAs(UnmanagedType.LPStruct)> riid As Guid,
          <MarshalAs(UnmanagedType.Interface, IidParameterIndex:=2)> ByRef ppv As IShellItem) As Integer
     End Function
 

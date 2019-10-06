@@ -49,7 +49,7 @@ Public Class OpenFolderDialog
         End Set
     End Property
 
-    Friend Function ShowDialog(ByVal owner As IWin32Window) As DialogResult
+    Friend Function ShowDialog(owner As IWin32Window) As DialogResult
         Dim frm As IFileDialog = DirectCast(New FileOpenDialogRCW(), IFileDialog)
         Dim Options As FILEOPENDIALOGOPTIONS
         frm.GetOptions(Options)

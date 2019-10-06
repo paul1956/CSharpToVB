@@ -17,7 +17,7 @@ Public Class VSSelectorDialog
         End Get
     End Property
 
-    Private Sub Cancel_Button_Click(ByVal sender As Object, ByVal e As EventArgs) Handles Cancel_Button.Click
+    Private Sub Cancel_Button_Click(sender As Object, e As EventArgs) Handles Cancel_Button.Click
         DialogResult = DialogResult.Cancel
         Close()
     End Sub
@@ -26,7 +26,7 @@ Public Class VSSelectorDialog
         m_instance = visualStudioInstances(DataGridView1.CurrentRow.Index)
     End Sub
 
-    Private Sub OK_Button_Click(ByVal sender As Object, ByVal e As EventArgs) Handles OK_Button.Click
+    Private Sub OK_Button_Click(sender As Object, e As EventArgs) Handles OK_Button.Click
         If m_instance Is Nothing Then
             Exit Sub
         End If

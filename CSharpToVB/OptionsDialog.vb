@@ -9,7 +9,7 @@ Public Class OptionsDialog
     Private SelectedColor As Color
     Private SelectedColorName As String = "default"
 
-    Private Sub Cancel_Button_Click(ByVal sender As Object, ByVal e As EventArgs) Handles Cancel_Button.Click
+    Private Sub Cancel_Button_Click(sender As Object, e As EventArgs) Handles Cancel_Button.Click
         DialogResult = DialogResult.Cancel
         Close()
     End Sub
@@ -34,7 +34,7 @@ Public Class OptionsDialog
         SelectedColor = ColorSelector.GetColorFromName(SelectedColorName)
     End Sub
 
-    Private Sub OK_Button_Click(ByVal sender As Object, ByVal e As EventArgs) Handles OK_Button.Click
+    Private Sub OK_Button_Click(sender As Object, e As EventArgs) Handles OK_Button.Click
         My.Settings.DefaultProjectDirectory = CType(ProjectDirectoryList.SelectedItem, MyListItem).Value
         My.Settings.Save()
         DialogResult = DialogResult.OK
@@ -60,7 +60,7 @@ Public Class OptionsDialog
 
     Private Sub UpdateColor_Button_Click(sender As Object, e As EventArgs) Handles UpdateColor_Button.Click
         ColorDialog1.Color = SelectedColor
-        If ColorDialog1.ShowDialog <> Windows.Forms.DialogResult.Cancel Then
+        If ColorDialog1.ShowDialog <> DialogResult.Cancel Then
             ColorSelector.SetColor(ItemColor_ComboBox.Items(ItemColor_ComboBox.SelectedIndex).ToString, ColorDialog1.Color)
             Application.DoEvents()
         End If
@@ -68,7 +68,7 @@ Public Class OptionsDialog
 
     Private Class MyListItem
 
-        Public Sub New(ByVal pText As String, ByVal pValue As String)
+        Public Sub New(pText As String, pValue As String)
             _Text = pText
             _Value = pValue
         End Sub

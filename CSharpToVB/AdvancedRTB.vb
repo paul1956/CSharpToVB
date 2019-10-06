@@ -16,9 +16,9 @@ Public Class AdvancedRTB
         InitializeComponent()
     End Sub
 
-    Public Event VertScrollBarRightClicked(ByVal sender As Object, ByVal loc As Point)
+    Public Event VertScrollBarRightClicked(sender As Object, loc As Point)
 
-    Public Event HorizScrollBarRightClicked(ByVal sender As Object, ByVal loc As Point)
+    Public Event HorizScrollBarRightClicked(sender As Object, loc As Point)
 
     Private Const OBJID_VSCROLL As Long = &HFFFFFFFB 'the vertical scroll bar of the hwnd window
     Friend WithEvents ContextMenuStrip1 As ContextMenuStrip
@@ -67,7 +67,7 @@ Public Class AdvancedRTB
             Return GetScrollPos(Handle, SBOrientation.HORZ)
 
         End Get
-        Set(ByVal value As Integer)
+        Set(value As Integer)
             SetScrollPos(Handle, SBOrientation.HORZ, True)
         End Set
     End Property
@@ -79,7 +79,7 @@ Public Class AdvancedRTB
         Get
             Return GetScrollPos(Handle, SBOrientation.VERT)
         End Get
-        Set(ByVal value As Integer)
+        Set(value As Integer)
             SetScrollPos(Handle, SBOrientation.VERT, True)
         End Set
     End Property
@@ -152,7 +152,7 @@ Public Class AdvancedRTB
         With sbi
             Dim SB_Size As Integer = .RC_ScrollBar.Bottom - .RC_ScrollBar.Top
             Dim Percent As Double = 1 - (SB_Size - PointToClient(MousePosition).Y) / SB_Size
-            Dim DesiredLine As Integer = CInt(Lines.Count * Percent)
+            Dim DesiredLine As Integer = CInt(Lines.Length * Percent)
             [Select](GetFirstCharIndexFromLine(DesiredLine), 0)
             ScrollToCaret()
         End With

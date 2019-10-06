@@ -21,9 +21,9 @@ Namespace Microsoft.CodeAnalysis.UnitTests.Formatting
             code As String,
             spans As IEnumerable(Of TextSpan),
             language As String,
-            ByVal Optional ChangedOptionSet As Dictionary(Of OptionKey, Object) = Nothing,
-            ByVal Optional treeCompare As Boolean = True,
-            ByVal Optional parseOptions As ParseOptions = Nothing) As Task
+            Optional ChangedOptionSet As Dictionary(Of OptionKey, Object) = Nothing,
+            Optional treeCompare As Boolean = True,
+            Optional parseOptions As ParseOptions = Nothing) As Task
             Using Workspace As AdhocWorkspace = New AdhocWorkspace()
                 Dim project As Project = Workspace.CurrentSolution.AddProject("Project", "Project.dll", language)
                 If parseOptions IsNot Nothing Then
@@ -50,7 +50,7 @@ Namespace Microsoft.CodeAnalysis.UnitTests.Formatting
         End Function
 
         Protected Sub AssertFormatWithTransformation(
-            workspace As Workspace, expected As String, root As SyntaxNode, spans As IEnumerable(Of TextSpan), optionSet As OptionSet, ByVal Optional treeCompare As Boolean = True, ByVal Optional parseOptions As ParseOptions = Nothing)
+            workspace As Workspace, expected As String, root As SyntaxNode, spans As IEnumerable(Of TextSpan), optionSet As OptionSet, Optional treeCompare As Boolean = True, Optional parseOptions As ParseOptions = Nothing)
             Dim newRootNode As SyntaxNode = Formatter.Format(root, spans, workspace, optionSet, CancellationToken.None)
 
             Assert.Equal(expected, newRootNode.ToFullString())

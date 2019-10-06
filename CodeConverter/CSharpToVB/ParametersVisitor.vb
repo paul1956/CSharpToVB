@@ -219,6 +219,10 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                     NewModifiersWithoutComments.Add(m.With(ModifierLeadingTrivia, ModifierTrailingTrivia))
                 Next
                 modifiers = VBFactory.TokenList(NewModifiersWithoutComments).ToList
+                Dim ByValIndex As Integer = modifiers.FindIndex(Function(t As SyntaxToken) t.IsKind(VB.SyntaxKind.ByValKeyword))
+                If ByValIndex >= 0 Then
+                    modifiers.RemoveAt(ByValIndex)
+                End If
                 Dim AsClause As VBS.SimpleAsClauseSyntax = Nothing
                 If returnType IsNot Nothing Then
                     For Each Trivia As SyntaxTrivia In returnType.GetLeadingTrivia

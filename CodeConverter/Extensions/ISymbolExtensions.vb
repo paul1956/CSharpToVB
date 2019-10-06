@@ -142,7 +142,7 @@ Namespace CSharpToVBCodeConverter.Util
         End Function
 
         <Extension>
-        Public Function ConvertISymbolToType(ByVal symbol As ISymbol, ByVal compilation As Compilation, Optional ByVal extensionUsedAsInstance As Boolean = False) As ITypeSymbol
+        Public Function ConvertISymbolToType(symbol As ISymbol, compilation As Compilation, Optional extensionUsedAsInstance As Boolean = False) As ITypeSymbol
             Dim _type As ITypeSymbol = TryCast(symbol, ITypeSymbol)
             If _type IsNot Nothing Then
                 Return _type

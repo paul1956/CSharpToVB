@@ -262,7 +262,7 @@ Namespace CSharpToVBCodeConverter.Util
                 Case Else
                     Stop
             End Select
-            Dim Msg As String = " ' TODO VB does not allow directives here, original directive: "
+            Const Msg As String = " ' TODO VB does not allow directives here, original directive: "
             NewTriviaList = New List(Of SyntaxTrivia) From {
                 SpaceTrivia,
                 LineContinuation,

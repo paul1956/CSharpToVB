@@ -329,7 +329,7 @@ Option Strict Off
 Class TestClass
 
     Private Sub TestMethod()
-        Dim test As System.Func(Of Integer, Integer) = Function(ByVal a As Integer) a * 2
+        Dim test As System.Func(Of Integer, Integer) = Function(a As Integer) a * 2
 
         test(3)
     End Sub

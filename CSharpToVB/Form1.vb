@@ -563,7 +563,7 @@ Public Class Form1
         End
     End Sub
 
-    Private Sub mnu_MRUList_Click(ByVal sender As Object, ByVal e As EventArgs)
+    Private Sub mnu_MRUList_Click(sender As Object, e As EventArgs)
         ' open the file...
         OpenFile(DirectCast(sender, ToolStripItem).Tag.ToString().Substring(4), "cs")
     End Sub
@@ -979,7 +979,7 @@ Public Class Form1
         ResizeRichTextBuffers()
     End Sub
 
-    Private Sub MRU_AddTo(ByVal Path As String)
+    Private Sub MRU_AddTo(Path As String)
         StatusStripCurrentFileName.Text = Path
         ' remove the item from the collection if exists so that we can
         ' re-add it to the beginning...
@@ -1256,7 +1256,7 @@ Public Class Form1
         mnuConvertConvertFolder.Enabled = InputBufferInUse
     End Sub
 
-    Private Sub RichTextBoxConversionOutput_HorizScrollBarRightClicked(ByVal sender As Object, ByVal loc As Point) Handles RichTextBoxConversionOutput.HorizScrollBarRightClicked
+    Private Sub RichTextBoxConversionOutput_HorizScrollBarRightClicked(sender As Object, loc As Point) Handles RichTextBoxConversionOutput.HorizScrollBarRightClicked
         Dim p As Integer = CType(sender, AdvancedRTB).HScrollPos
         MsgBox($"Horizontal Right Clicked At: {loc.ToString}, HScrollPos = {p}")
     End Sub
@@ -1270,7 +1270,7 @@ Public Class Form1
         mnuCompile.Enabled = OutputBufferInUse
     End Sub
 
-    Private Sub RichTextBoxConversionOutput_VertScrollBarRightClicked(ByVal sender As Object, ByVal loc As Point) Handles RichTextBoxConversionOutput.VertScrollBarRightClicked
+    Private Sub RichTextBoxConversionOutput_VertScrollBarRightClicked(sender As Object, loc As Point) Handles RichTextBoxConversionOutput.VertScrollBarRightClicked
         Dim p As Integer = CType(sender, AdvancedRTB).VScrollPos
         MsgBox($"Vertical Right Clicked At: {loc.ToString}, VScrollPos = {p} ")
     End Sub
@@ -1297,13 +1297,13 @@ Public Class Form1
         SearchInput.Visible = Visible
     End Sub
 
-    Private Sub SearchDirection_DrawItem(ByVal sender As Object, ByVal e As DrawItemEventArgs) Handles SearchDirection.DrawItem
+    Private Sub SearchDirection_DrawItem(sender As Object, e As DrawItemEventArgs) Handles SearchDirection.DrawItem
         If e.Index <> -1 Then
             e.Graphics.DrawImage(ImageList1.Images(e.Index), e.Bounds.Left, e.Bounds.Top)
         End If
     End Sub
 
-    Private Sub SearchDirection_MeasureItem(ByVal sender As Object, ByVal e As MeasureItemEventArgs) Handles SearchDirection.MeasureItem
+    Private Sub SearchDirection_MeasureItem(sender As Object, e As MeasureItemEventArgs) Handles SearchDirection.MeasureItem
         e.ItemHeight = ImageList1.ImageSize.Height
         e.ItemWidth = ImageList1.ImageSize.Width
     End Sub
@@ -1330,7 +1330,7 @@ Public Class Form1
         End If
     End Sub
 
-    Protected Overrides Sub OnLoad(ByVal e As EventArgs)
+    Protected Overrides Sub OnLoad(e As EventArgs)
         SetStyle(ControlStyles.AllPaintingInWmPaint Or ControlStyles.UserPaint Or ControlStyles.DoubleBuffer, True)
         ' enable events...
         MyBase.OnLoad(e)

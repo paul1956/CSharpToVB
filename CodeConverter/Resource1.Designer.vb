@@ -63,7 +63,7 @@ Namespace My.Resources
                 resourceCulture = value
             End Set
         End Property
-        
+
         '''<summary>
         '''  Looks up a localized string similar to &quot;using System;
         '''class test : IComparable { }&quot;.

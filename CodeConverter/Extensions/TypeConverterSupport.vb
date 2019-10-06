@@ -260,7 +260,7 @@ Namespace CSharpToVBCodeConverter
             Dim TupleElements As New List(Of TupleElementSyntax)
             For Each t As String In TupleString.Substring(1, TupleString.Length - 2).Split(","c)
                 Dim TuplePart() As String = t.Trim.Split(" "c)
-                If TuplePart.Count = 1 Then
+                If TuplePart.Length = 1 Then
                     Dim typedTupleElementSyntax1 As TypedTupleElementSyntax = VBFactory.TypedTupleElement(ConvertToType(TuplePart(0)))
                     TupleElements.Add(typedTupleElementSyntax1)
                 Else

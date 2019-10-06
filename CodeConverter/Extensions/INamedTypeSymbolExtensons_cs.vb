@@ -61,7 +61,7 @@ Namespace CSharpToVBCodeConverter.Util
             Dim TupleElements As New List(Of String)
             For Each t As String In TupleString.Substring(1, TupleString.Length - 2).Split(","c)
                 Dim TuplePart() As String = t.Trim.Split(" "c)
-                If TuplePart.Count = 1 Then
+                If TuplePart.Length = 1 Then
                     TupleElements.Add(ConvertToType(TuplePart(0).ToString(Globalization.CultureInfo.InvariantCulture)).ToString)
                 Else
                     Dim Identifier As SyntaxToken = CSharp.SyntaxFactory.Identifier(TuplePart(1))
@@ -72,7 +72,7 @@ Namespace CSharpToVBCodeConverter.Util
         End Function
 
         Private Function GetAbstractClassesToImplement(abstractClasses As IEnumerable(Of INamedTypeSymbol)) As ImmutableArray(Of INamedTypeSymbol)
-            Return abstractClasses.SelectMany(Function(a) a.GetBaseTypesAndThis()).Where(Function(t) t.IsAbstractClass()).ToImmutableArray()
+            Return abstractClasses.SelectMany(Function(a As INamedTypeSymbol) a.GetBaseTypesAndThis()).Where(Function(t As INamedTypeSymbol) t.IsAbstractClass()).ToImmutableArray()
         End Function
 
         <Extension>
@@ -93,12 +93,12 @@ Namespace CSharpToVBCodeConverter.Util
                 Return ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))).Empty
             End If
 
-            If Not interfacesOrAbstractClasses.All(Function(i) i.TypeKind = TypeKind.Interface) AndAlso Not interfacesOrAbstractClasses.All(Function(i) i.IsAbstractClass()) Then
+            If Not interfacesOrAbstractClasses.All(Function(i As INamedTypeSymbol) i.TypeKind = TypeKind.Interface) AndAlso Not interfacesOrAbstractClasses.All(Function(i As INamedTypeSymbol) i.IsAbstractClass()) Then
                 Return ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))).Empty
             End If
 
             Dim typesToImplement As ImmutableArray(Of INamedTypeSymbol) = GetTypesToImplement(classOrStructType, interfacesOrAbstractClasses, allowReimplementation, CancelToken)
-            Return typesToImplement.SelectAsArray(Function(s) (s, members:=GetImplementedMembers(classOrStructType, s, isImplemented, isValidImplementation, interfaceMemberGetter, CancelToken))).WhereAsArray(Function(t) t.members.Length > 0)
+            Return typesToImplement.SelectAsArray(Function(s As INamedTypeSymbol) (s, members:=GetImplementedMembers(classOrStructType, s, isImplemented, isValidImplementation, interfaceMemberGetter, CancelToken))).WhereAsArray(Function(t As (s As Microsoft.CodeAnalysis.INamedTypeSymbol, members As System.Collections.Immutable.ImmutableArray(Of Microsoft.CodeAnalysis.ISymbol))) t.members.Length > 0)
         End Function
 
         <Extension>
@@ -120,12 +120,12 @@ Namespace CSharpToVBCodeConverter.Util
                 Return ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))).Empty
             End If
 
-            If Not interfacesOrAbstractClasses.All(Function(i) i.TypeKind = TypeKind.Interface) AndAlso Not interfacesOrAbstractClasses.All(Function(i) i.IsAbstractClass()) Then
+            If Not interfacesOrAbstractClasses.All(Function(i As INamedTypeSymbol) i.TypeKind = TypeKind.Interface) AndAlso Not interfacesOrAbstractClasses.All(Function(i As INamedTypeSymbol) i.IsAbstractClass()) Then
                 Return ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))).Empty
             End If
 
             Dim typesToImplement As ImmutableArray(Of INamedTypeSymbol) = GetTypesToImplement(classOrStructType, interfacesOrAbstractClasses, allowReimplementation, CancelToken)
-            Return typesToImplement.SelectAsArray(Function(s) (s, members:=GetUnimplementedMembers(classOrStructType, s, isImplemented, isValidImplementation, interfaceMemberGetter, CancelToken))).WhereAsArray(Function(t) t.members.Length > 0)
+            Return typesToImplement.SelectAsArray(Function(s As INamedTypeSymbol) (s, members:=GetUnimplementedMembers(classOrStructType, s, isImplemented, isValidImplementation, interfaceMemberGetter, CancelToken))).WhereAsArray(Function(t As (s As Microsoft.CodeAnalysis.INamedTypeSymbol, members As System.Collections.Immutable.ImmutableArray(Of Microsoft.CodeAnalysis.ISymbol))) t.members.Length > 0)
         End Function
 
         Private Function GetImplementedMembers(classOrStructType As INamedTypeSymbol, interfaceType As INamedTypeSymbol, isImplemented As Func(Of INamedTypeSymbol, ISymbol, Func(Of INamedTypeSymbol, ISymbol, Boolean), CancellationToken, Boolean), isValidImplementation As Func(Of INamedTypeSymbol, ISymbol, Boolean), interfaceMemberGetter As Func(Of INamedTypeSymbol, ISymbol, ImmutableArray(Of ISymbol)), CancelToken As CancellationToken) As ImmutableArray(Of ISymbol)
@@ -144,7 +144,7 @@ Namespace CSharpToVBCodeConverter.Util
             ' We need to not only implement the specified interface, but also everything it
             ' inherits from.
             CancelToken.ThrowIfCancellationRequested()
-            Dim interfacesToImplement As New List(Of INamedTypeSymbol)(interfaces.SelectMany(Function(i) i.GetAllInterfacesIncludingThis()).Distinct())
+            Dim interfacesToImplement As New List(Of INamedTypeSymbol)(interfaces.SelectMany(Function(i As INamedTypeSymbol) i.GetAllInterfacesIncludingThis()).Distinct())
 
             ' However, there's no need to re-implement any interfaces that our base types already
             ' implement.  By definition they must contain all the necessary methods.
@@ -183,10 +183,10 @@ Namespace CSharpToVBCodeConverter.Util
             If TypeOf cS_MethodOrProperty Is IMethodSymbol Then
                 Dim CS_Method As IMethodSymbol = CType(cS_MethodOrProperty, IMethodSymbol)
                 Dim interfaceMethod As IMethodSymbol = CType(interfaceMethodOrProperty, IMethodSymbol)
-                If CS_Method.Parameters.Count <> interfaceMethod.Parameters.Count Then
+                If CS_Method.Parameters.Length <> interfaceMethod.Parameters.Length Then
                     Return False
                 End If
-                For i As Integer = 0 To CS_Method.Parameters.Count - 1
+                For i As Integer = 0 To CS_Method.Parameters.Length - 1
                     If CS_Method.Parameters(i).[Type].Name <> interfaceMethod.Parameters(i).[Type].Name Then
                         Return False
                     End If
@@ -266,7 +266,9 @@ Namespace CSharpToVBCodeConverter.Util
         <Extension>
         Friend Function FindImplementationForAbstractMember(type As INamedTypeSymbol, symbol As ISymbol) As ISymbol
             If symbol.IsAbstract Then
-                Return type.GetBaseTypesAndThis().SelectMany(Function(t) t.GetMembers(symbol.Name)).FirstOrDefault(Function(s) DirectCast(symbol, Object).Equals(GetOverriddenMember(s)))
+                Return type.GetBaseTypesAndThis() _
+                    .SelectMany(Function(t As INamedTypeSymbol) t.GetMembers(symbol.Name)) _
+                    .FirstOrDefault(Function(s As ISymbol) DirectCast(symbol, Object).Equals(GetOverriddenMember(s)))
             End If
 
             Return Nothing
@@ -283,7 +285,7 @@ Namespace CSharpToVBCodeConverter.Util
                             Function(type As INamedTypeSymbol, within As ISymbol)
                                 If type.TypeKind = TypeKind.Interface Then
                                     Return type.GetMembers().WhereAsArray(
-                                        Function(m) m.DeclaredAccessibility = Microsoft.CodeAnalysis.Accessibility.Public AndAlso
+                                        Function(m As ISymbol) m.DeclaredAccessibility = Microsoft.CodeAnalysis.Accessibility.Public AndAlso
                                                     m.Kind <> SymbolKind.NamedType AndAlso
                                                     IsImplementable(m) AndAlso
                                                     Not IsPropertyWithNonPublicImplementableAccessor(m))
@@ -305,7 +307,7 @@ Namespace CSharpToVBCodeConverter.Util
                             Function(type As INamedTypeSymbol, within As ISymbol)
                                 If type.TypeKind = TypeKind.Interface Then
                                     Return type.GetMembers().WhereAsArray(
-                                        Function(m) m.DeclaredAccessibility = Microsoft.CodeAnalysis.Accessibility.Public AndAlso
+                                        Function(m As ISymbol) m.DeclaredAccessibility = Microsoft.CodeAnalysis.Accessibility.Public AndAlso
                                                     m.Kind <> SymbolKind.NamedType AndAlso
                                                     IsImplementable(m) AndAlso
                                                     Not IsPropertyWithNonPublicImplementableAccessor(m))
