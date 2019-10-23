@@ -7,6 +7,7 @@ namespace Roslyn.Utilities
 {
     internal static partial class EnumerableExtensions
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0059:Unnecessary assignment of a value", Justification = "Needed to detect empty Enumerable")]
         public static bool IsEmpty<T>(this IEnumerable<T> source)
         {
             if (source is IReadOnlyCollection<T> readOnlyCollection)

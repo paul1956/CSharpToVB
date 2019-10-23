@@ -48,7 +48,7 @@
     <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="3.3.1" />
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="3.3.1" />
     <PackageReference Include="NuGet.Frameworks" Version="5.3.0" />
-    <PackageReference Include="PInvoke.Windows.Core" Version="0.5.184" />
+    <PackageReference Include="PInvoke.Windows.Core" Version="0.6.6" />
   </ItemGroup>
 
   <ItemGroup>

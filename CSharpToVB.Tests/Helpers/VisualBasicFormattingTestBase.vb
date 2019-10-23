@@ -61,61 +61,8 @@ Public NotInheritable Class VisualBasicFormattingTestBase
         Return AssertFormatAsync(expected, code, spans, LanguageNames.VisualBasic, changedOptionSet, testWithTransformation, parseOptions)
     End Function
 
-    Protected Function AssertFormatLf2CrLfAsync(code As String, expected As String, Optional optionSet As Dictionary(Of OptionKey, Object) = Nothing) As Task
-        If code Is Nothing Then
-            Throw New ArgumentNullException(NameOf(code))
-        End If
-        If expected Is Nothing Then
-            Throw New ArgumentNullException(NameOf(expected))
-        End If
-        code = code.Replace(vbLf, vbCrLf, StringComparison.InvariantCulture)
-        expected = expected.Replace(vbLf, vbCrLf, StringComparison.InvariantCulture)
-
-        Return AssertFormatAsync(code, expected, changedOptionSet:=optionSet)
-    End Function
-
-    Protected Async Function AssertFormatUsingAllEntryPointsAsync(code As String, expected As String) As Task
-        Using workspace As AdhocWorkspace = New AdhocWorkspace()
-
-            Dim project As Project = workspace.CurrentSolution.AddProject("Project", "Project.dll", LanguageNames.VisualBasic)
-            Dim document As Document = project.AddDocument("Document", SourceText.From(code))
-            Dim syntaxTree As SyntaxTree = Await document.GetSyntaxTreeAsync().ConfigureAwait(False)
-
-            ' Test various entry points into the formatter
-
-            Dim spans As New List(Of TextSpan) From {
-                syntaxTree.GetRoot().FullSpan
-            }
-
-            Dim changes As IList(Of TextChange) = Formatter.GetFormattedTextChanges(Await syntaxTree.GetRootAsync().ConfigureAwait(False), workspace, cancellationToken:=CancellationToken.None)
-            AssertResult(expected, Await document.GetTextAsync().ConfigureAwait(False), changes)
-
-            changes = Formatter.GetFormattedTextChanges(Await syntaxTree.GetRootAsync().ConfigureAwait(False), (Await syntaxTree.GetRootAsync().ConfigureAwait(False)).FullSpan, workspace, cancellationToken:=CancellationToken.None)
-            AssertResult(expected, Await document.GetTextAsync().ConfigureAwait(False), changes)
-
-            spans = New List(Of TextSpan) From {
-                syntaxTree.GetRoot().FullSpan
-            }
-
-            changes = Formatter.GetFormattedTextChanges(Await syntaxTree.GetRootAsync().ConfigureAwait(False), spans, workspace, cancellationToken:=CancellationToken.None)
-            AssertResult(expected, Await document.GetTextAsync().ConfigureAwait(False), changes)
-
-            ' format with node and transform
-            AssertFormatWithTransformation(workspace, expected, syntaxTree.GetRoot(), spans, Nothing, False)
-        End Using
-    End Function
-
     Protected Overrides Function ParseCompilation(text As String, parseOptions As ParseOptions) As SyntaxNode
         Return SyntaxFactory.ParseCompilationUnit(text, options:=DirectCast(parseOptions, VisualBasicParseOptions))
-    End Function
-
-    Friend Overloads Function AssertFormatAsync(
-        code As String,
-        expected As String,
-        Optional changedOptionSet As Dictionary(Of OptionKey, Object) = Nothing,
-        Optional testWithTransformation As Boolean = False,
-        Optional experimental As Boolean = False) As Task
-        Return AssertFormatAsync(expected, code, SpecializedCollection.SingletonEnumerable(New TextSpan(0, code.Length)), changedOptionSet, testWithTransformation, experimental:=experimental)
     End Function
 
     Friend Function AssertFormatSpanAsync(markupCode As String, expected As String) As Task
