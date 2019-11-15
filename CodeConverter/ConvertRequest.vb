@@ -6,7 +6,6 @@ Option Infer Off
 Option Strict On
 
 Imports System.Threading
-Imports System.Windows.Forms
 Imports ManageProgressBar
 #If NETCOREAPP3_0 Then
 
