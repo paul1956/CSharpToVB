@@ -2,14 +2,13 @@
 
   <PropertyGroup>
     <RootNamespace></RootNamespace>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <OptionStrict>On</OptionStrict>
     <OptionInfer>Off</OptionInfer>
     <AssemblyName>VB.CodeConverter</AssemblyName>
     <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
   <PropertyGroup>
-    <LangVersion>16</LangVersion>
     <OptionExplicit>On</OptionExplicit>
     <NeutralLanguage>en-US</NeutralLanguage>
     <Authors>Paul M Cohen</Authors>

@@ -17,10 +17,10 @@ Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
 Public Module ParseUtilities
 
-    Private ReadOnly PreprocessorSymbols As List(Of String) = New List(Of String) From {
-                                                "NETSTANDARD2_0",
-                                                "NET46",
-                                                "NETCOREAPP2_0"
+    Private ReadOnly PreprocessorSymbols As List(Of String) = New List(Of String) From { _
+ _                                         '"NETSTANDARD",
+ _                                         '"NETFRAMEWORK",
+                                                "NETCOREAPP"
                                             }
 
     Public Function GetCSharpParseOptions(Optional CSPreprocessorSymbols As List(Of String) = Nothing) As CS.CSharpParseOptions

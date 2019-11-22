@@ -26,7 +26,7 @@ Imports Microsoft.CodeAnalysis.Emit
 Imports Microsoft.CodeAnalysis.MSBuild
 Imports Microsoft.VisualBasic.FileIO
 
-#If NETCOREAPP3_0 Then
+#If NETCOREAPP Then
 
 Imports VBMsgBox
 
@@ -34,7 +34,7 @@ Imports VBMsgBox
 
 Public Class Form1
 
-#If NETCOREAPP3_0 Then
+#If NETCOREAPP Then
 
     <STAThread>
     Public Shared Sub Main()

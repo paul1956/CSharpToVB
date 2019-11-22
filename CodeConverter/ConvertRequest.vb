@@ -7,7 +7,7 @@ Option Strict On
 
 Imports System.Threading
 Imports ManageProgressBar
-#If NETCOREAPP3_0 Then
+#If NETCOREAPP Then
 
 #Else
 
