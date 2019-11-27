@@ -72,6 +72,41 @@ Partial Class Form1
         Me.mnuOptionsPauseConvertOnSuccess = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuOptionsStartFolderConvertFromLastFile = New System.Windows.Forms.ToolStripMenuItem()
         Me.ToolStripSeparator4 = New System.Windows.Forms.ToolStripSeparator()
+        Me.FrameworkToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.NetToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.CoreToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.StandardToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.NETCOREAPPToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.NETCOREAPP10ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.NETCOREAPP20ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.NETCOREAPP11ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.NETCOREAPP21ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.NETCOREAPP22ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.NETCOREAPP30ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.NETCOREAPP31ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.NETSTANDARDToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.NETSTANDARD10ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.NETSTANDARD11ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.NETSTANDARD12ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.NETSTANDARD13ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.NETSTANDARD14ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.NETSTANDARD15ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.NETSTANDARD16ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.NETSTANDARD20ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.NETSTANDARD21ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.NET20ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.NET35ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.NET40ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.NET45ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.NET451ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.NET452ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.NET46ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.NET461ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.NET462ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.NET47ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.NET471ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.NET472ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.NET48ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuOptionsAdvanced = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuView = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuViewShowSourceLineNumbers = New System.Windows.Forms.ToolStripMenuItem()
@@ -100,9 +135,9 @@ Partial Class Form1
         Me.RichTextBoxFileList = New System.Windows.Forms.RichTextBox()
         Me.RichTextBoxErrorList = New System.Windows.Forms.RichTextBox()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
-        Me.LineNumbers_For_RichTextBoxInput = New CSharpToVBApp.LineNumbersForRichTextBox()
-        Me.RichTextBoxConversionOutput = New CSharpToVBApp.AdvancedRTB()
-        Me.LineNumbers_For_RichTextBoxOutput = New CSharpToVBApp.LineNumbersForRichTextBox()
+        Me.LineNumbers_For_RichTextBoxInput = New LineNumbersForRichTextBox()
+        Me.RichTextBoxConversionOutput = New AdvancedRTB()
+        Me.LineNumbers_For_RichTextBoxOutput = New LineNumbersForRichTextBox()
         Me.MenuStrip1.SuspendLayout()
         Me.ContextMenuStrip1.SuspendLayout()
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -314,7 +349,7 @@ Partial Class Form1
         '
         'mnuOptions
         '
-        Me.mnuOptions.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuOptionsColorizeResult, Me.mnuOptionsColorizeSource, Me.mnuOptionsDelayBetweenConversions, Me.mnuOptionsAddFilesToIgnoreFilesEithErrorsList, Me.mnuOptionsEditIgnoreFilesWithErrorsList, Me.ToolStripSeparator6, Me.SkipOptionsToolStripMenuItem, Me.mnuOptionsPauseConvertOnSuccess, Me.mnuOptionsStartFolderConvertFromLastFile, Me.ToolStripSeparator4, Me.mnuOptionsAdvanced})
+        Me.mnuOptions.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuOptionsColorizeResult, Me.mnuOptionsColorizeSource, Me.mnuOptionsDelayBetweenConversions, Me.mnuOptionsAddFilesToIgnoreFilesEithErrorsList, Me.mnuOptionsEditIgnoreFilesWithErrorsList, Me.ToolStripSeparator6, Me.SkipOptionsToolStripMenuItem, Me.mnuOptionsPauseConvertOnSuccess, Me.mnuOptionsStartFolderConvertFromLastFile, Me.ToolStripSeparator4, Me.FrameworkToolStripMenuItem, Me.mnuOptionsAdvanced})
         Me.mnuOptions.Name = "mnuOptions"
         Me.mnuOptions.ShortcutKeys = CType((System.Windows.Forms.Keys.Alt Or System.Windows.Forms.Keys.O), System.Windows.Forms.Keys)
         Me.mnuOptions.Size = New System.Drawing.Size(61, 20)
@@ -415,6 +450,258 @@ Partial Class Form1
         Me.mnuOptionsStartFolderConvertFromLastFile.Name = "mnuOptionsStartFolderConvertFromLastFile"
         Me.mnuOptionsStartFolderConvertFromLastFile.Size = New System.Drawing.Size(360, 22)
         Me.mnuOptionsStartFolderConvertFromLastFile.Text = "Start Conversion Folder From Last File"
+        '
+        'FrameworkToolStripMenuItem
+        '
+        Me.FrameworkToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.CoreToolStripMenuItem, Me.StandardToolStripMenuItem, Me.NetToolStripMenuItem})
+        Me.FrameworkToolStripMenuItem.Name = "FrameworkToolStripMenuItem"
+        Me.FrameworkToolStripMenuItem.Size = New System.Drawing.Size(78, 20)
+        Me.FrameworkToolStripMenuItem.Text = "Framework"
+        '
+        'CoreToolStripMenuItem
+        '
+        Me.CoreToolStripMenuItem.Checked = True
+        Me.CoreToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked
+        Me.CoreToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.NETCOREAPPToolStripMenuItem, Me.NETCOREAPP10ToolStripMenuItem, Me.NETCOREAPP11ToolStripMenuItem, Me.NETCOREAPP20ToolStripMenuItem, Me.NETCOREAPP21ToolStripMenuItem, Me.NETCOREAPP22ToolStripMenuItem, Me.NETCOREAPP30ToolStripMenuItem, Me.NETCOREAPP31ToolStripMenuItem})
+        Me.CoreToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.CoreToolStripMenuItem.Name = "CoreToolStripMenuItem"
+        Me.CoreToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.CoreToolStripMenuItem.Text = "Core"
+        '
+        'NETCOREAPPToolStripMenuItem
+        '
+        Me.NETCOREAPPToolStripMenuItem.Checked = True
+        Me.NETCOREAPPToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked
+        Me.NETCOREAPPToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.NETCOREAPPToolStripMenuItem.Name = "NETCOREAPPToolStripMenuItem"
+        Me.NETCOREAPPToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.NETCOREAPPToolStripMenuItem.Text = "NETCOREAPP"
+        '
+        'NETCOREAPP10ToolStripMenuItem
+        '
+        Me.NETCOREAPP10ToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.NETCOREAPP10ToolStripMenuItem.Name = "NETCOREAPP10ToolStripMenuItem"
+        Me.NETCOREAPP10ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.NETCOREAPP10ToolStripMenuItem.Text = "NETCOREAPP1_0"
+        '
+        'NETCOREAPP11ToolStripMenuItem
+        '
+        Me.NETCOREAPP11ToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.NETCOREAPP11ToolStripMenuItem.Name = "NETCOREAPP11ToolStripMenuItem"
+        Me.NETCOREAPP11ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.NETCOREAPP11ToolStripMenuItem.Text = "NETCOREAPP1_1"
+        '
+        'NETCOREAPP20ToolStripMenuItem
+        '
+        Me.NETCOREAPP20ToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.NETCOREAPP20ToolStripMenuItem.Name = "NETCOREAPP20ToolStripMenuItem"
+        Me.NETCOREAPP20ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.NETCOREAPP20ToolStripMenuItem.Text = "NETCOREAPP2_0"
+        '
+        'NETCOREAPP21ToolStripMenuItem
+        '
+        Me.NETCOREAPP21ToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.NETCOREAPP21ToolStripMenuItem.Name = "NETCOREAPP21ToolStripMenuItem"
+        Me.NETCOREAPP21ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.NETCOREAPP21ToolStripMenuItem.Text = "NETCOREAPP2_1"
+        '
+        'NETCOREAPP22ToolStripMenuItem
+        '
+        Me.NETCOREAPP22ToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.NETCOREAPP22ToolStripMenuItem.Name = "NETCOREAPP22ToolStripMenuItem"
+        Me.NETCOREAPP22ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.NETCOREAPP22ToolStripMenuItem.Text = "NETCOREAPP2_2"
+        '
+        'NETCOREAPP30ToolStripMenuItem
+        '
+        Me.NETCOREAPP30ToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.NETCOREAPP30ToolStripMenuItem.Name = "NETCOREAPP30ToolStripMenuItem"
+        Me.NETCOREAPP30ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.NETCOREAPP30ToolStripMenuItem.Text = "NETCOREAPP3_0"
+        '
+        'NETCOREAPP31ToolStripMenuItem
+        '
+        Me.NETCOREAPP31ToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.NETCOREAPP31ToolStripMenuItem.Name = "NETCOREAPP31ToolStripMenuItem"
+        Me.NETCOREAPP31ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.NETCOREAPP31ToolStripMenuItem.Text = "NETCOREAPP3_1"
+        '
+        'StandardToolStripMenuItem
+        '
+        Me.StandardToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.NETSTANDARDToolStripMenuItem, Me.NETSTANDARD10ToolStripMenuItem, Me.NETSTANDARD11ToolStripMenuItem, Me.NETSTANDARD12ToolStripMenuItem, Me.NETSTANDARD13ToolStripMenuItem, Me.NETSTANDARD14ToolStripMenuItem, Me.NETSTANDARD15ToolStripMenuItem, Me.NETSTANDARD16ToolStripMenuItem, Me.NETSTANDARD20ToolStripMenuItem, Me.NETSTANDARD21ToolStripMenuItem})
+        Me.StandardToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.StandardToolStripMenuItem.Name = "StandardToolStripMenuItem"
+        Me.StandardToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.StandardToolStripMenuItem.Text = ".Net Standard"
+        '
+        'NETSTANDARDToolStripMenuItem
+        '
+        Me.NETSTANDARDToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.NETSTANDARDToolStripMenuItem.Name = "NETSTANDARDToolStripMenuItem"
+        Me.NETSTANDARDToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.NETSTANDARDToolStripMenuItem.Text = "NETSTANDARD"
+        '
+        'NETSTANDARD10ToolStripMenuItem
+        '
+        Me.NETSTANDARD10ToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.NETSTANDARD10ToolStripMenuItem.Name = "NETSTANDARD10ToolStripMenuItem"
+        Me.NETSTANDARD10ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.NETSTANDARD10ToolStripMenuItem.Text = "NETSTANDARD1_0"
+        '
+        'NETSTANDARD11ToolStripMenuItem
+        '
+        Me.NETSTANDARD11ToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.NETSTANDARD11ToolStripMenuItem.Name = "NETSTANDARD11ToolStripMenuItem"
+        Me.NETSTANDARD11ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.NETSTANDARD11ToolStripMenuItem.Text = "NETSTANDARD1_1"
+        '
+        'NETSTANDARD12ToolStripMenuItem
+        '
+        Me.NETSTANDARD12ToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.NETSTANDARD12ToolStripMenuItem.Name = "NETSTANDARD12ToolStripMenuItem"
+        Me.NETSTANDARD12ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.NETSTANDARD12ToolStripMenuItem.Text = "NETSTANDARD1_2"
+        '
+        'NETSTANDARD13ToolStripMenuItem
+        '
+        Me.NETSTANDARD13ToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.NETSTANDARD13ToolStripMenuItem.Name = "NETSTANDARD13ToolStripMenuItem"
+        Me.NETSTANDARD13ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.NETSTANDARD13ToolStripMenuItem.Text = "NETSTANDARD1_3"
+        '
+        'NETSTANDARD14ToolStripMenuItem
+        '
+        Me.NETSTANDARD14ToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.NETSTANDARD14ToolStripMenuItem.Name = "NETSTANDARD14ToolStripMenuItem"
+        Me.NETSTANDARD14ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.NETSTANDARD14ToolStripMenuItem.Text = "NETSTANDARD1_4"
+        '
+        'NETSTANDARD15ToolStripMenuItem
+        '
+        Me.NETSTANDARD15ToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.NETSTANDARD15ToolStripMenuItem.Name = "NETSTANDARD15ToolStripMenuItem"
+        Me.NETSTANDARD15ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.NETSTANDARD15ToolStripMenuItem.Text = "NETSTANDARD1_5"
+        '
+        'NETSTANDARD16ToolStripMenuItem
+        '
+        Me.NETSTANDARD16ToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.NETSTANDARD16ToolStripMenuItem.Name = "NETSTANDARD16ToolStripMenuItem"
+        Me.NETSTANDARD16ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.NETSTANDARD16ToolStripMenuItem.Text = "NETSTANDARD1_6"
+        '
+        'NETSTANDARD20ToolStripMenuItem
+        '
+        Me.NETSTANDARD20ToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.NETSTANDARD20ToolStripMenuItem.Name = "NETSTANDARD20ToolStripMenuItem"
+        Me.NETSTANDARD20ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.NETSTANDARD20ToolStripMenuItem.Text = "NETSTANDARD2_0"
+        '
+        'NETSTANDARD21ToolStripMenuItem
+        '
+        Me.NETSTANDARD21ToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.NETSTANDARD21ToolStripMenuItem.Name = "NETSTANDARD21ToolStripMenuItem"
+        Me.NETSTANDARD21ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.NETSTANDARD21ToolStripMenuItem.Text = "NETSTANDARD2_1"
+        '
+        'NetToolStripMenuItem
+        '
+        Me.NetToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.NET20ToolStripMenuItem, Me.NET35ToolStripMenuItem, Me.NET40ToolStripMenuItem, Me.NET45ToolStripMenuItem, Me.NET451ToolStripMenuItem, Me.NET452ToolStripMenuItem, Me.NET46ToolStripMenuItem, Me.NET461ToolStripMenuItem, Me.NET462ToolStripMenuItem, Me.NET47ToolStripMenuItem, Me.NET471ToolStripMenuItem, Me.NET48ToolStripMenuItem, Me.NET472ToolStripMenuItem})
+        Me.NetToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.NetToolStripMenuItem.Name = "NetToolStripMenuItem"
+        Me.NetToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.NetToolStripMenuItem.Text = ".Net Full Framework"
+        '
+        'NET20ToolStripMenuItem
+        '
+        Me.NET20ToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.NET20ToolStripMenuItem.Name = "NET20ToolStripMenuItem"
+        Me.NET20ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.NET20ToolStripMenuItem.Text = "NET20"
+        '
+        'NET35ToolStripMenuItem
+        '
+        Me.NET35ToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.NET35ToolStripMenuItem.Name = "NET35ToolStripMenuItem"
+        Me.NET35ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.NET35ToolStripMenuItem.Text = "NET35"
+        '
+        'NET40ToolStripMenuItem
+        '
+        Me.NET40ToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.NET40ToolStripMenuItem.Name = "NET40ToolStripMenuItem"
+        Me.NET40ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.NET40ToolStripMenuItem.Text = "NET40"
+        '
+        'NET45ToolStripMenuItem
+        '
+        Me.NET45ToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.NET45ToolStripMenuItem.Name = "NET45ToolStripMenuItem"
+        Me.NET45ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.NET45ToolStripMenuItem.Text = "NET45"
+        '
+        'NET451ToolStripMenuItem
+        '
+        Me.NET451ToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.NET451ToolStripMenuItem.Name = "NET451ToolStripMenuItem"
+        Me.NET451ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.NET451ToolStripMenuItem.Text = "NET451"
+        '
+        'NET452ToolStripMenuItem
+        '
+        Me.NET452ToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.NET452ToolStripMenuItem.Name = "NET452ToolStripMenuItem"
+        Me.NET452ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.NET452ToolStripMenuItem.Text = "NET452"
+        '
+        'NET46ToolStripMenuItem
+        '
+        Me.NET46ToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.NET46ToolStripMenuItem.Name = "NET46ToolStripMenuItem"
+        Me.NET46ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.NET46ToolStripMenuItem.Text = "NET46"
+        '
+        'NET461ToolStripMenuItem
+        '
+        Me.NET461ToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.NET461ToolStripMenuItem.Name = "NET461ToolStripMenuItem"
+        Me.NET461ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.NET461ToolStripMenuItem.Text = "NET461"
+        '
+        'NET462ToolStripMenuItem
+        '
+        Me.NET462ToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.NET462ToolStripMenuItem.Name = "NET462ToolStripMenuItem"
+        Me.NET462ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.NET462ToolStripMenuItem.Text = "NET462"
+        '
+        'NET47ToolStripMenuItem
+        '
+        Me.NET47ToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.NET47ToolStripMenuItem.Name = "NET47ToolStripMenuItem"
+        Me.NET47ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.NET47ToolStripMenuItem.Text = "NET47"
+        '
+        'NET471ToolStripMenuItem
+        '
+        Me.NET471ToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.NET471ToolStripMenuItem.Name = "NET471ToolStripMenuItem"
+        Me.NET471ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.NET471ToolStripMenuItem.Text = "NET471"
+        '
+        'NET48ToolStripMenuItem
+        '
+        Me.NET48ToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.NET48ToolStripMenuItem.Name = "NET48ToolStripMenuItem"
+        Me.NET48ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.NET48ToolStripMenuItem.Text = "NET48"
+        '
+        'NET472ToolStripMenuItem
+        '
+        Me.NET472ToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.NET472ToolStripMenuItem.Name = "NET472ToolStripMenuItem"
+        Me.NET472ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.NET472ToolStripMenuItem.Text = "NET472"
         '
         'ToolStripSeparator4
         '
@@ -667,7 +954,7 @@ Partial Class Form1
         Me.LineNumbers_For_RichTextBoxInput.BorderLinesStyle = System.Drawing.Drawing2D.DashStyle.Dot
         Me.LineNumbers_For_RichTextBoxInput.BorderLinesThickness = 1.0!
         Me.LineNumbers_For_RichTextBoxInput.Dock = System.Windows.Forms.DockStyle.Left
-        Me.LineNumbers_For_RichTextBoxInput.DockSide = CSharpToVBApp.LineNumbersForRichTextBox.LineNumberDockSides.Left
+        Me.LineNumbers_For_RichTextBoxInput.DockSide = LineNumbersForRichTextBox.LineNumberDockSides.Left
         Me.LineNumbers_For_RichTextBoxInput.GridLinesColor = System.Drawing.Color.SlateGray
         Me.LineNumbers_For_RichTextBoxInput.GridLinesStyle = System.Drawing.Drawing2D.DashStyle.Dot
         Me.LineNumbers_For_RichTextBoxInput.GridLinesThickness = 1.0!
@@ -680,7 +967,7 @@ Partial Class Form1
         Me.LineNumbers_For_RichTextBoxInput.Location = New System.Drawing.Point(0, 0)
         Me.LineNumbers_For_RichTextBoxInput.Margin = New System.Windows.Forms.Padding(0)
         Me.LineNumbers_For_RichTextBoxInput.MarginLinesColor = System.Drawing.Color.SlateGray
-        Me.LineNumbers_For_RichTextBoxInput.MarginLinesSide = CSharpToVBApp.LineNumbersForRichTextBox.LineNumberDockSides.Right
+        Me.LineNumbers_For_RichTextBoxInput.MarginLinesSide = LineNumbersForRichTextBox.LineNumberDockSides.Right
         Me.LineNumbers_For_RichTextBoxInput.MarginLinesStyle = System.Drawing.Drawing2D.DashStyle.Solid
         Me.LineNumbers_For_RichTextBoxInput.MarginLinesThickness = 1.0!
         Me.LineNumbers_For_RichTextBoxInput.Name = "LineNumbers_For_RichTextBoxInput"
@@ -720,7 +1007,7 @@ Partial Class Form1
         Me.LineNumbers_For_RichTextBoxOutput.BorderLinesColor = System.Drawing.Color.SlateGray
         Me.LineNumbers_For_RichTextBoxOutput.BorderLinesStyle = System.Drawing.Drawing2D.DashStyle.Dot
         Me.LineNumbers_For_RichTextBoxOutput.BorderLinesThickness = 1.0!
-        Me.LineNumbers_For_RichTextBoxOutput.DockSide = CSharpToVBApp.LineNumbersForRichTextBox.LineNumberDockSides.Left
+        Me.LineNumbers_For_RichTextBoxOutput.DockSide = LineNumbersForRichTextBox.LineNumberDockSides.Left
         Me.LineNumbers_For_RichTextBoxOutput.GridLinesColor = System.Drawing.Color.SlateGray
         Me.LineNumbers_For_RichTextBoxOutput.GridLinesStyle = System.Drawing.Drawing2D.DashStyle.Dot
         Me.LineNumbers_For_RichTextBoxOutput.GridLinesThickness = 1.0!
@@ -733,7 +1020,7 @@ Partial Class Form1
         Me.LineNumbers_For_RichTextBoxOutput.Location = New System.Drawing.Point(977, 0)
         Me.LineNumbers_For_RichTextBoxOutput.Margin = New System.Windows.Forms.Padding(0)
         Me.LineNumbers_For_RichTextBoxOutput.MarginLinesColor = System.Drawing.Color.SlateGray
-        Me.LineNumbers_For_RichTextBoxOutput.MarginLinesSide = CSharpToVBApp.LineNumbersForRichTextBox.LineNumberDockSides.Right
+        Me.LineNumbers_For_RichTextBoxOutput.MarginLinesSide = LineNumbersForRichTextBox.LineNumberDockSides.Right
         Me.LineNumbers_For_RichTextBoxOutput.MarginLinesStyle = System.Drawing.Drawing2D.DashStyle.Solid
         Me.LineNumbers_For_RichTextBoxOutput.MarginLinesThickness = 1.0!
         Me.LineNumbers_For_RichTextBoxOutput.Name = "LineNumbers_For_RichTextBoxOutput"
@@ -851,6 +1138,41 @@ Partial Class Form1
     Friend WithEvents mnuOptionsSkipSkipBinAndObjFolders As ToolStripMenuItem
     Friend WithEvents mnuOptionsSkipSkipTestResourceFiles As ToolStripMenuItem
     Friend WithEvents ToolStripSeparator6 As ToolStripSeparator
+    Friend WithEvents FrameworkToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents CoreToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents NETCOREAPPToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents NETCOREAPP10ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents StandardToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents NetToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents NETCOREAPP11ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents NETCOREAPP20ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents NETCOREAPP21ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents NETCOREAPP22ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents NETCOREAPP30ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents NETCOREAPP31ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents NETSTANDARDToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents NETSTANDARD10ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents NETSTANDARD11ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents NETSTANDARD12ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents NETSTANDARD13ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents NETSTANDARD14ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents NETSTANDARD15ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents NETSTANDARD16ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents NETSTANDARD20ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents NETSTANDARD21ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents NET20ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents NET35ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents NET40ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents NET45ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents NET451ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents NET452ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents NET46ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents NET461ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents NET462ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents NET47ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents NET471ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents NET472ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents NET48ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents mnuOptionsAddFilesToIgnoreFilesEithErrorsList As ToolStripMenuItem
     Friend WithEvents StatusStrip1 As StatusStrip
     Friend WithEvents StatusStripCurrentFileName As ToolStripStatusLabel
