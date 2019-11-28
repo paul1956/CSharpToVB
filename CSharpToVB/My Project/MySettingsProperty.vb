@@ -1,4 +1,6 @@
-﻿Namespace My
+﻿Imports CSharpToVBApp.CSharpToVBApp.My_Project
+
+Namespace My
 
     <HideModuleName(),
      DebuggerNonUserCode(),
@@ -6,9 +8,9 @@
     Friend Module MySettingsProperty
 
         <ComponentModel.Design.HelpKeyword("My.Settings")>
-        Friend ReadOnly Property Settings() As MySettings
+        Friend ReadOnly Property Settings() As Settings
             Get
-                Return MySettings.Default
+                Return Settings.Default
             End Get
         End Property
     End Module

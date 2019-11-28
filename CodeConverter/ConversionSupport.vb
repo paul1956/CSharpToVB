@@ -38,7 +38,7 @@ Namespace CSharpToVBCodeConverter
             Throw New ArgumentException($"{language} not supported!")
         End Function
 
-        Public Function ConvertInputRequest(RequestToConvert As ConvertRequest, OptionalReferences() As MetadataReference, mProgressBar As ReportProgress, CancelToken As CancellationToken) As ConversionResult
+        Public Function ConvertInputRequest(RequestToConvert As ConvertRequest, CSPreprocessorSymbols As List(Of String), VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)), OptionalReferences() As MetadataReference, mProgressBar As ReportProgress, CancelToken As CancellationToken) As ConversionResult
             If RequestToConvert Is Nothing Then
                 Throw New ArgumentNullException(NameOf(RequestToConvert))
             End If
@@ -59,7 +59,7 @@ Namespace CSharpToVBCodeConverter
                 Throw New ArgumentNullException(NameOf(OptionalReferences))
             End If
 
-            Dim CSharpParseOption As CS.CSharpParseOptions = GetCSharpParseOptions()
+            Dim CSharpParseOption As CS.CSharpParseOptions = GetCSharpParseOptions(CSPreprocessorSymbols)
             Dim Tree As SyntaxTree = ParseCSharpSource(RequestToConvert.SourceCode)
             Dim CSharpOptions As CS.CSharpCompilationOptions = New CS.CSharpCompilationOptions(
                                                 outputKind:=Nothing,
@@ -107,7 +107,7 @@ Namespace CSharpToVBCodeConverter
                                     )
                     UsedStacks.Clear()
                     UsedIdentifiers.Clear()
-                    Return New ConversionResult(ConvertedNode, LanguageNames.CSharp, LanguageNames.VisualBasic)
+                    Return New ConversionResult(ConvertedNode, LanguageNames.CSharp, LanguageNames.VisualBasic, VBPreprocessorSymbols)
                 Else
                     Return New ConversionResult(Array.Empty(Of Exception))
                 End If

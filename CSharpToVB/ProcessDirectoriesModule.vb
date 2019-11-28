@@ -11,7 +11,6 @@ Imports System.Threading
 Imports Microsoft.CodeAnalysis
 
 Public Module ProcessDirectoriesModule
-
     ''' <summary>
     ''' Converts new directory from TargetDirectory/SubdirectoryName
     ''' </summary>
@@ -55,13 +54,19 @@ Public Module ProcessDirectoriesModule
     ''' <returns>
     ''' False if error and user wants to stop, True if success or user wants to ignore error
     ''' </returns>
-    Public Function ProcessDirectory(SourceDirectory As String, TargetDirectory As String, MeForm As Form1, StopButton As Button, RichTextBoxFileList As RichTextBox, ByRef LastFileNameWithPath As String, SourceLanguageExtension As String, ByRef FilesProcessed As Long, ByRef TotalFilesToProcess As Long, ProcessFile As Func(Of String, String, String, MetadataReference(), CancellationToken, Boolean), CancelToken As CancellationToken) As Boolean
+    Public Function ProcessDirectory(SourceDirectory As String, TargetDirectory As String, MeForm As Form1, StopButton As Button, RichTextBoxFileList As RichTextBox, ByRef LastFileNameWithPath As String, SourceLanguageExtension As String, ByRef FilesProcessed As Long, ByRef TotalFilesToProcess As Long, ProcessFile As Func(Of String, String, String, List(Of String), List(Of KeyValuePair(Of String, Object)), MetadataReference(), CancellationToken, Boolean), CancelToken As CancellationToken) As Boolean
         If String.IsNullOrWhiteSpace(SourceDirectory) OrElse Not Directory.Exists(SourceDirectory) Then
             Return True
         End If
         ' Process the list of files found in the directory.
         Try
             Dim DirectoryList As String() = Directory.GetFiles(path:=SourceDirectory, searchPattern:=$"*.{SourceLanguageExtension}")
+            Dim CSPreprocessorSymbols As New List(Of String) From {
+                                        My.Settings.Framework
+                                    }
+            Dim VBPreprocessorSymbols As New List(Of KeyValuePair(Of String, Object)) From {
+                                        KeyValuePair.Create(Of String, Object)(My.Settings.Framework, True)
+                                    }
             For Each PathWithFileName As String In DirectoryList
                 FilesProcessed += 1
                 If LastFileNameWithPath.Length = 0 OrElse LastFileNameWithPath = PathWithFileName Then
@@ -73,7 +78,7 @@ Public Module ProcessDirectoriesModule
                         Application.DoEvents()
                     End If
 
-                    If Not ProcessFile(PathWithFileName, TargetDirectory, SourceLanguageExtension, CSharpReferences(Assembly.Load("System.Windows.Forms").Location, OptionalReference:=Nothing).ToArray, CancelToken) Then
+                    If Not ProcessFile(PathWithFileName, TargetDirectory, SourceLanguageExtension, CSPreprocessorSymbols, VBPreprocessorSymbols, CSharpReferences(Assembly.Load("System.Windows.Forms").Location, OptionalReference:=Nothing).ToArray, CancelToken) Then
                         SetButtonStopAndCursor(MeForm:=MeForm, StopButton:=StopButton, StopButtonVisible:=False)
                         Return False
                     End If

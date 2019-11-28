@@ -134,9 +134,7 @@ Namespace CodeConverter.Tests
 
             Using Workspace As AdhocWorkspace = New AdhocWorkspace()
                 Dim project As Project = Workspace.CurrentSolution.AddProject("Project", "Project.dll", LanguageNames.VisualBasic)
-                Dim PreprocessorSymbols As New List(Of KeyValuePair(Of String, Object)) From { _
- _                 'New KeyValuePair(Of String, Object)("NETSTANDARD", True),
- _                 'New KeyValuePair(Of String, Object)("NETFRAMEWORK", True),
+                Dim PreprocessorSymbols As New List(Of KeyValuePair(Of String, Object)) From {
                     New KeyValuePair(Of String, Object)("NETCOREAPP", True)
                 }
 

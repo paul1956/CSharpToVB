@@ -32,7 +32,7 @@ Namespace CSharpToVBCodeConverter
 
         End Enum
 
-        Public Sub New(_ConvertedTree As SyntaxNode, InputLanguage As String, OutputLanguage As String)
+        Public Sub New(_ConvertedTree As SyntaxNode, InputLanguage As String, OutputLanguage As String, VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)))
             Exceptions = New List(Of Exception)
             SourceLanguage = InputLanguage
             ResultStatus = ResultTriState.Success
@@ -40,7 +40,7 @@ Namespace CSharpToVBCodeConverter
             Using Workspace As New AdhocWorkspace()
                 Dim project As Project = Workspace.CurrentSolution.AddProject("Project", "Project.dll", OutputLanguage)
 
-                Dim VBParseOptions As VB.VisualBasicParseOptions = GetVBParseOptions()
+                Dim VBParseOptions As VB.VisualBasicParseOptions = GetVBParseOptions(VBPreprocessorSymbols)
 
                 project = project.WithParseOptions(VBParseOptions)
 

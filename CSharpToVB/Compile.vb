@@ -27,13 +27,11 @@ Public Module Compile
         End If
 
         Dim PreprocessorSymbols As ImmutableArray(Of KeyValuePair(Of String, Object)) = ImmutableArray(Of KeyValuePair(Of String, Object)).Empty
-        'PreprocessorSymbols = PreprocessorSymbols.Add(New KeyValuePair(Of String, Object)("NETSTANDARD", True))
-        'PreprocessorSymbols = PreprocessorSymbols.Add(New KeyValuePair(Of String, Object)("NETFRAMEWORK", True))
-        PreprocessorSymbols = PreprocessorSymbols.Add(New KeyValuePair(Of String, Object)("NETCOREAPP", True))
+        PreprocessorSymbols = PreprocessorSymbols.Add(KeyValuePair.Create(Of String, Object)(My.Settings.Framework, True))
         PreprocessorSymbols = AddPredefinedPreprocessorSymbols(OutputKind.DynamicallyLinkedLibrary, PreprocessorSymbols)
 
         Dim ParseOptions As VisualBasicParseOptions = New VisualBasicParseOptions(
-                LanguageVersion.VisualBasic16,
+                LanguageVersion.Latest,
                 DocumentationMode.Diagnose,
                 kind:=SourceCodeKind.Regular,
                 PreprocessorSymbols)

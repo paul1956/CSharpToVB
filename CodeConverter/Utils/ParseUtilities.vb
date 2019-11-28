@@ -17,16 +17,7 @@ Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
 Public Module ParseUtilities
 
-    Private ReadOnly PreprocessorSymbols As List(Of String) = New List(Of String) From { _
- _                                         '"NETSTANDARD",
- _                                         '"NETFRAMEWORK",
-                                                "NETCOREAPP"
-                                            }
-
-    Public Function GetCSharpParseOptions(Optional CSPreprocessorSymbols As List(Of String) = Nothing) As CS.CSharpParseOptions
-        If CSPreprocessorSymbols Is Nothing Then
-            CSPreprocessorSymbols = PreprocessorSymbols
-        End If
+    Public Function GetCSharpParseOptions(CSPreprocessorSymbols As List(Of String)) As CS.CSharpParseOptions
         Return New CS.CSharpParseOptions(
                                         CS.LanguageVersion.Latest,
                                         DocumentationMode.Parse,
@@ -76,25 +67,15 @@ Public Module ParseUtilities
         Return TotalFilesToProcess
     End Function
 
-    Public Function GetVBParseOptions(Optional VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)) = Nothing) As VB.VisualBasicParseOptions
-        If VBPreprocessorSymbols Is Nothing Then
-            VBPreprocessorSymbols = New List(Of KeyValuePair(Of String, Object))
-            For Each Key As String In PreprocessorSymbols
-                VBPreprocessorSymbols.Add(New KeyValuePair(Of String, Object)(Key, True))
-            Next
-        End If
+    Public Function GetVBParseOptions(VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object))) As VB.VisualBasicParseOptions
         Return New VB.VisualBasicParseOptions(
-                                    VB.LanguageVersion.VisualBasic16,
+                                    VB.LanguageVersion.Latest,
                                     DocumentationMode.Diagnose,
                                     SourceCodeKind.Regular,
                                     VBPreprocessorSymbols)
     End Function
 
     Public Function ParseCSharpSource(SourceText As String, Optional CSPreprocessorSymbols As List(Of String) = Nothing) As SyntaxTree
-        If CSPreprocessorSymbols Is Nothing Then
-            CSPreprocessorSymbols = PreprocessorSymbols
-        End If
-
         Dim CSharpParseOptions As CS.CSharpParseOptions = GetCSharpParseOptions(CSPreprocessorSymbols)
         Dim ParsedCSharpTree As SyntaxTree = CS.SyntaxFactory.ParseSyntaxTree(
                                                             Text.SourceText.From(SourceText),
