@@ -22,7 +22,7 @@ Namespace CSharpToVBCodeConverter.Util
             ' nested type of that owner and I'm allowed access to everything inside of it.
             Dim current As INamedTypeSymbol = withinType.OriginalDefinition
             Do While current IsNot Nothing
-                If current.Equals(originalContainingType) Then
+                If SymbolEqualityComparer.Default.Equals(current, originalContainingType) Then
                     Return True
                 End If
 
@@ -214,7 +214,7 @@ Namespace CSharpToVBCodeConverter.Util
 
         <Extension>
         Friend Function IsSameAssemblyOrHasFriendAccessTo(assembly As IAssemblySymbol, toAssembly As IAssemblySymbol) As Boolean
-            Return Equals(assembly, toAssembly) OrElse (assembly.IsInteractive AndAlso toAssembly.IsInteractive) OrElse toAssembly.GivesAccessTo(assembly)
+            Return SymbolEqualityComparer.Default.Equals(assembly, toAssembly) OrElse (assembly.IsInteractive AndAlso toAssembly.IsInteractive) OrElse toAssembly.GivesAccessTo(assembly)
         End Function
 
         <Extension()>

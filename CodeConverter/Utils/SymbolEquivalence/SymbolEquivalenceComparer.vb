@@ -105,11 +105,11 @@ Partial Friend Class SymbolEquivalenceComparer
     End Function
 
     Private Shared Function IsConstructedFromSelf(symbol As INamedTypeSymbol) As Boolean
-        Return DirectCast(symbol, Object).Equals(symbol.ConstructedFrom)
+        Return SymbolEqualityComparer.Default.Equals(symbol, symbol.ConstructedFrom)
     End Function
 
     Private Shared Function IsConstructedFromSelf(symbol As IMethodSymbol) As Boolean
-        Return DirectCast(symbol, Object).Equals(symbol.ConstructedFrom)
+        Return SymbolEqualityComparer.Default.Equals(symbol, symbol.ConstructedFrom)
     End Function
 
     Private Shared Function IsObjectType(symbol As ISymbol) As Boolean

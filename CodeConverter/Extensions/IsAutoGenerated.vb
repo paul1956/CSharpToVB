@@ -84,7 +84,7 @@ Public Module GeneratedCodeUtilities
             End If
 
             For Each attribute As AttributeData In symbol.GetAttributes()
-                If generatedCodeAttribute.Equals(attribute.AttributeClass) Then
+                If SymbolEqualityComparer.Default.Equals(generatedCodeAttribute, attribute.AttributeClass) Then
                     Return True
                 End If
             Next

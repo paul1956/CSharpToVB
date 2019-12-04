@@ -81,7 +81,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
 
                     If TypeOf node.Parent Is CSS.BracketedArgumentListSyntax Then
                         Dim _Typeinfo As TypeInfo = ModelExtensions.GetTypeInfo(mSemanticModel, NodeExpression)
-                        If Not Equals(_Typeinfo.ConvertedType, _Typeinfo.Type) Then
+                        If Not SymbolEqualityComparer.Default.Equals(_Typeinfo.ConvertedType, _Typeinfo.Type) Then
                             If _Typeinfo.Type?.SpecialType = SpecialType.System_Char Then '
                                 ArgumentWithTrivia = VBFactory.ParseExpression($"ChrW({ArgumentWithTrivia.WithoutTrivia.ToString})").WithTriviaFrom(ArgumentWithTrivia)
                             End If

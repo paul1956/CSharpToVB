@@ -86,7 +86,7 @@ Public Module ExpressionSyntaxSupport
                 If typeInfo.Type IsNot Nothing Then
                     If (typeInfo.Type.IsErrorType) Then
                         Return (Model.Compilation.ObjectType, _Error:=True)
-                    ElseIf Equals(typeInfo.Type, Model.Compilation.ObjectType) Then
+                    ElseIf SymbolEqualityComparer.Default.Equals(typeInfo.Type, Model.Compilation.ObjectType) Then
                         Return (Model.Compilation.ObjectType, _Error:=False)
                     End If
                 End If
@@ -125,7 +125,7 @@ Public Module ExpressionSyntaxSupport
                 If typeInfo.Type IsNot Nothing Then
                     If (typeInfo.Type.IsErrorType) Then
                         Return (PredefinedTypeObject, _Error:=True)
-                    ElseIf Equals(typeInfo.Type, Model.Compilation.ObjectType) Then
+                    ElseIf SymbolEqualityComparer.Default.Equals(typeInfo.Type, Model.Compilation.ObjectType) Then
                         Return (PredefinedTypeObject, _Error:=False)
                     End If
                 End If

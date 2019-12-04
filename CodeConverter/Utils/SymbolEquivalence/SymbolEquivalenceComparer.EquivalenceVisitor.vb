@@ -39,7 +39,7 @@ Partial Friend Class SymbolEquivalenceComparer
         End Function
 
         Private Shared Function DynamicTypesAreEquivalent(x As IDynamicTypeSymbol, y As IDynamicTypeSymbol) As Boolean
-            If x.Equals(y) Then Return True
+            If SymbolEqualityComparer.Default.Equals(x, y) Then Return True
             Return True
         End Function
 
@@ -340,7 +340,7 @@ Partial Friend Class SymbolEquivalenceComparer
                 ' equality.  This will properly handle things like the VB case where two
                 ' anonymous types will be considered the same if they have properties that
                 ' differ in casing.
-                If DirectCast(x, Object).Equals(y) Then
+                If SymbolEqualityComparer.Default.Equals(x, y) Then
                     Return True
                 End If
             End If

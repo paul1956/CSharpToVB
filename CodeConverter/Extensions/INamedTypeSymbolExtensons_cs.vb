@@ -268,7 +268,7 @@ Namespace CSharpToVBCodeConverter.Util
             If symbol.IsAbstract Then
                 Return type.GetBaseTypesAndThis() _
                     .SelectMany(Function(t As INamedTypeSymbol) t.GetMembers(symbol.Name)) _
-                    .FirstOrDefault(Function(s As ISymbol) DirectCast(symbol, Object).Equals(GetOverriddenMember(s)))
+                    .FirstOrDefault(Function(s As ISymbol) SymbolEqualityComparer.Default.Equals(symbol, GetOverriddenMember(s)))
             End If
 
             Return Nothing
