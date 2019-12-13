@@ -12,53 +12,35 @@ Imports CSharpToVBApp
 Public Class AdvancedRTB
     Inherits RichTextBox
 
+    Friend WithEvents ContextMenuStrip1 As ContextMenuStrip
+
+    Friend WithEvents ToolStripMenuItem1 As ToolStripMenuItem
+
+    Friend WithEvents ToolStripMenuItem2 As ToolStripMenuItem
+
+    Friend WithEvents ToolStripMenuItem3 As ToolStripMenuItem
+
+    Friend WithEvents ToolStripSeparator1 As ToolStripSeparator
+
+    Private Const OBJID_VSCROLL As Long = &HFFFFFFFB
+
+    Private Const WM_NCRBUTTONDOWN As Integer = &HA4
+
+    'the vertical scroll bar of the hwnd window
+    <CodeAnalysis.SuppressMessage("Code Quality", "IDE0069:Disposable fields should be disposed", Justification:="Can't figure out how to dispose")>
+    Private components As System.ComponentModel.IContainer
+
+    Private sbi As SCROLLBARINFO
+
+    Private VertRightClicked As Boolean = False
+
     Sub New()
         InitializeComponent()
     End Sub
 
-    Public Event VertScrollBarRightClicked(sender As Object, loc As Point)
-
     Public Event HorizScrollBarRightClicked(sender As Object, loc As Point)
 
-    Private Const OBJID_VSCROLL As Long = &HFFFFFFFB 'the vertical scroll bar of the hwnd window
-    Friend WithEvents ContextMenuStrip1 As ContextMenuStrip
-
-    <CodeAnalysis.SuppressMessage("Code Quality", "IDE0069:Disposable fields should be disposed", Justification:="Can't figure out how to dispose")>
-    Private components As System.ComponentModel.IContainer
-
-    Friend WithEvents ToolStripMenuItem1 As ToolStripMenuItem
-    Friend WithEvents ToolStripSeparator1 As ToolStripSeparator
-    Friend WithEvents ToolStripMenuItem2 As ToolStripMenuItem
-    Friend WithEvents ToolStripMenuItem3 As ToolStripMenuItem
-    Private Const WM_NCRBUTTONDOWN As Integer = &HA4
-
-    Private VertRightClicked As Boolean = False
-    Private sbi As SCROLLBARINFO
-
-    Private Shared Sub SetScrollPos(handle As IntPtr, SB_Orientation As SBOrientation, v As Boolean)
-        Dim scrollinfo As New SCROLLINFO With {
-            .CB_Size = CUInt(Marshal.SizeOf(GetType(SCROLLINFO))),
-            .F_Mask = ScrollInfoMasks.POS
-        }
-        Dim unused As Integer = SetScrollInfo(hWnd:=handle, nBar:=SB_Orientation, lpsi:=scrollinfo, bRepaint:=v)
-    End Sub
-
-    ''' <summary>
-    ''' Returns the Position of the Scroll Bar Thumb
-    ''' </summary>
-    ''' <param name="handle"></param>
-    ''' <param name="SB_Orientation"></param>
-    ''' <returns></returns>
-    Private Shared Function GetScrollPos(handle As IntPtr, SB_Orientation As SBOrientation) As Integer
-        Dim si As New SCROLLINFO
-        With si
-            .CB_Size = CUInt(Marshal.SizeOf(si))
-            .F_Mask = ScrollInfoMasks.ALL
-        End With
-        Dim lRet As Integer = GetScrollInfo(handle, SB_Orientation, si)
-        Return If(lRet <> 0, si.N_Pos, -1)
-    End Function
-
+    Public Event VertScrollBarRightClicked(sender As Object, loc As Point)
     ''' <summary>
     ''' Gets and Sets the Horizontal Scroll position of the control.
     ''' </summary>
@@ -84,30 +66,31 @@ Public Class AdvancedRTB
         End Set
     End Property
 
-    Protected Overrides Sub WndProc(ByRef m As Message)
-        If m.Msg = WM_NCRBUTTONDOWN Then
-            sbi = New SCROLLBARINFO
-            sbi.CB_Size = Marshal.SizeOf(sbi)
-            GetScrollBarInfo(Handle, OBJID_VSCROLL, sbi)
-            If sbi.RC_ScrollBar.ToRectangle.Contains(MousePosition) Then
-                VertRightClicked = True
-            Else
-                sbi.CB_Size = 0
-                MyBase.WndProc(m)
-            End If
-        Else
-            MyBase.WndProc(m)
-            Exit Sub
-        End If
+    ''' <summary>
+    ''' Returns the Position of the Scroll Bar Thumb
+    ''' </summary>
+    ''' <param name="handle"></param>
+    ''' <param name="SB_Orientation"></param>
+    ''' <returns></returns>
+    Private Shared Function GetScrollPos(handle As IntPtr, SB_Orientation As SBOrientation) As Integer
+        Dim si As New SCROLLINFO
+        With si
+            .CB_Size = CUInt(Marshal.SizeOf(si))
+            .F_Mask = ScrollInfoMasks.ALL
+        End With
+        Dim lRet As Integer = GetScrollInfo(handle, SB_Orientation, si)
+        Return If(lRet <> 0, si.N_Pos, -1)
+    End Function
 
-        If VertRightClicked Then
-            VertRightClicked = False
-            ContextMenuStrip1.Show(Me, PointToClient(MousePosition))
-        End If
+    Private Shared Sub SetScrollPos(handle As IntPtr, SB_Orientation As SBOrientation, v As Boolean)
+        Dim scrollinfo As New SCROLLINFO With {
+            .CB_Size = CUInt(Marshal.SizeOf(GetType(SCROLLINFO))),
+            .F_Mask = ScrollInfoMasks.POS
+        }
+        Dim unused As Integer = SetScrollInfo(hWnd:=handle, nBar:=SB_Orientation, lpsi:=scrollinfo, bRepaint:=v)
     End Sub
-
     Private Sub InitializeComponent()
-        components = New System.ComponentModel.Container()
+        components = New ComponentModel.Container()
         ContextMenuStrip1 = New ContextMenuStrip(components)
         ToolStripMenuItem1 = New ToolStripMenuItem()
         ToolStripMenuItem2 = New ToolStripMenuItem()
@@ -120,30 +103,30 @@ Public Class AdvancedRTB
         '
         ContextMenuStrip1.Items.AddRange(New ToolStripItem() {ToolStripMenuItem1, ToolStripSeparator1, ToolStripMenuItem2, ToolStripMenuItem3})
         ContextMenuStrip1.Name = "ContextMenuStrip1"
-        ContextMenuStrip1.Size = New System.Drawing.Size(147, 76)
+        ContextMenuStrip1.Size = New Size(147, 76)
         '
         'ToolStripMenuItem1
         '
         ToolStripMenuItem1.Name = "ToolStripMenuItem1"
-        ToolStripMenuItem1.Size = New System.Drawing.Size(146, 22)
+        ToolStripMenuItem1.Size = New Size(146, 22)
         ToolStripMenuItem1.Text = "Scroll Here"
         '
         'ToolStripMenuItem2
         '
         ToolStripMenuItem2.Name = "ToolStripMenuItem2"
-        ToolStripMenuItem2.Size = New System.Drawing.Size(146, 22)
+        ToolStripMenuItem2.Size = New Size(146, 22)
         ToolStripMenuItem2.Text = "Scroll Top"
         '
         'ToolStripMenuItem3
         '
         ToolStripMenuItem3.Name = "ToolStripMenuItem3"
-        ToolStripMenuItem3.Size = New System.Drawing.Size(146, 22)
+        ToolStripMenuItem3.Size = New Size(146, 22)
         ToolStripMenuItem3.Text = "Scroll Bottom"
         '
         'ToolStripSeparator1
         '
         ToolStripSeparator1.Name = "ToolStripSeparator1"
-        ToolStripSeparator1.Size = New System.Drawing.Size(143, 6)
+        ToolStripSeparator1.Size = New Size(143, 6)
         ContextMenuStrip1.ResumeLayout(False)
         ResumeLayout(False)
     End Sub
@@ -167,6 +150,28 @@ Public Class AdvancedRTB
 
     End Sub
 
+    <DebuggerStepThrough>
+    Protected Overrides Sub WndProc(ByRef m As Message)
+        If m.Msg = WM_NCRBUTTONDOWN Then
+            sbi = New SCROLLBARINFO
+            sbi.CB_Size = Marshal.SizeOf(sbi)
+            GetScrollBarInfo(Handle, OBJID_VSCROLL, sbi)
+            If sbi.RC_ScrollBar.ToRectangle.Contains(MousePosition) Then
+                VertRightClicked = True
+            Else
+                sbi.CB_Size = 0
+                MyBase.WndProc(m)
+            End If
+        Else
+            MyBase.WndProc(m)
+            Exit Sub
+        End If
+
+        If VertRightClicked Then
+            VertRightClicked = False
+            ContextMenuStrip1.Show(Me, PointToClient(MousePosition))
+        End If
+    End Sub
 #Region "IDisposable Support"
 
     Private disposedValue As Boolean ' To detect redundant calls
