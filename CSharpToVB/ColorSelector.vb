@@ -106,7 +106,7 @@ Public Class ColorSelector
 
     Public Shared Sub WriteColorDictionaryToFile(FPath As String)
         Dim FileStream As FileStream = File.OpenWrite(FPath)
-        Dim sw As New IO.StreamWriter(FileStream)
+        Dim sw As New StreamWriter(FileStream)
         sw.WriteLine($"Key,R,G,B")
         For Each kvp As KeyValuePair(Of String, Color) In ColorMappingDictionary
             sw.WriteLine($"{kvp.Key},{kvp.Value.R},{kvp.Value.G},{kvp.Value.B}")
@@ -122,7 +122,7 @@ Public Class ColorSelector
             Exit Sub
         End If
         Dim FileStream As FileStream = File.OpenRead(FPath)
-        Dim sr As New IO.StreamReader(FileStream)
+        Dim sr As New StreamReader(FileStream)
         sr.ReadLine()
         While (sr.Peek() <> -1)
             Dim line As String = sr.ReadLine()

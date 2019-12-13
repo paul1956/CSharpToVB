@@ -675,11 +675,10 @@ Public Class Form1
         LineNumbers_For_RichTextBoxOutput.Visible = False
         Dim SourceFolderName As String
         Dim ProjectSavePath As String
-        Using OFD As New OpenFolderDialog
+        Using OFD As New FolderBrowserDialog
             With OFD
                 .Description = "Select folder to convert..."
-                .FolderMustExist = True
-                .InitialFolder = My.Settings.DefaultProjectDirectory
+                .SelectedPath = My.Settings.DefaultProjectDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) & Path.DirectorySeparatorChar
                 .ShowNewFolderButton = False
                 If .ShowDialog(Me) <> DialogResult.OK Then
                     Return
