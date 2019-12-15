@@ -1,4 +1,6 @@
-﻿' Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
 Option Explicit On
 Option Infer Off
 Option Strict On
@@ -8,7 +10,7 @@ Imports Microsoft.CodeAnalysis.Text
 
 Public Class Range
 
-    Public Sub New(classification As String, span As TextSpan, text As SourceText)
+    Friend Sub New(classification As String, span As TextSpan, text As SourceText)
         Me.New(classification, span, text.GetSubText(span).ToString())
     End Sub
 
@@ -17,13 +19,13 @@ Public Class Range
     End Sub
 
     Public Sub New(classifiedSpan As ClassifiedSpan, text As String)
-        Me._ClassifiedSpan = classifiedSpan
-        Me._Text = text
+        _ClassifiedSpan = classifiedSpan
+        _Text = text
     End Sub
 
     Public ReadOnly Property ClassificationType As String
         Get
-            Return Me.ClassifiedSpan.ClassificationType
+            Return ClassifiedSpan.ClassificationType
         End Get
     End Property
 
@@ -33,7 +35,7 @@ Public Class Range
 
     Public ReadOnly Property TextSpan As TextSpan
         Get
-            Return Me.ClassifiedSpan.TextSpan
+            Return ClassifiedSpan.TextSpan
         End Get
     End Property
 

@@ -9,7 +9,7 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
         /// <summary>
         /// struct enumerator used in foreach.
         /// </summary>
-     public struct Enumerator : IEnumerator<T>
+        public struct Enumerator : IEnumerator<T>
         {
             private readonly ArrayBuilder<T> _builder;
             private int _index;
@@ -42,7 +42,7 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
             {
                 get
                 {
-                    return this.Current;
+                    return Current;
                 }
             }
 

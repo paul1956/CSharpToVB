@@ -6,8 +6,8 @@ Public Class ReportProgress
     Implements IReportProgress
 
     Sub New(Bar As ToolStripProgressBar)
-        Me._ProgressBar = Bar
-        Me.ProgressBar.Value = 0
+        _ProgressBar = Bar
+        ProgressBar.Value = 0
     End Sub
 
     Private ReadOnly Property ProgressBar As ToolStripProgressBar
@@ -21,29 +21,30 @@ Public Class ReportProgress
     End Sub
 
     Public Sub Clear() Implements IReportProgress.Clear
-        Me.ProgressBar.Value = 0
+        ProgressBar.Value = 0
     End Sub
 
     Public Sub SetTotalItems(TotalItems As Integer) Implements IReportProgress.SetTotalItems
-        Me.ProgressBar.Visible = True
-        Me.ProgressBar.Value = 0
-        Me.ProgressBar.Maximum = TotalItems
+        ProgressBar.Visible = True
+        ProgressBar.Value = 0
+        ProgressBar.Maximum = TotalItems
     End Sub
 
     Public Sub UpdateProgress(Increment As Integer) Implements IReportProgress.UpdateProgress
-        Me.ProgressBar.Step = Increment
-        Me.ProgressBar.PerformStep()
-        Me.ProgressBar.Step = -1
-        Me.ProgressBar.PerformStep()
-        Me.ProgressBar.Step = 1
-        Me.ProgressBar.PerformStep()
-        Me.ProgressBar.TextImageRelation = TextImageRelation.Overlay
-        Me.pbPrecentage(Me.ProgressBar, $"{Me.ProgressBar.Value:N0} of {Me.ProgressBar.Maximum:N0}")
-        If Me.ProgressBar.Value >= Me.ProgressBar.Maximum Then
-            Me.ProgressBar.Visible = False
+        ProgressBar.Step = Increment
+        ProgressBar.PerformStep()
+        ProgressBar.Step = -1
+        ProgressBar.PerformStep()
+        ProgressBar.Step = 1
+        ProgressBar.PerformStep()
+        ProgressBar.TextImageRelation = TextImageRelation.Overlay
+        pbPrecentage(ProgressBar, $"{ProgressBar.Value:N0} of {ProgressBar.Maximum:N0}")
+        If ProgressBar.Value >= ProgressBar.Maximum Then
+            ProgressBar.Visible = False
         End If
-        If Me.ProgressBar.Value Mod 100 = 0 Then
+        If ProgressBar.Value Mod 100 = 0 Then
             Application.DoEvents()
         End If
     End Sub
+
 End Class

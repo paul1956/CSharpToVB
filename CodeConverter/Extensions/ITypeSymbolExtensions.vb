@@ -1,49 +1,31 @@
-﻿Option Explicit On
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+Option Explicit On
 Option Infer Off
 Option Strict On
 
+Imports System.Collections.Immutable
 Imports System.ComponentModel
 Imports System.Runtime.CompilerServices
 
 Imports Microsoft.CodeAnalysis
 
-Namespace IVisualBasicCode.CodeConverter.Util
+Namespace CSharpToVBCodeConverter.Util
 
     <EditorBrowsable(EditorBrowsableState.Never)>
     Partial Public Module ITypeSymbolExtensions
 
-        <Extension()>
-        Public Iterator Function GetBaseTypesAndThis(type As ITypeSymbol) As IEnumerable(Of ITypeSymbol)
-            Dim current As ITypeSymbol = type
-            While current IsNot Nothing
-                Yield current
-                current = current.BaseType
-            End While
-        End Function
-
-        ' Determine if "type" inherits from "baseType", ignoring constructed types, and dealing
-        ' only with original types.
-        <Extension>
-        Public Function InheritsFromOrEqualsIgnoringConstruction(type As ITypeSymbol, baseType As ITypeSymbol) As Boolean
-            Dim originalBaseType As ITypeSymbol = baseType.OriginalDefinition
-            Return type.GetBaseTypesAndThis.Contains(Function(t As ITypeSymbol) SymbolEquivalenceComparer.Instance.Equals(t.OriginalDefinition, originalBaseType))
-        End Function
-
         ' Is the type "withinType" nested within the original type "originalContainingType".
         Private Function IsNestedWithinOriginalContainingType(withinType As INamedTypeSymbol, originalContainingType As INamedTypeSymbol) As Boolean
-            '			Contract.ThrowIfNull(withinType);
-            '			Contract.ThrowIfNull(originalContainingType);
-
             ' Walk up my parent chain and see if I eventually hit the owner.  If so then I'm a
             ' nested type of that owner and I'm allowed access to everything inside of it.
             Dim current As INamedTypeSymbol = withinType.OriginalDefinition
             Do While current IsNot Nothing
-                'Contract.Requires(current.IsDefinition);
-                If current.Equals(originalContainingType) Then
+                If SymbolEqualityComparer.Default.Equals(current, originalContainingType) Then
                     Return True
                 End If
 
-                ' NOTE(cyrusn): The container of an 'original' type is always original.
                 current = current.ContainingType
             Loop
 
@@ -52,8 +34,6 @@ Namespace IVisualBasicCode.CodeConverter.Util
 
         ' Is a private symbol access
         Private Function IsPrivateSymbolAccessible(within As ISymbol, originalContainingType As INamedTypeSymbol) As Boolean
-            'Contract.Requires(within is INamedTypeSymbol || within is IAssemblySymbol);
-
             Dim withinType As INamedTypeSymbol = TryCast(within, INamedTypeSymbol)
             If withinType Is Nothing Then
                 ' If we're not within a type, we can't access a private symbol
@@ -85,7 +65,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
             ' A protected symbol is accessible if we're (optionally nested) inside the type that it
             ' was defined in.
 
-            ' NOTE(ericli): It is helpful to consider 'protected' as *increasing* the
+            ' NOTE: It is helpful to consider 'protected' as *increasing* the
             ' accessibility domain of a private member, rather than *decreasing* that of a public
             ' member. Members are naturally private; the protected, internal and public access
             ' modifiers all increase the accessibility domain. Since private members are accessible
@@ -103,8 +83,6 @@ Namespace IVisualBasicCode.CodeConverter.Util
                 Dim current As INamedTypeSymbol = withinType.OriginalDefinition
                 Dim originalThroughTypeOpt As ITypeSymbol = throughTypeOpt?.OriginalDefinition
                 Do While current IsNot Nothing
-                    '	Contract.Requires(current.IsDefinition);
-
                     If current.InheritsFromOrEqualsIgnoringConstruction(originalContainingType) Then
                         ' NOTE(cyrusn): We're continually walking up the 'throughType's inheritance
                         ' chain.  We could compute it up front and cache it in a set.  However, i
@@ -128,44 +106,42 @@ Namespace IVisualBasicCode.CodeConverter.Util
         End Function
 
         <Extension>
-        Public Function ActionType(ByVal compilation As Compilation) As INamedTypeSymbol
+        Friend Function ActionType(compilation As Compilation) As INamedTypeSymbol
             Return compilation.GetTypeByMetadataName(GetType(Action).FullName)
         End Function
 
-        <Extension()>
-        Public Function IsDelegateType(symbol As ITypeSymbol) As Boolean
-            If symbol Is Nothing Then
-                Return False
+        <Extension>
+        Friend Function GetAllInterfacesIncludingThis(type As ITypeSymbol) As IList(Of INamedTypeSymbol)
+            Dim allInterfaces As ImmutableArray(Of INamedTypeSymbol) = type.AllInterfaces
+            Dim tempVar As Boolean = TypeOf type Is INamedTypeSymbol
+            Dim namedType As INamedTypeSymbol = If(tempVar, CType(type, INamedTypeSymbol), Nothing)
+            If tempVar AndAlso namedType.TypeKind = TypeKind.Interface AndAlso Not allInterfaces.Contains(namedType) Then
+                Dim result As New List(Of INamedTypeSymbol)(allInterfaces.Length + 1) From {
+                    namedType
+                }
+                result.AddRange(allInterfaces)
+                Return result
             End If
-            Return symbol.TypeKind = TypeKind.[Delegate]
+
+            Return allInterfaces
+        End Function
+
+        ' Determine if "type" inherits from "baseType", ignoring constructed types, and dealing
+        ' only with original types.
+        <Extension>
+        Friend Function InheritsFromOrEqualsIgnoringConstruction(type As ITypeSymbol, baseType As ITypeSymbol) As Boolean
+            Dim originalBaseType As ITypeSymbol = baseType.OriginalDefinition
+            Return type.GetBaseTypesAndThis.Contains(Function(t As ITypeSymbol) SymbolEquivalenceComparer.s_instance.Equals(t.OriginalDefinition, originalBaseType))
         End Function
 
         <Extension()>
-        Friend Function IsEnumType(type As ITypeSymbol) As Boolean
-            Debug.Assert(type IsNot Nothing)
-            Return type.TypeKind = TypeKind.Enum
-        End Function
-
-        <Extension()>
-        Public Function IsErrorType(symbol As ITypeSymbol) As Boolean
+        Friend Function IsErrorType(symbol As ITypeSymbol) As Boolean
             Return symbol.TypeKind = TypeKind.[Error]
-        End Function
-
-        <Extension()>
-        Public Function IsInterfaceType(symbol As ITypeSymbol) As Boolean
-            If symbol Is Nothing Then
-                Return False
-            End If
-
-            Return symbol.TypeKind = TypeKind.[Interface]
         End Function
 
         ' Is a member with declared accessibility "declaredAccessiblity" accessible from within
         ' "within", which must be a named type or an assembly.
-        Public Function IsMemberAccessible(containingType As INamedTypeSymbol, declaredAccessibility As Accessibility, within As ISymbol, throughTypeOpt As ITypeSymbol, ByRef failedThroughTypeCheck As Boolean) As Boolean
-            '			Contract.Requires(within is INamedTypeSymbol || within is IAssemblySymbol);
-            '			Contract.ThrowIfNull(containingType);
-
+        Friend Function IsMemberAccessible(containingType As INamedTypeSymbol, declaredAccessibility As Microsoft.CodeAnalysis.Accessibility, within As ISymbol, throughTypeOpt As ITypeSymbol, ByRef failedThroughTypeCheck As Boolean) As Boolean
             failedThroughTypeCheck = False
 
             Dim originalContainingType As INamedTypeSymbol = containingType.OriginalDefinition
@@ -178,18 +154,18 @@ Namespace IVisualBasicCode.CodeConverter.Util
             End If
 
             Select Case declaredAccessibility
-                Case Accessibility.NotApplicable
+                Case Microsoft.CodeAnalysis.Accessibility.NotApplicable
                     ' TODO(cyrusn): Is this the right thing to do here?  Should the caller ever be
                     ' asking about the accessibility of a symbol that has "NotApplicable" as its
                     ' value?  For now, I'm preserving the behavior of the existing code.  But perhaps
                     ' we should fail here and require the caller to not do this?
                     Return True
 
-                Case Accessibility.Public
+                Case Microsoft.CodeAnalysis.Accessibility.Public
                     ' Public symbols are always accessible from any context
                     Return True
 
-                Case Accessibility.Private
+                Case Microsoft.CodeAnalysis.Accessibility.Private
                     ' All expressions in the current submission (top-level or nested in a method or
                     ' type) can access previous submission's private top-level members. Previous
                     ' submissions are treated like outer classes for the current submission - the
@@ -201,12 +177,12 @@ Namespace IVisualBasicCode.CodeConverter.Util
                     ' private members never accessible from outside a type.
                     Return withinNamedType IsNot Nothing AndAlso IsPrivateSymbolAccessible(withinNamedType, originalContainingType)
 
-                Case Accessibility.Internal
+                Case Microsoft.CodeAnalysis.Accessibility.Internal
                     ' An internal type is accessible if we're in the same assembly or we have
                     ' friend access to the assembly it was defined in.
                     Return withinAssembly.IsSameAssemblyOrHasFriendAccessTo(containingType.ContainingAssembly)
 
-                Case Accessibility.ProtectedAndInternal
+                Case Microsoft.CodeAnalysis.Accessibility.ProtectedAndInternal
                     If Not withinAssembly.IsSameAssemblyOrHasFriendAccessTo(containingType.ContainingAssembly) Then
                         ' We require internal access.  If we don't have it, then this symbol is
                         ' definitely not accessible to us.
@@ -216,7 +192,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
                     ' We had internal access.  Also have to make sure we have protected access.
                     Return IsProtectedSymbolAccessible(withinNamedType, withinAssembly, throughTypeOpt, originalContainingType, failedThroughTypeCheck)
 
-                Case Accessibility.ProtectedOrInternal
+                Case Microsoft.CodeAnalysis.Accessibility.ProtectedOrInternal
                     If withinAssembly.IsSameAssemblyOrHasFriendAccessTo(containingType.ContainingAssembly) Then
                         ' If we have internal access to this symbol, then that's sufficient.  no
                         ' need to do the complicated protected case.
@@ -227,7 +203,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
                     ' sufficient.
                     Return IsProtectedSymbolAccessible(withinNamedType, withinAssembly, throughTypeOpt, originalContainingType, failedThroughTypeCheck)
 
-                Case Accessibility.Protected
+                Case Microsoft.CodeAnalysis.Accessibility.Protected
                     Return IsProtectedSymbolAccessible(withinNamedType, withinAssembly, throughTypeOpt, originalContainingType, failedThroughTypeCheck)
 
                 Case Else
@@ -237,8 +213,39 @@ Namespace IVisualBasicCode.CodeConverter.Util
         End Function
 
         <Extension>
-        Public Function IsSameAssemblyOrHasFriendAccessTo(assembly As IAssemblySymbol, toAssembly As IAssemblySymbol) As Boolean
-            Return Equals(assembly, toAssembly) OrElse (assembly.IsInteractive AndAlso toAssembly.IsInteractive) OrElse toAssembly.GivesAccessTo(assembly)
+        Friend Function IsSameAssemblyOrHasFriendAccessTo(assembly As IAssemblySymbol, toAssembly As IAssemblySymbol) As Boolean
+            Return SymbolEqualityComparer.Default.Equals(assembly, toAssembly) OrElse (assembly.IsInteractive AndAlso toAssembly.IsInteractive) OrElse toAssembly.GivesAccessTo(assembly)
+        End Function
+
+        <Extension()>
+        Public Iterator Function GetBaseTypesAndThis(type As ITypeSymbol) As IEnumerable(Of ITypeSymbol)
+            Dim current As ITypeSymbol = type
+            While current IsNot Nothing
+                Yield current
+                current = current.BaseType
+            End While
+        End Function
+
+        <Extension>
+        Public Function IsAbstractClass(symbol As ITypeSymbol) As Boolean
+            Return CBool(symbol?.TypeKind = TypeKind.Class AndAlso symbol.IsAbstract)
+        End Function
+
+        <Extension()>
+        Public Function IsDelegateType(symbol As ITypeSymbol) As Boolean
+            If symbol Is Nothing Then
+                Return False
+            End If
+            Return symbol.TypeKind = TypeKind.[Delegate]
+        End Function
+
+        <Extension()>
+        Public Function IsInterfaceType(symbol As ITypeSymbol) As Boolean
+            If symbol Is Nothing Then
+                Return False
+            End If
+
+            Return symbol.TypeKind = TypeKind.[Interface]
         End Function
 
     End Module

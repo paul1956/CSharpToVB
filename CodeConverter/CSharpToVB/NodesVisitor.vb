@@ -1,55 +1,68 @@
-﻿Option Explicit On
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+Option Explicit On
 Option Infer Off
 Option Strict On
 
-Imports IVisualBasicCode.CodeConverter.Util
+Imports System.Diagnostics.CodeAnalysis
+Imports System.Windows.Forms
+
+Imports CSharpToVBCodeConverter.Util
 
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.CSharp.Syntax
 Imports Microsoft.CodeAnalysis.Simplification
 Imports Microsoft.CodeAnalysis.VisualBasic
+
 Imports CS = Microsoft.CodeAnalysis.CSharp
-Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
+
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
+
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace IVisualBasicCode.CodeConverter.Visual_Basic
+Namespace CSharpToVBCodeConverter.Visual_Basic
 
     Partial Public Class CSharpConverter
 
-        Partial Protected Friend Class NodesVisitor
+        Partial Friend Class NodesVisitor
             Inherits CS.CSharpSyntaxVisitor(Of VisualBasicSyntaxNode)
 
             ' This file contains all the stuff accessed by multiple Visitor functions in Class NodeVisitor and Visitors that
             ' had no better home.
 
-            ReadOnly allImports As List(Of VBS.ImportsStatementSyntax) = New List(Of VBS.ImportsStatementSyntax)()
-            ReadOnly inlineAssignHelperMarkers As List(Of BaseTypeDeclarationSyntax) = New List(Of BaseTypeDeclarationSyntax)()
-            Private ReadOnly IsModuleStack As New Stack(Of Boolean)
-            Private ReadOnly mSemanticModel As SemanticModel
-            Private placeholder As Integer = 1
+            Private ReadOnly _isModuleStack As New Stack(Of Boolean)
+            Private ReadOnly _mSemanticModel As SemanticModel
+            Private _placeholder As Integer = 1
+            Public ReadOnly _allImports As List(Of VBS.ImportsStatementSyntax) = New List(Of VBS.ImportsStatementSyntax)()
+            Public ReadOnly _inlineAssignHelperMarkers As List(Of BaseTypeDeclarationSyntax) = New List(Of BaseTypeDeclarationSyntax)()
 
             Public Sub New(lSemanticModel As SemanticModel)
-                Me.mSemanticModel = lSemanticModel
+                _mSemanticModel = lSemanticModel
             End Sub
 
             Public ReadOnly Property IsModule As Boolean
                 Get
-                    If Me.IsModuleStack.Count = 0 Then
+                    If _isModuleStack.Count = 0 Then
                         Return False
                     End If
-                    Return Me.IsModuleStack.Peek
+                    Return _isModuleStack.Peek
                 End Get
             End Property
 
+            <ExcludeFromCodeCoverage>
             Public Overrides Function DefaultVisit(node As SyntaxNode) As VisualBasicSyntaxNode
                 Throw New NotImplementedException(node.[GetType]().ToString & " not implemented!")
             End Function
 
             Public Overrides Function VisitCompilationUnit(node As CompilationUnitSyntax) As VisualBasicSyntaxNode
-
                 For Each [using] As UsingDirectiveSyntax In node.Usings
+                    Application.DoEvents()
+
+                    If s_originalRequest.CancelToken.IsCancellationRequested Then
+                        Throw New OperationCanceledException
+                    End If
                     [using].Accept(Me)
                 Next
                 Dim externList As New List(Of VisualBasicSyntaxNode)
@@ -64,19 +77,29 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Options = Options.Add(VBFactory.OptionStatement(StrictToken, OffToken).WithTrailingEOL)
 
                 Dim ListOfAttributes As SyntaxList(Of VBS.AttributesStatementSyntax) = VBFactory.List(node.AttributeLists.Select(Function(a As AttributeListSyntax) VBFactory.AttributesStatement(VBFactory.SingletonList(DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))))
-                Dim Members As SyntaxList(Of VBS.StatementSyntax) = VBFactory.List(node.Members.Select(Function(m As MemberDeclarationSyntax) DirectCast(m.Accept(Me), VBS.StatementSyntax)))
+                Dim MemberList As New List(Of VBS.StatementSyntax)
+                For Each m As MemberDeclarationSyntax In node.Members
+                    Application.DoEvents()
+
+                    If s_originalRequest.CancelToken.IsCancellationRequested Then
+                        Throw New OperationCanceledException
+                    End If
+                    MemberList.Add(DirectCast(m.Accept(Me), VBS.StatementSyntax))
+                Next
+                Dim Members As SyntaxList(Of VBS.StatementSyntax) = VBFactory.List(MemberList)
                 Dim compilationUnitSyntax1 As VBS.CompilationUnitSyntax
                 Dim EndOfFIleTokenWithTrivia As SyntaxToken = EndOfFileToken.WithConvertedTriviaFrom(node.EndOfFileToken)
 
                 If externList.Count > 0 Then
                     compilationUnitSyntax1 = VBFactory.CompilationUnit(
                         VBFactory.List(Of VBS.OptionStatementSyntax)(),
-                        VBFactory.List(Me.allImports),
+                        VBFactory.List(_allImports),
                         ListOfAttributes,
                         Members).WithTriviaFrom(externList(0))
-                ElseIf Me.allImports.Count > 0 Then
+                ElseIf _allImports.Count > 0 Then
                     If Members.Count > 0 AndAlso Members(0).HasLeadingTrivia Then
-                        If (TypeOf Members(0) IsNot VBS.NamespaceBlockSyntax AndAlso TypeOf Members(0) IsNot VBS.ModuleBlockSyntax) OrElse Members(0).GetLeadingTrivia.ToFullString.Contains("auto-generated") Then
+                        If (TypeOf Members(0) IsNot VBS.NamespaceBlockSyntax AndAlso TypeOf Members(0) IsNot VBS.ModuleBlockSyntax) OrElse
+                            Members(0).GetLeadingTrivia.ToFullString.Contains("auto-generated", StringComparison.InvariantCultureIgnoreCase) Then
                             Dim HeadingTriviaList As New List(Of SyntaxTrivia)
                             HeadingTriviaList.AddRange(Members(0).GetLeadingTrivia)
                             If HeadingTriviaList(0).IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
@@ -95,12 +118,12 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                                     NewLeadingTrivia.Add(t)
                                 End If
                             Next
-                            Me.allImports(0) = Me.allImports(0).WithPrependedLeadingTrivia(NewLeadingTrivia)
+                            _allImports(0) = _allImports(0).WithPrependedLeadingTrivia(NewLeadingTrivia)
                         End If
                     End If
                     compilationUnitSyntax1 = VBFactory.CompilationUnit(
                                                                 Options,
-                                                                VBFactory.List(Me.allImports),
+                                                                VBFactory.List(_allImports),
                                                                 ListOfAttributes,
                                                                 Members,
                                                                 EndOfFIleTokenWithTrivia
@@ -108,7 +131,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Else
                     compilationUnitSyntax1 = VBFactory.CompilationUnit(
                                                                 Options,
-                                                                VBFactory.List(Me.allImports),
+                                                                VBFactory.List(_allImports),
                                                                 ListOfAttributes,
                                                                 Members,
                                                                 EndOfFIleTokenWithTrivia)
@@ -199,7 +222,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             ''' <returns></returns>
             ''' <remarks>Added by PC</remarks>
             Public Overrides Function VisitSingleVariableDesignation(Node As SingleVariableDesignationSyntax) As VisualBasicSyntaxNode
-                Dim Identifier As SyntaxToken = GenerateSafeVBToken(Node.Identifier, IsQualifiedName:=False)
+                Dim Identifier As SyntaxToken = GenerateSafeVBToken(Node.Identifier, IsQualifiedName:=False, IsTypeName:=False)
                 Dim IdentifierExpression As VBS.IdentifierNameSyntax = VBFactory.IdentifierName(Identifier)
                 Dim ModifiedIdentifier As VBS.ModifiedIdentifierSyntax = VBFactory.ModifiedIdentifier(Identifier).WithTrailingTrivia(SpaceTrivia)
                 Dim SeparatedSyntaxListOfModifiedIdentifier As SeparatedSyntaxList(Of VBS.ModifiedIdentifierSyntax) =
@@ -250,9 +273,9 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Dim StatementWithIssue As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
 
                 Dim NewCaseStatement As VBS.SelectStatementSyntax = VBFactory.SelectStatement(CType(node.GoverningExpression.Accept(Me), VBS.ExpressionSyntax))
-                Dim TempVariableName As SyntaxToken = VBFactory.Identifier(MethodBodyVisitor.GetUniqueVariableNameInScope(node, "tempVar", Me.mSemanticModel))
+                Dim TempVariableName As SyntaxToken = VBFactory.Identifier(MethodBodyVisitor.GetUniqueVariableNameInScope(node, "tempVar", _mSemanticModel))
                 Dim TempIdentifier As VBS.IdentifierNameSyntax = VBFactory.IdentifierName(TempVariableName)
-                Dim _Typeinfo As TypeInfo = ModelExtensions.GetTypeInfo(Me.mSemanticModel, node.GoverningExpression)
+                Dim _Typeinfo As TypeInfo = ModelExtensions.GetTypeInfo(_mSemanticModel, node.GoverningExpression)
                 Dim Variable As VBS.VariableDeclaratorSyntax
                 Dim AsClause As VBS.AsClauseSyntax = Nothing
                 If _Typeinfo.Type IsNot Nothing AndAlso Not _Typeinfo.Type.IsErrorType Then
@@ -263,8 +286,9 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 For Each arm As SwitchExpressionArmSyntax In node.Arms
                     If TypeOf arm.Pattern Is ConstantPatternSyntax Then
                         Dim ConstatntPattern As ConstantPatternSyntax = CType(arm.Pattern, ConstantPatternSyntax)
-                        Dim RelationalCaseClause As VBS.RelationalCaseClauseSyntax = VBFactory.CaseEqualsClause(CType(ConstatntPattern.Expression.Accept(Me), VBS.ExpressionSyntax))
-                        Dim CaseStatement As VBS.CaseStatementSyntax = VBFactory.CaseStatement(RelationalCaseClause)
+                        Dim ConstatntPatternExpression As VBS.ExpressionSyntax = CType(ConstatntPattern.Expression.Accept(Me), VBS.ExpressionSyntax)
+                        Dim RelationalCaseClause As VBS.RelationalCaseClauseSyntax = VBFactory.CaseEqualsClause(ConstatntPatternExpression.WithLeadingTrivia(SpaceTrivia))
+                        Dim CaseStatement As VBS.CaseStatementSyntax = VBFactory.CaseStatement(RelationalCaseClause).WithPrependedLeadingTrivia(ConstatntPatternExpression.GetLeadingTrivia)
                         Dim Expression As VBS.ExpressionSyntax = CType(arm.Expression.Accept(Me), VBS.ExpressionSyntax)
                         Dim LeadingTrivia As New List(Of SyntaxTrivia)
                         LeadingTrivia.AddRange(Expression.GetLeadingTrivia)
@@ -281,10 +305,10 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         End If
                         Blocks = Blocks.Add(VBFactory.CaseElseBlock(VBFactory.CaseElseStatement(VBFactory.ElseCaseClause).WithTrailingEOL, Statements))
                     ElseIf TypeOf arm.Pattern Is RecursivePatternSyntax Then
-                        StatementWithIssue.AddMarker(FlagUnsupportedStatements(node, "Swith Expression with Recursive Pattern Syntax", CommentOutOriginalStatements:=True), StatementHandlingOption.ReplaceStatement, AllowDuplicates:=True)
+                        StatementWithIssue.AddMarker(FlagUnsupportedStatements(node, "Switch Expression with Recursive Pattern Syntax", CommentOutOriginalStatements:=True), StatementHandlingOption.ReplaceStatement, AllowDuplicates:=True)
                         Return TempIdentifier
                     ElseIf TypeOf arm.Pattern Is DeclarationPatternSyntax Then
-                        StatementWithIssue.AddMarker(FlagUnsupportedStatements(node, "Swith Expression with Declaration Pattern Syntax", CommentOutOriginalStatements:=True), StatementHandlingOption.ReplaceStatement, AllowDuplicates:=True)
+                        StatementWithIssue.AddMarker(FlagUnsupportedStatements(node, "Switch Expression with Declaration Pattern Syntax", CommentOutOriginalStatements:=True), StatementHandlingOption.ReplaceStatement, AllowDuplicates:=True)
                         Return TempIdentifier
                     ElseIf TypeOf arm.Pattern Is VarPatternSyntax Then
                         Dim VarPattern As VarPatternSyntax = DirectCast(arm.Pattern, VarPatternSyntax)
@@ -343,9 +367,11 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             End Function
 
             Public Overrides Function VisitVariableDeclarator(node As VariableDeclaratorSyntax) As VisualBasicSyntaxNode
-                Dim Identifier As SyntaxToken = GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False)
+                Dim Identifier As SyntaxToken = GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False)
                 Dim ArgumentList As New List(Of VBS.ArgumentSyntax)
-                If node.ArgumentList IsNot Nothing Then
+                If node.ArgumentList Is Nothing Then
+                    Return VBFactory.ModifiedIdentifier(Identifier).WithTrailingTrivia(SpaceTrivia)
+                Else
                     For i As Integer = 0 To node.ArgumentList.Arguments.Count - 1
                         Dim Expression As VBS.ExpressionSyntax = CType(node.ArgumentList.Arguments(i).Expression.Accept(Me), VBS.ExpressionSyntax)
                         If TypeOf Expression Is VBS.LiteralExpressionSyntax Then
@@ -367,8 +393,6 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                             Stop
                         End If
                     Next
-                Else
-                    Return VBFactory.ModifiedIdentifier(Identifier).WithTrailingTrivia(SpaceTrivia)
                 End If
                 Dim Nullable As SyntaxToken = Nothing
                 Dim ArrayBounds As VBS.ArgumentListSyntax = VBFactory.ArgumentList(VBFactory.SeparatedList(ArgumentList))
@@ -378,6 +402,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             Public Overrides Function VisitWhenClause(node As WhenClauseSyntax) As VisualBasicSyntaxNode
                 Return node.Condition.Accept(Me)
             End Function
+
         End Class
 
     End Class

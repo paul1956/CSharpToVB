@@ -1,4 +1,7 @@
-﻿Option Explicit On
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+Option Explicit On
 Option Infer Off
 Option Strict On
 
@@ -9,8 +12,24 @@ Imports Microsoft.CodeAnalysis
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 
-Namespace IVisualBasicCode.CodeConverter.Util
+Namespace CSharpToVBCodeConverter.Util
     Public Module SyntaxTokenExtensions
+
+        <Extension>
+        Friend Function WithPrependedLeadingTrivia(token As SyntaxToken, trivia As IEnumerable(Of SyntaxTrivia)) As SyntaxToken
+            Return token.WithPrependedLeadingTrivia(trivia.ToSyntaxTriviaList())
+        End Function
+
+        <Extension>
+        Public Function [With](token As SyntaxToken, leading As List(Of SyntaxTrivia), trailing As List(Of SyntaxTrivia)) As SyntaxToken
+            Return token.WithLeadingTrivia(leading).WithTrailingTrivia(trailing)
+        End Function
+
+        <Extension>
+        Public Function [With](token As SyntaxToken, leading As SyntaxTriviaList, trailing As SyntaxTriviaList) As SyntaxToken
+            Return token.WithLeadingTrivia(leading).WithTrailingTrivia(trailing)
+        End Function
+
         ''' <summary>
         ''' Returns the token after this token in the syntax tree.
         ''' </summary>
@@ -28,8 +47,8 @@ Namespace IVisualBasicCode.CodeConverter.Util
         End Function
 
         <Extension>
-        Public Function IsKind(token As SyntaxToken, ParamArray kinds() As Microsoft.CodeAnalysis.CSharp.SyntaxKind) As Boolean
-            Return kinds.Contains(CType(token.RawKind, Microsoft.CodeAnalysis.CSharp.SyntaxKind))
+        Public Function IsKind(token As SyntaxToken, ParamArray kinds() As CSharp.SyntaxKind) As Boolean
+            Return kinds.Contains(CType(token.RawKind, CSharp.SyntaxKind))
         End Function
 
         <Extension>
@@ -86,21 +105,6 @@ Namespace IVisualBasicCode.CodeConverter.Util
         End Function
 
         <Extension>
-        Public Function Width(token As SyntaxToken) As Integer
-            Return token.Span.Length
-        End Function
-
-        <Extension>
-        Public Function [With](token As SyntaxToken, leading As List(Of SyntaxTrivia), trailing As List(Of SyntaxTrivia)) As SyntaxToken
-            Return token.WithLeadingTrivia(leading).WithTrailingTrivia(trailing)
-        End Function
-
-        <Extension>
-        Public Function [With](token As SyntaxToken, leading As SyntaxTriviaList, trailing As SyntaxTriviaList) As SyntaxToken
-            Return token.WithLeadingTrivia(leading).WithTrailingTrivia(trailing)
-        End Function
-
-        <Extension>
         Public Function WithAppendedTrailingTrivia(token As SyntaxToken, trivia As IEnumerable(Of SyntaxTrivia)) As SyntaxToken
             Return token.WithTrailingTrivia(token.TrailingTrivia.Concat(trivia))
         End Function
@@ -154,15 +158,15 @@ Namespace IVisualBasicCode.CodeConverter.Util
                                     End If
                                 Next
                                 If j < TriviaListUBound AndAlso InitialTriviaList(j).IsKind(VB.SyntaxKind.CommentTrivia) Then
-                                    If Not NewWhiteSpaceString = "" Then
-                                        FinalLeadingTriviaList.Add(VBFactory.WhitespaceTrivia(NewWhiteSpaceString))
-                                    Else
+                                    If String.IsNullOrWhiteSpace(NewWhiteSpaceString) Then
                                         FinalLeadingTriviaList.Add(SpaceTrivia)
+                                    Else
+                                        FinalLeadingTriviaList.Add(VBFactory.WhitespaceTrivia(NewWhiteSpaceString))
                                     End If
                                     FinalLeadingTriviaList.Add(LineContinuation)
                                     AfterLineContinuation = True
                                 Else
-                                    If Not NewWhiteSpaceString = "" Then
+                                    If Not String.IsNullOrWhiteSpace(NewWhiteSpaceString) Then
                                         FinalLeadingTriviaList.Add(VBFactory.WhitespaceTrivia(NewWhiteSpaceString))
                                     End If
                                 End If
@@ -230,10 +234,10 @@ Namespace IVisualBasicCode.CodeConverter.Util
                             End If
                             If j = 0 OrElse j < TriviaListUBound AndAlso InitialTriviaList(j).IsKind(VB.SyntaxKind.CommentTrivia) Then
                                 If Not AfterLineContinuation Then
-                                    If Not NewWhiteSpaceString = "" Then
-                                        FinalTrailingTriviaList.Add(VBFactory.WhitespaceTrivia(NewWhiteSpaceString))
-                                    Else
+                                    If String.IsNullOrWhiteSpace(NewWhiteSpaceString) Then
                                         FinalTrailingTriviaList.Add(SpaceTrivia)
+                                    Else
+                                        FinalTrailingTriviaList.Add(VBFactory.WhitespaceTrivia(NewWhiteSpaceString))
                                     End If
                                     FinalTrailingTriviaList.Add(LineContinuation)
                                 End If
@@ -241,7 +245,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
                                 AfterLineContinuation = True
                             Else
                                 FinalTrailingTriviaList.Add(Trivia)
-                                If Not NewWhiteSpaceString = "" Then
+                                If Not String.IsNullOrWhiteSpace(NewWhiteSpaceString) Then
                                     FinalTrailingTriviaList.Add(VBFactory.WhitespaceTrivia(NewWhiteSpaceString))
                                 End If
                             End If
@@ -272,14 +276,6 @@ Namespace IVisualBasicCode.CodeConverter.Util
             End If
             Return Token.With(FinalLeadingTriviaList, FinalTrailingTriviaList)
         End Function
-        <Extension>
-        Public Function WithPrependedLeadingTrivia(token As SyntaxToken, ParamArray trivia() As SyntaxTrivia) As SyntaxToken
-            If trivia.Length = 0 Then
-                Return token
-            End If
-
-            Return token.WithPrependedLeadingTrivia(DirectCast(trivia, IEnumerable(Of SyntaxTrivia)))
-        End Function
 
         <Extension>
         Public Function WithPrependedLeadingTrivia(token As SyntaxToken, trivia As SyntaxTriviaList) As SyntaxToken
@@ -290,9 +286,5 @@ Namespace IVisualBasicCode.CodeConverter.Util
             Return token.WithLeadingTrivia(trivia.Concat(token.LeadingTrivia))
         End Function
 
-        <Extension>
-        Public Function WithPrependedLeadingTrivia(token As SyntaxToken, trivia As IEnumerable(Of SyntaxTrivia)) As SyntaxToken
-            Return token.WithPrependedLeadingTrivia(trivia.ToSyntaxTriviaList())
-        End Function
     End Module
 End Namespace

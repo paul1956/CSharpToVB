@@ -1,56 +1,47 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 
   <PropertyGroup>
     <RootNamespace></RootNamespace>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <OptionStrict>On</OptionStrict>
     <OptionInfer>Off</OptionInfer>
     <AssemblyName>VB.CodeConverter</AssemblyName>
+    <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
   <PropertyGroup>
-	<LangVersion>16</LangVersion>
+    <OptionExplicit>On</OptionExplicit>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <Authors>Paul M Cohen</Authors>
+    <Company>Travel By Paul</Company>
+    <Product>VB Core Code Converter</Product>
+    <RepositoryUrl>https://github.com/paul1956/CSharpToVB</RepositoryUrl>
+    <RepositoryType>GitHub</RepositoryType>
+    <Version>3.0.0</Version>
   </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <NoWarn />
-    <WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <NoWarn />
-    <WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <DefineConstants>VB_TO_CSharp="False"</DefineConstants>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-  </PropertyGroup>
-
   <ItemGroup>
-    <Compile Remove="Utils\obj\**" />
-    <Compile Remove="VBToCSharp\**" />
-    <EmbeddedResource Remove="Utils\obj\**" />
-    <EmbeddedResource Remove="VBToCSharp\**" />
-    <None Remove="Utils\obj\**" />
-    <None Remove="VBToCSharp\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis" Version="3.1.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="2.9.3">
+    <PackageReference Include="Microsoft.CodeAnalysis" Version="3.4.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8">
       <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="3.1.0" />
-    <PackageReference Include="System.Memory" Version="4.5.3" />
+    <PackageReference Include="VBMsgBox" Version="1.0.2" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\HashLibrary\HashLibrary.csproj" />
+    <ProjectReference Include="..\ManageProgressBar\ManageProgressBar.vbproj" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.VisualBasic">
-      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\Microsoft.VisualBasic.dll</HintPath>
-    </Reference>
+    <Compile Update="Resource1.Designer.vb">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resource1.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
-
+  <ItemGroup>
+    <EmbeddedResource Update="Resource1.resx">
+      <CustomToolNamespace>My.Resources</CustomToolNamespace>
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resource1.Designer.vb</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
 </Project>

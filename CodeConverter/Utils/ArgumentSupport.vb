@@ -1,20 +1,23 @@
-﻿Imports System.Runtime.CompilerServices
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+Imports System.Runtime.CompilerServices
 
-Imports IVisualBasicCode.CodeConverter.Util
+Imports CSharpToVBCodeConverter.Util
 
 Imports Microsoft.CodeAnalysis
 
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
-Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
+Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace IVisualBasicCode.CodeConverter.Visual_Basic
+Namespace CSharpToVBCodeConverter.Visual_Basic
 
     Public Module ArgumentSupport
 
         <Extension>
-        Public Function RestructureArguments(VB_Node As VBS.StatementSyntax, CS_ArgumentList As CSS.ArgumentListSyntax) As VBS.StatementSyntax
-            If CS_ArgumentList.ContainsConditionalDirective = DirectiveState.None Then
+        Friend Function RestructureArguments(VB_Node As VBS.StatementSyntax, CS_ArgumentList As CSS.ArgumentListSyntax) As VBS.StatementSyntax
+            If Not CS_ArgumentList.ContainsConditionalDirective Then
                 Return VB_Node
             End If
 

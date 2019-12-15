@@ -9,7 +9,7 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
 {
     [DebuggerDisplay("Count = {Count,nq}")]
     [DebuggerTypeProxy(typeof(ArrayBuilder<>.DebuggerProxy))]
-   public partial class ArrayBuilder<T> : IReadOnlyCollection<T>, IReadOnlyList<T>
+    public partial class ArrayBuilder<T> : IReadOnlyCollection<T>, IReadOnlyList<T>
     {
         #region DebuggerProxy
 
@@ -38,7 +38,7 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
             }
         }
 
-        #endregion
+        #endregion DebuggerProxy
 
         private readonly ImmutableArray<T>.Builder _builder;
 
@@ -157,10 +157,10 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
         }
 
         public int FindIndex(Predicate<T> match)
-            => FindIndex(0, this.Count, match);
+            => FindIndex(0, Count, match);
 
         public int FindIndex(int startIndex, Predicate<T> match)
-            => FindIndex(startIndex, this.Count - startIndex, match);
+            => FindIndex(startIndex, Count - startIndex, match);
 
         public int FindIndex(int startIndex, int count, Predicate<T> match)
         {
@@ -244,7 +244,7 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
                 return default;
             }
 
-            return this.ToImmutable();
+            return ToImmutable();
         }
 
         /// <summary>
@@ -272,15 +272,15 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
         /// </summary>
         public ImmutableArray<T> ToImmutableAndFree()
         {
-            var result = this.ToImmutable();
-            this.Free();
+            var result = ToImmutable();
+            Free();
             return result;
         }
 
         public T[] ToArrayAndFree()
         {
-            var result = this.ToArray();
-            this.Free();
+            var result = ToArray();
+            Free();
             return result;
         }
 
@@ -304,9 +304,9 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
                 // Overall perf does not seem to be very sensitive to this number, so I picked 128 as a limit.
                 if (_builder.Capacity < 128)
                 {
-                    if (this.Count != 0)
+                    if (Count != 0)
                     {
-                        this.Clear();
+                        Clear();
                     }
 
                     pool.Free(this);
@@ -319,12 +319,12 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
             }
         }
 
-
         // 2) Expose the pool or the way to create a pool or the way to get an instance.
         //    for now we will expose both and figure which way works better
 #pragma warning disable RECS0108 // Warns about static fields in generic types
         private static readonly ObjectPool<ArrayBuilder<T>> s_poolInstance = CreatePool();
 #pragma warning restore RECS0108 // Warns about static fields in generic types
+
         public static ArrayBuilder<T> GetInstance()
         {
             var builder = s_poolInstance.Allocate();
@@ -364,7 +364,7 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
             return pool;
         }
 
-        #endregion
+        #endregion Poolable
 
         public Enumerator GetEnumerator()
         {
@@ -383,7 +383,7 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
 
         internal Dictionary<K, ImmutableArray<T>> ToDictionary<K>(Func<T, K> keySelector, IEqualityComparer<K> comparer = null)
         {
-            if (this.Count == 1)
+            if (Count == 1)
             {
                 var dictionary1 = new Dictionary<K, ImmutableArray<T>>(1, comparer);
                 T value = this[0];
@@ -391,7 +391,7 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
                 return dictionary1;
             }
 
-            if (this.Count == 0)
+            if (Count == 0)
             {
                 return new Dictionary<K, ImmutableArray<T>>(comparer);
             }

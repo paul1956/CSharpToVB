@@ -1,4 +1,7 @@
-﻿Option Explicit On
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+Option Explicit On
 Option Infer Off
 Option Strict On
 
@@ -6,11 +9,17 @@ Imports System.Runtime.CompilerServices
 
 Imports Microsoft.CodeAnalysis
 
+Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace IVisualBasicCode.CodeConverter.Util
+Namespace CSharpToVBCodeConverter.Util
 
-    Partial Public Module SyntaxExtensions
+    Public Module SyntaxExtensions
+
+        <Extension()>
+        Public Function IsParentKind(node As SyntaxNode, kind As CS.SyntaxKind) As Boolean
+            Return node IsNot Nothing AndAlso node.Parent.IsKind(kind)
+        End Function
 
         ''' <summary>
         ''' Creates a new syntax node with all whitespace and end of line trivia replaced with
@@ -29,6 +38,7 @@ Namespace IVisualBasicCode.CodeConverter.Util
                                                                       Optional eol As String = vbCrLf,
                                                                       Optional PreserveCRLF As Boolean = False
                                                                       ) As TNode
+            Contracts.Contract.Requires(node IsNot Nothing)
             Return DirectCast(VBS.SyntaxNormalizer.Normalize(node, indentation, eol, useElasticTrivia:=False, useDefaultCasing, PreserveCRLF), TNode)
         End Function
 

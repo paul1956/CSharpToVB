@@ -1,8 +1,11 @@
-﻿Option Explicit On
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+Option Explicit On
 Option Infer Off
 Option Strict On
 
-Namespace IVisualBasicCode.CodeConverter.Util
+Namespace CSharpToVBCodeConverter.Util
     Friend Module NameGenerator
 
         Private Sub EnsureUniquenessInPlace(names As IList(Of String), isFixed As IList(Of Boolean), canUse As Func(Of String, Boolean), Optional isCaseSensitive As Boolean = True)
@@ -59,26 +62,27 @@ Namespace IVisualBasicCode.CodeConverter.Util
         ''' that are the same, and both are fixed that you will end up with non-unique names at the
         ''' end.
         ''' </summary>
-        Public Function EnsureUniqueness(names As IList(Of String), isFixed As IList(Of Boolean), Optional canUse As Func(Of String, Boolean) = Nothing, Optional isCaseSensitive As Boolean = True) As IList(Of String)
+        Public Function EnsureUniqueness(names As IList(Of String), isFixed As IList(Of Boolean), Optional canUse As Func(Of String, Boolean) = Nothing) As IList(Of String)
             Dim copy As List(Of String) = names.ToList()
-            EnsureUniquenessInPlace(copy, isFixed, canUse, isCaseSensitive)
+            EnsureUniquenessInPlace(copy, isFixed, canUse)
             Return copy
         End Function
 
         ''' <summary>
         ''' Transforms baseName into a name that does not conflict with any name in 'reservedNames'
         ''' </summary>
-        Public Function EnsureUniqueness(baseName As String, reservedNames As IEnumerable(Of String), Optional isCaseSensitive As Boolean = True) As String
+        Public Function EnsureUniqueness(baseName As String, reservedNames As IEnumerable(Of String)) As String
             Dim names As List(Of String) = New List(Of String) From {baseName}
             Dim isFixed As List(Of Boolean) = New List(Of Boolean) From {False}
-            For Each s As SymbolTableEntry In UsedIdentifiers.Values
+            For Each s As SymbolTableEntry In s_usedIdentifiers.Values
                 names.Add(s.Name)
             Next
 
-            names.AddRange(reservedNames.Distinct())
+            'names.AddRange(reservedNames.Distinct())
+            names.AddRange(reservedNames)
             isFixed.AddRange(Enumerable.Repeat(True, names.Count - 1))
 
-            Dim result As IList(Of String) = EnsureUniqueness(names, isFixed, isCaseSensitive:=isCaseSensitive)
+            Dim result As IList(Of String) = EnsureUniqueness(names, isFixed)
             Return result.First()
         End Function
 

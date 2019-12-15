@@ -1,22 +1,25 @@
-﻿Option Explicit On
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+Option Explicit On
 Option Infer Off
 Option Strict On
 
-Imports IVisualBasicCode.CodeConverter.Util
+Imports CSharpToVBCodeConverter.Util
 
 Imports Microsoft.CodeAnalysis
 
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
-Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
+Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace IVisualBasicCode.CodeConverter.Visual_Basic
+Namespace CSharpToVBCodeConverter.Visual_Basic
 
     Partial Public Class CSharpConverter
 
-        Partial Protected Friend Class NodesVisitor
+        Partial Friend Class NodesVisitor
             Inherits CS.CSharpSyntaxVisitor(Of VB.VisualBasicSyntaxNode)
 
             Public Overrides Function VisitAttribute(node As CSS.AttributeSyntax) As VB.VisualBasicSyntaxNode
@@ -111,7 +114,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     Case Else
                         Return Nothing
                 End Select
-                Return VBFactory.AttributeTarget(id).WithConvertedTriviafrom(node)
+                Return VBFactory.AttributeTarget(id).WithConvertedTriviaFrom(node)
             End Function
 
         End Class

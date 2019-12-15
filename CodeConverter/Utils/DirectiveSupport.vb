@@ -1,16 +1,19 @@
-﻿Imports System.Runtime.CompilerServices
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+Imports System.Runtime.CompilerServices
 
 Imports Microsoft.CodeAnalysis
 
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 
-Namespace IVisualBasicCode.CodeConverter.Visual_Basic
+Namespace CSharpToVBCodeConverter.Visual_Basic
 
     Public Module DirectiveSupport
 
         <Flags>
-        Public Enum DirectiveState
+        Public Enum DirectiveStates
             None = 0
             IfFound = 1
             ElseFound = 2
@@ -23,52 +26,25 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
         End Enum
 
         <Extension>
-        Public Function ContainsConditionalDirective(Tokens As SyntaxTokenList) As DirectiveState
-            Dim FoundDirectives As DirectiveState = DirectiveState.None
-            If Tokens.Count = 0 Then
-                Return FoundDirectives
-            End If
-            For i As Integer = 0 To Tokens.Count - 1
-                For Each t As SyntaxTrivia In Tokens(i).LeadingTrivia
-                    Select Case t.RawKind
-                        Case CS.SyntaxKind.IfDirectiveTrivia
-                            FoundDirectives.ClearFlags
-                            FoundDirectives = FoundDirectives.SetFlags(DirectiveState.IfFound)
-                        Case CS.SyntaxKind.DisabledTextTrivia
-                            FoundDirectives = FoundDirectives.SetFlags(DirectiveState.DisabledText)
-                        Case CS.SyntaxKind.ElseDirectiveTrivia
-                            FoundDirectives = FoundDirectives.SetFlags(DirectiveState.ElseFound)
-                        Case CS.SyntaxKind.ElifDirectiveTrivia
-                            FoundDirectives = FoundDirectives.SetFlags(DirectiveState.ElIf)
-                        Case CS.SyntaxKind.EndIfDirectiveTrivia
-                            FoundDirectives = FoundDirectives.SetFlags(DirectiveState.EndIfFound)
-                        Case Else
-                            Stop
-                    End Select
-                Next
-            Next
-            Return FoundDirectives
-        End Function
-
-        <Extension>
-        Public Function ContainsConditionalDirective(ArgumentList As CSS.ArgumentListSyntax) As DirectiveState
-            Dim FoundDirectives As DirectiveState = DirectiveState.None
+        Friend Function ContainsConditionalDirective(ArgumentList As CSS.ArgumentListSyntax) As Boolean
             If ArgumentList.Arguments.Count = 0 Then
-                Return FoundDirectives
+                Return False
             End If
             For i As Integer = 0 To ArgumentList.Arguments.Count - 1
                 For Each t As SyntaxTrivia In ArgumentList.Arguments(i).GetLeadingTrivia
                     Select Case t.RawKind
                         Case CS.SyntaxKind.IfDirectiveTrivia
-                            FoundDirectives = FoundDirectives.SetFlags(DirectiveState.IfFound)
+                            Return True
                         Case CS.SyntaxKind.DisabledTextTrivia
-                            FoundDirectives = FoundDirectives.SetFlags(DirectiveState.DisabledText)
+                            Return True
                         Case CS.SyntaxKind.ElseDirectiveTrivia
-                            FoundDirectives = FoundDirectives.SetFlags(DirectiveState.ElseFound)
+                            Return True
                         Case CS.SyntaxKind.ElifDirectiveTrivia
-                            FoundDirectives = FoundDirectives.SetFlags(DirectiveState.ElIf)
+                            Return True
                         Case CS.SyntaxKind.EndIfDirectiveTrivia
-                            FoundDirectives = FoundDirectives.SetFlags(DirectiveState.EndIfFound)
+                            Return True
+                        Case CS.SyntaxKind.NullableDirectiveTrivia
+                            Return False
                         Case CS.SyntaxKind.WhitespaceTrivia
                             ' ignore
                         Case CS.SyntaxKind.SingleLineCommentTrivia
@@ -76,62 +52,12 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         Case CS.SyntaxKind.EndOfLineTrivia
                             ' Ignore
                         Case Else
-                            Debug.WriteLine($"Unknown TriviaKind {CType(t.RawKind, CS.SyntaxKind).ToString}")
+                            Debug.WriteLine($"Unknown TriviaKind {CType(t.RawKind, CS.SyntaxKind).ToString} in ContainsConditionalDirective")
                             Stop
                     End Select
                 Next
             Next
-            Return FoundDirectives
-        End Function
-
-        <Extension>
-        Public Function GetConditionalDirectives(AttributeList As CSS.AttributeListSyntax) As DirectiveState
-            Dim FoundDirectives As DirectiveState = DirectiveState.None
-            If AttributeList.Attributes.Count = 0 Then
-                Return FoundDirectives
-            End If
-            For i As Integer = 0 To AttributeList.Attributes.Count - 1
-                For Each t As SyntaxTrivia In AttributeList.GetLeadingTrivia
-                    FoundDirectives = ContainsDirectiveOrDisabledText(FoundDirectives, t)
-                Next
-                For Each t As SyntaxTrivia In AttributeList.GetTrailingTrivia
-                    FoundDirectives = ContainsDirectiveOrDisabledText(FoundDirectives, t)
-                Next
-            Next
-            Return FoundDirectives
-        End Function
-
-        Private Function ContainsDirectiveOrDisabledText(FoundDirectives As DirectiveState, t As SyntaxTrivia) As DirectiveState
-            Select Case t.RawKind
-                Case CS.SyntaxKind.EndOfLineTrivia, CS.SyntaxKind.WhitespaceTrivia
-                    ' ignore
-                Case CS.SyntaxKind.SingleLineDocumentationCommentTrivia, CS.SyntaxKind.SingleLineCommentTrivia
-                    ' Ignore
-                Case CS.SyntaxKind.IfDirectiveTrivia
-                    FoundDirectives = FoundDirectives.SetFlags(DirectiveState.IfFound)
-                Case CS.SyntaxKind.DisabledTextTrivia
-                    FoundDirectives = FoundDirectives.SetFlags(DirectiveState.DisabledText)
-                Case CS.SyntaxKind.ElseDirectiveTrivia
-                    FoundDirectives = FoundDirectives.SetFlags(DirectiveState.ElseFound)
-                Case CS.SyntaxKind.ElifDirectiveTrivia
-                    FoundDirectives = FoundDirectives.SetFlags(DirectiveState.ElIf)
-                Case CS.SyntaxKind.EndIfDirectiveTrivia
-                    FoundDirectives = FoundDirectives.SetFlags(DirectiveState.EndIfFound)
-                Case CS.SyntaxKind.RegionDirectiveTrivia
-                    FoundDirectives = FoundDirectives.SetFlags(DirectiveState.Region)
-                Case CS.SyntaxKind.EndRegionDirectiveTrivia
-                    FoundDirectives = FoundDirectives.SetFlags(DirectiveState.EndRegion)
-                Case CS.SyntaxKind.PragmaWarningDirectiveTrivia
-                    FoundDirectives = FoundDirectives.SetFlags(DirectiveState.PragmaWarning)
-                Case CS.SyntaxKind.None, CS.SyntaxKind.MultiLineCommentTrivia, CS.SyntaxKind.MultiLineDocumentationCommentTrivia,
-                     CS.SyntaxKind.SingleLineCommentTrivia, CS.SyntaxKind.SingleLineDocumentationCommentTrivia
-                    ' Ignore
-                Case Else
-                    Debug.WriteLine($"Unknown TriviaKind {t.RawKind.ToString}")
-                    Stop
-            End Select
-
-            Return FoundDirectives
+            Return False
         End Function
 
     End Module

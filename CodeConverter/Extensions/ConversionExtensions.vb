@@ -1,4 +1,7 @@
-﻿Option Explicit On
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+Option Explicit On
 Option Infer Off
 Option Strict On
 
@@ -9,7 +12,7 @@ Imports Microsoft.CodeAnalysis
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 
-Namespace IVisualBasicCode.CodeConverter.Visual_Basic
+Namespace CSharpToVBCodeConverter.Visual_Basic
     Friend Module ConversionExtensions
 
         Private Function MatchesNamespaceOrRoot(arg As SyntaxNode) As Boolean
@@ -22,7 +25,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Throw New ArgumentNullException(NameOf(tree))
             End If
             If String.IsNullOrWhiteSpace(FullName) Then
-                Throw New ArgumentException("given namespace cannot be null or empty.", NameOf(FullName))
+                Throw New ArgumentNullException(NameOf(FullName))
             End If
             FullName = FullName.Trim()
             Return tree.GetRoot().DescendantNodes(AddressOf MatchesNamespaceOrRoot).OfType(Of CSS.UsingDirectiveSyntax)().Any(Function(u As CSS.UsingDirectiveSyntax) u.Name.ToString().Equals(FullName, StringComparison.OrdinalIgnoreCase))

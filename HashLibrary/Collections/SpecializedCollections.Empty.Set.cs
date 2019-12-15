@@ -11,7 +11,7 @@ namespace Roslyn.Utilities
         {
             internal class Set<T> : Collection<T>, ISet<T>, IReadOnlySet<T>
             {
-                public static readonly new Set<T> Instance = new Set<T>();
+                public static readonly Set<T> s_instance = new Set<T>();
 
                 protected Set()
                 {

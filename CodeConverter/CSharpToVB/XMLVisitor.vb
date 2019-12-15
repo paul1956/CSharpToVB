@@ -1,8 +1,13 @@
-﻿Option Explicit On
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+Option Explicit On
 Option Infer Off
 Option Strict On
 
-Imports IVisualBasicCode.CodeConverter.Util
+Imports System.Diagnostics.CodeAnalysis
+
+Imports CSharpToVBCodeConverter.Util
 
 Imports Microsoft.CodeAnalysis
 
@@ -12,7 +17,7 @@ Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace IVisualBasicCode.CodeConverter.Visual_Basic
+Namespace CSharpToVBCodeConverter.Visual_Basic
 
     Friend Class XMLVisitor
         Inherits CS.CSharpSyntaxVisitor(Of VB.VisualBasicSyntaxNode)
@@ -74,6 +79,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             Return VBAttributes
         End Function
 
+        <ExcludeFromCodeCoverage>
         Public Overrides Function DefaultVisit(node As SyntaxNode) As VB.VisualBasicSyntaxNode
             Return MyBase.DefaultVisit(node)
         End Function
@@ -188,7 +194,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             Dim Content As New SyntaxList(Of VBS.XmlNodeSyntax)
             Dim StartTag As VBS.XmlElementStartTagSyntax = DirectCast(node.StartTag.Accept(Me).WithConvertedTriviaFrom(node.StartTag), VBS.XmlElementStartTagSyntax)
 
-            Dim NoEndTag As Boolean = node.EndTag.Name.LocalName.ValueText.IsEmptyNullOrWhitespace
+            Dim NoEndTag As Boolean = String.IsNullOrWhiteSpace(node.EndTag.Name.LocalName.ValueText)
             Dim EndTag As VBS.XmlElementEndTagSyntax = If(NoEndTag,
                 VBFactory.XmlElementEndTag(DirectCast(StartTag.Name, VBS.XmlNameSyntax).WithConvertedTriviaFrom(node.EndTag)),
                 VBFactory.XmlElementEndTag(DirectCast(node.EndTag.Name.Accept(Me), VBS.XmlNameSyntax)))
@@ -207,12 +213,14 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
 
                 If node.EndTag?.HasLeadingTrivia AndAlso node.EndTag.GetLeadingTrivia(0).IsKind(CS.SyntaxKind.DocumentationCommentExteriorTrivia) Then
                     Dim NewLeadingTriviaList As New SyntaxTriviaList
-                    NewLeadingTriviaList = NewLeadingTriviaList.Add(VBFactory.DocumentationCommentExteriorTrivia(node.EndTag.GetLeadingTrivia(0).ToString.Replace("///", "'''")))
+                    NewLeadingTriviaList = NewLeadingTriviaList.Add(VBFactory.DocumentationCommentExteriorTrivia(node.EndTag.GetLeadingTrivia(0).ToString.Replace("///", "'''", StringComparison.InvariantCulture)))
                     Dim NewTokenList As New SyntaxTokenList
                     NewTokenList = NewTokenList.Add(VBFactory.XmlTextLiteralToken(NewLeadingTriviaList, " ", " ", New SyntaxTriviaList))
                     Content = Content.Add(VBFactory.XmlText(NewTokenList))
                     EndTag = EndTag.WithoutLeadingTrivia
                 End If
+            Catch ex As OperationCanceledException
+                Throw
             Catch ex As Exception
                 Stop
             End Try
@@ -225,15 +233,17 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
         End Function
 
         Public Overrides Function VisitXmlElementStartTag(node As CSS.XmlElementStartTagSyntax) As VB.VisualBasicSyntaxNode
-            Dim ListOfAttributes As SyntaxList(Of VBS.XmlNodeSyntax) = Me.GatherAttributes(node.Attributes)
+            Dim ListOfAttributes As SyntaxList(Of VBS.XmlNodeSyntax) = GatherAttributes(node.Attributes)
             Return VBFactory.XmlElementStartTag(DirectCast(node.Name.Accept(Me), VBS.XmlNodeSyntax), ListOfAttributes)
         End Function
 
         Public Overrides Function VisitXmlEmptyElement(node As CSS.XmlEmptyElementSyntax) As VB.VisualBasicSyntaxNode
             Try
                 Dim Name As VBS.XmlNodeSyntax = DirectCast(node.Name.Accept(Me), VBS.XmlNodeSyntax)
-                Dim ListOfAttributes As SyntaxList(Of VBS.XmlNodeSyntax) = Me.GatherAttributes(node.Attributes)
+                Dim ListOfAttributes As SyntaxList(Of VBS.XmlNodeSyntax) = GatherAttributes(node.Attributes)
                 Return VBFactory.XmlEmptyElement(Name, ListOfAttributes).WithConvertedTriviaFrom(node)
+            Catch ex As OperationCanceledException
+                Throw
             Catch ex As Exception
                 Return VBFactory.XmlText(node.GetText.ToString)
             End Try

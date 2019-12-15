@@ -1,4 +1,7 @@
-﻿Option Explicit On
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+Option Explicit On
 Option Infer Off
 Option Strict On
 
@@ -338,23 +341,26 @@ Public Module NewLine
             Case UnicodeNewline.CR
                 Return vbCr
             Case UnicodeNewline.NEL
-                Return ChrW(&H85).ToString()
+                Return ChrW(&H85).ToString(Globalization.CultureInfo.CurrentCulture)
             Case UnicodeNewline.VT
                 Return vbVerticalTab
             Case UnicodeNewline.FF
                 Return vbFormFeed
             Case UnicodeNewline.LS
-                Return ChrW(&H2028).ToString()
+                Return ChrW(&H2028).ToString(Globalization.CultureInfo.CurrentCulture)
             Case UnicodeNewline.PS
-                Return ChrW(&H2029).ToString()
+                Return ChrW(&H2029).ToString(Globalization.CultureInfo.CurrentCulture)
             Case Else
-                Throw New ArgumentOutOfRangeException()
+                Throw New ArgumentOutOfRangeException(NameOf(newLine))
         End Select
     End Function
 
     <Extension>
     Public Function SplitLines(text As String) As String()
         Dim result As New List(Of String)()
+        If text Is Nothing Then
+            Return result.ToArray
+        End If
         Dim sb As New StringBuilder()
 
         Dim length As Integer = Nothing
@@ -365,7 +371,7 @@ Public Module NewLine
             ' Do not delete the next line
             Dim j As Integer = i
             If TryGetDelimiterLengthAndType(ch, length, type, Function() If(j < text.Length - 1, text.Chars(j + 1), ControlChars.NullChar)) Then
-                result.Add(sb.ToString())
+                result.Add(sb.ToString)
                 sb.Length = 0
                 i += length - 1
                 Continue For
@@ -373,10 +379,10 @@ Public Module NewLine
             sb.Append(ch)
         Next i
         If sb.Length > 0 Then
-            result.Add(sb.ToString())
+            result.Add(sb.ToString)
         End If
 
-        Return result.ToArray()
+        Return result.ToArray
     End Function
 
     <Extension>
@@ -385,7 +391,7 @@ Public Module NewLine
     End Function
 
     <Extension>
-    Public Function NormalizeLineEndings(Lines As String, Optional Delimiter As String = vbCrLf) As String
+    Friend Function NormalizeLineEndings(Lines As String, Optional Delimiter As String = vbCrLf) As String
         Return Lines.SplitLines.JoinLines(Delimiter)
     End Function
 
@@ -397,6 +403,7 @@ Public Module NewLine
     ''' <returns>String with Unicode NewLines replaced with SubstituteChar</returns>
     <Extension>
     Public Function WithoutNewLines(text As String, Optional SubstituteChar As Char = ControlChars.NullChar) As String
+        Contracts.Contract.Requires(text IsNot Nothing)
         Dim sb As New StringBuilder()
         Dim length As Integer = Nothing
         Dim type As UnicodeNewline = Nothing

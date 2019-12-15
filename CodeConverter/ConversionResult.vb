@@ -1,8 +1,9 @@
-﻿Option Explicit On
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+Option Explicit On
 Option Infer Off
 Option Strict On
-
-Imports System.Diagnostics.CodeAnalysis
 
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Formatting
@@ -11,7 +12,7 @@ Imports Microsoft.CodeAnalysis.Text
 
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
-Namespace IVisualBasicCode.CodeConverter
+Namespace CSharpToVBCodeConverter
 
     Public Class ConversionResult
 
@@ -31,15 +32,15 @@ Namespace IVisualBasicCode.CodeConverter
 
         End Enum
 
-        Public Sub New(_ConvertedTree As SyntaxNode, InputLanguage As String, OutputLanguage As String)
-            Me.Exceptions = New List(Of Exception)
-            Me.SourceLanguage = InputLanguage
-            Me.ResultStatus = ResultTriState.Success
-            Me.TargetLanguage = OutputLanguage
+        Public Sub New(_ConvertedTree As SyntaxNode, InputLanguage As String, OutputLanguage As String, VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)))
+            Exceptions = New List(Of Exception)
+            SourceLanguage = InputLanguage
+            ResultStatus = ResultTriState.Success
+            TargetLanguage = OutputLanguage
             Using Workspace As New AdhocWorkspace()
                 Dim project As Project = Workspace.CurrentSolution.AddProject("Project", "Project.dll", OutputLanguage)
 
-                Dim VBParseOptions As VB.VisualBasicParseOptions = GetVBParseOptions()
+                Dim VBParseOptions As VB.VisualBasicParseOptions = GetVBParseOptions(VBPreprocessorSymbols)
 
                 project = project.WithParseOptions(VBParseOptions)
 
@@ -47,15 +48,14 @@ Namespace IVisualBasicCode.CodeConverter
                 Dim _SyntaxTree As SyntaxTree = _Document.GetSyntaxTreeAsync().Result
 
                 Dim Root As SyntaxNode = _SyntaxTree.GetRootAsync().Result
-                Me.ConvertedCode = WorkspaceFormat(Workspace, Root, spans:=Nothing, Workspace.Options, _Document.GetTextAsync().Result)
-                Me.ConvertedTree = DirectCast(Root, VB.VisualBasicSyntaxNode)
+                ConvertedCode = WorkspaceFormat(Workspace, Root, spans:=Nothing, Workspace.Options, _Document.GetTextAsync().Result)
+                ConvertedTree = DirectCast(Root, VB.VisualBasicSyntaxNode)
             End Using
 
         End Sub
 
-        <ExcludeFromCodeCoverage>
         Public Sub New(ParamArray exceptions() As Exception)
-            Me.ResultStatus = If(exceptions.Count = 0, ResultTriState.Ignore, ResultTriState.Failure)
+            ResultStatus = If(exceptions.Any, ResultTriState.Failure, ResultTriState.Ignore)
             Me.Exceptions = exceptions
         End Sub
 
@@ -64,8 +64,15 @@ Namespace IVisualBasicCode.CodeConverter
         Public Property ConvertedTree As VB.VisualBasicSyntaxNode
 
         Public Property Exceptions As IReadOnlyList(Of Exception)
+        Private _filteredListOfFailures As List(Of Diagnostic)
 
-        Public Property FilteredListOfFailures As List(Of Diagnostic)
+        Public Function GetFilteredListOfFailures() As List(Of Diagnostic)
+            Return _filteredListOfFailures
+        End Function
+
+        Public Sub SetFilteredListOfFailures(AutoPropertyValue As List(Of Diagnostic))
+            _filteredListOfFailures = AutoPropertyValue
+        End Sub
 
         Public Property ResultStatus As ResultTriState
 
@@ -75,7 +82,7 @@ Namespace IVisualBasicCode.CodeConverter
 
         Protected Shared Function WorkspaceFormat(workspace As Workspace, root As SyntaxNode, spans As IEnumerable(Of TextSpan), _OptionSet As OptionSet, _SourceText As SourceText) As String
             Dim result As IList(Of TextChange) = Formatter.GetFormattedTextChanges(root, spans, workspace, _OptionSet)
-            Return _SourceText.WithChanges(result).ToString()
+            Return _SourceText?.WithChanges(result).ToString()
         End Function
 
     End Class

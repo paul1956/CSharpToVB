@@ -1,9 +1,11 @@
-﻿' Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
 Option Explicit On
 Option Infer Off
 Option Strict On
 
-Imports Microsoft.CodeAnalysis.PooledObjects
+Imports Microsoft.CodeAnalysis.PooledObjects1
 
 Namespace Microsoft.CodeAnalysis
 
@@ -11,7 +13,7 @@ Namespace Microsoft.CodeAnalysis
 
         Private Const None As Integer = 0
 
-        Private Shared ReadOnly s_childEnumeratorStackPool As ObjectPool(Of Stack(Of ChildSyntaxList.Enumerator)) = New ObjectPool(Of Stack(Of ChildSyntaxList.Enumerator))(Function() New Stack(Of ChildSyntaxList.Enumerator)(), 10)
+        Private Shared ReadOnly s_childEnumeratorStackPool As New ObjectPool(Of Stack(Of ChildSyntaxList.Enumerator))(Function() New Stack(Of ChildSyntaxList.Enumerator)(), 10)
         Public Shared ReadOnly Instance As SyntaxNavigator = New SyntaxNavigator()
 
         Private Sub New()
@@ -26,7 +28,7 @@ Namespace Microsoft.CodeAnalysis
             For Each trivia As SyntaxTrivia In triviaList
                 If trivia.HasStructure AndAlso stepInto(trivia) Then
                     Dim [structure] As SyntaxNode = trivia.GetStructure()
-                    Dim token As SyntaxToken = Me.GetFirstToken([structure], predicate, stepInto)
+                    Dim token As SyntaxToken = GetFirstToken([structure], predicate, stepInto)
                     'BC30518: Overload resolution failed because no accessible 'GetFirstToken' can be called with these arguments:
                     If token.RawKind <> None Then
                         Return token
@@ -41,7 +43,7 @@ Namespace Microsoft.CodeAnalysis
             ' find first token that matches (either specified token or token inside related trivia)
             If stepInto IsNot Nothing Then
                 ' search in leading trivia
-                Dim firstToken As SyntaxToken = Me.GetFirstToken(token.LeadingTrivia, predicate, stepInto)
+                Dim firstToken As SyntaxToken = GetFirstToken(token.LeadingTrivia, predicate, stepInto)
                 If firstToken.RawKind <> None Then
                     Return firstToken
                 End If
@@ -53,7 +55,7 @@ Namespace Microsoft.CodeAnalysis
 
             If stepInto IsNot Nothing Then
                 ' search in trailing trivia
-                Dim firstToken As SyntaxToken = Me.GetFirstToken(token.TrailingTrivia, predicate, stepInto)
+                Dim firstToken As SyntaxToken = GetFirstToken(token.TrailingTrivia, predicate, stepInto)
                 If firstToken.RawKind <> None Then
                     Return firstToken
                 End If
@@ -71,7 +73,7 @@ Namespace Microsoft.CodeAnalysis
                     If en.MoveNext() Then
                         Dim child As SyntaxNodeOrToken = en.Current
                         If child.IsToken Then
-                            Dim token As SyntaxToken = Me.GetFirstToken(child.AsToken(), predicate, stepInto)
+                            Dim token As SyntaxToken = GetFirstToken(child.AsToken(), predicate, stepInto)
                             If token.RawKind <> None Then
                                 Return token
                             End If
@@ -97,7 +99,7 @@ Namespace Microsoft.CodeAnalysis
                 If returnNext Then
                     If trivia.HasStructure AndAlso stepInto IsNot Nothing AndAlso stepInto(trivia) Then
                         Dim [structure] As SyntaxNode = trivia.GetStructure()
-                        Dim token As SyntaxToken = Me.GetFirstToken([structure], predicate, stepInto)
+                        Dim token As SyntaxToken = GetFirstToken([structure], predicate, stepInto)
                         'BC30518: Overload resolution failed because no accessible 'GetFirstToken' can be called with these arguments:
                         If token.RawKind <> None Then
                             Return token
@@ -112,13 +114,13 @@ Namespace Microsoft.CodeAnalysis
         End Function
 
         Friend Function GetNextToken(current As SyntaxToken, predicate As Func(Of SyntaxToken, Boolean), stepInto As Func(Of SyntaxTrivia, Boolean)) As SyntaxToken
-            Return Me.GetNextToken(current, predicate, stepInto IsNot Nothing, stepInto)
+            Return GetNextToken(current, predicate, stepInto IsNot Nothing, stepInto)
         End Function
 
         Friend Function GetNextToken(current As SyntaxTrivia, predicate As Func(Of SyntaxToken, Boolean), stepInto As Func(Of SyntaxTrivia, Boolean)) As SyntaxToken
             Dim returnNext As Boolean = False
             ' look inside leading trivia for current & next
-            Dim token As SyntaxToken = Me.GetNextToken(current, current.Token.LeadingTrivia, predicate, stepInto, returnNext)
+            Dim token As SyntaxToken = GetNextToken(current, current.Token.LeadingTrivia, predicate, stepInto, returnNext)
             If token.RawKind <> None Then
                 Return token
             End If
@@ -129,12 +131,12 @@ Namespace Microsoft.CodeAnalysis
             End If
 
             ' look inside trailing trivia for current & next (or just next)
-            token = Me.GetNextToken(current, current.Token.TrailingTrivia, predicate, stepInto, returnNext)
+            token = GetNextToken(current, current.Token.TrailingTrivia, predicate, stepInto, returnNext)
             If token.RawKind <> None Then
                 Return token
             End If
 
-            Return Me.GetNextToken(current.Token, predicate, False, stepInto)
+            Return GetNextToken(current.Token, predicate, False, stepInto)
         End Function
 
         Friend Function GetNextToken(node As SyntaxNode, predicate As Func(Of SyntaxToken, Boolean), stepInto As Func(Of SyntaxTrivia, Boolean)) As SyntaxToken
@@ -145,13 +147,13 @@ Namespace Microsoft.CodeAnalysis
                 For Each child As SyntaxNodeOrToken In node.Parent.ChildNodesAndTokens()
                     If returnNext Then
                         If child.IsToken Then
-                            Dim token As SyntaxToken = Me.GetFirstToken(child.AsToken(), predicate, stepInto)
+                            Dim token As SyntaxToken = GetFirstToken(child.AsToken(), predicate, stepInto)
                             'BC30518: Overload resolution failed because no accessible 'GetFirstToken' can be called with these arguments:
                             If token.RawKind <> None Then
                                 Return token
                             End If
                         Else
-                            Dim token As SyntaxToken = Me.GetFirstToken(child.AsNode(), predicate, stepInto)
+                            Dim token As SyntaxToken = GetFirstToken(child.AsNode(), predicate, stepInto)
                             'BC30518: Overload resolution failed because no accessible 'GetFirstToken' can be called with these arguments:
                             If token.RawKind <> None Then
                                 Return token
@@ -167,7 +169,7 @@ Namespace Microsoft.CodeAnalysis
             End While
 
             If node.IsStructuredTrivia Then
-                Return Me.GetNextToken(CType(node, IStructuredTriviaSyntax).ParentTrivia, predicate, stepInto)
+                Return GetNextToken(CType(node, IStructuredTriviaSyntax).ParentTrivia, predicate, stepInto)
             End If
 
             Return Nothing
@@ -178,7 +180,7 @@ Namespace Microsoft.CodeAnalysis
             If current.Parent IsNot Nothing Then
                 ' look inside trailing trivia for structure
                 If searchInsideCurrentTokenTrailingTrivia Then
-                    Dim firstToken As SyntaxToken = Me.GetFirstToken(current.TrailingTrivia, predicate, stepInto)
+                    Dim firstToken As SyntaxToken = GetFirstToken(current.TrailingTrivia, predicate, stepInto)
                     If firstToken.RawKind <> None Then
                         Return firstToken
                     End If
@@ -190,12 +192,12 @@ Namespace Microsoft.CodeAnalysis
                 For Each child As SyntaxNodeOrToken In current.Parent.ChildNodesAndTokens()
                     If returnNext Then
                         If child.IsToken Then
-                            Dim token As SyntaxToken = Me.GetFirstToken(child.AsToken(), predicate, stepInto)
+                            Dim token As SyntaxToken = GetFirstToken(child.AsToken(), predicate, stepInto)
                             If token.RawKind <> None Then
                                 Return token
                             End If
                         Else
-                            Dim token As SyntaxToken = Me.GetFirstToken(child.AsNode(), predicate, stepInto)
+                            Dim token As SyntaxToken = GetFirstToken(child.AsNode(), predicate, stepInto)
                             If token.RawKind <> None Then
                                 Return token
                             End If
@@ -205,7 +207,7 @@ Namespace Microsoft.CodeAnalysis
                     End If
                 Next
 
-                Return Me.GetNextToken(current.Parent, predicate, stepInto)
+                Return GetNextToken(current.Parent, predicate, stepInto)
             End If
 
             Return Nothing

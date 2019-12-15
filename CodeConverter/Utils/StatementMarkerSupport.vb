@@ -1,23 +1,27 @@
-﻿Option Explicit On
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+Option Explicit On
 Option Infer Off
 Option Strict On
 
 Imports System.Runtime.CompilerServices
 Imports System.Text
 
-Imports IVisualBasicCode.CodeConverter.Util
-Imports IVisualBasicCode.CodeConverter.Visual_Basic
+Imports CSharpToVBCodeConverter.Util
+Imports CSharpToVBCodeConverter.Visual_Basic
 
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
+Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 
 Public Module StatementMarker
-    Private NextIndex As Integer = 0
-    Private ReadOnly StatementDictionary As New Dictionary(Of CS.CSharpSyntaxNode, Integer)
-    Private ReadOnly StatementSupportTupleList As New List(Of (Index As Integer, Statement As VisualBasic.VisualBasicSyntaxNode, RemoveStatement As StatementHandlingOption))
+    Private ReadOnly s_statementDictionary As New Dictionary(Of CS.CSharpSyntaxNode, Integer)
+    Private ReadOnly s_statementSupportTupleList As New List(Of (Index As Integer, Statement As VisualBasic.VisualBasicSyntaxNode, RemoveStatement As StatementHandlingOption))
+    Private s_nextIndex As Integer = 0
 
     Public Enum StatementHandlingOption
         PrependStatement ' Perpend original statement
@@ -26,7 +30,15 @@ Public Module StatementMarker
     End Enum
 
     Private Function CompareWithoutTrivia(Statement1 As VisualBasic.VisualBasicSyntaxNode, Statement2 As VisualBasic.VisualBasicSyntaxNode) As Boolean
-        Return Statement1.WithoutTrivia.ToFullString.Replace(vbCrLf, "").Replace(" ", "") = Statement2.WithoutTrivia.ToFullString.Replace(vbCrLf, "").Replace(" ", "")
+        Return Statement1.
+                    WithoutTrivia.
+                    ToFullString.
+                    Replace(vbCrLf, "", StringComparison.InvariantCulture).
+                    Replace(" ", "", StringComparison.InvariantCulture) =
+                Statement2.
+                    WithoutTrivia.
+                    ToFullString.Replace(vbCrLf, "", StringComparison.InvariantCulture).
+                    Replace(" ", "", StringComparison.InvariantCulture)
     End Function
 
     ''' <summary>
@@ -37,10 +49,10 @@ Public Module StatementMarker
     ''' <remarks>Added by PC</remarks>
     Private Function ConvertSourceTextToTriviaList(FullString As String, Optional LeadingComment As String = "") As SyntaxTriviaList
         Dim NewTrivia As New SyntaxTriviaList
-        If LeadingComment.IsNotEmptyNullOrWhitespace Then
+        If Not String.IsNullOrWhiteSpace(LeadingComment) Then
             Dim LeadingCommentLines() As String = LeadingComment.SplitLines
             For Each Line As String In LeadingCommentLines
-                NewTrivia = NewTrivia.Add(VisualBasic.SyntaxFactory.CommentTrivia($"' {Line}"))
+                NewTrivia = NewTrivia.Add(VBFactory.CommentTrivia($"' {Line}"))
                 NewTrivia = NewTrivia.Add(VB_EOLTrivia)
             Next
         End If
@@ -48,7 +60,7 @@ Public Module StatementMarker
         For Each chr As String In FullString
             If chr.IsNewLine Then
                 If sb.Length > 0 Then
-                    NewTrivia = NewTrivia.Add(VisualBasic.SyntaxFactory.CommentTrivia($"' {sb.ToString}"))
+                    NewTrivia = NewTrivia.Add(VBFactory.CommentTrivia($"' {sb.ToString}"))
                     NewTrivia = NewTrivia.Add(VB_EOLTrivia)
                     sb.Clear()
                 End If
@@ -59,29 +71,11 @@ Public Module StatementMarker
             End If
         Next
         If sb.Length > 0 Then
-            NewTrivia = NewTrivia.Add(VisualBasic.SyntaxFactory.CommentTrivia($"' {sb.ToString}"))
+            NewTrivia = NewTrivia.Add(VBFactory.CommentTrivia($"' {sb.ToString}"))
             NewTrivia = NewTrivia.Add(VB_EOLTrivia)
         End If
 
         Return NewTrivia
-    End Function
-
-    Public Function AddFinalTriviaToField(node As CSS.FieldDeclarationSyntax) As List(Of StatementSyntax)
-        Dim StatementList As New List(Of StatementSyntax)
-        If Not StatementDictionary.ContainsKey(node) Then
-            Return StatementList
-        End If
-        Dim Index As Integer = StatementDictionary(node)
-        For Each StatementTuple As (Index As Integer, Statement As StatementSyntax, StatementHandling As StatementHandlingOption) In StatementSupportTupleList
-            If StatementTuple.Index = Index AndAlso StatementTuple.StatementHandling = StatementHandlingOption.AppendEmptyStatement Then
-                StatementList.Add(StatementTuple.Statement)
-                StatementDictionary.Remove(node)
-            End If
-        Next
-        If StatementDictionary.Count = 0 Then
-            StatementSupportTupleList.Clear()
-        End If
-        Return StatementList
     End Function
 
     ''' <summary>
@@ -93,19 +87,19 @@ Public Module StatementMarker
     ''' otherwise we just add the statement BEFORE the node</param>
     ''' <param name="AllowDuplicates">True if we can put do multiple replacements</param>
     <Extension>
-    Public Sub AddMarker(Node As CS.CSharpSyntaxNode, Statement As VisualBasic.VisualBasicSyntaxNode, StatementHandling As StatementHandlingOption, AllowDuplicates As Boolean)
-        If StatementDictionary.ContainsKey(Node) Then
+    Friend Sub AddMarker(Node As CS.CSharpSyntaxNode, Statement As VisualBasic.VisualBasicSyntaxNode, StatementHandling As StatementHandlingOption, AllowDuplicates As Boolean)
+        If s_statementDictionary.ContainsKey(Node) Then
             If Not AllowDuplicates Then
                 Return
             End If
         Else
             ' Need to ignore duplicate declarations
-            StatementDictionary.Add(Node, NextIndex)
-            NextIndex += 1
+            s_statementDictionary.Add(Node, s_nextIndex)
+            s_nextIndex += 1
         End If
-        Dim Index As Integer = StatementDictionary(Node)
+        Dim Index As Integer = s_statementDictionary(Node)
         Dim IdenticalTrivia As Boolean = False
-        For Each t As (Index As Integer, Statement As VisualBasic.VisualBasicSyntaxNode, StatementHandlingOption As StatementHandlingOption) In StatementSupportTupleList
+        For Each t As (Index As Integer, Statement As VisualBasic.VisualBasicSyntaxNode, StatementHandlingOption As StatementHandlingOption) In s_statementSupportTupleList
             If t.Index = Index AndAlso TypeOf Statement IsNot EmptyStatementSyntax AndAlso CompareWithoutTrivia(Statement, t.Statement) AndAlso t.StatementHandlingOption = StatementHandling Then
                 Return
             End If
@@ -116,49 +110,29 @@ Public Module StatementMarker
         If IdenticalTrivia Then
             Statement = Statement.WithoutLeadingTrivia()
         End If
-        StatementSupportTupleList.Add((Index, Statement, StatementHandling))
+        s_statementSupportTupleList.Add((Index, Statement, StatementHandling))
     End Sub
 
-    Public Function AddSpecialCommentToField(node As CSS.FieldDeclarationSyntax, FieldDeclaration As FieldDeclarationSyntax) As FieldDeclarationSyntax
-        If Not StatementDictionary.ContainsKey(node) Then
+    Friend Function AddSpecialCommentToField(node As CSS.FieldDeclarationSyntax, FieldDeclaration As FieldDeclarationSyntax) As FieldDeclarationSyntax
+        If Not s_statementDictionary.ContainsKey(node) Then
             Return FieldDeclaration
         End If
         Dim LeadingTrivia As New List(Of SyntaxTrivia)
-        Dim Index As Integer = StatementDictionary(node)
-        For Each StatementTuple As (Index As Integer, Statement As StatementSyntax, StatementHandling As StatementHandlingOption) In StatementSupportTupleList
+        Dim Index As Integer = s_statementDictionary(node)
+        For Each StatementTuple As (Index As Integer, Statement As StatementSyntax, StatementHandling As StatementHandlingOption) In s_statementSupportTupleList
             If StatementTuple.Index = Index AndAlso StatementTuple.StatementHandling <> StatementHandlingOption.AppendEmptyStatement Then
                 LeadingTrivia.AddRange(StatementTuple.Statement.GetLeadingTrivia)
-                StatementDictionary.Remove(node)
+                s_statementDictionary.Remove(node)
             End If
         Next
-        If StatementDictionary.Count = 0 Then
-            StatementSupportTupleList.Clear()
+        If s_statementDictionary.Count = 0 Then
+            s_statementSupportTupleList.Clear()
         End If
         LeadingTrivia.AddRange(FieldDeclaration.GetLeadingTrivia)
         Return FieldDeclaration.WithLeadingTrivia(LeadingTrivia)
     End Function
 
-    <Extension>
-    Public Function CheckCorrectnessLeadingTrivia(Of T As SyntaxNode)(NodeWithIssue As T, Optional MessageFragment As String = "") As SyntaxTriviaList
-        Dim LeadingTrivia As New List(Of SyntaxTrivia) From {
-            VisualBasic.SyntaxFactory.CommentTrivia($"' TODO TASK: {MessageFragment}:")
-        }
-        If NodeWithIssue IsNot Nothing Then
-            LeadingTrivia.Add(VisualBasic.SyntaxFactory.CommentTrivia($"' Original Statement:"))
-            LeadingTrivia.AddRange(ConvertSourceTextToTriviaList(NodeWithIssue.ToFullString))
-        End If
-        LeadingTrivia.Add(VisualBasic.SyntaxFactory.CommentTrivia($"' An attempt was made to correctly port the code, check the code below for correctness"))
-        LeadingTrivia.Add(VB_EOLTrivia)
-        Return LeadingTrivia.ToSyntaxTriviaList
-    End Function
-
-    Public Sub ClearMarker()
-        NextIndex = 0
-        StatementDictionary.Clear()
-        StatementSupportTupleList.Clear()
-    End Sub
-
-    Public Function FlagUnsupportedStatements(node As CS.CSharpSyntaxNode, UnsupportedFeature As String, CommentOutOriginalStatements As Boolean) As EmptyStatementSyntax
+    Friend Function FlagUnsupportedStatements(node As CS.CSharpSyntaxNode, UnsupportedFeature As String, CommentOutOriginalStatements As Boolean) As EmptyStatementSyntax
         Dim NewLeadingTrivia As New List(Of SyntaxTrivia)
         Dim NewTrailingTrivia As New List(Of SyntaxTrivia)
         If CommentOutOriginalStatements Then
@@ -171,36 +145,27 @@ Public Module StatementMarker
             End If
             ' NewTrailingTrivia.Add(VB_EOLTrivia)
         End If
-        NewLeadingTrivia.Add(VisualBasic.SyntaxFactory.CommentTrivia($"' TODO: VB does not support {UnsupportedFeature}."))
+        NewLeadingTrivia.Add(VBFactory.CommentTrivia($"' TODO: VB does not support {UnsupportedFeature}."))
         NewLeadingTrivia.Add(VB_EOLTrivia)
         If CommentOutOriginalStatements Then
             NewLeadingTrivia.Add(VB_EOLTrivia)
-            NewLeadingTrivia.Add(VisualBasic.SyntaxFactory.CommentTrivia($"' Original Statement:"))
+            NewLeadingTrivia.Add(VBFactory.CommentTrivia($"' Original Statement:"))
             NewLeadingTrivia.Add(VB_EOLTrivia)
             Dim NodeSplit() As String = node.ToString.SplitLines
             ' Match #
-            For i As Integer = 0 To NodeSplit.Count - 1
-                If NodeSplit(i).TrimStart(" "c).StartsWith("#") Then
+            For i As Integer = 0 To NodeSplit.Length - 1
+                If NodeSplit(i).TrimStart(" "c).StartsWith("#", StringComparison.InvariantCulture) Then
                     NewLeadingTrivia.AddRange(ConvertDirectiveTrivia(NodeSplit(i)))
                 Else
-                    NewLeadingTrivia.Add(VisualBasic.SyntaxFactory.CommentTrivia($"' {NodeSplit(i)}"))
+                    NewLeadingTrivia.Add(VBFactory.CommentTrivia($"' {NodeSplit(i)}"))
                 End If
                 NewLeadingTrivia.Add(VB_EOLTrivia)
             Next
         End If
-        Return VisualBasic.SyntaxFactory.EmptyStatement.With(NewLeadingTrivia, NewTrailingTrivia)
+        Return VBFactory.EmptyStatement.With(NewLeadingTrivia, NewTrailingTrivia)
     End Function
 
-    Public Function GetMarkerErrorMessage() As String
-        Dim builder As New StringBuilder()
-        builder.Append($" Marker Error StatementDictionary.Count = {StatementDictionary.Count}{vbCrLf}")
-        For Each statement As CS.CSharpSyntaxNode In StatementDictionary.Keys
-            builder.Append(statement.ToFullString)
-        Next
-        Return builder.ToString()
-    End Function
-
-    Public Function GetStatementwithIssues(node As CS.CSharpSyntaxNode) As CS.CSharpSyntaxNode
+    Friend Function GetStatementwithIssues(node As CS.CSharpSyntaxNode) As CS.CSharpSyntaxNode
         Dim StatementWithIssues As CS.CSharpSyntaxNode = node
         While StatementWithIssues IsNot Nothing
             If TypeOf StatementWithIssues Is CSS.FieldDeclarationSyntax Then
@@ -258,51 +223,98 @@ Public Module StatementMarker
         Return StatementWithIssues
     End Function
 
-    ''' <summary>
-    ''' Allow access to Marker Errors with exposing implemmentation
-    ''' </summary>
-    ''' <returns>True if there are statements left out of translation</returns>
-    Public Function HasMarkerError() As Boolean
-        If StatementDictionary.Count > 0 Then
-            Return True
-        End If
-        Return False
-    End Function
-
-    Public Function PrependStatementWithMarkedStatementTrivia(node As CS.CSharpSyntaxNode, Statement As StatementSyntax) As StatementSyntax
+    Friend Function PrependStatementWithMarkedStatementTrivia(node As CS.CSharpSyntaxNode, Statement As StatementSyntax) As StatementSyntax
         Dim NewNodesList As New SyntaxList(Of StatementSyntax)
         Dim RemoveStatement As Boolean = False
-        If Not StatementDictionary.ContainsKey(node) Then
+        If Not s_statementDictionary.ContainsKey(node) Then
             Return Statement
         End If
-        Dim Index As Integer = StatementDictionary(node)
+        Dim Index As Integer = s_statementDictionary(node)
 
-        For Each StatementTuple As (Index As Integer, Statement As StatementSyntax, RemoveStatement As Boolean) In StatementSupportTupleList
+        For Each StatementTuple As (Index As Integer, Statement As StatementSyntax, RemoveStatement As Boolean) In s_statementSupportTupleList
             If StatementTuple.Index = Index Then
                 NewNodesList = NewNodesList.Add(StatementTuple.Statement)
                 RemoveStatement = RemoveStatement Or StatementTuple.RemoveStatement
             End If
         Next
-        StatementDictionary.Remove(node)
-        If StatementDictionary.Count = 0 Then
-            StatementSupportTupleList.Clear()
+        s_statementDictionary.Remove(node)
+        If s_statementDictionary.Count = 0 Then
+            s_statementSupportTupleList.Clear()
         End If
         Return Statement.WithPrependedLeadingTrivia(NewNodesList(0).GetLeadingTrivia)
     End Function
 
+    Public Function AddFinalTriviaToField(node As CSS.FieldDeclarationSyntax) As List(Of StatementSyntax)
+        Dim StatementList As New List(Of StatementSyntax)
+        If Not s_statementDictionary.ContainsKey(node) Then
+            Return StatementList
+        End If
+        Dim Index As Integer = s_statementDictionary(node)
+        For Each StatementTuple As (Index As Integer, Statement As StatementSyntax, StatementHandling As StatementHandlingOption) In s_statementSupportTupleList
+            If StatementTuple.Index = Index AndAlso StatementTuple.StatementHandling = StatementHandlingOption.AppendEmptyStatement Then
+                StatementList.Add(StatementTuple.Statement)
+                s_statementDictionary.Remove(node)
+            End If
+        Next
+        If s_statementDictionary.Count = 0 Then
+            s_statementSupportTupleList.Clear()
+        End If
+        Return StatementList
+    End Function
+
+    <Extension>
+    Public Function CheckCorrectnessLeadingTrivia(Of T As SyntaxNode)(NodeWithIssue As T, Optional MessageFragment As String = "") As SyntaxTriviaList
+        Dim LeadingTrivia As New List(Of SyntaxTrivia) From {
+            VBFactory.CommentTrivia($"' TODO TASK: {MessageFragment}:")
+        }
+        If NodeWithIssue IsNot Nothing Then
+            LeadingTrivia.Add(VBFactory.CommentTrivia($"' Original Statement:"))
+            LeadingTrivia.AddRange(ConvertSourceTextToTriviaList(NodeWithIssue.ToFullString))
+        End If
+        LeadingTrivia.Add(VBFactory.CommentTrivia($"' An attempt was made to correctly port the code, check the code below for correctness"))
+        LeadingTrivia.Add(VB_EOLTrivia)
+        Return LeadingTrivia.ToSyntaxTriviaList
+    End Function
+
+    Public Sub ClearMarker()
+        s_nextIndex = 0
+        s_statementDictionary.Clear()
+        s_statementSupportTupleList.Clear()
+    End Sub
+
+    Public Function GetMarkerErrorMessage() As String
+        Dim builder As New StringBuilder()
+        builder.Append($" Marker Error StatementDictionary.Count = {s_statementDictionary.Count}{vbCrLf}")
+        For Each statement As CS.CSharpSyntaxNode In s_statementDictionary.Keys
+            builder.Append(statement.ToFullString)
+        Next
+        Return builder.ToString()
+    End Function
+
+    ''' <summary>
+    ''' Allow access to Marker Errors with exposing implementation
+    ''' </summary>
+    ''' <returns>True if there are statements left out of translation</returns>
+    Public Function HasMarkerError() As Boolean
+        If s_statementDictionary.Count > 0 Then
+            Return True
+        End If
+        Return False
+    End Function
+
     Public Function ReplaceStatementsWithMarkedStatements(node As CS.CSharpSyntaxNode, Statements As SyntaxList(Of StatementSyntax)) As SyntaxList(Of StatementSyntax)
-        If StatementDictionary.Count = 0 Then
+        If s_statementDictionary.Count = 0 Then
             Return Statements
         End If
         Dim NewNodesList As New List(Of StatementSyntax)
         Dim TrailingNodesList As New List(Of StatementSyntax)
         Dim RemoveStatement As Boolean = False
-        If Not StatementDictionary.ContainsKey(node) Then
+        If Not s_statementDictionary.ContainsKey(node) Then
             Return Statements
         End If
-        Dim Index As Integer = StatementDictionary(node)
+        Dim Index As Integer = s_statementDictionary(node)
 
-        For Each StatementTuple As (Index As Integer, Statement As StatementSyntax, StatementHandling As StatementHandlingOption) In StatementSupportTupleList
+        For Each StatementTuple As (Index As Integer, Statement As StatementSyntax, StatementHandling As StatementHandlingOption) In s_statementSupportTupleList
             If StatementTuple.Index = Index Then
                 If StatementTuple.StatementHandling = StatementHandlingOption.AppendEmptyStatement Then
                     TrailingNodesList.Add(StatementTuple.Statement)
@@ -312,9 +324,9 @@ Public Module StatementMarker
                 End If
             End If
         Next
-        StatementDictionary.Remove(node)
-        If StatementDictionary.Count = 0 Then
-            StatementSupportTupleList.Clear()
+        s_statementDictionary.Remove(node)
+        If s_statementDictionary.Count = 0 Then
+            s_statementSupportTupleList.Clear()
         End If
         If Not RemoveStatement Then
             If NewNodesList.Count > 0 Then
@@ -329,7 +341,7 @@ Public Module StatementMarker
             NewNodesList.AddRange(Statements)
         End If
         NewNodesList.AddRange(TrailingNodesList)
-        Return VisualBasic.SyntaxFactory.List(NewNodesList)
+        Return VBFactory.List(NewNodesList)
     End Function
 
     ''' <summary>
@@ -340,8 +352,8 @@ Public Module StatementMarker
     ''' <returns></returns>
     Public Function WrapInComment(nodes As SyntaxList(Of StatementSyntax), NodeWithComments As CSS.StatementSyntax, comment As String) As SyntaxList(Of StatementSyntax)
         If nodes.Count > 0 Then
-            nodes = nodes.Replace(nodes(0), nodes(0).WithConvertedTriviaFrom(NodeWithComments).WithPrependedLeadingTrivia(VisualBasic.SyntaxFactory.CommentTrivia($"' BEGIN TODO: {comment}")))
-            nodes = nodes.Add(VisualBasic.SyntaxFactory.EmptyStatement.WithLeadingTrivia(VB_EOLTrivia, VisualBasic.SyntaxFactory.CommentTrivia($"' END TODO: {comment}")))
+            nodes = nodes.Replace(nodes(0), nodes(0).WithConvertedTriviaFrom(NodeWithComments).WithPrependedLeadingTrivia(VBFactory.CommentTrivia($"' BEGIN TODO: {comment}")))
+            nodes = nodes.Add(VBFactory.EmptyStatement.WithLeadingTrivia(VB_EOLTrivia, VBFactory.CommentTrivia($"' END TODO: {comment}")))
         End If
         Return nodes
     End Function

@@ -1,17 +1,22 @@
-﻿Option Explicit On
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+Option Explicit On
 Option Infer Off
 Option Strict On
 
-Imports IVisualBasicCode.CodeConverter.Util
-
+Imports System.Threading
+Imports CSharpToVBCodeConverter.Util
+Imports ManageProgressBar
 Imports Microsoft.CodeAnalysis
 
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
+Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace IVisualBasicCode.CodeConverter.Visual_Basic
+Namespace CSharpToVBCodeConverter.Visual_Basic
 
     Partial Public Class CSharpConverter
 
@@ -43,106 +48,75 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             Return $"&B{System.Convert.ToString(Value, 2).PadLeft(64, "0"c)}"
         End Function
 
-        ''' <summary>
-        ''' Returns Safe VB Name
-        ''' </summary>
-        ''' <param name="id">Original Name</param>
-        ''' <param name="IsQualifiedName">True if name is part of a Qualified Name and should not be renamed</param>
-        ''' <param name="IsTypeName"></param>
-        ''' <returns></returns>
-        Private Shared Function GenerateSafeVBToken(id As SyntaxToken, IsQualifiedName As Boolean, Optional IsTypeName As Boolean = False) As SyntaxToken
-            Debug.Assert(id.Language = "C#", $"In {NameOf(GenerateSafeVBToken)} Language of Token is not C#")
-            Debug.Assert((Not id.HasLeadingTrivia) OrElse id.LeadingTrivia(0).Language = "C#", $"In {NameOf(GenerateSafeVBToken)} Language of ID Token leading trivia is not VB")
-            Debug.Assert((Not id.HasTrailingTrivia) OrElse id.TrailingTrivia(0).Language = "C#", $"In {NameOf(GenerateSafeVBToken)} Language of ID Token trailing trivia is not VB")
-
-            Dim keywordKind As VB.SyntaxKind = VB.SyntaxFacts.GetKeywordKind(id.ValueText)
-            If VB.SyntaxFacts.IsKeywordKind(keywordKind) Then
-                Return MakeIdentifierUnique(id, BracketNeeded:=True, QualifiedNameOrTypeName:=IsQualifiedName)
-            End If
-            If Not IsTypeName Then
-                If VB.SyntaxFacts.IsPredefinedType(keywordKind) Then
-                    Return MakeIdentifierUnique(id, BracketNeeded:=True, QualifiedNameOrTypeName:=IsQualifiedName)
-                End If
-            End If
-
-            If id.Parent?.IsParentKind(CS.SyntaxKind.Parameter) Then
-                Dim Param As CSS.ParameterSyntax = DirectCast(id.Parent.Parent, CSS.ParameterSyntax)
-                Dim MethodDeclaration As CSS.MethodDeclarationSyntax = TryCast(Param.Parent?.Parent, CSS.MethodDeclarationSyntax)
-                IsQualifiedName = If(MethodDeclaration IsNot Nothing AndAlso String.Compare(MethodDeclaration.Identifier.ValueText, id.ValueText, ignoreCase:=True) <> 0, False, True)
-                IsQualifiedName = IsQualifiedName Or String.Compare(Param.Type.ToString, id.ValueText, ignoreCase:=False) = 0
-            End If
-            Return MakeIdentifierUnique(id, BracketNeeded:=False, QualifiedNameOrTypeName:=IsQualifiedName)
-        End Function
-
         Private Shared Function GetLiteralExpression(value As Object, Token As SyntaxToken, _NodesVisitor As NodesVisitor) As VBS.ExpressionSyntax
             Select Case Token.RawKind
                 Case CS.SyntaxKind.NumericLiteralToken
                     Dim TokenToString As String = Token.ToString
-                    If TokenToString.StartsWith("0x") Then
+                    If TokenToString.StartsWith("0x", StringComparison.InvariantCultureIgnoreCase) Then
                         Dim HEXValueString As String = $"&H{TokenToString.Substring(2)}".Replace("ul", "", StringComparison.OrdinalIgnoreCase).Replace("u", "", StringComparison.OrdinalIgnoreCase).Replace("l", "", StringComparison.OrdinalIgnoreCase)
-                        If TypeOf value Is Integer Then Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VB.SyntaxFactory.Literal(HEXValueString, CInt(value)))
-                        If TypeOf value Is SByte Then Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VB.SyntaxFactory.Literal(HEXValueString, CSByte(value)))
-                        If TypeOf value Is Short Then Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VB.SyntaxFactory.Literal(HEXValueString, CShort(value)))
-                        If TypeOf value Is UShort Then Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VB.SyntaxFactory.Literal(HEXValueString, CUShort(value)))
-                        If TypeOf value Is UInteger Then Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VB.SyntaxFactory.Literal(HEXValueString & "UI", CUInt(value)))
-                        If TypeOf value Is Long Then Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VB.SyntaxFactory.Literal(HEXValueString, CLng(value)))
-                        If TypeOf value Is ULong Then Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VB.SyntaxFactory.Literal(HEXValueString & "UL", CULng(value)))
-                    ElseIf TokenToString.StartsWith("0b") Then
-                        If TypeOf value Is Integer Then Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VB.SyntaxFactory.Literal(($"{Binary(CInt(value))}"), CInt(value)))
-                        If TypeOf value Is Byte Then Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VB.SyntaxFactory.Literal(($"{Binary(CByte(value))}"), CByte(value)))
-                        If TypeOf value Is SByte Then Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VB.SyntaxFactory.Literal($"{Binary(CSByte(value))}", CSByte(value)))
-                        If TypeOf value Is Short Then Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VB.SyntaxFactory.Literal($"{Binary(CShort(value))}", CShort(value)))
-                        If TypeOf value Is UShort Then Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VB.SyntaxFactory.Literal($"{Binary(CUShort(value))}", CUShort(value)))
-                        If TypeOf value Is UInteger Then Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VB.SyntaxFactory.Literal($"{Binary(CUInt(value))}", CUInt(value)))
-                        If TypeOf value Is Long Then Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VB.SyntaxFactory.Literal($"{Binary(CLng(value))}", CLng(value)))
-                        If TypeOf value Is ULong Then Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VB.SyntaxFactory.Literal($"{Binary(CType(CULng(value), Long))}UL", CULng(value)))
+                        If TypeOf value Is Integer Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(HEXValueString, CInt(value)))
+                        If TypeOf value Is SByte Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(HEXValueString, CSByte(value)))
+                        If TypeOf value Is Short Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(HEXValueString, CShort(value)))
+                        If TypeOf value Is UShort Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(HEXValueString, CUShort(value)))
+                        If TypeOf value Is UInteger Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(HEXValueString & "UI", CUInt(value)))
+                        If TypeOf value Is Long Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(HEXValueString, CLng(value)))
+                        If TypeOf value Is ULong Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(HEXValueString & "UL", CULng(value)))
+                    ElseIf TokenToString.StartsWith("0b", StringComparison.InvariantCultureIgnoreCase) Then
+                        If TypeOf value Is Integer Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(($"{Binary(CInt(value))}"), CInt(value)))
+                        If TypeOf value Is Byte Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(($"{Binary(CByte(value))}"), CByte(value)))
+                        If TypeOf value Is SByte Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal($"{Binary(CSByte(value))}", CSByte(value)))
+                        If TypeOf value Is Short Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal($"{Binary(CShort(value))}", CShort(value)))
+                        If TypeOf value Is UShort Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal($"{Binary(CUShort(value))}", CUShort(value)))
+                        If TypeOf value Is UInteger Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal($"{Binary(CUInt(value))}", CUInt(value)))
+                        If TypeOf value Is Long Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal($"{Binary(CLng(value))}", CLng(value)))
+                        If TypeOf value Is ULong Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal($"{Binary(CType(CULng(value), Long))}UL", CULng(value)))
                     End If
 
-                    If TypeOf value Is Integer Then Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VB.SyntaxFactory.Literal(CInt(value)))
-                    If TypeOf value Is Byte Then Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VB.SyntaxFactory.Literal(CByte(value)))
-                    If TypeOf value Is SByte Then Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VB.SyntaxFactory.Literal(CSByte(value)))
-                    If TypeOf value Is Short Then Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VB.SyntaxFactory.Literal(CShort(value)))
-                    If TypeOf value Is UShort Then Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VB.SyntaxFactory.Literal(CUShort(value)))
-                    If TypeOf value Is UInteger Then Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VB.SyntaxFactory.Literal(CUInt(value)))
-                    If TypeOf value Is Long Then Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VB.SyntaxFactory.Literal(CLng(value)))
-                    If TypeOf value Is ULong Then Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VB.SyntaxFactory.Literal(CULng(value)))
-                    If TypeOf value Is Single Then Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VB.SyntaxFactory.Literal(CSng(value)))
-                    If TypeOf value Is Double Then Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VB.SyntaxFactory.Literal(CDbl(value)))
-                    If TypeOf value Is Decimal Then Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VB.SyntaxFactory.Literal(CDec(value)))
+                    If TypeOf value Is Integer Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(CInt(value)))
+                    If TypeOf value Is Byte Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(CByte(value)))
+                    If TypeOf value Is SByte Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(CSByte(value)))
+                    If TypeOf value Is Short Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(CShort(value)))
+                    If TypeOf value Is UShort Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(CUShort(value)))
+                    If TypeOf value Is UInteger Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(CUInt(value)))
+                    If TypeOf value Is Long Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(CLng(value)))
+                    If TypeOf value Is ULong Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(CULng(value)))
+                    If TypeOf value Is Single Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(CSng(value)))
+                    If TypeOf value Is Double Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(CDbl(value)))
+                    If TypeOf value Is Decimal Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(CDec(value)))
                 Case CS.SyntaxKind.StringLiteralToken
                     If TypeOf value Is String Then
                         Dim StrValue As String = DirectCast(value, String)
-                        If StrValue.Contains("\") Then
+                        If StrValue.Contains("\", StringComparison.InvariantCulture) Then
                             StrValue = ConvertCSharpEscapes(StrValue)
                         End If
-                        If StrValue.Contains(UnicodeOpenQuote) Then
+                        If StrValue.Contains(UnicodeOpenQuote, StringComparison.InvariantCulture) Then
                             StrValue = StrValue.ConverUnicodeQuotes(UnicodeOpenQuote)
                         End If
-                        If StrValue.Contains(UnicodeCloseQuote) Then
+                        If StrValue.Contains(UnicodeCloseQuote, StringComparison.InvariantCulture) Then
                             StrValue = StrValue.ConverUnicodeQuotes(UnicodeCloseQuote)
                         End If
-                        If StrValue.Contains(UnicodeFullWidthQuoationMark) Then
+                        If StrValue.Contains(UnicodeFullWidthQuoationMark, StringComparison.InvariantCulture) Then
                             StrValue = StrValue.ConverUnicodeQuotes(UnicodeFullWidthQuoationMark)
                         End If
-                        Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.StringLiteralExpression, VB.SyntaxFactory.Literal(StrValue))
+                        Return VBFactory.LiteralExpression(VB.SyntaxKind.StringLiteralExpression, VBFactory.Literal(StrValue))
                     End If
                 Case CS.SyntaxKind.FalseKeyword
-                    Return VB.SyntaxFactory.FalseLiteralExpression(FalseKeyword)
+                    Return VBFactory.FalseLiteralExpression(FalseKeyword)
                 Case CS.SyntaxKind.NullKeyword
                     Return NothingExpression
                 Case CS.SyntaxKind.TrueKeyword
-                    Return VB.SyntaxFactory.TrueLiteralExpression(TrueKeyword)
+                    Return VBFactory.TrueLiteralExpression(TrueKeyword)
                 Case CS.SyntaxKind.CharacterLiteralToken
                     If AscW(CChar(value)) = &H201C Then
-                        Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.CharacterLiteralExpression, VB.SyntaxFactory.Literal($"{UnicodeOpenQuote}{UnicodeOpenQuote}"))
+                        Return VBFactory.LiteralExpression(VB.SyntaxKind.CharacterLiteralExpression, VBFactory.Literal($"{UnicodeOpenQuote}{UnicodeOpenQuote}"))
                     End If
                     If AscW(CChar(value)) = &H201D Then
-                        Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.CharacterLiteralExpression, VB.SyntaxFactory.Literal($"{UnicodeCloseQuote}{UnicodeCloseQuote}"))
+                        Return VBFactory.LiteralExpression(VB.SyntaxKind.CharacterLiteralExpression, VBFactory.Literal($"{UnicodeCloseQuote}{UnicodeCloseQuote}"))
                     End If
-                    If Token.Text.StartsWith("'\u") Then
-                        Return VB.SyntaxFactory.ParseExpression($"ChrW(&H{Token.Text.Replace("'", "").Substring(2)})")
+                    If Token.Text.StartsWith("'\u", StringComparison.InvariantCultureIgnoreCase) Then
+                        Return VBFactory.ParseExpression($"ChrW(&H{Token.Text.Replace("'", "", StringComparison.InvariantCulture).Substring(2)})")
                     End If
-                    Return VB.SyntaxFactory.LiteralExpression(VB.SyntaxKind.CharacterLiteralExpression, VB.SyntaxFactory.Literal(CChar(value)))
+                    Return VBFactory.LiteralExpression(VB.SyntaxKind.CharacterLiteralExpression, VBFactory.Literal(CChar(value)))
                 Case CS.SyntaxKind.DefaultKeyword
                     Dim ReturnType As VBS.TypeSyntax
                     Dim MethodStatement As CSS.MethodDeclarationSyntax = Token.Parent.GetAncestor(Of CSS.MethodDeclarationSyntax)
@@ -151,16 +125,16 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         Dim PropertyDeclaration As CSS.PropertyDeclarationSyntax = Token.Parent.GetAncestor(Of CSS.PropertyDeclarationSyntax)
                         If PropertyDeclaration IsNot Nothing Then
                             ReturnType = DirectCast(PropertyDeclaration.Type.Accept(_NodesVisitor), VBS.TypeSyntax)
-                            Return VB.SyntaxFactory.CTypeExpression(NothingExpression, ReturnType)
+                            Return VBFactory.CTypeExpression(NothingExpression, ReturnType)
                         End If
                         If MethodStatement IsNot Nothing Then
                             ReturnType = DirectCast(MethodStatement.ReturnType.Accept(_NodesVisitor), VBS.TypeSyntax)
-                            Return VB.SyntaxFactory.CTypeExpression(NothingExpression, ReturnType)
+                            Return VBFactory.CTypeExpression(NothingExpression, ReturnType)
                         End If
                         Dim OperatorStatement As CSS.ConversionOperatorDeclarationSyntax = Token.Parent.GetAncestor(Of CSS.ConversionOperatorDeclarationSyntax)
                         If OperatorStatement IsNot Nothing Then
                             ReturnType = DirectCast(OperatorStatement.Type.Accept(_NodesVisitor), VBS.TypeSyntax)
-                            Return VB.SyntaxFactory.CTypeExpression(NothingExpression, ReturnType)
+                            Return VBFactory.CTypeExpression(NothingExpression, ReturnType)
                         End If
                     End If
                     Dim EqualsValue As CSS.EqualsValueClauseSyntax = Token.Parent.GetAncestor(Of CSS.EqualsValueClauseSyntax)
@@ -168,7 +142,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         Dim Parameter As CSS.ParameterSyntax = Token.Parent.GetAncestor(Of CSS.ParameterSyntax)
                         If Parameter IsNot Nothing Then
                             ReturnType = DirectCast(Parameter.Type.Accept(_NodesVisitor), VBS.TypeSyntax)
-                            Return VB.SyntaxFactory.CTypeExpression(NothingExpression, ReturnType)
+                            Return VBFactory.CTypeExpression(NothingExpression, ReturnType)
                         End If
                     End If
                     Dim AssignmentExpression As CSS.AssignmentExpressionSyntax = Token.Parent.GetAncestor(Of CSS.AssignmentExpressionSyntax)
@@ -177,11 +151,11 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                             If TypeOf AssignmentExpression.Left Is CSS.ThisExpressionSyntax Then
                                 Dim ClassAncestor As CSS.ClassDeclarationSyntax = Token.Parent.GetAncestor(Of CSS.ClassDeclarationSyntax)
                                 If ClassAncestor IsNot Nothing Then
-                                    Return VB.SyntaxFactory.CTypeExpression(NothingExpression, VB.SyntaxFactory.ParseTypeName(ClassAncestor.Identifier.ValueText))
+                                    Return VBFactory.CTypeExpression(NothingExpression, VBFactory.ParseTypeName(ClassAncestor.Identifier.ValueText))
                                 End If
                                 Dim StructAncestor As CSS.StructDeclarationSyntax = Token.Parent.GetAncestor(Of CSS.StructDeclarationSyntax)
                                 If StructAncestor IsNot Nothing Then
-                                    Return VB.SyntaxFactory.CTypeExpression(NothingExpression, VB.SyntaxFactory.ParseTypeName(StructAncestor.Identifier.ValueText))
+                                    Return VBFactory.CTypeExpression(NothingExpression, VBFactory.ParseTypeName(StructAncestor.Identifier.ValueText))
                                 End If
                                 Stop
                                 Return NothingExpression
@@ -212,7 +186,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                             For Each P As CSS.ParameterSyntax In MethodStatement.ParameterList.Parameters
                                 If P.Identifier.ValueText = IDString Then
                                     ReturnType = DirectCast(P.Type.Accept(_NodesVisitor), VBS.TypeSyntax)
-                                    Return VB.SyntaxFactory.CTypeExpression(NothingExpression, ReturnType)
+                                    Return VBFactory.CTypeExpression(NothingExpression, ReturnType)
                                 End If
                             Next
                             Return NothingExpression
@@ -226,46 +200,10 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                         Return NothingExpression
                     End If
                 Case CS.SyntaxKind.ArgListKeyword
-                    Return VB.SyntaxFactory.IdentifierName("__Arglist")
+                    Return VBFactory.IdentifierName("__Arglist")
             End Select
             Stop
             Return NothingExpression
-        End Function
-
-        Private Shared Function MakeIdentifierUnique(id As SyntaxToken, BracketNeeded As Boolean, QualifiedNameOrTypeName As Boolean) As SyntaxToken
-            Dim ConvertedIdentifier As String = If(BracketNeeded, $"[{id.ValueText}]", id.ValueText)
-            If ConvertedIdentifier = "_" Then
-                ConvertedIdentifier = "underscore"
-            End If
-            ' Don't Change Qualified Names
-            If QualifiedNameOrTypeName Then
-                If Not UsedIdentifiers.ContainsKey(ConvertedIdentifier) Then
-                    UsedIdentifiers.Add(ConvertedIdentifier, New SymbolTableEntry(ConvertedIdentifier, True))
-                End If
-                Return VB.SyntaxFactory.Identifier(UsedIdentifiers(ConvertedIdentifier).Name).WithConvertedTriviaFrom(id)
-            End If
-            If UsedIdentifiers.ContainsKey(ConvertedIdentifier) Then
-                ' We have a case sensitive exact match so just return it
-                Return VB.SyntaxFactory.Identifier(UsedIdentifiers(ConvertedIdentifier).Name).WithConvertedTriviaFrom(id)
-            End If
-            For Each ident As KeyValuePair(Of String, SymbolTableEntry) In UsedIdentifiers
-                If String.Compare(ident.Key, ConvertedIdentifier, ignoreCase:=False) = 0 Then
-                    ' We have an exact match keep looking
-                    Continue For
-                End If
-                If String.Compare(ident.Key, ConvertedIdentifier, ignoreCase:=True) = 0 Then
-                    ' If we are here we have seen the variable in a different case so fix it
-                    If UsedIdentifiers(ident.Key).IsType Then
-                        UsedIdentifiers.Add(ConvertedIdentifier, New SymbolTableEntry(_Name:=ConvertedIdentifier, _IsType:=False))
-                    Else
-                        Dim NewUniqueName As String = If(ConvertedIdentifier.StartsWith("["), ConvertedIdentifier.Replace("[", "").Replace("]", "_Renamed"), $"{ConvertedIdentifier}_Renamed")
-                        UsedIdentifiers.Add(ConvertedIdentifier, New SymbolTableEntry(_Name:=NewUniqueName, _IsType:=QualifiedNameOrTypeName))
-                    End If
-                    Return VB.SyntaxFactory.Identifier(UsedIdentifiers(ConvertedIdentifier).Name).WithConvertedTriviaFrom(id)
-                End If
-            Next
-            UsedIdentifiers.Add(ConvertedIdentifier, New SymbolTableEntry(ConvertedIdentifier, QualifiedNameOrTypeName))
-            Return VB.SyntaxFactory.Identifier(ConvertedIdentifier)
         End Function
 
         ''' <summary>
@@ -280,7 +218,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             Dim TypeOrAddressOf As VB.VisualBasicSyntaxNode = DeclarationType.WithConvertedLeadingTriviaFrom(VariableDeclaration.Type)
             Dim TypeLeadingTrivia As SyntaxTriviaList = TypeOrAddressOf.GetLeadingTrivia
 
-            If TypeLeadingTrivia.Count > 0 Then
+            If TypeLeadingTrivia.Any Then
                 If TypeLeadingTrivia.Last.RawKind = VB.SyntaxKind.WhitespaceTrivia Then
                     TypeOrAddressOf = TypeOrAddressOf.WithLeadingTrivia(TypeLeadingTrivia.Last)
                 Else
@@ -290,12 +228,12 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
             If IsFieldDeclaration AndAlso TypeLeadingTrivia.Count > 1 Then
                 Dim StatementWithIssues As CS.CSharpSyntaxNode = GetStatementwithIssues(VariableDeclaration)
                 If TypeLeadingTrivia.ContainsCommentOrDirectiveTrivia AndAlso Not TriviaIsIdentical(TypeLeadingTrivia, ConvertTrivia(StatementWithIssues.GetLeadingTrivia).ToList) Then
-                    StatementWithIssues.AddMarker(VB.SyntaxFactory.EmptyStatement.WithLeadingTrivia(TypeLeadingTrivia), StatementHandlingOption.AppendEmptyStatement, AllowDuplicates:=True)
+                    StatementWithIssues.AddMarker(VBFactory.EmptyStatement.WithLeadingTrivia(TypeLeadingTrivia), StatementHandlingOption.AppendEmptyStatement, AllowDuplicates:=True)
                 End If
             End If
             Dim CS_CollectedCommentTrivia As New List(Of SyntaxTrivia)
             If TypeOrAddressOf.IsKind(VB.SyntaxKind.AddressOfExpression) Then
-                type = VB.SyntaxFactory.ParseTypeName(DirectCast(TypeOrAddressOf, VBS.UnaryExpressionSyntax).Operand.ToString)
+                type = VBFactory.ParseTypeName(DirectCast(TypeOrAddressOf, VBS.UnaryExpressionSyntax).Operand.ToString)
                 CS_CollectedCommentTrivia.Add(CS.SyntaxFactory.Comment(" TODO TASK: VB has no direct equivalent to C# Pointer Variables"))
             Else
                 type = DirectCast(TypeOrAddressOf, VBS.TypeSyntax)
@@ -313,16 +251,16 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 Dim AsClause As VBS.AsClauseSyntax = Nothing
                 If VariableDeclaration.Type.IsKind(CS.SyntaxKind.RefType) Then
                 ElseIf Not VariableDeclaration.Type.IsVar Then
-                    AsClause = VB.SyntaxFactory.SimpleAsClause(type)
+                    AsClause = VBFactory.SimpleAsClause(type)
                 Else
                     ' Get Type from Initializer
                     If v.Initializer.Value.IsKind(CS.SyntaxKind.AnonymousObjectCreationExpression) Then
-                        AsClause = VB.SyntaxFactory.AsNewClause(CType(v.Initializer.Value.Accept(_NodesVisitor), VBS.NewExpressionSyntax))
+                        AsClause = VBFactory.AsNewClause(CType(v.Initializer.Value.Accept(_NodesVisitor), VBS.NewExpressionSyntax))
                     ElseIf v.Initializer.Value.IsKind(CS.SyntaxKind.ImplicitArrayCreationExpression) Then
                     Else
-                        Dim Result As (_ITypeSymbol As ITypeSymbol, _Error As Boolean) = DetermineType(v.Initializer.Value, _Model)
+                        Dim Result As (_TypeSyntax As VBS.TypeSyntax, _Error As Boolean) = DetermineTypeSyntax(v.Initializer.Value, _Model)
                         If Not Result._Error Then
-                            AsClause = VB.SyntaxFactory.SimpleAsClause(NodesVisitor.ConvertToType(Result._ITypeSymbol))
+                            AsClause = VBFactory.SimpleAsClause(Result._TypeSyntax)
                         Else
                             AsClause = Nothing
                         End If
@@ -330,19 +268,19 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 End If
                 Dim Value As VBS.ExpressionSyntax = DirectCast(v.Initializer.Value.Accept(_NodesVisitor), VBS.ExpressionSyntax)
                 If Value Is Nothing Then
-                    Value = VB.SyntaxFactory.IdentifierName("HandleRefExpression").WithConvertedTriviaFrom(v.Initializer.Value)
+                    Value = VBFactory.IdentifierName("HandleRefExpression").WithConvertedTriviaFrom(v.Initializer.Value)
                 End If
                 If Value.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
                     LeadingTrivia.AddRange(Value.GetLeadingTrivia)
                 End If
                 Dim Initializer As VBS.EqualsValueSyntax = Nothing
                 If Not AsClause.IsKind(VB.SyntaxKind.AsNewClause) Then
-                    Initializer = VB.SyntaxFactory.EqualsValue(Value.WithLeadingTrivia(SpaceTrivia))
+                    Initializer = VBFactory.EqualsValue(Value.WithLeadingTrivia(SpaceTrivia))
                 End If
                 ' Get the names last to lead with var jsonWriter = new JsonWriter(stringWriter)
                 ' Which should be Dim jsonWriter_Renamed = new JsonWriter(stringWriter)
-                Dim Names As SeparatedSyntaxList(Of VBS.ModifiedIdentifierSyntax) = VB.SyntaxFactory.SingletonSeparatedList(DirectCast(v.Accept(_NodesVisitor), VBS.ModifiedIdentifierSyntax))
-                Dim Declator As VBS.VariableDeclaratorSyntax = VB.SyntaxFactory.VariableDeclarator(
+                Dim Names As SeparatedSyntaxList(Of VBS.ModifiedIdentifierSyntax) = VBFactory.SingletonSeparatedList(DirectCast(v.Accept(_NodesVisitor), VBS.ModifiedIdentifierSyntax))
+                Dim Declator As VBS.VariableDeclaratorSyntax = VBFactory.VariableDeclarator(
                                                                                             Names,
                                                                                             AsClause,
                                                                                             Initializer
@@ -359,7 +297,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                     End If
                     ModifiedIdentifierList.Add(DirectCast(d.Accept(_NodesVisitor), VBS.ModifiedIdentifierSyntax).WithTrailingTrivia(SpaceTrivia))
                 Next
-                Dim VariableDeclarator As VBS.VariableDeclaratorSyntax = VB.SyntaxFactory.VariableDeclarator(VB.SyntaxFactory.SeparatedList(ModifiedIdentifierList), asClause:=VB.SyntaxFactory.SimpleAsClause(type), initializer:=Nothing)
+                Dim VariableDeclarator As VBS.VariableDeclaratorSyntax = VBFactory.VariableDeclarator(VBFactory.SeparatedList(ModifiedIdentifierList), asClause:=VBFactory.SimpleAsClause(type), initializer:=Nothing)
                 declarators.Insert(0, VariableDeclarator.WithTrailingTrivia(ConvertTrivia(CS_CollectedCommentTrivia)))
                 CS_CollectedCommentTrivia.Clear()
             End If
@@ -371,7 +309,7 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
                 declarators.RemoveAt(declarators.Count - 1)
                 declarators.Add(TempDeclarator)
             End If
-            Return VB.SyntaxFactory.SeparatedList(declarators)
+            Return VBFactory.SeparatedList(declarators)
         End Function
 
         ''' <summary>
@@ -381,18 +319,16 @@ Namespace IVisualBasicCode.CodeConverter.Visual_Basic
         ''' <param name="_SkipAutoGenerated"></param>
         ''' <param name="_SemanticModel"></param>
         ''' <returns></returns>
-        Public Shared Function Convert(SourceTree As CS.CSharpSyntaxNode, _SkipAutoGenerated As Boolean, _SemanticModel As SemanticModel) As VB.VisualBasicSyntaxNode
+        Public Shared Function Convert(SourceTree As CS.CSharpSyntaxNode, _SkipAutoGenerated As Boolean, _SemanticModel As SemanticModel, ProgressReport As ReportProgress, CancelToken As CancellationToken) As VB.VisualBasicSyntaxNode
             Dim visualBasicSyntaxNode1 As VB.VisualBasicSyntaxNode
-            If OriginalRequest Is Nothing Then
-                OriginalRequest = New ConvertRequest(ConvertRequest.CS_To_VB, _SkipAutoGenerated, Sub() Return, _ProgressBar:=Nothing)
-            End If
-            SyncLock ThisLock
+            s_originalRequest = New ConvertRequest(_SkipAutoGenerated, ProgressReport, CancelToken)
+            SyncLock s_thisLock
                 ClearMarker()
-                UsedIdentifierStack.Push(UsedIdentifiers)
-                UsedIdentifiers.Clear()
-                visualBasicSyntaxNode1 = SourceTree.Accept(New NodesVisitor(_SemanticModel))
-                If UsedIdentifierStack.Count > 0 Then
-                    UsedIdentifiers = DirectCast(UsedIdentifierStack.Pop, Dictionary(Of String, SymbolTableEntry))
+                s_usedStacks.Push(s_usedIdentifiers)
+                s_usedIdentifiers.Clear()
+                visualBasicSyntaxNode1 = SourceTree?.Accept(New NodesVisitor(_SemanticModel))
+                If s_usedStacks.Count > 0 Then
+                    s_usedIdentifiers = DirectCast(s_usedStacks.Pop, Dictionary(Of String, SymbolTableEntry))
                 End If
             End SyncLock
             Return visualBasicSyntaxNode1

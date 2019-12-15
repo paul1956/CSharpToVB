@@ -1,11 +1,16 @@
-﻿Option Explicit On
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+Option Explicit On
 Option Infer Off
 Option Strict On
+
 Imports System.IO
 
 Public Class ColorSelector
-    Private Shared ReadOnly FullPath As String = Path.Combine(FileIO.SpecialDirectories.MyDocuments, "ColorDictionary.csv")
-    Private Shared ReadOnly ColorMappingDictionary As New Dictionary(Of String, Color) From {
+    Private Shared ReadOnly s_fullPath As String = Path.Combine(FileIO.SpecialDirectories.MyDocuments, "ColorDictionary.csv")
+
+    Private Shared ReadOnly s_colorMappingDictionary As New Dictionary(Of String, Color) From {
          {"class name", Color.FromArgb(0, 128, 128)},
          {"comment", Color.FromArgb(0, 100, 0)},
          {"constant name", Color.Black},
@@ -64,63 +69,69 @@ Public Class ColorSelector
          {"xml literal - processing instruction", Color.FromArgb(128, 128, 128)},
          {"xml literal - text", Color.FromArgb(85, 85, 85)}
      }
+
     Sub New()
-        UpdateColorDictionaryFromFile(FullPath)
+        UpdateColorDictionaryFromFile(s_fullPath)
     End Sub
+
     Sub New(filePath As String)
         UpdateColorDictionaryFromFile(filePath)
     End Sub
 
     Public Shared Sub SetColor(name As String, value As Color)
-        ColorMappingDictionary(name) = value
-        WriteColorDictionaryToFile(FullPath)
+        s_colorMappingDictionary(name) = value
+        WriteColorDictionaryToFile(s_fullPath)
     End Sub
 
-    Public Shared Function GetColorFromName(Name As String) As Color
+    Friend Shared Function GetColorFromName(Name As String) As Color
         Try
-            If Name.IsEmptyNullOrWhitespace Then
-                Return ColorMappingDictionary("default")
+            If String.IsNullOrWhiteSpace(Name) Then
+                Return s_colorMappingDictionary("default")
             End If
-            Return ColorMappingDictionary(Name)
+            Return s_colorMappingDictionary(Name)
         Catch ex As Exception
             Debug.Print($"GetColorFromName missing({Name})")
             Stop
-            Return ColorMappingDictionary("error")
+            Return s_colorMappingDictionary("error")
         End Try
     End Function
+
     Public Shared Function GetColorNameList() As Dictionary(Of String, Color).KeyCollection
-        Return ColorMappingDictionary.Keys
+        Return s_colorMappingDictionary.Keys
     End Function
+
     Public Shared Sub WriteColorDictionaryToFile()
-        WriteColorDictionaryToFile(FullPath)
+        WriteColorDictionaryToFile(s_fullPath)
     End Sub
+
     Public Shared Sub WriteColorDictionaryToFile(FPath As String)
         Dim FileStream As FileStream = File.OpenWrite(FPath)
-        Dim sw As New IO.StreamWriter(FileStream)
+        Dim sw As New StreamWriter(FileStream)
         sw.WriteLine($"Key,R,G,B")
-        For Each kvp As KeyValuePair(Of String, Color) In ColorMappingDictionary
+        For Each kvp As KeyValuePair(Of String, Color) In s_colorMappingDictionary
             sw.WriteLine($"{kvp.Key},{kvp.Value.R},{kvp.Value.G},{kvp.Value.B}")
         Next
         sw.Flush()
         sw.Close()
         FileStream.Close()
     End Sub
+
     Public Shared Sub UpdateColorDictionaryFromFile(FPath As String)
         If Not File.Exists(FPath) Then
             WriteColorDictionaryToFile(FPath)
             Exit Sub
         End If
         Dim FileStream As FileStream = File.OpenRead(FPath)
-        Dim sr As New IO.StreamReader(FileStream)
+        Dim sr As New StreamReader(FileStream)
         sr.ReadLine()
         While (sr.Peek() <> -1)
             Dim line As String = sr.ReadLine()
             Dim Split() As String = line.Split(","c)
             Dim key As String = Split(0)
-            Dim R As Integer = Convert.ToInt32(Split(1))
-            Dim G As Integer = Convert.ToInt32(Split(2))
-            Dim B As Integer = Convert.ToInt32(Split(3))
-            ColorMappingDictionary(key) = Color.FromArgb(R, G, B)
+            Dim R As Integer = Convert.ToInt32(Split(1), Globalization.CultureInfo.InvariantCulture)
+            Dim G As Integer = Convert.ToInt32(Split(2), Globalization.CultureInfo.InvariantCulture)
+            Dim B As Integer = Convert.ToInt32(Split(3), Globalization.CultureInfo.InvariantCulture)
+            s_colorMappingDictionary(key) = Color.FromArgb(R, G, B)
         End While
         sr.Close()
         FileStream.Close()

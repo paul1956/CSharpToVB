@@ -1,6 +1,10 @@
-﻿
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
 ' DO NOT REORDER DOCUMENT Tokens must be defined BEFORE they are used, the #If is require to prevent code cleanup
 #If True Then
+
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.VisualBasic
 
@@ -16,6 +20,7 @@ Public Module VisualBasicSyntaxFactory
     Public Const UnicodeFullWidthQuoationMark As Char = ChrW(&HFF02)
 
 #Region "Token"
+
     Public ReadOnly AddressOfKeyword As SyntaxToken = SyntaxFactory.Token(SyntaxKind.AddressOfKeyword)
     Public ReadOnly AmpersandToken As SyntaxToken = SyntaxFactory.Token(SyntaxKind.AmpersandToken)
     Public ReadOnly AndAlsoKeyword As SyntaxToken = SyntaxFactory.Token(SyntaxKind.AndAlsoKeyword)
@@ -162,16 +167,19 @@ Public Module VisualBasicSyntaxFactory
     Public ReadOnly UShortKeyword As SyntaxToken = SyntaxFactory.Token(SyntaxKind.UShortKeyword)
 
 #Region "Options"
+
     Public ReadOnly ExplicitToken As SyntaxToken = SyntaxFactory.Token(SyntaxKind.ExplicitKeyword)
     Public ReadOnly InferToken As SyntaxToken = SyntaxFactory.Token(SyntaxKind.InferKeyword)
     Public ReadOnly StrictToken As SyntaxToken = SyntaxFactory.Token(SyntaxKind.StrictKeyword)
     Public ReadOnly OnToken As SyntaxToken = SyntaxFactory.Token(SyntaxKind.OnKeyword)
     Public ReadOnly OffToken As SyntaxToken = SyntaxFactory.Token(SyntaxKind.OffKeyword)
+
 #End Region
 
 #End Region
 
 #Region "Predefined Types"
+
     Public ReadOnly Handle_RefType As Syntax.TypeSyntax = SyntaxFactory.ParseTypeName("HandleRefType")
     Public ReadOnly IntPtrType As Syntax.TypeSyntax = SyntaxFactory.ParseTypeName("IntPtr")
     Public ReadOnly PredefinedTypeBoolean As Syntax.TypeSyntax = SyntaxFactory.PredefinedType(BooleanKeyword)
@@ -190,13 +198,16 @@ Public Module VisualBasicSyntaxFactory
     Public ReadOnly PredefinedTypeUInteger As Syntax.TypeSyntax = SyntaxFactory.PredefinedType(UIntegerKeyword)
     Public ReadOnly PredefinedTypeULong As Syntax.TypeSyntax = SyntaxFactory.PredefinedType(ULongKeyword)
     Public ReadOnly PredefinedTypeUShort As Syntax.TypeSyntax = SyntaxFactory.PredefinedType(UShortKeyword)
+
 #End Region
 
 #Region "Trivia"
+
     Public ReadOnly ElasticMarker As SyntaxTrivia = SyntaxFactory.ElasticWhitespace(String.Empty)
     Public ReadOnly LineContinuation As SyntaxTrivia = SyntaxFactory.LineContinuationTrivia("_")
     Public ReadOnly SpaceTrivia As SyntaxTrivia = SyntaxFactory.Space
     Public ReadOnly VB_EOLTrivia As SyntaxTrivia = SyntaxFactory.EndOfLineTrivia(vbCrLf)
+
 #End Region
 
 #Region "Expressions"
@@ -205,11 +216,12 @@ Public Module VisualBasicSyntaxFactory
     Public ReadOnly Expression_1 As Syntax.ExpressionSyntax = SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(1))
     Public ReadOnly NothingExpression As Syntax.LiteralExpressionSyntax = SyntaxFactory.NothingLiteralExpression(NothingKeyword)
     Public ReadOnly VBCrLfExpression As Syntax.IdentifierNameSyntax = SyntaxFactory.IdentifierName("vbCrLf")
+
 #End Region
 
     Public ReadOnly DimModifier As SyntaxTokenList = SyntaxFactory.TokenList(DimKeyword)
     Public ReadOnly Value_ModifiedIdentifier As Syntax.ModifiedIdentifierSyntax = SyntaxFactory.ModifiedIdentifier("Value")
     Public ReadOnly PublicModifier As SyntaxTokenList = SyntaxFactory.TokenList(PublicKeyword)
-
+    Public ReadOnly RuntimeInteropServicesOut As Syntax.TypeSyntax = SyntaxFactory.ParseTypeName("Runtime.InteropServices.Out")
 #End If
 End Module

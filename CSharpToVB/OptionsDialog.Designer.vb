@@ -4,7 +4,7 @@ Partial Class OptionsDialog
 
     'Form overrides dispose to clean up the component list.
     <System.Diagnostics.DebuggerNonUserCode()>
-    Protected Overrides Sub Dispose(ByVal disposing As Boolean)
+    Protected Overrides Sub Dispose(disposing As Boolean)
         Try
             If disposing AndAlso components IsNot Nothing Then
                 components.Dispose()
@@ -31,7 +31,6 @@ Partial Class OptionsDialog
         Me.ItemColor_ComboBox = New System.Windows.Forms.ComboBox()
         Me.Label2 = New System.Windows.Forms.Label()
         Me.UpdateColor_Button = New System.Windows.Forms.Button()
-        Me.TableLayoutPanel1.SuspendLayout()
         Me.SuspendLayout()
         '
         'TableLayoutPanel1
@@ -42,11 +41,12 @@ Partial Class OptionsDialog
         Me.TableLayoutPanel1.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
         Me.TableLayoutPanel1.Controls.Add(Me.OK_Button, 0, 0)
         Me.TableLayoutPanel1.Controls.Add(Me.Cancel_Button, 1, 0)
-        Me.TableLayoutPanel1.Location = New System.Drawing.Point(310, 280)
+        Me.TableLayoutPanel1.Location = New System.Drawing.Point(362, 323)
+        Me.TableLayoutPanel1.Margin = New System.Windows.Forms.Padding(4, 3, 4, 3)
         Me.TableLayoutPanel1.Name = "TableLayoutPanel1"
         Me.TableLayoutPanel1.RowCount = 1
         Me.TableLayoutPanel1.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
-        Me.TableLayoutPanel1.Size = New System.Drawing.Size(146, 29)
+        Me.TableLayoutPanel1.Size = New System.Drawing.Size(170, 33)
         Me.TableLayoutPanel1.TabIndex = 0
         '
         'OK_Button
@@ -71,17 +71,19 @@ Partial Class OptionsDialog
         'ProjectDirectoryList
         '
         Me.ProjectDirectoryList.FormattingEnabled = True
-        Me.ProjectDirectoryList.Location = New System.Drawing.Point(200, 15)
+        Me.ProjectDirectoryList.Location = New System.Drawing.Point(233, 17)
+        Me.ProjectDirectoryList.Margin = New System.Windows.Forms.Padding(4, 3, 4, 3)
         Me.ProjectDirectoryList.Name = "ProjectDirectoryList"
-        Me.ProjectDirectoryList.Size = New System.Drawing.Size(220, 21)
+        Me.ProjectDirectoryList.Size = New System.Drawing.Size(256, 23)
         Me.ProjectDirectoryList.TabIndex = 1
         '
         'Label1
         '
         Me.Label1.AutoSize = True
-        Me.Label1.Location = New System.Drawing.Point(27, 19)
+        Me.Label1.Location = New System.Drawing.Point(31, 22)
+        Me.Label1.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.Label1.Name = "Label1"
-        Me.Label1.Size = New System.Drawing.Size(155, 13)
+        Me.Label1.Size = New System.Drawing.Size(170, 15)
         Me.Label1.TabIndex = 2
         Me.Label1.Text = "Directory to Start Folder Search"
         '
@@ -98,26 +100,29 @@ Partial Class OptionsDialog
         Me.ItemColor_ComboBox.DropDownWidth = 300
         Me.ItemColor_ComboBox.FormattingEnabled = True
         Me.ItemColor_ComboBox.IntegralHeight = False
-        Me.ItemColor_ComboBox.Location = New System.Drawing.Point(30, 119)
+        Me.ItemColor_ComboBox.Location = New System.Drawing.Point(35, 137)
+        Me.ItemColor_ComboBox.Margin = New System.Windows.Forms.Padding(4, 3, 4, 3)
         Me.ItemColor_ComboBox.MaxDropDownItems = 20
         Me.ItemColor_ComboBox.Name = "ItemColor_ComboBox"
-        Me.ItemColor_ComboBox.Size = New System.Drawing.Size(390, 21)
+        Me.ItemColor_ComboBox.Size = New System.Drawing.Size(454, 24)
         Me.ItemColor_ComboBox.TabIndex = 3
         '
         'Label2
         '
         Me.Label2.AutoSize = True
-        Me.Label2.Location = New System.Drawing.Point(30, 100)
+        Me.Label2.Location = New System.Drawing.Point(35, 115)
+        Me.Label2.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.Label2.Name = "Label2"
-        Me.Label2.Size = New System.Drawing.Size(91, 13)
+        Me.Label2.Size = New System.Drawing.Size(104, 15)
         Me.Label2.TabIndex = 4
         Me.Label2.Text = "Display Item Color"
         '
         'UpdateColor_Button
         '
-        Me.UpdateColor_Button.Location = New System.Drawing.Point(301, 84)
+        Me.UpdateColor_Button.Location = New System.Drawing.Point(351, 97)
+        Me.UpdateColor_Button.Margin = New System.Windows.Forms.Padding(4, 3, 4, 3)
         Me.UpdateColor_Button.Name = "UpdateColor_Button"
-        Me.UpdateColor_Button.Size = New System.Drawing.Size(118, 23)
+        Me.UpdateColor_Button.Size = New System.Drawing.Size(138, 27)
         Me.UpdateColor_Button.TabIndex = 5
         Me.UpdateColor_Button.Text = "Update Color"
         Me.UpdateColor_Button.UseVisualStyleBackColor = True
@@ -125,10 +130,10 @@ Partial Class OptionsDialog
         'OptionsDialog
         '
         Me.AcceptButton = Me.OK_Button
-        Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
+        Me.AutoScaleDimensions = New System.Drawing.SizeF(7.0!, 15.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.CancelButton = Me.Cancel_Button
-        Me.ClientSize = New System.Drawing.Size(468, 321)
+        Me.ClientSize = New System.Drawing.Size(546, 370)
         Me.Controls.Add(Me.UpdateColor_Button)
         Me.Controls.Add(Me.Label2)
         Me.Controls.Add(Me.ItemColor_ComboBox)
@@ -136,13 +141,13 @@ Partial Class OptionsDialog
         Me.Controls.Add(Me.ProjectDirectoryList)
         Me.Controls.Add(Me.TableLayoutPanel1)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog
+        Me.Margin = New System.Windows.Forms.Padding(4, 3, 4, 3)
         Me.MaximizeBox = False
         Me.MinimizeBox = False
         Me.Name = "OptionsDialog"
         Me.ShowInTaskbar = False
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent
         Me.Text = "Options"
-        Me.TableLayoutPanel1.ResumeLayout(False)
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
