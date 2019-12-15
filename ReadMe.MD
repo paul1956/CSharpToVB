@@ -12,7 +12,7 @@ description: "C# to VB Converter"
 
 ## Requires
 
-- Visual Studio 2019 Version 16.5.0 Preview 1.0 or later to edit the GUI in the solution designer and you need to enable the designer in the Visual Studio Preview. Go to Tools > Options > Environment > Preview Features and select the Use the preview Windows Forms designer for .NET Core apps option. 
+- Visual Studio 2019 Version 16.5.0 Preview 1.0 or later to edit the GUI in the solution designer and you need to enable the designer in the Visual Studio Preview. Go to Tools > Options > Environment > Preview Features and select the Use the preview Windows Forms designer for .NET Core application option. 
 - Visual Studio 2019 version 16.3.0 to compile the code it produces
 - .NET Core 3.1 to use the converter
 
