@@ -36,14 +36,14 @@ Namespace CSharpToVBCodeConverter
             End If
             ' Don't Change Qualified Names
             If QualifiedNameOrTypeName Then
-                If Not UsedIdentifiers.ContainsKey(ConvertedIdentifier) Then
-                    UsedIdentifiers.Add(ConvertedIdentifier, New SymbolTableEntry(ConvertedIdentifier, True))
+                If Not s_usedIdentifiers.ContainsKey(ConvertedIdentifier) Then
+                    s_usedIdentifiers.Add(ConvertedIdentifier, New SymbolTableEntry(ConvertedIdentifier, True))
                 End If
-                Return VBFactory.Identifier(UsedIdentifiers(ConvertedIdentifier).Name).WithConvertedTriviaFrom(id)
+                Return VBFactory.Identifier(s_usedIdentifiers(ConvertedIdentifier).Name).WithConvertedTriviaFrom(id)
             End If
-            If UsedIdentifiers.ContainsKey(ConvertedIdentifier) Then
+            If s_usedIdentifiers.ContainsKey(ConvertedIdentifier) Then
                 ' We have a case sensitive exact match so just return it
-                Return VBFactory.Identifier(UsedIdentifiers(ConvertedIdentifier).Name).WithConvertedTriviaFrom(id)
+                Return VBFactory.Identifier(s_usedIdentifiers(ConvertedIdentifier).Name).WithConvertedTriviaFrom(id)
             End If
             Dim IsFieldIdentifier As Boolean = False
             If TypeOf id.Parent Is CSS.VariableDeclaratorSyntax Then
@@ -55,15 +55,15 @@ Namespace CSharpToVBCodeConverter
                     End If
                 End If
             End If
-            For Each ident As KeyValuePair(Of String, SymbolTableEntry) In UsedIdentifiers
+            For Each ident As KeyValuePair(Of String, SymbolTableEntry) In s_usedIdentifiers
                 If String.Compare(ident.Key, ConvertedIdentifier, ignoreCase:=False, Globalization.CultureInfo.InvariantCulture) = 0 Then
                     ' We have an exact match keep looking
                     Continue For
                 End If
                 If String.Compare(ident.Key, ConvertedIdentifier, ignoreCase:=True, Globalization.CultureInfo.InvariantCulture) = 0 Then
                     ' If we are here we have seen the variable in a different case so fix it
-                    If UsedIdentifiers(ident.Key).IsType Then
-                        UsedIdentifiers.Add(ConvertedIdentifier, New SymbolTableEntry(_Name:=ConvertedIdentifier, _IsType:=False))
+                    If s_usedIdentifiers(ident.Key).IsType Then
+                        s_usedIdentifiers.Add(ConvertedIdentifier, New SymbolTableEntry(_Name:=ConvertedIdentifier, _IsType:=False))
                     Else
                         Dim NewUniqueName As String
                         If ident.Value.Name.StartsWith("_", StringComparison.InvariantCulture) Then
@@ -76,13 +76,13 @@ Namespace CSharpToVBCodeConverter
                                                         $"_{ConvertedIdentifier}",
                                                         $"{ConvertedIdentifier}_Renamed"))
                         End If
-                        UsedIdentifiers.Add(ConvertedIdentifier, New SymbolTableEntry(_Name:=NewUniqueName, _IsType:=QualifiedNameOrTypeName))
+                        s_usedIdentifiers.Add(ConvertedIdentifier, New SymbolTableEntry(_Name:=NewUniqueName, _IsType:=QualifiedNameOrTypeName))
                     End If
-                    Return VBFactory.Identifier(UsedIdentifiers(ConvertedIdentifier).Name).WithConvertedTriviaFrom(id)
+                    Return VBFactory.Identifier(s_usedIdentifiers(ConvertedIdentifier).Name).WithConvertedTriviaFrom(id)
                 End If
             Next
             Dim _ConvertedIdentifier As String = $"{If(IsFieldIdentifier, "_", "")}{ConvertedIdentifier}"
-            UsedIdentifiers.Add(ConvertedIdentifier, New SymbolTableEntry(_ConvertedIdentifier, QualifiedNameOrTypeName))
+            s_usedIdentifiers.Add(ConvertedIdentifier, New SymbolTableEntry(_ConvertedIdentifier, QualifiedNameOrTypeName))
             Return VBFactory.Identifier(_ConvertedIdentifier)
         End Function
 

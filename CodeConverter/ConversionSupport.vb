@@ -7,10 +7,12 @@ Option Strict On
 
 Imports System.Collections.Immutable
 Imports System.Threading
-Imports System.Windows.Forms
+
 Imports CSharpToVBCodeConverter.Util
 Imports CSharpToVBCodeConverter.Visual_Basic
+
 Imports ManageProgressBar
+
 Imports Microsoft.CodeAnalysis
 
 Imports CS = Microsoft.CodeAnalysis.CSharp
@@ -18,12 +20,12 @@ Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
 Namespace CSharpToVBCodeConverter
     Public Module ConversionSupport
-        Friend OriginalRequest As ConvertRequest
-        Friend ImplementedMembersStack As New Stack(ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))).Empty)
-        Friend ImplementedMembers As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))) = (New List(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))).ToImmutableArray
-        Friend ReadOnly UsedStacks As New Stack(New Dictionary(Of String, SymbolTableEntry))
-        Friend UsedIdentifiers As New Dictionary(Of String, SymbolTableEntry)(StringComparer.Ordinal)
-        Friend ThisLock As New Object
+        Friend ReadOnly s_usedStacks As New Stack(New Dictionary(Of String, SymbolTableEntry))
+        Friend s_implementedMembers As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))) = (New List(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))).ToImmutableArray
+        Friend s_implementedMembersStack As New Stack(ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))).Empty)
+        Friend s_originalRequest As ConvertRequest
+        Friend s_thisLock As New Object
+        Friend s_usedIdentifiers As New Dictionary(Of String, SymbolTableEntry)(StringComparer.Ordinal)
 
         Private Function GetDefaultVersionForLanguage(language As String) As Integer
             If language Is Nothing Then
@@ -47,10 +49,10 @@ Namespace CSharpToVBCodeConverter
             Dim fromVersion As Integer = GetDefaultVersionForLanguage("cs")
             Dim toVersion As Integer = GetDefaultVersionForLanguage("vb")
             Dim codeWithOptions As CodeWithOptions = (New CodeWithOptions(RequestToConvert)).SetFromLanguage(fromLanguage, fromVersion).SetToLanguage(toLanguage, toVersion)
-            OriginalRequest = RequestToConvert
-            SyncLock UsedStacks
-                UsedStacks.Push(UsedIdentifiers)
-                UsedIdentifiers.Clear()
+            s_originalRequest = RequestToConvert
+            SyncLock s_usedStacks
+                s_usedStacks.Push(s_usedIdentifiers)
+                s_usedIdentifiers.Clear()
             End SyncLock
             If RequestToConvert.SourceCode Is Nothing Then
                 Throw New Exception($"{NameOf(RequestToConvert.SourceCode)} should not be Nothing")
@@ -105,8 +107,8 @@ Namespace CSharpToVBCodeConverter
                                     mProgressBar,
                                     CancelToken
                                     )
-                    UsedStacks.Clear()
-                    UsedIdentifiers.Clear()
+                    s_usedStacks.Clear()
+                    s_usedIdentifiers.Clear()
                     Return New ConversionResult(ConvertedNode, LanguageNames.CSharp, LanguageNames.VisualBasic, VBPreprocessorSymbols)
                 Else
                     Return New ConversionResult(Array.Empty(Of Exception))

@@ -8,12 +8,12 @@ Option Strict On
 Imports Microsoft.Build.Locator
 
 Public Class VSSelectorDialog
-    Private m_instance As VisualStudioInstance = Nothing
-    Private ReadOnly visualStudioInstances() As VisualStudioInstance = MSBuildLocator.QueryVisualStudioInstances().ToArray()
+    Private ReadOnly _visualStudioInstances() As VisualStudioInstance = MSBuildLocator.QueryVisualStudioInstances().ToArray()
+    Private _instance As VisualStudioInstance = Nothing
 
     Public ReadOnly Property MSBuildInstance As VisualStudioInstance
         Get
-            Return m_instance
+            Return _instance
         End Get
     End Property
 
@@ -23,11 +23,11 @@ Public Class VSSelectorDialog
     End Sub
 
     Private Sub DataGridView1_SelectionChanged(sender As Object, e As EventArgs) Handles DataGridView1.SelectionChanged
-        m_instance = visualStudioInstances(DataGridView1.CurrentRow.Index)
+        _instance = _visualStudioInstances(DataGridView1.CurrentRow.Index)
     End Sub
 
     Private Sub OK_Button_Click(sender As Object, e As EventArgs) Handles OK_Button.Click
-        If m_instance Is Nothing Then
+        If _instance Is Nothing Then
             Exit Sub
         End If
         DialogResult = DialogResult.OK
@@ -42,21 +42,21 @@ Public Class VSSelectorDialog
         InstanceTable.Columns.Add("Edition")
         InstanceTable.Columns.Add("Version")
         InstanceTable.Columns.Add("MSBuildPath")
-        For Index As Integer = 0 To visualStudioInstances.Length - 1
-            If visualStudioInstances(Index).Name.Contains(" Build ", StringComparison.InvariantCultureIgnoreCase) Then
+        For Index As Integer = 0 To _visualStudioInstances.Length - 1
+            If _visualStudioInstances(Index).Name.Contains(" Build ", StringComparison.InvariantCultureIgnoreCase) Then
                 Continue For
             End If
             BestIndex = Index
             Dim rowToAdd As DataRow = InstanceTable.NewRow()
             rowToAdd("InstanceNumber") = Index + 1
-            rowToAdd("Edition") = visualStudioInstances(Index).Name
-            rowToAdd("Version") = visualStudioInstances(Index).Version
-            rowToAdd("MSBuildPath") = visualStudioInstances(Index).MSBuildPath
+            rowToAdd("Edition") = _visualStudioInstances(Index).Name
+            rowToAdd("Version") = _visualStudioInstances(Index).Version
+            rowToAdd("MSBuildPath") = _visualStudioInstances(Index).MSBuildPath
             InstanceTable.Rows.Add(rowToAdd)
         Next
         DataGridView1.DataSource = InstanceTable
         If InstanceTable.Rows.Count = 1 Then
-            m_instance = visualStudioInstances(BestIndex)
+            _instance = _visualStudioInstances(BestIndex)
             DialogResult = DialogResult.OK
             Close()
         End If

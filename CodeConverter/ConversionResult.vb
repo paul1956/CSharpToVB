@@ -64,14 +64,14 @@ Namespace CSharpToVBCodeConverter
         Public Property ConvertedTree As VB.VisualBasicSyntaxNode
 
         Public Property Exceptions As IReadOnlyList(Of Exception)
-        Private _FilteredListOfFailures As List(Of Diagnostic)
+        Private _filteredListOfFailures As List(Of Diagnostic)
 
         Public Function GetFilteredListOfFailures() As List(Of Diagnostic)
-            Return _FilteredListOfFailures
+            Return _filteredListOfFailures
         End Function
 
         Public Sub SetFilteredListOfFailures(AutoPropertyValue As List(Of Diagnostic))
-            _FilteredListOfFailures = AutoPropertyValue
+            _filteredListOfFailures = AutoPropertyValue
         End Sub
 
         Public Property ResultStatus As ResultTriState

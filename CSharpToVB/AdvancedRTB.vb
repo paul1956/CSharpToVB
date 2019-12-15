@@ -28,11 +28,11 @@ Public Class AdvancedRTB
 
     'the vertical scroll bar of the hwnd window
     <CodeAnalysis.SuppressMessage("Code Quality", "IDE0069:Disposable fields should be disposed", Justification:="Can't figure out how to dispose")>
-    Private components As System.ComponentModel.IContainer
+    Private _components As System.ComponentModel.IContainer
 
-    Private sbi As SCROLLBARINFO
+    Private _sbi As SCROLLBARINFO
 
-    Private VertRightClicked As Boolean = False
+    Private _vertRightClicked As Boolean = False
 
     Sub New()
         InitializeComponent()
@@ -90,8 +90,8 @@ Public Class AdvancedRTB
         Dim unused As Integer = SetScrollInfo(hWnd:=handle, nBar:=SB_Orientation, lpsi:=scrollinfo, bRepaint:=v)
     End Sub
     Private Sub InitializeComponent()
-        components = New ComponentModel.Container()
-        ContextMenuStrip1 = New ContextMenuStrip(components)
+        _components = New ComponentModel.Container()
+        ContextMenuStrip1 = New ContextMenuStrip(_components)
         ToolStripMenuItem1 = New ToolStripMenuItem()
         ToolStripMenuItem2 = New ToolStripMenuItem()
         ToolStripMenuItem3 = New ToolStripMenuItem()
@@ -132,7 +132,7 @@ Public Class AdvancedRTB
     End Sub
 
     Private Sub ToolStripMenuItem1_Click(sender As Object, e As EventArgs) Handles ToolStripMenuItem1.Click
-        With sbi
+        With _sbi
             Dim SB_Size As Integer = .RC_ScrollBar.Bottom - .RC_ScrollBar.Top
             Dim Percent As Double = 1 - (SB_Size - PointToClient(MousePosition).Y) / SB_Size
             Dim DesiredLine As Integer = CInt(Lines.Length * Percent)
@@ -153,13 +153,13 @@ Public Class AdvancedRTB
     <DebuggerStepThrough>
     Protected Overrides Sub WndProc(ByRef m As Message)
         If m.Msg = WM_NCRBUTTONDOWN Then
-            sbi = New SCROLLBARINFO
-            sbi.CB_Size = Marshal.SizeOf(sbi)
-            GetScrollBarInfo(Handle, OBJID_VSCROLL, sbi)
-            If sbi.RC_ScrollBar.ToRectangle.Contains(MousePosition) Then
-                VertRightClicked = True
+            _sbi = New SCROLLBARINFO
+            _sbi.CB_Size = Marshal.SizeOf(_sbi)
+            GetScrollBarInfo(Handle, OBJID_VSCROLL, _sbi)
+            If _sbi.RC_ScrollBar.ToRectangle.Contains(MousePosition) Then
+                _vertRightClicked = True
             Else
-                sbi.CB_Size = 0
+                _sbi.CB_Size = 0
                 MyBase.WndProc(m)
             End If
         Else
@@ -167,27 +167,27 @@ Public Class AdvancedRTB
             Exit Sub
         End If
 
-        If VertRightClicked Then
-            VertRightClicked = False
+        If _vertRightClicked Then
+            _vertRightClicked = False
             ContextMenuStrip1.Show(Me, PointToClient(MousePosition))
         End If
     End Sub
 #Region "IDisposable Support"
 
-    Private disposedValue As Boolean ' To detect redundant calls
+    Private _disposedValue As Boolean ' To detect redundant calls
 
     ' IDisposable
     Protected Overrides Sub Dispose(disposing As Boolean)
-        If Not disposedValue Then
+        If Not _disposedValue Then
             If disposing Then
-                components.Dispose()
+                _components.Dispose()
                 ' TODO: dispose managed state (managed objects).
             End If
 
             ' TODO: free unmanaged resources (unmanaged objects) and override Finalize() below.
             ' TODO: set large fields to null.
         End If
-        disposedValue = True
+        _disposedValue = True
     End Sub
 
 #End Region

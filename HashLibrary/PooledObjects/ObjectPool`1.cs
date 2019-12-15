@@ -67,10 +67,10 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
                 // Note that the initial read is optimistically not synchronized. That is intentional.
                 // We will interlock only when we have a candidate. in a worst case we may miss some
                 // recently returned objects. Not a big deal.
-                T inst = items[i].Value;
+                T inst = items[i]._value;
                 if (inst != null)
                 {
-                    if (inst == Interlocked.CompareExchange(ref items[i].Value, null, inst))
+                    if (inst == Interlocked.CompareExchange(ref items[i]._value, null, inst))
                     {
                         return inst;
                     }
@@ -91,12 +91,12 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
             var items = _items;
             for (int i = 0; i < items.Length; i++)
             {
-                if (items[i].Value == null)
+                if (items[i]._value == null)
                 {
                     // Intentionally not using interlocked here.
                     // In a worst case scenario two objects may be stored into same slot.
                     // It is very unlikely to happen and will only mean that one of the objects will get collected.
-                    items[i].Value = obj;
+                    items[i]._value = obj;
                     break;
                 }
             }
@@ -112,7 +112,7 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
             var items = _items;
             for (int i = 0; i < items.Length; i++)
             {
-                var value = items[i].Value;
+                var value = items[i]._value;
                 if (value == null)
                 {
                     return;
@@ -186,7 +186,7 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
         [DebuggerDisplay("{Value,nq}")]
         private struct Element
         {
-            internal T Value;
+            internal T _value;
         }
     }
 }

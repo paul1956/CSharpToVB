@@ -117,20 +117,20 @@ Partial Public Module SpecializedCollections
 
 #Region "IDisposable Support"
 
-            Private disposedValue As Boolean ' To detect redundant calls
+        Private _disposedValue As Boolean ' To detect redundant calls
 
-            ' IDisposable
-            Protected Overridable Sub Dispose(disposing As Boolean)
-                If Not disposedValue Then
-                    If disposing Then
-                        ' TODO: dispose managed state (managed objects).
-                    End If
-
-                    ' TODO: free unmanaged resources (unmanaged objects) and override Finalize() below.
-                    ' TODO: set large fields to null.
+        ' IDisposable
+        Protected Overridable Sub Dispose(disposing As Boolean)
+            If Not _disposedValue Then
+                If disposing Then
+                    ' TODO: dispose managed state (managed objects).
                 End If
-                disposedValue = True
-            End Sub
+
+                ' TODO: free unmanaged resources (unmanaged objects) and override Finalize() below.
+                ' TODO: set large fields to null.
+            End If
+            _disposedValue = True
+        End Sub
 
             ' This code added by Visual Basic to correctly implement the disposable pattern.
             Public Sub Dispose() Implements IDisposable.Dispose

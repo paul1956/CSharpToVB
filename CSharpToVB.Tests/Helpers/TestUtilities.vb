@@ -12,8 +12,8 @@ Imports Xunit
 
 Public Module TestUtilities
 
-    Private RoslynRootDirectory As String = String.Empty
-    Private ReadOnly _LockRoslynRootDirectory As Object = New Object
+    Private ReadOnly s_lockRoslynRootDirectory As Object = New Object
+    Private s_roslynRootDirectory As String = String.Empty
 
     Private Sub GetOccurrenceCount(kind As SyntaxKind, node As SyntaxNodeOrToken,
                                       ByRef actualCount As Integer)
@@ -64,23 +64,23 @@ Public Module TestUtilities
     End Function
 
     Public Function GetRoslynRootDirectory() As String
-        SyncLock _LockRoslynRootDirectory
-            If String.IsNullOrWhiteSpace(RoslynRootDirectory) Then
-                RoslynRootDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Source")
-                If Not Directory.Exists(RoslynRootDirectory) Then
+        SyncLock s_lockRoslynRootDirectory
+            If String.IsNullOrWhiteSpace(s_roslynRootDirectory) Then
+                s_roslynRootDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Source")
+                If Not Directory.Exists(s_roslynRootDirectory) Then
                     Return ""
                 End If
-                RoslynRootDirectory = Path.Combine(RoslynRootDirectory, "Repos")
-                If Not Directory.Exists(RoslynRootDirectory) Then
+                s_roslynRootDirectory = Path.Combine(s_roslynRootDirectory, "Repos")
+                If Not Directory.Exists(s_roslynRootDirectory) Then
                     Return ""
                 End If
-                RoslynRootDirectory = Path.Combine(RoslynRootDirectory, "Roslyn")
-                If Not Directory.Exists(RoslynRootDirectory) Then
+                s_roslynRootDirectory = Path.Combine(s_roslynRootDirectory, "Roslyn")
+                If Not Directory.Exists(s_roslynRootDirectory) Then
                     Return ""
                 End If
             End If
         End SyncLock
-        Return RoslynRootDirectory
+        Return s_roslynRootDirectory
     End Function
 
     <Extension()>

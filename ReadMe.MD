@@ -1,16 +1,48 @@
+---
+languages:
+- vb
+products:
+- dotnet-core
+- windows
+page_type: Code Converter
+name: ".NET Core WinForms Sudoku (Visual Basic)"
+description: "C# to VB Converter"
+---
+# C# to VB.Net Converter
+
+## Requires
+
+- Visual Studio 2019 Version 16.5.0 Preview 1.0 or later to edit the GUI in the solution designer and you need to enable the designer in the Visual Studio Preview. Go to Tools > Options > Environment > Preview Features and select the Use the preview Windows Forms designer for .NET Core apps option. 
+- Visual Studio 2019 version 16.3.0 to compile the code it produces
+- .NET Core 3.1 to use the converter
+
+## License
+- MIT
+
+## Technologies
+  - Windows Forms
+  - dotnet-core
+
+## Topics
+- Code Converter
+
+## Updated
+- 12/14/2019
+
+## Description
 This application will convert C# to VB while trying to preserve comments, formatting and as many Directives
 as possible. It converts the True side of conditional directives, the False side is not converted. After
-conversion it tries to compile the code, there is a list of ignored errors that can be modified. If I file
-can't be compiled it can be add to an ignore list.
+conversion it tries to compile the code, there is a list of ignored errors that can be modified. If a file
+can't be compiled it can be add to an ignore list so you can continue to process other files.
 
-You can convert text by typing in into the left Window, a file, project or folder from the menu's.
+You can convert text by typing or pasting in into the left Window, a file, project or folder from the menu's.
 
 The Tests under "TestCompile" are designed to translate the C# code in Roslyn and uses
 GetRoslynRootDirectory to find it. Results of folder conversion are stored in with the same directory
 structure with the root directory renamed to _VB. The original directories are unchanged.
 
-This version required at least Visual Studio 2019 version 16.2.0 Preview 3.0 to compile the code it produces uses the new Visual Basic feature _ ' Comment to preserve
-most comments and formatting.
+This version required at least Visual Studio 2019 version 16.3.0 to compile the code it produces because it uses the new Visual Basic feature _ ' Comment to preserve
+most comments and formatting. To build the converter application, Visual Studio 16.5.0 Preview 1.0 and .Net Core 3.1.
 
 Opening the resulting Visual Basic files in Visual Studio will further improve the formatting.
 
@@ -24,10 +56,13 @@ need to deselect the option. You can show or hide line numbers from the View Men
 
 Work to be done:
 Handle .DLL's from C# project file
-Create a VB project File from the original C# project file, which should be easier under Core 3.0 since
-it is almost empty.
 There are several Stop statements for debugging, and if you continue past them reasonable things will
 happen but a better translation is possible.
+
+New is this release
+It will try to create a VB project File from the original C# project file.
+
+
 The program does not deal well with bad C# code.
 https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json is added to NuGet Package Source to find
 Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpecific attributes used for testing.

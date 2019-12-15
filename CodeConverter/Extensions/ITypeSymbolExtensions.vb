@@ -131,7 +131,7 @@ Namespace CSharpToVBCodeConverter.Util
         <Extension>
         Friend Function InheritsFromOrEqualsIgnoringConstruction(type As ITypeSymbol, baseType As ITypeSymbol) As Boolean
             Dim originalBaseType As ITypeSymbol = baseType.OriginalDefinition
-            Return type.GetBaseTypesAndThis.Contains(Function(t As ITypeSymbol) SymbolEquivalenceComparer.Instance.Equals(t.OriginalDefinition, originalBaseType))
+            Return type.GetBaseTypesAndThis.Contains(Function(t As ITypeSymbol) SymbolEquivalenceComparer.s_instance.Equals(t.OriginalDefinition, originalBaseType))
         End Function
 
         <Extension()>

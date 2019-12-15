@@ -74,7 +74,7 @@ Namespace CSharpToVBCodeConverter.Util
         Public Function EnsureUniqueness(baseName As String, reservedNames As IEnumerable(Of String)) As String
             Dim names As List(Of String) = New List(Of String) From {baseName}
             Dim isFixed As List(Of Boolean) = New List(Of Boolean) From {False}
-            For Each s As SymbolTableEntry In UsedIdentifiers.Values
+            For Each s As SymbolTableEntry In s_usedIdentifiers.Values
                 names.Add(s.Name)
             Next
 

@@ -57,7 +57,7 @@ End Function
                         If classOrInterface Is Nothing Then
                             Return
                         End If
-                        Dim classOrInterfaceSymbol As ISymbol = ModelExtensions.GetSymbolInfo(mSemanticModel, classOrInterface).Symbol
+                        Dim classOrInterfaceSymbol As ISymbol = ModelExtensions.GetSymbolInfo(_mSemanticModel, classOrInterface).Symbol
                         If classOrInterfaceSymbol?.IsInterfaceType() Then
                             TypeSyntaxArray = _Type.BaseList?.Types.Select(Function(t As CSS.BaseTypeSyntax) DirectCast(t.Type.Accept(Me), VBS.TypeSyntax)).ToArray()
                             StartImplementsIndex = 0
@@ -84,8 +84,8 @@ End Function
                                 Dim classOrStructType As INamedTypeSymbol = Nothing
                                 Dim interfaceTypes As IEnumerable(Of INamedTypeSymbol) = Nothing
 
-                                If TryInitializeState(mSemanticModel, ImplementsClause, OriginalRequest.CancelToken, classOrStructDecl, classOrStructType, interfaceTypes) Then
-                                    Dim items As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))) = classOrStructType.GetAllImplementedMembers(interfaceTypes, OriginalRequest.CancelToken)
+                                If TryInitializeState(_mSemanticModel, ImplementsClause, s_originalRequest.CancelToken, classOrStructDecl, classOrStructType, interfaceTypes) Then
+                                    Dim items As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))) = classOrStructType.GetAllImplementedMembers(interfaceTypes, s_originalRequest.CancelToken)
                                     ImplementedMembers = ImplementedMembers.AddRange(items)
                                 End If
                             Next
@@ -107,8 +107,8 @@ End Function
             End Sub
 
             Private Iterator Function PatchInlineHelpers(node As CSS.BaseTypeDeclarationSyntax, IsModule As Boolean) As IEnumerable(Of VBS.StatementSyntax)
-                If inlineAssignHelperMarkers.Contains(node) Then
-                    inlineAssignHelperMarkers.Remove(node)
+                If _inlineAssignHelperMarkers.Contains(node) Then
+                    _inlineAssignHelperMarkers.Remove(node)
                     Yield TryCast(VBFactory.ParseSyntaxTree(InlineAssignHelperCode.Replace("Shared ", If(IsModule, "", "Shared "), StringComparison.InvariantCulture)).GetRoot().ChildNodes().FirstOrDefault(), VBS.StatementSyntax)
                 End If
             End Function
@@ -139,14 +139,14 @@ End Function
             End Function
 
             Public Overrides Function VisitClassDeclaration(node As CSS.ClassDeclarationSyntax) As VB.VisualBasicSyntaxNode
-                Dim saveUsedIdentifiers As Dictionary(Of String, SymbolTableEntry) = UsedIdentifiers
-                SyncLock UsedStacks
-                    UsedStacks.Push(UsedIdentifiers)
-                    UsedIdentifiers.Clear()
-                    IsModuleStack.Push(node.Modifiers.Any(CS.SyntaxKind.StaticKeyword) And node.TypeParameterList Is Nothing)
-                    If ImplementedMembers.Any Then
-                        ImplementedMembersStack.Push(ImplementedMembers)
-                        ImplementedMembers = (New List(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))).ToImmutableArray
+                Dim saveUsedIdentifiers As Dictionary(Of String, SymbolTableEntry) = s_usedIdentifiers
+                SyncLock s_usedStacks
+                    s_usedStacks.Push(s_usedIdentifiers)
+                    s_usedIdentifiers.Clear()
+                    _isModuleStack.Push(node.Modifiers.Any(CS.SyntaxKind.StaticKeyword) And node.TypeParameterList Is Nothing)
+                    If s_implementedMembers.Any Then
+                        s_implementedMembersStack.Push(s_implementedMembers)
+                        s_implementedMembers = (New List(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))).ToImmutableArray
                     End If
                 End SyncLock
                 Dim members As New List(Of VBS.StatementSyntax)
@@ -154,14 +154,14 @@ End Function
                 Dim [inherits] As New List(Of VBS.InheritsStatementSyntax)()
                 Dim [implements] As New List(Of VBS.ImplementsStatementSyntax)()
 
-                ConvertBaseList(node, [inherits], [implements], ImplementedMembers)
+                ConvertBaseList(node, [inherits], [implements], s_implementedMembers)
 
-                Dim classType As ITypeSymbol = CType(mSemanticModel.GetDeclaredSymbol(node), ITypeSymbol)
+                Dim classType As ITypeSymbol = CType(_mSemanticModel.GetDeclaredSymbol(node), ITypeSymbol)
 
                 For i As Integer = 0 To MembersLastIndex
                     Application.DoEvents()
 
-                    If OriginalRequest.CancelToken.IsCancellationRequested Then
+                    If s_originalRequest.CancelToken.IsCancellationRequested Then
                         Throw New OperationCanceledException
                     End If
                     Dim m As CSS.MemberDeclarationSyntax = node.Members(i)
@@ -229,13 +229,13 @@ End Function
                                                                                     VBFactory.List(members),
                                                                                     EndModule
                                                                                     ).WithAppendedTrailingTrivia(ConvertTrivia(node.GetTrailingTrivia))
-                    SyncLock UsedStacks
-                        IsModuleStack.Pop()
-                        If UsedStacks.Count > 0 Then
-                            UsedIdentifiers = DirectCast(UsedStacks.Pop, Dictionary(Of String, SymbolTableEntry))
+                    SyncLock s_usedStacks
+                        _isModuleStack.Pop()
+                        If s_usedStacks.Count > 0 Then
+                            s_usedIdentifiers = DirectCast(s_usedStacks.Pop, Dictionary(Of String, SymbolTableEntry))
                         End If
-                        If ImplementedMembersStack.Count > 0 Then
-                            ImplementedMembers = DirectCast(ImplementedMembersStack.Pop, ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))))
+                        If s_implementedMembersStack.Count > 0 Then
+                            s_implementedMembers = DirectCast(s_implementedMembersStack.Pop, ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))))
                         End If
                     End SyncLock
                     Return ModuleBlock
@@ -301,14 +301,14 @@ End Function
                                                                                 VBFactory.List(members),
                                                                                 EndClass
                                                                                 ).WithConvertedTrailingTriviaFrom(node)
-                    UsedIdentifiers = saveUsedIdentifiers
-                    SyncLock UsedStacks
-                        IsModuleStack.Pop()
-                        If UsedStacks.Count > 0 Then
-                            UsedIdentifiers = DirectCast(UsedStacks.Pop, Dictionary(Of String, SymbolTableEntry))
+                    s_usedIdentifiers = saveUsedIdentifiers
+                    SyncLock s_usedStacks
+                        _isModuleStack.Pop()
+                        If s_usedStacks.Count > 0 Then
+                            s_usedIdentifiers = DirectCast(s_usedStacks.Pop, Dictionary(Of String, SymbolTableEntry))
                         End If
-                        If ImplementedMembersStack.Count > 0 Then
-                            ImplementedMembers = DirectCast(ImplementedMembersStack.Pop, ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))))
+                        If s_implementedMembersStack.Count > 0 Then
+                            s_implementedMembers = DirectCast(s_implementedMembersStack.Pop, ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))))
                         End If
                     End SyncLock
                     Return ClassBlock
@@ -317,7 +317,7 @@ End Function
 
             Public Overrides Function VisitDelegateDeclaration(node As CSS.DelegateDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim Identifier As SyntaxToken = GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False)
-                Dim methodInfo As INamedTypeSymbol = TryCast(ModelExtensions.GetDeclaredSymbol(mSemanticModel, node), INamedTypeSymbol)
+                Dim methodInfo As INamedTypeSymbol = TryCast(ModelExtensions.GetDeclaredSymbol(_mSemanticModel, node), INamedTypeSymbol)
                 Dim AttributeLists As SyntaxList(Of VBS.AttributeListSyntax) = VBFactory.List(node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))
                 Dim Modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, IsModule)
                 Dim TypeParameterList As VBS.TypeParameterListSyntax = DirectCast(node.TypeParameterList?.Accept(Me), VBS.TypeParameterListSyntax)?.WithoutTrailingTrivia
@@ -447,10 +447,10 @@ End Function
             End Function
 
             Public Overrides Function VisitInterfaceDeclaration(node As CSS.InterfaceDeclarationSyntax) As VB.VisualBasicSyntaxNode
-                SyncLock UsedStacks
-                    If ImplementedMembers.Any Then
-                        ImplementedMembersStack.Push(ImplementedMembers)
-                        ImplementedMembers = (New List(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))).ToImmutableArray
+                SyncLock s_usedStacks
+                    If s_implementedMembers.Any Then
+                        s_implementedMembersStack.Push(s_implementedMembers)
+                        s_implementedMembers = (New List(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))).ToImmutableArray
                     End If
                 End SyncLock
                 Dim ListOfAttributes As SyntaxList(Of VBS.AttributeListSyntax) = VBFactory.List(node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))
@@ -500,9 +500,9 @@ End Function
             End Function
 
             Public Overrides Function VisitNamespaceDeclaration(node As CSS.NamespaceDeclarationSyntax) As VB.VisualBasicSyntaxNode
-                SyncLock UsedStacks
-                    If UsedStacks.Count > 0 Then
-                        UsedIdentifiers = DirectCast(UsedStacks.Pop, Dictionary(Of String, SymbolTableEntry))
+                SyncLock s_usedStacks
+                    If s_usedStacks.Count > 0 Then
+                        s_usedIdentifiers = DirectCast(s_usedStacks.Pop, Dictionary(Of String, SymbolTableEntry))
                     End If
                 End SyncLock
 
@@ -521,7 +521,7 @@ End Function
                 For i As Integer = 0 To LastMemberIndex
                     Application.DoEvents()
 
-                    If OriginalRequest.CancelToken.IsCancellationRequested Then
+                    If s_originalRequest.CancelToken.IsCancellationRequested Then
                         Throw New OperationCanceledException
                     End If
                     members.Add(DirectCast(node.Members(i).Accept(Me), VBS.StatementSyntax))
@@ -545,11 +545,11 @@ End Function
             Public Overrides Function VisitStructDeclaration(node As CSS.StructDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim [inherits] As List(Of VBS.InheritsStatementSyntax) = New List(Of VBS.InheritsStatementSyntax)
                 Dim [implements] As List(Of VBS.ImplementsStatementSyntax) = New List(Of VBS.ImplementsStatementSyntax)
-                If ImplementedMembers.Any Then
-                    ImplementedMembersStack.Push(ImplementedMembers)
-                    ImplementedMembers = (New List(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))).ToImmutableArray
+                If s_implementedMembers.Any Then
+                    s_implementedMembersStack.Push(s_implementedMembers)
+                    s_implementedMembers = (New List(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))).ToImmutableArray
                 End If
-                ConvertBaseList(node, [inherits], [implements], ImplementedMembers)
+                ConvertBaseList(node, [inherits], [implements], s_implementedMembers)
                 Dim Members As New List(Of VBS.StatementSyntax)
                 For Each m As CSS.MemberDeclarationSyntax In node.Members
                     Dim Item As VBS.StatementSyntax = DirectCast(m.Accept(Me), VBS.StatementSyntax)
@@ -559,9 +559,9 @@ End Function
                         Members.Add(Item)
                     End If
                 Next
-                SyncLock UsedStacks
-                    If ImplementedMembersStack.Count > 0 Then
-                        ImplementedMembers = DirectCast(ImplementedMembersStack.Pop, ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))))
+                SyncLock s_usedStacks
+                    If s_implementedMembersStack.Count > 0 Then
+                        s_implementedMembers = DirectCast(s_implementedMembersStack.Pop, ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))))
                     End If
                 End SyncLock
                 If Members.Any Then
@@ -604,10 +604,10 @@ End Function
             End Function
 
             Public Overrides Function VisitUsingDirective(node As CSS.UsingDirectiveSyntax) As VB.VisualBasicSyntaxNode
-                SyncLock UsedStacks
-                    UsedStacks.Push(UsedIdentifiers)
+                SyncLock s_usedStacks
+                    s_usedStacks.Push(s_usedIdentifiers)
                 End SyncLock
-                UsedIdentifiers.Clear()
+                s_usedIdentifiers.Clear()
                 Dim ImportsName As VBS.NameSyntax
                 Dim [Alias] As VBS.ImportAliasClauseSyntax = Nothing
                 Dim Identifier As SyntaxToken
@@ -621,8 +621,8 @@ End Function
                 Dim clause As VBS.ImportsClauseSyntax = VBFactory.SimpleImportsClause([Alias], ImportsName)
                 Dim import As VBS.ImportsStatementSyntax = VBFactory.ImportsStatement(VBFactory.SingletonSeparatedList(clause)).WithConvertedTriviaFrom(node)
                 Dim MatchNotFound As Boolean = True
-                If allImports.Count > 0 Then
-                    For Each ImportStatement As VBS.ImportsStatementSyntax In allImports
+                If _allImports.Count > 0 Then
+                    For Each ImportStatement As VBS.ImportsStatementSyntax In _allImports
                         Dim ImportsClause As VBS.SimpleImportsClauseSyntax = DirectCast(ImportStatement.ImportsClauses(0), VBS.SimpleImportsClauseSyntax)
                         If ImportsClause.Alias IsNot Nothing AndAlso ImportsClause.Alias.ToString = [Alias]?.ToString Then
                             MatchNotFound = False
@@ -636,12 +636,12 @@ End Function
                     Next
                 End If
                 If MatchNotFound Then
-                    allImports.Add(import)
+                    _allImports.Add(import)
                 End If
 
-                SyncLock UsedStacks
-                    If UsedStacks.Count > 0 Then
-                        UsedIdentifiers = DirectCast(UsedStacks.Pop, Dictionary(Of String, SymbolTableEntry))
+                SyncLock s_usedStacks
+                    If s_usedStacks.Count > 0 Then
+                        s_usedIdentifiers = DirectCast(s_usedStacks.Pop, Dictionary(Of String, SymbolTableEntry))
                     End If
                 End SyncLock
                 Return Nothing

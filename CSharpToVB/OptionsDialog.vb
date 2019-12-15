@@ -6,8 +6,8 @@ Option Infer Off
 Option Strict On
 
 Public Class OptionsDialog
-    Private SelectedColor As Color
-    Private SelectedColorName As String = "default"
+    Private _selectedColor As Color
+    Private _selectedColorName As String = "default"
 
     Private Sub Cancel_Button_Click(sender As Object, e As EventArgs) Handles Cancel_Button.Click
         DialogResult = DialogResult.Cancel
@@ -30,8 +30,8 @@ Public Class OptionsDialog
     End Sub
 
     Private Sub ItemColor_ComboBox_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ItemColor_ComboBox.SelectedIndexChanged
-        SelectedColorName = CStr(ItemColor_ComboBox.SelectedItem)
-        SelectedColor = ColorSelector.GetColorFromName(SelectedColorName)
+        _selectedColorName = CStr(ItemColor_ComboBox.SelectedItem)
+        _selectedColor = ColorSelector.GetColorFromName(_selectedColorName)
     End Sub
 
     Private Sub OK_Button_Click(sender As Object, e As EventArgs) Handles OK_Button.Click
@@ -59,7 +59,7 @@ Public Class OptionsDialog
     End Sub
 
     Private Sub UpdateColor_Button_Click(sender As Object, e As EventArgs) Handles UpdateColor_Button.Click
-        ColorDialog1.Color = SelectedColor
+        ColorDialog1.Color = _selectedColor
         If ColorDialog1.ShowDialog <> DialogResult.Cancel Then
             ColorSelector.SetColor(ItemColor_ComboBox.Items(ItemColor_ComboBox.SelectedIndex).ToString, ColorDialog1.Color)
             Application.DoEvents()

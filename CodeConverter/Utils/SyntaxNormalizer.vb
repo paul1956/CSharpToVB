@@ -27,9 +27,9 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         Private ReadOnly _usePreserveCRLF As Boolean
         Private _afterIndentation As Boolean
         Private _afterLineBreak As Boolean
-        Private _EOLLeadingTriviaCount As Integer = 0
-        Private _EOLTraiingTriviaCount As Integer = 0
-        Private _IndentationDepth As Integer
+        Private _eolLeadingTriviaCount As Integer = 0
+        Private _eolTraiingTriviaCount As Integer = 0
+        Private _indentationDepth As Integer
         Private _indentations As ArrayBuilder(Of SyntaxTrivia)
         Private _isInStructuredTrivia As Boolean
 
@@ -249,8 +249,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         ''' of these blocks (e.g. the if statement), it is a level less
         ''' </summary>
         Private Function GetIndentationDepth() As Integer
-            Debug.Assert(_IndentationDepth >= 0)
-            Return _IndentationDepth
+            Debug.Assert(_indentationDepth >= 0)
+            Return _indentationDepth
         End Function
 
         Private Function GetIndentationDepth(trivia As SyntaxTrivia) As Integer
@@ -548,9 +548,9 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Dim currentTriviaList As ArrayBuilder(Of SyntaxTrivia) = ArrayBuilder(Of SyntaxTrivia).GetInstance()
             Try
                 For i As Integer = 1 To lineBreaksBefore
-                    If _EOLLeadingTriviaCount < 2 Then
+                    If _eolLeadingTriviaCount < 2 Then
                         currentTriviaList.Add(GetEndOfLine())
-                        _EOLLeadingTriviaCount += 1
+                        _eolLeadingTriviaCount += 1
                     End If
                     _afterLineBreak = True
                     _afterIndentation = False
@@ -571,9 +571,9 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
                     End If
                     If Trivia.IsKind(SyntaxKind.EndOfLineTrivia) Then
                         If isTrailing Then
-                            If _EOLTraiingTriviaCount = 0 Then
+                            If _eolTraiingTriviaCount = 0 Then
                                 currentTriviaList.Add(GetEndOfLine())
-                                _EOLTraiingTriviaCount += 1
+                                _eolTraiingTriviaCount += 1
                             Else
                                 If currentTriviaList.Last.IsKind(SyntaxKind.CommentTrivia) AndAlso i < triviaList.Count - 1 Then
                                     currentTriviaList.Add(VB_EOLTrivia)
@@ -581,9 +581,9 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
                                 Continue For
                             End If
                         Else
-                            If _EOLLeadingTriviaCount < 1 Then
+                            If _eolLeadingTriviaCount < 1 Then
                                 currentTriviaList.Add(GetEndOfLine())
-                                _EOLLeadingTriviaCount += 1
+                                _eolLeadingTriviaCount += 1
                             Else
                                 Continue For
                             End If
@@ -619,9 +619,9 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
                         (currentTriviaList.Count > 0 AndAlso NeedsLineBreakBetween(currentTriviaList.Last(), Trivia, isTrailing))
 
                     If needsLineBreak AndAlso Not _afterLineBreak Then
-                        If _EOLTraiingTriviaCount = 0 Then
+                        If _eolTraiingTriviaCount = 0 Then
                             currentTriviaList.Add(GetEndOfLine())
-                            _EOLTraiingTriviaCount += 1
+                            _eolTraiingTriviaCount += 1
                         End If
                         _afterLineBreak = True
                         _afterIndentation = False
@@ -660,14 +660,14 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
                             End If
                             currentTriviaList.Add(Trivia)
                             ' Allow one return after this trivia
-                            _EOLTraiingTriviaCount = 0
+                            _eolTraiingTriviaCount = 0
                         End If
                     End If
 
                     If NeedsLineBreakAfter(Trivia) Then
                         If Not isTrailing Then
                             currentTriviaList.Add(GetEndOfLine())
-                            _EOLLeadingTriviaCount += 1
+                            _eolLeadingTriviaCount += 1
                         End If
                         _afterLineBreak = True
                         _afterIndentation = False
@@ -685,11 +685,11 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
                         If Not isTrailing Then
                             Throw UnexpectedValue("IsTrailing")
                         End If
-                        If _EOLTraiingTriviaCount = 0 Then
+                        If _eolTraiingTriviaCount = 0 Then
                             currentTriviaList.Add(GetEndOfLine())
                         End If
-                        _EOLLeadingTriviaCount = 0
-                        _EOLTraiingTriviaCount += 1
+                        _eolLeadingTriviaCount = 0
+                        _eolTraiingTriviaCount += 1
                         _afterLineBreak = True
                         _afterIndentation = False
                     Next i
@@ -822,7 +822,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
 
         Public Overrides Function VisitAccessorStatement(node As AccessorStatementSyntax) As SyntaxNode
             Dim result As SyntaxNode = MyBase.VisitAccessorStatement(node)
-            _IndentationDepth += 1
+            _indentationDepth += 1
 
             Return result
         End Function
@@ -851,14 +851,14 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             AddLinebreaksAfterElementsIfNeeded(node.Statements, 1, 1)
 
             Dim result As SyntaxNode = MyBase.VisitCaseBlock(node)
-            _IndentationDepth -= 1
+            _indentationDepth -= 1
 
             Return result
         End Function
 
         Public Overrides Function VisitCaseStatement(node As CaseStatementSyntax) As SyntaxNode
             Dim result As SyntaxNode = MyBase.VisitCaseStatement(node)
-            _IndentationDepth += 1
+            _indentationDepth += 1
 
             Return result
         End Function
@@ -872,9 +872,9 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         End Function
 
         Public Overrides Function VisitCatchStatement(node As CatchStatementSyntax) As SyntaxNode
-            _IndentationDepth -= 1
+            _indentationDepth -= 1
             Dim result As SyntaxNode = MyBase.VisitCatchStatement(node)
-            _IndentationDepth += 1
+            _indentationDepth += 1
 
             Return result
         End Function
@@ -887,7 +887,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
 
         Public Overrides Function VisitClassStatement(node As ClassStatementSyntax) As SyntaxNode
             Dim result As SyntaxNode = MyBase.VisitClassStatement(node)
-            _IndentationDepth += 1
+            _indentationDepth += 1
 
             Return result
         End Function
@@ -975,7 +975,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
 
         Public Overrides Function VisitDoStatement(node As DoStatementSyntax) As SyntaxNode
             Dim result As SyntaxNode = MyBase.VisitDoStatement(node)
-            _IndentationDepth += 1
+            _indentationDepth += 1
 
             Return result
         End Function
@@ -1008,17 +1008,17 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         End Function
 
         Public Overrides Function VisitElseIfStatement(node As ElseIfStatementSyntax) As SyntaxNode
-            _IndentationDepth -= 1
+            _indentationDepth -= 1
             Dim result As SyntaxNode = MyBase.VisitElseIfStatement(node)
-            _IndentationDepth += 1
+            _indentationDepth += 1
 
             Return result
         End Function
 
         Public Overrides Function VisitElseStatement(node As ElseStatementSyntax) As SyntaxNode
-            _IndentationDepth -= 1
+            _indentationDepth -= 1
             Dim result As SyntaxNode = MyBase.VisitElseStatement(node)
-            _IndentationDepth += 1
+            _indentationDepth += 1
 
             Return result
         End Function
@@ -1031,7 +1031,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         End Function
 
         Public Overrides Function VisitEndBlockStatement(node As EndBlockStatementSyntax) As SyntaxNode
-            _IndentationDepth -= 1
+            _indentationDepth -= 1
 
             Return MyBase.VisitEndBlockStatement(node)
         End Function
@@ -1069,7 +1069,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
 
         Public Overrides Function VisitEnumStatement(node As EnumStatementSyntax) As SyntaxNode
             Dim result As SyntaxNode = MyBase.VisitEnumStatement(node)
-            _IndentationDepth += 1
+            _indentationDepth += 1
 
             Return result
         End Function
@@ -1085,7 +1085,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
 
             ' only indent if this is a block
             If node.Parent IsNot Nothing AndAlso node.Parent.IsKind(SyntaxKind.EventBlock) Then
-                _IndentationDepth += 1
+                _indentationDepth += 1
             End If
 
             Return result
@@ -1113,9 +1113,9 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         End Function
 
         Public Overrides Function VisitFinallyStatement(node As FinallyStatementSyntax) As SyntaxNode
-            _IndentationDepth -= 1
+            _indentationDepth -= 1
             Dim result As SyntaxNode = MyBase.VisitFinallyStatement(node)
-            _IndentationDepth += 1
+            _indentationDepth += 1
 
             Return result
         End Function
@@ -1134,14 +1134,14 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
 
         Public Overrides Function VisitForEachStatement(node As ForEachStatementSyntax) As SyntaxNode
             Dim result As SyntaxNode = MyBase.VisitForEachStatement(node)
-            _IndentationDepth += 1
+            _indentationDepth += 1
 
             Return result
         End Function
 
         Public Overrides Function VisitForStatement(node As ForStatementSyntax) As SyntaxNode
             Dim result As SyntaxNode = MyBase.VisitForStatement(node)
-            _IndentationDepth += 1
+            _indentationDepth += 1
 
             Return result
         End Function
@@ -1155,7 +1155,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
 
         Public Overrides Function VisitIfStatement(node As IfStatementSyntax) As SyntaxNode
             Dim result As SyntaxNode = MyBase.VisitIfStatement(node)
-            _IndentationDepth += 1
+            _indentationDepth += 1
 
             Return result
         End Function
@@ -1174,23 +1174,23 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
 
         Public Overrides Function VisitInterfaceStatement(node As InterfaceStatementSyntax) As SyntaxNode
             Dim result As SyntaxNode = MyBase.VisitInterfaceStatement(node)
-            _IndentationDepth += 1
+            _indentationDepth += 1
 
             Return result
         End Function
 
         Public Overrides Function VisitLabelStatement(node As LabelStatementSyntax) As SyntaxNode
             ' labels are never indented.
-            Dim previousIndentationDepth As Integer = _IndentationDepth
-            _IndentationDepth = 0
+            Dim previousIndentationDepth As Integer = _indentationDepth
+            _indentationDepth = 0
             Dim result As SyntaxNode = MyBase.VisitLabelStatement(node)
-            _IndentationDepth = previousIndentationDepth
+            _indentationDepth = previousIndentationDepth
 
             Return result
         End Function
 
         Public Overrides Function VisitLoopStatement(node As LoopStatementSyntax) As SyntaxNode
-            _IndentationDepth -= 1
+            _indentationDepth -= 1
 
             Return MyBase.VisitLoopStatement(node)
         End Function
@@ -1211,7 +1211,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             ' only indent if this is a block
             If node.Parent IsNot Nothing AndAlso
                 node.Parent.IsKind(SyntaxKind.SubBlock, SyntaxKind.FunctionBlock) Then
-                _IndentationDepth += 1
+                _indentationDepth += 1
             End If
 
             Return result
@@ -1225,7 +1225,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
 
         Public Overrides Function VisitModuleStatement(node As ModuleStatementSyntax) As SyntaxNode
             Dim result As SyntaxNode = MyBase.VisitModuleStatement(node)
-            _IndentationDepth += 1
+            _indentationDepth += 1
 
             Return result
         End Function
@@ -1266,7 +1266,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             ' one statement per line
             AddLinebreaksAfterElementsIfNeeded(node.Statements, 1, 1)
             MarkLastStatementIfNeeded(node.Statements)
-            _IndentationDepth += 1
+            _indentationDepth += 1
             Dim result As SyntaxNode = MyBase.VisitMultiLineLambdaExpression(node)
 
             Return result
@@ -1296,7 +1296,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
 
         Public Overrides Function VisitNamespaceStatement(node As NamespaceStatementSyntax) As SyntaxNode
             Dim result As SyntaxNode = MyBase.VisitNamespaceStatement(node)
-            _IndentationDepth += 1
+            _indentationDepth += 1
 
             Return result
         End Function
@@ -1308,7 +1308,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             If variableCount = 0 Then
                 variableCount = 1
             End If
-            _IndentationDepth -= variableCount
+            _indentationDepth -= variableCount
 
             Return MyBase.VisitNextStatement(node)
         End Function
@@ -1324,7 +1324,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         <ExcludeFromCodeCoverage>
         Public Overrides Function VisitOperatorStatement(node As OperatorStatementSyntax) As SyntaxNode
             Dim result As SyntaxNode = MyBase.VisitOperatorStatement(node)
-            _IndentationDepth += 1
+            _indentationDepth += 1
 
             Return result
         End Function
@@ -1340,7 +1340,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
 
             ' only indent if this is a block
             If node.Parent IsNot Nothing AndAlso node.Parent.IsKind(SyntaxKind.PropertyBlock) Then
-                _IndentationDepth += 1
+                _indentationDepth += 1
             End If
 
             Return result
@@ -1374,7 +1374,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
 
         Public Overrides Function VisitSelectStatement(node As SelectStatementSyntax) As SyntaxNode
             Dim result As SyntaxNode = MyBase.VisitSelectStatement(node)
-            _IndentationDepth += 1
+            _indentationDepth += 1
 
             Return result
         End Function
@@ -1387,14 +1387,14 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
 
         Public Overrides Function VisitStructureStatement(node As StructureStatementSyntax) As SyntaxNode
             Dim result As SyntaxNode = MyBase.VisitStructureStatement(node)
-            _IndentationDepth += 1
+            _indentationDepth += 1
 
             Return result
         End Function
 
         Public Overrides Function VisitSubNewStatement(node As SubNewStatementSyntax) As SyntaxNode
             Dim result As SyntaxNode = MyBase.VisitSubNewStatement(node)
-            _IndentationDepth += 1
+            _indentationDepth += 1
 
             Return result
         End Function
@@ -1415,7 +1415,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
 
         Public Overrides Function VisitSyncLockStatement(node As SyncLockStatementSyntax) As SyntaxNode
             Dim result As SyntaxNode = MyBase.VisitSyncLockStatement(node)
-            _IndentationDepth += 1
+            _indentationDepth += 1
 
             Return result
         End Function
@@ -1449,7 +1449,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
                 If numLineBreaksBefore > 0 AndAlso (IsLastTokenOnLine(_previousToken) OrElse _previousToken.ContainsEOLTrivia) Then
                     numLineBreaksBefore -= 1
                 End If
-                _EOLLeadingTriviaCount = 0
+                _eolLeadingTriviaCount = 0
 
                 Dim LeadingTrivia As SyntaxTriviaList = token.LeadingTrivia
 
@@ -1478,7 +1478,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
                 Dim numLineBreaksAfter As Integer = If(_usePreserveCRLF, LineBreaksBetween(token, nextToken), If(LineBreaksBetween(token, nextToken) > 0, 1, 0))
                 Dim needsSeparatorAfter As Boolean = If(numLineBreaksAfter > 0, False, NeedsSeparator(token, nextToken))
 
-                _EOLTraiingTriviaCount = 0
+                _eolTraiingTriviaCount = 0
                 newToken = newToken.WithTrailingTrivia(
                             RewriteTrivia(token,
                                 token.TrailingTrivia,
@@ -1521,7 +1521,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
 
         Public Overrides Function VisitTryStatement(node As TryStatementSyntax) As SyntaxNode
             Dim result As SyntaxNode = MyBase.VisitTryStatement(node)
-            _IndentationDepth += 1
+            _indentationDepth += 1
 
             Return result
         End Function
@@ -1543,7 +1543,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         <ExcludeFromCodeCoverage>
         Public Overrides Function VisitUsingStatement(node As UsingStatementSyntax) As SyntaxNode
             Dim result As SyntaxNode = MyBase.VisitUsingStatement(node)
-            _IndentationDepth += 1
+            _indentationDepth += 1
 
             Return result
         End Function
@@ -1561,7 +1561,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
 
         Public Overrides Function VisitWhileStatement(node As WhileStatementSyntax) As SyntaxNode
             Dim result As SyntaxNode = MyBase.VisitWhileStatement(node)
-            _IndentationDepth += 1
+            _indentationDepth += 1
 
             Return result
         End Function
@@ -1577,7 +1577,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         <ExcludeFromCodeCoverage>
         Public Overrides Function VisitWithStatement(node As WithStatementSyntax) As SyntaxNode
             Dim result As SyntaxNode = MyBase.VisitWithStatement(node)
-            _IndentationDepth += 1
+            _indentationDepth += 1
 
             Return result
         End Function

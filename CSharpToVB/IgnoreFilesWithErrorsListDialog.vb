@@ -2,12 +2,11 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 Public Class IgnoreFilesWithErrorsList
-    Dim _FileToLoad As String = ""
-    Private ReadOnly list_string As IList(Of String) = New List(Of String)()
-
+    Private ReadOnly _list_string As IList(Of String) = New List(Of String)()
+    Private _fileToLoad As String = ""
     Public ReadOnly Property FileToLoad As String
         Get
-            Return _FileToLoad
+            Return _fileToLoad
         End Get
     End Property
 
@@ -29,7 +28,7 @@ Public Class IgnoreFilesWithErrorsList
                 My.Settings.IgnoreFileList.RemoveAt(e.RowIndex)
                 UpdateGrid()
             Case dgvIgnoredFilesList.Columns("Load").Index
-                _FileToLoad = My.Settings.IgnoreFileList(e.RowIndex)
+                _fileToLoad = My.Settings.IgnoreFileList(e.RowIndex)
             Case Else
                 Return
         End Select
@@ -41,7 +40,7 @@ Public Class IgnoreFilesWithErrorsList
             Exit Sub
         End If
         ' Initialize the button column.
-        _FileToLoad = ""
+        _fileToLoad = ""
 #Disable Warning IDE0067 ' Dispose objects before losing scope
         Dim buttonDeleteEntry As New DataGridViewButtonColumn
         With buttonDeleteEntry
@@ -76,11 +75,11 @@ Public Class IgnoreFilesWithErrorsList
     End Sub
 
     Private Sub UpdateGrid()
-        list_string.Clear()
+        _list_string.Clear()
         For Each s As String In My.Settings.IgnoreFileList
-            list_string.Add(s)
+            _list_string.Add(s)
         Next
-        dgvIgnoredFilesList.DataSource = list_string.Select(Function(x As String) New With {Key .Value = x}).ToList()
+        dgvIgnoredFilesList.DataSource = _list_string.Select(Function(x As String) New With {Key .Value = x}).ToList()
     End Sub
 
 End Class

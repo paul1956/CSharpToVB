@@ -24,7 +24,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
         Partial Friend Class NodesVisitor
             Inherits CS.CSharpSyntaxVisitor(Of VB.VisualBasicSyntaxNode)
             Private Const CompilerServices As String = "System.Runtime.CompilerServices"
-            Private ReadOnly ExtensionAttribute As VBS.AttributeSyntax = VBFactory.Attribute(Nothing, VBFactory.ParseTypeName("Extension"), VBFactory.ArgumentList())
+            Private ReadOnly _extensionAttribute As VBS.AttributeSyntax = VBFactory.Attribute(Nothing, VBFactory.ParseTypeName("Extension"), VBFactory.ArgumentList())
 
             Private Shared Function ConvertOperatorDeclarationToken(lSyntaxKind As CS.SyntaxKind) As SyntaxToken
                 Select Case lSyntaxKind
@@ -126,7 +126,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Dim endStmt As VBS.EndBlockStatementSyntax
                 Dim body As SyntaxList(Of VBS.StatementSyntax) = VBFactory.List(Of VBS.StatementSyntax)()
                 isIterator = False
-                Dim visitor As MethodBodyVisitor = New MethodBodyVisitor(mSemanticModel, Me)
+                Dim visitor As MethodBodyVisitor = New MethodBodyVisitor(_mSemanticModel, Me)
                 If node.Body IsNot Nothing Then
                     body = VBFactory.List(node.Body.Statements.SelectMany(Function(s As CSS.StatementSyntax) s.Accept(visitor)))
                     isIterator = visitor.IsInterator
@@ -257,7 +257,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                     Dim Statement As New List(Of VBS.StatementSyntax)
                     For i As Integer = 0 To node.Body.Statements.Count - 1
                         Dim s As CSS.StatementSyntax = node.Body.Statements(i)
-                        Statement.AddRange(s.Accept(New MethodBodyVisitor(mSemanticModel, Me)))
+                        Statement.AddRange(s.Accept(New MethodBodyVisitor(_mSemanticModel, Me)))
                     Next i
                     CS_CloseBraceToken = node.Body.CloseBraceToken
                     EndSubStatement = VBFactory.EndSubStatement().WithConvertedTriviaFrom(CS_CloseBraceToken)
@@ -323,7 +323,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Dim parameterList As VBS.ParameterListSyntax = DirectCast(node.ParameterList?.Accept(Me), VBS.ParameterListSyntax).
                                                                     WithRestructuredingEOLTrivia
                 Dim Modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, IsModule, TokenContext.Member)
-                Dim visitor As New MethodBodyVisitor(mSemanticModel, Me)
+                Dim visitor As New MethodBodyVisitor(_mSemanticModel, Me)
                 Modifiers.Add(If(node.ImplicitOrExplicitKeyword.ValueText = "explicit", NarrowingKeyword, WideningKeyword))
                 Dim Type As VBS.TypeSyntax = DirectCast(node.Type.Accept(Me), VBS.TypeSyntax).With({SpaceTrivia}, {SpaceTrivia})
                 Dim AsClause As VBS.SimpleAsClauseSyntax = VBFactory.SimpleAsClause(Nothing, Type)
@@ -350,7 +350,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Dim Statements As New List(Of VBS.StatementSyntax)
                 If node.Body IsNot Nothing Then
                     For Each S As CSS.StatementSyntax In node.Body.Statements
-                        Statements.AddRange(S.Accept(New MethodBodyVisitor(mSemanticModel, Me)))
+                        Statements.AddRange(S.Accept(New MethodBodyVisitor(_mSemanticModel, Me)))
                     Next
                 Else
                     Dim ExpressionBody As VB.VisualBasicSyntaxNode = node.ExpressionBody.Accept(Me)
@@ -419,7 +419,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
             End Function
 
             Public Overrides Function VisitFieldDeclaration(node As CSS.FieldDeclarationSyntax) As VB.VisualBasicSyntaxNode
-                Dim _TypeInfo As TypeInfo = ModelExtensions.GetTypeInfo(mSemanticModel, node.Declaration.Type)
+                Dim _TypeInfo As TypeInfo = ModelExtensions.GetTypeInfo(_mSemanticModel, node.Declaration.Type)
                 Dim variableOrConstOrReadonly As TokenContext = TokenContext.VariableOrConst
                 If _TypeInfo.ConvertedType IsNot Nothing AndAlso _TypeInfo.ConvertedType.TypeKind = TypeKind.Class Then
                     For i As Integer = 0 To node.Declaration.Variables.Count - 1
@@ -464,7 +464,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Else
                     modifierList(0) = modifierList(0).WithLeadingTrivia(LeadingTrivia)
                 End If
-                Dim declarators As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) = RemodelVariableDeclaration(node.Declaration, Me, mSemanticModel, IsFieldDeclaration:=True, LeadingTrivia)
+                Dim declarators As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) = RemodelVariableDeclaration(node.Declaration, Me, _mSemanticModel, IsFieldDeclaration:=True, LeadingTrivia)
                 Dim FieldDeclaration As VBS.FieldDeclarationSyntax
                 Dim modifiers As SyntaxTokenList = VBFactory.TokenList(modifierList)
                 FieldDeclaration = VBFactory.FieldDeclaration(Attributes, modifiers, declarators).WithLeadingTrivia(LeadingTrivia)
@@ -570,15 +570,15 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 If node.ReturnType IsNot Nothing AndAlso TypeOf node.ReturnType Is CSS.RefTypeSyntax Then
                     Return FlagUnsupportedStatements(node, "ref return Functions", CommentOutOriginalStatements:=True)
                 End If
-                SyncLock UsedStacks
-                    UsedStacks.Push(UsedIdentifiers)
+                SyncLock s_usedStacks
+                    s_usedStacks.Push(s_usedIdentifiers)
                 End SyncLock
 
                 Dim id As SyntaxToken = GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False)
-                Dim visitor As New MethodBodyVisitor(mSemanticModel, Me)
+                Dim visitor As New MethodBodyVisitor(_mSemanticModel, Me)
 
-                Dim methodInfo As ISymbol = ModelExtensions.GetDeclaredSymbol(mSemanticModel, node)
-                Dim _methodTypeSymbol As ISymbol = ModelExtensions.GetDeclaredSymbol(mSemanticModel, node)
+                Dim methodInfo As ISymbol = ModelExtensions.GetDeclaredSymbol(_mSemanticModel, node)
+                Dim _methodTypeSymbol As ISymbol = ModelExtensions.GetDeclaredSymbol(_mSemanticModel, node)
                 Dim ReturnVoid As Boolean? = methodInfo?.GetReturnType()?.SpecialType = SpecialType.System_Void
                 Dim containingType As INamedTypeSymbol = methodInfo?.ContainingType
                 Dim Attributes As New List(Of VBS.AttributeListSyntax)
@@ -690,12 +690,12 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                         LeadingTrivia.AddRange(Modifiers(0).LeadingTrivia)
                         Modifiers(0) = Modifiers(0).WithLeadingTrivia(SpaceTrivia)
                     End If
-                    Attributes.Insert(0, VBFactory.AttributeList(VBFactory.SingletonSeparatedList(ExtensionAttribute)).WithLeadingTrivia(LeadingTrivia))
+                    Attributes.Insert(0, VBFactory.AttributeList(VBFactory.SingletonSeparatedList(_extensionAttribute)).WithLeadingTrivia(LeadingTrivia))
                     LeadingTrivia.Clear()
                     If Not DirectCast(node.SyntaxTree, CS.CSharpSyntaxTree).HasUsingDirective(CompilerServices) Then
                         Dim ImportComilierServices As VBS.ImportsStatementSyntax = VBFactory.ImportsStatement(VBFactory.SingletonSeparatedList(Of VBS.ImportsClauseSyntax)(VBFactory.SimpleImportsClause(VBFactory.ParseName(CompilerServices)))).WithAppendedTrailingTrivia(VB_EOLTrivia)
-                        If Not allImports.ContainsName(CompilerServices) Then
-                            allImports.Add(ImportComilierServices)
+                        If Not _allImports.ContainsName(CompilerServices) Then
+                            _allImports.Add(ImportComilierServices)
                         End If
                     End If
                 End If
@@ -764,7 +764,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 If TypeParameterList IsNot Nothing Then
                     TypeParameterList = TypeParameterList.WithTrailingTrivia(SpaceTrivia)
                 End If
-                Dim ImplementsClause As VBS.ImplementsClauseSyntax = ImplementedMembers.GetImplementsClauseForMethod(CType(_methodTypeSymbol, IMethodSymbol))
+                Dim ImplementsClause As VBS.ImplementsClauseSyntax = s_implementedMembers.GetImplementsClauseForMethod(CType(_methodTypeSymbol, IMethodSymbol))
                 If id.ToString = "Dispose" AndAlso TypeOf node.Parent Is CSS.ClassDeclarationSyntax Then
                     Dim ParentClass As CSS.ClassDeclarationSyntax = DirectCast(node.Parent, CSS.ClassDeclarationSyntax)
                     If ParentClass.BaseList IsNot Nothing Then
@@ -807,9 +807,9 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                         With(FunctionStatementLeadingTrivia, FunctionStatementTrailingTrivia).
                         WithTrailingEOL.
                         RestructureAttributesAndModifiers(Attributes.Count > 0, Modifiers.Count > 0), VBS.MethodStatementSyntax)
-                    SyncLock UsedStacks
-                        If UsedStacks.Count > 0 Then
-                            UsedIdentifiers = DirectCast(UsedStacks.Pop, Dictionary(Of String, SymbolTableEntry))
+                    SyncLock s_usedStacks
+                        If s_usedStacks.Count > 0 Then
+                            s_usedIdentifiers = DirectCast(s_usedStacks.Pop, Dictionary(Of String, SymbolTableEntry))
                         End If
                     End SyncLock
                     SubOrFunctionStatement = DirectCast(PrependStatementWithMarkedStatementTrivia(node, SubOrFunctionStatement), VBS.MethodStatementSyntax)
@@ -873,7 +873,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                                             implementsClause:=ImplementsClause).
                                             With(FunctionStatementLeadingTrivia, FunctionStatementTrailingTrivia)
                 SubOrFunctionStatement = DirectCast(PrependStatementWithMarkedStatementTrivia(node, SubOrFunctionStatement), VBS.MethodStatementSyntax)
-                UsedIdentifiers = DirectCast(UsedStacks.Pop, Dictionary(Of String, SymbolTableEntry))
+                s_usedIdentifiers = DirectCast(s_usedStacks.Pop, Dictionary(Of String, SymbolTableEntry))
 
                 If block Is Nothing Then
                     Return SubOrFunctionStatement
@@ -887,7 +887,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Dim Attributes As New List(Of VBS.AttributeListSyntax)
                 Dim ReturnAttributes As SyntaxList(Of VBS.AttributeListSyntax) = Nothing
                 ConvertAndSplitAttributes(node.AttributeLists, Attributes, ReturnAttributes)
-                Dim visitor As New MethodBodyVisitor(mSemanticModel, Me)
+                Dim visitor As New MethodBodyVisitor(_mSemanticModel, Me)
                 Dim body As New SyntaxList(Of VBS.StatementSyntax)
                 If node.Body IsNot Nothing Then
                     body = VBFactory.List(node.Body.Statements.SelectMany(Function(s As CSS.StatementSyntax) s.Accept(visitor)))
@@ -955,8 +955,8 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
 
                 If node.ExplicitInterfaceSpecifier Is Nothing Then
                     Identifier = GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False)
-                    Dim PropertySymbol As ISymbol = mSemanticModel.GetDeclaredSymbol(node)
-                    ImplementsClause = ImplementedMembers.GetImplementsClauseForProperty(CType(PropertySymbol, IPropertySymbol))
+                    Dim PropertySymbol As ISymbol = _mSemanticModel.GetDeclaredSymbol(node)
+                    ImplementsClause = s_implementedMembers.GetImplementsClauseForProperty(CType(PropertySymbol, IPropertySymbol))
                 Else
                     Identifier = VBFactory.Identifier($"{IdString}_{node.Identifier.ValueText}")
                     ImplementsClause = VBFactory.ImplementsClause(interfaceMembers)

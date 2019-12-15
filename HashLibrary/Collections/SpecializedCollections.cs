@@ -13,32 +13,32 @@ namespace Roslyn.Utilities
 
         public static IEnumerable<T> EmptyEnumerable<T>()
         {
-            return Empty.List<T>.Instance;
+            return Empty.List<T>.s_instance;
         }
 
         public static ICollection<T> EmptyCollection<T>()
         {
-            return Empty.List<T>.Instance;
+            return Empty.List<T>.s_instance;
         }
 
         public static IList<T> EmptyList<T>()
         {
-            return Empty.List<T>.Instance;
+            return Empty.List<T>.s_instance;
         }
 
         public static IReadOnlyList<T> EmptyReadOnlyList<T>()
         {
-            return Empty.List<T>.Instance;
+            return Empty.List<T>.s_instance;
         }
 
         public static ISet<T> EmptySet<T>()
         {
-            return Empty.Set<T>.Instance;
+            return Empty.Set<T>.s_instance;
         }
 
         public static IReadOnlySet<T> EmptyReadOnlySet<T>()
         {
-            return Empty.Set<T>.Instance;
+            return Empty.Set<T>.s_instance;
         }
 
         public static IDictionary<TKey, TValue> EmptyDictionary<TKey, TValue>()

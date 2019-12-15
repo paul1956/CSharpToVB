@@ -56,7 +56,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 End If
                 Dim symbolInfo As SymbolInfo
                 Try
-                    symbolInfo = ModelExtensions.GetSymbolInfo(mSemanticModel, originalName)
+                    symbolInfo = ModelExtensions.GetSymbolInfo(_mSemanticModel, originalName)
                 Catch ex As OperationCanceledException
                     Throw
                 Catch ex As Exception

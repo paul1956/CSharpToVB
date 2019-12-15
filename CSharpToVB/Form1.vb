@@ -26,46 +26,34 @@ Imports Microsoft.CodeAnalysis.Emit
 Imports Microsoft.CodeAnalysis.MSBuild
 Imports Microsoft.VisualBasic.FileIO
 
-#If NETCOREAPP Then
-
 Imports VBMsgBox
-
-#End If
 
 Public Class Form1
 
-#If NETCOREAPP Then
+    Private Shared ReadOnly s_snippetFileWithPath As String = Path.Combine(SpecialDirectories.MyDocuments, "CSharpToVBLastSnippet.RTF")
 
-    <STAThread>
-    Public Shared Sub Main()
-        Application.EnableVisualStyles()
-        Application.SetCompatibleTextRenderingDefault(False)
-        Dim f As New Form1()
-        Application.Run(f)
-        f.Dispose()
-    End Sub
+    Private ReadOnly _frameworkTypeList As New Dictionary(Of String, ToolStripMenuItem)
 
-#End If
+    Private ReadOnly _frameworkVersionList As New Dictionary(Of String, (Item As ToolStripMenuItem, Parent As ToolStripMenuItem))
 
-    Private Shared ReadOnly SnippetFileWithPath As String = Path.Combine(SpecialDirectories.MyDocuments, "CSharpToVBLastSnippet.RTF")
-    Private ReadOnly FrameworkVersionList As New Dictionary(Of String, (Item As ToolStripMenuItem, Parent As ToolStripMenuItem))
-    Private ReadOnly FrameworkTypeList As New Dictionary(Of String, ToolStripMenuItem)
-    Private _CurrentBuffer As RichTextBox
+    Private _cancellationTokenSource As CancellationTokenSource
 
-    Private CTS As CancellationTokenSource
-    Private RequestToConvert As ConvertRequest
-    Private ResultOfConversion As ConversionResult
+    Private _currentBuffer As RichTextBox
 
-    Private RTFLineStart As Integer
+    Private _requestToConvert As ConvertRequest
+
+    Private _resultOfConversion As ConversionResult
+
+    Private _rtfLineStart As Integer
 
     Private Property CurrentBuffer As RichTextBox
         Get
-            Return _CurrentBuffer
+            Return _currentBuffer
         End Get
         Set(value As RichTextBox)
-            _CurrentBuffer = value
+            _currentBuffer = value
             If value IsNot Nothing Then
-                _CurrentBuffer.Focus()
+                _currentBuffer.Focus()
             End If
         End Set
     End Property
@@ -265,7 +253,7 @@ Public Class Form1
 
     Private Sub ButtonStop_Click(sender As Object, e As EventArgs) Handles ButtonStop.Click
         ButtonStop.Visible = False
-        CTS.Cancel()
+        _cancellationTokenSource.Cancel()
         Application.DoEvents()
     End Sub
 
@@ -304,7 +292,7 @@ Public Class Form1
                         Progress.UpdateProgress(range.Text.Count(CType(vbLf, Char)))
                         Application.DoEvents()
                     End If
-                    If RequestToConvert.CancelToken.IsCancellationRequested Then
+                    If _requestToConvert.CancelToken.IsCancellationRequested Then
                         Exit Sub
                     End If
                 Next range
@@ -333,27 +321,27 @@ Public Class Form1
     End Sub
 
     Private Sub Compile_Colorize(TextToCompile As String)
-        Dim CompileResult As EmitResult = CompileVisualBasicString(StringToBeCompiled:=TextToCompile, ErrorsToBeIgnored, DiagnosticSeverity.Error, ResultOfConversion)
+        Dim CompileResult As EmitResult = CompileVisualBasicString(StringToBeCompiled:=TextToCompile, ErrorsToBeIgnored, DiagnosticSeverity.Error, _resultOfConversion)
 
-        LabelErrorCount.Text = $"Number of Errors: {ResultOfConversion.GetFilteredListOfFailures().Count}"
+        LabelErrorCount.Text = $"Number of Errors: {_resultOfConversion.GetFilteredListOfFailures().Count}"
         Dim FragmentRange As IEnumerable(Of Range) = GetClassifiedRanges(TextToCompile, LanguageNames.VisualBasic)
 
         If Not CompileResult?.Success Then
-            If Not ResultOfConversion.GetFilteredListOfFailures().Any Then
-                ResultOfConversion.ResultStatus = ResultTriState.Success
+            If Not _resultOfConversion.GetFilteredListOfFailures().Any Then
+                _resultOfConversion.ResultStatus = ResultTriState.Success
                 If My.Settings.ColorizeOutput Then
-                    Colorize(FragmentRange, RichTextBoxConversionOutput, TextToCompile.SplitLines.Length, ResultOfConversion.GetFilteredListOfFailures())
+                    Colorize(FragmentRange, RichTextBoxConversionOutput, TextToCompile.SplitLines.Length, _resultOfConversion.GetFilteredListOfFailures())
                 Else
-                    RichTextBoxConversionOutput.Text = ResultOfConversion.ConvertedCode
+                    RichTextBoxConversionOutput.Text = _resultOfConversion.ConvertedCode
                 End If
             Else
-                Colorize(FragmentRange, RichTextBoxConversionOutput, TextToCompile.SplitLines.Length, ResultOfConversion.GetFilteredListOfFailures())
+                Colorize(FragmentRange, RichTextBoxConversionOutput, TextToCompile.SplitLines.Length, _resultOfConversion.GetFilteredListOfFailures())
             End If
         Else
             If My.Settings.ColorizeOutput Then
                 Colorize(FragmentRange, RichTextBoxConversionOutput, TextToCompile.SplitLines.Length)
             Else
-                RichTextBoxConversionOutput.Text = ResultOfConversion.ConvertedCode
+                RichTextBoxConversionOutput.Text = _resultOfConversion.ConvertedCode
             End If
         End If
         Application.DoEvents()
@@ -372,24 +360,24 @@ Public Class Form1
     End Sub
 
     Private Function Convert_Compile_Colorize(RequestToConvert As ConvertRequest, CSPreprocessorSymbols As List(Of String), VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)), OptionalReferences() As MetadataReference, CancelToken As CancellationToken) As Boolean
-        ResultOfConversion = ConvertInputRequest(RequestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences:=OptionalReferences, mProgressBar:=New ReportProgress(ConversionProgressBar), CancelToken:=CancelToken)
-        mnuEditSaveAs.Enabled = Me.ResultOfConversion.ResultStatus = ResultTriState.Success
-        Select Case ResultOfConversion.ResultStatus
+        _resultOfConversion = ConvertInputRequest(RequestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences:=OptionalReferences, mProgressBar:=New ReportProgress(ConversionProgressBar), CancelToken:=CancelToken)
+        mnuEditSaveAs.Enabled = Me._resultOfConversion.ResultStatus = ResultTriState.Success
+        Select Case _resultOfConversion.ResultStatus
             Case ResultTriState.Success
-                Compile_Colorize(ResultOfConversion.ConvertedCode)
-                Dim FilteredErrorCount As Integer = ResultOfConversion.GetFilteredListOfFailures().Count
+                Compile_Colorize(_resultOfConversion.ConvertedCode)
+                Dim FilteredErrorCount As Integer = _resultOfConversion.GetFilteredListOfFailures().Count
                 LabelErrorCount.Text = $"Number of Errors: {FilteredErrorCount}"
                 Return FilteredErrorCount = 0
             Case ResultTriState.Failure
-                If TypeOf ResultOfConversion.Exceptions(0) IsNot OperationCanceledException Then
+                If TypeOf _resultOfConversion.Exceptions(0) IsNot OperationCanceledException Then
                     RichTextBoxConversionOutput.SelectionColor = Color.Red
-                    RichTextBoxConversionOutput.Text = GetExceptionsAsString(ResultOfConversion.Exceptions)
+                    RichTextBoxConversionOutput.Text = GetExceptionsAsString(_resultOfConversion.Exceptions)
                 End If
             Case ResultTriState.Ignore
                 RichTextBoxConversionOutput.Text = ""
                 LabelErrorCount.Text = "File Skipped"
         End Select
-        Return ResultOfConversion.ResultStatus <> ResultTriState.Failure
+        Return _resultOfConversion.ResultStatus <> ResultTriState.Failure
     End Function
 
     ''' <summary>
@@ -483,7 +471,7 @@ Public Class Form1
                 mnuOptionsDelayBetweenConversions.SelectedIndex = 0
         End Select
 
-        mnuFileSnippetLoadLast.Enabled = File.Exists(SnippetFileWithPath)
+        mnuFileSnippetLoadLast.Enabled = File.Exists(s_snippetFileWithPath)
         mnuOptionsPauseConvertOnSuccess.Checked = My.Settings.PauseConvertOnSuccess
         mnuOptionsSkipSkipAutoGenerated.Checked = My.Settings.SkipAutoGenerated
         mnuOptionsSkipSkipBinAndObjFolders.Checked = My.Settings.SkipBinAndObjFolders
@@ -505,7 +493,7 @@ Public Class Form1
         Height = CInt(Screen.PrimaryScreen.Bounds.Height * 0.95)
 
         For Each FrameworkType As ToolStripMenuItem In FrameworkToolStripMenuItem.DropDownItems
-            FrameworkTypeList.Add(FrameworkType.Text, FrameworkType)
+            _frameworkTypeList.Add(FrameworkType.Text, FrameworkType)
             FrameworkType.Checked = False
             For Each FrameworkVersion As ToolStripMenuItem In FrameworkType.DropDownItems
                 If FrameworkVersion.Text = My.Settings.Framework Then
@@ -517,7 +505,7 @@ Public Class Form1
                     FrameworkVersion.Enabled = True
                 End If
                 AddHandler FrameworkVersion.CheckedChanged, AddressOf ToolStripMenuItem_CheckedChanged
-                FrameworkVersionList.Add(FrameworkVersion.Text, (FrameworkVersion, FrameworkType))
+                _frameworkVersionList.Add(FrameworkVersion.Text, (FrameworkVersion, FrameworkType))
             Next
         Next
         CenterToScreen()
@@ -648,11 +636,11 @@ Public Class Form1
         RichTextBoxFileList.Text = ""
         LineNumbers_For_RichTextBoxOutput.Visible = False
         ResizeRichTextBuffers()
-        If CTS IsNot Nothing Then
-            CTS.Dispose()
+        If _cancellationTokenSource IsNot Nothing Then
+            _cancellationTokenSource.Dispose()
         End If
-        CTS = New CancellationTokenSource
-        RequestToConvert = New ConvertRequest(My.Settings.SkipAutoGenerated, New ReportProgress(ConversionProgressBar), CTS.Token) With {
+        _cancellationTokenSource = New CancellationTokenSource
+        _requestToConvert = New ConvertRequest(My.Settings.SkipAutoGenerated, New ReportProgress(ConversionProgressBar), _cancellationTokenSource.Token) With {
             .SourceCode = RichTextBoxConversionInput.Text
         }
         Dim CSPreprocessorSymbols As New List(Of String) From {
@@ -661,8 +649,8 @@ Public Class Form1
         Dim VBPreprocessorSymbols As New List(Of KeyValuePair(Of String, Object)) From {
             KeyValuePair.Create(Of String, Object)(My.Settings.Framework, True)
         }
-        Convert_Compile_Colorize(RequestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences:=CSharpReferences(Assembly.Load("System.Windows.Forms").Location, Nothing).ToArray, CancelToken:=CTS.Token)
-        If RequestToConvert.CancelToken.IsCancellationRequested Then
+        Convert_Compile_Colorize(_requestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences:=CSharpReferences(Assembly.Load("System.Windows.Forms").Location, Nothing).ToArray, CancelToken:=_cancellationTokenSource.Token)
+        If _requestToConvert.CancelToken.IsCancellationRequested Then
             MsgBox($"Conversion canceled.", MsgBoxStyle.Information, Title:="C# to VB")
             ConversionProgressBar.Value = 0
         End If
@@ -696,15 +684,15 @@ Public Class Form1
             End If
             Dim LastFileNameWithPath As String = If(My.Settings.StartFolderConvertFromLastFile, My.Settings.MRU_Data.Last, "")
             Dim FilesProcessed As Long = 0L
-            CTS = New CancellationTokenSource
+            _cancellationTokenSource = New CancellationTokenSource
             If ProcessAllFiles(SourceFolderName,
                                 ProjectSavePath,
                                 LastFileNameWithPath,
                                 "cs",
                                 FilesProcessed,
-                                CTS.Token
+                                _cancellationTokenSource.Token
                                 ) Then
-                If CTS.Token.IsCancellationRequested Then
+                If _cancellationTokenSource.Token.IsCancellationRequested Then
                     MsgBox($"Conversion canceled, {FilesProcessed} files completed successfully.", Title:="C# to VB")
                 Else
                     MsgBox($"Conversion completed, {FilesProcessed} files completed successfully.", Title:="C# to VB")
@@ -767,11 +755,11 @@ Public Class Form1
             ' This path is a directory.
             Dim LastFileNameWithPath As String = If(My.Settings.StartFolderConvertFromLastFile, My.Settings.MRU_Data.Last, "")
             Dim FilesProcessed As Long = 0
-            If CTS IsNot Nothing Then
-                CTS.Dispose()
+            If _cancellationTokenSource IsNot Nothing Then
+                _cancellationTokenSource.Dispose()
             End If
-            CTS = New CancellationTokenSource
-            If ProcessAllFiles(FolderName, ProjectSavePath, LastFileNameWithPath, SourceLanguageExtension, FilesProcessed, CTS.Token) Then
+            _cancellationTokenSource = New CancellationTokenSource
+            If ProcessAllFiles(FolderName, ProjectSavePath, LastFileNameWithPath, SourceLanguageExtension, FilesProcessed, _cancellationTokenSource.Token) Then
                 MsgBox($"Conversion completed.")
             End If
         Else
@@ -834,10 +822,10 @@ Public Class Form1
                     Dim currentProject As Project = Workspace.OpenProjectAsync(.FileName).Result
                     Workspace.LoadMetadataForReferencedProjects = True
                     If currentProject.HasDocuments Then
-                        If CTS IsNot Nothing Then
-                            CTS.Dispose()
+                        If _cancellationTokenSource IsNot Nothing Then
+                            _cancellationTokenSource.Dispose()
                         End If
-                        CTS = New CancellationTokenSource
+                        _cancellationTokenSource = New CancellationTokenSource
                         Dim References() As MetadataReference = SharedReferences.CSharpReferences(Assembly.Load("System.Windows.Forms").Location, currentProject.MetadataReferences).ToArray
                         Dim xmlDoc As New XmlDocument With {
                             .PreserveWhitespace = True
@@ -863,7 +851,7 @@ Public Class Form1
                         For Each document As Document In currentProject.Documents
                             If ParseCSharpSource(document.GetTextAsync(Nothing).Result.ToString).GetRoot.SyntaxTree.IsGeneratedCode(Function(t As SyntaxTrivia) As Boolean
                                                                                                                                         Return t.IsComment OrElse t.IsRegularOrDocComment
-                                                                                                                                    End Function, CTS.Token) Then
+                                                                                                                                    End Function, _cancellationTokenSource.Token) Then
                                 TotalFilesToProcess -= 1
                                 FilesConversionProgress.Text = $"Processed {FilesProcessed: N0} of {TotalFilesToProcess:N0} Files"
                                 Application.DoEvents()
@@ -877,8 +865,8 @@ Public Class Form1
                                 Application.DoEvents()
                             End If
                             Dim TargetLanguageExtension As String = If("cs" = "cs", "vb", "cs")
-                            If Not ProcessFile(document.FilePath, ConvertSourceFileToDestinationFile(Path.GetDirectoryName(.FileName), ProjectSavePath, document), "cs", CSPreprocessorSymbols, VBPreprocessorSymbols, References, CTS.Token) _
-                                OrElse RequestToConvert.CancelToken.IsCancellationRequested Then
+                            If Not ProcessFile(document.FilePath, ConvertSourceFileToDestinationFile(Path.GetDirectoryName(.FileName), ProjectSavePath, document), "cs", CSPreprocessorSymbols, VBPreprocessorSymbols, References, _cancellationTokenSource.Token) _
+                                OrElse _requestToConvert.CancelToken.IsCancellationRequested Then
                                 Exit For
                             End If
                         Next document
@@ -893,9 +881,9 @@ Public Class Form1
 
     Private Sub mnuFileSnippetLoadLast_Click(sender As Object, e As EventArgs) Handles mnuFileSnippetLoadLast.Click
         If My.Settings.ColorizeInput Then
-            mnuConvertConvertSnippet.Enabled = 0 <> LoadInputBufferFromStream("CS", File.OpenRead(path:=SnippetFileWithPath))
+            mnuConvertConvertSnippet.Enabled = 0 <> LoadInputBufferFromStream("CS", File.OpenRead(path:=s_snippetFileWithPath))
         Else
-            RichTextBoxConversionInput.LoadFile(SnippetFileWithPath, RichTextBoxStreamType.PlainText)
+            RichTextBoxConversionInput.LoadFile(s_snippetFileWithPath, RichTextBoxStreamType.PlainText)
         End If
         mnuCompile.Enabled = True
     End Sub
@@ -904,11 +892,11 @@ Public Class Form1
         If RichTextBoxConversionInput.TextLength = 0 Then
             Exit Sub
         End If
-        RichTextBoxConversionInput.SaveFile(SnippetFileWithPath, RichTextBoxStreamType.PlainText)
+        RichTextBoxConversionInput.SaveFile(s_snippetFileWithPath, RichTextBoxStreamType.PlainText)
     End Sub
 
     Private Sub mnuFileSnippett_Click(sender As Object, e As EventArgs) Handles mnuFileSnippet.Click
-        If Not File.Exists(SnippetFileWithPath) Then
+        If Not File.Exists(s_snippetFileWithPath) Then
             Exit Sub
         End If
     End Sub
@@ -1171,11 +1159,11 @@ Public Class Form1
         Dim fsRead As FileStream = File.OpenRead(SourceFileNameWithPath)
         Dim lines As Integer = LoadInputBufferFromStream(SourceLanguageExtension, fsRead)
         If lines > 0 Then
-            RequestToConvert = New ConvertRequest(My.Settings.SkipAutoGenerated, New ReportProgress(ConversionProgressBar), CTS.Token) With {
+            _requestToConvert = New ConvertRequest(My.Settings.SkipAutoGenerated, New ReportProgress(ConversionProgressBar), _cancellationTokenSource.Token) With {
                 .SourceCode = RichTextBoxConversionInput.Text
             }
-            If Not Convert_Compile_Colorize(RequestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences:=OptionalReferences, CancelToken:=CancelToken) Then
-                If RequestToConvert.CancelToken.IsCancellationRequested Then
+            If Not Convert_Compile_Colorize(_requestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences:=OptionalReferences, CancelToken:=CancelToken) Then
+                If _requestToConvert.CancelToken.IsCancellationRequested Then
                     ConversionProgressBar.Value = 0
                     Return False
                 End If
@@ -1196,7 +1184,7 @@ Public Class Form1
                 End Select
             Else
                 If Not String.IsNullOrWhiteSpace(TargetDirectory) Then
-                    If Not RequestToConvert.CancelToken.IsCancellationRequested Then
+                    If Not _requestToConvert.CancelToken.IsCancellationRequested Then
                         Dim NewFileName As String = Path.ChangeExtension(New FileInfo(SourceFileNameWithPath).Name, If(SourceLanguageExtension = "vb", "cs", "vb"))
                         WriteTextToStream(TargetDirectory, NewFileName, RichTextBoxConversionOutput.Text)
                     Else
@@ -1245,8 +1233,8 @@ Public Class Form1
     End Sub
 
     Private Sub RichTexBoxErrorList_DoubleClick(sender As Object, e As EventArgs) Handles RichTextBoxErrorList.DoubleClick
-        If RTFLineStart > 0 AndAlso RichTextBoxConversionOutput.SelectionStart <> RTFLineStart Then
-            RichTextBoxConversionOutput.Select(RTFLineStart, 0)
+        If _rtfLineStart > 0 AndAlso RichTextBoxConversionOutput.SelectionStart <> _rtfLineStart Then
+            RichTextBoxConversionOutput.Select(_rtfLineStart, 0)
             RichTextBoxConversionOutput.ScrollToCaret()
         End If
     End Sub
@@ -1272,7 +1260,7 @@ Public Class Form1
         If ErrorLine <= 0 Then
             Exit Sub
         End If
-        RTFLineStart = RichTextBoxConversionOutput.GetFirstCharIndexFromLine(ErrorLine - 1)
+        _rtfLineStart = RichTextBoxConversionOutput.GetFirstCharIndexFromLine(ErrorLine - 1)
     End Sub
 
     Private Sub RichTextBoxConversionInput_Enter(sender As Object, e As EventArgs) Handles RichTextBoxConversionInput.Enter
@@ -1367,13 +1355,13 @@ Public Class Form1
     Private Sub ToolStripMenuItem_CheckedChanged(sender As Object, e As EventArgs)
         Dim MenuItem As ToolStripMenuItem = CType(sender, ToolStripMenuItem)
         If Not MenuItem.Checked Then Return
-        For Each kvp As KeyValuePair(Of String, (Item As ToolStripMenuItem, Parent As ToolStripMenuItem)) In FrameworkVersionList
+        For Each kvp As KeyValuePair(Of String, (Item As ToolStripMenuItem, Parent As ToolStripMenuItem)) In _frameworkVersionList
             If kvp.Key = MenuItem.Text Then
                 MenuItem.Enabled = False
                 My.Settings.Framework = MenuItem.Text
                 My.Settings.Save()
                 kvp.Value.Parent.Checked = True
-                For Each ParentItem As KeyValuePair(Of String, ToolStripMenuItem) In FrameworkTypeList
+                For Each ParentItem As KeyValuePair(Of String, ToolStripMenuItem) In _frameworkTypeList
                     If kvp.Value.Parent.Text = ParentItem.Key Then
                         ParentItem.Value.Checked = True
                     Else
@@ -1403,6 +1391,15 @@ Public Class Form1
         End If
         ' display MRU if there are any items to display...
         MRU_Update()
+    End Sub
+
+    <STAThread>
+    Public Shared Sub Main()
+        Application.EnableVisualStyles()
+        Application.SetCompatibleTextRenderingDefault(False)
+        Dim f As New Form1()
+        Application.Run(f)
+        f.Dispose()
     End Sub
 
 End Class

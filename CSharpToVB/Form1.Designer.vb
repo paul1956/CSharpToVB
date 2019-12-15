@@ -10,8 +10,8 @@ Partial Class Form1
                 If components IsNot Nothing Then
                     components.Dispose()
                 End If
-                If CTS IsNot Nothing Then
-                    CTS.Dispose()
+                If _cancellationTokenSource IsNot Nothing Then
+                    _cancellationTokenSource.Dispose()
                 End If
             End If
         Finally

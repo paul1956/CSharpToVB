@@ -14,52 +14,52 @@ Imports System.Windows.Forms
 Imports Microsoft.CodeAnalysis
 
 Public Module SharedReferences
-    Private ReadOnly _CSharpReferences As New List(Of MetadataReference)
-    Private ReadOnly _ReferencePath As New List(Of String)
-    Private ReadOnly _VisualBasicReferences As New List(Of MetadataReference)
-    Private ReadOnly FrameworkDirectory As String = Directory.GetParent(GetType(Object).Assembly.Location).FullName
+    Private ReadOnly s_cSharpReferences As New List(Of MetadataReference)
+    Private ReadOnly s_referencePath As New List(Of String)
+    Private ReadOnly s_visualBasicReferences As New List(Of MetadataReference)
+    Private ReadOnly s_frameworkDirectory As String = Directory.GetParent(GetType(Object).Assembly.Location).FullName
 
     Private Sub BuildReferenceList(WindowsFormsLocation As String, OptionalReference As IReadOnlyList(Of MetadataReference))
-        If _ReferencePath.Any Then
+        If s_referencePath.Any Then
             Return
         End If
         ' CodeAnalysisReference
         Dim Location As String = GetType(Compilation).Assembly.Location
-        AddReferences(_ReferencePath, Location)
+        AddReferences(s_referencePath, Location)
 
         'SystemReferences
-        For Each DLL_Path As String In Directory.GetFiles(FrameworkDirectory, "*.dll")
+        For Each DLL_Path As String In Directory.GetFiles(s_frameworkDirectory, "*.dll")
             If DLL_Path.EndsWith("System.EnterpriseServices.Wrapper.dll", StringComparison.InvariantCulture) Then
                 Continue For
             End If
-            AddReferences(_ReferencePath, DLL_Path)
+            AddReferences(s_referencePath, DLL_Path)
         Next
 
         ' ComponentModelEditorBrowsable
         Location = GetType(System.ComponentModel.EditorBrowsableAttribute).GetAssemblyLocation
-        AddReferences(_ReferencePath, Location)
+        AddReferences(s_referencePath, Location)
 
         ' SystemCore
         Location = GetType(Enumerable).Assembly.Location
-        AddReferences(_ReferencePath, Location)
+        AddReferences(s_referencePath, Location)
 
         ' SystemXmlLinq
         Location = GetType(XElement).Assembly.Location
-        AddReferences(_ReferencePath, Location)
+        AddReferences(s_referencePath, Location)
 
         ' VBRuntime
         Location = GetType(CompilerServices.StandardModuleAttribute).Assembly.Location
-        _VisualBasicReferences.Add(MetadataReference.CreateFromFile(Location))
+        s_visualBasicReferences.Add(MetadataReference.CreateFromFile(Location))
 
         ' Windows Forms
         If Not String.IsNullOrWhiteSpace(WindowsFormsLocation) Then
-            AddReferences(_ReferencePath, WindowsFormsLocation)
+            AddReferences(s_referencePath, WindowsFormsLocation)
         End If
 
         ' Optional References
         If OptionalReference?.Any Then
-            _VisualBasicReferences.AddRange(OptionalReference)
-            _CSharpReferences.AddRange(OptionalReference)
+            s_visualBasicReferences.AddRange(OptionalReference)
+            s_cSharpReferences.AddRange(OptionalReference)
         End If
     End Sub
 
@@ -75,10 +75,10 @@ Public Module SharedReferences
         L.Add(FileNameWithPath)
         Application.DoEvents()
         If hasMetadataOrIsAssembly.IsAssembly Then
-            _CSharpReferences.Add(MetadataReference.CreateFromFile(FileNameWithPath))
+            s_cSharpReferences.Add(MetadataReference.CreateFromFile(FileNameWithPath))
         End If
         Application.DoEvents()
-        _VisualBasicReferences.Add(MetadataReference.CreateFromFile(FileNameWithPath))
+        s_visualBasicReferences.Add(MetadataReference.CreateFromFile(FileNameWithPath))
     End Sub
 
     Private Function HasMetadataIsAssembly(sourcePath As String) As (HasMetadata As Boolean, IsAssembly As Boolean)
@@ -103,11 +103,11 @@ Public Module SharedReferences
             WindowsFormsLocation = ""
         End If
         Try
-            SyncLock _ReferencePath
-                If Not _CSharpReferences.Any Then
+            SyncLock s_referencePath
+                If Not s_cSharpReferences.Any Then
                     BuildReferenceList(WindowsFormsLocation, OptionalReference)
                 End If
-                Return _CSharpReferences.ToList
+                Return s_cSharpReferences.ToList
             End SyncLock
         Catch ex As OperationCanceledException
             Throw
@@ -122,11 +122,11 @@ Public Module SharedReferences
             If WindowsFormsLocation Is Nothing Then
                 WindowsFormsLocation = ""
             End If
-            SyncLock _ReferencePath
-                If Not _VisualBasicReferences.Any Then
+            SyncLock s_referencePath
+                If Not s_visualBasicReferences.Any Then
                     BuildReferenceList(WindowsFormsLocation, OptionalReference)
                 End If
-                Return _VisualBasicReferences.ToList
+                Return s_visualBasicReferences.ToList
             End SyncLock
         Catch ex As OperationCanceledException
             Stop

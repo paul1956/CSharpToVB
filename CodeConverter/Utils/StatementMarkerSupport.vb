@@ -19,9 +19,9 @@ Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 
 Public Module StatementMarker
-    Private ReadOnly StatementDictionary As New Dictionary(Of CS.CSharpSyntaxNode, Integer)
-    Private ReadOnly StatementSupportTupleList As New List(Of (Index As Integer, Statement As VisualBasic.VisualBasicSyntaxNode, RemoveStatement As StatementHandlingOption))
-    Private NextIndex As Integer = 0
+    Private ReadOnly s_statementDictionary As New Dictionary(Of CS.CSharpSyntaxNode, Integer)
+    Private ReadOnly s_statementSupportTupleList As New List(Of (Index As Integer, Statement As VisualBasic.VisualBasicSyntaxNode, RemoveStatement As StatementHandlingOption))
+    Private s_nextIndex As Integer = 0
 
     Public Enum StatementHandlingOption
         PrependStatement ' Perpend original statement
@@ -88,18 +88,18 @@ Public Module StatementMarker
     ''' <param name="AllowDuplicates">True if we can put do multiple replacements</param>
     <Extension>
     Friend Sub AddMarker(Node As CS.CSharpSyntaxNode, Statement As VisualBasic.VisualBasicSyntaxNode, StatementHandling As StatementHandlingOption, AllowDuplicates As Boolean)
-        If StatementDictionary.ContainsKey(Node) Then
+        If s_statementDictionary.ContainsKey(Node) Then
             If Not AllowDuplicates Then
                 Return
             End If
         Else
             ' Need to ignore duplicate declarations
-            StatementDictionary.Add(Node, NextIndex)
-            NextIndex += 1
+            s_statementDictionary.Add(Node, s_nextIndex)
+            s_nextIndex += 1
         End If
-        Dim Index As Integer = StatementDictionary(Node)
+        Dim Index As Integer = s_statementDictionary(Node)
         Dim IdenticalTrivia As Boolean = False
-        For Each t As (Index As Integer, Statement As VisualBasic.VisualBasicSyntaxNode, StatementHandlingOption As StatementHandlingOption) In StatementSupportTupleList
+        For Each t As (Index As Integer, Statement As VisualBasic.VisualBasicSyntaxNode, StatementHandlingOption As StatementHandlingOption) In s_statementSupportTupleList
             If t.Index = Index AndAlso TypeOf Statement IsNot EmptyStatementSyntax AndAlso CompareWithoutTrivia(Statement, t.Statement) AndAlso t.StatementHandlingOption = StatementHandling Then
                 Return
             End If
@@ -110,23 +110,23 @@ Public Module StatementMarker
         If IdenticalTrivia Then
             Statement = Statement.WithoutLeadingTrivia()
         End If
-        StatementSupportTupleList.Add((Index, Statement, StatementHandling))
+        s_statementSupportTupleList.Add((Index, Statement, StatementHandling))
     End Sub
 
     Friend Function AddSpecialCommentToField(node As CSS.FieldDeclarationSyntax, FieldDeclaration As FieldDeclarationSyntax) As FieldDeclarationSyntax
-        If Not StatementDictionary.ContainsKey(node) Then
+        If Not s_statementDictionary.ContainsKey(node) Then
             Return FieldDeclaration
         End If
         Dim LeadingTrivia As New List(Of SyntaxTrivia)
-        Dim Index As Integer = StatementDictionary(node)
-        For Each StatementTuple As (Index As Integer, Statement As StatementSyntax, StatementHandling As StatementHandlingOption) In StatementSupportTupleList
+        Dim Index As Integer = s_statementDictionary(node)
+        For Each StatementTuple As (Index As Integer, Statement As StatementSyntax, StatementHandling As StatementHandlingOption) In s_statementSupportTupleList
             If StatementTuple.Index = Index AndAlso StatementTuple.StatementHandling <> StatementHandlingOption.AppendEmptyStatement Then
                 LeadingTrivia.AddRange(StatementTuple.Statement.GetLeadingTrivia)
-                StatementDictionary.Remove(node)
+                s_statementDictionary.Remove(node)
             End If
         Next
-        If StatementDictionary.Count = 0 Then
-            StatementSupportTupleList.Clear()
+        If s_statementDictionary.Count = 0 Then
+            s_statementSupportTupleList.Clear()
         End If
         LeadingTrivia.AddRange(FieldDeclaration.GetLeadingTrivia)
         Return FieldDeclaration.WithLeadingTrivia(LeadingTrivia)
@@ -226,38 +226,38 @@ Public Module StatementMarker
     Friend Function PrependStatementWithMarkedStatementTrivia(node As CS.CSharpSyntaxNode, Statement As StatementSyntax) As StatementSyntax
         Dim NewNodesList As New SyntaxList(Of StatementSyntax)
         Dim RemoveStatement As Boolean = False
-        If Not StatementDictionary.ContainsKey(node) Then
+        If Not s_statementDictionary.ContainsKey(node) Then
             Return Statement
         End If
-        Dim Index As Integer = StatementDictionary(node)
+        Dim Index As Integer = s_statementDictionary(node)
 
-        For Each StatementTuple As (Index As Integer, Statement As StatementSyntax, RemoveStatement As Boolean) In StatementSupportTupleList
+        For Each StatementTuple As (Index As Integer, Statement As StatementSyntax, RemoveStatement As Boolean) In s_statementSupportTupleList
             If StatementTuple.Index = Index Then
                 NewNodesList = NewNodesList.Add(StatementTuple.Statement)
                 RemoveStatement = RemoveStatement Or StatementTuple.RemoveStatement
             End If
         Next
-        StatementDictionary.Remove(node)
-        If StatementDictionary.Count = 0 Then
-            StatementSupportTupleList.Clear()
+        s_statementDictionary.Remove(node)
+        If s_statementDictionary.Count = 0 Then
+            s_statementSupportTupleList.Clear()
         End If
         Return Statement.WithPrependedLeadingTrivia(NewNodesList(0).GetLeadingTrivia)
     End Function
 
     Public Function AddFinalTriviaToField(node As CSS.FieldDeclarationSyntax) As List(Of StatementSyntax)
         Dim StatementList As New List(Of StatementSyntax)
-        If Not StatementDictionary.ContainsKey(node) Then
+        If Not s_statementDictionary.ContainsKey(node) Then
             Return StatementList
         End If
-        Dim Index As Integer = StatementDictionary(node)
-        For Each StatementTuple As (Index As Integer, Statement As StatementSyntax, StatementHandling As StatementHandlingOption) In StatementSupportTupleList
+        Dim Index As Integer = s_statementDictionary(node)
+        For Each StatementTuple As (Index As Integer, Statement As StatementSyntax, StatementHandling As StatementHandlingOption) In s_statementSupportTupleList
             If StatementTuple.Index = Index AndAlso StatementTuple.StatementHandling = StatementHandlingOption.AppendEmptyStatement Then
                 StatementList.Add(StatementTuple.Statement)
-                StatementDictionary.Remove(node)
+                s_statementDictionary.Remove(node)
             End If
         Next
-        If StatementDictionary.Count = 0 Then
-            StatementSupportTupleList.Clear()
+        If s_statementDictionary.Count = 0 Then
+            s_statementSupportTupleList.Clear()
         End If
         Return StatementList
     End Function
@@ -277,15 +277,15 @@ Public Module StatementMarker
     End Function
 
     Public Sub ClearMarker()
-        NextIndex = 0
-        StatementDictionary.Clear()
-        StatementSupportTupleList.Clear()
+        s_nextIndex = 0
+        s_statementDictionary.Clear()
+        s_statementSupportTupleList.Clear()
     End Sub
 
     Public Function GetMarkerErrorMessage() As String
         Dim builder As New StringBuilder()
-        builder.Append($" Marker Error StatementDictionary.Count = {StatementDictionary.Count}{vbCrLf}")
-        For Each statement As CS.CSharpSyntaxNode In StatementDictionary.Keys
+        builder.Append($" Marker Error StatementDictionary.Count = {s_statementDictionary.Count}{vbCrLf}")
+        For Each statement As CS.CSharpSyntaxNode In s_statementDictionary.Keys
             builder.Append(statement.ToFullString)
         Next
         Return builder.ToString()
@@ -296,25 +296,25 @@ Public Module StatementMarker
     ''' </summary>
     ''' <returns>True if there are statements left out of translation</returns>
     Public Function HasMarkerError() As Boolean
-        If StatementDictionary.Count > 0 Then
+        If s_statementDictionary.Count > 0 Then
             Return True
         End If
         Return False
     End Function
 
     Public Function ReplaceStatementsWithMarkedStatements(node As CS.CSharpSyntaxNode, Statements As SyntaxList(Of StatementSyntax)) As SyntaxList(Of StatementSyntax)
-        If StatementDictionary.Count = 0 Then
+        If s_statementDictionary.Count = 0 Then
             Return Statements
         End If
         Dim NewNodesList As New List(Of StatementSyntax)
         Dim TrailingNodesList As New List(Of StatementSyntax)
         Dim RemoveStatement As Boolean = False
-        If Not StatementDictionary.ContainsKey(node) Then
+        If Not s_statementDictionary.ContainsKey(node) Then
             Return Statements
         End If
-        Dim Index As Integer = StatementDictionary(node)
+        Dim Index As Integer = s_statementDictionary(node)
 
-        For Each StatementTuple As (Index As Integer, Statement As StatementSyntax, StatementHandling As StatementHandlingOption) In StatementSupportTupleList
+        For Each StatementTuple As (Index As Integer, Statement As StatementSyntax, StatementHandling As StatementHandlingOption) In s_statementSupportTupleList
             If StatementTuple.Index = Index Then
                 If StatementTuple.StatementHandling = StatementHandlingOption.AppendEmptyStatement Then
                     TrailingNodesList.Add(StatementTuple.Statement)
@@ -324,9 +324,9 @@ Public Module StatementMarker
                 End If
             End If
         Next
-        StatementDictionary.Remove(node)
-        If StatementDictionary.Count = 0 Then
-            StatementSupportTupleList.Clear()
+        s_statementDictionary.Remove(node)
+        If s_statementDictionary.Count = 0 Then
+            s_statementSupportTupleList.Clear()
         End If
         If Not RemoveStatement Then
             If NewNodesList.Count > 0 Then

@@ -52,7 +52,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
             End Function
 
             Private Function GeneratePlaceholder(v As String) As String
-                Return $"__{v}{Math.Min(Threading.Interlocked.Increment(placeholder), placeholder - 1)}__"
+                Return $"__{v}{Math.Min(Threading.Interlocked.Increment(_placeholder), _placeholder - 1)}__"
             End Function
 
             Public Overrides Function VisitFromClause(node As CSS.FromClauseSyntax) As VB.VisualBasicSyntaxNode

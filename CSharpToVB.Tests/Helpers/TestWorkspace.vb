@@ -11,23 +11,10 @@ Namespace CodeConverter.Tests
     Friend Class TestWorkspace
         Inherits Workspace
 
-        Private Shared Shadows ReadOnly services As HostServices = Microsoft.CodeAnalysis.Host.Mef.MefHostServices.DefaultHost
-        ' MefHostServices.Create(new [] {
-        '				typeof(MefHostServices).Assembly,
-        '				typeof(Microsoft.CodeAnalysis.CSharp.Formatting.CSharpFormattingOptions).Assembly
-        '			});
+        Private Shared Shadows ReadOnly s_services As HostServices = Microsoft.CodeAnalysis.Host.Mef.MefHostServices.DefaultHost
 
         Public Sub New(Optional workspaceKind As String = "Test")
-            MyBase.New(services, workspaceKind)
-            '
-            '			foreach (var a in MefHostServices.DefaultAssemblies)
-            '			{
-            '				Console.WriteLine(a.FullName);
-            '			}
-        End Sub
-
-        Public Sub ChangeDocument(id As DocumentId, text As SourceText)
-            ApplyDocumentTextChanged(id, text)
+            MyBase.New(s_services, workspaceKind)
         End Sub
 
         Protected Overrides Sub ApplyDocumentTextChanged(id As DocumentId, text As SourceText)
@@ -41,6 +28,10 @@ Namespace CodeConverter.Tests
         Public Overrides Function CanApplyChange(feature As ApplyChangesKind) As Boolean
             Return True
         End Function
+
+        Public Sub ChangeDocument(id As DocumentId, text As SourceText)
+            ApplyDocumentTextChanged(id, text)
+        End Sub
 
         Public Sub Open(projectInfo As ProjectInfo)
             Dim sInfo As SolutionInfo = SolutionInfo.Create(SolutionId.CreateNewId(), VersionStamp.Create(), Nothing, {projectInfo})

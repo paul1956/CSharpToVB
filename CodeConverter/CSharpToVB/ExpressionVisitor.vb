@@ -93,7 +93,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 End If
 
                 Dim header As LambdaHeaderSyntax
-                Dim symbol As IMethodSymbol = TryCast(ModelExtensions.GetSymbolInfo(mSemanticModel, node).Symbol, IMethodSymbol)
+                Dim symbol As IMethodSymbol = TryCast(ModelExtensions.GetSymbolInfo(_mSemanticModel, node).Symbol, IMethodSymbol)
                 Dim Modifiers As List(Of SyntaxToken) = ConvertModifiers(CS_Modifiers, IsModule, TokenContext.Local)
                 Dim EndSubOrFunctionStatement As EndBlockStatementSyntax
                 Dim parameterList As ParameterListSyntax = VBFactory.ParameterList(VBFactory.SeparatedList(NodesList, Separators))
@@ -144,7 +144,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                             Select Case MemberAccessExpression.Expression.Kind
                                 Case VB.SyntaxKind.ObjectCreationExpression, VB.SyntaxKind.SimpleMemberAccessExpression
                                     EndBlock = VBFactory.EndBlockStatement(VB.SyntaxKind.EndSubStatement, SubKeyword)
-                                    Dim UniqueName As String = MethodBodyVisitor.GetUniqueVariableNameInScope(node, "tempVar", mSemanticModel)
+                                    Dim UniqueName As String = MethodBodyVisitor.GetUniqueVariableNameInScope(node, "tempVar", _mSemanticModel)
                                     Dim UniqueIdentifier As IdentifierNameSyntax = VBFactory.IdentifierName(VBFactory.Identifier(UniqueName))
                                     Dim Names As SeparatedSyntaxList(Of ModifiedIdentifierSyntax) = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(UniqueName))
                                     Dim DimStatement As LocalDeclarationStatementSyntax
@@ -181,7 +181,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 End If
 
                 ' TypeOf block Is SyntaxList(Of CSS.StatementSyntax)
-                Statements = Statements.AddRange(VBFactory.List(DirectCast(block, SyntaxList(Of CSS.StatementSyntax)).SelectMany(Function(s As CSS.StatementSyntax) s.Accept(New MethodBodyVisitor(mSemanticModel, Me)))))
+                Statements = Statements.AddRange(VBFactory.List(DirectCast(block, SyntaxList(Of CSS.StatementSyntax)).SelectMany(Function(s As CSS.StatementSyntax) s.Accept(New MethodBodyVisitor(_mSemanticModel, Me)))))
                 Dim expression As ExpressionSyntax = Nothing
                 If Statements.Count = 1 AndAlso UnpackExpressionFromStatement(Statements(0), expression) Then
                     Dim lSyntaxKind As VB.SyntaxKind = If(IsFunction, VB.SyntaxKind.SingleLineFunctionLambdaExpression, VB.SyntaxKind.SingleLineSubLambdaExpression)
@@ -217,8 +217,8 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Dim LeftNodeTypeInfo As TypeInfo
                 Dim RightNodeTypeInfo As TypeInfo
                 Try
-                    LeftNodeTypeInfo = ModelExtensions.GetTypeInfo(mSemanticModel, node.Left)
-                    RightNodeTypeInfo = ModelExtensions.GetTypeInfo(mSemanticModel, node.Right)
+                    LeftNodeTypeInfo = ModelExtensions.GetTypeInfo(_mSemanticModel, node.Left)
+                    RightNodeTypeInfo = ModelExtensions.GetTypeInfo(_mSemanticModel, node.Right)
                 Catch ex As OperationCanceledException
                     Throw
                 Catch ex As Exception
@@ -239,7 +239,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                         EndsWith("tostring", StringComparison.InvariantCultureIgnoreCase) Then
                     Return True
                 End If
-                Dim _Typeinfo As TypeInfo = ModelExtensions.GetTypeInfo(mSemanticModel, Node)
+                Dim _Typeinfo As TypeInfo = ModelExtensions.GetTypeInfo(_mSemanticModel, Node)
                 If _Typeinfo.Type?.ToString = "string" Then
                     Return True
                 End If
@@ -309,11 +309,11 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
 
             Private Sub MarkPatchInlineAssignHelper(node As CS.CSharpSyntaxNode)
                 Dim parentDefinition As CSS.BaseTypeDeclarationSyntax = node.AncestorsAndSelf().OfType(Of CSS.BaseTypeDeclarationSyntax)().FirstOrDefault()
-                inlineAssignHelperMarkers.Add(parentDefinition)
+                _inlineAssignHelperMarkers.Add(parentDefinition)
             End Sub
 
             Private Function ReduceArrayUpperBoundExpression(expr As CSS.ExpressionSyntax) As ExpressionSyntax
-                Dim constant As [Optional](Of Object) = mSemanticModel.GetConstantValue(expr)
+                Dim constant As [Optional](Of Object) = _mSemanticModel.GetConstantValue(expr)
                 If constant.HasValue AndAlso TypeOf constant.Value Is Integer Then
                     Return VBFactory.NumericLiteralExpression(VBFactory.Literal(CInt(constant.Value) - 1))
                 End If
@@ -723,7 +723,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
 
             Public Overrides Function VisitAssignmentExpression(node As CSS.AssignmentExpressionSyntax) As VB.VisualBasicSyntaxNode
                 If TypeOf node.Parent Is CSS.ExpressionStatementSyntax OrElse TypeOf node.Parent Is CSS.ArrowExpressionClauseSyntax Then
-                    Dim RightTypeInfo As TypeInfo = ModelExtensions.GetTypeInfo(mSemanticModel, node.Right)
+                    Dim RightTypeInfo As TypeInfo = ModelExtensions.GetTypeInfo(_mSemanticModel, node.Right)
                     Dim IsDelegate As Boolean
                     If RightTypeInfo.ConvertedType IsNot Nothing Then
                         IsDelegate = RightTypeInfo.ConvertedType.IsDelegateType
@@ -758,7 +758,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                         Dim StatementList As New SyntaxList(Of StatementSyntax)
                         Dim VariableNames As New List(Of String)
                         If node.Left.IsKind(CS.SyntaxKind.DeclarationExpression) Then
-                            TupleName = MethodBodyVisitor.GetUniqueVariableNameInScope(node, "TupleTempVar", mSemanticModel)
+                            TupleName = MethodBodyVisitor.GetUniqueVariableNameInScope(node, "TupleTempVar", _mSemanticModel)
                             Dim NodeLeft As CSS.DeclarationExpressionSyntax = DirectCast(node.Left, CSS.DeclarationExpressionSyntax)
                             Dim Designation As CSS.ParenthesizedVariableDesignationSyntax = DirectCast(NodeLeft.Designation, CSS.ParenthesizedVariableDesignationSyntax)
                             For i As Integer = 0 To Designation.Variables.Count - 1
@@ -803,7 +803,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                             Dim LeftTupleNode As TupleExpressionSyntax = DirectCast(node.Left.Accept(Me).WithConvertedTriviaFrom(node.Left), TupleExpressionSyntax)
 
                             VariableNames = New List(Of String)
-                            TupleName = MethodBodyVisitor.GetUniqueVariableNameInScope(node, "TupleTempVar", mSemanticModel)
+                            TupleName = MethodBodyVisitor.GetUniqueVariableNameInScope(node, "TupleTempVar", _mSemanticModel)
                             For Each Argument As ArgumentSyntax In LeftTupleNode.Arguments
                                 VariableNames.Add(Argument.ToString)
                             Next
@@ -1225,13 +1225,13 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Dim CTypeExpressionSyntax As VB.VisualBasicSyntaxNode
                 Dim NewTrailingTrivia As New List(Of SyntaxTrivia)
                 Try
-                    Dim type As ITypeSymbol = ModelExtensions.GetTypeInfo(mSemanticModel, node.Type).Type
+                    Dim type As ITypeSymbol = ModelExtensions.GetTypeInfo(_mSemanticModel, node.Type).Type
                     Dim Expression As ExpressionSyntax = DirectCast(node.Expression.Accept(Me), ExpressionSyntax)
                     NewTrailingTrivia.AddRange(Expression.GetTrailingTrivia)
                     NewTrailingTrivia.AddRange(ConvertTrivia(node.GetTrailingTrivia))
                     Expression = Expression.WithoutTrivia
 
-                    Dim ExpressionTypeStr As String = ModelExtensions.GetTypeInfo(mSemanticModel, node.Expression).Type?.ToString
+                    Dim ExpressionTypeStr As String = ModelExtensions.GetTypeInfo(_mSemanticModel, node.Expression).Type?.ToString
                     Select Case type.SpecialType
                         Case SpecialType.System_Object
                             CTypeExpressionSyntax = VBFactory.PredefinedCastExpression(CObjKeyword, Expression)
@@ -1521,7 +1521,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                     End If
                 ElseIf node.Expression.IsKind(CS.SyntaxKind.ObjectCreationExpression) Then
                     expression = DirectCast(node.Expression.Accept(Me), ExpressionSyntax)
-                    Dim UniqueName As String = MethodBodyVisitor.GetUniqueVariableNameInScope(node, "tempVar", mSemanticModel)
+                    Dim UniqueName As String = MethodBodyVisitor.GetUniqueVariableNameInScope(node, "tempVar", _mSemanticModel)
                     Dim UniqueIdentifier As IdentifierNameSyntax = VBFactory.IdentifierName(VBFactory.Identifier(UniqueName))
                     Dim Names As SeparatedSyntaxList(Of ModifiedIdentifierSyntax) = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(UniqueName))
 
@@ -1604,17 +1604,17 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                     Dim ReportProgress As Boolean = ExpressionLastIndex > 500
 
                     If ReportProgress Then
-                        OriginalRequest.ProgressBar?.SetTotalItems(ExpressionLastIndex)
+                        s_originalRequest.ProgressBar?.SetTotalItems(ExpressionLastIndex)
                     End If
                     ' Figuring out this without using Accept is complicated below is safe but not fast
                     Dim ItemIsField As Boolean = node.Expressions.Any AndAlso TypeOf node.Expressions(0).Accept(Me) Is FieldInitializerSyntax
                     For i As Integer = 0 To ExpressionLastIndex
                         If ReportProgress Then
-                            OriginalRequest.ProgressBar?.UpdateProgress(1)
+                            s_originalRequest.ProgressBar?.UpdateProgress(1)
                         End If
                         Application.DoEvents()
 
-                        If OriginalRequest.CancelToken.IsCancellationRequested Then
+                        If s_originalRequest.CancelToken.IsCancellationRequested Then
                             Exit For
                         End If
                         Dim Item As VB.VisualBasicSyntaxNode = node.Expressions(i).Accept(Me)
@@ -1937,7 +1937,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                                 Stop
                             End If
                         Case CS.SyntaxKind.SimpleAssignmentExpression
-                            Dim LeftNodeTypeInfo As TypeInfo = ModelExtensions.GetTypeInfo(mSemanticModel, DirectCast(node.Parent, CSS.AssignmentExpressionSyntax).Left)
+                            Dim LeftNodeTypeInfo As TypeInfo = ModelExtensions.GetTypeInfo(_mSemanticModel, DirectCast(node.Parent, CSS.AssignmentExpressionSyntax).Left)
                             If LeftNodeTypeInfo.Type Is Nothing OrElse LeftNodeTypeInfo.Type.IsErrorType Then
                                 Return NothingExpression
                             End If
@@ -1964,7 +1964,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                                             CType(VBFactory.CTypeExpression(NothingExpression, ConvertToType(LeftNodeTypeInfo.Type.Name)), ExpressionSyntax))
                             End If
                         Case CS.SyntaxKind.ConditionalExpression
-                            Dim LeftNodeTypeInfo As TypeInfo = ModelExtensions.GetTypeInfo(mSemanticModel, DirectCast(node.Parent, CSS.ConditionalExpressionSyntax).WhenTrue)
+                            Dim LeftNodeTypeInfo As TypeInfo = ModelExtensions.GetTypeInfo(_mSemanticModel, DirectCast(node.Parent, CSS.ConditionalExpressionSyntax).WhenTrue)
                             If LeftNodeTypeInfo.Type Is Nothing OrElse LeftNodeTypeInfo.Type.IsErrorType Then
                                 Return NothingExpression
                             End If
@@ -2014,7 +2014,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Dim Expression As ExpressionSyntax = DirectCast(node.Expression.Accept(Me), ExpressionSyntax).WithConvertedTriviaFrom(node.Expression)
 
                 If TypeOf Expression Is NewExpressionSyntax AndAlso Not TypeOf Expression Is ArrayCreationExpressionSyntax Then
-                    Dim UniqueName As String = MethodBodyVisitor.GetUniqueVariableNameInScope(node, "tempVar", mSemanticModel)
+                    Dim UniqueName As String = MethodBodyVisitor.GetUniqueVariableNameInScope(node, "tempVar", _mSemanticModel)
                     Dim UniqueIdentifier As IdentifierNameSyntax = VBFactory.IdentifierName(VBFactory.Identifier(UniqueName))
                     Dim Names As SeparatedSyntaxList(Of ModifiedIdentifierSyntax) = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(UniqueName))
                     Dim AsClause As AsClauseSyntax = VBFactory.AsNewClause(DirectCast(Expression.With({SpaceTrivia}, {SpaceTrivia}), NewExpressionSyntax))
@@ -2024,7 +2024,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                     StatementWithIssues.AddMarker(DimStatement.WithTrailingEOL, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
                     Expression = UniqueIdentifier.WithLeadingTrivia(Expression.GetLeadingTrivia.Last).WithTrailingTrivia(Expression.GetTrailingTrivia)
                 ElseIf TypeOf Expression Is CollectionInitializerSyntax Then
-                    Dim UniqueName As String = MethodBodyVisitor.GetUniqueVariableNameInScope(node, "tempVar", mSemanticModel)
+                    Dim UniqueName As String = MethodBodyVisitor.GetUniqueVariableNameInScope(node, "tempVar", _mSemanticModel)
                     Dim UniqueIdentifier As IdentifierNameSyntax = VBFactory.IdentifierName(VBFactory.Identifier(UniqueName))
                     Dim Names As SeparatedSyntaxList(Of ModifiedIdentifierSyntax) = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(UniqueName))
                     Dim Initializer As EqualsValueSyntax = VBFactory.EqualsValue(Expression)
@@ -2165,7 +2165,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                         If node.Expression.IsKind(CS.SyntaxKind.AddExpression) Then
                             Return VBFactory.ParenthesizedExpression(OpenParenToken.WithConvertedTriviaFrom(node.OpenParenToken), Expression, CloseParenToken.WithConvertedTriviaFrom(node.CloseParenToken))
                         End If
-                        Dim UniqueName As String = MethodBodyVisitor.GetUniqueVariableNameInScope(node, "tempVar", mSemanticModel)
+                        Dim UniqueName As String = MethodBodyVisitor.GetUniqueVariableNameInScope(node, "tempVar", _mSemanticModel)
                         Dim Names As SeparatedSyntaxList(Of ModifiedIdentifierSyntax) = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(UniqueName))
                         Dim UniqueIdentifier As IdentifierNameSyntax = VBFactory.IdentifierName(VBFactory.Identifier(UniqueName))
                         If TypeOf Expression Is TernaryConditionalExpressionSyntax Then
@@ -2228,7 +2228,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                         StatementWithIssue.AddMarker(DeclarationToBeAdded, StatementHandlingOption.PrependStatement, AllowDuplicates:=False)
                         Return UniqueIdentifier
                     ElseIf TypeOf node.Parent Is CSS.ConditionalAccessExpressionSyntax Then
-                        Dim UniqueName As String = MethodBodyVisitor.GetUniqueVariableNameInScope(node, "tempVar", mSemanticModel)
+                        Dim UniqueName As String = MethodBodyVisitor.GetUniqueVariableNameInScope(node, "tempVar", _mSemanticModel)
                         Dim Names As SeparatedSyntaxList(Of ModifiedIdentifierSyntax) = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(UniqueName))
                         VariableDeclaration = VBFactory.VariableDeclarator(Names, asClause:=Nothing, Initializer)
                         DeclarationToBeAdded = VBFactory.LocalDeclarationStatement(
