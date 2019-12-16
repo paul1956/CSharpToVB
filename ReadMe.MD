@@ -5,7 +5,7 @@ products:
 - dotnet-core
 - windows
 page_type: Code Converter
-name: ".NET Core WinForms Sudoku (Visual Basic)"
+name: "CSharpToVB (Visual Basic)"
 description: "C# to VB Converter"
 ---
 # C# to VB.Net Converter
