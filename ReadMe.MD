@@ -66,6 +66,8 @@ It will try to create a VB project File from the original C# project file.
 The program does not deal well with bad C# code.
 https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json is added to NuGet Package Source to find
 Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpecific attributes used for testing.
+
+## Code Coverage
 ```
 +------------------+--------+--------+--------+
 | Module           | Line   | Branch | Method |
