@@ -52,7 +52,7 @@ Public Module StatementMarker
         If Not String.IsNullOrWhiteSpace(LeadingComment) Then
             Dim LeadingCommentLines() As String = LeadingComment.SplitLines
             For Each Line As String In LeadingCommentLines
-                NewTrivia = NewTrivia.Add(VBFactory.CommentTrivia($"' {Line}"))
+                NewTrivia = NewTrivia.Add(VBFactory.CommentTrivia($"' {Line.Trim}"))
                 NewTrivia = NewTrivia.Add(VB_EOLTrivia)
             Next
         End If
@@ -60,7 +60,7 @@ Public Module StatementMarker
         For Each chr As String In FullString
             If chr.IsNewLine Then
                 If sb.Length > 0 Then
-                    NewTrivia = NewTrivia.Add(VBFactory.CommentTrivia($"' {sb.ToString}"))
+                    NewTrivia = NewTrivia.Add(VBFactory.CommentTrivia($"' {sb.ToString.Trim}"))
                     NewTrivia = NewTrivia.Add(VB_EOLTrivia)
                     sb.Clear()
                 End If
