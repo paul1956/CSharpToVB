@@ -741,7 +741,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
             Public Overrides Function VisitCheckedStatement(node As CSS.CheckedStatementSyntax) As SyntaxList(Of VBS.StatementSyntax)
                 Dim OpenBraceTrailingTrivia As New List(Of SyntaxTrivia)
                 Dim ClosingBraceLeadingTrivia As New List(Of SyntaxTrivia)
-                If node.Keyword.ValueText = "checked" Then
+                If node.Keyword.IsKind(CS.SyntaxKind.CheckedKeyword) Then
                     Return WrapInComment(ConvertBlock(node.Block, OpenBraceTrailingTrivia, ClosingBraceLeadingTrivia), node, "Visual Basic Default Is checked math, check that this works for you!")
                 End If
                 Return WrapInComment(ConvertBlock(node.Block, OpenBraceTrailingTrivia, ClosingBraceLeadingTrivia), node, "Visual Basic does Not support unchecked statements!")

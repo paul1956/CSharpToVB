@@ -269,6 +269,7 @@ Public Module StatementMarker
         }
         If NodeWithIssue IsNot Nothing Then
             LeadingTrivia.Add(VBFactory.CommentTrivia($"' Original Statement:"))
+            LeadingTrivia.Add(VB_EOLTrivia)
             LeadingTrivia.AddRange(ConvertSourceTextToTriviaList(NodeWithIssue.ToFullString))
         End If
         LeadingTrivia.Add(VBFactory.CommentTrivia($"' An attempt was made to correctly port the code, check the code below for correctness"))

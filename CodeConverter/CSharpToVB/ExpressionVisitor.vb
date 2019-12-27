@@ -1320,12 +1320,13 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
             End Function
 
             Public Overrides Function VisitCheckedExpression(node As CSS.CheckedExpressionSyntax) As VB.VisualBasicSyntaxNode
-                Dim Unchecked As Boolean = node.Keyword.ValueText <> "checked"
-                Dim msg As String = If(Unchecked, "VB has no direct equivalent to C# unchecked:", "VB default math is equivalent to C# checked:")
-                Dim StatementWithIssue As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
-                Dim LeadingTrivia As SyntaxTriviaList = CheckCorrectnessLeadingTrivia(StatementWithIssue, msg)
-                ' Only notify once on one line TODO Merge the comments
-                StatementWithIssue.AddMarker(VBFactory.EmptyStatement.WithLeadingTrivia(LeadingTrivia), StatementHandlingOption.PrependStatement, AllowDuplicates:=False)
+                Dim Unchecked As Boolean = node.Keyword.IsKind(CS.SyntaxKind.UncheckedKeyword)
+                If Unchecked Then
+                    Dim StatementWithIssue As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
+                    Dim LeadingTrivia As SyntaxTriviaList = CheckCorrectnessLeadingTrivia(StatementWithIssue, "VB has no direct equivalent to C# unchecked")
+                    ' Only notify once on one line TODO Merge the comments
+                    StatementWithIssue.AddMarker(VBFactory.EmptyStatement.WithLeadingTrivia(LeadingTrivia), StatementHandlingOption.PrependStatement, AllowDuplicates:=False)
+                End If
 
                 Dim Expression As ExpressionSyntax = DirectCast(node.Expression.Accept(Me), ExpressionSyntax)
                 If TypeOf Expression Is PredefinedCastExpressionSyntax Then
