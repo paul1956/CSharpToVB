@@ -17,7 +17,7 @@
     <RepositoryUrl>https://github.com/paul1956/CSharpToVB</RepositoryUrl>
     <Description>Convert C# to VB</Description>
     <RepositoryType>GitHub</RepositoryType>
-    <ApplicationIcon>PureVisualBasicPackage.ico</ApplicationIcon>
+    <ApplicationIcon>Icons\CStoVB.ico</ApplicationIcon>
     <OptionInfer>Off</OptionInfer>
     <OptionStrict>On</OptionStrict>
     <Version>1.0.1</Version>
@@ -59,7 +59,6 @@
     <PackageReference Include="NuGet.Frameworks" Version="5.4.0" />
     <PackageReference Include="PInvoke.Windows.Core" Version="0.6.6" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\CodeConverter\CodeConverter.vbproj" />
   </ItemGroup>
@@ -77,6 +76,10 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Icons\" />
   </ItemGroup>
 
 </Project>
