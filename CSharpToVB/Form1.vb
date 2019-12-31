@@ -1405,13 +1405,4 @@ Public Class Form1
         MRU_Update()
     End Sub
 
-    '<STAThread>
-    'Public Shared Sub Main()
-    '    Application.EnableVisualStyles()
-    '    Application.SetCompatibleTextRenderingDefault(False)
-    '    Dim f As New Form1()
-    '    Application.Run(f)
-    '    f.Dispose()
-    'End Sub
-
 End Class
