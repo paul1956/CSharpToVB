@@ -40,6 +40,8 @@ Public Class Form1
 
     Private _currentBuffer As RichTextBox
 
+    Private _inColorize As Boolean
+
     Private _requestToConvert As ConvertRequest
 
     Private _resultOfConversion As ConversionResult
@@ -271,6 +273,11 @@ Public Class Form1
     End Sub
 
     Private Sub Colorize(FragmentRange As IEnumerable(Of Range), ConversionBuffer As RichTextBox, Lines As Integer, Optional failures As IEnumerable(Of Diagnostic) = Nothing)
+        If _inColorize Then
+            Exit Sub
+        End If
+        _inColorize = True
+        ConversionBuffer.Visible = False
         Try ' Prevent crash when exiting
             If failures IsNot Nothing Then
                 For Each dia As Diagnostic In failures
@@ -292,7 +299,7 @@ Public Class Form1
                         Progress.UpdateProgress(range.Text.Count(CType(vbLf, Char)))
                         Application.DoEvents()
                     End If
-                    If _requestToConvert.CancelToken.IsCancellationRequested Then
+                    If _requestToConvert?.CancelToken.IsCancellationRequested Then
                         Exit Sub
                     End If
                 Next range
@@ -317,6 +324,8 @@ Public Class Form1
         Catch ex As Exception
             Stop
         End Try
+        ConversionBuffer.Visible = True
+        _inColorize = False
         ConversionProgressBar.Value = 0
     End Sub
 
@@ -1276,6 +1285,9 @@ Public Class Form1
         mnuFileSnippetSave.Enabled = InputBufferInUse
         mnuConvertConvertSnippet.Enabled = InputBufferInUse
         mnuConvertConvertFolder.Enabled = InputBufferInUse
+        If mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
+            Colorize(GetClassifiedRanges(SourceCode:=RichTextBoxConversionInput.Text, LanguageNames.CSharp), ConversionBuffer:=RichTextBoxConversionInput, Lines:=RichTextBoxConversionInput.Lines.Length)
+        End If
     End Sub
 
     Private Sub RichTextBoxConversionOutput_HorizScrollBarRightClicked(sender As Object, loc As Point) Handles RichTextBoxConversionOutput.HorizScrollBarRightClicked
@@ -1393,13 +1405,13 @@ Public Class Form1
         MRU_Update()
     End Sub
 
-    <STAThread>
-    Public Shared Sub Main()
-        Application.EnableVisualStyles()
-        Application.SetCompatibleTextRenderingDefault(False)
-        Dim f As New Form1()
-        Application.Run(f)
-        f.Dispose()
-    End Sub
+    '<STAThread>
+    'Public Shared Sub Main()
+    '    Application.EnableVisualStyles()
+    '    Application.SetCompatibleTextRenderingDefault(False)
+    '    Dim f As New Form1()
+    '    Application.Run(f)
+    '    f.Dispose()
+    'End Sub
 
 End Class

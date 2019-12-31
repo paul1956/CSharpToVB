@@ -56,9 +56,7 @@ namespace HashLibrary
                 }
 
                 // Should end up with a constrained virtual call to object.GetHashCode (i.e. avoid boxing where possible).
-#pragma warning disable RECS0017 // Possible compare of value type with 'null'
                 if (value != null)
-#pragma warning restore RECS0017 // Possible compare of value type with 'null'
                 {
                     hashCode = Combine(value.GetHashCode(), hashCode);
                 }
@@ -82,9 +80,7 @@ namespace HashLibrary
                 T value = values[i];
 
                 // Should end up with a constrained virtual call to object.GetHashCode (i.e. avoid boxing where possible).
-#pragma warning disable RECS0017 // Possible compare of value type with 'null'
                 if (value != null)
-#pragma warning restore RECS0017 // Possible compare of value type with 'null'
                 {
                     hashCode = Combine(value.GetHashCode(), hashCode);
                 }
@@ -110,9 +106,7 @@ namespace HashLibrary
                 }
 
                 // Should end up with a constrained virtual call to object.GetHashCode (i.e. avoid boxing where possible).
-#pragma warning disable RECS0017 // Possible compare of value type with 'null'
                 if (value != null)
-#pragma warning restore RECS0017 // Possible compare of value type with 'null'
                 {
                     hashCode = Combine(value.GetHashCode(), hashCode);
                 }
@@ -222,7 +216,7 @@ namespace HashLibrary
         }
 
         /// <summary>
-        /// Compute the hashcode of a sub-string using FNV-1a
+        /// Compute the hash-code of a sub-string using FNV-1a
         /// See http://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function
         /// Note: FNV-1a was developed and tuned for 8-bit sequences. We're using it here
         /// for 16-bit Unicode chars on the understanding that the majority of chars will
@@ -246,25 +240,8 @@ namespace HashLibrary
             return hashCode;
         }
 
-#if WORKSPACE
-
-        public static int GetCaseInsensitiveFNVHashCode(string text, int start, int length)
-        {
-            int hashCode = Hash.FnvOffsetBias;
-            int end = start + length;
-
-            for (int i = start; i < end; i++)
-            {
-                hashCode = unchecked((hashCode ^ CaseInsensitiveComparison.ToLower(text[i])) * Hash.FnvPrime);
-            }
-
-            return hashCode;
-        }
-
-#endif
-
         /// <summary>
-        /// Compute the hashcode of a sub-string using FNV-1a
+        /// Compute the hash-code of a sub-string using FNV-1a
         /// See http://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function
         /// </summary>
         /// <param name="text">The input string</param>
@@ -276,7 +253,7 @@ namespace HashLibrary
         }
 
         /// <summary>
-        /// Compute the hashcode of a string using FNV-1a
+        /// Compute the hash-code of a string using FNV-1a
         /// See http://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function
         /// </summary>
         /// <param name="text">The input string</param>
@@ -287,7 +264,7 @@ namespace HashLibrary
         }
 
         /// <summary>
-        /// Compute the hashcode of a string using FNV-1a
+        /// Compute the hash-code of a string using FNV-1a
         /// See http://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function
         /// </summary>
         /// <param name="text">The input string</param>
@@ -306,7 +283,7 @@ namespace HashLibrary
         }
 
         /// <summary>
-        /// Compute the hashcode of a sub string using FNV-1a
+        /// Compute the hash-code of a sub string using FNV-1a
         /// See http://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function
         /// </summary>
         /// <param name="text">The input string as a char array</param>
@@ -327,7 +304,7 @@ namespace HashLibrary
         }
 
         /// <summary>
-        /// Compute the hashcode of a single character using the FNV-1a algorithm
+        /// Compute the hash-code of a single character using the FNV-1a algorithm
         /// See http://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function
         /// Note: In general, this isn't any more useful than "char.GetHashCode". However,
         /// it may be needed if you need to generate the same hash code as a string or

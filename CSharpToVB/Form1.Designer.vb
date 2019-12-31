@@ -878,7 +878,7 @@ Partial Class Form1
         '
         'SplitContainer1
         '
-        Me.SplitContainer1.BackColor = System.Drawing.SystemColors.HotTrack
+        Me.SplitContainer1.BackColor = System.Drawing.SystemColors.Window
         Me.SplitContainer1.Dock = System.Windows.Forms.DockStyle.Fill
         Me.SplitContainer1.FixedPanel = System.Windows.Forms.FixedPanel.Panel2
         Me.SplitContainer1.Location = New System.Drawing.Point(0, 24)
