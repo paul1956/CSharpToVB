@@ -370,7 +370,7 @@ Public Class Form1
 
     Private Function Convert_Compile_Colorize(RequestToConvert As ConvertRequest, CSPreprocessorSymbols As List(Of String), VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)), OptionalReferences() As MetadataReference, CancelToken As CancellationToken) As Boolean
         _resultOfConversion = ConvertInputRequest(RequestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences:=OptionalReferences, mProgressBar:=New ReportProgress(ConversionProgressBar), CancelToken:=CancelToken)
-        mnuEditSaveAs.Enabled = Me._resultOfConversion.ResultStatus = ResultTriState.Success
+        mnuFileSaveAs.Enabled = Me._resultOfConversion.ResultStatus = ResultTriState.Success
         Select Case _resultOfConversion.ResultStatus
             Case ResultTriState.Success
                 Compile_Colorize(_resultOfConversion.ConvertedCode)
@@ -729,7 +729,7 @@ Public Class Form1
         RichTextBoxConversionInput.SelectedText = Clipboard.GetText(TextDataFormat.Text)
     End Sub
 
-    Private Sub mnuEditSaveAs_Click(sender As Object, e As EventArgs) Handles mnuEditSaveAs.Click
+    Private Sub mnuEditSaveAs_Click(sender As Object, e As EventArgs) Handles mnuFileSaveAs.Click
 
         SaveFileDialog1.AddExtension = True
         SaveFileDialog1.CreatePrompt = False
@@ -1405,4 +1405,9 @@ Public Class Form1
         MRU_Update()
     End Sub
 
+    Private Sub mnuHelpAboutMenuItem_Click(sender As Object, e As EventArgs) Handles mnuHelpAboutMenuItem.Click
+        Dim About As New AboutBox1
+        About.ShowDialog()
+        About.Dispose()
+    End Sub
 End Class

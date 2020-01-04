@@ -15,13 +15,14 @@
     <Authors>Paul M Cohen</Authors>
     <Company>Travel By Paul</Company>
     <RepositoryUrl>https://github.com/paul1956/CSharpToVB</RepositoryUrl>
-    <Description>Convert C# to VB</Description>
+    <Description>Convert C# to VB, it can convert snippits, files, projects and folders. It expects valid C# code and does not handle bad code well.</Description>
     <RepositoryType>GitHub</RepositoryType>
     <ApplicationIcon>Icons\CStoVB.ico</ApplicationIcon>
     <OptionInfer>Off</OptionInfer>
     <OptionStrict>On</OptionStrict>
     <Version>1.0.1</Version>
     <Product>CSharp To VB Converter</Product>
+    <Copyright>Copyright ©  2020</Copyright>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <NoWarn />

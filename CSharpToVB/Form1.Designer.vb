@@ -39,7 +39,7 @@ Partial Class Form1
         Me.mnuFileLastFolder = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuFolderSep2 = New System.Windows.Forms.ToolStripSeparator()
         Me.mnuFileOpenProject = New System.Windows.Forms.ToolStripMenuItem()
-        Me.mnuEditSaveAs = New System.Windows.Forms.ToolStripMenuItem()
+        Me.mnuFileSaveAs = New System.Windows.Forms.ToolStripMenuItem()
         Me.ToolStripSeparator2 = New System.Windows.Forms.ToolStripSeparator()
         Me.mnuFileSnippet = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuFileSnippetLoadLast = New System.Windows.Forms.ToolStripMenuItem()
@@ -113,6 +113,7 @@ Partial Class Form1
         Me.mnuViewShowSourceLineNumbers = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuViewShowDestinationLineNumbers = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuHelp = New System.Windows.Forms.ToolStripMenuItem()
+        Me.mnuHelpAboutMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.SaveFileDialog1 = New System.Windows.Forms.SaveFileDialog()
         Me.ContextMenuStrip1 = New System.Windows.Forms.ContextMenuStrip(Me.components)
         Me.ContextMenuCopy = New System.Windows.Forms.ToolStripMenuItem()
@@ -162,7 +163,7 @@ Partial Class Form1
         '
         'mnuFile
         '
-        Me.mnuFile.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuFileOpen, Me.mnuFileSep1, Me.mnuFileSep2, Me.mnuFolderOpen, Me.mnuFolderSep1, Me.mnuFileLastFolder, Me.mnuFolderSep2, Me.mnuFileOpenProject, Me.mnuEditSaveAs, Me.ToolStripSeparator2, Me.mnuFileSnippet, Me.ToolStripSeparator5, Me.mnuFileExit})
+        Me.mnuFile.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuFileOpen, Me.mnuFileSep1, Me.mnuFileSep2, Me.mnuFolderOpen, Me.mnuFolderSep1, Me.mnuFileLastFolder, Me.mnuFolderSep2, Me.mnuFileOpenProject, Me.mnuFileSaveAs, Me.ToolStripSeparator2, Me.mnuFileSnippet, Me.ToolStripSeparator5, Me.mnuFileExit})
         Me.mnuFile.Name = "mnuFile"
         Me.mnuFile.ShortcutKeys = CType((System.Windows.Forms.Keys.Alt Or System.Windows.Forms.Keys.F), System.Windows.Forms.Keys)
         Me.mnuFile.Size = New System.Drawing.Size(37, 20)
@@ -219,11 +220,11 @@ Partial Class Form1
         '
         'mnuEditSaveAs
         '
-        Me.mnuEditSaveAs.Enabled = False
-        Me.mnuEditSaveAs.Name = "mnuEditSaveAs"
-        Me.mnuEditSaveAs.ShortcutKeys = CType((System.Windows.Forms.Keys.Alt Or System.Windows.Forms.Keys.A), System.Windows.Forms.Keys)
-        Me.mnuEditSaveAs.Size = New System.Drawing.Size(227, 22)
-        Me.mnuEditSaveAs.Text = "Save &As..."
+        Me.mnuFileSaveAs.Enabled = False
+        Me.mnuFileSaveAs.Name = "mnuEditSaveAs"
+        Me.mnuFileSaveAs.ShortcutKeys = CType((System.Windows.Forms.Keys.Alt Or System.Windows.Forms.Keys.A), System.Windows.Forms.Keys)
+        Me.mnuFileSaveAs.Size = New System.Drawing.Size(227, 22)
+        Me.mnuFileSaveAs.Text = "Save &As..."
         '
         'ToolStripSeparator2
         '
@@ -473,7 +474,7 @@ Partial Class Form1
         Me.NETCOREAPPToolStripMenuItem.Checked = True
         Me.NETCOREAPPToolStripMenuItem.CheckOnClick = True
         Me.NETCOREAPPToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.NETCOREAPPToolStripMenuItem.Enabled = true
+        Me.NETCOREAPPToolStripMenuItem.Enabled = True
         Me.NETCOREAPPToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
         Me.NETCOREAPPToolStripMenuItem.Name = "NETCOREAPPToolStripMenuItem"
         Me.NETCOREAPPToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
@@ -759,8 +760,9 @@ Partial Class Form1
         Me.mnuView.CheckOnClick = True
         Me.mnuView.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuViewShowSourceLineNumbers, Me.mnuViewShowDestinationLineNumbers})
         Me.mnuView.Name = "mnuView"
+        Me.mnuView.ShortcutKeys = CType((System.Windows.Forms.Keys.Alt Or System.Windows.Forms.Keys.V), System.Windows.Forms.Keys)
         Me.mnuView.Size = New System.Drawing.Size(44, 20)
-        Me.mnuView.Text = "View"
+        Me.mnuView.Text = "&View"
         '
         'mnuViewShowSourceLineNumbers
         '
@@ -780,10 +782,17 @@ Partial Class Form1
         '
         'mnuHelp
         '
+        Me.mnuHelp.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuHelpAboutMenuItem})
         Me.mnuHelp.Name = "mnuHelp"
         Me.mnuHelp.ShortcutKeys = CType((System.Windows.Forms.Keys.Alt Or System.Windows.Forms.Keys.H), System.Windows.Forms.Keys)
         Me.mnuHelp.Size = New System.Drawing.Size(44, 20)
         Me.mnuHelp.Text = "&Help"
+        '
+        'mnuHelpAboutMenuItem
+        '
+        Me.mnuHelpAboutMenuItem.Name = "mnuHelpAboutMenuItem"
+        Me.mnuHelpAboutMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.mnuHelpAboutMenuItem.Text = "About"
         '
         'ContextMenuStrip1
         '
@@ -1113,7 +1122,7 @@ Partial Class Form1
     End Sub
     Friend WithEvents MenuStrip1 As MenuStrip
     Friend WithEvents mnuFile As ToolStripMenuItem
-    Friend WithEvents mnuEditSaveAs As ToolStripMenuItem
+    Friend WithEvents mnuFileSaveAs As ToolStripMenuItem
     Friend WithEvents mnuEdit As ToolStripMenuItem
     Friend WithEvents mnuEditCut As ToolStripMenuItem
     Friend WithEvents mnuEditCopy As ToolStripMenuItem
@@ -1126,6 +1135,7 @@ Partial Class Form1
     Friend WithEvents mnuConvertConvertFolder As ToolStripMenuItem
     Friend WithEvents mnuConvertConvertSnippet As ToolStripMenuItem
     Friend WithEvents mnuHelp As ToolStripMenuItem
+    Friend WithEvents mnuHelpAboutMenuItem As ToolStripMenuItem
     Friend WithEvents SaveFileDialog1 As SaveFileDialog
     Friend WithEvents mnuOptionsColorizeSource As ToolStripMenuItem
     Friend WithEvents mnuEditFind As ToolStripMenuItem
