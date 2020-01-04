@@ -20,7 +20,7 @@
     <ApplicationIcon>Icons\CStoVB.ico</ApplicationIcon>
     <OptionInfer>Off</OptionInfer>
     <OptionStrict>On</OptionStrict>
-    <Version>1.0.1</Version>
+    <Version>3.1.2.0</Version>
     <Product>CSharp To VB Converter</Product>
     <Copyright>Copyright ©  2020</Copyright>
   </PropertyGroup>

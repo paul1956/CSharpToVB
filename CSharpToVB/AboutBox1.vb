@@ -1,33 +1,26 @@
-﻿Imports System.Reflection
-
+﻿
 Public NotInheritable Class AboutBox1
 
-    Private Sub AboutBox1_Load(sender As System.Object, e As System.EventArgs) Handles MyBase.Load
+    Private Sub AboutBox1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         ' Set the title of the form.
         Dim ApplicationTitle As String
-        Dim AssemplyTitle As String = GetType(AboutBox1).Assembly.GetCustomAttributes(Of AssemblyTitleAttribute).ToArray(0)?.Title
-        Dim Company As String = GetType(AboutBox1).Assembly.GetCustomAttributes(Of AssemblyCompanyAttribute).ToArray(0)?.Company
-        Dim Copyright As String = GetType(AboutBox1).Assembly.GetCustomAttributes(Of AssemblyCopyrightAttribute).ToArray(0)?.Copyright
-        Dim Description As String = GetType(AboutBox1).Assembly.GetCustomAttributes(Of AssemblyDescriptionAttribute).ToArray(0)?.Description
-        Dim FileVersion As String = GetType(AboutBox1).Assembly.GetCustomAttributes(Of AssemblyFileVersionAttribute).ToArray(0)?.Version
-        Dim InformationVersion As String = GetType(AboutBox1).Assembly.GetCustomAttributes(Of AssemblyInformationalVersionAttribute).ToArray(0)?.InformationalVersion
-        Dim Product As String = GetType(AboutBox1).Assembly.GetCustomAttributes(Of AssemblyProductAttribute).ToArray(0)?.Product
-        Dim ExecutablePath As String = Application.ExecutablePath
-        Dim FileInfo As FileVersionInfo = FileVersionInfo.GetVersionInfo(ExecutablePath)
-        If Not String.IsNullOrEmpty(Product) Then
-            ApplicationTitle = Product
+        If String.IsNullOrEmpty(My.Info.Title) Then
+            ApplicationTitle = IO.Path.GetFileNameWithoutExtension(My.Info.AssemblyName)
         Else
-            ApplicationTitle = IO.Path.GetFileNameWithoutExtension(ExecutablePath)
+            ApplicationTitle = My.Info.Title
         End If
-        Text = $"About {ApplicationTitle }"
-        LabelProductName.Text = ApplicationTitle
-        LabelVersion.Text = $"Version {Application.ProductVersion}"
-        LabelCompanyName.Text = Application.CompanyName
-        LabelCopyright.Text = Copyright
-        TextBoxDescription.Text = Description
+        Text = $"About {ApplicationTitle}"
+        ' Initialize all of the text displayed on the About Box.
+        ' TODO: Customize the application's assembly information in the "Application" pane of the project 
+        '    properties dialog (under the "Project" menu).
+        LabelProductName.Text = My.Info.ProductName
+        LabelVersion.Text = $"Version {My.Info.Version.ToString}"
+        LabelCopyright.Text = My.Info.Copyright
+        LabelCompanyName.Text = My.Info.CompanyName
+        TextBoxDescription.Text = My.Info.Description
     End Sub
 
-    Private Sub OKButton_Click(sender As System.Object, e As System.EventArgs) Handles OKButton.Click
+    Private Sub OKButton_Click(sender As Object, e As EventArgs) Handles OKButton.Click
         Close()
     End Sub
 
