@@ -15,12 +15,12 @@ namespace Roslyn.Utilities
 
                 public Enumerable(TUnderlying underlying)
                 {
-                    this.Underlying = underlying;
+                    Underlying = underlying;
                 }
 
                 public IEnumerator GetEnumerator()
                 {
-                    return this.Underlying.GetEnumerator();
+                    return Underlying.GetEnumerator();
                 }
             }
         }

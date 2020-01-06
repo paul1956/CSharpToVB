@@ -13,6 +13,14 @@ Partial Class Form1
                 If _cancellationTokenSource IsNot Nothing Then
                     _cancellationTokenSource.Dispose()
                 End If
+#If Not netcoreapp5_0 Then
+                If _splashScreen IsNot Nothing Then
+                    _splashScreen.Dispose()
+                End If
+                If _splashTimer IsNot Nothing Then
+                    _splashTimer.Dispose()
+                End If
+#End If
             End If
         Finally
             MyBase.Dispose(disposing)
@@ -25,7 +33,7 @@ Partial Class Form1
     'NOTE: The following procedure is required by the Windows Form Designer
     'It can be modified using the Windows Form Designer.
     'Do not modify it using the code editor.
-    <System.Diagnostics.DebuggerStepThrough()>
+    '<System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
         Me.components = New System.ComponentModel.Container()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(Form1))

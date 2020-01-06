@@ -5,9 +5,11 @@ Option Explicit On
 Option Infer Off
 Option Strict On
 
+Imports System.ComponentModel
 Imports System.Diagnostics.CodeAnalysis
 Imports System.IO
 Imports System.Reflection
+Imports System.Security
 Imports System.Text
 Imports System.Threading
 Imports System.Xml
@@ -29,6 +31,24 @@ Imports Microsoft.VisualBasic.FileIO
 Imports VBMsgBox
 
 Public Class Form1
+#If Not netcoreapp5_0 Then
+    'Minimum amount of time to show the splash screen.  0 means hide as soon as the app comes up.
+    Private ReadOnly _minimumSplashExposure As Integer = 15000
+
+    Private ReadOnly _splashLock As New Object
+
+    ' We only need to show the splash screen once.
+    ' Protect the user from himself If they are overriding our app model.
+    Private _didSplashScreen As Boolean
+
+    'For splash screens with a minimum display time, this let's us know when that time has expired and it is ok to close the splash screen.
+    Private _ok2CloseSplashScreen As Boolean
+
+    Private _splashScreen As Form = New SplashScreen1
+
+    Private _splashTimer As Timers.Timer
+
+#End If
 
     Private Shared ReadOnly s_snippetFileWithPath As String = Path.Combine(SpecialDirectories.MyDocuments, "CSharpToVBLastSnippet.RTF")
 
@@ -47,6 +67,116 @@ Public Class Form1
     Private _resultOfConversion As ConversionResult
 
     Private _rtfLineStart As Integer
+
+#If Not netcoreapp5_0 Then
+    Sub New()
+        ShowSplashScreen()
+
+        ' This call is required by the designer.
+        InitializeComponent()
+
+        'block until the splash screen time is up.  See MinimumSplashExposureTimeIsUp() which releases us
+        While Not _ok2CloseSplashScreen
+            Application.DoEvents() 'In case Load() event, which we are waiting for, is doing stuff that requires windows messages.  our timer message doesn't count because it is on another thread.
+        End While
+
+        HideSplashScreen()
+
+        ' Add any initialization after the InitializeComponent() call.
+    End Sub
+
+    'used to marshal a call to Dispose on the Splash Screen
+    Private Delegate Sub DisposeDelegate()
+
+    ''' <summary>
+    ''' Provides access to the splash screen for this application
+    ''' </summary>
+    Public Property SplashScreen() As Form
+        Get
+            Return _splashScreen
+        End Get
+        Set(ByVal value As Form)
+            If value IsNot Nothing AndAlso value Is Me Then 'allow for the case where they set splash screen = nothing and mainForm is currently nothing
+                Throw New ArgumentException(GetResourceString("Splash screen and main form cannot be the same form."))
+            End If
+            _splashScreen = value
+        End Set
+    End Property
+
+    ''' <summary>
+    ''' Displays the splash screen.  We get called here from a different thread than what the
+    ''' main form is starting up on.  This allows us to process events for the Splash screen so
+    ''' it doesn't freeze up while the main form is getting it together.
+    ''' </summary>
+    Private Sub DisplaySplash()
+        Debug.Assert(_splashScreen IsNot Nothing, "We should have never get here if there is no splash screen")
+        If _splashTimer IsNot Nothing Then 'We only have a timer if there is a minimum time that the splash screen is supposed to be displayed.
+            _splashTimer.Enabled = True 'enable the timer now that we are about to show the splash screen
+        End If
+        System.Windows.Forms.Application.Run(_splashScreen)
+    End Sub
+
+    ''' <summary>
+    ''' Hide the splash screen.  The splash screen was created on another thread
+    ''' thread (main thread) than the one it was run on (secondary thread for the
+    ''' splash screen so it doesn't block app startup. We need to invoke the close.
+    ''' This function gets called from the main thread by the app fx.
+    ''' </summary>
+    <EditorBrowsable(EditorBrowsableState.Advanced)>
+    <SecuritySafeCritical()>
+    Protected Sub HideSplashScreen()
+        SyncLock _splashLock 'This ultimately wasn't necessary.  I suppose we better keep it for backwards compat
+            If _splashScreen IsNot Nothing AndAlso Not _splashScreen.IsDisposed Then
+                Dim TheBigGoodbye As New DisposeDelegate(AddressOf _splashScreen.Dispose)
+                _splashScreen.Invoke(TheBigGoodbye)
+                _splashScreen = Nothing
+            End If
+        End SyncLock
+    End Sub
+
+    ''' <summary>
+    ''' If a splash screen has a minimum time out, then once that is up we check to see whether
+    ''' we should close the splash screen.  If the main form has activated then we close it.
+    ''' Note that we are getting called on a secondary thread here which isn't necessairly
+    ''' associated with any form.  Don't touch forms from this function.
+    ''' </summary>
+    Private Sub MinimumSplashExposureTimeIsUp(ByVal sender As Object, ByVal e As System.Timers.ElapsedEventArgs)
+        If _splashTimer IsNot Nothing Then 'We only have a timer if there was a minimum timeout on the splash screen
+            _splashTimer.Dispose()
+            _splashTimer = Nothing
+        End If
+        _ok2CloseSplashScreen = True
+    End Sub
+
+    ''' <summary>
+    ''' Uses the extensibility model to see if there is a splash screen provided for this app and if there is,
+    ''' displays it.
+    ''' </summary>
+    <EditorBrowsable(EditorBrowsableState.Advanced)>
+    Protected Sub ShowSplashScreen()
+        If Not _didSplashScreen Then
+            _didSplashScreen = True
+            If _splashScreen Is Nothing Then
+                _splashScreen.ShowDialog()
+            End If
+            If _splashScreen IsNot Nothing Then
+                'Some splash screens have minimum face time they are supposed to get.  We'll set up a time to let us know when we can take it down.
+                If _minimumSplashExposure > 0 Then
+                    _ok2CloseSplashScreen = False 'Don't close until the timer expires.
+                    _splashTimer = New Timers.Timer(_minimumSplashExposure)
+                    AddHandler _splashTimer.Elapsed, AddressOf MinimumSplashExposureTimeIsUp
+                    _splashTimer.AutoReset = False
+                    'We'll enable it in DisplaySplash() once the splash screen thread gets running
+                Else
+                    _ok2CloseSplashScreen = True 'No timeout so just close it when then main form comes up
+                End If
+                'Run the splash screen on another thread so we don't starve it for events and painting while the main form gets its act together
+                Dim SplashThread As New Thread(AddressOf DisplaySplash)
+                SplashThread.Start()
+            End If
+        End If
+    End Sub
+#End If
 
     Private Property CurrentBuffer As RichTextBox
         Get
@@ -910,6 +1040,12 @@ Public Class Form1
         End If
     End Sub
 
+    Private Sub mnuHelpAboutMenuItem_Click(sender As Object, e As EventArgs) Handles mnuHelpAboutMenuItem.Click
+        Dim About As New AboutBox1
+        About.ShowDialog()
+        About.Dispose()
+    End Sub
+
     Private Sub mnuOptionsAddFilesToIgnoreFilesEithErrorsList_Click(sender As Object, e As EventArgs) Handles mnuOptionsAddFilesToIgnoreFilesEithErrorsList.Click
         Dim SourceFileNameWithPath As String = My.Settings.MRU_Data.Last
         If Not My.Settings.IgnoreFileList.Contains(SourceFileNameWithPath) Then
@@ -1405,9 +1541,4 @@ Public Class Form1
         MRU_Update()
     End Sub
 
-    Private Sub mnuHelpAboutMenuItem_Click(sender As Object, e As EventArgs) Handles mnuHelpAboutMenuItem.Click
-        Dim About As New AboutBox1
-        About.ShowDialog()
-        About.Dispose()
-    End Sub
 End Class

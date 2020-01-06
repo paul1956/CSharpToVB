@@ -11,7 +11,8 @@ namespace Roslyn.Utilities
         {
             internal class Dictionary<TKey, TValue> : Collection<KeyValuePair<TKey, TValue>>, IDictionary<TKey, TValue>, IReadOnlyDictionary<TKey, TValue>
             {
-                public static readonly new Dictionary<TKey, TValue> Instance = new Dictionary<TKey, TValue>();
+                [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Public API")]
+                public static new readonly Dictionary<TKey, TValue> Instance = new Dictionary<TKey, TValue>();
 
                 private Dictionary()
                 {

@@ -22,7 +22,8 @@
     <OptionStrict>On</OptionStrict>
     <Version>3.1.2.0</Version>
     <Product>CSharp To VB Converter</Product>
-    <Copyright>Copyright ©  2020</Copyright>
+    <Copyright>Copyright © 2020</Copyright>
+    <PackageId>CSharp To VB Converter</PackageId>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <NoWarn />
