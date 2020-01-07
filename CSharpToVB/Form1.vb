@@ -69,7 +69,7 @@ Public Class Form1
     Private _rtfLineStart As Integer
 
 #If Not netcoreapp5_0 Then
-    Sub New()
+    Public Sub New()
         ShowSplashScreen()
 
         ' This call is required by the designer.
@@ -190,13 +190,12 @@ Public Class Form1
         End Set
     End Property
 
-    Property MSBuildInstance As VisualStudioInstance
+    Public Property MSBuildInstance As VisualStudioInstance
 
     Private Shared Function ChangeExtension(AttributeValue As String, OldExtension As String, NewExtension As String) As String
-        If AttributeValue.EndsWith($".{OldExtension}", StringComparison.InvariantCultureIgnoreCase) Then
-            Return Path.ChangeExtension(AttributeValue, NewExtension)
-        End If
-        Return AttributeValue
+        Return If(AttributeValue.EndsWith($".{OldExtension}", StringComparison.InvariantCultureIgnoreCase),
+               Path.ChangeExtension(AttributeValue, NewExtension),
+               AttributeValue)
     End Function
 
     Private Shared Sub ConvertProjectFile(ProjectSavePath As String, currentProject As Project, xmlDoc As XmlDocument, root As XmlNode)
@@ -1510,11 +1509,7 @@ Public Class Form1
                 My.Settings.Save()
                 kvp.Value.Parent.Checked = True
                 For Each ParentItem As KeyValuePair(Of String, ToolStripMenuItem) In _frameworkTypeList
-                    If kvp.Value.Parent.Text = ParentItem.Key Then
-                        ParentItem.Value.Checked = True
-                    Else
-                        ParentItem.Value.Checked = False
-                    End If
+                    ParentItem.Value.Checked = kvp.Value.Parent.Text = ParentItem.Key
                 Next
             Else
                 kvp.Value.Item.Enabled = True

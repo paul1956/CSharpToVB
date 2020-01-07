@@ -34,7 +34,7 @@ Public Class AdvancedRTB
 
     Private _vertRightClicked As Boolean = False
 
-    Sub New()
+    Public Sub New()
         InitializeComponent()
     End Sub
 

@@ -9,8 +9,7 @@ Imports Xunit
 Namespace VBMsgBox.Test
 
     Public NotInheritable Class MsgBoxTests
-
-        Sub New()
+        Public Sub New()
         End Sub
 
         Public Shared ReadOnly Property ManualTestsEnabled() As Boolean

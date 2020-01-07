@@ -5,7 +5,7 @@ Imports System.Windows.Forms
 Public Class ReportProgress
     Implements IReportProgress
 
-    Sub New(Bar As ToolStripProgressBar)
+    Public Sub New(Bar As ToolStripProgressBar)
         _ProgressBar = Bar
         ProgressBar.Value = 0
     End Sub

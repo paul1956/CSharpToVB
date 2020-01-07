@@ -8,7 +8,7 @@ Imports Microsoft.CodeAnalysis
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
-Module TriviaExtensions
+Friend Module TriviaExtensions
 
     <Extension>
     Public Function IsComment(trivia As SyntaxTrivia) As Boolean

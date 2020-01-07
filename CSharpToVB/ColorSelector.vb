@@ -70,11 +70,11 @@ Public Class ColorSelector
          {"xml literal - text", Color.FromArgb(85, 85, 85)}
      }
 
-    Sub New()
+    Public Sub New()
         UpdateColorDictionaryFromFile(s_fullPath)
     End Sub
 
-    Sub New(filePath As String)
+    Public Sub New(filePath As String)
         UpdateColorDictionaryFromFile(filePath)
     End Sub
 
@@ -85,10 +85,7 @@ Public Class ColorSelector
 
     Friend Shared Function GetColorFromName(Name As String) As Color
         Try
-            If String.IsNullOrWhiteSpace(Name) Then
-                Return s_colorMappingDictionary("default")
-            End If
-            Return s_colorMappingDictionary(Name)
+            Return If(String.IsNullOrWhiteSpace(Name), s_colorMappingDictionary("default"), s_colorMappingDictionary(Name))
         Catch ex As Exception
             Debug.Print($"GetColorFromName missing({Name})")
             Stop

@@ -42,11 +42,7 @@ Namespace Microsoft.VisualBasic.ApplicationServices
                 If _description Is Nothing Then
                     Dim Attribute As AssemblyDescriptionAttribute =
                         CType(GetAttribute(GetType(AssemblyDescriptionAttribute)), AssemblyDescriptionAttribute)
-                    If Attribute Is Nothing Then
-                        _description = ""
-                    Else
-                        _description = Attribute.Description
-                    End If
+                    _description = If(Attribute Is Nothing, "", Attribute.Description)
                 End If
                 Return _description
             End Get
@@ -62,11 +58,7 @@ Namespace Microsoft.VisualBasic.ApplicationServices
                 If _companyName Is Nothing Then
                     Dim Attribute As AssemblyCompanyAttribute =
                         CType(GetAttribute(GetType(AssemblyCompanyAttribute)), AssemblyCompanyAttribute)
-                    If Attribute Is Nothing Then
-                        _companyName = ""
-                    Else
-                        _companyName = Attribute.Company
-                    End If
+                    _companyName = If(Attribute Is Nothing, "", Attribute.Company)
                 End If
                 Return _companyName
             End Get
@@ -82,11 +74,7 @@ Namespace Microsoft.VisualBasic.ApplicationServices
                 If _title Is Nothing Then
                     Dim Attribute As AssemblyTitleAttribute =
                         CType(GetAttribute(GetType(AssemblyTitleAttribute)), AssemblyTitleAttribute)
-                    If Attribute Is Nothing Then
-                        _title = ""
-                    Else
-                        _title = Attribute.Title
-                    End If
+                    _title = If(Attribute Is Nothing, "", Attribute.Title)
                 End If
                 Return _title
             End Get
@@ -101,11 +89,7 @@ Namespace Microsoft.VisualBasic.ApplicationServices
             Get
                 If _copyright Is Nothing Then
                     Dim Attribute As AssemblyCopyrightAttribute = CType(GetAttribute(GetType(AssemblyCopyrightAttribute)), AssemblyCopyrightAttribute)
-                    If Attribute Is Nothing Then
-                        _copyright = ""
-                    Else
-                        _copyright = Attribute.Copyright
-                    End If
+                    _copyright = If(Attribute IsNot Nothing, Attribute.Copyright, "")
                 End If
                 Return _copyright
             End Get
@@ -120,11 +104,7 @@ Namespace Microsoft.VisualBasic.ApplicationServices
             Get
                 If _trademark Is Nothing Then
                     Dim Attribute As AssemblyTrademarkAttribute = CType(GetAttribute(GetType(AssemblyTrademarkAttribute)), AssemblyTrademarkAttribute)
-                    If Attribute Is Nothing Then
-                        _trademark = ""
-                    Else
-                        _trademark = Attribute.Trademark
-                    End If
+                    _trademark = If(Attribute Is Nothing, "", Attribute.Trademark)
                 End If
                 Return _trademark
             End Get
@@ -139,11 +119,7 @@ Namespace Microsoft.VisualBasic.ApplicationServices
             Get
                 If _productName Is Nothing Then
                     Dim Attribute As AssemblyProductAttribute = CType(GetAttribute(GetType(AssemblyProductAttribute)), AssemblyProductAttribute)
-                    If Attribute Is Nothing Then
-                        _productName = ""
-                    Else
-                        _productName = Attribute.Product
-                    End If
+                    _productName = If(Attribute Is Nothing, "", Attribute.Product)
                 End If
                 Return _productName
             End Get
@@ -228,11 +204,7 @@ Namespace Microsoft.VisualBasic.ApplicationServices
 
             Dim Attributes() As Object = _assembly.GetCustomAttributes(AttributeType, inherit:=True)
 
-            If Attributes.Length = 0 Then
-                Return Nothing
-            Else
-                Return Attributes(0)
-            End If
+            Return If(Attributes.Length = 0, Nothing, Attributes(0))
         End Function
 
         ' Private fields.

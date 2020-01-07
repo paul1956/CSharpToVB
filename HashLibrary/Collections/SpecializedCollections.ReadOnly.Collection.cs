@@ -37,13 +37,7 @@ namespace Roslyn.Utilities
                     Underlying.CopyTo(array, arrayIndex);
                 }
 
-                public int Count
-                {
-                    get
-                    {
-                        return Underlying.Count;
-                    }
-                }
+                public int Count => Underlying.Count;
 
                 public bool IsReadOnly => true;
 

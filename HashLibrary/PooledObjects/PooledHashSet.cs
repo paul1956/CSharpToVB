@@ -18,7 +18,7 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
 
         public void Free()
         {
-            this.Clear();
+            Clear();
             _pool?.Free(this);
         }
 

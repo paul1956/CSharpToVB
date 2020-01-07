@@ -20,7 +20,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
         End Function
 
         <Extension>
-        Function HasUsingDirective(tree As CS.CSharpSyntaxTree, FullName As String) As Boolean
+        Public Function HasUsingDirective(tree As CS.CSharpSyntaxTree, FullName As String) As Boolean
             If tree Is Nothing Then
                 Throw New ArgumentNullException(NameOf(tree))
             End If
@@ -32,7 +32,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
         End Function
 
         <Extension>
-        Iterator Function IndexedSelect(Of T, R)(source As IEnumerable(Of T), transform As Func(Of Integer, T, R)) As IEnumerable(Of R)
+        Public Iterator Function IndexedSelect(Of T, R)(source As IEnumerable(Of T), transform As Func(Of Integer, T, R)) As IEnumerable(Of R)
             Dim i As Integer = 0
             For Each item As T In source
                 Yield transform(i, item)
