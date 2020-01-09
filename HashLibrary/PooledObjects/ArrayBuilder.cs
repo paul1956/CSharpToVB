@@ -69,27 +69,15 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
 
         public int Count
         {
-            get
-            {
-                return _builder.Count;
-            }
-            set
-            {
-                _builder.Count = value;
-            }
+            get => _builder.Count;
+            set => _builder.Count = value;
         }
 
         public T this[int index]
         {
-            get
-            {
-                return _builder[index];
-            }
+            get => _builder[index];
 
-            set
-            {
-                _builder[index] = value;
-            }
+            set => _builder[index] = value;
         }
 
         /// <summary>
@@ -239,12 +227,7 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
         /// </summary>
         public ImmutableArray<T> ToImmutableOrNull()
         {
-            if (Count == 0)
-            {
-                return default;
-            }
-
-            return ToImmutable();
+            return Count == 0 ? (default) : ToImmutable();
         }
 
         /// <summary>
