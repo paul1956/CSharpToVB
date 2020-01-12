@@ -89,6 +89,7 @@ Public Class AdvancedRTB
         }
         Dim unused As Integer = SetScrollInfo(hWnd:=handle, nBar:=SB_Orientation, lpsi:=scrollinfo, bRepaint:=v)
     End Sub
+    <CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification:="Translation Needed")>
     Private Sub InitializeComponent()
         _components = New ComponentModel.Container()
         ContextMenuStrip1 = New ContextMenuStrip(_components)

@@ -13,16 +13,16 @@ Namespace CSharpToVBCodeConverter
 
     Public Class CodeWithOptions
 
-        Public Sub New(_Request As ConvertRequest)
-            If _Request Is Nothing Then
-                Throw New ArgumentNullException(NameOf(_Request))
+        Public Sub New(RequestToConvert As ConvertRequest)
+            If RequestToConvert Is Nothing Then
+                Throw New ArgumentNullException(NameOf(RequestToConvert))
             End If
-            Text = _Request.SourceCode
+            Text = RequestToConvert.SourceCode
             FromLanguage = LanguageNames.CSharp
             ToLanguage = LanguageNames.VisualBasic
             FromLanguageVersion = CS.LanguageVersion.Latest
             ToLanguageVersion = VisualBasic.LanguageVersion.Latest
-            Request = _Request
+            Request = RequestToConvert
         End Sub
 
         Public Property FromLanguage As String

@@ -242,7 +242,7 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
             }
 
             var tmp = ArrayBuilder<U>.GetInstance(Count);
-            foreach (var i in this)
+            foreach (T i in this)
             {
                 tmp.Add((U)i);
             }
@@ -255,14 +255,14 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
         /// </summary>
         public ImmutableArray<T> ToImmutableAndFree()
         {
-            var result = ToImmutable();
+            ImmutableArray<T> result = ToImmutable();
             Free();
             return result;
         }
 
         public T[] ToArrayAndFree()
         {
-            var result = ToArray();
+            T[] result = ToArray();
             Free();
             return result;
         }
@@ -273,7 +273,7 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
         // 1) Expose Freeing primitive.
         public void Free()
         {
-            var pool = _pool;
+            ObjectPool<ArrayBuilder<T>> pool = _pool;
             if (pool != null)
             {
                 // According to the statistics of a C# compiler self-build, the most commonly used builder size is 0.  (808003 uses).
@@ -310,21 +310,21 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
 
         public static ArrayBuilder<T> GetInstance()
         {
-            var builder = s_poolInstance.Allocate();
+            ArrayBuilder<T> builder = s_poolInstance.Allocate();
             Debug.Assert(builder.Count == 0);
             return builder;
         }
 
         public static ArrayBuilder<T> GetInstance(int capacity)
         {
-            var builder = GetInstance();
+            ArrayBuilder<T> builder = GetInstance();
             builder.EnsureCapacity(capacity);
             return builder;
         }
 
         public static ArrayBuilder<T> GetInstance(int capacity, T fillWithValue)
         {
-            var builder = GetInstance();
+            ArrayBuilder<T> builder = GetInstance();
             builder.EnsureCapacity(capacity);
 
             for (int i = 0; i < capacity; i++)
@@ -384,9 +384,9 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
             var accumulator = new Dictionary<K, ArrayBuilder<T>>(Count, comparer);
             for (int i = 0; i < Count; i++)
             {
-                var item = this[i];
-                var key = keySelector(item);
-                if (!accumulator.TryGetValue(key, out var bucket))
+                T item = this[i];
+                K key = keySelector(item);
+                if (!accumulator.TryGetValue(key, out ArrayBuilder<T> bucket))
                 {
                     bucket = ArrayBuilder<T>.GetInstance();
                     accumulator.Add(key, bucket);
@@ -398,7 +398,7 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
             var dictionary = new Dictionary<K, ImmutableArray<T>>(accumulator.Count, comparer);
 
             // freeze
-            foreach (var pair in accumulator)
+            foreach (KeyValuePair<K, ArrayBuilder<T>> pair in accumulator)
             {
                 dictionary.Add(pair.Key, pair.Value.ToImmutableAndFree());
             }
@@ -497,9 +497,9 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
             var result = ArrayBuilder<S>.GetInstance(Count);
             var set = PooledHashSet<S>.GetInstance();
 
-            foreach (var item in this)
+            foreach (T item in this)
             {
-                var selected = selector(item);
+                S selected = selector(item);
                 if (set.Add(selected))
                 {
                     result.Add(selected);

@@ -84,13 +84,15 @@ Public Class ColorSelector
     End Sub
 
     Friend Shared Function GetColorFromName(Name As String) As Color
-        Try
-            Return If(String.IsNullOrWhiteSpace(Name), s_colorMappingDictionary("default"), s_colorMappingDictionary(Name))
-        Catch ex As Exception
-            Debug.Print($"GetColorFromName missing({Name})")
-            Stop
-            Return s_colorMappingDictionary("error")
-        End Try
+        If String.IsNullOrWhiteSpace(Name) Then
+            Return s_colorMappingDictionary("default")
+        End If
+        Dim ReturnValue As Color = Nothing
+        If s_colorMappingDictionary.TryGetValue(Name, ReturnValue) Then
+            Return ReturnValue
+        End If
+        Debug.Print($"GetColorFromName missing({Name})")
+        Return s_colorMappingDictionary("error")
     End Function
 
     Public Shared Function GetColorNameList() As Dictionary(Of String, Color).KeyCollection

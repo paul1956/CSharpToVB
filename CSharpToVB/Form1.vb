@@ -452,6 +452,7 @@ Public Class Form1
             End If
         Catch ex As Exception
             Stop
+            Throw
         End Try
         ConversionBuffer.Visible = True
         _inColorize = False
@@ -497,6 +498,7 @@ Public Class Form1
         CType(ContextMenuStrip1.SourceControl, RichTextBox).Paste()
     End Sub
 
+    <SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification:="Translation Needed")>
     Private Function Convert_Compile_Colorize(RequestToConvert As ConvertRequest, CSPreprocessorSymbols As List(Of String), VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)), OptionalReferences() As MetadataReference, CancelToken As CancellationToken) As Boolean
         _resultOfConversion = ConvertInputRequest(RequestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences:=OptionalReferences, mProgressBar:=New ReportProgress(ConversionProgressBar), CancelToken:=CancelToken)
         mnuFileSaveAs.Enabled = Me._resultOfConversion.ResultStatus = ResultTriState.Success
@@ -796,6 +798,7 @@ Public Class Form1
         SetButtonStopAndCursor(MeForm:=Me, StopButton:=ButtonStop, StopButtonVisible:=False)
     End Sub
 
+    <SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification:="Translation Needed")>
     Private Sub mnuConvertFolder_Click(sender As Object, e As EventArgs) Handles mnuConvertConvertFolder.Click
         LineNumbers_For_RichTextBoxInput.Visible = False
         LineNumbers_For_RichTextBoxOutput.Visible = False
@@ -864,11 +867,13 @@ Public Class Form1
         SaveFileDialog1.CreatePrompt = False
         SaveFileDialog1.DefaultExt = "vb"
         SaveFileDialog1.FileName = Path.ChangeExtension(OpenFileDialog1.SafeFileName, "vb")
+#Disable Warning CA1303 ' Do not pass literals as localized parameters
         SaveFileDialog1.Filter = "VB Code Files (*.vb)|*.vb"
+#Enable Warning CA1303 ' Do not pass literals as localized parameters
         SaveFileDialog1.FilterIndex = 0
         SaveFileDialog1.OverwritePrompt = True
         SaveFileDialog1.SupportMultiDottedExtensions = False
-        SaveFileDialog1.Title = $"Save vb Output..."
+        SaveFileDialog1.Title = $"Save {SaveFileDialog1.DefaultExt} Output..."
         SaveFileDialog1.ValidateNames = True
         Dim FileSaveResult As DialogResult = SaveFileDialog1.ShowDialog
         If FileSaveResult = DialogResult.OK Then
@@ -911,7 +916,9 @@ Public Class Form1
             .AddExtension = True
             .DefaultExt = LanguageExtension
             .FileName = ""
+#Disable Warning CA1303 ' Do not pass literals as localized parameters
             .Filter = If(LanguageExtension = "vb", "VB Code Files (*.vb)|*.vb", "C# Code Files (*.cs)|*.cs")
+#Enable Warning CA1303 ' Do not pass literals as localized parameters
             SaveFileDialog1.FilterIndex = 0
             .Multiselect = False
             .ReadOnlyChecked = True
@@ -931,11 +938,13 @@ Public Class Form1
             .AddExtension = True
             .DefaultExt = "cs"
             .FileName = ""
+#Disable Warning CA1303 ' Do not pass literals as localized parameters
             .Filter = "C# Project File (*.csproj)|*.csproj"
+#Enable Warning CA1303 ' Do not pass literals as localized parameters
             .FilterIndex = 0
             .Multiselect = False
             .ReadOnlyChecked = True
-            .Title = "Open cs Project file"
+            .Title = $"Open { .DefaultExt = "cs"} Project file"
             .ValidateNames = True
             ' InputLines is used for future progress bar
             If .ShowDialog = DialogResult.OK Then
@@ -1267,6 +1276,7 @@ Public Class Form1
     ''' <returns>
     ''' False if error and user wants to stop, True if success or user wants to ignore error
     ''' </returns>
+    <SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification:="Prevent Crash on Exit")>
     Private Function ProcessAllFiles(SourceDirectory As String, TargetDirectory As String, LastFileNameWithPath As String, SourceLanguageExtension As String, ByRef FilesProcessed As Long, CancelToken As CancellationToken) As Boolean
         Try
             RichTextBoxErrorList.Text = ""
@@ -1280,6 +1290,7 @@ Public Class Form1
         Catch ex As Exception
             ' don't crash on exit
             Stop
+            End
         Finally
             SetButtonStopAndCursor(Me, ButtonStop, StopButtonVisible:=False)
         End Try

@@ -35,7 +35,7 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
 
         public static PooledHashSet<T> GetInstance()
         {
-            var instance = s_poolInstance.Allocate();
+            PooledHashSet<T> instance = s_poolInstance.Allocate();
             Debug.Assert(instance.Count == 0);
             return instance;
         }
