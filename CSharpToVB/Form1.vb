@@ -41,6 +41,8 @@ Public Class Form1
     ' Protect the user from himself If they are overriding our app model.
     Private _didSplashScreen As Boolean
 
+    Private _footerLines As Integer = 0
+
     'For splash screens with a minimum display time, this let's us know when that time has expired and it is ok to close the splash screen.
     Private _ok2CloseSplashScreen As Boolean
 
@@ -1435,6 +1437,14 @@ Public Class Form1
         If mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
             Colorize(GetClassifiedRanges(SourceCode:=RichTextBoxConversionInput.Text, LanguageNames.CSharp), ConversionBuffer:=RichTextBoxConversionInput, Lines:=RichTextBoxConversionInput.Lines.Length)
         End If
+        If Not RichTextBoxConversionInput.Text.StartsWith(My.Settings.BoilerPlateHeader.Replace(vbCrLf, vbLf, StringComparison.InvariantCulture), StringComparison.InvariantCulture) Then
+            Dim SelectStart As Integer = RichTextBoxConversionInput.SelectionStart
+            Dim SelectLength As Integer = RichTextBoxConversionInput.SelectionLength
+            RichTextBoxConversionInput.SelectAll()
+            RichTextBoxConversionInput.SelectionProtected = False
+            RichTextBoxConversionInput.SelectionStart = SelectStart
+            RichTextBoxConversionInput.SelectionLength = SelectLength
+        End If
     End Sub
 
     Private Sub RichTextBoxConversionOutput_HorizScrollBarRightClicked(sender As Object, loc As Point) Handles RichTextBoxConversionOutput.HorizScrollBarRightClicked
@@ -1548,7 +1558,204 @@ Public Class Form1
         MRU_Update()
     End Sub
 
-    Private Sub mnuFileSnippetLoadTemplate_Click(sender As Object, e As EventArgs) Handles mnuFileSnippetLoadTemplate.Click
-        RichTextBoxConversionInput.Text = $"{My.Settings.BoilerPlateHeader}{vbCrLf}{vbCrLf}{My.Settings.BoilderPlateFooter}"
+    Private Sub mnuFileLoadTemplate_Click(sender As Object, e As EventArgs) Handles mnuFileLoadTemplate.Click
+        Dim Header As String = $"{My.Settings.BoilerPlateHeader.Replace(vbCrLf, vbLf, StringComparison.InvariantCulture)}{vbLf}"
+        RichTextBoxConversionInput.Clear()
+        RichTextBoxConversionInput.Select(0, 0)
+        RichTextBoxConversionInput.Text = Header
+        RichTextBoxConversionInput.Select(0, Header.Length)
+        RichTextBoxConversionInput.SelectionColor = Color.Gray
+        RichTextBoxConversionInput.SelectionProtected = True
+        RichTextBoxConversionInput.Select(RichTextBoxConversionInput.TextLength - 1, 0)
+        RichTextBoxConversionInput.AppendText(vbLf)
+        Dim FooterStart As Integer = Header.Length
+        Dim Footer As String = $"{My.Settings.BoilderPlateFooter.Replace(vbCrLf, vbLf, StringComparison.InvariantCulture)}{vbLf}"
+        _footerLines = Footer.Count(CChar(vbLf))
+        RichTextBoxConversionInput.AppendText(Footer)
+        RichTextBoxConversionInput.Select(RichTextBoxConversionInput.Text.Length - Footer.Length, Footer.Length)
+        RichTextBoxConversionInput.SelectionColor = Color.Gray
+        RichTextBoxConversionInput.SelectionProtected = True
+        RichTextBoxConversionInput.Select(Header.Length, 0)
+    End Sub
+
+    Private Sub RichTextBoxConversionInput_Click(sender As Object, e As EventArgs) Handles RichTextBoxConversionInput.Click
+        Dim index As Integer = RichTextBoxConversionInput.SelectionStart
+        Dim line As Integer = RichTextBoxConversionInput.GetLineFromCharIndex(index)
+        If _footerLines <> 0 AndAlso line >= RichTextBoxConversionInput.Lines.Length - _footerLines - 1 Then
+            RichTextBoxConversionInput.ReadOnly = True
+        Else
+            RichTextBoxConversionInput.ReadOnly = False
+        End If
+    End Sub
+
+    Private Sub RichTextBoxConversionInput_KeyDown(sender As Object, e As KeyEventArgs) Handles RichTextBoxConversionInput.KeyDown
+        If RichTextBoxConversionInput.SelectionColor = Color.Gray Then
+            Dim KeyValue As Char = ChrW(e.KeyValue)
+            Select Case e.KeyCode
+                Case Keys.D0, Keys.D1, Keys.D2, Keys.D3, Keys.D4, Keys.D5, Keys.D6, Keys.D7
+                    e.SuppressKeyPress = True
+                Case Keys.D8, Keys.D9, Keys.NumPad0, Keys.NumPad1, Keys.NumPad2, Keys.NumPad3
+                    e.SuppressKeyPress = True
+                Case Keys.NumPad4, Keys.NumPad5, Keys.NumPad6, Keys.NumPad7, Keys.NumPad8
+                    e.SuppressKeyPress = True
+                Case Keys.NumPad9, Keys.A, Keys.B, Keys.C, Keys.D, Keys.E, Keys.F, Keys.G
+                    e.SuppressKeyPress = True
+                Case Keys.H, Keys.I, Keys.J, Keys.K, Keys.L, Keys.M, Keys.N, Keys.O, Keys.P
+                    e.SuppressKeyPress = True
+                Case Keys.Q, Keys.R, Keys.S, Keys.T, Keys.U, Keys.V, Keys.W, Keys.X, Keys.Y, Keys.Z
+                    e.SuppressKeyPress = True
+                Case Keys.Return, Keys.OemSemicolon, Keys.Oemplus, Keys.Oemcomma, Keys.OemMinus
+                    e.SuppressKeyPress = True
+                Case Keys.OemPeriod, Keys.OemQuestion, Keys.Oemtilde, Keys.OemOpenBrackets, Keys.OemPipe
+                    e.SuppressKeyPress = True
+                Case Keys.OemCloseBrackets, Keys.OemQuotes, Keys.Oem8, Keys.OemBackslash
+                    e.SuppressKeyPress = True
+                Case Keys.Space, Keys.Delete, Keys.Multiply, Keys.Add, Keys.Separator
+                    e.SuppressKeyPress = True
+                Case Keys.Subtract, Keys.Decimal, Keys.Divide
+                    e.SuppressKeyPress = True
+                Case Keys.Shift, Keys.Control, Keys.Alt
+                    e.SuppressKeyPress = True
+                Case Keys.Right, Keys.Left, Keys.Up, Keys.Down
+                    Return
+                Case Keys.KeyCode
+                    Exit Select
+                Case Keys.Modifiers
+                    Exit Select
+                Case Keys.None
+                    Exit Select
+                Case Keys.LButton
+                    Exit Select
+                Case Keys.RButton
+                    Exit Select
+                Case Keys.Cancel
+                    Exit Select
+                Case Keys.MButton
+                    Exit Select
+                Case Keys.XButton1
+                    Exit Select
+                Case Keys.XButton2
+                    Exit Select
+                Case Keys.Back
+                    Exit Select
+                Case Keys.Tab
+                    Exit Select
+                Case Keys.LineFeed
+                    Exit Select
+                Case Keys.Clear
+                    Exit Select
+                Case Keys.ShiftKey
+                    Exit Select
+                Case Keys.ControlKey
+                    Stop
+                Case Keys.Menu
+                    Exit Select
+                Case Keys.Pause
+                    Exit Select
+                Case Keys.Capital
+                    Exit Select
+                Case Keys.KanaMode
+                    Exit Select
+                Case Keys.JunjaMode
+                    Exit Select
+                Case Keys.FinalMode
+                    Exit Select
+                Case Keys.HanjaMode
+                    Exit Select
+                Case Keys.Escape
+                    Exit Select
+                Case Keys.IMEConvert
+                    Exit Select
+                Case Keys.IMENonconvert
+                    Exit Select
+                Case Keys.IMEAccept
+                    Exit Select
+                Case Keys.IMEModeChange
+                    Exit Select
+                Case Keys.Prior
+                    Exit Select
+                Case Keys.Next
+                    Exit Select
+                Case Keys.End
+                    Exit Select
+                Case Keys.Home
+                    Exit Select
+                Case Keys.Select
+                    Exit Select
+                Case Keys.Print
+                    Exit Select
+                Case Keys.Execute
+                    Exit Select
+                Case Keys.Snapshot
+                    Exit Select
+                Case Keys.Insert
+                    Exit Select
+                Case Keys.Help
+                    Exit Select
+                Case Keys.LWin
+                    Exit Select
+                Case Keys.RWin
+                    Exit Select
+                Case Keys.Apps
+                    Exit Select
+                Case Keys.Sleep
+                    Exit Select
+                Case Keys.F1, Keys.F2, Keys.F3, Keys.F4, Keys.F5, Keys.F6, Keys.F7
+                    Exit Select
+                Case Keys.F8, Keys.F9, Keys.F10, Keys.F11, Keys.F12, Keys.F13
+                    Exit Select
+                Case Keys.F14, Keys.F15, Keys.F16, Keys.F17, Keys.F18, Keys.F19, Keys.F20
+                    Exit Select
+                Case Keys.F21, Keys.F22, Keys.F23, Keys.F24
+                    Exit Select
+                Case Keys.NumLock
+                    Exit Select
+                Case Keys.Scroll
+                    Exit Select
+                Case Keys.LShiftKey, Keys.RShiftKey, Keys.LControlKey, Keys.RControlKey
+                    Exit Select
+                Case Keys.LMenu, Keys.RMenu
+                    Exit Select
+                Case Keys.BrowserBack, Keys.BrowserForward, Keys.BrowserRefresh, Keys.BrowserStop
+                    Exit Select
+                Case Keys.BrowserSearch, Keys.BrowserFavorites, Keys.BrowserHome
+                    Exit Select
+                Case Keys.VolumeMute, Keys.VolumeDown, Keys.VolumeUp
+                    Exit Select
+                Case Keys.MediaNextTrack, Keys.MediaPreviousTrack, Keys.MediaStop, Keys.MediaPlayPause
+                    Exit Select
+                Case Keys.LaunchMail
+                    Exit Select
+                Case Keys.SelectMedia
+                    Exit Select
+                Case Keys.LaunchApplication1
+                    Exit Select
+                Case Keys.LaunchApplication2
+                    Exit Select
+                Case Keys.ProcessKey
+                    Exit Select
+                Case Keys.Packet
+                    Exit Select
+                Case Keys.Attn
+                    Exit Select
+                Case Keys.Crsel
+                    Exit Select
+                Case Keys.Exsel
+                    Exit Select
+                Case Keys.EraseEof
+                    Exit Select
+                Case Keys.Play, Keys.Zoom
+                    Exit Select
+                Case Keys.NoName
+                    Exit Select
+                Case Keys.Pa1
+                    Exit Select
+                Case Keys.OemClear
+                    Exit Select
+                Case Else
+                    Stop
+                    Throw UnreachableException
+            End Select
+        End If
     End Sub
 End Class
