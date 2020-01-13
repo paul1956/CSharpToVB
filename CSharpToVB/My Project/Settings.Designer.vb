@@ -204,16 +204,40 @@ Namespace CSharpToVBApp.My_Project
                 Me("StartFolderConvertFromLastFile") = value
             End Set
         End Property
-        
-        <Global.System.Configuration.UserScopedSettingAttribute(),  _
-         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("True")>  _
+
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("True")>
         Public Property UpgradeRequired() As Boolean
             Get
                 Return CType(Me("UpgradeRequired"),Boolean)
             End Get
             Set
                 Me("UpgradeRequired") = value
+            End Set
+        End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("public void Main()"&Global.Microsoft.VisualBasic.ChrW(13)&Global.Microsoft.VisualBasic.ChrW(10)&"        {")>  _
+        Public Property BoilerPlateHeader() As String
+            Get
+                Return CType(Me("BoilerPlateHeader"),String)
+            End Get
+            Set
+                Me("BoilerPlateHeader") = value
+            End Set
+        End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("         }")>  _
+        Public Property BoilderPlateFooter() As String
+            Get
+                Return CType(Me("BoilderPlateFooter"),String)
+            End Get
+            Set
+                Me("BoilderPlateFooter") = value
             End Set
         End Property
     End Class

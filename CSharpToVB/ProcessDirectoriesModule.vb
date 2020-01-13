@@ -90,6 +90,7 @@ Public Module ProcessDirectoriesModule
             Next PathWithFileName
         Catch ex As Exception
             Stop
+            Throw
         End Try
         Dim subdirectoryEntries As String() = Directory.GetDirectories(path:=SourceDirectory)
         Try
@@ -111,6 +112,7 @@ Public Module ProcessDirectoriesModule
             Next Subdirectory
         Catch ex As Exception
             Stop
+            Throw
         End Try
         Return True
     End Function

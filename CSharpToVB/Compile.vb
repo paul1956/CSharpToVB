@@ -56,7 +56,7 @@ Public Module Compile
         Using ms As MemoryStream = New MemoryStream()
             Try
                 CompileResult = compilation.Emit(ms)
-            Catch ex As Exception
+            Finally
                 ' Ignore fatal compiler errors
             End Try
         End Using

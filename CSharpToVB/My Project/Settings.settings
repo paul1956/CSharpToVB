@@ -1,32 +1,5 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="" GeneratedClassName="Settings" UseMySettingsClassName="true">
-    <configSections>
-        <sectionGroup name="userSettings" type="System.Configuration.UserSettingsGroup, System.Configuration.ConfigurationManager, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" >
-            <section name="CSharpToVBApp.Settings" type="System.Configuration.ClientSettingsSection, System.Configuration.ConfigurationManager, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" allowExeDefinition="MachineToLocalUser" requirePermission="false" />
-        </sectionGroup>
-    </configSections>
-    <system.diagnostics>
-        <sources>
-            <!-- This section defines the logging configuration for My.Application.Log -->
-            <source name="DefaultSource" switchName="DefaultSwitch">
-                <listeners>
-                    <add name="FileLog"/>
-                    <!-- Uncomment the below section to write to the Application Event Log -->
-                    <!--<add name="EventLog"/>-->
-                </listeners>
-            </source>
-        </sources>
-        <switches>
-            <add name="DefaultSwitch" value="Information" />
-        </switches>
-        <sharedListeners>
-            <add name="FileLog"
-                 type="Microsoft.VisualBasic.Logging.FileLogTraceListener, Microsoft.VisualBasic, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL"
-                 initializeData="FileLogWriter"/>
-            <!-- Uncomment the below section and replace APPLICATION_NAME with the name of your application to write to the Application Event Log -->
-            <!--<add name="EventLog" type="System.Diagnostics.EventLogTraceListener" initializeData="APPLICATION_NAME"/> -->
-        </sharedListeners>
-    </system.diagnostics>
   <Profiles />
   <Settings>
     <Setting Name="ColorizeInput" Type="System.Boolean" Scope="User">
@@ -76,6 +49,13 @@
     </Setting>
     <Setting Name="UpgradeRequired" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="BoilerPlateHeader" Type="System.String" Scope="User">
+      <Value Profile="(Default)">public void Main()
+        {</Value>
+    </Setting>
+    <Setting Name="BoilderPlateFooter" Type="System.String" Scope="User">
+      <Value Profile="(Default)">         }</Value>
     </Setting>
   </Settings>
 </SettingsFile>

@@ -33,7 +33,7 @@ Imports VBMsgBox
 Public Class Form1
 #If Not netcoreapp5_0 Then
     'Minimum amount of time to show the splash screen.  0 means hide as soon as the app comes up.
-    Private ReadOnly _minimumSplashExposure As Integer = 15000
+    Private ReadOnly _minimumSplashExposure As Integer = 5000
 
     Private ReadOnly _splashLock As New Object
 
@@ -113,7 +113,7 @@ Public Class Form1
         If _splashTimer IsNot Nothing Then 'We only have a timer if there is a minimum time that the splash screen is supposed to be displayed.
             _splashTimer.Enabled = True 'enable the timer now that we are about to show the splash screen
         End If
-        System.Windows.Forms.Application.Run(_splashScreen)
+        Application.Run(_splashScreen)
     End Sub
 
     ''' <summary>
@@ -382,23 +382,23 @@ Public Class Form1
         Return builder.ToString()
     End Function
 
-    Private Sub ButtonStop_Click(sender As Object, e As EventArgs) Handles ButtonStop.Click
-        ButtonStop.Visible = False
+    Private Sub ButtonStop_Click(sender As Object, e As EventArgs) Handles ButtonStopConversion.Click
+        ButtonStopConversion.Visible = False
         _cancellationTokenSource.Cancel()
         Application.DoEvents()
     End Sub
 
-    Private Sub ButtonStop_MouseEnter(sender As Object, e As EventArgs) Handles ButtonStop.MouseEnter
+    Private Sub ButtonStop_MouseEnter(sender As Object, e As EventArgs) Handles ButtonStopConversion.MouseEnter
         LocalUseWaitCursor(MeForm:=Me, WaitCursorEnable:=False)
     End Sub
 
-    Private Sub ButtonStop_MouseLeave(sender As Object, e As EventArgs) Handles ButtonStop.MouseLeave
-        ButtonStop.BackColor = System.Drawing.SystemColors.Control
-        LocalUseWaitCursor(MeForm:=Me, WaitCursorEnable:=ButtonStop.Visible)
+    Private Sub ButtonStop_MouseLeave(sender As Object, e As EventArgs) Handles ButtonStopConversion.MouseLeave
+        ButtonStopConversion.BackColor = SystemColors.Control
+        LocalUseWaitCursor(MeForm:=Me, WaitCursorEnable:=ButtonStopConversion.Visible)
     End Sub
 
-    Private Sub ButtonStop_VisibleChanged(sender As Object, e As EventArgs) Handles ButtonStop.VisibleChanged
-        LocalUseWaitCursor(MeForm:=Me, WaitCursorEnable:=ButtonStop.Visible)
+    Private Sub ButtonStop_VisibleChanged(sender As Object, e As EventArgs) Handles ButtonStopConversion.VisibleChanged
+        LocalUseWaitCursor(MeForm:=Me, WaitCursorEnable:=ButtonStopConversion.Visible)
     End Sub
 
     Private Sub Colorize(FragmentRange As IEnumerable(Of Range), ConversionBuffer As RichTextBox, Lines As Integer, Optional failures As IEnumerable(Of Diagnostic) = Nothing)
@@ -771,7 +771,7 @@ Public Class Form1
     End Sub
 
     Private Sub mnuConvertConvertSnippet_Click(sender As Object, e As EventArgs) Handles mnuConvertConvertSnippet.Click
-        SetButtonStopAndCursor(MeForm:=Me, StopButton:=ButtonStop, StopButtonVisible:=True)
+        SetButtonStopAndCursor(MeForm:=Me, StopButton:=ButtonStopConversion, StopButtonVisible:=True)
         RichTextBoxErrorList.Text = ""
         RichTextBoxFileList.Text = ""
         LineNumbers_For_RichTextBoxOutput.Visible = False
@@ -795,7 +795,7 @@ Public Class Form1
             ConversionProgressBar.Value = 0
         End If
         mnuConvertConvertFolder.Enabled = True
-        SetButtonStopAndCursor(MeForm:=Me, StopButton:=ButtonStop, StopButtonVisible:=False)
+        SetButtonStopAndCursor(MeForm:=Me, StopButton:=ButtonStopConversion, StopButtonVisible:=False)
     End Sub
 
     <SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification:="Translation Needed")>
@@ -973,7 +973,7 @@ Public Class Form1
                             _cancellationTokenSource.Dispose()
                         End If
                         _cancellationTokenSource = New CancellationTokenSource
-                        Dim References() As MetadataReference = SharedReferences.CSharpReferences(Assembly.Load("System.Windows.Forms").Location, currentProject.MetadataReferences).ToArray
+                        Dim References() As MetadataReference = CSharpReferences(Assembly.Load("System.Windows.Forms").Location, currentProject.MetadataReferences).ToArray
                         Dim xmlDoc As New XmlDocument With {
                             .PreserveWhitespace = True
                         }
@@ -985,7 +985,7 @@ Public Class Form1
 
                         RichTextBoxErrorList.Text = ""
                         RichTextBoxFileList.Text = ""
-                        SetButtonStopAndCursor(Me, ButtonStop, StopButtonVisible:=True)
+                        SetButtonStopAndCursor(Me, ButtonStopConversion, StopButtonVisible:=True)
                         Dim FilesProcessed As Integer = 0
                         Dim TotalFilesToProcess As Integer = currentProject.Documents.Count
                         Dim CSPreprocessorSymbols As New List(Of String) From {
@@ -1019,7 +1019,7 @@ Public Class Form1
                         Next document
                     End If
                 End Using
-                SetButtonStopAndCursor(MeForm:=Me, StopButton:=ButtonStop, StopButtonVisible:=False)
+                SetButtonStopAndCursor(MeForm:=Me, StopButton:=ButtonStopConversion, StopButtonVisible:=False)
             Else
                 mnuConvertConvertFolder.Enabled = True
             End If
@@ -1173,21 +1173,22 @@ Public Class Form1
 
     Private Sub MRU_Update()
         ' clear MRU menu items...
-        Dim clsItems As New List(Of ToolStripItem)
+        Dim MRUToolStripItems As New List(Of ToolStripItem)
+        Dim MRUStartIndex As Integer = mnuFile.DropDownItems.Count - 2
         ' create a temporary collection containing every MRU menu item
         ' (identified by the tag text when added to the list)...
-        For Each clsMenu As ToolStripItem In mnuFile.DropDownItems
-            If Not clsMenu.Tag Is Nothing Then
-                If (clsMenu.Tag.ToString().StartsWith("MRU:", StringComparison.InvariantCulture)) Then
-                    clsItems.Add(clsMenu)
+        For Each FileMenuItem As ToolStripItem In mnuFile.DropDownItems
+            If Not FileMenuItem.Tag Is Nothing Then
+                If (FileMenuItem.Tag.ToString().StartsWith("MRU:", StringComparison.InvariantCulture)) Then
+                    MRUToolStripItems.Add(FileMenuItem)
                 End If
             End If
         Next
         ' iterate through list and remove each from menu...
-        For Each clsMenu As ToolStripItem In clsItems
-            RemoveHandler clsMenu.Click, AddressOf mnu_MRUList_Click
-            RemoveHandler clsMenu.MouseDown, AddressOf mnu_MRUList_MouseDown
-            mnuFile.DropDownItems.Remove(clsMenu)
+        For Each MRUToolStripItem As ToolStripItem In MRUToolStripItems
+            RemoveHandler MRUToolStripItem.Click, AddressOf mnu_MRUList_Click
+            RemoveHandler MRUToolStripItem.MouseDown, AddressOf mnu_MRUList_MouseDown
+            mnuFile.DropDownItems.Remove(MRUToolStripItem)
         Next
         ' display items (in reverse order so the most recent is on top)...
         For iCounter As Integer = My.Settings.MRU_Data.Count - 1 To 0 Step -1
@@ -1202,19 +1203,19 @@ Public Class Form1
             AddHandler clsItem.Click, AddressOf mnu_MRUList_Click
             AddHandler clsItem.MouseDown, AddressOf mnu_MRUList_MouseDown
             ' insert into DropDownItems list...
-            mnuFile.DropDownItems.Insert(mnuFile.DropDownItems.Count - 11, clsItem)
+            mnuFile.DropDownItems.Insert(mnuFile.DropDownItems.Count - MRUStartIndex, clsItem)
         Next
         ' show separator...
         My.Settings.Save()
         If My.Settings.MRU_Data.Count > 0 Then
-            mnuFileLastFolder.Text = IO.Path.GetDirectoryName(My.Settings.MRU_Data.Last)
+            mnuFileLastFolder.Text = Path.GetDirectoryName(My.Settings.MRU_Data.Last)
             mnuFileLastFolder.Visible = True
             mnuFileSep1.Visible = True
-            mnuFolderSep1.Visible = True
+            mnuFileSep2.Visible = True
         Else
             mnuFileLastFolder.Visible = False
             mnuFileSep1.Visible = False
-            mnuFolderSep1.Visible = False
+            mnuFileSep2.Visible = False
         End If
 
     End Sub
@@ -1281,10 +1282,10 @@ Public Class Form1
         Try
             RichTextBoxErrorList.Text = ""
             RichTextBoxFileList.Text = ""
-            SetButtonStopAndCursor(Me, ButtonStop, StopButtonVisible:=True)
+            SetButtonStopAndCursor(Me, ButtonStopConversion, StopButtonVisible:=True)
             Dim TotalFilesToProcess As Long = GetFileCount(SourceDirectory, SourceLanguageExtension, My.Settings.SkipBinAndObjFolders, My.Settings.SkipTestResourceFiles)
             ' Process the list of files found in the directory.
-            Return ProcessDirectory(SourceDirectory, TargetDirectory, MeForm:=Me, ButtonStop, RichTextBoxFileList, LastFileNameWithPath, SourceLanguageExtension, FilesProcessed, TotalFilesToProcess, AddressOf ProcessFile, CancelToken)
+            Return ProcessDirectory(SourceDirectory, TargetDirectory, MeForm:=Me, ButtonStopConversion, RichTextBoxFileList, LastFileNameWithPath, SourceLanguageExtension, FilesProcessed, TotalFilesToProcess, AddressOf ProcessFile, CancelToken)
         Catch ex As OperationCanceledException
             ConversionProgressBar.Value = 0
         Catch ex As Exception
@@ -1292,7 +1293,7 @@ Public Class Form1
             Stop
             End
         Finally
-            SetButtonStopAndCursor(Me, ButtonStop, StopButtonVisible:=False)
+            SetButtonStopAndCursor(Me, ButtonStopConversion, StopButtonVisible:=False)
         End Try
         Return False
     End Function
@@ -1308,7 +1309,7 @@ Public Class Form1
         If My.Settings.IgnoreFileList.Contains(SourceFileNameWithPath) Then
             Return True
         End If
-        ButtonStop.Visible = True
+        ButtonStopConversion.Visible = True
         RichTextBoxConversionOutput.Text = ""
         MRU_AddTo(SourceFileNameWithPath)
         Dim fsRead As FileStream = File.OpenRead(SourceFileNameWithPath)
@@ -1357,7 +1358,7 @@ Public Class Form1
             Dim Delay As Integer = CInt((1000 * My.Settings.ConversionDelay) / LoopSleep)
             For i As Integer = 0 To Delay
                 Application.DoEvents()
-                Threading.Thread.Sleep(LoopSleep)
+                Thread.Sleep(LoopSleep)
                 If CancelToken.IsCancellationRequested Then
                     Return False
 
@@ -1547,4 +1548,7 @@ Public Class Form1
         MRU_Update()
     End Sub
 
+    Private Sub mnuFileSnippetLoadTemplate_Click(sender As Object, e As EventArgs) Handles mnuFileSnippetLoadTemplate.Click
+        RichTextBoxConversionInput.Text = $"{My.Settings.BoilerPlateHeader}{vbCrLf}{vbCrLf}{My.Settings.BoilderPlateFooter}"
+    End Sub
 End Class
