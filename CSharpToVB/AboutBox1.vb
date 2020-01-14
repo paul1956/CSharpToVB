@@ -3,7 +3,7 @@ Public NotInheritable Class AboutBox1
 
     Private Sub AboutBox1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         ' Set the title of the form.
-        Dim ApplicationTitle As String = If(String.IsNullOrEmpty(My.Info.Title), IO.Path.GetFileNameWithoutExtension(My.Info.AssemblyName), My.Info.Title)
+        Dim ApplicationTitle As String = If(My.Info.Title, IO.Path.GetFileNameWithoutExtension(My.Info.AssemblyName))
         Text = $"About {ApplicationTitle}"
         ' Initialize all of the text displayed on the About Box.
         ' TODO: Customize the application's assembly information in the "Application" pane of the project

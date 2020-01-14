@@ -13,12 +13,7 @@ Public NotInheritable Class SplashScreen1
         '  properties dialog (under the "Project" menu).
 
         'Application title
-        If Not String.IsNullOrEmpty(My.Info.ProductName) Then
-            ApplicationTitle.Text = My.Info.ProductName
-        Else
-            'If the application title is missing, use the application name, without the extension
-            ApplicationTitle.Text = IO.Path.GetFileNameWithoutExtension(My.Info.AssemblyName)
-        End If
+        ApplicationTitle.Text = If(String.IsNullOrWhiteSpace(My.Info.Title), IO.Path.GetFileNameWithoutExtension(My.Info.AssemblyName), My.Info.Title)
 
         'Format the version information using the text set into the Version control at design time as the
         '  formatting string.  This allows for effective localization if desired.

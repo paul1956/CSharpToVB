@@ -10,6 +10,7 @@
   <PropertyGroup>
     <LangVersion>16</LangVersion>
     <AssemblyName>CSharpToVBApp</AssemblyName>
+    <AssemblyTitle>C# To VB Converter</AssemblyTitle>
     <ApplicationManifest>My Project\app.manifest</ApplicationManifest>
     <NeutralLanguage>en-US</NeutralLanguage>
     <Authors>Paul M Cohen</Authors>
