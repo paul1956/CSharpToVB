@@ -63,7 +63,7 @@ Namespace CSharpToVBCodeConverter
                 If String.Compare(ident.Key, ConvertedIdentifier, ignoreCase:=True, Globalization.CultureInfo.InvariantCulture) = 0 Then
                     ' If we are here we have seen the variable in a different case so fix it
                     If s_usedIdentifiers(ident.Key).IsType Then
-                        s_usedIdentifiers.Add(ConvertedIdentifier, New SymbolTableEntry(_Name:=ConvertedIdentifier, _IsType:=False))
+                        s_usedIdentifiers.Add(ConvertedIdentifier, New SymbolTableEntry(Name:=ConvertedIdentifier, IsType:=False))
                     Else
                         Dim NewUniqueName As String
                         If ident.Value.Name.StartsWith("_", StringComparison.InvariantCulture) Then
@@ -76,7 +76,7 @@ Namespace CSharpToVBCodeConverter
                                                         $"_{ConvertedIdentifier}",
                                                         $"{ConvertedIdentifier}_Renamed"))
                         End If
-                        s_usedIdentifiers.Add(ConvertedIdentifier, New SymbolTableEntry(_Name:=NewUniqueName, _IsType:=QualifiedNameOrTypeName))
+                        s_usedIdentifiers.Add(ConvertedIdentifier, New SymbolTableEntry(Name:=NewUniqueName, IsType:=QualifiedNameOrTypeName))
                     End If
                     Return VBFactory.Identifier(s_usedIdentifiers(ConvertedIdentifier).Name).WithConvertedTriviaFrom(id)
                 End If

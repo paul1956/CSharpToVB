@@ -17,7 +17,7 @@ Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace CSharpToVBCodeConverter.Visual_Basic
+Namespace CSharpToVBCodeConverter.DestVisualBasic
 
     Partial Public Class CSharpConverter
 
@@ -107,7 +107,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                             Case VB.SyntaxKind.EndIfDirectiveTrivia
                                 FoundEndIf = True
                                 If Not StatementTrailingTrivia.Any Then
-                                    StatementTrailingTrivia.Add(VB_EOLTrivia)
+                                    StatementTrailingTrivia.Add(VBEOLTrivia)
                                 End If
                                 StatementTrailingTrivia.Add(Trivia)
                             Case Else
@@ -153,20 +153,20 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                         endStmt = VBFactory.EndGetStatement()
                     Case CS.SyntaxKind.SetAccessorDeclaration
                         blockKind = VB.SyntaxKind.SetAccessorBlock
-                        ValueParam = VBFactory.Parameter(Value_ModifiedIdentifier).
+                        ValueParam = VBFactory.Parameter(ValueModifiedIdentifier).
                             WithAsClause(VBFactory.SimpleAsClause(DirectCast(Parent.Type.Accept(Me), VBS.TypeSyntax).
                             WithLeadingTrivia(SpaceTrivia)))
                         stmt = VBFactory.SetAccessorStatement(Attributes, VBFactory.TokenList(Modifiers), VBFactory.ParameterList(VBFactory.SingletonSeparatedList(ValueParam)))
                         endStmt = VBFactory.EndSetStatement()
                     Case CS.SyntaxKind.AddAccessorDeclaration
                         blockKind = VB.SyntaxKind.AddHandlerAccessorBlock
-                        ValueParam = VBFactory.Parameter(Value_ModifiedIdentifier).
+                        ValueParam = VBFactory.Parameter(ValueModifiedIdentifier).
                             WithAsClause(VBFactory.SimpleAsClause(DirectCast(Parent.Type.Accept(Me), VBS.TypeSyntax)))
                         stmt = VBFactory.AddHandlerAccessorStatement(Attributes, VBFactory.TokenList(Modifiers), VBFactory.ParameterList(VBFactory.SingletonSeparatedList(ValueParam)))
                         endStmt = VBFactory.EndAddHandlerStatement()
                     Case CS.SyntaxKind.RemoveAccessorDeclaration
                         blockKind = VB.SyntaxKind.RemoveHandlerAccessorBlock
-                        ValueParam = VBFactory.Parameter(Value_ModifiedIdentifier).
+                        ValueParam = VBFactory.Parameter(ValueModifiedIdentifier).
                             WithAsClause(VBFactory.SimpleAsClause(DirectCast(Parent.Type.Accept(Me), VBS.TypeSyntax)))
                         stmt = VBFactory.RemoveHandlerAccessorStatement(Attributes, VBFactory.TokenList(Modifiers), VBFactory.ParameterList(VBFactory.SingletonSeparatedList(ValueParam)))
                         endStmt = VBFactory.EndRemoveHandlerStatement()
@@ -693,7 +693,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                     Attributes.Insert(0, VBFactory.AttributeList(VBFactory.SingletonSeparatedList(_extensionAttribute)).WithLeadingTrivia(LeadingTrivia))
                     LeadingTrivia.Clear()
                     If Not DirectCast(node.SyntaxTree, CS.CSharpSyntaxTree).HasUsingDirective(CompilerServices) Then
-                        Dim ImportComilierServices As VBS.ImportsStatementSyntax = VBFactory.ImportsStatement(VBFactory.SingletonSeparatedList(Of VBS.ImportsClauseSyntax)(VBFactory.SimpleImportsClause(VBFactory.ParseName(CompilerServices)))).WithAppendedTrailingTrivia(VB_EOLTrivia)
+                        Dim ImportComilierServices As VBS.ImportsStatementSyntax = VBFactory.ImportsStatement(VBFactory.SingletonSeparatedList(Of VBS.ImportsClauseSyntax)(VBFactory.SimpleImportsClause(VBFactory.ParseName(CompilerServices)))).WithAppendedTrailingTrivia(VBEOLTrivia)
                         If Not _allImports.ContainsName(CompilerServices) Then
                             _allImports.Add(ImportComilierServices)
                         End If
@@ -738,7 +738,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                             NewModifierLeadingTrivia.AddRange(Modifiers(0).LeadingTrivia)
                             NewModifierLeadingTrivia.AddRange(ConvertTrivia(CS_NodeLeadingTrivia))
                             If Not NewModifierLeadingTrivia.FirstOrDefault.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                                NewModifierLeadingTrivia.Insert(0, VB_EOLTrivia)
+                                NewModifierLeadingTrivia.Insert(0, VBEOLTrivia)
                             End If
                             Modifiers(0) = Modifiers(0).WithLeadingTrivia(NewModifierLeadingTrivia)
                         End If
@@ -1047,7 +1047,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Else
                     Keyword = PropertyKeyword
                     If TypeLeadingTrivia.Count > 0 Then
-                        TypeLeadingTrivia.Insert(0, VB_EOLTrivia)
+                        TypeLeadingTrivia.Insert(0, VBEOLTrivia)
                     End If
                 End If
                 Dim PrependedTrivia As List(Of SyntaxTrivia) = DedupLeadingTrivia(node, Keyword, Attributes, Modifiers)

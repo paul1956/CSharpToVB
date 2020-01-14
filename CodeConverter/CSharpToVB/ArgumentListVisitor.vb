@@ -15,7 +15,7 @@ Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace CSharpToVBCodeConverter.Visual_Basic
+Namespace CSharpToVBCodeConverter.DestVisualBasic
 
     Partial Public Class CSharpConverter
 
@@ -52,7 +52,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Dim NewLeadingTrivia As New List(Of SyntaxTrivia)
                 Dim NewTrailingTrivia As New List(Of SyntaxTrivia)
                 Try
-                    If node.RefKindKeyword.Text = "ref" Then
+                    If (Not node.RefKindKeyword.IsKind(CS.SyntaxKind.None)) AndAlso node.RefKindKeyword.Text = "ref" Then
                         Dim Expression As VBS.ExpressionSyntax = DirectCast(node.Expression.Accept(Me), VBS.ExpressionSyntax)
                         Dim IdentifierString As String = Expression.ToString.Replace("[", "", StringComparison.InvariantCulture).Replace("]", "", StringComparison.InvariantCulture)
                         Dim StatementWithIssues As CS.CSharpSyntaxNode = GetStatementwithIssues(node)

@@ -12,7 +12,7 @@ Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace CSharpToVBCodeConverter.Visual_Basic
+Namespace CSharpToVBCodeConverter.DestVisualBasic
 
     Public Module AttributeAndModifierSupport
 
@@ -70,7 +70,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
             For i As Integer = 0 To CS_Modifiers.Count - 1
                 Dim CS_Modifier As SyntaxToken = CS_Modifiers(i)
                 If i = 0 AndAlso Not FirstModifier Then
-                    CS_Modifier = CS_Modifier.WithLeadingTrivia(CS_SpaceTrivia)
+                    CS_Modifier = CS_Modifier.WithLeadingTrivia(CSSpaceTrivia)
                 End If
                 Dim VB_Modifier As SyntaxToken = ConvertModifier(CS_Modifier, IsModule, Context, FoundVisibility)
                 Dim TrailingTrivia As New List(Of SyntaxTrivia)
@@ -182,7 +182,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
 
         Private Function RestructureModifier(NodeModifier As SyntaxToken, i As Integer, ByRef AttributesNotFound As Boolean, ByRef StatementLeadingTrivia As List(Of SyntaxTrivia), ByRef StatementTrailingTrivia As List(Of SyntaxTrivia)) As SyntaxToken
             If (Not AttributesNotFound) AndAlso NodeModifier.RawKind = VB.SyntaxKind.EmptyToken AndAlso NodeModifier.HasLeadingTrivia AndAlso NodeModifier.LeadingTrivia.ContainsCommentOrDirectiveTrivia Then
-                StatementTrailingTrivia.Add(VB_EOLTrivia)
+                StatementTrailingTrivia.Add(VBEOLTrivia)
                 StatementTrailingTrivia.AddRange(NodeModifier.LeadingTrivia)
                 NodeModifier = NodeModifier.WithLeadingTrivia(SpaceTrivia)
             Else
@@ -191,7 +191,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
             If NodeModifier.TrailingTrivia.ContainsCommentOrDirectiveTrivia Then
                 StatementLeadingTrivia.AddRange(RelocateDirectiveDisabledTrivia(NodeModifier.TrailingTrivia, StatementTrailingTrivia, RemoveEOL:=False))
                 If StatementLeadingTrivia.Count > 0 AndAlso StatementLeadingTrivia.Last.RawKind <> VB.SyntaxKind.EndOfLineTrivia Then
-                    StatementLeadingTrivia.Add(VB_EOLTrivia)
+                    StatementLeadingTrivia.Add(VBEOLTrivia)
                 End If
                 Return NodeModifier.WithTrailingTrivia(SpaceTrivia)
             End If
@@ -209,7 +209,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
             Else
                 If i = 0 Then
                     If Modifier.LeadingTrivia.ContainsCommentOrDirectiveTrivia Then
-                        StatementTrailingTrivia.Add(VB_EOLTrivia)
+                        StatementTrailingTrivia.Add(VBEOLTrivia)
                     End If
                     StatementTrailingTrivia.AddRange(Modifier.LeadingTrivia)
                 Else
@@ -221,8 +221,8 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
             Return NewModifierLeadingTrivia
         End Function
 
-        Public Function ConvertModifiers(CS_Modifiers As SyntaxTokenList, IsModule As Boolean, Optional Context As TokenContext = TokenContext.[Global]) As List(Of SyntaxToken)
-            Return ConvertModifiersCore(CS_Modifiers, IsModule, Context).ToList
+        Public Function ConvertModifiers(CSModifiers As SyntaxTokenList, IsModule As Boolean, Optional Context As TokenContext = TokenContext.[Global]) As List(Of SyntaxToken)
+            Return ConvertModifiersCore(CSModifiers, IsModule, Context).ToList
         End Function
 
         Public Function ConvertModifierTokenKind(t As CS.SyntaxKind, IsModule As Boolean, context As TokenContext, ByRef FoundVisibility As Boolean) As SyntaxToken
@@ -310,9 +310,9 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
         End Function
 
         <Extension>
-        Public Function RestructureAttributesAndModifiers(VB_Node As VBS.StatementSyntax, HasAttributes As Boolean, HasModifiers As Boolean) As VBS.StatementSyntax
+        Public Function RestructureAttributesAndModifiers(VBStatementNode As VBS.StatementSyntax, HasAttributes As Boolean, HasModifiers As Boolean) As VBS.StatementSyntax
             If Not (HasAttributes OrElse HasModifiers) Then
-                Return VB_Node
+                Return VBStatementNode
             End If
 
             Dim AttributeLists As New List(Of VBS.AttributeListSyntax)
@@ -322,8 +322,8 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
             Dim StatementLeadingTrivia As New List(Of SyntaxTrivia)
             Dim StatementTrailingTrivia As New List(Of SyntaxTrivia)
 
-            If TypeOf VB_Node Is VBS.ClassStatementSyntax Then
-                Dim ClassStatement As VBS.ClassStatementSyntax = DirectCast(VB_Node, VBS.ClassStatementSyntax)
+            If TypeOf VBStatementNode Is VBS.ClassStatementSyntax Then
+                Dim ClassStatement As VBS.ClassStatementSyntax = DirectCast(VBStatementNode, VBS.ClassStatementSyntax)
                 If HasAttributes Then
                     RestructureAttributeList(ClassStatement.AttributeLists, AttributeLists, NewAttributeLeadingTrivia, StatementLeadingTrivia, StatementTrailingTrivia)
                     ClassStatement = ClassStatement.WithAttributeLists(VBFactory.List(AttributeLists))
@@ -344,8 +344,8 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                                                                         WithAppendedTrailingTrivia(StatementTrailingTrivia)
             End If
 
-            If TypeOf VB_Node Is VBS.EnumStatementSyntax Then
-                Dim EnumStatement As VBS.EnumStatementSyntax = DirectCast(VB_Node, VBS.EnumStatementSyntax)
+            If TypeOf VBStatementNode Is VBS.EnumStatementSyntax Then
+                Dim EnumStatement As VBS.EnumStatementSyntax = DirectCast(VBStatementNode, VBS.EnumStatementSyntax)
 
                 If HasAttributes Then
                     RestructureAttributeList(EnumStatement.AttributeLists, AttributeLists, NewAttributeLeadingTrivia, StatementLeadingTrivia, StatementTrailingTrivia)
@@ -366,8 +366,8 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                                                                         WithAppendedTrailingTrivia(StatementTrailingTrivia)
             End If
 
-            If TypeOf VB_Node Is VBS.FieldDeclarationSyntax Then
-                Dim FieldStatement As VBS.FieldDeclarationSyntax = DirectCast(VB_Node, VBS.FieldDeclarationSyntax)
+            If TypeOf VBStatementNode Is VBS.FieldDeclarationSyntax Then
+                Dim FieldStatement As VBS.FieldDeclarationSyntax = DirectCast(VBStatementNode, VBS.FieldDeclarationSyntax)
 
                 If HasAttributes Then
                     RestructureAttributeList(FieldStatement.AttributeLists, AttributeLists, NewAttributeLeadingTrivia, StatementLeadingTrivia, StatementTrailingTrivia)
@@ -384,8 +384,8 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Return FieldStatement.With(StatementLeadingTrivia, StatementTrailingTrivia)
             End If
 
-            If TypeOf VB_Node Is VBS.InterfaceStatementSyntax Then
-                Dim InterfaceStatement As VBS.InterfaceStatementSyntax = DirectCast(VB_Node, VBS.InterfaceStatementSyntax)
+            If TypeOf VBStatementNode Is VBS.InterfaceStatementSyntax Then
+                Dim InterfaceStatement As VBS.InterfaceStatementSyntax = DirectCast(VBStatementNode, VBS.InterfaceStatementSyntax)
 
                 If HasAttributes Then
                     RestructureAttributeList(InterfaceStatement.AttributeLists, AttributeLists, NewAttributeLeadingTrivia, StatementLeadingTrivia, StatementTrailingTrivia)
@@ -406,8 +406,8 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                                                                     WithAppendedTrailingTrivia(StatementTrailingTrivia)
             End If
 
-            If TypeOf VB_Node Is VBS.MethodStatementSyntax Then
-                Dim MethodStatement As VBS.MethodStatementSyntax = DirectCast(VB_Node, VBS.MethodStatementSyntax)
+            If TypeOf VBStatementNode Is VBS.MethodStatementSyntax Then
+                Dim MethodStatement As VBS.MethodStatementSyntax = DirectCast(VBStatementNode, VBS.MethodStatementSyntax)
 
                 If HasAttributes Then
                     RestructureAttributeList(MethodStatement.AttributeLists, AttributeLists, NewAttributeLeadingTrivia, StatementLeadingTrivia, StatementTrailingTrivia)
@@ -428,8 +428,8 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                                                                         WithAppendedTrailingTrivia(StatementTrailingTrivia)
             End If
 
-            If TypeOf VB_Node Is VBS.ModuleStatementSyntax Then
-                Dim ModuleStatement As VBS.ModuleStatementSyntax = DirectCast(VB_Node, VBS.ModuleStatementSyntax)
+            If TypeOf VBStatementNode Is VBS.ModuleStatementSyntax Then
+                Dim ModuleStatement As VBS.ModuleStatementSyntax = DirectCast(VBStatementNode, VBS.ModuleStatementSyntax)
 
                 If HasAttributes Then
                     RestructureAttributeList(ModuleStatement.AttributeLists, AttributeLists, NewAttributeLeadingTrivia, StatementLeadingTrivia, StatementTrailingTrivia)
@@ -450,8 +450,8 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                                                                         WithAppendedTrailingTrivia(StatementTrailingTrivia)
             End If
 
-            If TypeOf VB_Node Is VBS.PropertyBlockSyntax Then
-                Dim PropertyBlock As VBS.PropertyBlockSyntax = DirectCast(VB_Node, VBS.PropertyBlockSyntax)
+            If TypeOf VBStatementNode Is VBS.PropertyBlockSyntax Then
+                Dim PropertyBlock As VBS.PropertyBlockSyntax = DirectCast(VBStatementNode, VBS.PropertyBlockSyntax)
                 Dim PropertyStatement As VBS.PropertyStatementSyntax = PropertyBlock.PropertyStatement
 
                 If HasAttributes Then
@@ -470,13 +470,13 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Dim NewPropertyStatement As VBS.PropertyStatementSyntax = PropertyStatement.ReplaceToken(PropertyStatement.PropertyKeyword, NewPropertyKeyword)
                 Dim NewPropertyBlock As VBS.PropertyBlockSyntax = PropertyBlock.WithPropertyStatement(NewPropertyStatement.WithLeadingTrivia(StatementLeadingTrivia))
                 If Not NewPropertyBlock.GetTrailingTrivia.Last.IsEndOfLine Then
-                    StatementTrailingTrivia.Add(VB_EOLTrivia)
+                    StatementTrailingTrivia.Add(VBEOLTrivia)
                 End If
                 Return NewPropertyBlock.WithAppendedTrailingTrivia(StatementTrailingTrivia)
             End If
 
-            If TypeOf VB_Node Is VBS.StructureStatementSyntax Then
-                Dim StructureStatement As VBS.StructureStatementSyntax = DirectCast(VB_Node, VBS.StructureStatementSyntax)
+            If TypeOf VBStatementNode Is VBS.StructureStatementSyntax Then
+                Dim StructureStatement As VBS.StructureStatementSyntax = DirectCast(VBStatementNode, VBS.StructureStatementSyntax)
 
                 If HasAttributes Then
                     RestructureAttributeList(StructureStatement.AttributeLists, AttributeLists, NewAttributeLeadingTrivia, StatementLeadingTrivia, StatementTrailingTrivia)
@@ -496,8 +496,8 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                                                                          WithLeadingTrivia(StatementLeadingTrivia).
                                                                          WithAppendedTrailingTrivia(StatementTrailingTrivia)
             End If
-            If TypeOf VB_Node Is VBS.SubNewStatementSyntax Then
-                Dim SubNewStatement As VBS.SubNewStatementSyntax = DirectCast(VB_Node, VBS.SubNewStatementSyntax)
+            If TypeOf VBStatementNode Is VBS.SubNewStatementSyntax Then
+                Dim SubNewStatement As VBS.SubNewStatementSyntax = DirectCast(VBStatementNode, VBS.SubNewStatementSyntax)
 
                 If HasAttributes Then
                     RestructureAttributeList(SubNewStatement.AttributeLists, AttributeLists, NewAttributeLeadingTrivia, StatementLeadingTrivia, StatementTrailingTrivia)
@@ -519,7 +519,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
             End If
 
             Throw UnreachableException
-            Return VB_Node
+            Return VBStatementNode
         End Function
 
         Private Function RestructureAttributeList(CS_AttributeLists1 As SyntaxList(Of VBS.AttributeListSyntax), AttributeLists As List(Of VBS.AttributeListSyntax), ByRef NewAttributeLeadingTrivia As SyntaxTriviaList, ByRef StatementLeadingTrivia As List(Of SyntaxTrivia), ByRef StatementTrailingTrivia As List(Of SyntaxTrivia)) As Boolean

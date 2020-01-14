@@ -13,7 +13,7 @@ Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 
-Namespace CSharpToVBCodeConverter.Visual_Basic
+Namespace CSharpToVBCodeConverter.DestVisualBasic
 
     Public Module TriviaListSupport
 
@@ -29,7 +29,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 End If
                 If FoundDirective Then
                     If StatementTrailingTrivia.Count = 0 Then
-                        StatementTrailingTrivia.Add(VB_EOLTrivia)
+                        StatementTrailingTrivia.Add(VBEOLTrivia)
                     End If
                     StatementTrailingTrivia.Add(t)
                 Else
@@ -55,7 +55,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                     End If
                 Else
                     If t.IsDirective Then
-                        StatementTrivia.Add(VB_EOLTrivia)
+                        StatementTrivia.Add(VBEOLTrivia)
                         StatementTrivia.Add(t)
                         FoundDirective = True
                     Else
@@ -78,7 +78,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                     End If
                 Else
                     If t.IsComment Then
-                        StatementLeadingTrivia.Add(VB_EOLTrivia)
+                        StatementLeadingTrivia.Add(VBEOLTrivia)
                         StatementLeadingTrivia.Add(t)
                         FoundComment = True
                     Else

@@ -188,11 +188,11 @@ Namespace CSharpToVBCodeConverter.Util
                             FinalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(Trivia))
                             Select Case NextTrivia.RawKind
                                 Case VB.SyntaxKind.None
-                                    FinalLeadingTriviaList.Add(VB_EOLTrivia)
+                                    FinalLeadingTriviaList.Add(VBEOLTrivia)
                                 Case VB.SyntaxKind.WhitespaceTrivia
-                                    FinalLeadingTriviaList.Add(VB_EOLTrivia)
+                                    FinalLeadingTriviaList.Add(VBEOLTrivia)
                                 Case VB.SyntaxKind.IfDirectiveTrivia, VB.SyntaxKind.DisabledTextTrivia, VB.SyntaxKind.EndIfDirectiveTrivia
-                                    FinalLeadingTriviaList.Add(VB_EOLTrivia)
+                                    FinalLeadingTriviaList.Add(VBEOLTrivia)
                                 Case Else
                                     Stop
                             End Select

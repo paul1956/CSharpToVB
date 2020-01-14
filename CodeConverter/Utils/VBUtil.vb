@@ -7,7 +7,7 @@ Option Strict On
 
 Imports System.Runtime.CompilerServices
 
-Imports CSharpToVBCodeConverter.Visual_Basic
+Imports CSharpToVBCodeConverter.DestVisualBasic
 
 Imports Microsoft.CodeAnalysis
 

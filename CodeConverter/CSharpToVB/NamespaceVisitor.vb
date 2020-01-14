@@ -19,7 +19,7 @@ Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace CSharpToVBCodeConverter.Visual_Basic
+Namespace CSharpToVBCodeConverter.DestVisualBasic
 
     Partial Public Class CSharpConverter
 
@@ -274,7 +274,7 @@ End Function
                                     Case VB.SyntaxKind.EndIfDirectiveTrivia
                                         NewTrailingTrivia.Add(Trivia)
                                         If NextTrivia.IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
-                                            NewTrailingTrivia.Add(VB_EOLTrivia)
+                                            NewTrailingTrivia.Add(VBEOLTrivia)
                                             NewTrailingTrivia.Add(NextTrivia)
                                             i += 1
                                         End If

@@ -233,12 +233,12 @@ Namespace CSharpToVBCodeConverter.Util
             If Trivia.IsKind(VB.SyntaxKind.DisabledTextTrivia) Then
                 NewTriviaList.AddRange(LeadingTriviaList)
                 NewTriviaList.Add(VBFactory.CommentTrivia($" ' TODO VB does not allow Disabled Text here, original text:"))
-                NewTriviaList.Add(VB_EOLTrivia)
+                NewTriviaList.Add(VBEOLTrivia)
                 Dim TextStrings() As String = Trivia.ToFullString.Split({vbCrLf}, StringSplitOptions.RemoveEmptyEntries)
                 For Each TriviaAsString In TextStrings
                     NewTriviaList.AddRange(LeadingTriviaList)
                     NewTriviaList.Add(VBFactory.CommentTrivia($" ' {TriviaAsString}".Replace("  ", " ", StringComparison.InvariantCulture).TrimEnd))
-                    NewTriviaList.Add(VB_EOLTrivia)
+                    NewTriviaList.Add(VBEOLTrivia)
                 Next
                 If NewTriviaList.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
                     NewTriviaList.RemoveAt(NewTriviaList.Count - 1)
@@ -266,7 +266,7 @@ Namespace CSharpToVBCodeConverter.Util
             NewTriviaList = New List(Of SyntaxTrivia) From {
                 SpaceTrivia,
                 LineContinuation,
-                VB_EOLTrivia,
+                VBEOLTrivia,
                 SpaceTrivia,
                 LineContinuation,
                 SpaceTrivia,

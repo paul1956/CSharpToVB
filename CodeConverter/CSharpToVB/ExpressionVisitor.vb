@@ -21,7 +21,7 @@ Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 
-Namespace CSharpToVBCodeConverter.Visual_Basic
+Namespace CSharpToVBCodeConverter.DestVisualBasic
 
     Partial Public Class CSharpConverter
 
@@ -224,7 +224,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Catch ex As Exception
                     ' ignore
                 End Try
-                Dim LeftAndRightIsString As Boolean? = LeftNodeTypeInfo.ConvertedType?.SpecialType = System_String OrElse RightNodeTypeInfo.ConvertedType?.SpecialType = System_String
+                Dim LeftAndRightIsString As Boolean? = LeftNodeTypeInfo.ConvertedType?.SpecialType = SystemString OrElse RightNodeTypeInfo.ConvertedType?.SpecialType = SystemString
                 Return LeftAndRightIsString.HasValue AndAlso LeftAndRightIsString.Value
             End Function
 
@@ -378,7 +378,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                             FinalLeadingTriviaList.Add(LineContinuation)
                             FinalLeadingTriviaList.Add(Trivia)
                             If i < InitialTriviaListUBound AndAlso Not InitialTriviaList(i + 1).IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                                FinalLeadingTriviaList.Add(VB_EOLTrivia)
+                                FinalLeadingTriviaList.Add(VBEOLTrivia)
                             End If
                         Case VB.SyntaxKind.DisableWarningDirectiveTrivia, VB.SyntaxKind.EnableWarningDirectiveTrivia
                             FirstTrivia = False
@@ -525,7 +525,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                             AfterWhiteSpace = False
                         Case VB.SyntaxKind.EndIfDirectiveTrivia
                             FinalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(Trivia))
-                            FinalLeadingTriviaList.Add(VB_EOLTrivia)
+                            FinalLeadingTriviaList.Add(VBEOLTrivia)
                             AfterLineContinuation = False
                             AfterWhiteSpace = False
                         Case Else
@@ -772,7 +772,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
 
                             Dim TempTupleIdentifier As SeparatedSyntaxList(Of ModifiedIdentifierSyntax) = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(TupleName))
                             Dim VariableDeclaration As SeparatedSyntaxList(Of VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(TempTupleIdentifier, asClause:=Nothing, Initializer))
-                            Dim DimStatement As LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(DimModifiersTokenList, VariableDeclaration).WithPrependedLeadingTrivia(VBFactory.CommentTrivia($" ' TODO: VB has no equivalent to C# deconstruction declarations, an attempt was made to convert."), VB_EOLTrivia)
+                            Dim DimStatement As LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(DimModifiersTokenList, VariableDeclaration).WithPrependedLeadingTrivia(VBFactory.CommentTrivia($" ' TODO: VB has no equivalent to C# deconstruction declarations, an attempt was made to convert."), VBEOLTrivia)
                             StatementList = StatementList.Add(DimStatement)
 
                             For i As Integer = 0 To VariableNames.Count - 1
@@ -873,7 +873,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                             Next
                         End If
                         Dim TryStatement As TryStatementSyntax = VBFactory.TryStatement.
-                            WithLeadingTrivia(VB_EOLTrivia).
+                            WithLeadingTrivia(VBEOLTrivia).
                             WithPrependedLeadingTrivia(VBFactory.CommentTrivia("' TODO: This Try Block can be removed"))
                         Dim Throwstatement As SyntaxList(Of StatementSyntax) = VBFactory.SingletonList(Of StatementSyntax)(VBFactory.ThrowStatement)
                         Dim CatchBlock As SyntaxList(Of CatchBlockSyntax) = VBFactory.SingletonList(VBFactory.CatchBlock(VBFactory.CatchStatement,
@@ -1012,7 +1012,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                                             End Select
                                         Next
                                         If FoundEOL Then
-                                            SeparatorTrailingTrivia.Add(VB_EOLTrivia)
+                                            SeparatorTrailingTrivia.Add(VBEOLTrivia)
                                             FoundEOL = False
                                         End If
                                         LeftExpression = LeftExpression.With({SpaceTrivia}, {SpaceTrivia})
@@ -1055,7 +1055,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                             Dim FirstExpression As ExpressionSyntax = DirectCast(LeftVBNode, ExpressionSyntax)
                             If FirstExpression.ContainsEOLTrivia Then
                                 FirstExpression = FirstExpression.WithRestructuredingEOLTrivia
-                                CommaTokenWithTrivia = CommaTokenWithTrivia.WithTrailingTrivia(VB_EOLTrivia)
+                                CommaTokenWithTrivia = CommaTokenWithTrivia.WithTrailingTrivia(VBEOLTrivia)
                             End If
                             Dim Type As TypeSyntax = DirectCast(RightVBNode, TypeSyntax)
                             Dim TryCastExpression As TryCastExpressionSyntax = VBFactory.TryCastExpression(
@@ -1172,7 +1172,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                             End Select
                         Next
                         If FoundEOL Then
-                            NewOperatorTrailingTrivia.Add(VB_EOLTrivia)
+                            NewOperatorTrailingTrivia.Add(VBEOLTrivia)
                         End If
                         operatorToken = operatorToken.WithTrailingTrivia(NewOperatorTrailingTrivia)
                     End If
@@ -1198,7 +1198,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                             End Select
                         Next
                         If FoundEOL Then
-                            MovedTrailingTrivia.Add(VB_EOLTrivia)
+                            MovedTrailingTrivia.Add(VBEOLTrivia)
                         End If
                     End If
                     RightExpression = RightNode.With({SpaceTrivia}, MovedTrailingTrivia)
@@ -1646,7 +1646,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                     Dim CLoseBracketLeadingTriva As List(Of SyntaxTrivia) = ConvertTrivia(node.CloseBraceToken.LeadingTrivia).ToList
                     If CLoseBracketLeadingTriva.Any Then
                         If CLoseBracketLeadingTriva.First.IsKind(VB.SyntaxKind.CommentTrivia) Then
-                            CLoseBracketLeadingTriva.Insert(1, VB_EOLTrivia)
+                            CLoseBracketLeadingTriva.Insert(1, VBEOLTrivia)
                         End If
                     End If
                     Dim CLoseBracketTrailingTriva As List(Of SyntaxTrivia) = ConvertTrivia(node.CloseBraceToken.TrailingTrivia).ToList
@@ -1658,7 +1658,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                             Dim t As SyntaxTrivia = CLoseBracketLeadingTriva(i)
                             If FoundCommentOrDirective OrElse t.IsDirective Or t.IsComment Then
                                 If Not (FoundEOF OrElse FoundCommentOrDirective) Then
-                                    NewCLoseBracketLeadingTriva.Add(VB_EOLTrivia)
+                                    NewCLoseBracketLeadingTriva.Add(VBEOLTrivia)
                                     FoundEOF = False
                                 End If
                                 FoundCommentOrDirective = True
@@ -1669,7 +1669,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                                 Case VB.SyntaxKind.WhitespaceTrivia
                                     NewCLoseBracketLeadingTriva.Add(t)
                                 Case VB.SyntaxKind.EndOfLineTrivia
-                                    NewCLoseBracketLeadingTriva.Add(VB_EOLTrivia)
+                                    NewCLoseBracketLeadingTriva.Add(VBEOLTrivia)
                                     FoundEOF = True
                             End Select
                         Next
@@ -1678,7 +1678,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
 
                     Dim CloseBraceTokenWithTrivia As SyntaxToken = VisualBasicSyntaxFactory.CloseBraceToken.With(CLoseBracketLeadingTriva, CLoseBracketTrailingTriva)
                     If node.IsKind(CS.SyntaxKind.ObjectInitializerExpression) Then
-                        Dim WithKeywordWithTrivia As SyntaxToken = WithKeyword.WithTrailingTrivia(VB_EOLTrivia)
+                        Dim WithKeywordWithTrivia As SyntaxToken = WithKeyword.WithTrailingTrivia(VBEOLTrivia)
                         If Fields.Count > 0 Then
                             RestructureNodesAndSeparators(OpenBraceTokenWithTrivia, Fields, Separators, CloseBraceTokenWithTrivia)
                             Return VBFactory.ObjectMemberInitializer(WithKeywordWithTrivia, OpenBraceTokenWithTrivia, VBFactory.SeparatedList(Fields, Separators), CloseBraceTokenWithTrivia).WithConvertedTriviaFrom(node)
@@ -1687,7 +1687,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
 
                         If Expressions.Count > 0 Then
                             If Not Expressions(ExpressionLastIndex).ContainsEOLTrivia Then
-                                Expressions(ExpressionLastIndex) = Expressions(ExpressionLastIndex).WithAppendedTrailingTrivia(VB_EOLTrivia)
+                                Expressions(ExpressionLastIndex) = Expressions(ExpressionLastIndex).WithAppendedTrailingTrivia(VBEOLTrivia)
                                 Return VBFactory.ObjectCollectionInitializer(VBFactory.CollectionInitializer(OpenBraceTokenWithTrivia, VBFactory.SeparatedList(Expressions.OfType(Of ExpressionSyntax), Separators), CloseBraceTokenWithTrivia))
                             End If
                         Else
@@ -1814,7 +1814,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
 
                     Dim DeclarationToBeAdded As LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(DimModifier,
                                                                                                                           SeparatedListOfvariableDeclarations
-                                                                                                                          ).WithTrailingTrivia(VB_EOLTrivia).
+                                                                                                                          ).WithTrailingTrivia(VBEOLTrivia).
                                                                                                                           WithAdditionalAnnotations(Simplifier.Annotation)
                     If ReportCheckCorrectness Then
                         DeclarationToBeAdded = DeclarationToBeAdded.WithPrependedLeadingTrivia(
@@ -2068,7 +2068,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                     OperatorTrailingTrivia = ConvertTrivia(node.Name.GetLeadingTrivia).ToList
                 End If
                 If NeedOperatorEOL Then
-                    OperatorTrailingTrivia.Add(VB_EOLTrivia)
+                    OperatorTrailingTrivia.Add(VBEOLTrivia)
                 End If
                 Dim OperatorToken As SyntaxToken = DotToken.With(ConvertTrivia(node.OperatorToken.LeadingTrivia).ToList, OperatorTrailingTrivia)
                 Dim Name As SimpleNameSyntax = DirectCast(node.Name.Accept(Me).With(NewNameLeadingTrivia, ConvertTrivia(node.Name.GetTrailingTrivia)), SimpleNameSyntax)
@@ -2080,7 +2080,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                     FoundEOL = RestructureTrivia(TriviaList:=OperatorToken.LeadingTrivia, FoundEOL, OperatorTrailingTrivia)
 
                     If FoundEOL Then
-                        OperatorTrailingTrivia.Add(VB_EOLTrivia)
+                        OperatorTrailingTrivia.Add(VBEOLTrivia)
                     End If
                     Expression = Expression.WithoutTrailingTrivia
                     OperatorToken = OperatorToken.WithoutTrivia.WithTrailingTrivia(OperatorTrailingTrivia)
@@ -2277,7 +2277,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                     Return VBFactory.AssignmentStatement(ConvertCSExpressionsKindToVBKind(CS.CSharpExtensions.Kind(node)),
                                                             OperandExpression,
                                                             ExpressionKindToOperatorToken(kind),
-                                                            Expression_1)
+                                                            ExpressionD1)
                 Else
                     Dim OperatorName As String
                     Dim minMax As String
@@ -2301,7 +2301,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                     Dim SecondArgumentSyntax As SimpleArgumentSyntax = VBFactory.SimpleArgument(VBFactory.BinaryExpression(op,
                                                                                                                                    OperandExpression,
                                                                                                                                    ExpressionKindToOperatorToken(op),
-                                                                                                                                   Expression_1)
+                                                                                                                                   ExpressionD1)
                                                                                                                                    )
                     Return VBFactory.InvocationExpression(
                         MathExpression,
@@ -2322,18 +2322,18 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                     Return VBFactory.AssignmentStatement(kind,
                                                              OperandExpression,
                                                              ExpressionKindToOperatorToken(kind),
-                                                             Expression_1).WithConvertedTriviaFrom(node)
+                                                             ExpressionD1).WithConvertedTriviaFrom(node)
                 End If
                 If kind = VB.SyntaxKind.AddAssignmentStatement OrElse kind = VB.SyntaxKind.SubtractAssignmentStatement Then
                     If node.Parent.IsKind(CS.SyntaxKind.ForStatement) Then
                         If kind = VB.SyntaxKind.AddAssignmentStatement Then
                             Return VBFactory.AddAssignmentStatement(OperandExpression.WithTrailingTrivia(SpaceTrivia),
                                                                         ExpressionKindToOperatorToken(kind),
-                                                                        Expression_1).WithConvertedTriviaFrom(node)
+                                                                        ExpressionD1).WithConvertedTriviaFrom(node)
                         Else
                             Return VBFactory.SubtractAssignmentStatement(OperandExpression.WithTrailingTrivia(SpaceTrivia),
                                                                              ExpressionKindToOperatorToken(kind),
-                                                                             Expression_1).WithConvertedTriviaFrom(node)
+                                                                             ExpressionD1).WithConvertedTriviaFrom(node)
                         End If
                     Else
                         Dim operatorName As String = If(kind = VB.SyntaxKind.AddAssignmentStatement, "Increment", "Decrement")
@@ -2434,7 +2434,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
 
                                     FinalLeadingTriviaList.Add(Trivia)
                                     If j < TriviaListUBound AndAlso Not InitialTriviaList(j + 1).IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                                        FinalLeadingTriviaList.Add(VB_EOLTrivia)
+                                        FinalLeadingTriviaList.Add(VBEOLTrivia)
                                     End If
                                 Case VB.SyntaxKind.DisableWarningDirectiveTrivia
                                     GetStatementwithIssues(node).AddMarker(VBFactory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.PrependStatement, AllowDuplicates:=True)

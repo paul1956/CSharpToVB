@@ -9,7 +9,7 @@ Imports System.Runtime.CompilerServices
 Imports System.Text
 
 Imports CSharpToVBCodeConverter.Util
-Imports CSharpToVBCodeConverter.Visual_Basic
+Imports CSharpToVBCodeConverter.DestVisualBasic
 
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
@@ -53,7 +53,7 @@ Public Module StatementMarker
             Dim LeadingCommentLines() As String = LeadingComment.SplitLines
             For Each Line As String In LeadingCommentLines
                 NewTrivia = NewTrivia.Add(VBFactory.CommentTrivia($"' {Line.Trim}"))
-                NewTrivia = NewTrivia.Add(VB_EOLTrivia)
+                NewTrivia = NewTrivia.Add(VBEOLTrivia)
             Next
         End If
         Dim sb As New StringBuilder
@@ -61,7 +61,7 @@ Public Module StatementMarker
             If chr.IsNewLine Then
                 If sb.Length > 0 Then
                     NewTrivia = NewTrivia.Add(VBFactory.CommentTrivia($"' {sb.ToString.Trim}"))
-                    NewTrivia = NewTrivia.Add(VB_EOLTrivia)
+                    NewTrivia = NewTrivia.Add(VBEOLTrivia)
                     sb.Clear()
                 End If
             ElseIf chr = vbTab Then
@@ -72,7 +72,7 @@ Public Module StatementMarker
         Next
         If sb.Length > 0 Then
             NewTrivia = NewTrivia.Add(VBFactory.CommentTrivia($"' {sb.ToString}"))
-            NewTrivia = NewTrivia.Add(VB_EOLTrivia)
+            NewTrivia = NewTrivia.Add(VBEOLTrivia)
         End If
 
         Return NewTrivia
@@ -146,11 +146,11 @@ Public Module StatementMarker
             ' NewTrailingTrivia.Add(VB_EOLTrivia)
         End If
         NewLeadingTrivia.Add(VBFactory.CommentTrivia($"' TODO: VB does not support {UnsupportedFeature}."))
-        NewLeadingTrivia.Add(VB_EOLTrivia)
+        NewLeadingTrivia.Add(VBEOLTrivia)
         If CommentOutOriginalStatements Then
-            NewLeadingTrivia.Add(VB_EOLTrivia)
+            NewLeadingTrivia.Add(VBEOLTrivia)
             NewLeadingTrivia.Add(VBFactory.CommentTrivia($"' Original Statement:"))
-            NewLeadingTrivia.Add(VB_EOLTrivia)
+            NewLeadingTrivia.Add(VBEOLTrivia)
             Dim NodeSplit() As String = node.ToString.SplitLines
             ' Match #
             For i As Integer = 0 To NodeSplit.Length - 1
@@ -159,7 +159,7 @@ Public Module StatementMarker
                 Else
                     NewLeadingTrivia.Add(VBFactory.CommentTrivia($"' {NodeSplit(i)}"))
                 End If
-                NewLeadingTrivia.Add(VB_EOLTrivia)
+                NewLeadingTrivia.Add(VBEOLTrivia)
             Next
         End If
         Return VBFactory.EmptyStatement.With(NewLeadingTrivia, NewTrailingTrivia)
@@ -269,11 +269,11 @@ Public Module StatementMarker
         }
         If NodeWithIssue IsNot Nothing Then
             LeadingTrivia.Add(VBFactory.CommentTrivia($"' Original Statement:"))
-            LeadingTrivia.Add(VB_EOLTrivia)
+            LeadingTrivia.Add(VBEOLTrivia)
             LeadingTrivia.AddRange(ConvertSourceTextToTriviaList(NodeWithIssue.ToFullString))
         End If
         LeadingTrivia.Add(VBFactory.CommentTrivia($"' An attempt was made to correctly port the code, check the code below for correctness"))
-        LeadingTrivia.Add(VB_EOLTrivia)
+        LeadingTrivia.Add(VBEOLTrivia)
         Return LeadingTrivia.ToSyntaxTriviaList
     End Function
 
@@ -354,7 +354,7 @@ Public Module StatementMarker
     Public Function WrapInComment(nodes As SyntaxList(Of StatementSyntax), NodeWithComments As CSS.StatementSyntax, comment As String) As SyntaxList(Of StatementSyntax)
         If nodes.Count > 0 Then
             nodes = nodes.Replace(nodes(0), nodes(0).WithConvertedTriviaFrom(NodeWithComments).WithPrependedLeadingTrivia(VBFactory.CommentTrivia($"' BEGIN TODO: {comment}")))
-            nodes = nodes.Add(VBFactory.EmptyStatement.WithLeadingTrivia(VB_EOLTrivia, VBFactory.CommentTrivia($"' END TODO: {comment}")))
+            nodes = nodes.Add(VBFactory.EmptyStatement.WithLeadingTrivia(VBEOLTrivia, VBFactory.CommentTrivia($"' END TODO: {comment}")))
         End If
         Return nodes
     End Function

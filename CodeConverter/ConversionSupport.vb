@@ -9,7 +9,7 @@ Imports System.Collections.Immutable
 Imports System.Threading
 
 Imports CSharpToVBCodeConverter.Util
-Imports CSharpToVBCodeConverter.Visual_Basic
+Imports CSharpToVBCodeConverter.DestVisualBasic
 
 Imports ManageProgressBar
 

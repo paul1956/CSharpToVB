@@ -32,7 +32,7 @@ Namespace CSharpToVBCodeConverter
 
         End Enum
 
-        Public Sub New(_ConvertedTree As SyntaxNode, InputLanguage As String, OutputLanguage As String, VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)))
+        Public Sub New(ConvertedTree As SyntaxNode, InputLanguage As String, OutputLanguage As String, VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)))
             Exceptions = New List(Of Exception)
             SourceLanguage = InputLanguage
             ResultStatus = ResultTriState.Success
@@ -44,12 +44,12 @@ Namespace CSharpToVBCodeConverter
 
                 project = project.WithParseOptions(VBParseOptions)
 
-                Dim _Document As Document = project.AddDocument("Document", _ConvertedTree)
+                Dim _Document As Document = project.AddDocument("Document", ConvertedTree)
                 Dim _SyntaxTree As SyntaxTree = _Document.GetSyntaxTreeAsync().Result
 
                 Dim Root As SyntaxNode = _SyntaxTree.GetRootAsync().Result
                 ConvertedCode = WorkspaceFormat(Workspace, Root, spans:=Nothing, Workspace.Options, _Document.GetTextAsync().Result)
-                ConvertedTree = DirectCast(Root, VB.VisualBasicSyntaxNode)
+                Me.ConvertedTree = DirectCast(Root, VB.VisualBasicSyntaxNode)
             End Using
 
         End Sub
@@ -80,9 +80,9 @@ Namespace CSharpToVBCodeConverter
 
         Public Property TargetLanguage As String
 
-        Protected Shared Function WorkspaceFormat(workspace As Workspace, root As SyntaxNode, spans As IEnumerable(Of TextSpan), _OptionSet As OptionSet, _SourceText As SourceText) As String
-            Dim result As IList(Of TextChange) = Formatter.GetFormattedTextChanges(root, spans, workspace, _OptionSet)
-            Return _SourceText?.WithChanges(result).ToString()
+        Protected Shared Function WorkspaceFormat(workspace As Workspace, root As SyntaxNode, spans As IEnumerable(Of TextSpan), pOptionSet As OptionSet, pSourceText As SourceText) As String
+            Dim result As IList(Of TextChange) = Formatter.GetFormattedTextChanges(root, spans, workspace, pOptionSet)
+            Return pSourceText?.WithChanges(result).ToString()
         End Function
 
     End Class

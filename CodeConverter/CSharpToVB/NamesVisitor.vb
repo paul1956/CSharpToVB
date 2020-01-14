@@ -15,7 +15,7 @@ Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace CSharpToVBCodeConverter.Visual_Basic
+Namespace CSharpToVBCodeConverter.DestVisualBasic
 
     Partial Public Class CSharpConverter
 
@@ -59,7 +59,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                     symbolInfo = ModelExtensions.GetSymbolInfo(_mSemanticModel, originalName)
                 Catch ex As OperationCanceledException
                     Throw
-                Catch ex As Exception
+                Finally
                     ' Ignore
                 End Try
                 Dim symbol As ISymbol = If(symbolInfo.Symbol, symbolInfo.CandidateSymbols.FirstOrDefault())

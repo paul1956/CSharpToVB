@@ -22,7 +22,7 @@ Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace CSharpToVBCodeConverter.Visual_Basic
+Namespace CSharpToVBCodeConverter.DestVisualBasic
 
     Partial Public Class CSharpConverter
 
@@ -105,7 +105,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                             If HeadingTriviaList(0).IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
                                 HeadingTriviaList.RemoveAt(0)
                                 If HeadingTriviaList.Count > 0 Then
-                                    HeadingTriviaList.Add(VB_EOLTrivia)
+                                    HeadingTriviaList.Add(VBEOLTrivia)
                                 End If
                             End If
                             Dim NewMemberList As New SyntaxList(Of VBS.StatementSyntax)
@@ -206,7 +206,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
             Public Overrides Function VisitRefType(node As RefTypeSyntax) As VisualBasicSyntaxNode
                 Dim StatementwithIssue As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
                 StatementwithIssue.AddMarker(FlagUnsupportedStatements(StatementwithIssue, "ref type", CommentOutOriginalStatements:=True), StatementHandlingOption.ReplaceStatement, AllowDuplicates:=False)
-                Return Handle_RefType
+                Return HandleRefType
             End Function
 
             Public Overrides Function VisitRefTypeExpression(node As RefTypeExpressionSyntax) As VisualBasicSyntaxNode
@@ -379,7 +379,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                             ArgumentList.Add(VBFactory.SimpleArgument(VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(CInt(LiteralExpression.Token.Value) - 1))).WithConvertedLeadingTriviaFrom(node.ArgumentList.Arguments(i).Expression))
                         ElseIf TypeOf Expression Is VBS.IdentifierNameSyntax Then
                             Dim Id As VBS.IdentifierNameSyntax = CType(Expression, VBS.IdentifierNameSyntax)
-                            ArgumentList.Add(VBFactory.SimpleArgument(VBFactory.BinaryExpression(VB.SyntaxKind.SubtractExpression, Id, MinusToken, Expression_1)).WithConvertedLeadingTriviaFrom(node.ArgumentList.Arguments(i).Expression))
+                            ArgumentList.Add(VBFactory.SimpleArgument(VBFactory.BinaryExpression(VB.SyntaxKind.SubtractExpression, Id, MinusToken, ExpressionD1)).WithConvertedLeadingTriviaFrom(node.ArgumentList.Arguments(i).Expression))
                         ElseIf TypeOf Expression Is VBS.BinaryExpressionSyntax Then
                             Dim Value As VBS.BinaryExpressionSyntax = CType(Expression, VBS.BinaryExpressionSyntax)
                             If Expression.IsKind(VB.SyntaxKind.AddExpression) Then
@@ -388,7 +388,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                                     Continue For
                                 End If
                             End If
-                            ArgumentList.Add(VBFactory.SimpleArgument(VBFactory.BinaryExpression(VB.SyntaxKind.SubtractExpression, Value, MinusToken, Expression_1)).WithConvertedLeadingTriviaFrom(node.ArgumentList.Arguments(i).Expression))
+                            ArgumentList.Add(VBFactory.SimpleArgument(VBFactory.BinaryExpression(VB.SyntaxKind.SubtractExpression, Value, MinusToken, ExpressionD1)).WithConvertedLeadingTriviaFrom(node.ArgumentList.Arguments(i).Expression))
                         Else
                             Stop
                         End If

@@ -111,6 +111,7 @@ Public Module ExpressionSyntaxSupport
             Throw
         Catch ex As Exception
             Stop
+            Throw
         End Try
         Return (Model.Compilation.ObjectType, _Error:=True)
     End Function

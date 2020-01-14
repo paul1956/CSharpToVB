@@ -12,7 +12,7 @@ Public Module VisualBasicSyntaxFactory
 
     Public Const Quote As String = """"
     Public Const DoubleQuote As String = """"""
-    Public Const System_String As SpecialType = SpecialType.System_String
+    Public Const SystemString As SpecialType = SpecialType.System_String
     Public Const UnicodeOpenQuote As Char = ChrW(&H201C)
     Public Const UnicodeCloseQuote As Char = ChrW(&H201D)
     Public Const UnicodeDoubleOpenQuote As String = UnicodeOpenQuote & UnicodeOpenQuote
@@ -180,7 +180,7 @@ Public Module VisualBasicSyntaxFactory
 
 #Region "Predefined Types"
 
-    Public ReadOnly Handle_RefType As Syntax.TypeSyntax = SyntaxFactory.ParseTypeName("HandleRefType")
+    Public ReadOnly HandleRefType As Syntax.TypeSyntax = SyntaxFactory.ParseTypeName("HandleRefType")
     Public ReadOnly IntPtrType As Syntax.TypeSyntax = SyntaxFactory.ParseTypeName("IntPtr")
     Public ReadOnly PredefinedTypeBoolean As Syntax.TypeSyntax = SyntaxFactory.PredefinedType(BooleanKeyword)
     Public ReadOnly PredefinedTypeByte As Syntax.TypeSyntax = SyntaxFactory.PredefinedType(ByteKeyword)
@@ -206,21 +206,21 @@ Public Module VisualBasicSyntaxFactory
     Public ReadOnly ElasticMarker As SyntaxTrivia = SyntaxFactory.ElasticWhitespace(String.Empty)
     Public ReadOnly LineContinuation As SyntaxTrivia = SyntaxFactory.LineContinuationTrivia("_")
     Public ReadOnly SpaceTrivia As SyntaxTrivia = SyntaxFactory.Space
-    Public ReadOnly VB_EOLTrivia As SyntaxTrivia = SyntaxFactory.EndOfLineTrivia(vbCrLf)
+    Public ReadOnly VBEOLTrivia As SyntaxTrivia = SyntaxFactory.EndOfLineTrivia(vbCrLf)
 
 #End Region
 
 #Region "Expressions"
 
     Public ReadOnly IntPrtSizeExpression As Syntax.ExpressionSyntax = SyntaxFactory.ParseExpression("IntPrt.Size")
-    Public ReadOnly Expression_1 As Syntax.ExpressionSyntax = SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(1))
+    Public ReadOnly ExpressionD1 As Syntax.ExpressionSyntax = SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(1))
     Public ReadOnly NothingExpression As Syntax.LiteralExpressionSyntax = SyntaxFactory.NothingLiteralExpression(NothingKeyword)
     Public ReadOnly VBCrLfExpression As Syntax.IdentifierNameSyntax = SyntaxFactory.IdentifierName("vbCrLf")
 
 #End Region
 
     Public ReadOnly DimModifier As SyntaxTokenList = SyntaxFactory.TokenList(DimKeyword)
-    Public ReadOnly Value_ModifiedIdentifier As Syntax.ModifiedIdentifierSyntax = SyntaxFactory.ModifiedIdentifier("Value")
+    Public ReadOnly ValueModifiedIdentifier As Syntax.ModifiedIdentifierSyntax = SyntaxFactory.ModifiedIdentifier("Value")
     Public ReadOnly PublicModifier As SyntaxTokenList = SyntaxFactory.TokenList(PublicKeyword)
     Public ReadOnly RuntimeInteropServicesOut As Syntax.TypeSyntax = SyntaxFactory.ParseTypeName("Runtime.InteropServices.Out")
 #End If

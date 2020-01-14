@@ -25,7 +25,7 @@ Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace CSharpToVBCodeConverter.Visual_Basic
+Namespace CSharpToVBCodeConverter.DestVisualBasic
 
     Partial Public NotInheritable Class CSharpConverter
 
@@ -168,7 +168,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Dim statements As SyntaxList(Of VBS.StatementSyntax) = ConvertBlock(catchClause.Block, OpenBraceTrailingTrivia, ClosingBraceLeadingTrivia)
 
                 If catchClause.Declaration Is Nothing Then
-                    Return VBFactory.CatchBlock(VBFactory.CatchStatement().WithTrailingTrivia(VB_EOLTrivia).WithAppendedTrailingTrivia(ClosingBraceLeadingTrivia), statements)
+                    Return VBFactory.CatchBlock(VBFactory.CatchStatement().WithTrailingTrivia(VBEOLTrivia).WithAppendedTrailingTrivia(ClosingBraceLeadingTrivia), statements)
                 End If
                 If OpenBraceTrailingTrivia.Count > 0 OrElse ClosingBraceLeadingTrivia.Count > 0 Then
                     statements = statements.Replace(statements(0), statements(0).WithPrependedLeadingTrivia(OpenBraceTrailingTrivia))
@@ -188,9 +188,9 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                                                                     WhenClause).
                                                                     WithConvertedLeadingTriviaFrom(catchClause)
                 If Not CatchStatement.HasTrailingTrivia Then
-                    CatchStatement = CatchStatement.WithTrailingTrivia(VB_EOLTrivia)
-                ElseIf CatchStatement.GetTrailingTrivia.Last <> VB_EOLTrivia Then
-                    CatchStatement = CatchStatement.WithTrailingTrivia(VB_EOLTrivia)
+                    CatchStatement = CatchStatement.WithTrailingTrivia(VBEOLTrivia)
+                ElseIf CatchStatement.GetTrailingTrivia.Last <> VBEOLTrivia Then
+                    CatchStatement = CatchStatement.WithTrailingTrivia(VBEOLTrivia)
                 End If
                 Return VBFactory.CatchBlock(CatchStatement, statements)
             End Function
@@ -300,7 +300,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 End If
 
                 If ForStatementTrailingTrivia.Count > 0 AndAlso ForStatementTrailingTrivia.ContainsCommentOrDirectiveTrivia AndAlso Not ForStatementTrailingTrivia(0).IsEndOfLine Then
-                    ForStatementTrailingTrivia.Insert(0, VB_EOLTrivia)
+                    ForStatementTrailingTrivia.Insert(0, VBEOLTrivia)
                 End If
 
                 Dim StepClause As VBS.ForStepClauseSyntax = If([step] = 1,
@@ -510,7 +510,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Dim TrailingTrivia As New List(Of SyntaxTrivia)
                 If CommentString.Length > 0 Then
                     TrailingTrivia.Add(VBFactory.CommentTrivia($" ' {CommentString.ToString}"))
-                    TrailingTrivia.Add(VB_EOLTrivia)
+                    TrailingTrivia.Add(VBEOLTrivia)
                 End If
                 Dim CaseStatement As VBS.CaseStatementSyntax = VBFactory.CaseStatement(VBFactory.SeparatedList(LabelList)).With(NewLeadingTrivia, TrailingTrivia).WithTrailingEOL
                 Return VBFactory.CaseBlock(CaseStatement, ConvertSwitchSectionBlock(section, NewDimStatements))
@@ -672,7 +672,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 Dim UniqueVariableName As String = EnsureUniqueness(variableNameBase, reservedNames)
                 s_usedIdentifiers.Add(UniqueVariableName,
                                     New SymbolTableEntry(UniqueVariableName,
-                                                         _IsType:=False
+                                                         IsType:=False
                                                          )
                                     )
                 Return UniqueVariableName
@@ -1126,7 +1126,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 StatementTrailingTrivia.AddRange(ConvertTrivia(node.CloseParenToken.LeadingTrivia))
                 StatementTrailingTrivia.AddRange(ConvertTrivia(node.CloseParenToken.TrailingTrivia))
                 If StatementTrailingTrivia.Count > 0 AndAlso Not StatementTrailingTrivia(0).IsEndOfLine Then
-                    StatementTrailingTrivia.Insert(0, VB_EOLTrivia)
+                    StatementTrailingTrivia.Insert(0, VBEOLTrivia)
                 End If
                 Dim ConditionWithTrivia As VBS.ExpressionSyntax = DirectCast(node.Condition.Accept(_nodesVisitor).WithAppendedTrailingTrivia(ConvertTrivia(node.Condition.GetTrailingTrivia)).WithModifiedNodeTrivia(SeparatorFollows:=True), VBS.ExpressionSyntax)
 
@@ -1394,7 +1394,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                     TriviaList.Clear()
                     If FinallyBlock.Statements(0).IsKind(VB.SyntaxKind.EmptyStatement) Then
                         TriviaList.AddRange(FinallyBlock.Statements(0).GetTrailingTrivia)
-                        FinallyBlock = FinallyBlock.WithTrailingTrivia(VB_EOLTrivia)
+                        FinallyBlock = FinallyBlock.WithTrailingTrivia(VBEOLTrivia)
                     End If
                 End If
                 Dim EndTryStatement As VBS.EndBlockStatementSyntax = VBFactory.EndTryStatement()
@@ -1511,7 +1511,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                                 End Select
                             Next
                             If FoundEOL Then
-                                CollectedCommentTrivia.Add(VB_EOLTrivia)
+                                CollectedCommentTrivia.Add(VBEOLTrivia)
                                 Declator = Declator.WithTrailingTrivia(CollectedCommentTrivia)
                                 CollectedCommentTrivia.Clear()
                             Else
@@ -1519,7 +1519,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                             End If
                             If i = node.Variables.Count - 1 Then
                                 If Not Declator.HasTrailingTrivia OrElse Not Declator.GetTrailingTrivia.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                                    Declator = Declator.WithAppendedTrailingTrivia(VB_EOLTrivia)
+                                    Declator = Declator.WithAppendedTrailingTrivia(VBEOLTrivia)
                                 End If
                             End If
                         End If

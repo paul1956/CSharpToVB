@@ -1,9 +1,10 @@
-﻿' Licensed to the .NET Foundation under one or more agreements.
-' The .NET Foundation licenses this file to you under the MIT license.
-' See the LICENSE file in the project root for more information.
-Option Explicit On
+﻿Option Explicit On
 Option Infer Off
 Option Strict On
+' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+Imports System.ComponentModel
 
 Public Class OptionsDialog
     Private _selectedColor As Color
@@ -12,6 +13,37 @@ Public Class OptionsDialog
     Private Sub Cancel_Button_Click(sender As Object, e As EventArgs) Handles Cancel_Button.Click
         DialogResult = DialogResult.Cancel
         Close()
+    End Sub
+
+    Private Sub CSharpFooterTextBox_Validating(sender As Object, e As CancelEventArgs) Handles CSharpFooterTextBox.Validating
+        Dim OpenBracketCount As Integer = CSharpFooterTextBox.Text.Count("{"c)
+        Dim CloseBracketCount As Integer = CSharpFooterTextBox.Text.Count("}"c)
+        If CloseBracketCount = 0 Then
+            VBMsgBox.MsgBox("There must be at least 1 '}' in the footer", MsgBoxStyle.Exclamation, "C# Footer Validation Error")
+            e.Cancel = True
+            Exit Sub
+        End If
+        If CloseBracketCount - OpenBracketCount < 1 Then
+            VBMsgBox.MsgBox("There must be at least 1 more '}' then '{' in the header", MsgBoxStyle.Exclamation, "C# Footer Validation Error")
+            e.Cancel = True
+            Exit Sub
+        End If
+
+    End Sub
+
+    Private Sub CSharpHeaderTextBox_Validating(sender As Object, e As CancelEventArgs) Handles CSharpHeaderTextBox.Validating
+        Dim OpenBracketCount As Integer = CSharpHeaderTextBox.Text.Count("{"c)
+        Dim CloseBracketCount As Integer = CSharpHeaderTextBox.Text.Count("}"c)
+        If OpenBracketCount = 0 Then
+            VBMsgBox.MsgBox("There must be at least 1 '{' in the header", MsgBoxStyle.Exclamation, "C# Header Validation Error")
+            e.Cancel = True
+            Exit Sub
+        End If
+        If OpenBracketCount - CloseBracketCount < 1 Then
+            VBMsgBox.MsgBox("There must be at least 1 more '{' then '}' in the header", MsgBoxStyle.Exclamation, "C# Header Validation Error")
+            e.Cancel = True
+            Exit Sub
+        End If
     End Sub
 
     Private Sub ItemColor_ComboBox_DrawItem(sender As Object, e As DrawItemEventArgs) Handles ItemColor_ComboBox.DrawItem
@@ -56,6 +88,8 @@ Public Class OptionsDialog
             ItemColor_ComboBox.Items.Add(Name)
         Next Name
         ItemColor_ComboBox.SelectedIndex = ItemColor_ComboBox.FindStringExact("default")
+        CSharpHeaderTextBox.Text = My.Settings.BoilerPlateHeader
+        CSharpFooterTextBox.Text = My.Settings.BoilderPlateFooter
     End Sub
 
     Private Sub UpdateColor_Button_Click(sender As Object, e As EventArgs) Handles UpdateColor_Button.Click
@@ -65,7 +99,6 @@ Public Class OptionsDialog
             Application.DoEvents()
         End If
     End Sub
-
     Private Class MyListItem
 
         Public Sub New(pText As String, pValue As String)

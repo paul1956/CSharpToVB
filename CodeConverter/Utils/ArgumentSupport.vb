@@ -11,7 +11,7 @@ Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace CSharpToVBCodeConverter.Visual_Basic
+Namespace CSharpToVBCodeConverter.DestVisualBasic
 
     Public Module ArgumentSupport
 
@@ -43,7 +43,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                 StatementTrailingTrivia.AddRange(ConvertTrivia(CS_ArgumentList.CloseParenToken.LeadingTrivia))
                 StatementTrailingTrivia.AddRange(ConvertTrivia(CS_ArgumentList.CloseParenToken.TrailingTrivia))
                 If StatementTrailingTrivia.Count > 0 AndAlso StatementTrailingTrivia(0).IsDirective Then
-                    StatementTrailingTrivia.Insert(0, VB_EOLTrivia)
+                    StatementTrailingTrivia.Insert(0, VBEOLTrivia)
                 End If
                 Return ExpressionStatement.WithPrependedLeadingTrivia(StatementLeadingTrivia).
                                             WithMergedTrailingTrivia(StatementTrailingTrivia)

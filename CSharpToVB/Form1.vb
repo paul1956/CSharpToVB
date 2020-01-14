@@ -1176,7 +1176,6 @@ Public Class Form1
     Private Sub MRU_Update()
         ' clear MRU menu items...
         Dim MRUToolStripItems As New List(Of ToolStripItem)
-        Dim MRUStartIndex As Integer = mnuFile.DropDownItems.Count - 2
         ' create a temporary collection containing every MRU menu item
         ' (identified by the tag text when added to the list)...
         For Each FileMenuItem As ToolStripItem In mnuFile.DropDownItems
@@ -1205,7 +1204,7 @@ Public Class Form1
             AddHandler clsItem.Click, AddressOf mnu_MRUList_Click
             AddHandler clsItem.MouseDown, AddressOf mnu_MRUList_MouseDown
             ' insert into DropDownItems list...
-            mnuFile.DropDownItems.Insert(mnuFile.DropDownItems.Count - MRUStartIndex, clsItem)
+            mnuFile.DropDownItems.Insert(mnuFile.DropDownItems.Count - 11, clsItem)
         Next
         ' show separator...
         My.Settings.Save()

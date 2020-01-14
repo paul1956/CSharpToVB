@@ -15,7 +15,7 @@ Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace CSharpToVBCodeConverter.Visual_Basic
+Namespace CSharpToVBCodeConverter.DestVisualBasic
 
     Partial Public Class CSharpConverter
 
@@ -191,7 +191,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                                     Stop
                             End Select
                             If FoundComment Then
-                                AttributeTrailingTrivia.Add(VB_EOLTrivia)
+                                AttributeTrailingTrivia.Add(VBEOLTrivia)
                             End If
                         Next
                         OriginalAttributeListWithTrivia(I) = OriginalAttributeListWithTrivia(I).With(AttributeLeadingTrivia, AttributeTrailingTrivia)
@@ -286,7 +286,7 @@ Namespace CSharpToVBCodeConverter.Visual_Basic
                         End Select
                     Next
                     If FoundEOL Then
-                        ParameterTrailingTrivia.Add(VB_EOLTrivia)
+                        ParameterTrailingTrivia.Add(VBEOLTrivia)
                     End If
                     AsClause = VBFactory.SimpleAsClause(returnType.WithoutTrivia).WithTrailingTrivia(ParameterTrailingTrivia)
                 Else

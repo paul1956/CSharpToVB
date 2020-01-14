@@ -132,6 +132,7 @@ Public Module SharedReferences
             Stop
         Catch ex As Exception
             Stop
+            Throw
         End Try
         Return Nothing
     End Function

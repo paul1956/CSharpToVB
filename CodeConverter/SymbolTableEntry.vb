@@ -7,9 +7,9 @@ Option Strict On
 
 Public Class SymbolTableEntry
 
-    Public Sub New(_Name As String, _IsType As Boolean)
-        Name = _Name
-        IsType = _IsType
+    Public Sub New(Name As String, IsType As Boolean)
+        Me.Name = Name
+        Me.IsType = IsType
     End Sub
 
     Public ReadOnly Property IsType As Boolean

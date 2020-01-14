@@ -576,7 +576,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
                                 _eolTraiingTriviaCount += 1
                             Else
                                 If currentTriviaList.Last.IsKind(SyntaxKind.CommentTrivia) AndAlso i < triviaList.Count - 1 Then
-                                    currentTriviaList.Add(VB_EOLTrivia)
+                                    currentTriviaList.Add(VBEOLTrivia)
                                 End If
                                 Continue For
                             End If

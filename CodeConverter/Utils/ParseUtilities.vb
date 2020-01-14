@@ -62,6 +62,7 @@ Public Module ParseUtilities
             ' Ignore
         Catch ex As Exception
             Stop
+            Throw
         End Try
 
         Return TotalFilesToProcess
