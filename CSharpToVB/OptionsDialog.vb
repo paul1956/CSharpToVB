@@ -1,10 +1,16 @@
 ﻿Option Explicit On
 Option Infer Off
 Option Strict On
+
 ' Licensed to the .NET Foundation under one or more agreements.
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 Imports System.ComponentModel
+Imports System.IO
+
+Imports Microsoft.CodeAnalysis
+Imports Microsoft.CodeAnalysis.CSharp
+Imports Microsoft.CodeAnalysis.Emit
 
 Public Class OptionsDialog
     Private _selectedColor As Color
@@ -15,16 +21,39 @@ Public Class OptionsDialog
         Close()
     End Sub
 
+    Private Function Compile(StringToBeCompiled As String) As Boolean
+        Cursor = Cursors.WaitCursor
+        Application.DoEvents()
+        Dim assemblyName As String = Path.GetRandomFileName()
+        Dim tree As SyntaxTree = CSharpSyntaxTree.ParseText(StringToBeCompiled)
+        Dim compilation As CSharpCompilation = CSharpCompilation.Create(assemblyName, syntaxTrees:={tree}, CSharpReferences("", New List(Of MetadataReference)))
+        Dim CompileResult As EmitResult = Nothing
+        Using ms As MemoryStream = New MemoryStream()
+            Try
+                CompileResult = compilation.Emit(ms)
+            Finally
+                ' Ignore fatal compiler errors
+            End Try
+        End Using
+        Cursor = Cursors.Default
+        Application.DoEvents()
+        If CompileResult.Success Then
+            Return True
+        End If
+        VBMsgBox.MsgBox(CompileResult.ToString, MsgBoxStyle.Exclamation, "Compilation Failed")
+        Return False
+    End Function
+
     Private Sub CSharpFooterTextBox_Validating(sender As Object, e As CancelEventArgs) Handles CSharpFooterTextBox.Validating
         Dim OpenBracketCount As Integer = CSharpFooterTextBox.Text.Count("{"c)
         Dim CloseBracketCount As Integer = CSharpFooterTextBox.Text.Count("}"c)
-        If CloseBracketCount = 0 Then
-            VBMsgBox.MsgBox("There must be at least 1 '}' in the footer", MsgBoxStyle.Exclamation, "C# Footer Validation Error")
+        If CloseBracketCount < 3 Then
+            VBMsgBox.MsgBox("There must be at least 3 '}' in the footer", MsgBoxStyle.Exclamation, "C# Footer Validation Error")
             e.Cancel = True
             Exit Sub
         End If
         If CloseBracketCount - OpenBracketCount < 1 Then
-            VBMsgBox.MsgBox("There must be at least 1 more '}' then '{' in the header", MsgBoxStyle.Exclamation, "C# Footer Validation Error")
+            VBMsgBox.MsgBox("There must be at least 3 more '}' then '{' in the footer", MsgBoxStyle.Exclamation, "C# Footer Validation Error")
             e.Cancel = True
             Exit Sub
         End If
@@ -34,13 +63,13 @@ Public Class OptionsDialog
     Private Sub CSharpHeaderTextBox_Validating(sender As Object, e As CancelEventArgs) Handles CSharpHeaderTextBox.Validating
         Dim OpenBracketCount As Integer = CSharpHeaderTextBox.Text.Count("{"c)
         Dim CloseBracketCount As Integer = CSharpHeaderTextBox.Text.Count("}"c)
-        If OpenBracketCount = 0 Then
-            VBMsgBox.MsgBox("There must be at least 1 '{' in the header", MsgBoxStyle.Exclamation, "C# Header Validation Error")
+        If OpenBracketCount < 3 Then
+            VBMsgBox.MsgBox("There must be at least 3 '{' in the header", MsgBoxStyle.Exclamation, "C# Header Validation Error")
             e.Cancel = True
             Exit Sub
         End If
-        If OpenBracketCount - CloseBracketCount < 1 Then
-            VBMsgBox.MsgBox("There must be at least 1 more '{' then '}' in the header", MsgBoxStyle.Exclamation, "C# Header Validation Error")
+        If OpenBracketCount - CloseBracketCount < 3 Then
+            VBMsgBox.MsgBox("There must be at least 3 more '{' then '}' in the header", MsgBoxStyle.Exclamation, "C# Header Validation Error")
             e.Cancel = True
             Exit Sub
         End If
@@ -71,6 +100,13 @@ Public Class OptionsDialog
         My.Settings.Save()
         DialogResult = DialogResult.OK
         ColorSelector.WriteColorDictionaryToFile()
+        If Compile(CSharpHeaderTextBox.Text & vbLf & CSharpFooterTextBox.Text) Then
+            My.Settings.BoilerPlateHeader = CSharpHeaderTextBox.Text
+            My.Settings.BoilderPlateFooter = CSharpFooterTextBox.Text
+            My.Settings.Save()
+        Else
+            Exit Sub
+        End If
         Application.DoEvents()
         Close()
     End Sub
@@ -99,6 +135,7 @@ Public Class OptionsDialog
             Application.DoEvents()
         End If
     End Sub
+
     Private Class MyListItem
 
         Public Sub New(pText As String, pValue As String)

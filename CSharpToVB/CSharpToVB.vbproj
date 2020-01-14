@@ -21,7 +21,7 @@
     <ApplicationIcon>Icons\CStoVB.ico</ApplicationIcon>
     <OptionInfer>Off</OptionInfer>
     <OptionStrict>On</OptionStrict>
-    <Version>3.1.3.0</Version>
+    <Version>3.2.1.0</Version>
     <Product>CSharp To VB Converter</Product>
     <Copyright>Copyright © 2020 Travel By Paul</Copyright>
     <PackageId>CSharp To VB Converter</PackageId>

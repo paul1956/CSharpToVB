@@ -48,7 +48,7 @@ Partial Class OptionsDialog
         Me.TableLayoutPanel1.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
         Me.TableLayoutPanel1.Controls.Add(Me.OK_Button, 0, 0)
         Me.TableLayoutPanel1.Controls.Add(Me.Cancel_Button, 1, 0)
-        Me.TableLayoutPanel1.Location = New System.Drawing.Point(363, 323)
+        Me.TableLayoutPanel1.Location = New System.Drawing.Point(363, 455)
         Me.TableLayoutPanel1.Name = "TableLayoutPanel1"
         Me.TableLayoutPanel1.RowCount = 1
         Me.TableLayoutPanel1.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
@@ -143,12 +143,12 @@ Partial Class OptionsDialog
         Me.CSharpHeaderTextBox.Location = New System.Drawing.Point(13, 157)
         Me.CSharpHeaderTextBox.Multiline = True
         Me.CSharpHeaderTextBox.Name = "CSharpHeaderTextBox"
-        Me.CSharpHeaderTextBox.Size = New System.Drawing.Size(520, 67)
+        Me.CSharpHeaderTextBox.Size = New System.Drawing.Size(520, 183)
         Me.CSharpHeaderTextBox.TabIndex = 7
         '
         'CSharpFooterTextBox
         '
-        Me.CSharpFooterTextBox.Location = New System.Drawing.Point(13, 245)
+        Me.CSharpFooterTextBox.Location = New System.Drawing.Point(13, 360)
         Me.CSharpFooterTextBox.Multiline = True
         Me.CSharpFooterTextBox.Name = "CSharpFooterTextBox"
         Me.CSharpFooterTextBox.Size = New System.Drawing.Size(520, 67)
@@ -192,7 +192,7 @@ Partial Class OptionsDialog
         Me.AutoScaleDimensions = New System.Drawing.SizeF(7.0!, 15.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.CancelButton = Me.Cancel_Button
-        Me.ClientSize = New System.Drawing.Size(546, 370)
+        Me.ClientSize = New System.Drawing.Size(546, 502)
         Me.Controls.Add(Me.Label5)
         Me.Controls.Add(Me.LabelHorizontalLine)
         Me.Controls.Add(Me.Label1)
