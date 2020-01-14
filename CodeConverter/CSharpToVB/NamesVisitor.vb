@@ -59,7 +59,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     symbolInfo = ModelExtensions.GetSymbolInfo(_mSemanticModel, originalName)
                 Catch ex As OperationCanceledException
                     Throw
-                Finally
+                Catch ex As Exception
                     ' Ignore
                 End Try
                 Dim symbol As ISymbol = If(symbolInfo.Symbol, symbolInfo.CandidateSymbols.FirstOrDefault())
