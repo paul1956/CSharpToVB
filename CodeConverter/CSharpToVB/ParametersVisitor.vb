@@ -22,8 +22,11 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
         Partial Friend Class NodesVisitor
             Inherits CS.CSharpSyntaxVisitor(Of VB.VisualBasicSyntaxNode)
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitBracketedParameterList(node As CSS.BracketedParameterListSyntax) As VB.VisualBasicSyntaxNode
+                If node Is Nothing Then
+                    Throw New ArgumentNullException(NameOf(node))
+                End If
+
                 Dim CS_Separators As IEnumerable(Of SyntaxToken) = node.Parameters.GetSeparators
                 Dim OpenParenTokenWithTrivia As SyntaxToken = OpenParenToken.WithConvertedTriviaFrom(node.OpenBracketToken)
                 Dim CloseParenTokenWithTrivia As SyntaxToken = CloseParenToken
@@ -48,8 +51,11 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Return VBFactory.ParameterList(OpenParenTokenWithTrivia, VBFactory.SeparatedList(Items, Separators), CloseParenToken).WithConvertedTriviaFrom(node)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitParameter(node As CSS.ParameterSyntax) As VB.VisualBasicSyntaxNode
+                If node Is Nothing Then
+                    Throw New ArgumentNullException(NameOf(node))
+                End If
+
                 Dim returnType As VBS.TypeSyntax = DirectCast(node.Type?.Accept(Me), VBS.TypeSyntax)
                 Dim EqualsLeadingTrivia As New List(Of SyntaxTrivia)
                 If returnType IsNot Nothing Then
@@ -301,8 +307,11 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Return parameterSyntax1
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitParameterList(node As CSS.ParameterListSyntax) As VB.VisualBasicSyntaxNode
+                If node Is Nothing Then
+                    Throw New ArgumentNullException(NameOf(node))
+                End If
+
                 Dim CS_Separators As IEnumerable(Of SyntaxToken) = node.Parameters.GetSeparators
                 Dim OpenParenTokenWithTrivia As SyntaxToken = OpenParenToken.WithConvertedTriviaFrom(node.OpenParenToken)
                 Dim CloseParenTokenWithTrivia As SyntaxToken = CloseParenToken.WithConvertedTriviaFrom(node.CloseParenToken)

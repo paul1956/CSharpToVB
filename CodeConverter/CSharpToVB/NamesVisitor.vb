@@ -69,19 +69,28 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Return name
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitAliasQualifiedName(node As CSS.AliasQualifiedNameSyntax) As VB.VisualBasicSyntaxNode
+                If node Is Nothing Then
+                    Throw New ArgumentNullException(NameOf(node))
+                End If
+
                 Return WrapTypedNameIfNecessary(VBFactory.QualifiedName(DirectCast(node.[Alias].Accept(Me), VBS.NameSyntax), DirectCast(node.Name.Accept(Me), VBS.SimpleNameSyntax)), node).WithConvertedTriviaFrom(node)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitGenericName(node As CSS.GenericNameSyntax) As VB.VisualBasicSyntaxNode
+                If node Is Nothing Then
+                    Throw New ArgumentNullException(NameOf(node))
+                End If
+
                 Dim TypeArgumentList As VBS.TypeArgumentListSyntax = DirectCast(node.TypeArgumentList.Accept(Me), VBS.TypeArgumentListSyntax)
                 Return WrapTypedNameIfNecessary(VBFactory.GenericName(GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False).WithTrailingTrivia, TypeArgumentList), node)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitIdentifierName(node As CSS.IdentifierNameSyntax) As VB.VisualBasicSyntaxNode
+                If node Is Nothing Then
+                    Throw New ArgumentNullException(NameOf(node))
+                End If
+
                 Dim OriginalNameParent As SyntaxNode = node.Parent
                 If TypeOf OriginalNameParent Is CSS.MemberAccessExpressionSyntax OrElse
                     TypeOf OriginalNameParent Is CSS.MemberBindingExpressionSyntax OrElse
@@ -138,8 +147,11 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Return WrapTypedNameIfNecessary(VBFactory.IdentifierName(GenerateSafeVBToken(node.Identifier, OriginalNameParent.IsKind(CS.SyntaxKind.QualifiedName), IsTypeName:=TypeOf OriginalNameParent Is CSS.InvocationExpressionSyntax)), node)
             End Function
 
-            <CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification:="Node can't Be Nothing")>
             Public Overrides Function VisitQualifiedName(node As CSS.QualifiedNameSyntax) As VB.VisualBasicSyntaxNode
+                If node Is Nothing Then
+                    Throw New ArgumentNullException(NameOf(node))
+                End If
+
                 Return WrapTypedNameIfNecessary(VBFactory.QualifiedName(DirectCast(node.Left.Accept(Me), VBS.NameSyntax), DirectCast(node.Right.Accept(Me), VBS.SimpleNameSyntax)), node)
             End Function
 
