@@ -4,6 +4,7 @@
 Public Class IgnoreFilesWithErrorsList
     Private ReadOnly _list_string As IList(Of String) = New List(Of String)()
     Private _fileToLoad As String = ""
+
     Public ReadOnly Property FileToLoad As String
         Get
             Return _fileToLoad

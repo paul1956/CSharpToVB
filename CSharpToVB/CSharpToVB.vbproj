@@ -6,6 +6,10 @@
     <StartupObject>CSharpToVBApp.Form1</StartupObject>
     <UseWindowsForms>true</UseWindowsForms>
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
+    <OptionCompare>Text</OptionCompare>
+    <OptionExplicit>On</OptionExplicit>
+    <OptionInfer>Off</OptionInfer>
+    <OptionStrict>On</OptionStrict>
   </PropertyGroup>
   <PropertyGroup>
     <LangVersion>16</LangVersion>
@@ -19,8 +23,6 @@
     <Description>Convert C# to VB, it can convert snippits, files, projects and folders. It expects valid C# code and does not handle bad code well.</Description>
     <RepositoryType>GitHub</RepositoryType>
     <ApplicationIcon>Icons\CStoVB.ico</ApplicationIcon>
-    <OptionInfer>Off</OptionInfer>
-    <OptionStrict>On</OptionStrict>
     <Version>3.2.1.0</Version>
     <Product>CSharp To VB Converter</Product>
     <Copyright>Copyright © 2020 Travel By Paul</Copyright>

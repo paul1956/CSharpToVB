@@ -1,5 +1,4 @@
-﻿
-Public NotInheritable Class AboutBox1
+﻿Public NotInheritable Class AboutBox1
 
     Private Sub AboutBox1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         ' Set the title of the form.

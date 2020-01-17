@@ -3,13 +3,14 @@
   <PropertyGroup>
     <RootNamespace></RootNamespace>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <OptionStrict>On</OptionStrict>
+    <OptionCompare>Text</OptionCompare>
+    <OptionExplicit>On</OptionExplicit>
     <OptionInfer>Off</OptionInfer>
+    <OptionStrict>On</OptionStrict>
     <AssemblyName>VB.CodeConverter</AssemblyName>
     <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
   <PropertyGroup>
-    <OptionExplicit>On</OptionExplicit>
     <NeutralLanguage>en-US</NeutralLanguage>
     <Authors>Paul M Cohen</Authors>
     <Company>Travel By Paul</Company>

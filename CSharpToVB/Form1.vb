@@ -1,10 +1,6 @@
 ﻿' Licensed to the .NET Foundation under one or more agreements.
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
-Option Explicit On
-Option Infer Off
-Option Strict On
-
 Imports System.ComponentModel
 Imports System.Diagnostics.CodeAnalysis
 Imports System.IO
@@ -32,6 +28,7 @@ Imports VBMsgBox
 
 Public Class Form1
 #If Not netcoreapp5_0 Then
+
     'Minimum amount of time to show the splash screen.  0 means hide as soon as the app comes up.
     Private ReadOnly _minimumSplashExposure As Integer = 5000
 
@@ -71,6 +68,7 @@ Public Class Form1
     Private _rtfLineStart As Integer
 
 #If Not netcoreapp5_0 Then
+
     Public Sub New()
         ShowSplashScreen()
 
@@ -178,6 +176,7 @@ Public Class Form1
             End If
         End If
     End Sub
+
 #End If
 
     Private Property CurrentBuffer As RichTextBox
@@ -1757,4 +1756,5 @@ Public Class Form1
             End Select
         End If
     End Sub
+
 End Class

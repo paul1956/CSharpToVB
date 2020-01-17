@@ -2,10 +2,6 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 #If Not netcoreapp5_0
-
-Option Strict On
-Option Explicit On
-
 Imports System.Reflection
 Imports System.Collections.ObjectModel
 Imports CSharpToVBApp.Microsoft.VisualBasic.CompilerServices

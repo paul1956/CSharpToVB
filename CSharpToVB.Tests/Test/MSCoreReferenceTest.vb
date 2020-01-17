@@ -9,6 +9,7 @@ Imports Xunit
 Namespace MSCoreReference.Tests
 
     Public NotInheritable Class MSCoreReferenceTest
+
         Public Shared Sub VerifyReferencesExist()
             Dim tree As SyntaxTree = CSharpSyntaxTree.ParseText(My.Resources.Resource1.UsingSystemclasstestIComparable)
 
