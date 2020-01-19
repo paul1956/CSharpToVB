@@ -461,12 +461,12 @@ Public Class Form1
     End Sub
 
     Private Sub Compile_Colorize(TextToCompile As String)
-        Dim CompileResult As EmitResult = CompileVisualBasicString(StringToBeCompiled:=TextToCompile, ErrorsToBeIgnored, DiagnosticSeverity.Error, _resultOfConversion)
+        Dim CompileResult As (Success As Boolean, EmitResult) = CompileVisualBasicString(StringToBeCompiled:=TextToCompile, ErrorsToBeIgnored, DiagnosticSeverity.Error, _resultOfConversion)
 
         LabelErrorCount.Text = $"Number of Errors: {_resultOfConversion.GetFilteredListOfFailures().Count}"
         Dim FragmentRange As IEnumerable(Of Range) = GetClassifiedRanges(TextToCompile, LanguageNames.VisualBasic)
 
-        If Not CompileResult?.Success Then
+        If Not CompileResult.Success Then
             If Not _resultOfConversion.GetFilteredListOfFailures().Any Then
                 _resultOfConversion.ResultStatus = ResultTriState.Success
                 If My.Settings.ColorizeOutput Then

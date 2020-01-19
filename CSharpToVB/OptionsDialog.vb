@@ -21,29 +21,6 @@ Public Class OptionsDialog
         Close()
     End Sub
 
-    Private Function Compile(StringToBeCompiled As String) As Boolean
-        Cursor = Cursors.WaitCursor
-        Application.DoEvents()
-        Dim assemblyName As String = Path.GetRandomFileName()
-        Dim tree As SyntaxTree = CSharpSyntaxTree.ParseText(StringToBeCompiled)
-        Dim compilation As CSharpCompilation = CSharpCompilation.Create(assemblyName, syntaxTrees:={tree}, CSharpReferences("", New List(Of MetadataReference)))
-        Dim CompileResult As EmitResult = Nothing
-        Using ms As MemoryStream = New MemoryStream()
-            Try
-                CompileResult = compilation.Emit(ms)
-            Finally
-                ' Ignore fatal compiler errors
-            End Try
-        End Using
-        Cursor = Cursors.Default
-        Application.DoEvents()
-        If CompileResult.Success Then
-            Return True
-        End If
-        VBMsgBox.MsgBox(CompileResult.ToString, MsgBoxStyle.Exclamation, "Compilation Failed")
-        Return False
-    End Function
-
     Private Sub CSharpFooterTextBox_Validating(sender As Object, e As CancelEventArgs) Handles CSharpFooterTextBox.Validating
         Dim OpenBracketCount As Integer = CSharpFooterTextBox.Text.Count("{"c)
         Dim CloseBracketCount As Integer = CSharpFooterTextBox.Text.Count("}"c)
@@ -100,13 +77,22 @@ Public Class OptionsDialog
         My.Settings.Save()
         DialogResult = DialogResult.OK
         ColorSelector.WriteColorDictionaryToFile()
-        If Compile(CSharpHeaderTextBox.Text & vbLf & CSharpFooterTextBox.Text) Then
+        Cursor = Cursors.WaitCursor
+        Application.DoEvents()
+        Dim CompileResult As (Success As Boolean, EmitResult) = CompileCSharpString(CSharpHeaderTextBox.Text & vbLf & CSharpFooterTextBox.Text)
+
+        If CompileResult.Success Then
             My.Settings.BoilerPlateHeader = CSharpHeaderTextBox.Text
             My.Settings.BoilderPlateFooter = CSharpFooterTextBox.Text
             My.Settings.Save()
         Else
+            DialogResult = DialogResult.None
+            VBMsgBox.MsgBox(String.Join(vbCrLf, CompileResult.Item2.Diagnostics), MsgBoxStyle.Exclamation, "Compilation Failed")
+            Cursor = Cursors.Default
+            Application.DoEvents()
             Exit Sub
         End If
+        Cursor = Cursors.Default
         Application.DoEvents()
         Close()
     End Sub

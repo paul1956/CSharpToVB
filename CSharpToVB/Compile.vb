@@ -9,17 +9,38 @@ Imports CSharpToVBCodeConverter
 Imports CSharpToVBCodeConverter.ConversionResult
 
 Imports Microsoft.CodeAnalysis
+Imports Microsoft.CodeAnalysis.CSharp
 Imports Microsoft.CodeAnalysis.Emit
 Imports Microsoft.CodeAnalysis.VisualBasic
 
 Public Module Compile
+    Public Function CompileCSharpString(StringToBeCompiled As String) As (Success As Boolean, EmitResult)
+        If String.IsNullOrEmpty(StringToBeCompiled) Then
+            Return (True, Nothing)
+        End If
 
-    Public Function CompileVisualBasicString(StringToBeCompiled As String, ErrorsToBeIgnored As List(Of String), SeverityToReport As DiagnosticSeverity, ByRef ResultOfConversion As ConversionResult) As EmitResult
+        Dim assemblyName As String = Path.GetRandomFileName()
+        Dim tree As SyntaxTree = CSharpSyntaxTree.ParseText(StringToBeCompiled)
+        Dim compilation As CSharpCompilation = CSharpCompilation.Create(assemblyName, syntaxTrees:={tree}, CSharpReferences("", New List(Of MetadataReference)))
+        Dim CompileResult As EmitResult = Nothing
+        Dim CompileSuccess As Boolean = True
+        Using ms As MemoryStream = New MemoryStream()
+            Try
+                CompileResult = compilation.Emit(ms)
+            Finally
+                ' Ignore fatal compiler errors
+                CompileSuccess = False
+            End Try
+        End Using
+        Return (CompileSuccess, CompileResult)
+    End Function
+
+    Public Function CompileVisualBasicString(StringToBeCompiled As String, ErrorsToBeIgnored As List(Of String), SeverityToReport As DiagnosticSeverity, ByRef ResultOfConversion As ConversionResult) As (Success As Boolean, EmitResult)
         Contracts.Contract.Requires(ResultOfConversion IsNot Nothing)
         If String.IsNullOrWhiteSpace(StringToBeCompiled) Then
             ResultOfConversion.SetFilteredListOfFailures(New List(Of Diagnostic))
             ResultOfConversion.ResultStatus = ResultTriState.Success
-            Return Nothing
+            Return (True, Nothing)
         End If
 
         Dim PreprocessorSymbols As ImmutableArray(Of KeyValuePair(Of String, Object)) = ImmutableArray(Of KeyValuePair(Of String, Object)).Empty
@@ -27,7 +48,7 @@ Public Module Compile
         PreprocessorSymbols = AddPredefinedPreprocessorSymbols(OutputKind.DynamicallyLinkedLibrary, PreprocessorSymbols)
 
         Dim ParseOptions As VisualBasicParseOptions = New VisualBasicParseOptions(
-                LanguageVersion.Latest,
+                VisualBasic.LanguageVersion.Latest,
                 DocumentationMode.Diagnose,
                 kind:=SourceCodeKind.Regular,
                 PreprocessorSymbols)
@@ -49,15 +70,17 @@ Public Module Compile
                                                                                   )
 
         Dim CompileResult As EmitResult = Nothing
+        Dim Success As Boolean = True
         Using ms As MemoryStream = New MemoryStream()
             Try
                 CompileResult = compilation.Emit(ms)
             Finally
                 ' Ignore fatal compiler errors
+                Success = False
             End Try
         End Using
-        ResultOfConversion.SetFilteredListOfFailures(FilterDiagnostics(Diags:=compilation.GetParseDiagnostics(), Severity:=SeverityToReport, ErrorsToBeIgnored))
-        Return CompileResult
+        ResultOfConversion.SetFilteredListOfFailures(FilterDiagnostics(Diags:=compilation.GetParseDiagnostics(), SeverityToReport, ErrorsToBeIgnored))
+        Return (Success, CompileResult)
     End Function
 
     Private Function FilterDiagnostics(Diags As ImmutableArray(Of Diagnostic), Severity As DiagnosticSeverity, ErrorsToBeIgnored As List(Of String)) As List(Of Diagnostic)

@@ -255,9 +255,9 @@ Namespace ConvertDirectory.Tests
                 If ResultOfConversion.ResultStatus = ResultTriState.Failure Then
                     Return False
                 End If
-                Dim CompileResult As EmitResult = CompileVisualBasicString(StringToBeCompiled:=ResultOfConversion.ConvertedCode, ErrorsToBeIgnored, DiagnosticSeverity.Error, ResultOfConversion)
-                If ResultOfConversion.GetFilteredListOfFailures().Any Then
-                    Dim Msg As String = ResultOfConversion.GetFilteredListOfFailures()(0).GetMessage
+                Dim CompileResult As (Success As Boolean, EmitResult) = CompileVisualBasicString(StringToBeCompiled:=ResultOfConversion.ConvertedCode, ErrorsToBeIgnored, DiagnosticSeverity.Error, ResultOfConversion)
+                If Not CompileResult.Success OrElse ResultOfConversion.GetFilteredListOfFailures().Any Then
+                    Dim Msg As String = If(CompileResult.Success, ResultOfConversion.GetFilteredListOfFailures()(0).GetMessage, "Fatal Compile error")
                     Throw New ApplicationException($"{PathWithFileName} failed to compile with error :{vbCrLf}{Msg}")
                     Return False
                 End If
