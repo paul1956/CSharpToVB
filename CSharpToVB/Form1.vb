@@ -6,6 +6,7 @@ Imports System.Diagnostics.CodeAnalysis
 Imports System.IO
 Imports System.Reflection
 Imports System.Security
+Imports System.Security.Permissions
 Imports System.Text
 Imports System.Threading
 Imports System.Xml
@@ -126,11 +127,15 @@ Public Class Form1
     <SecuritySafeCritical()>
     Protected Sub HideSplashScreen()
         SyncLock _splashLock 'This ultimately wasn't necessary.  I suppose we better keep it for backwards compat
+            Call New UIPermission(UIPermissionWindow.AllWindows).Assert()
+            Activate()
+            PermissionSet.RevertAssert() 'CLR also reverts if we throw or when we return from this function
             If _splashScreen IsNot Nothing AndAlso Not _splashScreen.IsDisposed Then
                 Dim TheBigGoodbye As New DisposeDelegate(AddressOf _splashScreen.Dispose)
                 _splashScreen.Invoke(TheBigGoodbye)
                 _splashScreen = Nothing
             End If
+            BringToFront()
         End SyncLock
     End Sub
 
@@ -451,13 +456,13 @@ Public Class Form1
                 LineNumbers_For_RichTextBoxInput.Visible = True
                 LineNumbers_For_RichTextBoxOutput.Visible = True
             End If
+            Progress.Clear()
         Catch ex As Exception
             Stop
             Throw
         End Try
         ConversionBuffer.Visible = True
         _inColorize = False
-        ConversionProgressBar.Value = 0
     End Sub
 
     Private Sub Compile_Colorize(TextToCompile As String)

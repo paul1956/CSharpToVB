@@ -962,17 +962,19 @@ Partial Class Form1
         '
         Me.ConversionProgressBar.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right
         Me.ConversionProgressBar.AutoSize = False
+        Me.ConversionProgressBar.ForeColor = Color.LightCyan
         Me.ConversionProgressBar.Name = "ConversionProgressBar"
-        Me.ConversionProgressBar.Size = New System.Drawing.Size(257, 19)
+        Me.ConversionProgressBar.Size = New System.Drawing.Size(257, 15)
         Me.ConversionProgressBar.Step = 1
         Me.ConversionProgressBar.Style = System.Windows.Forms.ProgressBarStyle.Continuous
+        Me.ConversionProgressBar.Visible = False
         '
         'FilesConversionProgress
         '
         Me.FilesConversionProgress.AutoSize = False
         Me.FilesConversionProgress.BackColor = System.Drawing.SystemColors.Control
         Me.FilesConversionProgress.Name = "FilesConversionProgress"
-        Me.FilesConversionProgress.Size = New System.Drawing.Size(250, 20)
+        Me.FilesConversionProgress.Size = New System.Drawing.Size(250, 18)
         '
         'RichTextBoxFileList
         '
