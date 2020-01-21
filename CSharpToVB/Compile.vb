@@ -14,6 +14,12 @@ Imports Microsoft.CodeAnalysis.Emit
 Imports Microsoft.CodeAnalysis.VisualBasic
 
 Public Module Compile
+
+    ''' <summary>
+    ''' Compile C# code
+    ''' </summary>
+    ''' <param name="StringToBeCompiled">String To Be Compiled</param>
+    ''' <returns>Tuple(CompileSuccess, EmitResult)CompileSuccess is true unless compiler crashes</returns>
     Public Function CompileCSharpString(StringToBeCompiled As String) As (Success As Boolean, EmitResult)
         If String.IsNullOrEmpty(StringToBeCompiled) Then
             Return (True, Nothing)
@@ -23,19 +29,27 @@ Public Module Compile
         Dim tree As SyntaxTree = CSharpSyntaxTree.ParseText(StringToBeCompiled)
         Dim compilation As CSharpCompilation = CSharpCompilation.Create(assemblyName, syntaxTrees:={tree}, CSharpReferences("", New List(Of MetadataReference)))
         Dim CompileResult As EmitResult = Nothing
-        Dim CompileSuccess As Boolean = True
+        Dim CompileSuccess As Boolean = False
         Using ms As MemoryStream = New MemoryStream()
             Try
                 CompileResult = compilation.Emit(ms)
+                CompileSuccess = True
             Finally
                 ' Ignore fatal compiler errors
-                CompileSuccess = False
             End Try
         End Using
         Return (CompileSuccess, CompileResult)
     End Function
 
-    Public Function CompileVisualBasicString(StringToBeCompiled As String, ErrorsToBeIgnored As List(Of String), SeverityToReport As DiagnosticSeverity, ByRef ResultOfConversion As ConversionResult) As (Success As Boolean, EmitResult)
+    ''' <summary>
+    ''' Compile VB code
+    ''' </summary>
+    ''' <param name="StringToBeCompiled"></param>
+    ''' <param name="ErrorsToBeIgnored"></param>
+    ''' <param name="SeverityToReport"></param>
+    ''' <param name="ResultOfConversion"></param>
+    ''' <returns>Tuple(CompileSuccess, EmitResult)CompileSuccess is true unless compiler crashes</returns>
+    Public Function CompileVisualBasicString(StringToBeCompiled As String, ErrorsToBeIgnored As List(Of String), SeverityToReport As DiagnosticSeverity, ByRef ResultOfConversion As ConversionResult) As (CompileSuccess As Boolean, EmitResult)
         Contracts.Contract.Requires(ResultOfConversion IsNot Nothing)
         If String.IsNullOrWhiteSpace(StringToBeCompiled) Then
             ResultOfConversion.SetFilteredListOfFailures(New List(Of Diagnostic))
@@ -70,17 +84,17 @@ Public Module Compile
                                                                                   )
 
         Dim CompileResult As EmitResult = Nothing
-        Dim Success As Boolean = True
+        Dim CompileSuccess As Boolean = False
         Using ms As MemoryStream = New MemoryStream()
             Try
                 CompileResult = compilation.Emit(ms)
+                CompileSuccess = True
             Finally
                 ' Ignore fatal compiler errors
-                Success = False
             End Try
         End Using
         ResultOfConversion.SetFilteredListOfFailures(FilterDiagnostics(Diags:=compilation.GetParseDiagnostics(), SeverityToReport, ErrorsToBeIgnored))
-        Return (Success, CompileResult)
+        Return (CompileSuccess, CompileResult)
     End Function
 
     Private Function FilterDiagnostics(Diags As ImmutableArray(Of Diagnostic), Severity As DiagnosticSeverity, ErrorsToBeIgnored As List(Of String)) As List(Of Diagnostic)

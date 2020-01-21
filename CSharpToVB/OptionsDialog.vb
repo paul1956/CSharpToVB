@@ -79,9 +79,9 @@ Public Class OptionsDialog
         ColorSelector.WriteColorDictionaryToFile()
         Cursor = Cursors.WaitCursor
         Application.DoEvents()
-        Dim CompileResult As (Success As Boolean, EmitResult) = CompileCSharpString(CSharpHeaderTextBox.Text & vbLf & CSharpFooterTextBox.Text)
+        Dim CompileResult As (CompileSuccess As Boolean, EmitResult) = CompileCSharpString(CSharpHeaderTextBox.Text & vbLf & CSharpFooterTextBox.Text)
 
-        If CompileResult.Success Then
+        If CompileResult.CompileSuccess Then
             My.Settings.BoilerPlateHeader = CSharpHeaderTextBox.Text
             My.Settings.BoilderPlateFooter = CSharpFooterTextBox.Text
             My.Settings.Save()
