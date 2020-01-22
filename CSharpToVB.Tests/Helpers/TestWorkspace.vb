@@ -1,7 +1,4 @@
-﻿Option Explicit On
-Option Infer Off
-Option Strict On
-
+﻿
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Host
 Imports Microsoft.CodeAnalysis.Text

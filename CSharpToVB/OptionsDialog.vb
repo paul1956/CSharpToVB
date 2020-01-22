@@ -1,12 +1,8 @@
-﻿Option Explicit On
-Option Infer Off
-Option Strict On
-
-' Licensed to the .NET Foundation under one or more agreements.
+﻿' Licensed to the .NET Foundation under one or more agreements.
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
+
 Imports System.ComponentModel
-Imports System.IO
 
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.CSharp
@@ -100,6 +96,7 @@ Public Class OptionsDialog
     Private Sub OptionsDialog_Load(sender As Object, e As EventArgs) Handles Me.Load
         ProjectDirectoryList.Items.Add(New MyListItem("Projects", GetLatestVisualStudioProjectPath))
         ProjectDirectoryList.Items.Add(New MyListItem("Repos", GetAlternetVisualStudioProjectsPath))
+        ProjectDirectoryList.SelectedIndex = 0
         For i As Integer = 0 To ProjectDirectoryList.Items.Count - 1
             If CType(ProjectDirectoryList.Items(i), MyListItem).Value = My.Settings.DefaultProjectDirectory Then
                 ProjectDirectoryList.SelectedIndex = i
