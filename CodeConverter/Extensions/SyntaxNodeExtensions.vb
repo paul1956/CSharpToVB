@@ -725,7 +725,7 @@ Namespace CSharpToVBCodeConverter.Util
                     End If
                     Return VBFactory.DisabledTextTrivia(t.ToString.Replace(vbLf, vbCrLf, StringComparison.InvariantCulture))
                 Case CS.SyntaxKind.PreprocessingMessageTrivia
-                    Return VBFactory.CommentTrivia($" ' {t.ToString}")
+                    Return VBFactory.CommentTrivia($" ' {t}")
 
                 Case CS.SyntaxKind.None
                     Return Nothing
@@ -816,7 +816,7 @@ Namespace CSharpToVBCodeConverter.Util
                                                                          ConvertTrivia(ELIfDirective.Condition.GetTrailingTrivia)).
                                                                          WithAppendedTriviaFromEndOfDirectiveToken(ELIfDirective.EndOfDirectiveToken))
                 Case CS.SyntaxKind.LineDirectiveTrivia
-                    Return VBFactory.CommentTrivia($"' TODO: Check VB does not support Line Directive Trivia, Original Directive {t.ToString}")
+                    Return VBFactory.CommentTrivia($"' TODO: Check VB does not support Line Directive Trivia, Original Directive {t}")
                 Case CS.SyntaxKind.ElseDirectiveTrivia
                     Return VBFactory.Trivia(VBFactory.ElseDirectiveTrivia.
                                                             NormalizeWhitespace.
@@ -917,7 +917,7 @@ Namespace CSharpToVBCodeConverter.Util
                     For Each tok As SyntaxToken In CType(StructuredTrivia, CSS.SkippedTokensTriviaSyntax).Tokens
                         Builder.Append(tok.ToString)
                     Next
-                    Return VBFactory.CommentTrivia($"' TODO: Error SkippedTokensTrivia '{Builder.ToString}'")
+                    Return VBFactory.CommentTrivia($"' TODO: Error SkippedTokensTrivia '{Builder}'")
                 Case CS.SyntaxKind.BadDirectiveTrivia
                     Return VBFactory.CommentTrivia($"' TODO: Skipped BadDirectiveTrivia")
                 Case CS.SyntaxKind.ConflictMarkerTrivia

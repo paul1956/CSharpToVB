@@ -68,7 +68,7 @@ Public Module StatementMarker
             End If
         Next
         If sb.Length > 0 Then
-            NewTrivia = NewTrivia.Add(VBFactory.CommentTrivia($"' {sb.ToString}"))
+            NewTrivia = NewTrivia.Add(VBFactory.CommentTrivia($"' {sb}"))
             NewTrivia = NewTrivia.Add(VBEOLTrivia)
         End If
 
@@ -214,7 +214,7 @@ Public Module StatementMarker
             StatementWithIssues = CType(StatementWithIssues.Parent, CS.CSharpSyntaxNode)
         End While
         If StatementWithIssues Is Nothing Then
-            Throw UnexpectedValue($"Can't find parent 'statement' of {node.ToString}")
+            Throw UnexpectedValue($"Can't find parent 'statement' of {node}")
         End If
 
         Return StatementWithIssues

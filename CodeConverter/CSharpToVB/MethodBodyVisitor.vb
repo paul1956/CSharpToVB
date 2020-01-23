@@ -463,7 +463,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                 End If
                             ElseIf TypeOf PatternLabel.Pattern Is CSS.RecursivePatternSyntax Then
                                 CaseLabelExpression = NothingExpression
-                                NewLeadingTrivia.AddRange(section.CheckCorrectnessLeadingTrivia($"VB has no equivalent to the C# 'Recursive Pattern({PatternLabel.Pattern.ToString}) in 'case' statements"))
+                                NewLeadingTrivia.AddRange(section.CheckCorrectnessLeadingTrivia($"VB has no equivalent to the C# 'Recursive Pattern({PatternLabel.Pattern}) in 'case' statements"))
                             Else
                                 CaseLabelExpression = Nothing
                                 Stop
@@ -505,7 +505,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Next
                 Dim TrailingTrivia As New List(Of SyntaxTrivia)
                 If CommentString.Length > 0 Then
-                    TrailingTrivia.Add(VBFactory.CommentTrivia($" ' {CommentString.ToString}"))
+                    TrailingTrivia.Add(VBFactory.CommentTrivia($" ' {CommentString}"))
                     TrailingTrivia.Add(VBEOLTrivia)
                 End If
                 Dim CaseStatement As VBS.CaseStatementSyntax = VBFactory.CaseStatement(VBFactory.SeparatedList(LabelList)).With(NewLeadingTrivia, TrailingTrivia).WithTrailingEOL
@@ -928,7 +928,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                         If CS_AwaitExpressionInfo.GetResultMethod Is Nothing Then
                                             Type = VBFactory.ParseTypeName($"Object")
                                         Else
-                                            Type = VBFactory.ParseTypeName($" {CS_AwaitExpressionInfo.GetResultMethod.ReturnType.ToString}")
+                                            Type = VBFactory.ParseTypeName($" {CS_AwaitExpressionInfo.GetResultMethod.ReturnType}")
                                         End If
                                         Dim AsClause As VBS.AsClauseSyntax = VBFactory.SimpleAsClause(Type)
                                         Declarator = VBFactory.VariableDeclarator(Names, AsClause, Initializer)
@@ -1436,7 +1436,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         Dim Condition As VBS.BinaryExpressionSyntax = VBFactory.IsNotExpression(left:=CType(VB_ConditionalAccessExpression, VBS.ExpressionSyntax),
                                                                                                 right:=NothingExpression)
                         Dim IfStatement As VBS.IfStatementSyntax = VBFactory.IfStatement(Condition)
-                        UsingStatement = VBFactory.UsingStatement(VBFactory.ParseExpression($"{VB_ConditionalAccessExpression.ToString}{CS_ConditionalAccessExpression.WhenNotNull.Accept(_nodesVisitor)}"), VBFactory.SeparatedList(Of VBS.VariableDeclaratorSyntax)())
+                        UsingStatement = VBFactory.UsingStatement(VBFactory.ParseExpression($"{VB_ConditionalAccessExpression}{CS_ConditionalAccessExpression.WhenNotNull.Accept(_nodesVisitor)}"), VBFactory.SeparatedList(Of VBS.VariableDeclaratorSyntax)())
                         UsingBlock = VBFactory.UsingBlock(UsingStatement.WithTrailingEOL, ConvertBlock(node.Statement, OpenBraceTrailingTrivia, ClosingBraceLeadingTrivia)).WithLeadingTrivia(LeadingTrivia)
                         Dim IfStatementBlock As VBS.MultiLineIfBlockSyntax = VBFactory.MultiLineIfBlock(IfStatement, VBFactory.SingletonList(Of VBS.StatementSyntax)(UsingBlock), elseIfBlocks:=Nothing, elseBlock:=Nothing).WithLeadingTrivia(LeadingTrivia)
                         Stmt = VBFactory.SingletonList(Of VBS.StatementSyntax)(IfStatementBlock)

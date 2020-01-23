@@ -67,7 +67,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     Case CS.SyntaxKind.TrueKeyword
                         Return IsTrueKeyword
                 End Select
-                Throw New NotSupportedException($"Assignment Operator {lSyntaxKind.ToString} is not supported")
+                Throw New NotSupportedException($"Assignment Operator {lSyntaxKind} is not supported")
             End Function
 
             Private Shared Function GetTriviaFromUnneededToken(_SemicolonToken As SyntaxToken) As List(Of SyntaxTrivia)

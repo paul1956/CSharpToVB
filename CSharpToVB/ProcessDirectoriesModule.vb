@@ -70,7 +70,7 @@ Public Module ProcessDirectoriesModule
                 If LastFileNameWithPath.Length = 0 OrElse LastFileNameWithPath = PathWithFileName Then
                     LastFileNameWithPath = ""
                     If RichTextBoxFileList IsNot Nothing Then
-                        RichTextBoxFileList.AppendText($"{FilesProcessed.ToString(Globalization.CultureInfo.InvariantCulture).PadLeft(5)} {PathWithFileName}{vbCrLf}")
+                        RichTextBoxFileList.AppendText($"{FilesProcessed.ToString(Globalization.CultureInfo.InvariantCulture),-5} {PathWithFileName}{vbCrLf}")
                         RichTextBoxFileList.Select(RichTextBoxFileList.TextLength, 0)
                         RichTextBoxFileList.ScrollToCaret()
                         Application.DoEvents()

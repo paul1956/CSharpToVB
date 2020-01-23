@@ -8,7 +8,7 @@
         ' TODO: Customize the application's assembly information in the "Application" pane of the project
         '    properties dialog (under the "Project" menu).
         LabelProductName.Text = My.Info.ProductName
-        LabelVersion.Text = $"Version {My.Info.Version.ToString}"
+        LabelVersion.Text = $"Version {My.Info.Version}"
         LabelCopyright.Text = My.Info.Copyright
         LabelCompanyName.Text = My.Info.CompanyName
         TextBoxDescription.Text = My.Info.Description

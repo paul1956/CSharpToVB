@@ -306,7 +306,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     Return EmptyToken
             End Select
 
-            Throw New NotSupportedException($"Modifier.Kind {t.ToString} is not supported!")
+            Throw New NotSupportedException($"Modifier.Kind {t} is not supported!")
         End Function
 
         <Extension>

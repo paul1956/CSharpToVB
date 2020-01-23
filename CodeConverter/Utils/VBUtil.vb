@@ -108,7 +108,7 @@ Namespace CSharpToVBCodeConverter.Util
                 Case CS.SyntaxKind.AsExpression
                     Return CType(CS.SyntaxKind.AsExpression, VB.SyntaxKind)
             End Select
-            Throw New NotSupportedException($"Expression.Kind {t.ToString} is not supported!")
+            Throw New NotSupportedException($"Expression.Kind {t} is not supported!")
         End Function
 
         ''' <summary>
@@ -180,7 +180,7 @@ Namespace CSharpToVBCodeConverter.Util
                     Return XorKeyword
             End Select
 
-            Throw New ArgumentOutOfRangeException($"op = {op.ToString}")
+            Throw New ArgumentOutOfRangeException($"op = {op}")
         End Function
 
         Public Function ConvertTypesTokenToKind(t As CS.SyntaxKind, Optional context As TokenContext = TokenContext.[Global]) As SyntaxToken
@@ -227,7 +227,7 @@ Namespace CSharpToVBCodeConverter.Util
                     Return ObjectKeyword
             End Select
 
-            Throw New NotSupportedException($"Type.Kind {t.ToString} is not supported!")
+            Throw New NotSupportedException($"Type.Kind {t} is not supported!")
         End Function
 
         <Extension()>

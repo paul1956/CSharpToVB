@@ -1012,7 +1012,7 @@ Public Class Form1
                                 Continue For
                             Else
                                 FilesProcessed += 1
-                                RichTextBoxFileList.AppendText($"{FilesProcessed.ToString(Globalization.CultureInfo.InvariantCulture).PadLeft(5)} {document.FilePath}{vbCrLf}")
+                                RichTextBoxFileList.AppendText($"{FilesProcessed.ToString(Globalization.CultureInfo.InvariantCulture),-5} {document.FilePath}{vbCrLf}")
                                 RichTextBoxFileList.Select(RichTextBoxFileList.TextLength, 0)
                                 RichTextBoxFileList.ScrollToCaret()
                                 FilesConversionProgress.Text = $"Processed {FilesProcessed:N0} of {TotalFilesToProcess:N0} Files"
@@ -1453,7 +1453,7 @@ Public Class Form1
 
     Private Sub RichTextBoxConversionOutput_HorizScrollBarRightClicked(sender As Object, loc As Point) Handles RichTextBoxConversionOutput.HorizScrollBarRightClicked
         Dim p As Integer = CType(sender, AdvancedRTB).HScrollPos
-        MsgBox($"Horizontal Right Clicked At: {loc.ToString}, HScrollPos = {p}")
+        MsgBox($"Horizontal Right Clicked At: {loc}, HScrollPos = {p}")
     End Sub
 
     Private Sub RichTextBoxConversionOutput_MouseEnter(sender As Object, e As EventArgs) Handles RichTextBoxConversionOutput.MouseEnter
@@ -1467,7 +1467,7 @@ Public Class Form1
 
     Private Sub RichTextBoxConversionOutput_VertScrollBarRightClicked(sender As Object, loc As Point) Handles RichTextBoxConversionOutput.VertScrollBarRightClicked
         Dim p As Integer = CType(sender, AdvancedRTB).VScrollPos
-        MsgBox($"Vertical Right Clicked At: {loc.ToString}, VScrollPos = {p} ")
+        MsgBox($"Vertical Right Clicked At: {loc}, VScrollPos = {p} ")
     End Sub
 
     Private Sub RichTextBoxErrorList_Enter(sender As Object, e As EventArgs) Handles RichTextBoxErrorList.Enter

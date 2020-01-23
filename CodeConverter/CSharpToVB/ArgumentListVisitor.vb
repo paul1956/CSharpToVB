@@ -79,7 +79,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         Dim _Typeinfo As TypeInfo = ModelExtensions.GetTypeInfo(_mSemanticModel, NodeExpression)
                         If Not SymbolEqualityComparer.Default.Equals(_Typeinfo.ConvertedType, _Typeinfo.Type) Then
                             If _Typeinfo.Type?.SpecialType = SpecialType.System_Char Then '
-                                ArgumentWithTrivia = VBFactory.ParseExpression($"ChrW({ArgumentWithTrivia.WithoutTrivia.ToString})").WithTriviaFrom(ArgumentWithTrivia)
+                                ArgumentWithTrivia = VBFactory.ParseExpression($"ChrW({ArgumentWithTrivia.WithoutTrivia})").WithTriviaFrom(ArgumentWithTrivia)
                             End If
                         End If
                     End If

@@ -209,7 +209,7 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
 
         public T Last()
         {
-            return _builder[_builder.Count - 1];
+            return _builder[^1];
         }
 
         public T First()

@@ -52,7 +52,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         Case CS.SyntaxKind.EndOfLineTrivia
                             ' Ignore
                         Case Else
-                            Debug.WriteLine($"Unknown TriviaKind {CType(t.RawKind, CS.SyntaxKind).ToString} in ContainsConditionalDirective")
+                            Debug.WriteLine($"Unknown TriviaKind {CType(t.RawKind, CS.SyntaxKind)} in ContainsConditionalDirective")
                             Stop
                     End Select
                 Next

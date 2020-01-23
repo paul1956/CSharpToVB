@@ -1110,7 +1110,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                                                            OfType(Of IdentifierNameSyntax).
                                                                            First(Function(b As IdentifierNameSyntax) b.Kind() = VB.SyntaxKind.IdentifierName)
                         Dim NewIdentifierWithQuestionMark As IdentifierNameSyntax =
-                                    VBFactory.IdentifierName($"{DirectCast(node.Left.Accept(Me), ExpressionSyntax).ToString}?")
+                                    VBFactory.IdentifierName($"{DirectCast(node.Left.Accept(Me), ExpressionSyntax)}?")
                         Return RightExpression.ReplaceNode(OldIdentifier, NewIdentifierWithQuestionMark)
                     End If
 
@@ -1242,7 +1242,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                             If (node.Parent.IsKind(CS.SyntaxKind.AttributeArgument)) Then
                                 CTypeExpressionSyntax = Expression
                             ElseIf TestAgainst.Contains(ExpressionTypeStr, StringComparer.OrdinalIgnoreCase) Then
-                                CTypeExpressionSyntax = VBFactory.ParseExpression($"ChrW({Expression.ToString})")
+                                CTypeExpressionSyntax = VBFactory.ParseExpression($"ChrW({Expression})")
                             Else
                                 CTypeExpressionSyntax = VBFactory.PredefinedCastExpression(CCharKeyword, Expression)
                             End If
@@ -1250,7 +1250,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                             CTypeExpressionSyntax = VBFactory.PredefinedCastExpression(CSByteKeyword, Expression)
                         Case SpecialType.System_Byte
                             If Expression.IsKind(VB.SyntaxKind.CharacterLiteralExpression) Then
-                                CTypeExpressionSyntax = VBFactory.ParseExpression($"AscW({Expression.ToString})")
+                                CTypeExpressionSyntax = VBFactory.ParseExpression($"AscW({Expression})")
                             Else
                                 CTypeExpressionSyntax = VBFactory.PredefinedCastExpression(CByteKeyword, Expression)
                             End If
@@ -1260,13 +1260,13 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                             CTypeExpressionSyntax = VBFactory.PredefinedCastExpression(CShortKeyword, VBFactory.InvocationExpression(FixExpression, ArgumentList))
                         Case SpecialType.System_UInt16
                             If ExpressionTypeStr = "char" Then
-                                CTypeExpressionSyntax = VBFactory.ParseExpression(text:=$"ChrW({Expression.ToString})")
+                                CTypeExpressionSyntax = VBFactory.ParseExpression(text:=$"ChrW({Expression})")
                             Else
                                 CTypeExpressionSyntax = VBFactory.PredefinedCastExpression(CUShortKeyword, Expression)
                             End If
                         Case SpecialType.System_Int32
                             If ExpressionTypeStr = "char" Then
-                                CTypeExpressionSyntax = VBFactory.ParseExpression($"ChrW({Expression.ToString})").WithTrailingTrivia(NewTrailingTrivia)
+                                CTypeExpressionSyntax = VBFactory.ParseExpression($"ChrW({Expression})").WithTrailingTrivia(NewTrailingTrivia)
                             Else
                                 Dim FixExpression As ExpressionSyntax = VBFactory.IdentifierName("Fix")
                                 Dim ArgumentList As ArgumentListSyntax = VBFactory.ArgumentList(VBFactory.SingletonSeparatedList(Of ArgumentSyntax)(VBFactory.SimpleArgument(Expression)))
@@ -1332,9 +1332,9 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 If TypeOf Expression Is PredefinedCastExpressionSyntax Then
                     Dim CastExpression As PredefinedCastExpressionSyntax = DirectCast(Expression, PredefinedCastExpressionSyntax)
                     If Unchecked Then
-                        Return VBFactory.ParseExpression($"{CastExpression.Keyword.ToString}(Val(""&H"" & Hex({CastExpression.Expression.ToString})))")
+                        Return VBFactory.ParseExpression($"{CastExpression.Keyword}(Val(""&H"" & Hex({CastExpression.Expression})))")
                     Else
-                        Return VBFactory.ParseExpression($"{CastExpression.Keyword.ToString}({CastExpression.Expression.ToString})")
+                        Return VBFactory.ParseExpression($"{CastExpression.Keyword}({CastExpression.Expression})")
                     End If
                 End If
                 If TypeOf Expression Is BinaryExpressionSyntax OrElse
@@ -1342,7 +1342,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     TypeOf Expression Is LiteralExpressionSyntax OrElse
                     TypeOf Expression Is ObjectCreationExpressionSyntax Then
                     If Unchecked Then
-                        Return VBFactory.ParseExpression($"Unchecked({Expression.ToString})")
+                        Return VBFactory.ParseExpression($"Unchecked({Expression})")
                     Else
                         Return Expression
                     End If
@@ -2364,7 +2364,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             ''' <returns></returns>ThrowExpressionSyntax
             ''' <remarks>Added by PC</remarks>
             Public Overrides Function VisitSizeOfExpression(node As CSS.SizeOfExpressionSyntax) As VB.VisualBasicSyntaxNode
-                Return VBFactory.ParseExpression($"Len(New {node.Type.ToString}()) ")
+                Return VBFactory.ParseExpression($"Len(New {node.Type}()) ")
             End Function
 
             Public Overrides Function VisitThisExpression(node As CSS.ThisExpressionSyntax) As VB.VisualBasicSyntaxNode
