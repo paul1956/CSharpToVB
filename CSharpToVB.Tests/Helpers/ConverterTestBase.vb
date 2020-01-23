@@ -5,8 +5,9 @@
 Imports System.Collections.Immutable
 Imports System.Reflection
 Imports System.Threading
-Imports CSharpToVBCodeConverter.Util
+
 Imports CSharpToVBCodeConverter.DestVisualBasic
+Imports CSharpToVBCodeConverter.Util
 
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.CSharp

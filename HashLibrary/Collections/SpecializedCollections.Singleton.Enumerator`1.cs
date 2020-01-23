@@ -29,10 +29,11 @@ namespace Roslyn.Utilities
                     Dispose(true);
                     System.GC.SuppressFinalize(this);
                 }
+
                 public void Dispose(bool flag)
                 {
                     if (flag == false)
-                    System.GC.SuppressFinalize(this);
+                        System.GC.SuppressFinalize(this);
                 }
 
                 public bool MoveNext()

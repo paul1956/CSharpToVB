@@ -336,6 +336,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
 
                 Return FoundEOL
             End Function
+
             Public Shared Function ConvertAndModifyNodeTrivia(Node As VB.VisualBasicSyntaxNode, NodesOrTokens As List(Of SyntaxNodeOrToken), Index As Integer) As VB.VisualBasicSyntaxNode
                 If NodesOrTokens Is Nothing Then
                     Throw New ArgumentNullException(NameOf(NodesOrTokens))
@@ -556,6 +557,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Next
                 Return Token.With(FinalLeadingTriviaList, FinalTrailingTriviaList)
             End Function
+
             Public Shared Function GetElementType(_ITypeSymbol As ITypeSymbol) As TypeSyntax
                 Dim _TypeSyntax As TypeSyntax = ConvertToType(_ITypeSymbol)
                 If _TypeSyntax.IsKind(VB.SyntaxKind.ArrayType) Then
@@ -623,6 +625,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 End If
                 Return VBFactory.PredefinedType(ObjectKeyword)
             End Function
+
             Public Overrides Function VisitAnonymousMethodExpression(node As CSS.AnonymousMethodExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Dim Parameters As New SeparatedSyntaxList(Of CSS.ParameterSyntax)
                 If node.ParameterList IsNot Nothing Then

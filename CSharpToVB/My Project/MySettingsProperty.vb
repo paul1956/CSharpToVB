@@ -13,5 +13,6 @@ Namespace My
                 Return Settings.Default
             End Get
         End Property
+
     End Module
 End Namespace

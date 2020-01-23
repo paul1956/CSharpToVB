@@ -48,7 +48,7 @@ namespace HashLibrary
 
             var hashCode = 0;
             var count = 0;
-            foreach (var value in values)
+            foreach (T value in values)
             {
                 if (count++ >= maxItemsToHash)
                 {
@@ -98,7 +98,7 @@ namespace HashLibrary
 
             var hashCode = 0;
             var count = 0;
-            foreach (var value in values)
+            foreach (T value in values)
             {
                 if (count++ >= maxItemsToHash)
                 {

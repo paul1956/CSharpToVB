@@ -1,9 +1,11 @@
 ﻿' Licensed to the .NET Foundation under one or more agreements.
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
-#If Not netcoreapp5_0
-Imports System.Reflection
+#If Not netcoreapp5_0 Then
+
 Imports System.Collections.ObjectModel
+Imports System.Reflection
+
 Imports CSharpToVBApp.Microsoft.VisualBasic.CompilerServices
 
 Namespace Microsoft.VisualBasic.ApplicationServices
@@ -209,11 +211,14 @@ Namespace Microsoft.VisualBasic.ApplicationServices
         ' Since these properties will not change during runtime, they're cached.
         ' "" is not Nothing so use Nothing to mark an un-accessed property.
         Private _description As String = Nothing ' Cache the assembly's description.
+
         Private _title As String = Nothing ' Cache the assembly's title.
         Private _productName As String = Nothing ' Cache the assembly's product name.
         Private _companyName As String = Nothing ' Cache the assembly's company name.
         Private _trademark As String = Nothing ' Cache the assembly's trademark.
         Private _copyright As String = Nothing ' Cache the assembly's copyright.
     End Class
+
 End Namespace
+
 #End If

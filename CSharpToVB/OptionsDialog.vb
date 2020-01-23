@@ -5,7 +5,6 @@
 Imports System.ComponentModel
 
 Imports Microsoft.CodeAnalysis
-Imports Microsoft.CodeAnalysis.CSharp
 Imports Microsoft.CodeAnalysis.Emit
 
 Public Class OptionsDialog

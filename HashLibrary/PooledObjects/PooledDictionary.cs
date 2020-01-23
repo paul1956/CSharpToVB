@@ -43,7 +43,7 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
 
         public static PooledDictionary<K, V> GetInstance()
         {
-            var instance = s_poolInstance.Allocate();
+            PooledDictionary<K, V> instance = s_poolInstance.Allocate();
             Debug.Assert(instance.Count == 0);
             return instance;
         }

@@ -1,5 +1,4 @@
-﻿
-Imports Microsoft.CodeAnalysis
+﻿Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Host
 Imports Microsoft.CodeAnalysis.Text
 

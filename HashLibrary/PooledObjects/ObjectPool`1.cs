@@ -60,7 +60,7 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
 
         private T AllocateSlow()
         {
-            var items = _items;
+            Element[] items = _items;
 
             for (int i = 0; i < items.Length; i++)
             {
@@ -82,13 +82,13 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
 
         private T CreateInstance()
         {
-            var inst = _factory();
+            T inst = _factory();
             return inst;
         }
 
         private void FreeSlow(T obj)
         {
-            var items = _items;
+            Element[] items = _items;
             for (int i = 0; i < items.Length; i++)
             {
                 if (items[i]._value == null)
@@ -109,10 +109,10 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
 
             Debug.Assert(_firstItem != obj, "freeing twice?");
 
-            var items = _items;
+            Element[] items = _items;
             for (int i = 0; i < items.Length; i++)
             {
-                var value = items[i]._value;
+                T value = items[i]._value;
                 if (value == null)
                 {
                     return;
