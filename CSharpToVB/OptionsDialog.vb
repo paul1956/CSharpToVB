@@ -50,7 +50,7 @@ Public Class OptionsDialog
     Private Sub ItemColor_ComboBox_DrawItem(sender As Object, e As DrawItemEventArgs) Handles ItemColor_ComboBox.DrawItem
         If e.Index >= 0 Then
             Dim n As String = CType(sender, ComboBox).Items(e.Index).ToString()
-            Using f As New Font("Arial", 9, FontStyle.Regular)
+            Using f As New Font("Segoe UI", 9, FontStyle.Regular)
                 Dim c As Color = ColorSelector.GetColorFromName(n)
                 Using b As Brush = New SolidBrush(c)
                     Dim rect As Rectangle = e.Bounds

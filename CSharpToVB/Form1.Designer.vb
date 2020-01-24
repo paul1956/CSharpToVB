@@ -925,7 +925,7 @@ Partial Class Form1
         Me.RichTextBoxConversionInput.ContextMenuStrip = Me.ContextMenuStrip1
         Me.RichTextBoxConversionInput.DetectUrls = False
         Me.RichTextBoxConversionInput.Dock = System.Windows.Forms.DockStyle.Left
-        Me.RichTextBoxConversionInput.Font = New System.Drawing.Font("Consolas", 11.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.RichTextBoxConversionInput.Font = New System.Drawing.Font("Segoe UI", 11.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.RichTextBoxConversionInput.Location = New System.Drawing.Point(23, 0)
         Me.RichTextBoxConversionInput.Name = "RichTextBoxConversionInput"
         Me.RichTextBoxConversionInput.Size = New System.Drawing.Size(1221, 163)
@@ -1048,7 +1048,7 @@ Partial Class Form1
         Me.RichTextBoxConversionOutput.ContextMenuStrip = Me.ContextMenuStrip1
         Me.RichTextBoxConversionOutput.DetectUrls = False
         Me.RichTextBoxConversionOutput.Dock = System.Windows.Forms.DockStyle.Right
-        Me.RichTextBoxConversionOutput.Font = New System.Drawing.Font("Consolas", 11.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.RichTextBoxConversionOutput.Font = New System.Drawing.Font("Segoe UI", 11.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.RichTextBoxConversionOutput.HScrollPos = 0
         Me.RichTextBoxConversionOutput.Location = New System.Drawing.Point(999, 0)
         Me.RichTextBoxConversionOutput.Name = "RichTextBoxConversionOutput"

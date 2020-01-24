@@ -466,12 +466,18 @@ Public Class Form1
     End Sub
 
     Private Sub Compile_Colorize(TextToCompile As String)
-        Dim CompileResult As (Success As Boolean, EmitResult) = CompileVisualBasicString(StringToBeCompiled:=TextToCompile, ErrorsToBeIgnored, DiagnosticSeverity.Error, _resultOfConversion)
+        Dim CompileResult As (Success As Boolean, EmitResult As EmitResult) = CompileVisualBasicString(StringToBeCompiled:=TextToCompile, ErrorsToBeIgnored, DiagnosticSeverity.Error, _resultOfConversion)
 
         LabelErrorCount.Text = $"Number of Errors: {_resultOfConversion.GetFilteredListOfFailures().Count}"
         Dim FragmentRange As IEnumerable(Of Range) = GetClassifiedRanges(TextToCompile, LanguageNames.VisualBasic)
 
-        If Not CompileResult.Success Then
+        If CompileResult.Success AndAlso CompileResult.EmitResult.Success Then
+            If My.Settings.ColorizeOutput Then
+                Colorize(FragmentRange, RichTextBoxConversionOutput, TextToCompile.SplitLines.Length)
+            Else
+                RichTextBoxConversionOutput.Text = _resultOfConversion.ConvertedCode
+            End If
+        Else
             If Not _resultOfConversion.GetFilteredListOfFailures().Any Then
                 _resultOfConversion.ResultStatus = ResultTriState.Success
                 If My.Settings.ColorizeOutput Then
@@ -481,12 +487,6 @@ Public Class Form1
                 End If
             Else
                 Colorize(FragmentRange, RichTextBoxConversionOutput, TextToCompile.SplitLines.Length, _resultOfConversion.GetFilteredListOfFailures())
-            End If
-        Else
-            If My.Settings.ColorizeOutput Then
-                Colorize(FragmentRange, RichTextBoxConversionOutput, TextToCompile.SplitLines.Length)
-            Else
-                RichTextBoxConversionOutput.Text = _resultOfConversion.ConvertedCode
             End If
         End If
         Application.DoEvents()

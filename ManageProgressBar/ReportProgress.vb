@@ -7,7 +7,7 @@ Public Class ReportProgress
     Implements IReportProgress
 
     Private _currentValue As Integer
-    Private ReadOnly _defaultFont As Font = New Font(SystemFonts.DefaultFont.Name, 7, FontStyle.Regular)
+    Private ReadOnly _defaultFont As Font = New Font("Segoe UI", 7, FontStyle.Bold)
 
     Public Sub New(Bar As ToolStripProgressBar)
         _ProgressBar = Bar
@@ -18,6 +18,7 @@ Public Class ReportProgress
     Private ReadOnly Property ProgressBar As ToolStripProgressBar
 
     Private Sub pbPrecentage(pb As ToolStripProgressBar, Text As String)
+        pb.Invalidate()
         Using g As Graphics = pb.ProgressBar.CreateGraphics()
             'Switch to Anti-aliased drawing for better (smoother) graphic results
             g.PixelOffsetMode = PixelOffsetMode.HighQuality
@@ -40,13 +41,10 @@ Public Class ReportProgress
     Public Sub UpdateProgress(Increment As Integer) Implements IReportProgress.UpdateProgress
         _currentValue += Increment
         ProgressBar.TextImageRelation = TextImageRelation.Overlay
-        ProgressBar.Value = ProgressBar.Maximum
-        ProgressBar.Value = _currentValue
-        ProgressBar.PerformStep()
+        ProgressBar.Increment(Increment)
         pbPrecentage(ProgressBar, $"{ProgressBar.Value:N0} of {ProgressBar.Maximum:N0}")
-        Thread.Sleep(2)
-        Application.DoEvents()
-        If ProgressBar.Value >= ProgressBar.Maximum Then
+        Thread.Sleep(5)
+        If _currentValue >= ProgressBar.Maximum Then
             ProgressBar.Visible = False
         End If
     End Sub
