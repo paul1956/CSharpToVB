@@ -1515,8 +1515,8 @@ Public Class Form1
     End Sub
 
     Private Sub SplitContainer1_SplitterMoved(sender As Object, e As SplitterEventArgs) Handles SplitContainer1.SplitterMoved
-        RichTextBoxFileList.Height = SplitContainer1.Panel2.Height - StatusStrip1.Height
-        RichTextBoxErrorList.Height = SplitContainer1.Panel2.Height - StatusStrip1.Height
+        RichTextBoxFileList.Height = SplitContainer1.Panel2.Height
+        RichTextBoxErrorList.Height = SplitContainer1.Panel2.Height
     End Sub
 
     Private Sub StatusStripCurrentFileName_MouseDown(sender As Object, e As MouseEventArgs) Handles StatusStripCurrentFileName.MouseDown

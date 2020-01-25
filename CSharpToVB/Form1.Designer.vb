@@ -912,11 +912,10 @@ Partial Class Form1
         '
         'SplitContainer1.Panel2
         '
-        Me.SplitContainer1.Panel2.Controls.Add(Me.StatusStrip1)
         Me.SplitContainer1.Panel2.Controls.Add(Me.RichTextBoxFileList)
         Me.SplitContainer1.Panel2.Controls.Add(Me.RichTextBoxErrorList)
-        Me.SplitContainer1.Size = New System.Drawing.Size(1923, 613)
-        Me.SplitContainer1.SplitterDistance = 163
+        Me.SplitContainer1.Size = New System.Drawing.Size(1923, 591)
+        Me.SplitContainer1.SplitterDistance = 470
         Me.SplitContainer1.SplitterWidth = 5
         Me.SplitContainer1.TabIndex = 22
         '
@@ -936,10 +935,9 @@ Partial Class Form1
         'StatusStrip1
         '
         Me.StatusStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.StatusStripCurrentFileName, Me.StatusStripSpacer, Me.ConversionProgressBar, Me.FilesConversionProgress})
-        Me.StatusStrip1.Location = New System.Drawing.Point(0, 420)
+        Me.StatusStrip1.Location = New System.Drawing.Point(0, 428)
         Me.StatusStrip1.Name = "StatusStrip1"
-        Me.StatusStrip1.Padding = New System.Windows.Forms.Padding(1, 0, 16, 0)
-        Me.StatusStrip1.Size = New System.Drawing.Size(1923, 25)
+        Me.StatusStrip1.Size = New System.Drawing.Size(1923, 22)
         Me.StatusStrip1.TabIndex = 2
         Me.StatusStrip1.Text = "StatusStrip1"
         '
@@ -1109,6 +1107,7 @@ Partial Class Form1
         Me.Controls.Add(Me.SearchInput)
         Me.Controls.Add(Me.SplitContainer1)
         Me.Controls.Add(Me.MenuStrip1)
+        Me.Controls.Add(Me.StatusStrip1)
         Me.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.KeyPreview = True
