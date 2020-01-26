@@ -1605,13 +1605,13 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     Dim ReportProgress As Boolean = ExpressionLastIndex > 500
 
                     If ReportProgress Then
-                        s_originalRequest.ProgressBar?.SetTotalItems(ExpressionLastIndex + 1)
+                        s_originalRequest.ProgressBar?.Maximum(ExpressionLastIndex + 1)
                     End If
                     ' Figuring out this without using Accept is complicated below is safe but not fast
                     Dim ItemIsField As Boolean = node.Expressions.Any AndAlso TypeOf node.Expressions(0).Accept(Me) Is FieldInitializerSyntax
                     For i As Integer = 0 To ExpressionLastIndex
                         If ReportProgress Then
-                            s_originalRequest.ProgressBar?.UpdateProgress(1)
+                            s_originalRequest.ProgressBar?.Increment(1)
                         End If
                         Application.DoEvents()
 

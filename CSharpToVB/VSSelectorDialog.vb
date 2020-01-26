@@ -30,7 +30,6 @@ Public Class VSSelectorDialog
         Close()
     End Sub
 
-    <CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification:="Translation Needed")>
     Private Sub VS_Selector_Dialog1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         Dim BestIndex As Integer = -1
         Text = "Multiple installs of MSBuild detected please select one:"

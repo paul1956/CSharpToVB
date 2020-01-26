@@ -45,11 +45,9 @@ Public Class IgnoreFilesWithErrorsList
 #Disable Warning IDE0067 ' Dispose objects before losing scope
         Dim buttonDeleteEntry As New DataGridViewButtonColumn
         With buttonDeleteEntry
-#Disable Warning CA1303 ' Do not pass literals as localized parameters
             .HeaderText = "Delete"
             .Name = "Delete"
             .Text = "Delete Entry"
-#Enable Warning CA1303 ' Do not pass literals as localized parameters
             ' Use the Text property for the button text for all cells rather
             ' than using each cell's value as the text for its own button.
             .UseColumnTextForButtonValue = True
@@ -59,11 +57,9 @@ Public Class IgnoreFilesWithErrorsList
 
         Dim buttonLoadFile As New DataGridViewButtonColumn
         With buttonLoadFile
-#Disable Warning CA1303 ' Do not pass literals as localized parameters
             .HeaderText = "Load File"
             .Name = "Load"
             .Text = "Load File"
-#Enable Warning CA1303 ' Do not pass literals as localized parameters
             ' Use the Text property for the button text for all cells rather
             ' than using each cell's value as the text for its own button.
             .UseColumnTextForButtonValue = True
