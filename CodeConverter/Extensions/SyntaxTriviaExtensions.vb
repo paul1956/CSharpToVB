@@ -170,6 +170,9 @@ Namespace CSharpToVBCodeConverter.Util
                 If t.IsNone Then
                     Continue For
                 End If
+                If t.IsDirective Then
+                    Continue For
+                End If
                 If t.IsComment Then
                     Return True
                 End If

@@ -176,9 +176,56 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
 
             Private Sub ConvertAndSplitAttributes(attributeLists As SyntaxList(Of CSS.AttributeListSyntax), <Out> ByRef Attributes As List(Of VBS.AttributeListSyntax), <Out> ByRef ReturnAttributes As SyntaxList(Of VBS.AttributeListSyntax))
                 Dim retAttr As List(Of VBS.AttributeListSyntax) = New List(Of VBS.AttributeListSyntax)()
+                Dim FirstAttribuate As Boolean = True
                 For Each attrList As CSS.AttributeListSyntax In attributeLists
                     If attrList.Target Is Nothing OrElse Not attrList.Target.Identifier.IsKind(CS.SyntaxKind.ReturnKeyword) Then
-                        Attributes.Add(DirectCast(attrList.Accept(Me), VBS.AttributeListSyntax))
+                        Dim item As VBS.AttributeListSyntax = DirectCast(attrList.Accept(Me), VBS.AttributeListSyntax)
+                        If FirstAttribuate Then
+                            FirstAttribuate = False
+                        Else
+                            Dim itemLeadingTrivia As SyntaxTriviaList = item.GetLeadingTrivia
+                            If itemLeadingTrivia.ContainsCommentTrivia Then
+                                Dim LeadingTriviaList As New List(Of SyntaxTrivia)
+                                Dim FirstComment As Boolean = True
+                                Dim NeedWhiteSpace As Boolean = True
+                                Dim needLineContinuation As Boolean = True
+                                For Each VBSyntaxTrivia As SyntaxTrivia In itemLeadingTrivia
+                                    Select Case VBSyntaxTrivia.RawKind
+                                        Case VB.SyntaxKind.WhitespaceTrivia
+                                            LeadingTriviaList.Add(VBSyntaxTrivia)
+                                            NeedWhiteSpace = False
+                                        Case VB.SyntaxKind.CommentTrivia
+                                            If FirstComment Then
+                                                FirstComment = False
+                                                If NeedWhiteSpace Then
+                                                    NeedWhiteSpace = False
+                                                    LeadingTriviaList.Add(SpaceTrivia)
+                                                End If
+                                                LeadingTriviaList.Add(LineContinuation)
+                                                LeadingTriviaList.Add(SpaceTrivia)
+                                                needLineContinuation = False
+                                            End If
+                                            LeadingTriviaList.Add(VBSyntaxTrivia)
+                                        Case VB.SyntaxKind.EndOfLineTrivia
+                                            If NeedWhiteSpace Then
+                                                NeedWhiteSpace = False
+                                                LeadingTriviaList.Add(SpaceTrivia)
+                                            End If
+                                            If needLineContinuation Then
+                                                LeadingTriviaList.Add(LineContinuation)
+                                                needLineContinuation = False
+                                                NeedWhiteSpace = True
+                                            End If
+                                            LeadingTriviaList.Add(VBSyntaxTrivia)
+                                        Case Else
+                                            Stop
+                                            NeedWhiteSpace = True
+                                    End Select
+                                Next
+                                item = item.WithLeadingTrivia(LeadingTriviaList)
+                            End If
+                        End If
+                        Attributes.Add(item)
                     Else
                         ' Remove trailing CRLF from return attributes
                         retAttr.Add(DirectCast(attrList.Accept(Me).With({SpaceTrivia}, {SpaceTrivia}), VBS.AttributeListSyntax))
@@ -642,7 +689,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                             Dim StatementLeadingTrivia As New List(Of SyntaxTrivia)
                             Dim StatementTrailingTrivia As New List(Of SyntaxTrivia)
                             If node.ExpressionBody.Expression.IsKind(CS.SyntaxKind.DefaultLiteralExpression) Then
-                                StatementLeadingTrivia.InsertRange(0, CheckCorrectnessLeadingTrivia(DirectCast(Nothing, CS.CSharpSyntaxNode), "VB Does not support ""Default"""))
+                                StatementLeadingTrivia.InsertRange(0, CheckCorrectnessLeadingTrivia(DirectCast(Nothing, CS.CSharpSyntaxNode), AttemptToPortMade:=True, "VB Does not support ""Default"""))
                                 Dim ReturnStatement As VBS.ReturnStatementSyntax = VBFactory.ReturnStatement(ReturnExpression.WithLeadingTrivia(SpaceTrivia))
                                 Dim ReturnStartementWithTrivia As VBS.ReturnStatementSyntax = ReturnStatement.
                                                 With(StatementLeadingTrivia, ConvertTrivia(node.ExpressionBody.Expression.GetTrailingTrivia)).
@@ -790,19 +837,26 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     If TypeParameterList IsNot Nothing OrElse ParameterList IsNot Nothing Then
                         id = id.WithTrailingTrivia(SpaceTrivia)
                     End If
+                    If Attributes.Any AndAlso Attributes.Last.GetTrailingTrivia.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                        If Modifiers.Any AndAlso Modifiers(0).LeadingTrivia.ContainsEOLTrivia Then
+                            If Modifiers(0).LeadingTrivia(0).IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                                Modifiers(0) = Modifiers(0).WithLeadingTrivia(Modifiers(0).LeadingTrivia.RemoveAt(0))
+                            End If
+                        End If
+                    End If
                     Dim MethodStatement As VBS.MethodStatementSyntax = VBFactory.SubStatement(
-                                                                    VBFactory.List(Attributes),
-                                                                    VBFactory.TokenList(Modifiers),
-                                                                    id,
-                                                                    TypeParameterList,
-                                                                    ParameterList,
-                                                                    asClause:=Nothing,
-                                                                    handlesClause:=Nothing,
-                                                                    ImplementsClause)
+                                                                        VBFactory.List(Attributes),
+                                                                        VBFactory.TokenList(Modifiers),
+                                                                        id,
+                                                                        TypeParameterList,
+                                                                        ParameterList,
+                                                                        asClause:=Nothing,
+                                                                        handlesClause:=Nothing,
+                                                                        ImplementsClause)
                     SubOrFunctionStatement = DirectCast(MethodStatement.
-                        With(FunctionStatementLeadingTrivia, FunctionStatementTrailingTrivia).
-                        WithTrailingEOL.
-                        RestructureAttributesAndModifiers(Attributes.Count > 0, Modifiers.Count > 0), VBS.MethodStatementSyntax)
+                    With(FunctionStatementLeadingTrivia, FunctionStatementTrailingTrivia).
+                    WithTrailingEOL.
+                    RestructureAttributesAndModifiers(Attributes.Count > 0, Modifiers.Count > 0), VBS.MethodStatementSyntax)
                     SyncLock s_usedStacks
                         If s_usedStacks.Count > 0 Then
                             s_usedIdentifiers = DirectCast(s_usedStacks.Pop, Dictionary(Of String, SymbolTableEntry))
@@ -858,6 +912,42 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     FunctionStatementTrailingTrivia.InsertRange(0, AsClause.GetTrailingTrivia.ToList)
                     AsClause = AsClause.WithTrailingTrivia(SpaceTrivia)
                 End If
+                Dim modifierLeadingTrivia As SyntaxTriviaList = If(Modifiers.Any, Modifiers(0).LeadingTrivia, Nothing)
+
+                If Attributes.Any AndAlso Modifiers.Any AndAlso modifierLeadingTrivia.ContainsCommentTrivia Then
+                    Dim FixedModifierLeadingTrivia As New List(Of SyntaxTrivia)
+
+                    For i As Integer = 0 To modifierLeadingTrivia.Count - 1
+                        Dim t As SyntaxTrivia = modifierLeadingTrivia(i)
+                        Dim NextTrivia As SyntaxTrivia = If(i < modifierLeadingTrivia.Count - 1, modifierLeadingTrivia(i + 1), Nothing)
+                        Select Case t.RawKind
+                            Case VB.SyntaxKind.WhitespaceTrivia
+                                If NextTrivia.IsKind(VB.SyntaxKind.CommentTrivia) Then
+                                    FixedModifierLeadingTrivia.Add(SpaceTrivia)
+                                    FixedModifierLeadingTrivia.Add(LineContinuation)
+                                    FixedModifierLeadingTrivia.Add(t)
+                                    FixedModifierLeadingTrivia.Add(NextTrivia)
+                                    i += 1
+                                Else
+                                    FixedModifierLeadingTrivia.Add(t)
+                                End If
+                            Case VB.SyntaxKind.EndOfLineTrivia
+                                FixedModifierLeadingTrivia.Add(t)
+                            Case VB.SyntaxKind.CommentTrivia
+                                FixedModifierLeadingTrivia.Add(t)
+                            Case Else
+                                Stop
+                        End Select
+                    Next
+                    Modifiers(0) = Modifiers(0).WithLeadingTrivia(FixedModifierLeadingTrivia)
+                End If
+                If Attributes.Any AndAlso Attributes.Last.GetTrailingTrivia.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                    If Modifiers.Any AndAlso Modifiers(0).LeadingTrivia.ContainsEOLTrivia Then
+                        If Modifiers(0).LeadingTrivia(0).IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                            Modifiers(0) = Modifiers(0).WithLeadingTrivia(Modifiers(0).LeadingTrivia.RemoveAt(0))
+                        End If
+                    End If
+                End If
                 SubOrFunctionStatement = VBFactory.FunctionStatement(
                                             VBFactory.List(Attributes),
                                             VBFactory.TokenList(Modifiers),
@@ -902,12 +992,12 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim lSyntaxKind As CS.SyntaxKind = CS.CSharpExtensions.Kind(node.OperatorToken)
                 Select Case lSyntaxKind
                     Case CS.SyntaxKind.MinusMinusToken
-                        Return VBFactory.EmptyStatement.WithLeadingTrivia(node.CheckCorrectnessLeadingTrivia("C# -- operator not available in VB")).WithPrependedLeadingTrivia(ConvertTrivia(node.GetLeadingTrivia)).WithConvertedTrailingTriviaFrom(node)
+                        Return VBFactory.EmptyStatement.WithLeadingTrivia(node.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=False, "C# -- operator not available in VB")).WithPrependedLeadingTrivia(ConvertTrivia(node.GetLeadingTrivia)).WithConvertedTrailingTriviaFrom(node)
                     Case CS.SyntaxKind.PercentToken
                         Dim stmt As VBS.OperatorStatementSyntax = VBFactory.OperatorStatement(VBFactory.List(Attributes), VBFactory.TokenList(Modifiers), ModKeyword, parameterList, VBFactory.SimpleAsClause(ReturnAttributes, DirectCast(node.ReturnType.Accept(Me), VBS.TypeSyntax)))
                         Return VBFactory.OperatorBlock(stmt, body).WithConvertedTriviaFrom(node)
                     Case CS.SyntaxKind.PlusPlusToken
-                        Return VBFactory.EmptyStatement.WithLeadingTrivia(node.CheckCorrectnessLeadingTrivia("C# ++ operator not available in VB")).WithPrependedLeadingTrivia(ConvertTrivia(node.GetLeadingTrivia)).WithConvertedTrailingTriviaFrom(node)
+                        Return VBFactory.EmptyStatement.WithLeadingTrivia(node.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=False, "C# ++ operator not available in VB")).WithPrependedLeadingTrivia(ConvertTrivia(node.GetLeadingTrivia)).WithConvertedTrailingTriviaFrom(node)
                     Case Else
                         Dim OperatorToken As SyntaxToken = ConvertOperatorDeclarationToken(lSyntaxKind)
                         Dim stmt As VBS.OperatorStatementSyntax = VBFactory.OperatorStatement(VBFactory.List(Attributes), VBFactory.TokenList(Modifiers), OperatorToken, parameterList, VBFactory.SimpleAsClause(ReturnAttributes, DirectCast(node.ReturnType.Accept(Me), VBS.TypeSyntax)))

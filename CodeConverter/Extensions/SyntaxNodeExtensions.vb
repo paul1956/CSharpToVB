@@ -826,28 +826,27 @@ Namespace CSharpToVBCodeConverter.Util
                     Return VBFactory.Trivia(VBFactory.EndRegionDirectiveTrivia(HashToken, EndKeyword, RegionKeyword).
                                             WithAppendedTriviaFromEndOfDirectiveToken(EndRegionDirective.EndOfDirectiveToken))
                 Case CS.SyntaxKind.PragmaWarningDirectiveTrivia
-                    Dim PragmaWarningDirectiveTrivia As CSS.PragmaWarningDirectiveTriviaSyntax = DirectCast(StructuredTrivia, CSS.PragmaWarningDirectiveTriviaSyntax)
-                    Dim ErrorList As New List(Of VBS.IdentifierNameSyntax)
-                    Dim TrailingTrivia As New List(Of SyntaxTrivia)
-                    For Each i As CSS.ExpressionSyntax In PragmaWarningDirectiveTrivia.ErrorCodes
-                        Dim ErrorCode As String = i.ToString
-                        If ErrorCode.IsInteger Then
-                            ErrorCode = $"CS_{ErrorCode}"
-                        End If
-                        ErrorList.Add(VBFactory.IdentifierName(ErrorCode))
-                        TrailingTrivia.AddRange(ConvertTrivia(i.GetTrailingTrivia))
-                    Next
-                    TrailingTrivia.AddRange(ConvertTrivia(PragmaWarningDirectiveTrivia.EndOfDirectiveToken.LeadingTrivia))
-                    TrailingTrivia.AddRange(ConvertTrivia(PragmaWarningDirectiveTrivia.EndOfDirectiveToken.TrailingTrivia))
-                    Dim WarningDirectiveTrivia As VBS.DirectiveTriviaSyntax
-                    If PragmaWarningDirectiveTrivia.DisableOrRestoreKeyword.IsKind(CS.SyntaxKind.DisableKeyword) Then
-                        WarningDirectiveTrivia = VBFactory.DisableWarningDirectiveTrivia(ErrorList.ToArray)
-                    Else
-                        WarningDirectiveTrivia = VBFactory.EnableWarningDirectiveTrivia(ErrorList.ToArray)
-                    End If
-                    Return VBFactory.Trivia(WarningDirectiveTrivia.
-                                                            WithPrependedLeadingTrivia(VBFactory.CommentTrivia($"' TODO The value of the warning(s) needs to be manually translated after removing the 'CS' and optional '_'"), VBEOLTrivia).
-                                                            WithTrailingTrivia(TrailingTrivia).WithTrailingEOL)
+                    'Dim PragmaWarningDirectiveTrivia As CSS.PragmaWarningDirectiveTriviaSyntax = DirectCast(StructuredTrivia, CSS.PragmaWarningDirectiveTriviaSyntax)
+                    'Dim ErrorList As New List(Of VBS.IdentifierNameSyntax)
+                    'Dim TrailingTriviaStringBuilder As New StringBuilder
+                    'For Each i As CSS.ExpressionSyntax In PragmaWarningDirectiveTrivia.ErrorCodes
+                    '    Dim ErrorCode As String = i.ToString
+                    '    If ErrorCode.IsInteger Then
+                    '        ErrorCode = $"CS_{ErrorCode}"
+                    '    End If
+                    '    ErrorList.Add(VBFactory.IdentifierName(ErrorCode))
+                    '    For Each Trivial As SyntaxTrivia In i.GetTrailingTrivia
+                    '        TrailingTriviaStringBuilder.Append(Trivial.ToString)
+                    '    Next
+                    'Next
+                    'Dim WarningDirectiveTrivia As VBS.DirectiveTriviaSyntax
+                    'If PragmaWarningDirectiveTrivia.DisableOrRestoreKeyword.IsKind(CS.SyntaxKind.DisableKeyword) Then
+                    '    WarningDirectiveTrivia = VBFactory.DisableWarningDirectiveTrivia(ErrorList.ToArray)
+                    'Else
+                    '    WarningDirectiveTrivia = VBFactory.EnableWarningDirectiveTrivia(ErrorList.ToArray)
+                    'End If
+                    'Return VBFactory.CommentTrivia($" ' TODO {WarningDirectiveTrivia.NormalizeWhitespace}{TrailingTriviaStringBuilder.ToString}")
+                    Return Nothing
                 Case CS.SyntaxKind.RegionDirectiveTrivia
                     Dim RegionDirective As CSS.RegionDirectiveTriviaSyntax = CType(StructuredTrivia, CSS.RegionDirectiveTriviaSyntax)
                     Dim EndOfDirectiveToken As SyntaxToken = RegionDirective.EndOfDirectiveToken

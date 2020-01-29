@@ -45,6 +45,31 @@ End Function
                 Return LeadingTrivia
             End Function
 
+            Private Shared Function TryInitializeState(model As SemanticModel, node As SyntaxNode, CancelToken As CancellationToken,
+                                                       <Out()> ByRef classOrStructDecl As SyntaxNode, <Out()> ByRef classOrStructType As INamedTypeSymbol, <Out()> ByRef interfaceTypes As IEnumerable(Of INamedTypeSymbol)) As Boolean
+                Dim NodeTypeIsTypeSyntax As Boolean = TypeOf node Is CSS.TypeSyntax
+                Dim interfaceNode As CSS.TypeSyntax = If(NodeTypeIsTypeSyntax, CType(node, CSS.TypeSyntax), Nothing)
+                If NodeTypeIsTypeSyntax AndAlso TypeOf interfaceNode.Parent Is CSS.BaseTypeSyntax AndAlso interfaceNode.Parent.IsParentKind(CS.SyntaxKind.BaseList) AndAlso CType(interfaceNode.Parent, CSS.BaseTypeSyntax).Type Is interfaceNode Then
+                    If interfaceNode.Parent.Parent.IsParentKind(CS.SyntaxKind.ClassDeclaration) OrElse interfaceNode.Parent.Parent.IsParentKind(CS.SyntaxKind.StructDeclaration) Then
+                        Dim interfaceSymbolInfo As SymbolInfo = model.GetSymbolInfo(interfaceNode, CancelToken)
+                        If interfaceSymbolInfo.CandidateReason <> CandidateReason.WrongArity Then
+                            Dim interfaceType As INamedTypeSymbol = TryCast(interfaceSymbolInfo.GetAnySymbol(), INamedTypeSymbol)
+                            If interfaceType IsNot Nothing AndAlso interfaceType.TypeKind = TypeKind.Interface Then
+                                classOrStructDecl = TryCast(interfaceNode.Parent.Parent.Parent, CSS.TypeDeclarationSyntax)
+                                classOrStructType = TryCast(model.GetDeclaredSymbol(classOrStructDecl, CancelToken), INamedTypeSymbol)
+                                interfaceTypes = SpecializedCollection.SingletonEnumerable(interfaceType)
+                                Return interfaceTypes IsNot Nothing AndAlso classOrStructType IsNot Nothing
+                            End If
+                        End If
+                    End If
+                End If
+
+                classOrStructDecl = Nothing
+                classOrStructType = Nothing
+                interfaceTypes = Nothing
+                Return False
+            End Function
+
             Private Sub ConvertBaseList(_Type As CSS.BaseTypeDeclarationSyntax, [inherits] As List(Of VBS.InheritsStatementSyntax), [implements] As List(Of VBS.ImplementsStatementSyntax), ByRef Optional ImplementedMembers As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))) = Nothing)
                 Dim TypeSyntaxArray As VBS.TypeSyntax()
                 Dim StartImplementsIndex As Integer = 0
@@ -93,7 +118,7 @@ End Function
                         If TypeSyntaxArray?.Length > 0 Then [implements].Add(VBFactory.ImplementsStatement(TypeSyntaxArray))
                     Case CS.SyntaxKind.InterfaceDeclaration
                         TypeSyntaxArray = _Type.BaseList?.Types.Select(Function(t As CSS.BaseTypeSyntax) DirectCast(t.Type.Accept(Me), VBS.TypeSyntax)).ToArray()
-                        If TypeSyntaxArray?.Length > 0 Then [inherits].Add(VBFactory.InheritsStatement(TypeSyntaxArray))
+                        If TypeSyntaxArray?.Length > 0 Then [inherits].Add(VBFactory.InheritsStatement(TypeSyntaxArray).withConvertedLeadingTriviaFrom(_Type.BaseList.ColonToken))
                 End Select
                 If [implements].Count > 0 Then
                     [implements]([implements].Count - 1) = [implements].Last.WithTrailingEOL
@@ -110,28 +135,23 @@ End Function
                 End If
             End Function
 
-            Private Shared Function TryInitializeState(model As SemanticModel, node As SyntaxNode, CancelToken As CancellationToken,
-                                                       <Out()> ByRef classOrStructDecl As SyntaxNode, <Out()> ByRef classOrStructType As INamedTypeSymbol, <Out()> ByRef interfaceTypes As IEnumerable(Of INamedTypeSymbol)) As Boolean
-                Dim NodeTypeIsTypeSyntax As Boolean = TypeOf node Is CSS.TypeSyntax
-                Dim interfaceNode As CSS.TypeSyntax = If(NodeTypeIsTypeSyntax, CType(node, CSS.TypeSyntax), Nothing)
-                If NodeTypeIsTypeSyntax AndAlso TypeOf interfaceNode.Parent Is CSS.BaseTypeSyntax AndAlso interfaceNode.Parent.IsParentKind(CS.SyntaxKind.BaseList) AndAlso CType(interfaceNode.Parent, CSS.BaseTypeSyntax).Type Is interfaceNode Then
-                    If interfaceNode.Parent.Parent.IsParentKind(CS.SyntaxKind.ClassDeclaration) OrElse interfaceNode.Parent.Parent.IsParentKind(CS.SyntaxKind.StructDeclaration) Then
-                        Dim interfaceSymbolInfo As SymbolInfo = model.GetSymbolInfo(interfaceNode, CancelToken)
-                        If interfaceSymbolInfo.CandidateReason <> CandidateReason.WrongArity Then
-                            Dim interfaceType As INamedTypeSymbol = TryCast(interfaceSymbolInfo.GetAnySymbol(), INamedTypeSymbol)
-                            If interfaceType IsNot Nothing AndAlso interfaceType.TypeKind = TypeKind.Interface Then
-                                classOrStructDecl = TryCast(interfaceNode.Parent.Parent.Parent, CSS.TypeDeclarationSyntax)
-                                classOrStructType = TryCast(model.GetDeclaredSymbol(classOrStructDecl, CancelToken), INamedTypeSymbol)
-                                interfaceTypes = SpecializedCollection.SingletonEnumerable(interfaceType)
-                                Return interfaceTypes IsNot Nothing AndAlso classOrStructType IsNot Nothing
-                            End If
-                        End If
+            Friend Function IsNotInStructure(node As CS.CSharpSyntaxNode) As Boolean
+                Dim StatementWithIssues As CS.CSharpSyntaxNode = node
+                While StatementWithIssues IsNot Nothing
+                    'If TypeOf StatementWithIssues Is CSS.ClassDeclarationSyntax Then
+                    '    Exit While
+                    'End If
+
+                    If TypeOf StatementWithIssues Is CSS.StructDeclarationSyntax Then
+                        Exit While
                     End If
+
+                    StatementWithIssues = CType(StatementWithIssues.Parent, CS.CSharpSyntaxNode)
+                End While
+                If StatementWithIssues Is Nothing Then
+                    Return True
                 End If
 
-                classOrStructDecl = Nothing
-                classOrStructType = Nothing
-                interfaceTypes = Nothing
                 Return False
             End Function
 
@@ -204,7 +224,9 @@ End Function
                 Dim ListOfAttributes As SyntaxList(Of VBS.AttributeListSyntax) = VBFactory.List(node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))
                 Dim typeParameterList As VBS.TypeParameterListSyntax = DirectCast(node.TypeParameterList?.Accept(Me), VBS.TypeParameterListSyntax)
 
-                If IsModule Then
+                Dim NotInsideClassOrStruct As Boolean = _isModuleStack.Count < 2 AndAlso IsNotInStructure(node)
+
+                If IsModule AndAlso NotInsideClassOrStruct Then
                     Dim ModuleModifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, IsModule, TokenContext.InterfaceOrModule)
                     Dim ModuleKeywordWithTrivia As SyntaxToken = ModuleKeyword.WithConvertedLeadingTriviaFrom(node.Keyword).WithTrailingTrivia(SpaceTrivia)
                     Dim PrependedTrivia As List(Of SyntaxTrivia) = DedupLeadingTrivia(node, ModuleKeyword, ListOfAttributes.ToList, ModuleModifiers)
@@ -237,7 +259,7 @@ End Function
                     End SyncLock
                     Return ModuleBlock
                 Else
-                    Dim ClassModifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, IsModule, TokenContext.Class)
+                    Dim ClassModifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, IsModule:=False, If(IsModule, TokenContext.InterfaceOrModule, TokenContext.Class))
                     Dim ClassKeywordWithTrivia As SyntaxToken = ClassKeyWord.WithConvertedTriviaFrom(node.Keyword)
                     Dim PrependedTrivia As List(Of SyntaxTrivia) = DedupLeadingTrivia(node, ClassKeywordWithTrivia, ListOfAttributes.ToList, ClassModifiers)
                     Dim ClassStatement As VBS.ClassStatementSyntax = DirectCast(VBFactory.ClassStatement(

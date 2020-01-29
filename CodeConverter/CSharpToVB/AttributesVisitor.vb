@@ -77,7 +77,45 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             Public Overrides Function VisitAttributeList(node As CSS.AttributeListSyntax) As VB.VisualBasicSyntaxNode
                 Dim CS_Separators As IEnumerable(Of SyntaxToken) = node.Attributes.GetSeparators
                 Dim LessThanTokenWithTrivia As SyntaxToken = LessThanToken.WithConvertedTriviaFrom(node.OpenBracketToken)
-                Dim GreaterThenTokenWithTrivia As SyntaxToken = GreaterThanToken.WithConvertedTriviaFrom(node.CloseBracketToken)
+                Dim FinalTrailingTriviaList As New List(Of SyntaxTrivia)
+                Dim FirstComment As Boolean = True
+                Dim NeedWhiteSpace As Boolean = True
+                Dim needLineContinuation As Boolean = True
+                For Each T As SyntaxTrivia In node.CloseBracketToken.TrailingTrivia
+                    Dim VBSyntaxTrivia As SyntaxTrivia = ConvertTrivia(T)
+                    Select Case VBSyntaxTrivia.RawKind
+                        Case VB.SyntaxKind.WhitespaceTrivia
+                            FinalTrailingTriviaList.Add(VBSyntaxTrivia)
+                            NeedWhiteSpace = False
+                        Case VB.SyntaxKind.CommentTrivia
+                            If FirstComment Then
+                                FirstComment = False
+                                If NeedWhiteSpace Then
+                                    NeedWhiteSpace = False
+                                    FinalTrailingTriviaList.Add(SpaceTrivia)
+                                End If
+                                FinalTrailingTriviaList.Add(LineContinuation)
+                                needLineContinuation = False
+                            End If
+                            FinalTrailingTriviaList.Add(VBSyntaxTrivia)
+                        Case VB.SyntaxKind.EndOfLineTrivia
+                            If NeedWhiteSpace Then
+                                NeedWhiteSpace = False
+                                FinalTrailingTriviaList.Add(SpaceTrivia)
+                            End If
+                            If needLineContinuation Then
+                                FinalTrailingTriviaList.Add(LineContinuation)
+                                needLineContinuation = False
+                                NeedWhiteSpace = True
+                            End If
+                            FinalTrailingTriviaList.Add(VBSyntaxTrivia)
+                        Case Else
+                            Stop
+                            NeedWhiteSpace = True
+                    End Select
+                Next
+                Dim GreaterThenTokenWithTrivia As SyntaxToken = GreaterThanToken.WithTrailingTrivia(FinalTrailingTriviaList)
+
                 Dim AttributeList As New List(Of VBS.AttributeSyntax)
                 Dim Separators As New List(Of SyntaxToken)
                 Dim SeparatorCount As Integer = node.Attributes.Count - 1

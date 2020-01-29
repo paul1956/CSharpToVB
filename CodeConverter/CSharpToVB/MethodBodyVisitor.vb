@@ -336,7 +336,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         If CS_Assignment.IsKind(CS.SyntaxKind.SimpleAssignmentExpression) Then
                             exprNode = VBFactory.SimpleAssignmentStatement(LeftExpression, RightExpression).
                                                          WithConvertedTriviaFrom(node)
-                            NewLeadingTrivia.AddRange(CheckCorrectnessLeadingTrivia(node, "Parenthesized Expression Assignment"))
+                            NewLeadingTrivia.AddRange(node.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=False, "Parenthesized Expression Assignment"))
                         End If
                     End If
                 ElseIf TypeOf node Is CSS.PostfixUnaryExpressionSyntax Then
@@ -349,7 +349,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                                                 OperandExpression,
                                                                 ExpressionKindToOperatorToken(kind),
                                                                 _literalExpression)
-                        NewLeadingTrivia.AddRange(CheckCorrectnessLeadingTrivia(node, "Parenthesized Expression Assignment"))
+                        NewLeadingTrivia.AddRange(node.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=False, "Parenthesized Expression Assignment"))
                     End If
                 End If
                 If exprNode Is Nothing Then
@@ -463,7 +463,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                 End If
                             ElseIf TypeOf PatternLabel.Pattern Is CSS.RecursivePatternSyntax Then
                                 CaseLabelExpression = NothingExpression
-                                NewLeadingTrivia.AddRange(section.CheckCorrectnessLeadingTrivia($"VB has no equivalent to the C# 'Recursive Pattern({PatternLabel.Pattern}) in 'case' statements"))
+                                NewLeadingTrivia.AddRange(section.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=False, $"VB has no equivalent to the C# 'Recursive Pattern({PatternLabel.Pattern}) in 'case' statements"))
                             Else
                                 CaseLabelExpression = Nothing
                                 Stop
@@ -488,7 +488,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     End If
                 Next
                 If NeedWarningMessage Then
-                    NewLeadingTrivia.AddRange(section.CheckCorrectnessLeadingTrivia("VB has no equivalent to the C# 'when' clause in 'case' statements"))
+                    NewLeadingTrivia.AddRange(section.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=True, "VB has no equivalent to the C# 'when' clause in 'case' statements"))
                 End If
                 Dim CommentString As New StringBuilder
                 For Each t As SyntaxTrivia In ConvertTrivia(CS_LabelTrivia)
@@ -1249,7 +1249,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             End Function
 
             Public Overrides Function VisitLocalFunctionStatement(node As CSS.LocalFunctionStatementSyntax) As SyntaxList(Of VBS.StatementSyntax)
-                Dim syntaxList1 As SyntaxList(Of VBS.StatementSyntax) = VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.EmptyStatement.WithLeadingTrivia(node.CheckCorrectnessLeadingTrivia("Local Functions are not support by VB")).WithPrependedLeadingTrivia(ConvertTrivia(node.GetLeadingTrivia)).WithConvertedTrailingTriviaFrom(node))
+                Dim syntaxList1 As SyntaxList(Of VBS.StatementSyntax) = VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.EmptyStatement.WithLeadingTrivia(node.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=False, "Local Functions are not support by VB")).WithPrependedLeadingTrivia(ConvertTrivia(node.GetLeadingTrivia)).WithConvertedTrailingTriviaFrom(node))
                 Return syntaxList1
             End Function
 

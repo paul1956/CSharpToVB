@@ -260,7 +260,7 @@ Public Module StatementMarker
     End Function
 
     <Extension>
-    Public Function CheckCorrectnessLeadingTrivia(Of T As SyntaxNode)(NodeWithIssue As T, Optional MessageFragment As String = "") As SyntaxTriviaList
+    Public Function CheckCorrectnessLeadingTrivia(Of T As SyntaxNode)(NodeWithIssue As T, AttemptToPortMade As Boolean, Optional MessageFragment As String = "") As SyntaxTriviaList
         Dim LeadingTrivia As New List(Of SyntaxTrivia) From {
             VBFactory.CommentTrivia($"' TODO TASK: {MessageFragment}:")
         }
@@ -269,7 +269,9 @@ Public Module StatementMarker
             LeadingTrivia.Add(VBEOLTrivia)
             LeadingTrivia.AddRange(ConvertSourceTextToTriviaList(NodeWithIssue.ToFullString))
         End If
-        LeadingTrivia.Add(VBFactory.CommentTrivia($"' An attempt was made to correctly port the code, check the code below for correctness"))
+        If AttemptToPortMade Then
+            LeadingTrivia.Add(VBFactory.CommentTrivia($"' An attempt was made to correctly port the code, check the code below for correctness"))
+        End If
         LeadingTrivia.Add(VBEOLTrivia)
         Return LeadingTrivia.ToSyntaxTriviaList
     End Function

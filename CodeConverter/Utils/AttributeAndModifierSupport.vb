@@ -289,6 +289,9 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         End If
                         Return EmptyToken
                     End If
+                    If context = TokenContext.InterfaceOrModule Then
+                        Return NotInheritableKeyword
+                    End If
                     Return SharedKeyword
                 Case CS.SyntaxKind.ThisKeyword
                     Return MeKeyword

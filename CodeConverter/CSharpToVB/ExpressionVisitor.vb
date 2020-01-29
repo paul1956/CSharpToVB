@@ -381,7 +381,6 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         Case VB.SyntaxKind.DisableWarningDirectiveTrivia, VB.SyntaxKind.EnableWarningDirectiveTrivia
                             FirstTrivia = False
                             Stop
-                            'GetStatementwithIssues(CS_Node).AddMarker(VBFactory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
                         Case VB.SyntaxKind.IfDirectiveTrivia
                             FirstTrivia = False
                             FinalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(Trivia))
@@ -1323,7 +1322,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim Unchecked As Boolean = node.Keyword.IsKind(CS.SyntaxKind.UncheckedKeyword)
                 If Unchecked Then
                     Dim StatementWithIssue As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
-                    Dim LeadingTrivia As SyntaxTriviaList = CheckCorrectnessLeadingTrivia(StatementWithIssue, "VB has no direct equivalent to C# unchecked")
+                    Dim LeadingTrivia As SyntaxTriviaList = StatementWithIssue.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=True, "VB has no direct equivalent to C# unchecked")
                     ' Only notify once on one line TODO Merge the comments
                     StatementWithIssue.AddMarker(VBFactory.EmptyStatement.WithLeadingTrivia(LeadingTrivia), StatementHandlingOption.PrependStatement, AllowDuplicates:=False)
                 End If
@@ -1818,10 +1817,13 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                                                                                                           WithAdditionalAnnotations(Simplifier.Annotation)
                     If ReportCheckCorrectness Then
                         DeclarationToBeAdded = DeclarationToBeAdded.WithPrependedLeadingTrivia(
-                                                                        CheckCorrectnessLeadingTrivia(
-                                                                                StatementWithIssue,
+                                                                       StatementWithIssue.CheckCorrectnessLeadingTrivia(
+                                                                                AttemptToPortMade:=True,
                                                                                 "VB has no direct equivalent To C# pattern variables 'is' expressions")
                                                                                 )
+                        If StatementWithIssue.ContainsDirectives Then
+                            DeclarationToBeAdded = DeclarationToBeAdded.WithPrependedLeadingTrivia(ConvertTrivia(StatementWithIssue.GetLeadingTrivia))
+                        End If
                     End If
 
                     StatementWithIssue.AddMarker(Statement:=DeclarationToBeAdded, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
@@ -1846,11 +1848,11 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                             asClause:=Nothing, initializer:=VBFactory.EqualsValue(VBExpression)).WithTrailingEOL
                              )
 
-                    Dim LeadingTrivia As SyntaxTriviaList = CheckCorrectnessLeadingTrivia(StatementWithIssue, "VB has no direct equivalent To C# var pattern expressions")
+                    Dim LeadingTrivia As SyntaxTriviaList = StatementWithIssue.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=True, "VB has no direct equivalent To C# var pattern expressions")
                     Dim DeclarationToBeAdded As LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(DimModifier,
                         Declarators).WithAdditionalAnnotations(Simplifier.Annotation)
                     If ReportCheckCorrectness Then
-                        DeclarationToBeAdded = DeclarationToBeAdded.WithPrependedLeadingTrivia(CheckCorrectnessLeadingTrivia(StatementWithIssue, "VB has no direct equivalent To C# var pattern expressions")).WithTrailingEOL
+                        DeclarationToBeAdded = DeclarationToBeAdded.WithPrependedLeadingTrivia(StatementWithIssue.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=True, "VB has no direct equivalent To C# var pattern expressions")).WithTrailingEOL
                     End If
 
                     StatementWithIssue.AddMarker(Statement:=DeclarationToBeAdded,

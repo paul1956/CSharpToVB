@@ -138,6 +138,7 @@ Partial Class Form1
         Me.SplitContainer1 = New System.Windows.Forms.SplitContainer()
         Me.RichTextBoxConversionInput = New System.Windows.Forms.RichTextBox()
         Me.StatusStrip1 = New System.Windows.Forms.StatusStrip()
+        Me.StatusStripElapasedTimeLabel = New System.Windows.Forms.ToolStripStatusLabel()
         Me.StatusStripCurrentFileName = New System.Windows.Forms.ToolStripStatusLabel()
         Me.StatusStripSpacer = New System.Windows.Forms.ToolStripStatusLabel()
         Me.ConversionProgressBar = New System.Windows.Forms.ToolStripProgressBar()
@@ -934,12 +935,18 @@ Partial Class Form1
         '
         'StatusStrip1
         '
-        Me.StatusStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.StatusStripCurrentFileName, Me.StatusStripSpacer, Me.ConversionProgressBar, Me.FilesConversionProgress})
+        Me.StatusStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.StatusStripElapasedTimeLabel, Me.StatusStripCurrentFileName, Me.StatusStripSpacer, Me.ConversionProgressBar, Me.FilesConversionProgress})
         Me.StatusStrip1.Location = New System.Drawing.Point(0, 428)
         Me.StatusStrip1.Name = "StatusStrip1"
         Me.StatusStrip1.Size = New System.Drawing.Size(1923, 22)
         Me.StatusStrip1.TabIndex = 2
         Me.StatusStrip1.Text = "StatusStrip1"
+        '
+        'StatusStripElapasedTimeLabel
+        '
+        Me.StatusStripElapasedTimeLabel.AutoSize = False
+        Me.StatusStripElapasedTimeLabel.Name = "StatusStripElapasedTimeLabel"
+        Me.StatusStripElapasedTimeLabel.Size = New System.Drawing.Size(150, 17)
         '
         'StatusStripCurrentFileName
         '
@@ -1237,8 +1244,9 @@ Partial Class Form1
     Friend WithEvents NET48ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents mnuOptionsAddFilesToIgnoreFilesEithErrorsList As ToolStripMenuItem
     Friend WithEvents StatusStrip1 As StatusStrip
-    Friend WithEvents StatusStripCurrentFileName As ToolStripStatusLabel
-    Friend WithEvents ConversionProgressBar As ToolStripProgressBar
+    Friend WithEvents StatusStripElapasedTimeLabel As ToolStripStatusLabel
     Friend WithEvents StatusStripSpacer As ToolStripStatusLabel
+    Friend WithEvents StatusStripCurrentFileName As ToolStripStatusLabel
     Friend WithEvents FilesConversionProgress As ToolStripStatusLabel
+    Friend WithEvents ConversionProgressBar As ToolStripProgressBar
 End Class

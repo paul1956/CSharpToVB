@@ -59,27 +59,35 @@ Handle .DLL's from C# project file
 There are several Stop statements for debugging, and if you continue past them reasonable things will
 happen but a better translation is possible.
 
-New is this release
+
 It will try to create a VB project File from the original C# project file.
 
-
-The program does not deal well with bad C# code.
 https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json is added to NuGet Package Source to find
 Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpecific attributes used for testing.
+
+New is Release 4.0
+
+- The program does not deal well with bad C# code so there is now a new feature to add a fixed code fragment to make a fragment into a valid C# program
+- The Code Fragment can be edition under Options/Advanced Options
+- Ignoring errors that broke translated code have been removed, every valid program should compile without errors
+- Translation of #pragma disable/enable errors has been removed they the original pragma is now translated and then commented out.
+- After translating a folder the total time is displayed in the status bar
+- Code coverage is only done on CodeConverter Project.
+- Translated Attributes will end in a line continuation, Visual Studio can remove the unnecessary ones using code cleanup.
 
 ## Code Coverage
 ```
 +------------------+--------+--------+--------+
 | Module           | Line   | Branch | Method |
 +------------------+--------+--------+--------+
-| VB.CodeConverter | 79.72% | 72.45% | 87.24% |
+| VB.CodeConverter | 79.56% | 72.37% | 87.1%  |
 +------------------+--------+--------+--------+
 
 +---------+--------+--------+--------+
 |         | Line   | Branch | Method |
 +---------+--------+--------+--------+
-| Total   | 79.72% | 72.45% | 87.24% |
+| Total   | 79.56% | 72.37% | 87.1%  |
 +---------+--------+--------+--------+
-| Average | 79.72% | 72.45% | 87.24% |
+| Average | 79.56% | 72.37% | 87.1%  |
 +---------+--------+--------+--------+
 ```

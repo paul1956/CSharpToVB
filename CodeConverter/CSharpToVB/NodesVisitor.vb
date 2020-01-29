@@ -142,7 +142,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
 
             Public Overrides Function VisitDeclarationPattern(node As DeclarationPatternSyntax) As VisualBasicSyntaxNode
                 Dim StatementWithIssue As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
-                Dim LeadingTrivia As SyntaxTriviaList = CheckCorrectnessLeadingTrivia(StatementWithIssue, "VB has no direct equivalent To C# pattern variables 'is' expressions")
+                Dim LeadingTrivia As SyntaxTriviaList = StatementWithIssue.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=True, "VB has no direct equivalent To C# pattern variables 'is' expressions")
                 Dim Designation As SingleVariableDesignationSyntax = DirectCast(node.Designation, SingleVariableDesignationSyntax)
 
                 Dim value As VBS.ExpressionSyntax = VBFactory.ParseExpression($"TryCast({node.Designation.Accept(Me).NormalizeWhitespace.ToFullString}, {node.Type.Accept(Me).NormalizeWhitespace.ToFullString})")
@@ -359,7 +359,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
 
             Public Overrides Function VisitVariableDeclaration(node As VariableDeclarationSyntax) As VisualBasicSyntaxNode
                 Dim StatementWithIssue As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
-                Dim LeadingTrivia As SyntaxTriviaList = CheckCorrectnessLeadingTrivia(StatementWithIssue, "VB has no direct equivalent To C# var pattern expressions")
+                Dim LeadingTrivia As SyntaxTriviaList = StatementWithIssue.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=True, "VB has no direct equivalent To C# var pattern expressions")
                 Return MyBase.VisitVariableDeclaration(node)
             End Function
 

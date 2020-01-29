@@ -30,7 +30,7 @@ Imports VBMsgBox
 Public Class Form1
 #If Not netcoreapp5_0 Then
 
-    'Minimum amount of time to show the splash screen.  0 means hide as soon as the app comes up.
+    'Minimum amount of time to show the splash screen. 0 means hide as soon as the app comes up.
     Private ReadOnly _minimumSplashExposure As Integer = 5000
 
     Private ReadOnly _splashLock As New Object
@@ -142,7 +142,7 @@ Public Class Form1
     ''' <summary>
     ''' If a splash screen has a minimum time out, then once that is up we check to see whether
     ''' we should close the splash screen.  If the main form has activated then we close it.
-    ''' Note that we are getting called on a secondary thread here which isn't necessairly
+    ''' Note that we are getting called on a secondary thread here which isn't necessarily
     ''' associated with any form.  Don't touch forms from this function.
     ''' </summary>
     Private Sub MinimumSplashExposureTimeIsUp(ByVal sender As Object, ByVal e As System.Timers.ElapsedEventArgs)
@@ -466,7 +466,7 @@ Public Class Form1
     End Sub
 
     Private Sub Compile_Colorize(TextToCompile As String)
-        Dim CompileResult As (Success As Boolean, EmitResult As EmitResult) = CompileVisualBasicString(StringToBeCompiled:=TextToCompile, ErrorsToBeIgnored, DiagnosticSeverity.Error, _resultOfConversion)
+        Dim CompileResult As (Success As Boolean, EmitResult As EmitResult) = CompileVisualBasicString(StringToBeCompiled:=TextToCompile, SeverityToReport:=DiagnosticSeverity.Error, ResultOfConversion:=_resultOfConversion)
 
         LabelErrorCount.Text = $"Number of Errors: {_resultOfConversion.GetFilteredListOfFailures().Count}"
         Dim FragmentRange As IEnumerable(Of Range) = GetClassifiedRanges(TextToCompile, LanguageNames.VisualBasic)
@@ -475,7 +475,7 @@ Public Class Form1
             If My.Settings.ColorizeOutput Then
                 Colorize(FragmentRange, RichTextBoxConversionOutput, TextToCompile.SplitLines.Length)
             Else
-                RichTextBoxConversionOutput.Text = _resultOfConversion.ConvertedCode
+                RichTextBoxConversionOutput.Text = TextToCompile
             End If
         Else
             If Not _resultOfConversion.GetFilteredListOfFailures().Any Then
@@ -483,7 +483,7 @@ Public Class Form1
                 If My.Settings.ColorizeOutput Then
                     Colorize(FragmentRange, RichTextBoxConversionOutput, TextToCompile.SplitLines.Length, _resultOfConversion.GetFilteredListOfFailures())
                 Else
-                    RichTextBoxConversionOutput.Text = _resultOfConversion.ConvertedCode
+                    RichTextBoxConversionOutput.Text = TextToCompile
                 End If
             Else
                 Colorize(FragmentRange, RichTextBoxConversionOutput, TextToCompile.SplitLines.Length, _resultOfConversion.GetFilteredListOfFailures())
@@ -831,6 +831,11 @@ Public Class Form1
             Dim LastFileNameWithPath As String = If(My.Settings.StartFolderConvertFromLastFile, My.Settings.MRU_Data.Last, "")
             Dim FilesProcessed As Long = 0L
             _cancellationTokenSource = New CancellationTokenSource
+            StatusStripElapasedTimeLabel.Text = ""
+            ' Create new stopwatch
+            Dim stopwatch As New Stopwatch()
+            ' Begin timing
+            stopwatch.Start()
             If ProcessAllFiles(SourceFolderName,
                                 ProjectSavePath,
                                 LastFileNameWithPath,
@@ -838,14 +843,18 @@ Public Class Form1
                                 FilesProcessed,
                                 _cancellationTokenSource.Token
                                 ) Then
+                stopwatch.Stop()
                 If _cancellationTokenSource.Token.IsCancellationRequested Then
                     MsgBox($"Conversion canceled, {FilesProcessed} files completed successfully.", Title:="C# to VB")
                 Else
                     MsgBox($"Conversion completed, {FilesProcessed} files completed successfully.", Title:="C# to VB")
                 End If
             Else
-                MsgBox($"Conversion stopped.", Title:="C# to VB")
+                stopwatch.Stop()
             End If
+            Dim elapsed As TimeSpan = stopwatch.Elapsed
+            StatusStripElapasedTimeLabel.Text = $"H:{elapsed.Hours} M:{elapsed.Minutes} S:{elapsed.Seconds} MS:{elapsed.Milliseconds}"
+            MsgBox($"Conversion stopped.", Title:="C# to VB")
         End Using
 
     End Sub

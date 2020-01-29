@@ -189,6 +189,8 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                 Case VB.SyntaxKind.WhitespaceTrivia
                                     AttributeTrailingTrivia.Add(t)
                                     FoundComment = False
+                                Case VB.SyntaxKind.LineContinuationTrivia
+                                    AttributeTrailingTrivia.Add(t)
                                 Case Else
                                     Stop
                             End Select
