@@ -58,20 +58,10 @@ Namespace CSharpToVBCodeConverter
                 End If
                 If String.Compare(ident.Key, ConvertedIdentifier, ignoreCase:=True, Globalization.CultureInfo.InvariantCulture) = 0 Then
                     ' If we are here we have seen the variable in a different case so fix it
+                    Dim NewUniqueName As String = GetNewUniqueName(ConvertedIdentifier, ident)
                     If s_usedIdentifiers(ident.Key).IsType Then
-                        s_usedIdentifiers.Add(ConvertedIdentifier, New SymbolTableEntry(Name:=ConvertedIdentifier, IsType:=False))
+                        s_usedIdentifiers.Add(ConvertedIdentifier, New SymbolTableEntry(Name:=NewUniqueName, IsType:=False))
                     Else
-                        Dim NewUniqueName As String
-                        If ident.Value.Name.StartsWith("_", StringComparison.InvariantCulture) Then
-                            NewUniqueName = ConvertedIdentifier
-                        Else
-                            NewUniqueName = If(ConvertedIdentifier.StartsWith("[", StringComparison.InvariantCulture),
-                                                    ConvertedIdentifier.Replace("[", "_", StringComparison.InvariantCulture).
-                                                                        Replace("]", "", StringComparison.InvariantCulture),
-                                                    If(Char.IsLower(CChar(ConvertedIdentifier.Substring(0, 1))),
-                                                        $"_{ConvertedIdentifier}",
-                                                        $"{ConvertedIdentifier}_Renamed"))
-                        End If
                         s_usedIdentifiers.Add(ConvertedIdentifier, New SymbolTableEntry(Name:=NewUniqueName, IsType:=QualifiedNameOrTypeName))
                     End If
                     Return VBFactory.Identifier(s_usedIdentifiers(ConvertedIdentifier).Name).WithConvertedTriviaFrom(id)
@@ -80,6 +70,22 @@ Namespace CSharpToVBCodeConverter
             Dim _ConvertedIdentifier As String = $"{If(IsFieldIdentifier, "_", "")}{ConvertedIdentifier}"
             s_usedIdentifiers.Add(ConvertedIdentifier, New SymbolTableEntry(_ConvertedIdentifier, QualifiedNameOrTypeName))
             Return VBFactory.Identifier(_ConvertedIdentifier)
+        End Function
+
+        Private Function GetNewUniqueName(ConvertedIdentifier As String, ident As KeyValuePair(Of String, SymbolTableEntry)) As String
+            Dim NewUniqueName As String
+            If ident.Value.Name.StartsWith("_", StringComparison.InvariantCulture) Then
+                NewUniqueName = ConvertedIdentifier
+            Else
+                NewUniqueName = If(ConvertedIdentifier.StartsWith("[", StringComparison.InvariantCulture),
+                                        ConvertedIdentifier.Replace("[", "_", StringComparison.InvariantCulture).
+                                                            Replace("]", "", StringComparison.InvariantCulture),
+                                        If(Char.IsLower(CChar(ConvertedIdentifier.Substring(0, 1))),
+                                            $"_{ConvertedIdentifier}",
+                                            $"{ConvertedIdentifier}_Renamed"))
+            End If
+
+            Return NewUniqueName
         End Function
 
         Friend Function AddBracketsIfRequired(Id As String) As String

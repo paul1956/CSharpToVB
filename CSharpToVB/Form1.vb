@@ -489,6 +489,7 @@ Public Class Form1
                 Colorize(FragmentRange, RichTextBoxConversionOutput, TextToCompile.SplitLines.Length, _resultOfConversion.GetFilteredListOfFailures())
             End If
         End If
+        RichTextBoxConversionOutput.Visible = True
         Application.DoEvents()
     End Sub
 
@@ -802,6 +803,7 @@ Public Class Form1
         End If
         mnuConvertConvertFolder.Enabled = True
         SetButtonStopAndCursor(MeForm:=Me, StopButton:=ButtonStopConversion, StopButtonVisible:=False)
+        LineNumbers_For_RichTextBoxOutput.Visible = True
     End Sub
 
     Private Sub mnuConvertFolder_Click(sender As Object, e As EventArgs) Handles mnuConvertConvertFolder.Click

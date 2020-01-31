@@ -46,13 +46,25 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 End If
                 Dim IndexOfLessThan As Integer = TypeString.IndexOf("<", StringComparison.InvariantCulture)
                 Dim TypeName As String = SplitTypeString(0)
-                Dim Name As String = If(SplitTypeString.Length = 1, "", SplitTypeString(1) & " As ")
+                Dim Name As String = If(SplitTypeString.Length = 1, "", MakeSafeName(SplitTypeString(1)) & " As ")
                 If IndexOfLessThan > 0 Then
                     Return $"{Name}{TypeName.Left(IndexOfLessThan)}{TypeName.Substring(IndexOfLessThan).
                                     Replace("<", "(Of ", StringComparison.InvariantCulture).
                                     Replace(">", ")", StringComparison.InvariantCulture)}"
                 End If
                 Return Name & ConvertToType(TypeName).ToString
+            End Function
+            ''' <summary>
+            ''' If Name is an VB Reserved word surround with []
+            ''' </summary>
+            ''' <param name="Name"></param>
+            ''' <returns>A VB Safe Identifier Name</returns>
+            Private Shared Function MakeSafeName(Name As String) As String
+                If IsSpecialReservedWord(Name) OrElse
+                   VB.SyntaxFacts.IsKeywordKind(VB.SyntaxFacts.GetKeywordKind(Name)) Then
+                    Return $"[{Name}]"
+                End If
+                Return Name
             End Function
 
             Private Shared Function ConvertTupleToTypeStrings(TypeString As String) As List(Of String)

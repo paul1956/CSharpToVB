@@ -621,7 +621,6 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim visitor As New MethodBodyVisitor(_mSemanticModel, Me)
 
                 Dim methodInfo As ISymbol = ModelExtensions.GetDeclaredSymbol(_mSemanticModel, node)
-                Dim _methodTypeSymbol As ISymbol = ModelExtensions.GetDeclaredSymbol(_mSemanticModel, node)
                 Dim ReturnVoid As Boolean? = methodInfo?.GetReturnType()?.SpecialType = SpecialType.System_Void
                 Dim containingType As INamedTypeSymbol = methodInfo?.ContainingType
                 Dim Attributes As New List(Of VBS.AttributeListSyntax)
@@ -807,7 +806,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 If TypeParameterList IsNot Nothing Then
                     TypeParameterList = TypeParameterList.WithTrailingTrivia(SpaceTrivia)
                 End If
-                Dim ImplementsClause As VBS.ImplementsClauseSyntax = s_implementedMembers.GetImplementsClauseForMethod(CType(_methodTypeSymbol, IMethodSymbol))
+                Dim ImplementsClause As VBS.ImplementsClauseSyntax = s_implementedMembers.GetImplementsClauseForMethod(CType(methodInfo, IMethodSymbol))
                 If id.ToString = "Dispose" AndAlso TypeOf node.Parent Is CSS.ClassDeclarationSyntax Then
                     Dim ParentClass As CSS.ClassDeclarationSyntax = DirectCast(node.Parent, CSS.ClassDeclarationSyntax)
                     If ParentClass.BaseList IsNot Nothing Then

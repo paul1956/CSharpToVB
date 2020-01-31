@@ -748,6 +748,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         End If
                     End If
                     If node.Left.IsKind(CS.SyntaxKind.DeclarationExpression, CS.SyntaxKind.TupleExpression) Then
+                        Dim TupleList As New List(Of String)
                         Dim TupleName As String
                         Dim RightNode As ExpressionSyntax = DirectCast(node.Right.Accept(Me).WithConvertedTriviaFrom(node.Right), ExpressionSyntax)
                         Dim Initializer As EqualsValueSyntax = VBFactory.EqualsValue(RightNode)
@@ -770,7 +771,28 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                             Next
 
                             Dim TempTupleIdentifier As SeparatedSyntaxList(Of ModifiedIdentifierSyntax) = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(TupleName))
-                            Dim VariableDeclaration As SeparatedSyntaxList(Of VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(TempTupleIdentifier, asClause:=Nothing, Initializer))
+                            If RightTypeInfo.ConvertedType IsNot Nothing AndAlso not RightTypeInfo.ConvertedType.IsErrorType Then
+                                If TypeOf RightTypeInfo.Type Is INamedTypeSymbol Then
+                                    Dim Type As INamedTypeSymbol = DirectCast(RightTypeInfo.ConvertedType, INamedTypeSymbol)
+                                    If Type.IsTupleType Then
+                                        Dim NamedTypes As String = Type.TupleElements(0).ContainingType.ToString
+                                        SplitTupleString(TupleList, NamedTypes)
+                                    Else
+                                        TupleList.AddRange(ConvertTupleToTypeStrings(Type.ToString))
+                                    End If
+                                End If
+                            End If
+                            Dim SimpleAs As SimpleAsClauseSyntax = Nothing
+                            If TupleList.Any Then
+                                Dim builder As New System.Text.StringBuilder()
+                                builder.Append("(")
+                                For i As Integer = 0 To TupleList.Count - 2
+                                    builder.Append(TupleList(i) & ", ")
+                                Next
+                                builder.Append(TupleList.Last & ")")
+                                SimpleAs = VBFactory.SimpleAsClause(AsKeyword.WithTrailingTrivia(SpaceTrivia), attributeLists:=Nothing, VBFactory.ParseTypeName(builder.ToString).WithLeadingTrivia(SpaceTrivia)).WithLeadingTrivia(SpaceTrivia)
+                            End If
+                            Dim VariableDeclaration As SeparatedSyntaxList(Of VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(TempTupleIdentifier, asClause:=SimpleAs, Initializer))
                             Dim DimStatement As LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(DimModifiersTokenList, VariableDeclaration).WithPrependedLeadingTrivia(VBFactory.CommentTrivia($" ' TODO: VB has no equivalent to C# deconstruction declarations, an attempt was made to convert."), VBEOLTrivia)
                             StatementList = StatementList.Add(DimStatement)
 
@@ -782,7 +804,16 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                 If NodeLeft.Type Is Nothing Then
                                     Stop
                                 Else
-                                    AsClause = VBFactory.SimpleAsClause(CType(NodeLeft.Type.Accept(Me), TypeSyntax))
+                                    Dim TempType As TypeSyntax = CType(NodeLeft.Type.Accept(Me), TypeSyntax)
+                                    If TypeOf TempType Is Object AndAlso TupleList.Any Then
+                                        Dim AsIndex As Integer = TupleList(i).IndexOf(" As ", StringComparison.InvariantCultureIgnoreCase)
+                                        If AsIndex > 0 Then
+                                            TempType = VBFactory.ParseTypeName(TupleList(i).Substring(AsIndex + 4))
+                                        Else
+                                            TempType = VBFactory.ParseTypeName(If(i < TupleList.Count - 1, TupleList(i), "Object"))
+                                        End If
+                                    End If
+                                    AsClause = VBFactory.SimpleAsClause(TempType)
                                 End If
                                 Dim TupleExpression As ExpressionSyntax = VBFactory.ParseExpression($"{TupleName}.Item{(i + 1)}")
                                 Initializer = VBFactory.EqualsValue(VBFactory.InvocationExpression(TupleExpression))
@@ -806,7 +837,6 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                             For Each Argument As ArgumentSyntax In LeftTupleNode.Arguments
                                 VariableNames.Add(Argument.ToString)
                             Next
-                            Dim TupleList As New List(Of String)
                             If RightTypeInfo.Type Is Nothing OrElse RightTypeInfo.Type.IsErrorType Then
                                 For Each a As CSS.ArgumentSyntax In DirectCast(node.Left, CSS.TupleExpressionSyntax).Arguments
                                     If TypeOf a.Expression Is CSS.DeclarationExpressionSyntax Then
@@ -935,6 +965,58 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 MarkPatchInlineAssignHelper(node)
                 Return VBFactory.InvocationExpression(expression:=VBFactory.IdentifierName("__InlineAssignHelper"), argumentList:=VBFactory.ArgumentList(VBFactory.SeparatedList((New ArgumentSyntax() {VBFactory.SimpleArgument(LeftExpression), VBFactory.SimpleArgument(RightExpression)})))).WithConvertedTriviaFrom(node)
             End Function
+
+            Private Shared Sub SplitTupleString(TupleList As List(Of String), NamedTypes As String)
+                Dim currentChar As String
+                Dim openLT As Integer
+                Dim tmpString As New System.Text.StringBuilder
+                For i As Integer = 1 To NamedTypes.Length - 1
+                    currentChar = NamedTypes(i)
+                    Select Case currentChar
+                        Case "<"
+                            openLT = 1
+                            tmpString.Append(currentChar)
+                            While openLT <> 0
+                                i += 1
+                                currentChar = NamedTypes(i)
+                                If currentChar = "<" Then
+                                    openLT += 1
+                                End If
+                                tmpString.Append(currentChar)
+                                If currentChar = ">" Then
+                                    openLT -= 1
+                                    If openLT = 0 Then
+                                        Exit While
+                                    End If
+                                End If
+                            End While
+                            TupleList.Add(tmpString.ToString.Replace("<", "(Of ", StringComparison.OrdinalIgnoreCase).Replace(">", ")", StringComparison.OrdinalIgnoreCase))
+                            tmpString.Clear()
+                            Dim commaIndex As Integer = NamedTypes.IndexOf(",", i + 1, StringComparison.OrdinalIgnoreCase)
+                            If commaIndex < 0 Then
+                                Exit Select
+                            End If
+                            i = commaIndex + 1
+                        Case " " ' variable name
+                            Dim commaIndex As Integer = NamedTypes.IndexOf(",", i + 1, StringComparison.OrdinalIgnoreCase)
+                            TupleList.Add(tmpString.ToString.Replace("<", "(Of ", StringComparison.OrdinalIgnoreCase).Replace(">", ")", StringComparison.OrdinalIgnoreCase))
+                            If commaIndex < 0 Then
+                                Exit Select
+                            End If
+                            tmpString.Clear()
+                            i = commaIndex + 1
+                        Case ","
+                            TupleList.Add(tmpString.ToString.Replace("<", "(Of ", StringComparison.OrdinalIgnoreCase).Replace(">", ")", StringComparison.OrdinalIgnoreCase))
+                            tmpString.Clear()
+                            i += If(NamedTypes(i + 1) = " ", 2, 1)
+                        Case ")"
+                            TupleList.Add(tmpString.ToString.Replace("<", "(Of ", StringComparison.OrdinalIgnoreCase).Replace(">", ")", StringComparison.OrdinalIgnoreCase))
+                            Exit For
+                        Case Else
+                            tmpString.Append(currentChar)
+                    End Select
+                Next
+            End Sub
 
             Public Overrides Function VisitAwaitExpression(node As CSS.AwaitExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Return VBFactory.AwaitExpression(expression:=DirectCast(node.Expression.Accept(Me), ExpressionSyntax)).WithConvertedTriviaFrom(node)
@@ -1237,7 +1319,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         Case SpecialType.System_Boolean
                             CTypeExpressionSyntax = VBFactory.PredefinedCastExpression(CBoolKeyword, Expression)
                         Case SpecialType.System_Char
-                            Dim TestAgainst As String() = {"int", "ushort"}
+                            Dim TestAgainst As String() = {"int", "UShort"}
                             If (node.Parent.IsKind(CS.SyntaxKind.AttributeArgument)) Then
                                 CTypeExpressionSyntax = Expression
                             ElseIf TestAgainst.Contains(ExpressionTypeStr, StringComparer.OrdinalIgnoreCase) Then
@@ -1322,7 +1404,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim Unchecked As Boolean = node.Keyword.IsKind(CS.SyntaxKind.UncheckedKeyword)
                 If Unchecked Then
                     Dim StatementWithIssue As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
-                    Dim LeadingTrivia As SyntaxTriviaList = StatementWithIssue.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=True, "VB has no direct equivalent to C# unchecked")
+                    Dim LeadingTrivia As SyntaxTriviaList = StatementWithIssue.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=True, "VB has no direct equivalent To C# unchecked")
                     ' Only notify once on one line TODO Merge the comments
                     StatementWithIssue.AddMarker(VBFactory.EmptyStatement.WithLeadingTrivia(LeadingTrivia), StatementHandlingOption.PrependStatement, AllowDuplicates:=False)
                 End If
@@ -1729,7 +1811,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             End Function
 
             Public Overrides Function VisitInvocationExpression(node As CSS.InvocationExpressionSyntax) As VB.VisualBasicSyntaxNode
-                If node.Expression.ToString() = "nameof" Then
+                If node.Expression.ToString() = "NameOf" Then
                     Try
                         Dim IdentifierOrMember As String = node.ArgumentList.Arguments(0).Accept(Me).ToString
                         Return VBFactory.NameOfExpression(VBFactory.IdentifierName(IdentifierOrMember)).WithConvertedTriviaFrom(node)

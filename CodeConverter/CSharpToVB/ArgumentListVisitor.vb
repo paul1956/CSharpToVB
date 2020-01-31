@@ -26,7 +26,12 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim Separators As New List(Of SyntaxToken)
                 Dim SeparatorCount As Integer = CS_Arguments.Count - 1
                 For i As Integer = 0 To SeparatorCount
-                    NodeList.Add(DirectCast(CS_Arguments(i).Accept(Me), VBS.ArgumentSyntax).WithModifiedNodeTrivia(SeparatorFollows:=SeparatorCount > i))
+                    Dim CS_Operation As Operations.IArgumentOperation = CType(_mSemanticModel.GetOperation(CS_Arguments(i)), Operations.IArgumentOperation)
+                    Dim argument As VBS.ArgumentSyntax = DirectCast(CS_Arguments(i).Accept(Me), VBS.ArgumentSyntax)
+                    If CS_Operation?.Value.Kind = OperationKind.DelegateCreation Then
+                        argument = VBFactory.SimpleArgument(VBFactory.AddressOfExpression(argument.GetExpression))
+                    End If
+                    NodeList.Add(argument.WithModifiedNodeTrivia(SeparatorFollows:=SeparatorCount > i))
                     If SeparatorCount > i Then
                         Separators.Add(CommaToken.WithConvertedTrailingTriviaFrom(CS_Arguments.GetSeparators()(i)))
                     End If
