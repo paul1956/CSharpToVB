@@ -354,10 +354,10 @@ Option Strict Off
 Class TestClass
 
     Private Sub TestMethod(str As String)
-        Dim length As Integer = If(str?.Length, -1)
-        Console.WriteLine(length)
+        Dim _length As Integer = If(str?.Length, -1)
+        Console.WriteLine(_length)
         Console.ReadKey()
-        Dim redirectUri As String = context.OwinContext.Authentication?.AuthenticationResponseChallenge?.Properties?.RedirectUri
+        Dim _redirectUri As String = context.OwinContext.Authentication?.AuthenticationResponseChallenge?.Properties?.RedirectUri
     End Sub
 End Class")
         End Sub

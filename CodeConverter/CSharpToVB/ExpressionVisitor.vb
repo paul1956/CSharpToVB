@@ -830,6 +830,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
 
                         ' Handle assignment to a Tuple of Variables that already exist
                         If node.Left.IsKind(CS.SyntaxKind.TupleExpression) Then
+                            TupleList.Clear()
                             Dim LeftTupleNode As TupleExpressionSyntax = DirectCast(node.Left.Accept(Me).WithConvertedTriviaFrom(node.Left), TupleExpressionSyntax)
 
                             VariableNames = New List(Of String)
@@ -969,6 +970,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             Private Shared Sub SplitTupleString(TupleList As List(Of String), NamedTypes As String)
                 Dim currentChar As String
                 Dim openLT As Integer
+                Dim openParen As Integer
                 Dim tmpString As New System.Text.StringBuilder
                 For i As Integer = 1 To NamedTypes.Length - 1
                     currentChar = NamedTypes(i)
@@ -979,29 +981,40 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                             While openLT <> 0
                                 i += 1
                                 currentChar = NamedTypes(i)
-                                If currentChar = "<" Then
-                                    openLT += 1
-                                End If
-                                tmpString.Append(currentChar)
-                                If currentChar = ">" Then
-                                    openLT -= 1
-                                    If openLT = 0 Then
-                                        Exit While
-                                    End If
-                                End If
+                                Select Case currentChar
+                                    Case ">"
+                                        openLT -= 1
+                                        tmpString.Append(">")
+                                        If openLT = 0 Then
+                                            Exit While
+                                        End If
+                                    Case "<"
+                                        openLT += 1
+                                        tmpString.Append("<")
+                                    Case "["
+                                        tmpString.Append("(")
+                                    Case "]"
+                                        tmpString.Append(")")
+                                    Case Else
+                                        tmpString.Append(currentChar)
+                                End Select
                             End While
                             TupleList.Add(tmpString.ToString.Replace("<", "(Of ", StringComparison.OrdinalIgnoreCase).Replace(">", ")", StringComparison.OrdinalIgnoreCase))
                             tmpString.Clear()
                             Dim commaIndex As Integer = NamedTypes.IndexOf(",", i + 1, StringComparison.OrdinalIgnoreCase)
                             If commaIndex < 0 Then
-                                Exit Select
+                                Exit For
                             End If
                             i = commaIndex + 1
+                        Case "["
+                            tmpString.Append("(")
+                        Case "]"
+                            tmpString.Append(")")
                         Case " " ' variable name
                             Dim commaIndex As Integer = NamedTypes.IndexOf(",", i + 1, StringComparison.OrdinalIgnoreCase)
                             TupleList.Add(tmpString.ToString.Replace("<", "(Of ", StringComparison.OrdinalIgnoreCase).Replace(">", ")", StringComparison.OrdinalIgnoreCase))
                             If commaIndex < 0 Then
-                                Exit Select
+                                Exit For
                             End If
                             tmpString.Clear()
                             i = commaIndex + 1
@@ -1012,6 +1025,46 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         Case ")"
                             TupleList.Add(tmpString.ToString.Replace("<", "(Of ", StringComparison.OrdinalIgnoreCase).Replace(">", ")", StringComparison.OrdinalIgnoreCase))
                             Exit For
+                        Case "?"
+                            TupleList.Add("Object")
+                            tmpString.Clear()
+                            Dim commaIndex As Integer = NamedTypes.IndexOf(",", i + 1, StringComparison.OrdinalIgnoreCase)
+                            If commaIndex < 0 Then
+                                Exit For
+                            End If
+                            i = commaIndex + 1
+                        Case "("
+                            If tmpString.Length <> 0 Then
+                                Stop
+                            End If
+                            openParen += 1
+                            tmpString.Append("(")
+                            While openParen <> 0
+                                i += 1
+                                currentChar = NamedTypes(i)
+                                Select Case currentChar
+                                    Case ")"
+                                        openParen -= 1
+                                        tmpString.Append(")")
+                                        If openParen = 0 Then
+                                            Exit While
+                                        End If
+                                    Case "("
+                                        openParen += 1
+                                        tmpString.Append("(")
+                                    Case Else
+                                        tmpString.Append(currentChar)
+                                End Select
+                            End While
+                            Dim subTupleList As New List(Of String)
+                            SplitTupleString(subTupleList, tmpString.ToString)
+                            TupleList.Add($"({subTupleList.ToArray.JoinLines(", ")})")
+                            tmpString.Clear()
+                            Dim commaIndex As Integer = NamedTypes.IndexOf(",", i + 1, StringComparison.OrdinalIgnoreCase)
+                            If commaIndex < 0 Then
+                                Exit For
+                            End If
+                            i = commaIndex + 1
                         Case Else
                             tmpString.Append(currentChar)
                     End Select
