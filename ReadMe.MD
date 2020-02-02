@@ -32,8 +32,7 @@ description: "C# to VB Converter"
 ## Description
 This application will convert C# to VB while trying to preserve comments, formatting and as many Directives
 as possible. It converts the True side of conditional directives, the False side is not converted. After
-conversion it tries to compile the code, there is a list of ignored errors that can be modified. If a file
-can't be compiled it can be add to an ignore list so you can continue to process other files.
+conversion it tries to compile the code. If a file can't be compiled it can be add to an ignore list so you can continue to process other files.
 
 You can convert text by typing or pasting in into the left Window, a file, project or folder from the menu's.
 

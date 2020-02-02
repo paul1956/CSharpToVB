@@ -6,7 +6,7 @@ Imports System.IO
 Public Class ColorSelector
     Private Shared ReadOnly s_fullPath As String = Path.Combine(FileIO.SpecialDirectories.MyDocuments, "ColorDictionary.csv")
 
-    Private Shared ReadOnly s_colorMappingDictionary As New Dictionary(Of String, Color) From {
+    Private Shared ReadOnly s_colorMappingDictionary As New Dictionary(Of String, Color)(StringComparer.OrdinalIgnoreCase) From {
          {"class name", Color.FromArgb(0, 128, 128)},
          {"comment", Color.FromArgb(0, 100, 0)},
          {"constant name", Color.Black},

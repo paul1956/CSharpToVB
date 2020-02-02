@@ -17,7 +17,7 @@ Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
 Namespace CSharpToVBCodeConverter
     Public Module ConversionSupport
-        Friend ReadOnly s_usedStacks As New Stack(New Dictionary(Of String, SymbolTableEntry))
+        Friend ReadOnly s_usedStacks As New Stack(New Dictionary(Of String, SymbolTableEntry)(StringComparer.Ordinal))
         Friend s_implementedMembers As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))) = (New List(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))).ToImmutableArray
         Friend s_implementedMembersStack As New Stack(ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))).Empty)
         Friend s_originalRequest As ConvertRequest
