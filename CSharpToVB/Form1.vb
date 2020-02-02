@@ -929,6 +929,7 @@ Public Class Form1
         With OpenFileDialog1
             .AddExtension = True
             .DefaultExt = LanguageExtension
+            .InitialDirectory = My.Settings.DefaultProjectDirectory
             .FileName = ""
             .Filter = If(LanguageExtension = "vb", "VB Code Files (*.vb)|*.vb", "C# Code Files (*.cs)|*.cs")
             SaveFileDialog1.FilterIndex = 0
