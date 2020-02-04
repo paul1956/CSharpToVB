@@ -776,12 +776,12 @@ Namespace CSharpToVBCodeConverter.Util
                     End If
                     Dim IfDirective As CSS.IfDirectiveTriviaSyntax = DirectCast(StructuredTrivia, CSS.IfDirectiveTriviaSyntax)
                     Dim Expression1 As String = IfDirective.Condition.ToString.
-                                        Replace("!", "Not ", StringComparison.InvariantCulture).
                                         Replace("==", "=", StringComparison.InvariantCulture).
-                                        Replace("!=", "<>", StringComparison.InvariantCulture).
+                                        Replace("!=", "Not ", StringComparison.InvariantCulture).
                                         Replace("&&", "And", StringComparison.InvariantCulture).
                                         Replace("||", "Or", StringComparison.InvariantCulture).
                                         Replace("  ", " ", StringComparison.InvariantCulture).
+                                        Replace("!", "Not ", StringComparison.InvariantCulture).
                                         Replace("false", "False", StringComparison.InvariantCulture).
                                         Replace("true", "True", StringComparison.InvariantCulture)
 
