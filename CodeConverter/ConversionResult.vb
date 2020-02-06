@@ -12,21 +12,7 @@ Namespace CSharpToVBCodeConverter
 
     Public Class ConversionResult
 
-        '
-        ' Summary:
-        '     Indicates File Conversion succeeded, failed or wasn't attempted (ignored)
-        Public Enum ResultTriState
-
-            '     This file was ignored setting.
-            Ignore = -2
-
-            '     Conversion succeeded.
-            Success = -1
-
-            '     Conversion failed.
-            Failure = 0
-
-        End Enum
+        Private _filteredListOfFailures As List(Of Diagnostic)
 
         Public Sub New(ConvertedTree As SyntaxNode, InputLanguage As String, OutputLanguage As String, VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)))
             Exceptions = New List(Of Exception)
@@ -55,21 +41,24 @@ Namespace CSharpToVBCodeConverter
             Me.Exceptions = exceptions
         End Sub
 
+        ''' <summary>
+        ''' Indicates File Conversion succeeded, failed or wasn't attempted (ignored)
+        ''' </summary>
+        Public Enum ResultTriState
+            '     This file was ignored setting.
+            Ignore = -2
+            '     Conversion succeeded.
+            Success = -1
+            '     Conversion failed.
+            Failure = 0
+
+        End Enum
+
         Public ReadOnly Property ConvertedCode As String
 
         Public Property ConvertedTree As VB.VisualBasicSyntaxNode
 
         Public Property Exceptions As IReadOnlyList(Of Exception)
-        Private _filteredListOfFailures As List(Of Diagnostic)
-
-        Public Function GetFilteredListOfFailures() As List(Of Diagnostic)
-            Return _filteredListOfFailures
-        End Function
-
-        Public Sub SetFilteredListOfFailures(AutoPropertyValue As List(Of Diagnostic))
-            _filteredListOfFailures = AutoPropertyValue
-        End Sub
-
         Public Property ResultStatus As ResultTriState
 
         Public Property SourceLanguage As String
@@ -80,6 +69,14 @@ Namespace CSharpToVBCodeConverter
             Dim result As IList(Of TextChange) = Formatter.GetFormattedTextChanges(root, spans, workspace, pOptionSet)
             Return pSourceText?.WithChanges(result).ToString()
         End Function
+
+        Public Function GetFilteredListOfFailures() As List(Of Diagnostic)
+            Return _filteredListOfFailures
+        End Function
+
+        Public Sub SetFilteredListOfFailures(AutoPropertyValue As List(Of Diagnostic))
+            _filteredListOfFailures = AutoPropertyValue
+        End Sub
 
     End Class
 

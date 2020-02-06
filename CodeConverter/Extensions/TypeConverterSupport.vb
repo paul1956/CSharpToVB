@@ -1,29 +1,20 @@
 ﻿' Licensed to the .NET Foundation under one or more agreements.
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
+Imports CSharpToVBCodeConverter.DestVisualBasic
 Imports CSharpToVBCodeConverter.Util
 
 Imports Microsoft.CodeAnalysis
-Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
-
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace CSharpToVBCodeConverter
 
     Public Module TypeConverterSupport
-
-        Private Function ConvertToTupleElement(TupleElement As IFieldSymbol) As TupleElementSyntax
-            If TupleElement.Type Is Nothing Then
-                Return VBFactory.NamedTupleElement(TupleElement.Name.ToString(Globalization.CultureInfo.InvariantCulture))
-            End If
-            Dim AsClause As SimpleAsClauseSyntax = VBFactory.SimpleAsClause(ConvertToType(TupleElement.Type))
-            Return VBFactory.NamedTupleElement(VBFactory.Identifier(AddBracketsIfRequired(TupleElement.Name)), AsClause)
-        End Function
 
         Private Function MakeIdentifierUnique(id As SyntaxToken, BracketNeeded As Boolean, QualifiedNameOrTypeName As Boolean) As SyntaxToken
             Dim ConvertedIdentifier As String = If(BracketNeeded, $"[{id.ValueText}]", id.ValueText)
@@ -72,46 +63,23 @@ Namespace CSharpToVBCodeConverter
             Return VBFactory.Identifier(_ConvertedIdentifier)
         End Function
 
-        Private Function GetNewUniqueName(ConvertedIdentifier As String, ident As KeyValuePair(Of String, SymbolTableEntry)) As String
-            Dim NewUniqueName As String
-            If ident.Value.Name.StartsWith("_", StringComparison.InvariantCulture) Then
-                NewUniqueName = ConvertedIdentifier
-            Else
-                NewUniqueName = If(ConvertedIdentifier.StartsWith("[", StringComparison.InvariantCulture),
-                                        ConvertedIdentifier.Replace("[", "_", StringComparison.InvariantCulture).
-                                                            Replace("]", "", StringComparison.InvariantCulture),
-                                        If(Char.IsLower(CChar(ConvertedIdentifier.Substring(0, 1))),
-                                            $"_{ConvertedIdentifier}",
-                                            $"{ConvertedIdentifier}_Renamed"))
-            End If
-
-            Return NewUniqueName
-        End Function
-
-        Friend Function AddBracketsIfRequired(Id As String) As String
-            If IsSpecialReservedWord(Id) OrElse VB.SyntaxFacts.IsKeywordKind(VB.SyntaxFacts.GetKeywordKind(Id)) Then
-                Return $"[{Id}]"
-            End If
-            Return Id
-        End Function
-
-        Friend Function ConvertToType(PossibleTupleType As ITypeSymbol) As TypeSyntax
+        Friend Function ConvertToType(PossibleTupleType As ITypeSymbol) As VBS.TypeSyntax
             If PossibleTupleType.IsKind(SymbolKind.ArrayType) Then
-                Dim ElementType As TypeSyntax = ConvertToType(DirectCast(PossibleTupleType, IArrayTypeSymbol).ElementType)
-                If TypeOf ElementType Is ArrayTypeSyntax Then
+                Dim ElementType As VBS.TypeSyntax = ConvertToType(DirectCast(PossibleTupleType, IArrayTypeSymbol).ElementType)
+                If TypeOf ElementType Is VBS.ArrayTypeSyntax Then
                     Return ElementType
                 End If
                 Return VBFactory.ArrayType(ElementType)
             End If
             If PossibleTupleType.IsTupleType Then
-                Dim TupleElementList As New List(Of TupleElementSyntax)
+                Dim TupleElementList As New List(Of VBS.TupleElementSyntax)
                 For Each TupleElement As IFieldSymbol In DirectCast(PossibleTupleType, INamedTypeSymbol).TupleElements
-                    TupleElementList.Add(ConvertToTupleElement(TupleElement))
+                    TupleElementList.Add(CSharpConverter.ConvertToTupleElement(TupleElement))
                 Next
                 Return VBFactory.TupleType(TupleElementList.ToArray)
             End If
             If PossibleTupleType.Name = "Tuple" Then
-                Dim TupleElementList As New List(Of TypeSyntax)
+                Dim TupleElementList As New List(Of VBS.TypeSyntax)
                 For Each TupleElement As ITypeSymbol In DirectCast(PossibleTupleType, INamedTypeSymbol).TypeArguments
                     TupleElementList.Add(ConvertToType(TupleElement))
                 Next
@@ -124,14 +92,14 @@ Namespace CSharpToVBCodeConverter
                 Dim Name As String = PossibleName.Substring(0, StartIndex)
                 Dim PossibleTypes As String = PossibleName.Substring(StartIndex + 1, IndexOfLastGreaterThan - StartIndex - 1)
                 If PossibleTupleType.ToString.StartsWith("System.Func", StringComparison.InvariantCulture) Then
-                    Dim DictionaryTypeElement As New List(Of TypeSyntax)
+                    Dim DictionaryTypeElement As New List(Of VBS.TypeSyntax)
                     While PossibleTypes.Length > 0
                         Dim EndIndex As Integer
                         ' Tuple
                         If PossibleTypes.StartsWith("(", StringComparison.InvariantCulture) Then
                             ' Tuple
                             EndIndex = PossibleTypes.LastIndexOf(")", StringComparison.InvariantCulture)
-                            DictionaryTypeElement.Add(CovertStringToTupleType(PossibleTypes.Substring(0, EndIndex + 1).Trim))
+                            DictionaryTypeElement.Add(CSharpConverter.ConvertCSTupleToVBType(PossibleTypes.Substring(0, EndIndex + 1).Trim))
                             EndIndex += 1
                         Else
                             ' Type
@@ -153,7 +121,7 @@ Namespace CSharpToVBCodeConverter
                 ' Could be dictionary or List
                 If TypeOf PossibleTupleType Is INamedTypeSymbol AndAlso PossibleName.Contains(",", StringComparison.InvariantCulture) Then
                     Dim NamedType As INamedTypeSymbol = CType(PossibleTupleType, INamedTypeSymbol)
-                    Dim DictionaryTypeElement As New List(Of TypeSyntax)
+                    Dim DictionaryTypeElement As New List(Of VBS.TypeSyntax)
                     If Not NamedType.TypeArguments.Any Then
                         Return PredefinedTypeObject
                     End If
@@ -252,41 +220,10 @@ Namespace CSharpToVBCodeConverter
                 Case "?", "_"
                     Return PredefinedTypeObject
                 Case Else
-                    Return VBFactory.ParseTypeName(AddBracketsIfRequired(TypeString.
+                    Return VBFactory.ParseTypeName(MakeVBSafeName(TypeString.
                                                                              Replace("[", "(", StringComparison.InvariantCulture).
                                                                              Replace("]", ")", StringComparison.InvariantCulture)))
             End Select
-        End Function
-
-        Friend Function CovertStringToTupleType(TupleString As String) As TypeSyntax
-            Dim TupleElements As New List(Of TupleElementSyntax)
-            For Each t As String In TupleString.Substring(1, TupleString.Length - 2).Split(","c)
-                Dim TuplePart() As String = t.Trim.Split(" "c)
-                If TuplePart.Length = 1 Then
-                    Dim typedTupleElementSyntax1 As TypedTupleElementSyntax = VBFactory.TypedTupleElement(ConvertToType(TuplePart(0)))
-                    TupleElements.Add(typedTupleElementSyntax1)
-                Else
-                    Dim Identifier As SyntaxToken = CS.SyntaxFactory.Identifier(TuplePart(1))
-                    Dim namedTupleElementSyntax1 As NamedTupleElementSyntax = VBFactory.NamedTupleElement(GenerateSafeVBToken(Identifier, IsQualifiedName:=False, IsTypeName:=False), VBFactory.SimpleAsClause(ConvertToType(TuplePart(0))))
-                    TupleElements.Add(namedTupleElementSyntax1)
-                End If
-            Next
-            Return VBFactory.TupleType(TupleElements.ToArray)
-        End Function
-
-        Friend Function IsSpecialReservedWord(ID As String) As Boolean
-            If ID.Equals("Alias", StringComparison.InvariantCultureIgnoreCase) OrElse
-                    ID.Equals("CType", StringComparison.InvariantCultureIgnoreCase) OrElse
-                    ID.Equals("End", StringComparison.InvariantCultureIgnoreCase) OrElse
-                    ID.Equals("Error", StringComparison.InvariantCultureIgnoreCase) OrElse
-                    ID.Equals("Event", StringComparison.InvariantCultureIgnoreCase) OrElse
-                    ID.Equals("Imports", StringComparison.InvariantCultureIgnoreCase) OrElse
-                    ID.Equals("Module", StringComparison.InvariantCultureIgnoreCase) OrElse
-                    ID.Equals("Option", StringComparison.InvariantCultureIgnoreCase) OrElse
-                    ID.Equals("Optional", StringComparison.InvariantCultureIgnoreCase) Then
-                Return True
-            End If
-            Return False
         End Function
 
         ''' <summary>

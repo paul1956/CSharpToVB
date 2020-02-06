@@ -104,7 +104,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     End If
                     If TypeOf OriginalNameParent Is CSS.ArgumentSyntax Then
                         If VB.SyntaxFacts.IsKeywordKind(VB.SyntaxFacts.GetKeywordKind(node.Identifier.ValueText)) Then
-                            Return VBFactory.ParseName(AddBracketsIfRequired(node.Identifier.ValueText))
+                            Return VBFactory.ParseName(MakeVBSafeName(node.Identifier.ValueText))
                         End If
                     End If
                     Return WrapTypedNameIfNecessary(VBFactory.IdentifierName(GenerateSafeVBToken(node.Identifier, IsQualifiedName:=True, IsTypeName:=False)), node)

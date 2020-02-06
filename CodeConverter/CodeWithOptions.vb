@@ -23,10 +23,10 @@ Namespace CSharpToVBCodeConverter
 
         Public Property FromLanguage As String
         Public Property FromLanguageVersion As Integer
+        Public Property Request As ConvertRequest
         Public Property Text As String
         Public Property ToLanguage() As String
         Public Property ToLanguageVersion() As Integer
-        Public Property Request As ConvertRequest
 
         Public Function SetFromLanguage(Optional name As String = LanguageNames.CSharp, Optional version As Integer = CS.LanguageVersion.Latest) As CodeWithOptions
             FromLanguage = name

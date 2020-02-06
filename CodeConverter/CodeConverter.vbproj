@@ -20,6 +20,7 @@
     <Version>3.0.0</Version>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="GlobalSuppressions.vb" />
     <Compile Remove="Resource1.Designer.vb" />
   </ItemGroup>
   <ItemGroup>
