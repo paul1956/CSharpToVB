@@ -128,8 +128,11 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     isIterator = visitor.IsInterator
                 ElseIf node.ExpressionBody IsNot Nothing Then
                     Dim VBNode As VB.VisualBasicSyntaxNode = node.ExpressionBody.Accept(Me)
-                    If TypeOf VBNode Is VBS.AssignmentStatementSyntax OrElse TypeOf VBNode Is VBS.ThrowStatementSyntax Then
+                    If TypeOf VBNode Is VBS.AssignmentStatementSyntax OrElse
+                       TypeOf VBNode Is VBS.ThrowStatementSyntax Then
                         body = VBFactory.SingletonList(DirectCast(VBNode, VBS.StatementSyntax))
+                    ElseIf TypeOf VBNode Is VBS.AddRemoveHandlerStatementSyntax Then
+                        body = VBFactory.SingletonList(DirectCast(VBNode, VBS.StatementSyntax).WithTrailingEOL)
                     Else
                         body = VBFactory.SingletonList(Of VBS.StatementSyntax)(
                                                     VBFactory.ReturnStatement(DirectCast(VBNode, VBS.ExpressionSyntax)).
@@ -957,6 +960,11 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                             handlesClause:=Nothing,
                                             implementsClause:=ImplementsClause).
                                             With(FunctionStatementLeadingTrivia, FunctionStatementTrailingTrivia)
+                If ReturnAttributes.Count > 0 AndAlso
+                   (Attributes.Count = 0 OrElse Attributes(0).Attributes(0).Name.ToString = "Extension") AndAlso
+                   node.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
+                    SubOrFunctionStatement = SubOrFunctionStatement.WithPrependedLeadingTrivia(ConvertTrivia(node.GetLeadingTrivia))
+                End If
                 SubOrFunctionStatement = DirectCast(PrependStatementWithMarkedStatementTrivia(node, SubOrFunctionStatement), VBS.MethodStatementSyntax)
                 s_usedIdentifiers = DirectCast(s_usedStacks.Pop, Dictionary(Of String, SymbolTableEntry))
 
@@ -1035,6 +1043,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     Else
                         ' Might need to handle other types here
                         Stop
+                        Throw UnreachableException
                     End If
                 End If
 
@@ -1056,7 +1065,17 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     Dim ExpressionSyntaxNode As VB.VisualBasicSyntaxNode = node.ExpressionBody.Expression.Accept(Me).WithConvertedLeadingTriviaFrom(node.ExpressionBody.Expression)
                     If TypeOf ExpressionSyntaxNode Is VBS.ThrowStatementSyntax Then
                         Statements = VBFactory.SingletonList(Of VBS.StatementSyntax)(DirectCast(ExpressionSyntaxNode, VBS.ThrowStatementSyntax).WithConvertedTriviaFrom(node.ExpressionBody))
-                    Else
+                    ElseIf TypeOf ExpressionSyntaxNode Is VBS.SingleLineIfStatementSyntax Then
+                        Dim IfStatement As VBS.SingleLineIfStatementSyntax = DirectCast(ExpressionSyntaxNode, VBS.SingleLineIfStatementSyntax).WithTrailingEOL
+                        Dim ReturnStatement As VBS.ReturnStatementSyntax = VBFactory.ReturnStatement(DirectCast(IfStatement.Condition, VBS.BinaryExpressionSyntax).Left.WithLeadingTrivia(SpaceTrivia)).
+                                                WithLeadingTrivia(IfStatement.Condition.GetLeadingTrivia)
+                        ReturnStatement = ReturnStatement.RelocateDirectivesInLeadingTrivia
+                        Dim StatementList As New List(Of VBS.StatementSyntax) From {
+                            IfStatement,
+                            ReturnStatement
+                        }
+                        Statements = ReplaceStatementsWithMarkedStatements(node, VBFactory.List(StatementList))
+                    ElseIf TypeOf ExpressionSyntaxNode Is VBS.ExpressionSyntax Then
                         Dim ReturnedExpression As VBS.ExpressionSyntax = DirectCast(ExpressionSyntaxNode, VBS.ExpressionSyntax)
                         If ReturnedExpression Is Nothing Then
                             ' ref expression
@@ -1074,6 +1093,9 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                                 WithLeadingTrivia(ReturnedExpression.GetLeadingTrivia)
                         ReturnStatement = ReturnStatement.RelocateDirectivesInLeadingTrivia
                         Statements = ReplaceStatementsWithMarkedStatements(node, VBFactory.SingletonList(Of VBS.StatementSyntax)(ReturnStatement))
+                    Else
+                        Stop
+                        Throw UnreachableException
                     End If
                     accessors.Add(VBFactory.AccessorBlock(VB.SyntaxKind.GetAccessorBlock, VBFactory.GetAccessorStatement.WithTrailingEOL, Statements, VBFactory.EndGetStatement()))
                 Else

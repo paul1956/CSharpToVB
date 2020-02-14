@@ -48,7 +48,7 @@ Public Class TextProgressBar
         With _progressBar
             .Increment(Value)
             pbPrecentage(_progressBar, $"{ .Value:N0} of { .Maximum:N0}")
-            Thread.Sleep(3)
+            Thread.Sleep(1)
             If .Value >= .Maximum Then
                 .Visible = False
             End If

@@ -1007,9 +1007,9 @@ Public Class Form1
                                     }
 
                         For Each document As Document In currentProject.Documents
-                            If ParseCSharpSource(document.GetTextAsync(Nothing).Result.ToString).GetRoot.SyntaxTree.IsGeneratedCode(Function(t As SyntaxTrivia) As Boolean
-                                                                                                                                        Return t.IsComment OrElse t.IsRegularOrDocComment
-                                                                                                                                    End Function, _cancellationTokenSource.Token) Then
+                            If ParseCSharpSource(document.GetTextAsync(Nothing).Result.ToString, CSPreprocessorSymbols).GetRoot.SyntaxTree.IsGeneratedCode(Function(t As SyntaxTrivia) As Boolean
+                                                                                                                                                               Return t.IsComment OrElse t.IsRegularOrDocComment
+                                                                                                                                                           End Function, _cancellationTokenSource.Token) Then
                                 TotalFilesToProcess -= 1
                                 FilesConversionProgress.Text = $"Processed {FilesProcessed: N0} of {TotalFilesToProcess:N0} Files"
                                 Application.DoEvents()

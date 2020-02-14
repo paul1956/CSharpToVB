@@ -2,6 +2,7 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
+Imports System.Text
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
@@ -10,6 +11,18 @@ Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 Namespace CSharpToVBCodeConverter
 
     Public Module IdentifierSupport
+
+        Friend Sub CreateDesignationName(ListOfVariables As List(Of VBS.ModifiedIdentifierSyntax), ByRef sBuilder As StringBuilder)
+            sBuilder.Append("TupleTempVar")
+            For j As Integer = 0 To ListOfVariables.Count - 1
+                Dim v As VBS.ModifiedIdentifierSyntax = ListOfVariables(j)
+                If v.Identifier.ValueText = "_" Then
+                    sBuilder.Append($"_Discard{j}")
+                Else
+                    sBuilder.Append($"_{v.Identifier.ValueText}")
+                End If
+            Next
+        End Sub
 
         Friend Function GetNewUniqueName(ConvertedIdentifier As String, ident As KeyValuePair(Of String, SymbolTableEntry)) As String
             Dim NewUniqueName As String

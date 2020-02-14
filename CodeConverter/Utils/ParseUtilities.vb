@@ -47,9 +47,10 @@ Public Module ParseUtilities
             For Each File As String In Directory.GetFiles(path:=DirPath, searchPattern:=$"*.{SourceLanguageExtension}")
                 Application.DoEvents()
 
-                If Not ParseCSharpSource(File).GetRoot.SyntaxTree.IsGeneratedCode(Function(t As SyntaxTrivia) As Boolean
-                                                                                      Return t.IsComment OrElse t.IsRegularOrDocComment
-                                                                                  End Function, CancellationToken.None) Then
+                If Not ParseCSharpSource(File, New List(Of String)).
+                    GetRoot.SyntaxTree.IsGeneratedCode(Function(t As SyntaxTrivia) As Boolean
+                                                           Return t.IsComment OrElse t.IsRegularOrDocComment
+                                                       End Function, CancellationToken.None) Then
                     TotalFilesToProcess += 1
                 End If
             Next
@@ -73,7 +74,7 @@ Public Module ParseUtilities
                                     VBPreprocessorSymbols)
     End Function
 
-    Public Function ParseCSharpSource(SourceText As String, Optional CSPreprocessorSymbols As List(Of String) = Nothing) As SyntaxTree
+    Public Function ParseCSharpSource(SourceText As String, CSPreprocessorSymbols As List(Of String)) As SyntaxTree
         Dim CSharpParseOptions As CS.CSharpParseOptions = GetCSharpParseOptions(CSPreprocessorSymbols)
         Dim ParsedCSharpTree As SyntaxTree = CS.SyntaxFactory.ParseSyntaxTree(
                                                             Text.SourceText.From(SourceText),

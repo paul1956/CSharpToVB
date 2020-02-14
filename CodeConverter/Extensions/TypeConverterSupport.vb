@@ -137,16 +137,20 @@ Namespace CSharpToVBCodeConverter
                                                     )
                 End If
             End If
-            Return ConvertToType(PossibleName.Replace("<", "(Of ", StringComparison.InvariantCulture).Replace(">", ")", StringComparison.InvariantCulture))
+            Return ConvertToType(PossibleName)
         End Function
 
         Friend Function ConvertToType(_TypeString As String) As VBS.TypeSyntax
+            If _TypeString.Contains("<", StringComparison.InvariantCulture) Then
+                _TypeString = _TypeString.Replace("<", "(Of ", StringComparison.InvariantCulture).
+                                    Replace(">", ")", StringComparison.InvariantCulture)
+            End If
             Dim TypeString As String = _TypeString.Trim
-            Dim IndexOf As Integer = TypeString.IndexOf("(Of ", StringComparison.InvariantCulture)
+            Dim IndexOf As Integer = TypeString.IndexOf("(Of ", StringComparison.InvariantCultureIgnoreCase)
             If IndexOf >= 0 Then
                 Dim Name As String = TypeString.Substring(0, IndexOf)
                 TypeString = TypeString.Substring(IndexOf + 3)
-                Dim IndexOfLastCloseParen As Integer = TypeString.LastIndexOf(")", StringComparison.InvariantCulture)
+                Dim IndexOfLastCloseParen As Integer = TypeString.LastIndexOf(")", StringComparison.InvariantCultureIgnoreCase)
                 TypeString = TypeString.Substring(0, IndexOfLastCloseParen)
                 Dim TypeList As New List(Of VBS.TypeSyntax)
                 Dim PossibleTypes As String = TypeString.Trim
@@ -174,7 +178,7 @@ Namespace CSharpToVBCodeConverter
                             End Select
                         Next
                     End If
-                    TypeList.Add(ConvertToType(PossibleTypes.Substring(0, EndIndex).Trim))
+                    TypeList.Add(ConvertToType(PossibleTypes.Substring(0, EndIndex)).WithLeadingTrivia(SpaceTrivia))
                     If EndIndex + 1 < PossibleTypes.Length Then
                         PossibleTypes = PossibleTypes.Substring(EndIndex + 1).Trim
                     Else
@@ -184,14 +188,17 @@ Namespace CSharpToVBCodeConverter
                 Dim TypeArguemntList As VBS.TypeArgumentListSyntax = VBFactory.TypeArgumentList(VBFactory.SeparatedList(TypeList))
                 Return VBFactory.GenericName(Name, TypeArguemntList)
             End If
+            If TypeString.EndsWith("*", StringComparison.InvariantCultureIgnoreCase) Then
+                Return IntPtrType
+            End If
             Select Case TypeString.ToUpperInvariant
                 Case "BYTE"
                     Return PredefinedTypeByte
                 Case "SBYTE"
                     Return PredefinedTypeSByte
-                Case "INT"
+                Case "INT", "INTEGER"
                     Return PredefinedTypeInteger
-                Case "UINT"
+                Case "UINT", "UINTEGER"
                     Return PredefinedTypeUInteger
                 Case "SHORT"
                     Return PredefinedTypeShort
@@ -207,7 +214,7 @@ Namespace CSharpToVBCodeConverter
                     Return PredefinedTypeDouble
                 Case "CHAR"
                     Return PredefinedTypeChar
-                Case "BOOL"
+                Case "BOOL", "BOOLEAN"
                     Return PredefinedTypeBoolean
                 Case "OBJECT", "VAR"
                     Return PredefinedTypeObject
@@ -220,10 +227,19 @@ Namespace CSharpToVBCodeConverter
                 Case "?", "_"
                     Return PredefinedTypeObject
                 Case Else
-                    Return VBFactory.ParseTypeName(MakeVBSafeName(TypeString.
-                                                                             Replace("[", "(", StringComparison.InvariantCulture).
-                                                                             Replace("]", ")", StringComparison.InvariantCulture)))
+                    If TypeString.Contains("[", StringComparison.InvariantCultureIgnoreCase) Then
+                        TypeString = TypeString.
+                                        Replace("[", "@", StringComparison.InvariantCulture).
+                                        Replace("]", "#", StringComparison.InvariantCulture)
+                    End If
+                    Return VBFactory.ParseTypeName(MakeVBSafeName(TypeString).
+                                                            Replace("@", "(", StringComparison.InvariantCulture).
+                                                            Replace("#", ")", StringComparison.InvariantCulture))
             End Select
+        End Function
+
+        Public Function GenerateSafeVBToken(id As String, IsQualifiedName As Boolean, IsTypeName As Boolean) As SyntaxToken
+            Return GenerateSafeVBToken(CS.SyntaxFactory.Identifier(id), IsQualifiedName, IsTypeName)
         End Function
 
         ''' <summary>

@@ -100,13 +100,15 @@ Namespace CSharpToVBCodeConverter.Util
                     Return VB.SyntaxKind.IsExpression
                 Case CS.SyntaxKind.AddressOfExpression
                     Return VB.SyntaxKind.AddressOfExpression
-                        ' Remainder of list are so caller don't crash but are not directly supported by VB
+' Remainder of list are so caller don't crash but are not directly supported by VB
                 Case CS.SyntaxKind.PointerIndirectionExpression
                     Return CType(CS.SyntaxKind.PointerIndirectionExpression, VB.SyntaxKind)
                 Case CS.SyntaxKind.CoalesceExpression
                     Return CType(CS.SyntaxKind.CoalesceExpression, VB.SyntaxKind)
                 Case CS.SyntaxKind.AsExpression
                     Return CType(CS.SyntaxKind.AsExpression, VB.SyntaxKind)
+                Case CS.SyntaxKind.IndexExpression
+                    Return CType(CS.SyntaxKind.IndexExpression, VB.SyntaxKind)
             End Select
             Throw New NotSupportedException($"Expression.Kind {t} is not supported!")
         End Function

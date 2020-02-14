@@ -370,61 +370,6 @@ Namespace CSharpToVBCodeConverter.Util
             Return Nothing
         End Function
 
-        '<Extension>
-        'Public Function GetAllUnimplementedExplicitMembers(classOrStructType As INamedTypeSymbol,
-        '                                               interfaces As IEnumerable(Of INamedTypeSymbol),
-        '                                               CancelToken As CancellationToken) As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))
-        '    Return classOrStructType.GetAllUnimplementedMembers(
-        '                    interfaces,
-        '                    AddressOf IsExplicitlyImplemented,
-        '                    AddressOf ImplementationExists,
-        '                    Function(type As INamedTypeSymbol, within As ISymbol)
-        '                        If type.TypeKind = TypeKind.Interface Then
-        '                            Return type.GetMembers().WhereAsArray(Function(m) m.Kind <> SymbolKind.NamedType AndAlso
-        '                                                                        IsImplementable(m) AndAlso
-        '                                                                        m.IsAccessibleWithin(within) AndAlso
-        '                                                                        Not IsPropertyWithInaccessibleImplementableAccessor(m, within))
-        '                        End If
-        '                        Return type.GetMembers()
-        '                    End Function,
-        '                    allowReimplementation:=False,
-        '                    CancelToken)
-
-        'End Function
-        '<Extension>
-        'Public Function GetAllUnimplementedMembersInThis(classOrStructType As INamedTypeSymbol,
-        '                                             interfacesOrAbstractClasses As IEnumerable(Of INamedTypeSymbol),
-        '                                             CancelToken As CancellationToken) As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))
-        '    Return classOrStructType.GetAllUnimplementedMembers(
-        '    interfacesOrAbstractClasses,
-        '    AddressOf IsImplemented,
-        '    Function(t, m)
-        '        Dim implementation As ISymbol = classOrStructType.FindImplementationForInterfaceMember(m)
-        '        Return implementation IsNot Nothing AndAlso
-        '               Equals(implementation.ContainingType, classOrStructType)
-        '    End Function,
-        '    AddressOf GetMembers,
-        '    allowReimplementation:=True,
-        '    CancelToken)
-        'End Function
-
-        '<Extension>
-        'Public Function GetAllUnimplementedMembersInThis(classOrStructType As INamedTypeSymbol,
-        '                                             interfacesOrAbstractClasses As IEnumerable(Of INamedTypeSymbol),
-        '                                             interfaceMemberGetter As Func(Of INamedTypeSymbol, ISymbol, ImmutableArray(Of ISymbol)),
-        '                                             CancelToken As CancellationToken) As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))
-        '    Return classOrStructType.GetAllUnimplementedMembers(
-        '    interfacesOrAbstractClasses,
-        '    AddressOf IsImplemented,
-        '    Function(t, m)
-        '        Dim implementation As ISymbol = classOrStructType.FindImplementationForInterfaceMember(m)
-        '        Return implementation IsNot Nothing AndAlso Equals(implementation.ContainingType, classOrStructType)
-        '    End Function,
-        '    interfaceMemberGetter,
-        '    allowReimplementation:=True,
-        '    CancelToken)
-        'End Function
-
         <Extension>
         Public Iterator Function GetBaseTypesAndThis(namedType As INamedTypeSymbol) As IEnumerable(Of INamedTypeSymbol)
             Dim current As INamedTypeSymbol = namedType

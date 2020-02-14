@@ -29,7 +29,13 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     Dim CS_Operation As Operations.IArgumentOperation = CType(_mSemanticModel.GetOperation(CS_Arguments(i)), Operations.IArgumentOperation)
                     Dim argument As VBS.ArgumentSyntax = DirectCast(CS_Arguments(i).Accept(Me), VBS.ArgumentSyntax)
                     If CS_Operation?.Value.Kind = OperationKind.DelegateCreation Then
-                        argument = VBFactory.SimpleArgument(VBFactory.AddressOfExpression(argument.GetExpression))
+                        Dim LeadingTrivia As New List(Of SyntaxTrivia)
+                        LeadingTrivia.AddRange(argument.GetExpression.GetLeadingTrivia)
+                        If LeadingTrivia.Count >= 2 AndAlso LeadingTrivia(1).IsKind(VB.SyntaxKind.LineContinuationTrivia) Then
+                            argument = VBFactory.SimpleArgument(VBFactory.AddressOfExpression(AddressOfKeyword.WithTrailingTrivia(LeadingTrivia.GetRange(0, 1)), argument.GetExpression))
+                        Else
+                            argument = VBFactory.SimpleArgument(VBFactory.AddressOfExpression(argument.GetExpression))
+                        End If
                     End If
                     NodeList.Add(argument.WithModifiedNodeTrivia(SeparatorFollows:=SeparatorCount > i))
                     If SeparatorCount > i Then
@@ -76,6 +82,16 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         Else
                             ArgumentWithTrivia = DirectCast(NodeExpression.Accept(Me).WithModifiedNodeTrivia(SeparatorFollows:=True), VBS.ExpressionSyntax)
                         End If
+                    ElseIf NodeExpression.IsKind(CS.SyntaxKind.IndexExpression) Then
+                        Try
+                            Dim ElementAccessExpression As CSS.ElementAccessExpressionSyntax = CType(node.Parent.Parent, CSS.ElementAccessExpressionSyntax)
+                            Dim OffsetFromLength As VBS.ExpressionSyntax = CType(CType(NodeExpression, CSS.PrefixUnaryExpressionSyntax).Operand.Accept(Me), VBS.ExpressionSyntax)
+                            Dim Identifier As VBS.IdentifierNameSyntax = VBFactory.IdentifierName(MakeVBSafeName(ElementAccessExpression.Expression.ToString))
+                            ArgumentWithTrivia = VBFactory.BinaryExpression(VB.SyntaxKind.SubtractExpression, Identifier, MinusToken, right:=OffsetFromLength)
+                        Catch ex As Exception
+                            Stop
+                            Throw UnexpectedValue("IndexExpression Parent.Parent not 'ElementAccessExpression'")
+                        End Try
                     Else
                         ArgumentWithTrivia = DirectCast(NodeExpression.Accept(Me).WithModifiedNodeTrivia(SeparatorFollows:=True), VBS.ExpressionSyntax)
                     End If

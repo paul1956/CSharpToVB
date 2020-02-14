@@ -232,8 +232,9 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             End If
             Dim CS_CollectedCommentTrivia As New List(Of SyntaxTrivia)
             If TypeOrAddressOf.IsKind(VB.SyntaxKind.AddressOfExpression) Then
-                type = VBFactory.ParseTypeName(DirectCast(TypeOrAddressOf, VBS.UnaryExpressionSyntax).Operand.ToString)
-                CS_CollectedCommentTrivia.Add(CS.SyntaxFactory.Comment(" TODO TASK: VB has no direct equivalent to C# Pointer Variables"))
+                type = IntPtrType
+                'type = VBFactory.ParseTypeName(DirectCast(TypeOrAddressOf, VBS.UnaryExpressionSyntax).Operand.ToString)
+                'CS_CollectedCommentTrivia.Add(CS.SyntaxFactory.Comment(" TODO TASK: VB has no direct equivalent to C# Pointer Variables"))
             Else
                 type = DirectCast(TypeOrAddressOf, VBS.TypeSyntax)
             End If

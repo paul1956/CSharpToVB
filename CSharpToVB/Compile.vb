@@ -26,7 +26,10 @@ Public Module Compile
         End If
 
         Dim assemblyName As String = Path.GetRandomFileName()
-        Dim tree As SyntaxTree = CSharpSyntaxTree.ParseText(StringToBeCompiled)
+        Dim PreprocessorSymbols As ImmutableArray(Of String) = ImmutableArray(Of String).Empty
+        PreprocessorSymbols = PreprocessorSymbols.Add(My.Settings.Framework)
+        Dim options As CSharpParseOptions = CSharpParseOptions.Default.WithPreprocessorSymbols(PreprocessorSymbols)
+        Dim tree As SyntaxTree = CSharpSyntaxTree.ParseText(StringToBeCompiled, options)
         Dim compilation As CSharpCompilation = CSharpCompilation.Create(assemblyName, syntaxTrees:={tree}, CSharpReferences("", New List(Of MetadataReference)))
         Dim CompileResult As EmitResult = Nothing
         Dim CompileSuccess As Boolean = False
@@ -81,7 +84,6 @@ Public Module Compile
                                                                     VisualBasicReferences(Assembly.Load("System.Windows.Forms").Location),
                                                                     options:=CompilationOptions
                                                                                   )
-
         Dim CompileResult As EmitResult = Nothing
         Dim CompileSuccess As Boolean = False
         Using ms As MemoryStream = New MemoryStream()

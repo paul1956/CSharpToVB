@@ -58,8 +58,7 @@ Namespace CSharpToVBCodeConverter
                 Throw New ArgumentNullException(NameOf(OptionalReferences))
             End If
 
-            Dim CSharpParseOption As CS.CSharpParseOptions = GetCSharpParseOptions(CSPreprocessorSymbols)
-            Dim Tree As SyntaxTree = ParseCSharpSource(RequestToConvert.SourceCode)
+            Dim Tree As SyntaxTree = ParseCSharpSource(RequestToConvert.SourceCode, CSPreprocessorSymbols)
             Dim CSharpOptions As CS.CSharpCompilationOptions = New CS.CSharpCompilationOptions(
                                                 outputKind:=Nothing,
                                                 reportSuppressedDiagnostics:=False,

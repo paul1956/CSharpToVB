@@ -25,10 +25,6 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             Return MakeVBSafeName(CSNamedTypeString.Substring(i, length).Trim)
         End Function
 
-        Friend Shared Function ConvertCSTupleToVBType(NamedType As INamedTypeSymbol) As VBS.TypeSyntax
-            Return ConvertCSTupleToVBType(NamedType.ToString)
-        End Function
-
         Friend Shared Function ConvertCSTupleToVBType(CSNamedTypeStringIn As String) As VBS.TypeSyntax
             Dim CSNamedTypeString As String = CSNamedTypeStringIn
             Dim IsArray As Boolean = False
@@ -41,7 +37,9 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 IsArray = True
                 CSNamedTypeString = CSNamedTypeString.Substring(0, CSNamedTypeString.Length - 2).Trim
             End If
-            CSNamedTypeString = CSNamedTypeString.Substring(1, CSNamedTypeString.Length - 2).Trim
+            If CSNamedTypeString.StartsWith("(", StringComparison.InvariantCultureIgnoreCase) AndAlso CSNamedTypeString.EndsWith(")", StringComparison.InvariantCultureIgnoreCase) Then
+                CSNamedTypeString = CSNamedTypeString.Substring(1, CSNamedTypeString.Length - 2).Trim
+            End If
 
             Dim ElementList As List(Of String) = ConvertTupleToVBTypeStrings(CSNamedTypeString, IncludeName:=True)
             Dim builder As New StringBuilder
@@ -63,12 +61,6 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             Return VBFactory.NamedTupleElement(VBFactory.Identifier(MakeVBSafeName(TupleElement.Name)), AsClause)
         End Function
 
-        ''' <summary>
-        ''' Returns converted Tuple Types WITHOUT names
-        ''' </summary>
-        ''' <param name="CSNamedTypeString"></param>
-        ''' <param name="IncludeName"> With variable names</param>
-        ''' <returns>List of Tuple Element Types</returns>
         Friend Shared Function ConvertTupleToVBTypeStrings(CSNamedTypeString As String, IncludeName As Boolean) As List(Of String)
             Dim currentChar As String
             Dim openLT As Integer

@@ -432,7 +432,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 NewLeadingTrivia.Clear()
                 NewLeadingTrivia.AddRange(ConvertTrivia(node.GetLeadingTrivia))
                 OneStatement = OneStatement.WithoutTrivia
-                If Not (TypeOf OneStatement Is VBS.StatementSyntax) Then
+                If Not TypeOf OneStatement Is VBS.StatementSyntax Then
                     Select Case True
                         Case TypeOf OneStatement Is VBS.ObjectCreationExpressionSyntax
                             Dim variable As VBS.VariableDeclaratorSyntax = VBFactory.VariableDeclarator(VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(VBFactory.Identifier(GetUniqueVariableNameInScope(node, "tempVar", _semanticModel)))), VBFactory.AsNewClause(DirectCast(OneStatement, VBS.NewExpressionSyntax)), initializer:=Nothing)

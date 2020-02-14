@@ -411,6 +411,7 @@ Namespace CSharpToVBCodeConverter.Util
         <Extension>
         Friend Function WithModifiedNodeTrivia(Of T As VB.VisualBasicSyntaxNode)(Node As T, SeparatorFollows As Boolean) As T
             Dim AfterFirstTrivia As Boolean = False
+            Dim AfterEOL As Boolean = False
             Dim AfterLineContinuation As Boolean = False
             Dim AfterWhiteSpace As Boolean = False
             Dim FinalLeadingTriviaList As New List(Of SyntaxTrivia)
@@ -433,6 +434,7 @@ Namespace CSharpToVBCodeConverter.Util
                             End If
                         End If
                         AfterFirstTrivia = True
+                        AfterEOL = False
                         AfterWhiteSpace = True
                         FinalLeadingTriviaList.Add(Trivia)
                     Case VB.SyntaxKind.EndOfLineTrivia
@@ -449,24 +451,27 @@ Namespace CSharpToVBCodeConverter.Util
                         Else
                             AfterLineContinuation = False
                         End If
+                        AfterEOL = True
                     Case VB.SyntaxKind.CommentTrivia
                         AfterFirstTrivia = True
-                        If Not AfterLineContinuation Then
+                        If Not AfterLineContinuation OrElse AfterEOL Then
                             If Not AfterWhiteSpace Then
                                 FinalLeadingTriviaList.Add(SpaceTrivia)
                             End If
                             FinalLeadingTriviaList.Add(LineContinuation)
-                            AfterLineContinuation = True
+                            AfterLineContinuation = False
                         End If
                         FinalLeadingTriviaList.Add(Trivia)
                         If Not NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
                             FinalLeadingTriviaList.Add(VBEOLTrivia)
+                            AfterEOL = True
                         End If
                     Case VB.SyntaxKind.DisableWarningDirectiveTrivia, VB.SyntaxKind.EnableWarningDirectiveTrivia,
                          VB.SyntaxKind.IfDirectiveTrivia, VB.SyntaxKind.DisabledTextTrivia,
                        VB.SyntaxKind.ElseDirectiveTrivia, VB.SyntaxKind.EndIfDirectiveTrivia
                         FinalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(Trivia))
                         AfterFirstTrivia = True
+                        AfterEOL = False
                         AfterLineContinuation = False
                         If NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) OrElse NextTrivia.IsNone Then
                             Continue For
@@ -476,9 +481,11 @@ Namespace CSharpToVBCodeConverter.Util
                         If Not AfterLineContinuation Then
                             FinalLeadingTriviaList.Add(Trivia)
                         End If
+                        AfterEOL = False
                         AfterLineContinuation = True
                     Case VB.SyntaxKind.RegionDirectiveTrivia, VB.SyntaxKind.EndRegionDirectiveTrivia
                         AfterFirstTrivia = True
+                        AfterEOL = False
                         AfterLineContinuation = False
                         FinalLeadingTriviaList.Add(Trivia)
                         If NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) OrElse NextTrivia.IsNone Then

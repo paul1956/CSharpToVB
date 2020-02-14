@@ -219,6 +219,59 @@ Public Module StatementMarker
 
         Return StatementWithIssues
     End Function
+    Friend Function IsDecedentOfAsyncMethod(node As CS.CSharpSyntaxNode) As Boolean
+        Dim StatementWithIssues As CS.CSharpSyntaxNode = node
+        While StatementWithIssues IsNot Nothing
+            If TypeOf StatementWithIssues Is CSS.MethodDeclarationSyntax Then
+                Dim MethodStatement As CSS.MethodDeclarationSyntax = CType(StatementWithIssues, CSS.MethodDeclarationSyntax)
+                For Each Modifier As SyntaxToken In MethodStatement.Modifiers
+                    If Modifier.IsKind(CS.SyntaxKind.AsyncKeyword) Then
+                        Return True
+                    End If
+                Next
+                Return False
+            End If
+
+            If TypeOf StatementWithIssues Is CSS.FieldDeclarationSyntax Then
+                Return False
+            End If
+
+            If TypeOf StatementWithIssues Is CSS.PropertyDeclarationSyntax Then
+                Return False
+            End If
+
+            If TypeOf StatementWithIssues Is CSS.ClassDeclarationSyntax Then
+                Return False
+            End If
+
+            If TypeOf StatementWithIssues Is CSS.ConversionOperatorDeclarationSyntax Then
+                Return False
+            End If
+
+            If TypeOf StatementWithIssues Is CSS.ConstructorDeclarationSyntax Then
+                Return False
+            End If
+
+            If TypeOf StatementWithIssues Is CSS.EnumDeclarationSyntax Then
+                Exit While
+            End If
+
+            If TypeOf StatementWithIssues Is CSS.StructDeclarationSyntax Then
+                Return False
+            End If
+
+            If TypeOf StatementWithIssues Is CSS.UsingDirectiveSyntax Then
+                Return False
+            End If
+
+            StatementWithIssues = CType(StatementWithIssues.Parent, CS.CSharpSyntaxNode)
+        End While
+        If StatementWithIssues Is Nothing Then
+            Throw UnexpectedValue($"Can't find parent 'statement' of {node}")
+        End If
+
+        Return False
+    End Function
 
     Friend Function PrependStatementWithMarkedStatementTrivia(node As CS.CSharpSyntaxNode, Statement As StatementSyntax) As StatementSyntax
         Dim NewNodesList As New SyntaxList(Of StatementSyntax)

@@ -81,7 +81,12 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim TypeSyntax As VB.VisualBasicSyntaxNode = node.ElementType.Accept(Me)
                 If TypeOf TypeSyntax Is VBS.ArrayTypeSyntax Then
                     Dim ArrayType As VBS.ArrayTypeSyntax = DirectCast(TypeSyntax, VBS.ArrayTypeSyntax)
-                    Dim NullableType As VBS.NullableTypeSyntax = VBFactory.NullableType(DirectCast(TypeSyntax, VBS.ArrayTypeSyntax).ElementType)
+                    Dim elementType As VBS.TypeSyntax = ArrayType.ElementType
+                    Dim ElementTypeStr As String = elementType.ToString
+                    If ElementTypeStr.EndsWith("?"c) Then
+                        elementType = VBFactory.ParseTypeName(ElementTypeStr.TrimEnd("?"c))
+                    End If
+                    Dim NullableType As VBS.NullableTypeSyntax = VBFactory.NullableType(elementType)
                     Return VBFactory.ArrayType(NullableType, ArrayType.RankSpecifiers).WithConvertedTriviaFrom(node)
                 End If
                 Return VBFactory.NullableType(DirectCast(TypeSyntax, VBS.TypeSyntax)).WithConvertedTriviaFrom(node)
