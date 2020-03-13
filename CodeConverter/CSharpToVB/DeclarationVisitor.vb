@@ -467,7 +467,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             Public Overrides Function VisitFieldDeclaration(node As CSS.FieldDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim _TypeInfo As TypeInfo = ModelExtensions.GetTypeInfo(_mSemanticModel, node.Declaration.Type)
                 Dim variableOrConstOrReadonly As TokenContext = TokenContext.VariableOrConst
-                If _TypeInfo.ConvertedType IsNot Nothing AndAlso _TypeInfo.ConvertedType.TypeKind = TypeKind.Class Then
+                If _TypeInfo.ConvertedType IsNot Nothing AndAlso _TypeInfo.ConvertedType.TypeKind = Microsoft.CodeAnalysis.TypeKind.Class Then
                     For i As Integer = 0 To node.Declaration.Variables.Count - 1
                         Dim v As CSS.VariableDeclaratorSyntax = node.Declaration.Variables(i)
                         If v.Initializer IsNot Nothing AndAlso v.Initializer.Value.IsKind(CS.SyntaxKind.NullLiteralExpression) Then

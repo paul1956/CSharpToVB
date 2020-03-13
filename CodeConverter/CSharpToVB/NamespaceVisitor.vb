@@ -54,7 +54,7 @@ End Function
                         Dim interfaceSymbolInfo As SymbolInfo = model.GetSymbolInfo(interfaceNode, CancelToken)
                         If interfaceSymbolInfo.CandidateReason <> CandidateReason.WrongArity Then
                             Dim interfaceType As INamedTypeSymbol = TryCast(interfaceSymbolInfo.GetAnySymbol(), INamedTypeSymbol)
-                            If interfaceType IsNot Nothing AndAlso interfaceType.TypeKind = TypeKind.Interface Then
+                            If interfaceType IsNot Nothing AndAlso interfaceType.TypeKind = Microsoft.CodeAnalysis.TypeKind.Interface Then
                                 classOrStructDecl = TryCast(interfaceNode.Parent.Parent.Parent, CSS.TypeDeclarationSyntax)
                                 classOrStructType = TryCast(model.GetDeclaredSymbol(classOrStructDecl, CancelToken), INamedTypeSymbol)
                                 interfaceTypes = SpecializedCollection.SingletonEnumerable(interfaceType)

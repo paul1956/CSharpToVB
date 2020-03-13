@@ -83,7 +83,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     Dim ArrayType As VBS.ArrayTypeSyntax = DirectCast(TypeSyntax, VBS.ArrayTypeSyntax)
                     Dim elementType As VBS.TypeSyntax = ArrayType.ElementType
                     Dim ElementTypeStr As String = elementType.ToString
-                    If ElementTypeStr.EndsWith("?"c) Then
+                    If ElementTypeStr.EndsWith("?"c, StringComparison.InvariantCultureIgnoreCase) Then
                         elementType = VBFactory.ParseTypeName(ElementTypeStr.TrimEnd("?"c))
                     End If
                     Dim NullableType As VBS.NullableTypeSyntax = VBFactory.NullableType(elementType)

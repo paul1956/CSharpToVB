@@ -561,7 +561,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             Public Shared Function GetElementType(_ITypeSymbol As ITypeSymbol) As VBS.TypeSyntax
                 Dim _TypeSyntax As VBS.TypeSyntax = ConvertToType(_ITypeSymbol)
                 If _TypeSyntax.IsKind(VB.SyntaxKind.ArrayType) Then
-                    If DirectCast(_ITypeSymbol, IArrayTypeSymbol).ElementType.TypeKind = TypeKind.Array Then
+                    If DirectCast(_ITypeSymbol, IArrayTypeSymbol).ElementType.TypeKind = Microsoft.CodeAnalysis.TypeKind.Array Then
                         Return _TypeSyntax.NormalizeWhitespace
                     End If
                     Return DirectCast(_TypeSyntax, VBS.ArrayTypeSyntax).ElementType.NormalizeWhitespace
