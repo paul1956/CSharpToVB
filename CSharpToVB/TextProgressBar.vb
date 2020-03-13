@@ -1,9 +1,7 @@
 ﻿Imports System.Drawing.Drawing2D
 Imports System.Threading
-Imports ManageProgressBar
 
 Public Class TextProgressBar
-    Implements ITextProgressBar
     Implements IProgress(Of ProgressReport)
 
     Private ReadOnly _defaultFont As Font = New Font("Segoe UI", 8, FontStyle.Bold)
@@ -26,14 +24,14 @@ Public Class TextProgressBar
         End Using
     End Sub
 
-    Public Sub Clear() Implements ITextProgressBar.Clear
+    Public Sub Clear()
         With _progressBar
             .Value = 0
             .Visible = False
         End With
     End Sub
 
-    Public Sub Maximum(Value As Integer) Implements ITextProgressBar.Maximum
+    Public Sub Maximum(Value As Integer)
         With _progressBar
             .Visible = True
             .Maximum = Value
@@ -44,7 +42,7 @@ Public Class TextProgressBar
     ''' Advances the current position of the underlying Progress Bar by the specified amount.
     ''' </summary>
     ''' <param name="Value">The amount by which to increment the underlying progress bar's current position.</param>
-    Public Sub Increment(Value As Integer) Implements ITextProgressBar.Increment
+    Public Sub Increment(Value As Integer)
         With _progressBar
             .Increment(Value)
             pbPrecentage(_progressBar, $"{ .Value:N0} of { .Maximum:N0}")
