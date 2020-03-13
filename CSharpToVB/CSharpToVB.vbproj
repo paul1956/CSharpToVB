@@ -65,10 +65,10 @@
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="3.4.0" />
     <PackageReference Include="NuGet.Frameworks" Version="5.4.0" />
     <PackageReference Include="PInvoke.Windows.Core" Version="0.6.6" />
+    <PackageReference Include="VBMsgBox" Version="1.0.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CodeConverter\CodeConverter.vbproj" />
-    <ProjectReference Include="..\ManageProgressBar\ManageProgressBar.vbproj" />
   </ItemGroup>
 
   <ItemGroup>

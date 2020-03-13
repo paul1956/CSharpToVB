@@ -11,8 +11,6 @@ Imports CSharpToVBCodeConverter.Util
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Simplification
 
-Imports VBMsgBox
-
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
@@ -1250,7 +1248,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                                     )
                     Return binaryExpressionSyntax3
                 Catch ex As InsufficientExecutionStackException
-                    MsgBox(ex.Message, MsgBoxStyle.Critical, "Stack Overflow")
+                    _reportException?.Invoke(ex)
                     Return Nothing
                 Catch ex As OperationCanceledException
                     Throw
@@ -1666,13 +1664,13 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     Dim ReportProgress As Boolean = ExpressionLastIndex > 500
 
                     If ReportProgress Then
-                        s_originalRequest.ProgressBar?.Maximum(ExpressionLastIndex + 1)
+                        s_originalRequest.Progress?.Report(New ProgressReport(0, node.Expressions.Count))
                     End If
                     ' Figuring out this without using Accept is complicated below is safe but not fast
                     Dim ItemIsField As Boolean = node.Expressions.Any AndAlso TypeOf node.Expressions(0).Accept(Me) Is VBS.FieldInitializerSyntax
                     For i As Integer = 0 To ExpressionLastIndex
                         If ReportProgress Then
-                            s_originalRequest.ProgressBar?.Increment(1)
+                            s_originalRequest.Progress?.Report(New ProgressReport(i + 1, node.Expressions.Count))
                         End If
                         Application.DoEvents()
 

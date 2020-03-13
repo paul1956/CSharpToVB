@@ -48,7 +48,6 @@
   <ItemGroup>
     <ProjectReference Include="..\CodeConverter\CodeConverter.vbproj" />
     <ProjectReference Include="..\CSharpToVB\CSharpToVB.vbproj" />
-    <ProjectReference Include="..\ManageProgressBar\ManageProgressBar.vbproj" />
   </ItemGroup>
 
   <ItemGroup>

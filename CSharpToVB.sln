@@ -18,8 +18,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HashLibrary", "HashLibrary\
 EndProject
 Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "CSharpToVB.Tests", "CSharpToVB.Tests\CSharpToVB.Tests.vbproj", "{93A45B05-179A-4EA7-AE67-60B8C71F38A4}"
 EndProject
-Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "ManageProgressBar", "ManageProgressBar\ManageProgressBar.vbproj", "{EB03AF11-3C02-4CC3-AA64-977E8CE31879}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,10 +40,6 @@ Global
 		{93A45B05-179A-4EA7-AE67-60B8C71F38A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{93A45B05-179A-4EA7-AE67-60B8C71F38A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{93A45B05-179A-4EA7-AE67-60B8C71F38A4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EB03AF11-3C02-4CC3-AA64-977E8CE31879}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EB03AF11-3C02-4CC3-AA64-977E8CE31879}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EB03AF11-3C02-4CC3-AA64-977E8CE31879}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EB03AF11-3C02-4CC3-AA64-977E8CE31879}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

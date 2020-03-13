@@ -17,8 +17,6 @@ Imports CSharpToVBCodeConverter
 Imports CSharpToVBCodeConverter.ConversionResult
 Imports CSharpToVBCodeConverter.Util
 
-Imports ManageProgressBar
-
 Imports Microsoft.Build.Locator
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Emit
@@ -506,7 +504,7 @@ Public Class Form1
     End Sub
 
     Private Function Convert_Compile_Colorize(RequestToConvert As ConvertRequest, CSPreprocessorSymbols As List(Of String), VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)), OptionalReferences() As MetadataReference, CancelToken As CancellationToken) As Boolean
-        _resultOfConversion = ConvertInputRequest(RequestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences:=OptionalReferences, mProgressBar:=New TextProgressBar(ConversionProgressBar), CancelToken:=CancelToken)
+        _resultOfConversion = ConvertInputRequest(RequestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences:=OptionalReferences, AddressOf ReportException, mProgress:=New TextProgressBar(ConversionProgressBar), CancelToken:=CancelToken)
         mnuFileSaveAs.Enabled = Me._resultOfConversion.ResultStatus = ResultTriState.Success
         Select Case _resultOfConversion.ResultStatus
             Case ResultTriState.Success
@@ -525,6 +523,10 @@ Public Class Form1
         End Select
         Return _resultOfConversion.ResultStatus <> ResultTriState.Failure
     End Function
+
+    Private Sub ReportException(Exception As Exception)
+        MsgBox(Exception.Message, MsgBoxStyle.Critical, "Stack Overflow")
+    End Sub
 
     ''' <summary>
     ''' Look in SearchBuffer for text and highlight it
