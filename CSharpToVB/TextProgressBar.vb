@@ -4,6 +4,7 @@ Imports ManageProgressBar
 
 Public Class TextProgressBar
     Implements ITextProgressBar
+    Implements IProgress(Of ProgressReport)
 
     Private ReadOnly _defaultFont As Font = New Font("Segoe UI", 8, FontStyle.Bold)
     Private ReadOnly _progressBar As ToolStripProgressBar
@@ -52,6 +53,16 @@ Public Class TextProgressBar
                 .Visible = False
             End If
         End With
+    End Sub
+
+    Public Sub Report(value As ProgressReport) Implements IProgress(Of ProgressReport).Report
+        With _progressBar
+            .Visible = value.Maximum = 0 OrElse value.Current < value.Maximum
+            .Maximum = value.Maximum
+            .Value = value.Current
+        End With
+
+        pbPrecentage(_progressBar, $"{value.Current:N0} of {value.Maximum:N0}")
     End Sub
 
 End Class

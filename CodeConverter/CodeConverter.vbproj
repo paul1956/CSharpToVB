@@ -35,6 +35,5 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\HashLibrary\HashLibrary.csproj" />
-    <ProjectReference Include="..\ManageProgressBar\ManageProgressBar.vbproj" />
   </ItemGroup>
 </Project>

@@ -504,7 +504,7 @@ Public Class Form1
     End Sub
 
     Private Function Convert_Compile_Colorize(RequestToConvert As ConvertRequest, CSPreprocessorSymbols As List(Of String), VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)), OptionalReferences() As MetadataReference, CancelToken As CancellationToken) As Boolean
-        _resultOfConversion = ConvertInputRequest(RequestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences:=OptionalReferences, AddressOf ReportException, mProgressBar:=New TextProgressBar(ConversionProgressBar), CancelToken:=CancelToken)
+        _resultOfConversion = ConvertInputRequest(RequestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences:=OptionalReferences, AddressOf ReportException, mProgress:=New TextProgressBar(ConversionProgressBar), CancelToken:=CancelToken)
         mnuFileSaveAs.Enabled = Me._resultOfConversion.ResultStatus = ResultTriState.Success
         Select Case _resultOfConversion.ResultStatus
             Case ResultTriState.Success
