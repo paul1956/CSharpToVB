@@ -37,7 +37,7 @@ Namespace CSharpToVBCodeConverter
             Throw New ArgumentException($"{language} not supported!")
         End Function
 
-        Public Function ConvertInputRequest(RequestToConvert As ConvertRequest, CSPreprocessorSymbols As List(Of String), VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)), OptionalReferences() As MetadataReference, ReportException As Action(Of Exception), mProgressBar As TextProgressBar, CancelToken As CancellationToken) As ConversionResult
+        Public Function ConvertInputRequest(RequestToConvert As ConvertRequest, CSPreprocessorSymbols As List(Of String), VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)), OptionalReferences() As MetadataReference, ReportException As Action(Of Exception), mProgressBar As ITextProgressBar, CancelToken As CancellationToken) As ConversionResult
             If RequestToConvert Is Nothing Then
                 Throw New ArgumentNullException(NameOf(RequestToConvert))
             End If

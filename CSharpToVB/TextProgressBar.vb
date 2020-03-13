@@ -1,7 +1,6 @@
-﻿Imports System.Drawing
-Imports System.Drawing.Drawing2D
+﻿Imports System.Drawing.Drawing2D
 Imports System.Threading
-Imports System.Windows.Forms
+Imports ManageProgressBar
 
 Public Class TextProgressBar
     Implements ITextProgressBar

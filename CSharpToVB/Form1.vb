@@ -17,8 +17,6 @@ Imports CSharpToVBCodeConverter
 Imports CSharpToVBCodeConverter.ConversionResult
 Imports CSharpToVBCodeConverter.Util
 
-Imports ManageProgressBar
-
 Imports Microsoft.Build.Locator
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Emit
