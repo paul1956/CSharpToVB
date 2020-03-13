@@ -34,9 +34,11 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             Private _placeholder As Integer = 1
             Public ReadOnly _allImports As List(Of VBS.ImportsStatementSyntax) = New List(Of VBS.ImportsStatementSyntax)()
             Public ReadOnly _inlineAssignHelperMarkers As List(Of BaseTypeDeclarationSyntax) = New List(Of BaseTypeDeclarationSyntax)()
+            Private ReadOnly _reportException As Action(Of Exception)
 
-            Public Sub New(lSemanticModel As SemanticModel)
+            Public Sub New(lSemanticModel As SemanticModel, ReportException As Action(Of Exception))
                 _mSemanticModel = lSemanticModel
+                _reportException = ReportException
             End Sub
 
             Public ReadOnly Property IsModule As Boolean

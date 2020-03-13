@@ -11,8 +11,6 @@ Imports CSharpToVBCodeConverter.Util
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Simplification
 
-Imports VBMsgBox
-
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
@@ -1250,7 +1248,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                                     )
                     Return binaryExpressionSyntax3
                 Catch ex As InsufficientExecutionStackException
-                    MsgBox(ex.Message, MsgBoxStyle.Critical, "Stack Overflow")
+                    _reportException?.Invoke(ex)
                     Return Nothing
                 Catch ex As OperationCanceledException
                     Throw
