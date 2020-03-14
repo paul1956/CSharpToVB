@@ -504,8 +504,14 @@ Public Class Form1
     End Sub
 
     Private Function Convert_Compile_Colorize(RequestToConvert As ConvertRequest, CSPreprocessorSymbols As List(Of String), VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)), OptionalReferences() As MetadataReference, CancelToken As CancellationToken) As Boolean
-        Using mProgress As TextProgressBar = New TextProgressBar(ConversionProgressBar)
-            _resultOfConversion = ConvertInputRequest(RequestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences, AddressOf ReportException, mProgress, CancelToken)
+        Using ProgressBar As TextProgressBar = New TextProgressBar(ConversionProgressBar)
+            ' The System.Progress class invokes the callback on the UI thread. It does this because we create the
+            ' System.Progress object on the main thread. During creation, it reads SynchronizationContext.Current so
+            ' that it knows how to get back to the main thread to invoke the callback there no matter what thread calls
+            ' IProgress.Report.
+            Dim progress As New Progress(Of ProgressReport)(AddressOf ProgressBar.Report)
+
+            _resultOfConversion = ConvertInputRequest(RequestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences, AddressOf ReportException, progress, CancelToken)
         End Using
         mnuFileSaveAs.Enabled = Me._resultOfConversion.ResultStatus = ResultTriState.Success
         Select Case _resultOfConversion.ResultStatus
