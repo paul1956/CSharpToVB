@@ -51,6 +51,10 @@ Public Class VSSelectorDialog
             InstanceTable.Rows.Add(rowToAdd)
         Next
         DataGridView1.DataSource = InstanceTable
+        If InstanceTable.Rows.Count = 0 Then
+            DialogResult = DialogResult.None
+            Close()
+        End If
         If InstanceTable.Rows.Count = 1 Then
             _instance = _visualStudioInstances(BestIndex)
             DialogResult = DialogResult.OK

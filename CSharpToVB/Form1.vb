@@ -972,15 +972,19 @@ Public Class Form1
                 mnuConvertConvertFolder.Enabled = True
                 If MSBuildInstance Is Nothing Then
                     Dim VS_Selector As New VSSelectorDialog
-                    If VS_Selector.ShowDialog(Me) <> DialogResult.OK Then
+                    Dim dialogResult1 As DialogResult = VS_Selector.ShowDialog(Me)
+                    If dialogResult1 = DialogResult.OK Then
+                        Console.WriteLine($"Using MSBuild at '{VS_Selector.MSBuildInstance.MSBuildPath}' to load projects.")
+                        ' NOTE: Be sure to register an instance with the MSBuildLocator
+                        '       before calling MSBuildWorkspace.Create()
+                        '       otherwise, MSBuildWorkspace won't MEF compose.
+                        MSBuildInstance = VS_Selector.MSBuildInstance
+                        MSBuildLocator.RegisterInstance(MSBuildInstance)
+                    ElseIf dialogResult1 = DialogResult.None Then
+                        MSBuildLocator.RegisterDefaults()
+                    Else
                         Stop
                     End If
-                    Console.WriteLine($"Using MSBuild at '{VS_Selector.MSBuildInstance.MSBuildPath}' to load projects.")
-                    ' NOTE: Be sure to register an instance with the MSBuildLocator
-                    '       before calling MSBuildWorkspace.Create()
-                    '       otherwise, MSBuildWorkspace won't MEF compose.
-                    MSBuildInstance = VS_Selector.MSBuildInstance
-                    MSBuildLocator.RegisterInstance(MSBuildInstance)
                     VS_Selector.Dispose()
                 End If
 
