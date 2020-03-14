@@ -504,9 +504,9 @@ Public Class Form1
     End Sub
 
     Private Function Convert_Compile_Colorize(RequestToConvert As ConvertRequest, CSPreprocessorSymbols As List(Of String), VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)), OptionalReferences() As MetadataReference, CancelToken As CancellationToken) As Boolean
-        Dim mProgress As TextProgressBar = New TextProgressBar(ConversionProgressBar)
-        _resultOfConversion = ConvertInputRequest(RequestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences, AddressOf ReportException, mProgress, CancelToken)
-        mProgress.Dispose()
+        Using mProgress As TextProgressBar = New TextProgressBar(ConversionProgressBar)
+            _resultOfConversion = ConvertInputRequest(RequestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences, AddressOf ReportException, mProgress, CancelToken)
+        End Using
         mnuFileSaveAs.Enabled = Me._resultOfConversion.ResultStatus = ResultTriState.Success
         Select Case _resultOfConversion.ResultStatus
             Case ResultTriState.Success
