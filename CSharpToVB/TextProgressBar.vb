@@ -57,7 +57,7 @@ Public Class TextProgressBar
         End With
     End Sub
 
-    Public Sub Report(value As ProgressReport)
+    Public Sub Update(value As ProgressReport)
         With _progressBar
             .Visible = value.Maximum = 0 OrElse value.Current < value.Maximum
             .Maximum = value.Maximum
