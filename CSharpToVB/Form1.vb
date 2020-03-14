@@ -503,7 +503,7 @@ Public Class Form1
         CType(ContextMenuStrip1.SourceControl, RichTextBox).Paste()
     End Sub
 
-    Private Function Convert_Compile_Colorize(RequestToConvert As ConvertRequest, CSPreprocessorSymbols As List(Of String), VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)), OptionalReferences() As MetadataReference, CancelToken As CancellationToken) As Boolean
+    Private Async Function Convert_Compile_ColorizeAsync(RequestToConvert As ConvertRequest, CSPreprocessorSymbols As List(Of String), VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)), OptionalReferences() As MetadataReference, CancelToken As CancellationToken) As Task(Of Boolean)
         Dim UIContext As SynchronizationContext = SynchronizationContext.Current
 
         Dim ReportException As Action(Of Exception) =
@@ -519,7 +519,7 @@ Public Class Form1
             ' IProgress.Report.
             Dim progress As New Progress(Of ProgressReport)(AddressOf ProgressBar.Update)
 
-            _resultOfConversion = ConvertInputRequest(RequestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences, ReportException, progress, CancelToken)
+            _resultOfConversion = Await Task.Run(Function() ConvertInputRequest(RequestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences, ReportException, progress, CancelToken)).ConfigureAwait(True)
         End Using
         mnuFileSaveAs.Enabled = Me._resultOfConversion.ResultStatus = ResultTriState.Success
         Select Case _resultOfConversion.ResultStatus
@@ -790,7 +790,7 @@ Public Class Form1
         mnuConvertConvertSnippet.Enabled = RichTextBoxConversionInput.TextLength > 0
     End Sub
 
-    Private Sub mnuConvertConvertSnippet_Click(sender As Object, e As EventArgs) Handles mnuConvertConvertSnippet.Click
+    Private Async Sub mnuConvertConvertSnippet_Click(sender As Object, e As EventArgs) Handles mnuConvertConvertSnippet.Click
         SetButtonStopAndCursor(MeForm:=Me, StopButton:=ButtonStopConversion, StopButtonVisible:=True)
         RichTextBoxErrorList.Text = ""
         RichTextBoxFileList.Text = ""
@@ -810,7 +810,7 @@ Public Class Form1
         Dim VBPreprocessorSymbols As New List(Of KeyValuePair(Of String, Object)) From {
             KeyValuePair.Create(Of String, Object)(My.Settings.Framework, True)
         }
-        Convert_Compile_Colorize(_requestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences:=CSharpReferences(Assembly.Load("System.Windows.Forms").Location, Nothing).ToArray, CancelToken:=_cancellationTokenSource.Token)
+        Await Convert_Compile_ColorizeAsync(_requestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences:=CSharpReferences(Assembly.Load("System.Windows.Forms").Location, Nothing).ToArray, CancelToken:=_cancellationTokenSource.Token).ConfigureAwait(True)
         If _requestToConvert.CancelToken.IsCancellationRequested Then
             MsgBox($"Conversion canceled.", MsgBoxStyle.Information, Title:="C# to VB")
             ConversionProgressBar.Value = 0
@@ -820,7 +820,7 @@ Public Class Form1
         LineNumbers_For_RichTextBoxOutput.Visible = True
     End Sub
 
-    Private Sub mnuConvertFolder_Click(sender As Object, e As EventArgs) Handles mnuConvertConvertFolder.Click
+    Private Async Sub mnuConvertFolder_Click(sender As Object, e As EventArgs) Handles mnuConvertConvertFolder.Click
         LineNumbers_For_RichTextBoxInput.Visible = False
         LineNumbers_For_RichTextBoxOutput.Visible = False
         Dim SourceFolderName As String
@@ -852,13 +852,13 @@ Public Class Form1
             Dim stopwatch As New Stopwatch()
             ' Begin timing
             stopwatch.Start()
-            If ProcessAllFiles(SourceFolderName,
+            If Await ProcessAllFilesAsync(SourceFolderName,
                                 ProjectSavePath,
                                 LastFileNameWithPath,
                                 "cs",
                                 FilesProcessed,
                                 _cancellationTokenSource.Token
-                                ) Then
+                                ).ConfigureAwait(True) Then
                 stopwatch.Stop()
                 If _cancellationTokenSource.Token.IsCancellationRequested Then
                     MsgBox($"Conversion canceled, {FilesProcessed} files completed successfully.", Title:="C# to VB")
@@ -918,7 +918,7 @@ Public Class Form1
         End
     End Sub
 
-    Private Sub mnuFileLastFolder_Click(sender As Object, e As EventArgs) Handles mnuFileLastFolder.Click
+    Private Async Sub mnuFileLastFolder_Click(sender As Object, e As EventArgs) Handles mnuFileLastFolder.Click
         Dim FolderName As String = CType(sender, ToolStripMenuItem).Text
         If Directory.Exists(FolderName) Then
             Dim SourceLanguageExtension As String = "cs"
@@ -930,7 +930,7 @@ Public Class Form1
                 _cancellationTokenSource.Dispose()
             End If
             _cancellationTokenSource = New CancellationTokenSource
-            If ProcessAllFiles(FolderName, ProjectSavePath, LastFileNameWithPath, SourceLanguageExtension, FilesProcessed, _cancellationTokenSource.Token) Then
+            If Await ProcessAllFilesAsync(FolderName, ProjectSavePath, LastFileNameWithPath, SourceLanguageExtension, FilesProcessed, _cancellationTokenSource.Token).ConfigureAwait(True) Then
                 MsgBox($"Conversion completed.")
             End If
         Else
@@ -960,7 +960,7 @@ Public Class Form1
         End With
     End Sub
 
-    Private Sub mnuFileOpenProject_Click(sender As Object, e As EventArgs) Handles mnuFileOpenProject.Click
+    Private Async Sub mnuFileOpenProject_Click(sender As Object, e As EventArgs) Handles mnuFileOpenProject.Click
         With OpenFileDialog1
             .AddExtension = True
             .DefaultExt = "cs"
@@ -1037,7 +1037,7 @@ Public Class Form1
                                 Application.DoEvents()
                             End If
                             Dim TargetLanguageExtension As String = If("cs" = "cs", "vb", "cs")
-                            If Not ProcessFile(document.FilePath, ConvertSourceFileToDestinationFile(Path.GetDirectoryName(.FileName), ProjectSavePath, document), "cs", CSPreprocessorSymbols, VBPreprocessorSymbols, References, _cancellationTokenSource.Token) _
+                            If Not Await ProcessFileAsync(document.FilePath, ConvertSourceFileToDestinationFile(Path.GetDirectoryName(.FileName), ProjectSavePath, document), "cs", CSPreprocessorSymbols, VBPreprocessorSymbols, References, _cancellationTokenSource.Token).ConfigureAwait(True) _
                                 OrElse _requestToConvert.CancelToken.IsCancellationRequested Then
                                 Exit For
                             End If
@@ -1302,14 +1302,14 @@ Public Class Form1
     ''' False if error and user wants to stop, True if success or user wants to ignore error
     ''' </returns>
     <SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification:="Prevent Crash on Exit")>
-    Private Function ProcessAllFiles(SourceDirectory As String, TargetDirectory As String, LastFileNameWithPath As String, SourceLanguageExtension As String, ByRef FilesProcessed As Long, CancelToken As CancellationToken) As Boolean
+    Private Async Function ProcessAllFilesAsync(SourceDirectory As String, TargetDirectory As String, LastFileNameWithPath As String, SourceLanguageExtension As String, ByRef FilesProcessed As Long, CancelToken As CancellationToken) As Task(Of Boolean)
         Try
             RichTextBoxErrorList.Text = ""
             RichTextBoxFileList.Text = ""
             SetButtonStopAndCursor(Me, ButtonStopConversion, StopButtonVisible:=True)
             Dim TotalFilesToProcess As Long = GetFileCount(SourceDirectory, SourceLanguageExtension, My.Settings.SkipBinAndObjFolders, My.Settings.SkipTestResourceFiles)
             ' Process the list of files found in the directory.
-            Return ProcessDirectory(SourceDirectory, TargetDirectory, MeForm:=Me, ButtonStopConversion, RichTextBoxFileList, LastFileNameWithPath, SourceLanguageExtension, FilesProcessed, TotalFilesToProcess, AddressOf ProcessFile, CancelToken)
+            Return Await ProcessDirectoryAsync(SourceDirectory, TargetDirectory, MeForm:=Me, ButtonStopConversion, RichTextBoxFileList, LastFileNameWithPath, SourceLanguageExtension, FilesProcessed, TotalFilesToProcess, AddressOf ProcessFileAsync, CancelToken).ConfigureAwait(True)
         Catch ex As OperationCanceledException
             ConversionProgressBar.Value = 0
         Catch ex As Exception
@@ -1329,7 +1329,7 @@ Public Class Form1
     ''' <param name="TargetDirectory">Complete path up to File to be converted</param>
     ''' <param name="SourceLanguageExtension">vb or cs</param>
     ''' <returns>False if error and user wants to stop, True if success or user wants to ignore error.</returns>
-    Private Function ProcessFile(SourceFileNameWithPath As String, TargetDirectory As String, SourceLanguageExtension As String, CSPreprocessorSymbols As List(Of String), VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)), OptionalReferences() As MetadataReference, CancelToken As CancellationToken) As Boolean
+    Private Async Function ProcessFileAsync(SourceFileNameWithPath As String, TargetDirectory As String, SourceLanguageExtension As String, CSPreprocessorSymbols As List(Of String), VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)), OptionalReferences() As MetadataReference, CancelToken As CancellationToken) As Task(Of Boolean)
         If My.Settings.IgnoreFileList.Contains(SourceFileNameWithPath) Then
             Return True
         End If
@@ -1342,7 +1342,7 @@ Public Class Form1
             _requestToConvert = New ConvertRequest(My.Settings.SkipAutoGenerated, New Progress(Of ProgressReport)(AddressOf New TextProgressBar(ConversionProgressBar).Update), _cancellationTokenSource.Token) With {
                 .SourceCode = RichTextBoxConversionInput.Text
             }
-            If Not Convert_Compile_Colorize(_requestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences:=OptionalReferences, CancelToken:=CancelToken) Then
+            If Not Await Convert_Compile_ColorizeAsync(_requestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences:=OptionalReferences, CancelToken:=CancelToken).ConfigureAwait(True) Then
                 If _requestToConvert.CancelToken.IsCancellationRequested Then
                     ConversionProgressBar.Value = 0
                     Return False
