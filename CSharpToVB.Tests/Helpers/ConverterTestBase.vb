@@ -30,7 +30,7 @@ Namespace CodeConverter.Tests
             Dim documentId As DocumentId = DocumentId.CreateNewId(projectId)
             If parseOptions Is Nothing Then
                 parseOptions = New CSharpParseOptions(
-                    languageVersion:=CSharp.LanguageVersion.CSharp6,
+                    languageVersion:=CSharp.LanguageVersion.Default,
                     documentationMode:=DocumentationMode.Diagnose Or DocumentationMode.Parse,
                     kind:=SourceCodeKind.Regular,
                     preprocessorSymbols:=ImmutableArray.Create("DEBUG", "TEST")

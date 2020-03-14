@@ -37,8 +37,6 @@ Public Class Form1
     ' Protect the user from himself If they are overriding our app model.
     Private _didSplashScreen As Boolean
 
-    Private _footerLines As Integer = 0
-
     'For splash screens with a minimum display time, this let's us know when that time has expired and it is ok to close the splash screen.
     Private _ok2CloseSplashScreen As Boolean
 
@@ -178,6 +176,13 @@ Public Class Form1
                 SplashThread.Start()
             End If
         End If
+    End Sub
+
+    Shared Sub main()
+        Application.EnableVisualStyles()
+        Dim mainForm As New Form1()
+        Application.Run(mainForm)
+        mainForm.Dispose()
     End Sub
 
 #End If
@@ -1236,7 +1241,7 @@ Public Class Form1
 
     ' Print message for WorkspaceFailed event to help diagnosing project load failures.
     Private Sub MSBuildWorkspaceFailed(_1 As Object, e1 As WorkspaceDiagnosticEventArgs)
-        If MsgBox(e1.Diagnostic.Message, MsgBoxStyle.AbortRetryIgnore, "MSBuild Failed") = MsgBoxResult.Abort Then
+        If MsgBox(e1.Diagnostic.Message, MsgBoxStyle.AbortRetryIgnore, "MSBuild Failed, abort will exit the application") = MsgBoxResult.Abort Then
             End
         End If
     End Sub
@@ -1568,86 +1573,6 @@ Public Class Form1
         End If
         ' display MRU if there are any items to display...
         MRU_Update()
-    End Sub
-
-    Private Sub mnuFileLoadTemplate_Click(sender As Object, e As EventArgs) Handles mnuFileLoadTemplate.Click
-        Dim Header As String = $"{My.Settings.BoilerPlateHeader.Replace(vbCrLf, vbLf, StringComparison.Ordinal)}{vbLf}"
-        RichTextBoxConversionInput.Clear()
-        RichTextBoxConversionInput.Select(0, 0)
-        RichTextBoxConversionInput.Text = Header
-        RichTextBoxConversionInput.Select(0, Header.Length)
-        RichTextBoxConversionInput.SelectionColor = Color.Gray
-        RichTextBoxConversionInput.SelectionProtected = True
-        RichTextBoxConversionInput.Select(RichTextBoxConversionInput.TextLength - 1, 0)
-        RichTextBoxConversionInput.AppendText(vbLf)
-        Dim FooterStart As Integer = Header.Length
-        Dim Footer As String = $"{My.Settings.BoilderPlateFooter.Replace(vbCrLf, vbLf, StringComparison.Ordinal)}{vbLf}"
-        _footerLines = Footer.Count(CChar(vbLf))
-        RichTextBoxConversionInput.AppendText(Footer)
-        RichTextBoxConversionInput.Select(RichTextBoxConversionInput.Text.Length - Footer.Length, Footer.Length)
-        RichTextBoxConversionInput.SelectionColor = Color.Gray
-        RichTextBoxConversionInput.SelectionProtected = True
-        RichTextBoxConversionInput.Select(Header.Length, 0)
-    End Sub
-
-    Private Sub RichTextBoxConversionInput_Click(sender As Object, e As EventArgs) Handles RichTextBoxConversionInput.Click
-        Dim index As Integer = RichTextBoxConversionInput.SelectionStart
-        Dim line As Integer = RichTextBoxConversionInput.GetLineFromCharIndex(index)
-        If _footerLines <> 0 AndAlso line >= RichTextBoxConversionInput.Lines.Length - _footerLines - 1 Then
-            RichTextBoxConversionInput.ReadOnly = True
-        Else
-            RichTextBoxConversionInput.ReadOnly = False
-        End If
-    End Sub
-
-    Private Sub RichTextBoxConversionInput_KeyDown(sender As Object, e As KeyEventArgs) Handles RichTextBoxConversionInput.KeyDown
-        If RichTextBoxConversionInput.SelectionColor = Color.Gray Then
-            Dim KeyValue As Char = ChrW(e.KeyValue)
-            Select Case e.KeyCode
-                Case Keys.D0, Keys.D1, Keys.D2, Keys.D3, Keys.D4, Keys.D5, Keys.D6, Keys.D7,
-                    Keys.D8, Keys.D9, Keys.NumPad0, Keys.NumPad1, Keys.NumPad2, Keys.NumPad3,
-                    Keys.NumPad4, Keys.NumPad5, Keys.NumPad6, Keys.NumPad7, Keys.NumPad8,
-                    Keys.NumPad9, Keys.A, Keys.B, Keys.C, Keys.D, Keys.E, Keys.F, Keys.G,
-                    Keys.H, Keys.I, Keys.J, Keys.K, Keys.L, Keys.M, Keys.N, Keys.O, Keys.P,
-                    Keys.Q, Keys.R, Keys.S, Keys.T, Keys.U, Keys.V, Keys.W, Keys.X, Keys.Y, Keys.Z,
-                    Keys.Return, Keys.OemSemicolon, Keys.Oemplus, Keys.Oemcomma, Keys.OemMinus,
-                    Keys.OemPeriod, Keys.OemQuestion, Keys.Oemtilde, Keys.OemOpenBrackets,
-                    Keys.OemPipe, Keys.OemCloseBrackets, Keys.OemQuotes, Keys.Oem8,
-                    Keys.OemBackslash, Keys.Space, Keys.Delete, Keys.Multiply, Keys.Add,
-                    Keys.Separator, Keys.Subtract, Keys.Decimal, Keys.Divide,
-                    Keys.Shift, Keys.Control, Keys.Alt
-                    e.SuppressKeyPress = True
-                Case Keys.Right, Keys.Left, Keys.Up, Keys.Down,
-                    Keys.KeyCode, Keys.Modifiers, Keys.None, Keys.LButton,
-                    Keys.RButton, Keys.Cancel, Keys.MButton, Keys.XButton1, Keys.XButton2,
-                    Keys.Back, Keys.Tab, Keys.LineFeed, Keys.Clear, Keys.ShiftKey, Keys.ControlKey,
-                    Keys.Menu, Keys.Pause, Keys.Capital, Keys.KanaMode, Keys.JunjaMode,
-                    Keys.FinalMode, Keys.HanjaMode, Keys.Escape, Keys.IMEConvert,
-                    Keys.IMENonconvert, Keys.IMEAccept, Keys.IMEModeChange, Keys.Prior,
-                    Keys.Next, Keys.End, Keys.Home, Keys.Select, Keys.Print,
-                    Keys.Execute, Keys.Snapshot, Keys.Insert, Keys.Help,
-                    Keys.LWin, Keys.RWin, Keys.Apps, Keys.Sleep,
-                    Keys.F1, Keys.F2, Keys.F3, Keys.F4, Keys.F5, Keys.F6, Keys.F7,
-                    Keys.F8, Keys.F9, Keys.F10, Keys.F11, Keys.F12, Keys.F13, Keys.F14,
-                    Keys.F15, Keys.F16, Keys.F17, Keys.F18, Keys.F19, Keys.F20,
-                    Keys.F21, Keys.F22, Keys.F23, Keys.F24,
-                    Keys.NumLock, Keys.Scroll,
-                    Keys.LShiftKey, Keys.RShiftKey, Keys.LControlKey, Keys.RControlKey,
-                    Keys.LMenu, Keys.RMenu,
-                    Keys.BrowserBack, Keys.BrowserForward, Keys.BrowserRefresh, Keys.BrowserStop,
-                    Keys.BrowserSearch, Keys.BrowserFavorites, Keys.BrowserHome,
-                    Keys.VolumeMute, Keys.VolumeDown, Keys.VolumeUp,
-                    Keys.MediaNextTrack, Keys.MediaPreviousTrack, Keys.MediaStop, Keys.MediaPlayPause,
-                    Keys.LaunchMail, Keys.SelectMedia, Keys.LaunchApplication1,
-                    Keys.LaunchApplication2, Keys.ProcessKey, Keys.Packet,
-                    Keys.Attn, Keys.Crsel, Keys.Exsel, Keys.EraseEof, Keys.Play, Keys.Zoom,
-                    Keys.NoName, Keys.Pa1, Keys.OemClear
-                    Exit Select
-                Case Else
-                    Stop
-                    Throw UnreachableException
-            End Select
-        End If
     End Sub
 
 End Class

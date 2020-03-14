@@ -18,7 +18,7 @@ Public Module ParseUtilities
         Return New CS.CSharpParseOptions(
                                         CS.LanguageVersion.Latest,
                                         DocumentationMode.Parse,
-                                        SourceCodeKind.Regular,
+                                        SourceCodeKind.Script,
                                         CSPreprocessorSymbols)
     End Function
 

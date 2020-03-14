@@ -25,7 +25,7 @@
     <ApplicationIcon>Icons\CStoVB.ico</ApplicationIcon>
     <Version>4.1.0.2</Version>
     <Product>CSharp To VB Converter</Product>
-    <Copyright>Copyright © 2020 Travel By Paul</Copyright>
+    <Copyright>Copyright (c) .NET Foundation and Contributors</Copyright>
     <PackageId>CSharp To VB Converter</PackageId>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
