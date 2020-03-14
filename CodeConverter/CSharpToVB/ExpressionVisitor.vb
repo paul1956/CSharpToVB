@@ -31,29 +31,29 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             Private Shared Function GetTypeSyntaxFromInterface(expressionConvertedType As ITypeSymbol) As VBS.TypeSyntax
 
                 If Not expressionConvertedType.AllInterfaces.Any Then
-                    If expressionConvertedType.ToString.EndsWith("IArityEnumerable", StringComparison.InvariantCulture) Then
+                    If expressionConvertedType.ToString.EndsWith("IArityEnumerable", StringComparison.Ordinal) Then
                         Return PredefinedTypeInteger
                     End If
                     Return PredefinedTypeObject
                 End If
                 For Each NamedType As INamedTypeSymbol In expressionConvertedType.AllInterfaces
-                    Dim index As Integer = NamedType.ToString.IndexOf(IEnumerableOf, StringComparison.InvariantCulture)
+                    Dim index As Integer = NamedType.ToString.IndexOf(IEnumerableOf, StringComparison.Ordinal)
                     Dim NewType As String
                     If index > 0 Then
                         NewType = NamedType.ToString.Substring(index + IEnumerableOf.Length)
                         Return VBFactory.ParseName(NewType)
                     End If
-                    index = NamedType.ToString.IndexOf(IDictionary, StringComparison.InvariantCulture)
+                    index = NamedType.ToString.IndexOf(IDictionary, StringComparison.Ordinal)
                     If index > 0 Then
                         Return ConvertToType(NamedType)
                     End If
-                    index = NamedType.ToString.IndexOf(IEnumerable, StringComparison.InvariantCulture)
+                    index = NamedType.ToString.IndexOf(IEnumerable, StringComparison.Ordinal)
                     If index > 0 Then
                         Return ConvertToType(NamedType)
                     End If
                 Next
 
-                Dim index1 As Integer = expressionConvertedType.ToString.IndexOf(IEnumerableOf, StringComparison.InvariantCulture)
+                Dim index1 As Integer = expressionConvertedType.ToString.IndexOf(IEnumerableOf, StringComparison.Ordinal)
                 If index1 > 0 Then
                     Dim NewType As String = expressionConvertedType.ToString.Substring(index1 + IEnumerableOf.Length)
                     Return VBFactory.ParseName(NewType)
@@ -97,7 +97,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim IsFunction As Boolean = Not (symbol.ReturnsVoid OrElse TypeOf node.Body Is CSS.AssignmentExpressionSyntax)
                 Dim Braces As (SyntaxToken, SyntaxToken) = node.Body.GetBraces
                 If IsFunction Then
-                    Dim AddAsClause As Boolean = symbol.ReturnType.IsErrorType OrElse symbol.ReturnType.ToString.Contains("?", StringComparison.InvariantCulture)
+                    Dim AddAsClause As Boolean = symbol.ReturnType.IsErrorType OrElse symbol.ReturnType.ToString.Contains("?", StringComparison.Ordinal)
                     Dim AsClause As VBS.SimpleAsClauseSyntax = If(AddAsClause,
                                                                   Nothing,
                                                                   VBFactory.SimpleAsClause(ConvertToType(symbol.ReturnType))
@@ -231,9 +231,9 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 End If
                 ' Extra to pick up more strings
                 If Node.ToString.
-                        Replace("(", "", StringComparison.InvariantCulture).
-                        Replace(")", "", StringComparison.InvariantCulture).
-                        EndsWith("tostring", StringComparison.InvariantCultureIgnoreCase) Then
+                        Replace("(", "", StringComparison.Ordinal).
+                        Replace(")", "", StringComparison.Ordinal).
+                        EndsWith("tostring", StringComparison.OrdinalIgnoreCase) Then
                     Return True
                 End If
                 Dim _Typeinfo As TypeInfo = ModelExtensions.GetTypeInfo(_mSemanticModel, Node)
@@ -732,13 +732,13 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     If RightTypeInfo.ConvertedType IsNot Nothing Then
                         IsDelegate = RightTypeInfo.ConvertedType.IsDelegateType
                         If Not IsDelegate Then
-                            IsDelegate = RightTypeInfo.ConvertedType.ToString().StartsWith("System.EventHandler", StringComparison.InvariantCulture)
+                            IsDelegate = RightTypeInfo.ConvertedType.ToString().StartsWith("System.EventHandler", StringComparison.Ordinal)
                         End If
                     Else
                         If RightTypeInfo.Type IsNot Nothing Then
                             IsDelegate = RightTypeInfo.Type.IsDelegateType
                             If Not IsDelegate Then
-                                IsDelegate = RightTypeInfo.Type.ToString.StartsWith("System.EventHandler", StringComparison.InvariantCulture)
+                                IsDelegate = RightTypeInfo.Type.ToString.StartsWith("System.EventHandler", StringComparison.Ordinal)
                             End If
                         End If
                     End If
@@ -1337,7 +1337,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                             Dim TypeOrAddressOf As VB.VisualBasicSyntaxNode = node.Type.Accept(Me)
                             If TypeOrAddressOf.IsKind(VB.SyntaxKind.AddressOfExpression) Then
                                 Dim AddressOf1 As VBS.UnaryExpressionSyntax = DirectCast(TypeOrAddressOf, VBS.UnaryExpressionSyntax)
-                                If AddressOf1.Operand.ToString.StartsWith("&", StringComparison.InvariantCultureIgnoreCase) Then
+                                If AddressOf1.Operand.ToString.StartsWith("&", StringComparison.OrdinalIgnoreCase) Then
                                     Dim StatementWithIssues As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
                                     StatementWithIssues.AddMarker(FlagUnsupportedStatements(StatementWithIssues, "pointers", CommentOutOriginalStatements:=True), StatementHandlingOption.ReplaceStatement, AllowDuplicates:=True)
                                     CTypeExpressionSyntax = Expression
@@ -1346,7 +1346,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                 Else
                                     CTypeExpressionSyntax = VBFactory.CTypeExpression(Expression, VBFactory.ParseTypeName(AddressOf1.Operand.
                                                                                                                                 ToString.
-                                                                                                                                Replace("&", "", StringComparison.InvariantCultureIgnoreCase)))
+                                                                                                                                Replace("&", "", StringComparison.OrdinalIgnoreCase)))
                                 End If
                             Else
                                 CTypeExpressionSyntax = VBFactory.CTypeExpression(Expression, DirectCast(TypeOrAddressOf, VBS.TypeSyntax))
@@ -1491,10 +1491,10 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     Dim StatementWithIssues As CS.CSharpSyntaxNode = GetStatementwithIssues(Node)
                     StatementWithIssues.AddMarker(DeclarationToBeAdded, StatementHandlingOption.PrependStatement, AllowDuplicates:=False)
                     Return VBFactory.IdentifierName(Node.Designation.ToString.
-                                                                    Replace(",", "", StringComparison.InvariantCulture).
-                                                                    Replace(" ", "", StringComparison.InvariantCulture).
-                                                                    Replace("(", "", StringComparison.InvariantCulture).
-                                                                    Replace(")", "", StringComparison.InvariantCulture))
+                                                                    Replace(",", "", StringComparison.Ordinal).
+                                                                    Replace(" ", "", StringComparison.Ordinal).
+                                                                    Replace("(", "", StringComparison.Ordinal).
+                                                                    Replace(")", "", StringComparison.Ordinal))
                 End If
                 If Node.Designation.IsKind(CS.SyntaxKind.DiscardDesignation) Then
                     Dim DiscardDesignation As CSS.DiscardDesignationSyntax = DirectCast(Node.Designation, CSS.DiscardDesignationSyntax)
@@ -1967,18 +1967,18 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 ' now this looks somehow like a hack... is there a better way?
                 If node.IsKind(CS.SyntaxKind.StringLiteralExpression) Then
                     ' @"" have no escapes except quotes (ASCII and Unicode)
-                    If node.Token.Text.StartsWith("@", StringComparison.InvariantCulture) Then
+                    If node.Token.Text.StartsWith("@", StringComparison.Ordinal) Then
                         Return VBFactory.StringLiteralExpression(
                                                     token:=VBFactory.StringLiteralToken(
                                                     text:=node.Token.Text.
                                                         Substring(1).
-                                                        Replace(UnicodeOpenQuote, UnicodeDoubleOpenQuote, StringComparison.InvariantCulture).
-                                                        Replace(UnicodeCloseQuote, UnicodeDoubleCloseQuote, StringComparison.InvariantCulture).
+                                                        Replace(UnicodeOpenQuote, UnicodeDoubleOpenQuote, StringComparison.Ordinal).
+                                                        Replace(UnicodeCloseQuote, UnicodeDoubleCloseQuote, StringComparison.Ordinal).
                                                         NormalizeLineEndings,
                                                     value:=DirectCast(node.Token.Value, String).
-                                                        Replace(Quote, DoubleQuote, StringComparison.InvariantCulture).
-                                                        Replace(UnicodeOpenQuote, UnicodeDoubleOpenQuote, StringComparison.InvariantCulture).
-                                                        Replace(UnicodeCloseQuote, UnicodeDoubleCloseQuote, StringComparison.InvariantCulture).NormalizeLineEndings)
+                                                        Replace(Quote, DoubleQuote, StringComparison.Ordinal).
+                                                        Replace(UnicodeOpenQuote, UnicodeDoubleOpenQuote, StringComparison.Ordinal).
+                                                        Replace(UnicodeCloseQuote, UnicodeDoubleCloseQuote, StringComparison.Ordinal).NormalizeLineEndings)
                                                                 ).WithConvertedTriviaFrom(node.Token)
                     End If
                     If DirectCast(node.Token.Value, String) <> node.Token.ValueText Then
@@ -2039,14 +2039,14 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                 Dim TupleNameString As String = LeftNodeTypeInfo.Type.ToString
                                 TupleNameString = TupleNameString.Substring(1, TupleNameString.Length - 2)
                                 For Each s As String In TupleNameString.Split(","c)
-                                    If s.Trim.Contains(" ", StringComparison.InvariantCulture) Then
+                                    If s.Trim.Contains(" ", StringComparison.Ordinal) Then
                                         TypeList.Add(MakeVBSafeName(s.Trim.Split(" "c)(0).
-                                                                           Replace("<", "(Of ", StringComparison.InvariantCulture).
-                                                                           Replace(">", ")", StringComparison.InvariantCulture)))
+                                                                           Replace("<", "(Of ", StringComparison.Ordinal).
+                                                                           Replace(">", ")", StringComparison.Ordinal)))
                                     Else
                                         TypeList.Add(MakeVBSafeName(s.Trim.
-                                                                           Replace("<", "(Of ", StringComparison.InvariantCulture).
-                                                                           Replace(">", ")", StringComparison.InvariantCulture)))
+                                                                           Replace("<", "(Of ", StringComparison.Ordinal).
+                                                                           Replace(">", ")", StringComparison.Ordinal)))
                                     End If
                                 Next
                                 Return VBFactory.CTypeExpression(NothingExpression,
@@ -2087,11 +2087,11 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 End If
 
                 If node.IsKind(CS.SyntaxKind.CharacterLiteralExpression) Then
-                    If node.Token.Text.Replace("'", "", StringComparison.InvariantCulture).Length <= 2 Then
+                    If node.Token.Text.Replace("'", "", StringComparison.Ordinal).Length <= 2 Then
                         Return GetLiteralExpression(node.Token.Value, node.Token, Me).WithConvertedTriviaFrom(node.Token)
                     End If
                 End If
-                If node.Token.ValueText.Contains("\", StringComparison.InvariantCulture) Then
+                If node.Token.ValueText.Contains("\", StringComparison.Ordinal) Then
                     Stop
                 End If
 
@@ -2191,7 +2191,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
 
                 Dim argumentList As VBS.ArgumentListSyntax = DirectCast(node.ArgumentList?.Accept(Me), VBS.ArgumentListSyntax)
                 If argumentList IsNot Nothing Then
-                    If type1.ToString.EndsWith("EventHandler", StringComparison.InvariantCulture) AndAlso
+                    If type1.ToString.EndsWith("EventHandler", StringComparison.Ordinal) AndAlso
                         argumentList.Arguments.Count = 1 Then
                         argumentList = VBFactory.ArgumentList(VBFactory.SingletonSeparatedList(Of VBS.ArgumentSyntax)(VBFactory.SimpleArgument(VBFactory.AddressOfExpression(DirectCast(argumentList.Arguments(0), VBS.SimpleArgumentSyntax).Expression))))
                     End If

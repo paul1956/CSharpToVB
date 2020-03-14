@@ -86,29 +86,29 @@ Namespace CSharpToVBCodeConverter
                 Return VBFactory.GenericName("Tuple", VBFactory.TypeArgumentList(VBFactory.SeparatedList(TupleElementList)))
             End If
             Dim PossibleName As String = PossibleTupleType.ToString.Trim
-            Dim StartIndex As Integer = PossibleName.IndexOf("<", StringComparison.InvariantCulture)
+            Dim StartIndex As Integer = PossibleName.IndexOf("<", StringComparison.Ordinal)
             If StartIndex > 0 Then
-                Dim IndexOfLastGreaterThan As Integer = PossibleName.LastIndexOf(">", StringComparison.InvariantCulture)
+                Dim IndexOfLastGreaterThan As Integer = PossibleName.LastIndexOf(">", StringComparison.Ordinal)
                 Dim Name As String = PossibleName.Substring(0, StartIndex)
                 Dim PossibleTypes As String = PossibleName.Substring(StartIndex + 1, IndexOfLastGreaterThan - StartIndex - 1)
-                If PossibleTupleType.ToString.StartsWith("System.Func", StringComparison.InvariantCulture) Then
+                If PossibleTupleType.ToString.StartsWith("System.Func", StringComparison.Ordinal) Then
                     Dim DictionaryTypeElement As New List(Of VBS.TypeSyntax)
                     While PossibleTypes.Length > 0
                         Dim EndIndex As Integer
                         ' Tuple
-                        If PossibleTypes.StartsWith("(", StringComparison.InvariantCulture) Then
+                        If PossibleTypes.StartsWith("(", StringComparison.Ordinal) Then
                             ' Tuple
-                            EndIndex = PossibleTypes.LastIndexOf(")", StringComparison.InvariantCulture)
+                            EndIndex = PossibleTypes.LastIndexOf(")", StringComparison.Ordinal)
                             DictionaryTypeElement.Add(CSharpConverter.ConvertCSTupleToVBType(PossibleTypes.Substring(0, EndIndex + 1).Trim))
                             EndIndex += 1
                         Else
                             ' Type
-                            EndIndex = PossibleTypes.IndexOf(",", StringComparison.InvariantCulture)
-                            Dim FirstLessThan As Integer = PossibleTypes.IndexOf("<", StringComparison.InvariantCulture)
+                            EndIndex = PossibleTypes.IndexOf(",", StringComparison.Ordinal)
+                            Dim FirstLessThan As Integer = PossibleTypes.IndexOf("<", StringComparison.Ordinal)
                             EndIndex = If(EndIndex = -1 OrElse (FirstLessThan <> -1 AndAlso FirstLessThan < EndIndex), PossibleTypes.Length, EndIndex)
                             DictionaryTypeElement.Add(ConvertToType(PossibleTypes.Substring(0, EndIndex) _
-                                                                                     .Replace("<", "(Of ", StringComparison.InvariantCulture) _
-                                                                                     .Replace(">", ")", StringComparison.InvariantCulture).Trim))
+                                                                                     .Replace("<", "(Of ", StringComparison.Ordinal) _
+                                                                                     .Replace(">", ")", StringComparison.Ordinal).Trim))
                         End If
                         If EndIndex + 1 < PossibleTypes.Length Then
                             PossibleTypes = PossibleTypes.Substring(EndIndex + 1).Trim
@@ -119,7 +119,7 @@ Namespace CSharpToVBCodeConverter
                     Return VBFactory.GenericName(Name, VBFactory.TypeArgumentList(VBFactory.SeparatedList(DictionaryTypeElement)))
                 End If
                 ' Could be dictionary or List
-                If TypeOf PossibleTupleType Is INamedTypeSymbol AndAlso PossibleName.Contains(",", StringComparison.InvariantCulture) Then
+                If TypeOf PossibleTupleType Is INamedTypeSymbol AndAlso PossibleName.Contains(",", StringComparison.Ordinal) Then
                     Dim NamedType As INamedTypeSymbol = CType(PossibleTupleType, INamedTypeSymbol)
                     Dim DictionaryTypeElement As New List(Of VBS.TypeSyntax)
                     If Not NamedType.TypeArguments.Any Then
@@ -141,24 +141,24 @@ Namespace CSharpToVBCodeConverter
         End Function
 
         Friend Function ConvertToType(_TypeString As String) As VBS.TypeSyntax
-            If _TypeString.Contains("<", StringComparison.InvariantCulture) Then
-                _TypeString = _TypeString.Replace("<", "(Of ", StringComparison.InvariantCulture).
-                                    Replace(">", ")", StringComparison.InvariantCulture)
+            If _TypeString.Contains("<", StringComparison.Ordinal) Then
+                _TypeString = _TypeString.Replace("<", "(Of ", StringComparison.Ordinal).
+                                    Replace(">", ")", StringComparison.Ordinal)
             End If
             Dim TypeString As String = _TypeString.Trim
-            Dim IndexOf As Integer = TypeString.IndexOf("(Of ", StringComparison.InvariantCultureIgnoreCase)
+            Dim IndexOf As Integer = TypeString.IndexOf("(Of ", StringComparison.OrdinalIgnoreCase)
             If IndexOf >= 0 Then
                 Dim Name As String = TypeString.Substring(0, IndexOf)
                 TypeString = TypeString.Substring(IndexOf + 3)
-                Dim IndexOfLastCloseParen As Integer = TypeString.LastIndexOf(")", StringComparison.InvariantCultureIgnoreCase)
+                Dim IndexOfLastCloseParen As Integer = TypeString.LastIndexOf(")", StringComparison.OrdinalIgnoreCase)
                 TypeString = TypeString.Substring(0, IndexOfLastCloseParen)
                 Dim TypeList As New List(Of VBS.TypeSyntax)
                 Dim PossibleTypes As String = TypeString.Trim
                 While PossibleTypes.Length > 0
                     Dim EndIndex As Integer
                     ' Type
-                    EndIndex = PossibleTypes.IndexOf(",", StringComparison.InvariantCulture)
-                    Dim FirstLessThan As Integer = PossibleTypes.IndexOf("(", StringComparison.InvariantCulture)
+                    EndIndex = PossibleTypes.IndexOf(",", StringComparison.Ordinal)
+                    Dim FirstLessThan As Integer = PossibleTypes.IndexOf("(", StringComparison.Ordinal)
                     If EndIndex = -1 OrElse FirstLessThan = -1 Then
                         EndIndex = PossibleTypes.Length
                     ElseIf EndIndex > FirstLessThan Then
@@ -188,7 +188,7 @@ Namespace CSharpToVBCodeConverter
                 Dim TypeArguemntList As VBS.TypeArgumentListSyntax = VBFactory.TypeArgumentList(VBFactory.SeparatedList(TypeList))
                 Return VBFactory.GenericName(Name, TypeArguemntList)
             End If
-            If TypeString.EndsWith("*", StringComparison.InvariantCultureIgnoreCase) Then
+            If TypeString.EndsWith("*", StringComparison.OrdinalIgnoreCase) Then
                 Return IntPtrType
             End If
             Select Case TypeString.ToUpperInvariant
@@ -227,14 +227,14 @@ Namespace CSharpToVBCodeConverter
                 Case "?", "_"
                     Return PredefinedTypeObject
                 Case Else
-                    If TypeString.Contains("[", StringComparison.InvariantCultureIgnoreCase) Then
+                    If TypeString.Contains("[", StringComparison.OrdinalIgnoreCase) Then
                         TypeString = TypeString.
-                                        Replace("[", "@", StringComparison.InvariantCulture).
-                                        Replace("]", "#", StringComparison.InvariantCulture)
+                                        Replace("[", "@", StringComparison.Ordinal).
+                                        Replace("]", "#", StringComparison.Ordinal)
                     End If
                     Return VBFactory.ParseTypeName(MakeVBSafeName(TypeString).
-                                                            Replace("@", "(", StringComparison.InvariantCulture).
-                                                            Replace("#", ")", StringComparison.InvariantCulture))
+                                                            Replace("@", "(", StringComparison.Ordinal).
+                                                            Replace("#", ")", StringComparison.Ordinal))
             End Select
         End Function
 

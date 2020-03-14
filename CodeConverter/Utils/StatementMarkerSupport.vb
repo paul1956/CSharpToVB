@@ -30,12 +30,12 @@ Public Module StatementMarker
         Return Statement1.
                     WithoutTrivia.
                     ToFullString.
-                    Replace(vbCrLf, "", StringComparison.InvariantCulture).
-                    Replace(" ", "", StringComparison.InvariantCulture) =
+                    Replace(vbCrLf, "", StringComparison.Ordinal).
+                    Replace(" ", "", StringComparison.Ordinal) =
                 Statement2.
                     WithoutTrivia.
-                    ToFullString.Replace(vbCrLf, "", StringComparison.InvariantCulture).
-                    Replace(" ", "", StringComparison.InvariantCulture)
+                    ToFullString.Replace(vbCrLf, "", StringComparison.Ordinal).
+                    Replace(" ", "", StringComparison.Ordinal)
     End Function
 
     ''' <summary>
@@ -151,7 +151,7 @@ Public Module StatementMarker
             Dim NodeSplit() As String = node.ToString.SplitLines
             ' Match #
             For i As Integer = 0 To NodeSplit.Length - 1
-                If NodeSplit(i).TrimStart(" "c).StartsWith("#", StringComparison.InvariantCulture) Then
+                If NodeSplit(i).TrimStart(" "c).StartsWith("#", StringComparison.Ordinal) Then
                     NewLeadingTrivia.AddRange(ConvertDirectiveTrivia(NodeSplit(i)))
                 Else
                     NewLeadingTrivia.Add(VBFactory.CommentTrivia($"' {NodeSplit(i)}"))

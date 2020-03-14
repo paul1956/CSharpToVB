@@ -98,7 +98,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 ElseIf _allImports.Count > 0 Then
                     If Members.Count > 0 AndAlso Members(0).HasLeadingTrivia Then
                         If (TypeOf Members(0) IsNot VBS.NamespaceBlockSyntax AndAlso TypeOf Members(0) IsNot VBS.ModuleBlockSyntax) OrElse
-                            Members(0).GetLeadingTrivia.ToFullString.Contains("auto-generated", StringComparison.InvariantCultureIgnoreCase) Then
+                            Members(0).GetLeadingTrivia.ToFullString.Contains("auto-generated", StringComparison.OrdinalIgnoreCase) Then
                             Dim HeadingTriviaList As New List(Of SyntaxTrivia)
                             HeadingTriviaList.AddRange(Members(0).GetLeadingTrivia)
                             If HeadingTriviaList(0).IsKind(VB.SyntaxKind.EndOfLineTrivia) Then

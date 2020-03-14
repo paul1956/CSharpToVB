@@ -30,8 +30,8 @@ Public Module ParseUtilities
                 Application.DoEvents()
 
                 If SkipTestResourceFiles AndAlso
-                        (Subdirectory.EndsWith("Test\Resources", StringComparison.InvariantCultureIgnoreCase) OrElse
-                         Subdirectory.EndsWith("Setup\Templates", StringComparison.InvariantCultureIgnoreCase)) Then
+                        (Subdirectory.EndsWith("Test\Resources", StringComparison.OrdinalIgnoreCase) OrElse
+                         Subdirectory.EndsWith("Setup\Templates", StringComparison.OrdinalIgnoreCase)) Then
                     Continue For
                 End If
                 If SkipBinAndObjFolders AndAlso (Subdirectory = "bin" OrElse Subdirectory = "obj" OrElse Subdirectory = "g") Then

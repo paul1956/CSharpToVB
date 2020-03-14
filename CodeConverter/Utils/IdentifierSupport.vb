@@ -26,12 +26,12 @@ Namespace CSharpToVBCodeConverter
 
         Friend Function GetNewUniqueName(ConvertedIdentifier As String, ident As KeyValuePair(Of String, SymbolTableEntry)) As String
             Dim NewUniqueName As String
-            If ident.Value.Name.StartsWith("_", StringComparison.InvariantCulture) Then
+            If ident.Value.Name.StartsWith("_", StringComparison.Ordinal) Then
                 NewUniqueName = ConvertedIdentifier
             Else
-                NewUniqueName = If(ConvertedIdentifier.StartsWith("[", StringComparison.InvariantCulture),
-                                        ConvertedIdentifier.Replace("[", "_", StringComparison.InvariantCulture).
-                                                            Replace("]", "", StringComparison.InvariantCulture),
+                NewUniqueName = If(ConvertedIdentifier.StartsWith("[", StringComparison.Ordinal),
+                                        ConvertedIdentifier.Replace("[", "_", StringComparison.Ordinal).
+                                                            Replace("]", "", StringComparison.Ordinal),
                                         If(Char.IsLower(CChar(ConvertedIdentifier.Substring(0, 1))),
                                             $"_{ConvertedIdentifier}",
                                             $"{ConvertedIdentifier}_Renamed"))
@@ -41,15 +41,15 @@ Namespace CSharpToVBCodeConverter
         End Function
 
         Friend Function IsSpecialReservedWord(ID As String) As Boolean
-            If ID.Equals("Alias", StringComparison.InvariantCultureIgnoreCase) OrElse
-                    ID.Equals("CType", StringComparison.InvariantCultureIgnoreCase) OrElse
-                    ID.Equals("End", StringComparison.InvariantCultureIgnoreCase) OrElse
-                    ID.Equals("Error", StringComparison.InvariantCultureIgnoreCase) OrElse
-                    ID.Equals("Event", StringComparison.InvariantCultureIgnoreCase) OrElse
-                    ID.Equals("Imports", StringComparison.InvariantCultureIgnoreCase) OrElse
-                    ID.Equals("Module", StringComparison.InvariantCultureIgnoreCase) OrElse
-                    ID.Equals("Option", StringComparison.InvariantCultureIgnoreCase) OrElse
-                    ID.Equals("Optional", StringComparison.InvariantCultureIgnoreCase) Then
+            If ID.Equals("Alias", StringComparison.OrdinalIgnoreCase) OrElse
+                    ID.Equals("CType", StringComparison.OrdinalIgnoreCase) OrElse
+                    ID.Equals("End", StringComparison.OrdinalIgnoreCase) OrElse
+                    ID.Equals("Error", StringComparison.OrdinalIgnoreCase) OrElse
+                    ID.Equals("Event", StringComparison.OrdinalIgnoreCase) OrElse
+                    ID.Equals("Imports", StringComparison.OrdinalIgnoreCase) OrElse
+                    ID.Equals("Module", StringComparison.OrdinalIgnoreCase) OrElse
+                    ID.Equals("Option", StringComparison.OrdinalIgnoreCase) OrElse
+                    ID.Equals("Optional", StringComparison.OrdinalIgnoreCase) Then
                 Return True
             End If
             Return False

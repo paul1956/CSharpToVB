@@ -49,7 +49,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             Select Case Token.RawKind
                 Case CS.SyntaxKind.NumericLiteralToken
                     Dim TokenToString As String = Token.ToString
-                    If TokenToString.StartsWith("0x", StringComparison.InvariantCultureIgnoreCase) Then
+                    If TokenToString.StartsWith("0x", StringComparison.OrdinalIgnoreCase) Then
                         Dim HEXValueString As String = $"&H{TokenToString.Substring(2)}".Replace("ul", "", StringComparison.OrdinalIgnoreCase).Replace("u", "", StringComparison.OrdinalIgnoreCase).Replace("l", "", StringComparison.OrdinalIgnoreCase)
                         If TypeOf value Is Integer Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(HEXValueString, CInt(value)))
                         If TypeOf value Is SByte Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(HEXValueString, CSByte(value)))
@@ -58,7 +58,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         If TypeOf value Is UInteger Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(HEXValueString & "UI", CUInt(value)))
                         If TypeOf value Is Long Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(HEXValueString, CLng(value)))
                         If TypeOf value Is ULong Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(HEXValueString & "UL", CULng(value)))
-                    ElseIf TokenToString.StartsWith("0b", StringComparison.InvariantCultureIgnoreCase) Then
+                    ElseIf TokenToString.StartsWith("0b", StringComparison.OrdinalIgnoreCase) Then
                         If TypeOf value Is Integer Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(($"{Binary(CInt(value))}"), CInt(value)))
                         If TypeOf value Is Byte Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(($"{Binary(CByte(value))}"), CByte(value)))
                         If TypeOf value Is SByte Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal($"{Binary(CSByte(value))}", CSByte(value)))
@@ -83,16 +83,16 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Case CS.SyntaxKind.StringLiteralToken
                     If TypeOf value Is String Then
                         Dim StrValue As String = DirectCast(value, String)
-                        If StrValue.Contains("\", StringComparison.InvariantCulture) Then
+                        If StrValue.Contains("\", StringComparison.Ordinal) Then
                             StrValue = ConvertCSharpEscapes(StrValue)
                         End If
-                        If StrValue.Contains(UnicodeOpenQuote, StringComparison.InvariantCulture) Then
+                        If StrValue.Contains(UnicodeOpenQuote, StringComparison.Ordinal) Then
                             StrValue = StrValue.ConverUnicodeQuotes(UnicodeOpenQuote)
                         End If
-                        If StrValue.Contains(UnicodeCloseQuote, StringComparison.InvariantCulture) Then
+                        If StrValue.Contains(UnicodeCloseQuote, StringComparison.Ordinal) Then
                             StrValue = StrValue.ConverUnicodeQuotes(UnicodeCloseQuote)
                         End If
-                        If StrValue.Contains(UnicodeFullWidthQuoationMark, StringComparison.InvariantCulture) Then
+                        If StrValue.Contains(UnicodeFullWidthQuoationMark, StringComparison.Ordinal) Then
                             StrValue = StrValue.ConverUnicodeQuotes(UnicodeFullWidthQuoationMark)
                         End If
                         Return VBFactory.LiteralExpression(VB.SyntaxKind.StringLiteralExpression, VBFactory.Literal(StrValue))
@@ -110,8 +110,8 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     If AscW(CChar(value)) = &H201D Then
                         Return VBFactory.LiteralExpression(VB.SyntaxKind.CharacterLiteralExpression, VBFactory.Literal($"{UnicodeCloseQuote}{UnicodeCloseQuote}"))
                     End If
-                    If Token.Text.StartsWith("'\u", StringComparison.InvariantCultureIgnoreCase) Then
-                        Return VBFactory.ParseExpression($"ChrW(&H{Token.Text.Replace("'", "", StringComparison.InvariantCulture).Substring(2)})")
+                    If Token.Text.StartsWith("'\u", StringComparison.OrdinalIgnoreCase) Then
+                        Return VBFactory.ParseExpression($"ChrW(&H{Token.Text.Replace("'", "", StringComparison.Ordinal).Substring(2)})")
                     End If
                     Return VBFactory.LiteralExpression(VB.SyntaxKind.CharacterLiteralExpression, VBFactory.Literal(CChar(value)))
                 Case CS.SyntaxKind.DefaultKeyword

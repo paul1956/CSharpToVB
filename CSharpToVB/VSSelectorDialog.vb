@@ -39,7 +39,7 @@ Public Class VSSelectorDialog
         InstanceTable.Columns.Add("Version")
         InstanceTable.Columns.Add("MSBuildPath")
         For Index As Integer = 0 To _visualStudioInstances.Length - 1
-            If _visualStudioInstances(Index).Name.Contains(" Build ", StringComparison.InvariantCultureIgnoreCase) Then
+            If _visualStudioInstances(Index).Name.Contains(" Build ", StringComparison.OrdinalIgnoreCase) Then
                 Continue For
             End If
             BestIndex = Index

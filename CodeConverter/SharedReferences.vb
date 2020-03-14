@@ -44,7 +44,7 @@ Public Module SharedReferences
 
         'SystemReferences
         For Each DLL_Path As String In Directory.GetFiles(s_frameworkDirectory, "*.dll")
-            If DLL_Path.EndsWith("System.EnterpriseServices.Wrapper.dll", StringComparison.InvariantCulture) Then
+            If DLL_Path.EndsWith("System.EnterpriseServices.Wrapper.dll", StringComparison.Ordinal) Then
                 Continue For
             End If
             AddReferences(s_referencePath, DLL_Path)
