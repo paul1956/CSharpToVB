@@ -845,7 +845,7 @@ Public Class Form1
                 Exit Sub
             End If
             Dim LastFileNameWithPath As String = If(My.Settings.StartFolderConvertFromLastFile, My.Settings.MRU_Data.Last, "")
-            Dim FilesProcessed As Long = 0L
+            Dim Stats As New ProcessingStats(LastFileNameWithPath)
             _cancellationTokenSource = New CancellationTokenSource
             StatusStripElapasedTimeLabel.Text = ""
             ' Create new stopwatch
@@ -854,16 +854,15 @@ Public Class Form1
             stopwatch.Start()
             If Await ProcessAllFilesAsync(SourceFolderName,
                                 ProjectSavePath,
-                                LastFileNameWithPath,
                                 "cs",
-                                FilesProcessed,
+                                Stats,
                                 _cancellationTokenSource.Token
                                 ).ConfigureAwait(True) Then
                 stopwatch.Stop()
                 If _cancellationTokenSource.Token.IsCancellationRequested Then
-                    MsgBox($"Conversion canceled, {FilesProcessed} files completed successfully.", Title:="C# to VB")
+                    MsgBox($"Conversion canceled, {Stats.FilesProcessed} files completed successfully.", Title:="C# to VB")
                 Else
-                    MsgBox($"Conversion completed, {FilesProcessed} files completed successfully.", Title:="C# to VB")
+                    MsgBox($"Conversion completed, {Stats.FilesProcessed} files completed successfully.", Title:="C# to VB")
                 End If
             Else
                 stopwatch.Stop()
@@ -925,12 +924,13 @@ Public Class Form1
             Dim ProjectSavePath As String = GetFoldertSavePath(FolderName, SourceLanguageExtension, ConvertingProject:=False)
             ' This path is a directory.
             Dim LastFileNameWithPath As String = If(My.Settings.StartFolderConvertFromLastFile, My.Settings.MRU_Data.Last, "")
+            Dim Stats As New ProcessingStats(LastFileNameWithPath)
             Dim FilesProcessed As Long = 0
             If _cancellationTokenSource IsNot Nothing Then
                 _cancellationTokenSource.Dispose()
             End If
             _cancellationTokenSource = New CancellationTokenSource
-            If Await ProcessAllFilesAsync(FolderName, ProjectSavePath, LastFileNameWithPath, SourceLanguageExtension, FilesProcessed, _cancellationTokenSource.Token).ConfigureAwait(True) Then
+            If Await ProcessAllFilesAsync(FolderName, ProjectSavePath, SourceLanguageExtension, Stats, _cancellationTokenSource.Token).ConfigureAwait(True) Then
                 MsgBox($"Conversion completed.")
             End If
         Else
@@ -1302,14 +1302,14 @@ Public Class Form1
     ''' False if error and user wants to stop, True if success or user wants to ignore error
     ''' </returns>
     <SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification:="Prevent Crash on Exit")>
-    Private Async Function ProcessAllFilesAsync(SourceDirectory As String, TargetDirectory As String, LastFileNameWithPath As String, SourceLanguageExtension As String, ByRef FilesProcessed As Long, CancelToken As CancellationToken) As Task(Of Boolean)
+    Private Async Function ProcessAllFilesAsync(SourceDirectory As String, TargetDirectory As String, SourceLanguageExtension As String, Stats As ProcessingStats, CancelToken As CancellationToken) As Task(Of Boolean)
         Try
             RichTextBoxErrorList.Text = ""
             RichTextBoxFileList.Text = ""
             SetButtonStopAndCursor(Me, ButtonStopConversion, StopButtonVisible:=True)
             Dim TotalFilesToProcess As Long = GetFileCount(SourceDirectory, SourceLanguageExtension, My.Settings.SkipBinAndObjFolders, My.Settings.SkipTestResourceFiles)
             ' Process the list of files found in the directory.
-            Return Await ProcessDirectoryAsync(SourceDirectory, TargetDirectory, MeForm:=Me, ButtonStopConversion, RichTextBoxFileList, LastFileNameWithPath, SourceLanguageExtension, FilesProcessed, TotalFilesToProcess, AddressOf ProcessFileAsync, CancelToken).ConfigureAwait(True)
+            Return Await ProcessDirectoryAsync(SourceDirectory, TargetDirectory, MeForm:=Me, ButtonStopConversion, RichTextBoxFileList, SourceLanguageExtension, Stats, TotalFilesToProcess, AddressOf ProcessFileAsync, CancelToken).ConfigureAwait(True)
         Catch ex As OperationCanceledException
             ConversionProgressBar.Value = 0
         Catch ex As Exception
