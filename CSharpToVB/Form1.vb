@@ -197,7 +197,7 @@ Public Class Form1
     Public Property MSBuildInstance As VisualStudioInstance
 
     Private Shared Function ChangeExtension(AttributeValue As String, OldExtension As String, NewExtension As String) As String
-        Return If(AttributeValue.EndsWith($".{OldExtension}", StringComparison.InvariantCultureIgnoreCase),
+        Return If(AttributeValue.EndsWith($".{OldExtension}", StringComparison.OrdinalIgnoreCase),
                Path.ChangeExtension(AttributeValue, NewExtension),
                AttributeValue)
     End Function
@@ -240,7 +240,7 @@ Public Class Form1
                                             LeadingXMLSpace.InnerXml = PropertyGroupChildNode.InnerXml
                                         End If
                                     Case "#comment"
-                                        root.ChildNodes(i).ChildNodes(J).Value = PropertyGroupChildNode.Value.Replace(".cs", ".vb", StringComparison.InvariantCultureIgnoreCase)
+                                        root.ChildNodes(i).ChildNodes(J).Value = PropertyGroupChildNode.Value.Replace(".cs", ".vb", StringComparison.OrdinalIgnoreCase)
                                     Case Else
                                         Stop
                                 End Select
@@ -260,7 +260,7 @@ Public Class Form1
                                     Case "#whitespace"
                                                             ' Ignore
                                     Case "#comment"
-                                        root.ChildNodes(i).ChildNodes(J).Value = xmlNode.Value.Replace(".cs", ".vb", StringComparison.InvariantCultureIgnoreCase)
+                                        root.ChildNodes(i).ChildNodes(J).Value = xmlNode.Value.Replace(".cs", ".vb", StringComparison.OrdinalIgnoreCase)
                                     Case "Compile"
                                         Dim CompileValue As String = ""
                                         For k As Integer = 0 To xmlNode.Attributes.Count - 1
@@ -271,7 +271,7 @@ Public Class Form1
                                             Select Case root.ChildNodes(i).ChildNodes(J).ChildNodes(k).Name
                                                 Case "DependentUpon"
                                                     Dim DependentUponNodeValue As String = xmlNode.ChildNodes(k).ChildNodes(0).Value
-                                                    If DependentUponNodeValue.EndsWith(".cs", StringComparison.InvariantCultureIgnoreCase) Then
+                                                    If DependentUponNodeValue.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) Then
                                                         root.ChildNodes(i).ChildNodes(J).ChildNodes(k).ChildNodes(0).Value = ChangeExtension(DependentUponNodeValue, "cs", "vb")
                                                     Else
                                                         CopyFile(ProjectSavePath, currentProject, Path.Combine(Path.GetDirectoryName(CompileValue), DependentUponNodeValue))
@@ -283,7 +283,7 @@ Public Class Form1
                                             End Select
                                         Next k
                                     Case "EmbeddedResource"
-                                        If xmlNode.Attributes(0).Value.EndsWith(".resx", StringComparison.InvariantCultureIgnoreCase) Then
+                                        If xmlNode.Attributes(0).Value.EndsWith(".resx", StringComparison.OrdinalIgnoreCase) Then
                                             CopyFile(ProjectSavePath, currentProject, xmlNode.Attributes(0).Value)
                                         End If
                                         For k As Integer = 0 To xmlNode.ChildNodes.Count - 1
@@ -323,7 +323,7 @@ Public Class Form1
                             Next J
                         Case "#whitespace"
                         Case "#comment"
-                            root.ChildNodes(i).Value = RootChildNode.Value.Replace(".cs", ".vb", StringComparison.InvariantCultureIgnoreCase)
+                            root.ChildNodes(i).Value = RootChildNode.Value.Replace(".cs", ".vb", StringComparison.OrdinalIgnoreCase)
                         Case Else
                             Stop
                     End Select
@@ -343,7 +343,7 @@ Public Class Form1
                 root.ChildNodes(PropertyGroupIndex).AppendChild(xmlDocFragment)
             End If
 
-            xmlDoc.Save(Path.Combine(ProjectSavePath, New FileInfo(currentProject.FilePath).Name.Replace(".csproj", "_VB.vbproj", StringComparison.InvariantCultureIgnoreCase)))
+            xmlDoc.Save(Path.Combine(ProjectSavePath, New FileInfo(currentProject.FilePath).Name.Replace(".csproj", "_VB.vbproj", StringComparison.OrdinalIgnoreCase)))
         End If
     End Sub
 
@@ -351,7 +351,7 @@ Public Class Form1
         If String.IsNullOrWhiteSpace(ProjectSavePath) Then
             Return String.Empty
         End If
-        Dim SubPathFromProject As String = Path.GetDirectoryName(DocumentName.FilePath).Replace(ProjectDirectory, "", StringComparison.InvariantCultureIgnoreCase).Trim("\"c)
+        Dim SubPathFromProject As String = Path.GetDirectoryName(DocumentName.FilePath).Replace(ProjectDirectory, "", StringComparison.OrdinalIgnoreCase).Trim("\"c)
         Dim PathToSaveDirectory As String = Path.Combine(ProjectSavePath, SubPathFromProject)
         If Not Directory.Exists(PathToSaveDirectory) Then
             Directory.CreateDirectory(PathToSaveDirectory)
@@ -428,7 +428,7 @@ Public Class Form1
                     .Select(.TextLength, 0)
                     .SelectionColor = ColorSelector.GetColorFromName(range.ClassificationType)
                     .AppendText(range.Text)
-                    If range.Text.Contains(vbLf, StringComparison.InvariantCultureIgnoreCase) Then
+                    If range.Text.Contains(vbLf, StringComparison.OrdinalIgnoreCase) Then
                         Progress.Increment(range.Text.Count(CType(vbLf, Char)))
                         Application.DoEvents()
                     End If
@@ -692,7 +692,7 @@ Public Class Form1
             CurrentDirectory = Directory.GetParent(CurrentDirectory).FullName
         End While
         ' At this point Solution Directory is the remainder of the path from SolutionRoot
-        Dim PathFromSolutionRoot As List(Of String) = DirectoryToBeTranslatedWithPath.Replace(SolutionRoot, "", StringComparison.InvariantCultureIgnoreCase) _
+        Dim PathFromSolutionRoot As List(Of String) = DirectoryToBeTranslatedWithPath.Replace(SolutionRoot, "", StringComparison.OrdinalIgnoreCase) _
                                                                                      .Trim(Path.DirectorySeparatorChar) _
                                                                                      .Split(Path.DirectorySeparatorChar).ToList
         SolutionRoot = $"{SolutionRoot}{Path.DirectorySeparatorChar}{PathFromSolutionRoot(0)}{TargetLanguageExtension}"
@@ -994,7 +994,7 @@ Public Class Form1
                         }
                         xmlDoc.Load(currentProject.FilePath)
                         Dim root As XmlNode = xmlDoc.FirstChild
-                        If root.Attributes.Count > 0 AndAlso root.Attributes(0).Name.Equals("SDK", StringComparison.InvariantCultureIgnoreCase) Then
+                        If root.Attributes.Count > 0 AndAlso root.Attributes(0).Name.Equals("SDK", StringComparison.OrdinalIgnoreCase) Then
                             ConvertProjectFile(ProjectSavePath, currentProject, xmlDoc, root)
                         End If
 
@@ -1193,7 +1193,7 @@ Public Class Form1
         ' (identified by the tag text when added to the list)...
         For Each FileMenuItem As ToolStripItem In mnuFile.DropDownItems
             If Not FileMenuItem.Tag Is Nothing Then
-                If (FileMenuItem.Tag.ToString().StartsWith("MRU:", StringComparison.InvariantCulture)) Then
+                If (FileMenuItem.Tag.ToString().StartsWith("MRU:", StringComparison.Ordinal)) Then
                     MRUToolStripItems.Add(FileMenuItem)
                 End If
             End If
@@ -1419,13 +1419,13 @@ Public Class Form1
         Dim lineStart As Integer = box.GetFirstCharIndexFromLine(line)
         Dim AfterEquals As Integer = box.GetFirstCharIndexFromLine(line) + 15
         Dim LineText As String = box.Text.Substring(box.GetFirstCharIndexFromLine(line))
-        If Not LineText.StartsWith("BC", StringComparison.InvariantCulture) Then
+        If Not LineText.StartsWith("BC", StringComparison.Ordinal) Then
             Exit Sub
         End If
-        If Not LineText.Contains(" Line = ", StringComparison.InvariantCulture) Then
+        If Not LineText.Contains(" Line = ", StringComparison.Ordinal) Then
             Exit Sub
         End If
-        Dim NumberCount As Integer = LineText.Substring(15).IndexOf(" ", StringComparison.InvariantCulture)
+        Dim NumberCount As Integer = LineText.Substring(15).IndexOf(" ", StringComparison.Ordinal)
         Dim ErrorLine As Integer = CInt(Val(box.Text.Substring(AfterEquals, NumberCount)))
         If ErrorLine <= 0 Then
             Exit Sub
@@ -1449,7 +1449,7 @@ Public Class Form1
         If mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
             Colorize(GetClassifiedRanges(SourceCode:=RichTextBoxConversionInput.Text, LanguageNames.CSharp), ConversionBuffer:=RichTextBoxConversionInput, Lines:=RichTextBoxConversionInput.Lines.Length)
         End If
-        If Not RichTextBoxConversionInput.Text.StartsWith(My.Settings.BoilerPlateHeader.Replace(vbCrLf, vbLf, StringComparison.InvariantCulture), StringComparison.InvariantCulture) Then
+        If Not RichTextBoxConversionInput.Text.StartsWith(My.Settings.BoilerPlateHeader.Replace(vbCrLf, vbLf, StringComparison.Ordinal), StringComparison.Ordinal) Then
             Dim SelectStart As Integer = RichTextBoxConversionInput.SelectionStart
             Dim SelectLength As Integer = RichTextBoxConversionInput.SelectionLength
             RichTextBoxConversionInput.SelectAll()
@@ -1571,7 +1571,7 @@ Public Class Form1
     End Sub
 
     Private Sub mnuFileLoadTemplate_Click(sender As Object, e As EventArgs) Handles mnuFileLoadTemplate.Click
-        Dim Header As String = $"{My.Settings.BoilerPlateHeader.Replace(vbCrLf, vbLf, StringComparison.InvariantCulture)}{vbLf}"
+        Dim Header As String = $"{My.Settings.BoilerPlateHeader.Replace(vbCrLf, vbLf, StringComparison.Ordinal)}{vbLf}"
         RichTextBoxConversionInput.Clear()
         RichTextBoxConversionInput.Select(0, 0)
         RichTextBoxConversionInput.Text = Header
@@ -1581,7 +1581,7 @@ Public Class Form1
         RichTextBoxConversionInput.Select(RichTextBoxConversionInput.TextLength - 1, 0)
         RichTextBoxConversionInput.AppendText(vbLf)
         Dim FooterStart As Integer = Header.Length
-        Dim Footer As String = $"{My.Settings.BoilderPlateFooter.Replace(vbCrLf, vbLf, StringComparison.InvariantCulture)}{vbLf}"
+        Dim Footer As String = $"{My.Settings.BoilderPlateFooter.Replace(vbCrLf, vbLf, StringComparison.Ordinal)}{vbLf}"
         _footerLines = Footer.Count(CChar(vbLf))
         RichTextBoxConversionInput.AppendText(Footer)
         RichTextBoxConversionInput.Select(RichTextBoxConversionInput.Text.Length - Footer.Length, Footer.Length)

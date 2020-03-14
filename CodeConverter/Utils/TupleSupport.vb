@@ -29,15 +29,15 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             Dim CSNamedTypeString As String = CSNamedTypeStringIn
             Dim IsArray As Boolean = False
             Dim Nullable As Boolean = False
-            If CSNamedTypeString.EndsWith("?", StringComparison.InvariantCulture) Then
+            If CSNamedTypeString.EndsWith("?", StringComparison.Ordinal) Then
                 Nullable = True
                 CSNamedTypeString = CSNamedTypeString.Substring(0, CSNamedTypeString.Length - 1).Trim
             End If
-            If CSNamedTypeString.EndsWith("[]", StringComparison.InvariantCulture) Then
+            If CSNamedTypeString.EndsWith("[]", StringComparison.Ordinal) Then
                 IsArray = True
                 CSNamedTypeString = CSNamedTypeString.Substring(0, CSNamedTypeString.Length - 2).Trim
             End If
-            If CSNamedTypeString.StartsWith("(", StringComparison.InvariantCultureIgnoreCase) AndAlso CSNamedTypeString.EndsWith(")", StringComparison.InvariantCultureIgnoreCase) Then
+            If CSNamedTypeString.StartsWith("(", StringComparison.OrdinalIgnoreCase) AndAlso CSNamedTypeString.EndsWith(")", StringComparison.OrdinalIgnoreCase) Then
                 CSNamedTypeString = CSNamedTypeString.Substring(1, CSNamedTypeString.Length - 2).Trim
             End If
 
@@ -96,7 +96,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                             End Select
                         End While
                         i += 1
-                        If i >= CSNamedTypeString.Length - 1 OrElse Not ".[".Contains(CSNamedTypeString(i), StringComparison.InvariantCultureIgnoreCase) Then
+                        If i >= CSNamedTypeString.Length - 1 OrElse Not ".[".Contains(CSNamedTypeString(i), StringComparison.OrdinalIgnoreCase) Then
                             Dim commaIndex As Integer = CSNamedTypeString.IndexOf(",", i, StringComparison.OrdinalIgnoreCase)
                             If IncludeName Then
                                 Dim name As String = ExtractName(CSNamedTypeString, i, commaIndex)

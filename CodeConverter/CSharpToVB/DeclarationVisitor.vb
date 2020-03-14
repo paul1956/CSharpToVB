@@ -891,13 +891,13 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         type = VBFactory.ParseTypeName("System.Delegate")
                     ElseIf type.ToString = "[Enum]" Then
                         type = VBFactory.ParseTypeName("System.Enum")
-                    ElseIf type.ToString.StartsWith("[", StringComparison.InvariantCulture) Then
+                    ElseIf type.ToString.StartsWith("[", StringComparison.Ordinal) Then
                         Dim S As String() = type.ToString.Split({"["c, "]"}, StringSplitOptions.RemoveEmptyEntries)
                         If Not (IsSpecialReservedWord(S(0)) OrElse
                                 VB.SyntaxFacts.IsKeywordKind(VB.SyntaxFacts.GetKeywordKind(S(0)))) Then
                             type = VBFactory.ParseTypeName(type.ToString().
-                                                                   Replace("]", "", StringComparison.InvariantCulture).
-                                                                   Replace("[", "", StringComparison.InvariantCulture))
+                                                                   Replace("]", "", StringComparison.Ordinal).
+                                                                   Replace("[", "", StringComparison.Ordinal))
                         End If
                     End If
                 End If
@@ -1027,7 +1027,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     If TypeOf VisualBasicSyntaxNode1 Is VBS.QualifiedNameSyntax Then
                         ExplicitInterfaceIdentifier = DirectCast(VisualBasicSyntaxNode1, VBS.QualifiedNameSyntax)
                         IdString = ExplicitInterfaceIdentifier.Right.ToString
-                        Dim OpenParenIndex As Integer = IdString.IndexOf("(", StringComparison.InvariantCulture)
+                        Dim OpenParenIndex As Integer = IdString.IndexOf("(", StringComparison.Ordinal)
                         If OpenParenIndex > 0 Then
                             IdString = IdString.Left(OpenParenIndex)
                         End If

@@ -40,17 +40,17 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             End Function
 
             Friend Shared Function ConvertNamedTypeToTypeString(TypeString As String) As String
-                Dim SplitTypeString() As String = TypeString.Trim.Split(" "c, StringComparison.InvariantCulture)
+                Dim SplitTypeString() As String = TypeString.Trim.Split(" "c, StringComparison.Ordinal)
                 If SplitTypeString.Length > 2 Then
                     Stop
                 End If
-                Dim IndexOfLessThan As Integer = TypeString.IndexOf("<", StringComparison.InvariantCulture)
+                Dim IndexOfLessThan As Integer = TypeString.IndexOf("<", StringComparison.Ordinal)
                 Dim TypeName As String = SplitTypeString(0)
                 Dim Name As String = If(SplitTypeString.Length = 1, "", MakeVBSafeName(SplitTypeString(1)) & " As ")
                 If IndexOfLessThan > 0 Then
                     Return $"{Name}{TypeName.Left(IndexOfLessThan)}{TypeName.Substring(IndexOfLessThan).
-                                    Replace("<", "(Of ", StringComparison.InvariantCulture).
-                                    Replace(">", ")", StringComparison.InvariantCulture)}"
+                                    Replace("<", "(Of ", StringComparison.Ordinal).
+                                    Replace(">", ")", StringComparison.Ordinal)}"
                 End If
                 Return Name & ConvertToType(TypeName).ToString
             End Function
@@ -83,7 +83,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     Dim ArrayType As VBS.ArrayTypeSyntax = DirectCast(TypeSyntax, VBS.ArrayTypeSyntax)
                     Dim elementType As VBS.TypeSyntax = ArrayType.ElementType
                     Dim ElementTypeStr As String = elementType.ToString
-                    If ElementTypeStr.EndsWith("?"c, StringComparison.InvariantCultureIgnoreCase) Then
+                    If ElementTypeStr.EndsWith("?"c, StringComparison.OrdinalIgnoreCase) Then
                         elementType = VBFactory.ParseTypeName(ElementTypeStr.TrimEnd("?"c))
                     End If
                     Dim NullableType As VBS.NullableTypeSyntax = VBFactory.NullableType(elementType)

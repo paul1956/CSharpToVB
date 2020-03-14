@@ -131,7 +131,7 @@ End Function
             Private Iterator Function PatchInlineHelpers(node As CSS.BaseTypeDeclarationSyntax, IsModule As Boolean) As IEnumerable(Of VBS.StatementSyntax)
                 If _inlineAssignHelperMarkers.Contains(node) Then
                     _inlineAssignHelperMarkers.Remove(node)
-                    Yield TryCast(VBFactory.ParseSyntaxTree(InlineAssignHelperCode.Replace("Shared ", If(IsModule, "", "Shared "), StringComparison.InvariantCulture)).GetRoot().ChildNodes().FirstOrDefault(), VBS.StatementSyntax)
+                    Yield TryCast(VBFactory.ParseSyntaxTree(InlineAssignHelperCode.Replace("Shared ", If(IsModule, "", "Shared "), StringComparison.Ordinal)).GetRoot().ChildNodes().FirstOrDefault(), VBS.StatementSyntax)
                 End If
             End Function
 
@@ -474,7 +474,7 @@ End Function
                 End SyncLock
                 Dim ListOfAttributes As SyntaxList(Of VBS.AttributeListSyntax) = VBFactory.List(node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))
                 Dim Modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, IsModule, TokenContext.InterfaceOrModule)
-                If node.Modifiers.ToString.Contains("unsafe", StringComparison.InvariantCulture) Then
+                If node.Modifiers.ToString.Contains("unsafe", StringComparison.Ordinal) Then
                     Return FlagUnsupportedStatements(node, "unsafe interfaces", CommentOutOriginalStatements:=True)
                 End If
                 Dim members As New List(Of VBS.StatementSyntax)

@@ -19,11 +19,11 @@ Namespace CSharpToVBCodeConverter.Util
 
         Private Function ConvertISymbolToNameSyntaxInterfaceName(interfaceMethod As ISymbol) As VBS.NameSyntax
             Dim TypeString As String = interfaceMethod.ContainingSymbol.ToString
-            TypeString = TypeString.Replace("<", "(Of ", StringComparison.InvariantCulture).
-                                    Replace(">", ")", StringComparison.InvariantCulture).
-                                    Replace("[", "(", StringComparison.InvariantCulture).
-                                    Replace("]", ")", StringComparison.InvariantCulture)
-            Dim FirstTupleIndex As Integer = TypeString.IndexOf("(Of (", StringComparison.InvariantCulture)
+            TypeString = TypeString.Replace("<", "(Of ", StringComparison.Ordinal).
+                                    Replace(">", ")", StringComparison.Ordinal).
+                                    Replace("[", "(", StringComparison.Ordinal).
+                                    Replace("]", ")", StringComparison.Ordinal)
+            Dim FirstTupleIndex As Integer = TypeString.IndexOf("(Of (", StringComparison.Ordinal)
             If FirstTupleIndex < 0 Then
                 Return VBFactory.ParseName(TypeString)
             End If

@@ -99,8 +99,8 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         If t.IsKind(CS.SyntaxKind.DocumentationCommentExteriorTrivia) Then
                             NewLeadingTriviaList = NewLeadingTriviaList.Add(VBFactory.DocumentationCommentExteriorTrivia(token.LeadingTrivia(0).
                                                                                                                          ToString().
-                                                                                                                         Replace("///", "'''", StringComparison.InvariantCulture)))
-                            If Not TokenText.StartsWith(" ", StringComparison.InvariantCulture) Then
+                                                                                                                         Replace("///", "'''", StringComparison.Ordinal)))
+                            If Not TokenText.StartsWith(" ", StringComparison.Ordinal) Then
                                 TokenText = " " & TokenText
                                 ValueText = " " & ValueText
                             End If

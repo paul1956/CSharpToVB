@@ -100,7 +100,7 @@ Public Module ProcessDirectoriesModule
                     Continue For
                 End If
 
-                If (Subdirectory.EndsWith("Test\Resources", StringComparison.InvariantCultureIgnoreCase) OrElse Subdirectory.EndsWith("Setup\Templates", StringComparison.InvariantCultureIgnoreCase)) AndAlso (MeForm Is Nothing OrElse My.Settings.SkipTestResourceFiles) Then
+                If (Subdirectory.EndsWith("Test\Resources", StringComparison.OrdinalIgnoreCase) OrElse Subdirectory.EndsWith("Setup\Templates", StringComparison.OrdinalIgnoreCase)) AndAlso (MeForm Is Nothing OrElse My.Settings.SkipTestResourceFiles) Then
                     Continue For
                 End If
                 If Not ProcessDirectory(Subdirectory, ConvertSourceToTargetDirectory(TargetDirectory, Subdirectory), MeForm, StopButton, RichTextBoxFileList, LastFileNameWithPath, SourceLanguageExtension, FilesProcessed, TotalFilesToProcess, ProcessFile, CancelToken) Then

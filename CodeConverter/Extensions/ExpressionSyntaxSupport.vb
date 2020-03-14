@@ -36,8 +36,8 @@ Public Module ExpressionSyntaxSupport
                         If symbol.Kind = SymbolKind.PointerType Then
                             Return (_type, _Error:=True)
                         End If
-                        If _type.ToString.Contains("<anonymous type", StringComparison.InvariantCulture) OrElse
-                            _type.ToString.StartsWith("(", StringComparison.InvariantCulture) Then
+                        If _type.ToString.Contains("<anonymous type", StringComparison.Ordinal) OrElse
+                            _type.ToString.StartsWith("(", StringComparison.Ordinal) Then
                             Return (_type, _Error:=True)
                         End If
                         Return (_type, _Error:=False)
@@ -76,10 +76,10 @@ Public Module ExpressionSyntaxSupport
                         If symbol.Kind = SymbolKind.PointerType Then
                             Return (IntPtrType, _Error:=True)
                         End If
-                        If _type.ToString.Contains("<anonymous type", StringComparison.InvariantCulture) Then
+                        If _type.ToString.Contains("<anonymous type", StringComparison.Ordinal) Then
                             Return (PredefinedTypeObject, _Error:=True)
                         End If
-                        If _type.ToString.StartsWith("(", StringComparison.InvariantCulture) Then
+                        If _type.ToString.StartsWith("(", StringComparison.Ordinal) Then
                             Return (CSharpConverter.ConvertCSTupleToVBType(_type.ToString), _Error:=False)
                         End If
                     End If

@@ -119,53 +119,53 @@ Namespace CSharpToVBCodeConverter.Util
         Friend Function ConvertDirectiveTrivia(OriginalText As String) As List(Of SyntaxTrivia)
             Dim Text As String = OriginalText.Trim(" "c)
             Dim ResultTrivia As New List(Of SyntaxTrivia)
-            Debug.Assert(Text.StartsWith("#", StringComparison.InvariantCulture), "All directives must start with #")
+            Debug.Assert(Text.StartsWith("#", StringComparison.Ordinal), "All directives must start with #")
 
-            If Text.StartsWith("#if", StringComparison.InvariantCulture) OrElse Text.StartsWith("#elif", StringComparison.InvariantCulture) Then
-                Dim Expression1 As String = Text.Replace("#if ", "", StringComparison.InvariantCulture).
-                        Replace("#elif ", "", StringComparison.InvariantCulture).
-                        Replace("!", "Not ", StringComparison.InvariantCulture).
-                        Replace("==", "=", StringComparison.InvariantCulture).
-                        Replace("!=", "<>", StringComparison.InvariantCulture).
-                        Replace("&&", "And", StringComparison.InvariantCulture).
-                        Replace("||", "Or", StringComparison.InvariantCulture).
-                        Replace("  ", " ", StringComparison.InvariantCulture).
-                        Replace("false", "False", StringComparison.InvariantCulture).
-                        Replace("true", "True", StringComparison.InvariantCulture).
-                        Replace("//", " ' ", StringComparison.InvariantCulture).
-                        Replace("  ", " ", StringComparison.InvariantCulture)
+            If Text.StartsWith("#if", StringComparison.Ordinal) OrElse Text.StartsWith("#elif", StringComparison.Ordinal) Then
+                Dim Expression1 As String = Text.Replace("#if ", "", StringComparison.Ordinal).
+                        Replace("#elif ", "", StringComparison.Ordinal).
+                        Replace("!", "Not ", StringComparison.Ordinal).
+                        Replace("==", "=", StringComparison.Ordinal).
+                        Replace("!=", "<>", StringComparison.Ordinal).
+                        Replace("&&", "And", StringComparison.Ordinal).
+                        Replace("||", "Or", StringComparison.Ordinal).
+                        Replace("  ", " ", StringComparison.Ordinal).
+                        Replace("false", "False", StringComparison.Ordinal).
+                        Replace("true", "True", StringComparison.Ordinal).
+                        Replace("//", " ' ", StringComparison.Ordinal).
+                        Replace("  ", " ", StringComparison.Ordinal)
 
-                Dim Kind As VB.SyntaxKind = If(Text.StartsWith("#if", StringComparison.InvariantCulture), VB.SyntaxKind.IfDirectiveTrivia, VB.SyntaxKind.ElseIfDirectiveTrivia)
-                Dim IfOrElseIfKeyword As SyntaxToken = If(Text.StartsWith("#if", StringComparison.InvariantCulture), IfKeyword, ElseIfKeyword)
+                Dim Kind As VB.SyntaxKind = If(Text.StartsWith("#if", StringComparison.Ordinal), VB.SyntaxKind.IfDirectiveTrivia, VB.SyntaxKind.ElseIfDirectiveTrivia)
+                Dim IfOrElseIfKeyword As SyntaxToken = If(Text.StartsWith("#if", StringComparison.Ordinal), IfKeyword, ElseIfKeyword)
                 Dim Expr As VBS.ExpressionSyntax = VBFactory.ParseExpression(Expression1)
                 Dim IfDirectiveTrivia As VBS.IfDirectiveTriviaSyntax = VBFactory.IfDirectiveTrivia(IfOrElseIfKeyword, Expr)
                 ResultTrivia.Add(VBFactory.Trivia(IfDirectiveTrivia))
                 Return ResultTrivia
             End If
-            If Text.StartsWith("#region", StringComparison.InvariantCulture) OrElse Text.StartsWith("# region", StringComparison.InvariantCulture) Then
+            If Text.StartsWith("#region", StringComparison.Ordinal) OrElse Text.StartsWith("# region", StringComparison.Ordinal) Then
                 ResultTrivia.AddRange(ConvertTrivia(CS.SyntaxFactory.ParseLeadingTrivia(Text)))
                 Return ResultTrivia
             End If
-            If Text.StartsWith("#endregion", StringComparison.InvariantCulture) Then
+            If Text.StartsWith("#endregion", StringComparison.Ordinal) Then
                 ResultTrivia.Add(VBFactory.Trivia(VBFactory.EndRegionDirectiveTrivia()))
-                Text = Text.Replace("#endregion", "", StringComparison.InvariantCulture)
+                Text = Text.Replace("#endregion", "", StringComparison.Ordinal)
                 If Text.Length > 0 Then
                     Stop
                 End If
                 Return ResultTrivia
             End If
-            If Text.StartsWith("#else", StringComparison.InvariantCulture) Then
-                Dim ElseKeywordWithTrailingTrivia As SyntaxToken = ElseKeyword.WithTrailingTrivia(ConvertTrivia(CS.SyntaxFactory.ParseTrailingTrivia(Text.Replace("#else", "", StringComparison.InvariantCulture))))
+            If Text.StartsWith("#else", StringComparison.Ordinal) Then
+                Dim ElseKeywordWithTrailingTrivia As SyntaxToken = ElseKeyword.WithTrailingTrivia(ConvertTrivia(CS.SyntaxFactory.ParseTrailingTrivia(Text.Replace("#else", "", StringComparison.Ordinal))))
                 ResultTrivia.Add(VBFactory.Trivia(VBFactory.ElseDirectiveTrivia(HashToken, ElseKeywordWithTrailingTrivia)))
                 Return ResultTrivia
             End If
-            If Text.StartsWith("#endif", StringComparison.InvariantCulture) Then
-                Text = Text.Replace("#endif", "", StringComparison.InvariantCulture)
-                Dim IfKeywordWithTrailingTrivia As SyntaxToken = IfKeyword.WithTrailingTrivia(ConvertTrivia(CS.SyntaxFactory.ParseTrailingTrivia(Text.Replace("#endif", "", StringComparison.InvariantCulture))))
+            If Text.StartsWith("#endif", StringComparison.Ordinal) Then
+                Text = Text.Replace("#endif", "", StringComparison.Ordinal)
+                Dim IfKeywordWithTrailingTrivia As SyntaxToken = IfKeyword.WithTrailingTrivia(ConvertTrivia(CS.SyntaxFactory.ParseTrailingTrivia(Text.Replace("#endif", "", StringComparison.Ordinal))))
                 ResultTrivia.Add(VBFactory.Trivia(VBFactory.EndIfDirectiveTrivia(HashToken, EndKeyword, IfKeywordWithTrailingTrivia)))
                 Return ResultTrivia
             End If
-            If Text.StartsWith("#pragma warning", StringComparison.InvariantCulture) Then
+            If Text.StartsWith("#pragma warning", StringComparison.Ordinal) Then
                 ResultTrivia.AddRange(ConvertTrivia(CS.SyntaxFactory.ParseLeadingTrivia(Text)))
                 Return ResultTrivia
             Else
@@ -714,15 +714,15 @@ Namespace CSharpToVBCodeConverter.Util
                 Case CS.SyntaxKind.EndOfLineTrivia
                     Return VBEOLTrivia
                 Case CS.SyntaxKind.SingleLineCommentTrivia
-                    If t.ToFullString.EndsWith("*/", StringComparison.InvariantCulture) Then
+                    If t.ToFullString.EndsWith("*/", StringComparison.Ordinal) Then
                         Return VBFactory.CommentTrivia($"'{ReplaceLeadingSlashes(t.ToFullString.Substring(2, t.ToFullString.Length - 4))}")
                     End If
                     Return VBFactory.CommentTrivia($"'{ReplaceLeadingSlashes(t.ToFullString.Substring(2))}")
                 Case CS.SyntaxKind.MultiLineCommentTrivia
-                    If t.ToFullString.EndsWith("*/", StringComparison.InvariantCulture) Then
-                        Return VBFactory.CommentTrivia($"'{ReplaceLeadingSlashes(t.ToFullString.Substring(2, t.ToFullString.Length - 4)).Replace(vbLf, "", StringComparison.InvariantCulture)}")
+                    If t.ToFullString.EndsWith("*/", StringComparison.Ordinal) Then
+                        Return VBFactory.CommentTrivia($"'{ReplaceLeadingSlashes(t.ToFullString.Substring(2, t.ToFullString.Length - 4)).Replace(vbLf, "", StringComparison.Ordinal)}")
                     End If
-                    Return VBFactory.CommentTrivia($"'{ReplaceLeadingSlashes(t.ToFullString.Substring(2)).Replace(vbLf, "", StringComparison.InvariantCulture)}")
+                    Return VBFactory.CommentTrivia($"'{ReplaceLeadingSlashes(t.ToFullString.Substring(2)).Replace(vbLf, "", StringComparison.Ordinal)}")
 
                 Case CS.SyntaxKind.DocumentationCommentExteriorTrivia
                     Return VBFactory.SyntaxTrivia(VB.SyntaxKind.CommentTrivia, "'''")
@@ -730,7 +730,7 @@ Namespace CSharpToVBCodeConverter.Util
                     If IgnoredIfDepth > 0 Then
                         Return VBFactory.DisabledTextTrivia(t.ToString.WithoutNewLines(" "c))
                     End If
-                    Return VBFactory.DisabledTextTrivia(t.ToString.Replace(vbLf, vbCrLf, StringComparison.InvariantCulture))
+                    Return VBFactory.DisabledTextTrivia(t.ToString.Replace(vbLf, vbCrLf, StringComparison.Ordinal))
                 Case CS.SyntaxKind.PreprocessingMessageTrivia
                     Return VBFactory.CommentTrivia($" ' {t}")
 
@@ -783,14 +783,14 @@ Namespace CSharpToVBCodeConverter.Util
                     End If
                     Dim IfDirective As CSS.IfDirectiveTriviaSyntax = DirectCast(StructuredTrivia, CSS.IfDirectiveTriviaSyntax)
                     Dim Expression1 As String = IfDirective.Condition.ToString.
-                                        Replace("==", "=", StringComparison.InvariantCulture).
-                                        Replace("!=", "Not ", StringComparison.InvariantCulture).
-                                        Replace("&&", "And", StringComparison.InvariantCulture).
-                                        Replace("||", "Or", StringComparison.InvariantCulture).
-                                        Replace("  ", " ", StringComparison.InvariantCulture).
-                                        Replace("!", "Not ", StringComparison.InvariantCulture).
-                                        Replace("false", "False", StringComparison.InvariantCulture).
-                                        Replace("true", "True", StringComparison.InvariantCulture)
+                                        Replace("==", "=", StringComparison.Ordinal).
+                                        Replace("!=", "Not ", StringComparison.Ordinal).
+                                        Replace("&&", "And", StringComparison.Ordinal).
+                                        Replace("||", "Or", StringComparison.Ordinal).
+                                        Replace("  ", " ", StringComparison.Ordinal).
+                                        Replace("!", "Not ", StringComparison.Ordinal).
+                                        Replace("false", "False", StringComparison.Ordinal).
+                                        Replace("true", "True", StringComparison.Ordinal)
 
                     Return VBFactory.Trivia(VBFactory.IfDirectiveTrivia(IfKeyword, VBFactory.ParseExpression(Expression1)).
                                                                     With(ConvertTrivia(IfDirective.GetLeadingTrivia),
@@ -802,14 +802,14 @@ Namespace CSharpToVBCodeConverter.Util
                     End If
                     Dim ELIfDirective As CSS.ElifDirectiveTriviaSyntax = DirectCast(StructuredTrivia, CSS.ElifDirectiveTriviaSyntax)
                     Dim Expression1 As String = ELIfDirective.Condition.ToString.
-                                                    Replace("!", "Not ", StringComparison.InvariantCulture).
-                                                    Replace("==", "=", StringComparison.InvariantCulture).
-                                                    Replace("!=", "<>", StringComparison.InvariantCulture).
-                                                    Replace("&&", "And", StringComparison.InvariantCulture).
-                                                    Replace("||", "Or", StringComparison.InvariantCulture).
-                                                    Replace("  ", " ", StringComparison.InvariantCulture).
-                                                    Replace("false", "False", StringComparison.InvariantCulture).
-                                                    Replace("true", "True", StringComparison.InvariantCulture)
+                                                    Replace("!", "Not ", StringComparison.Ordinal).
+                                                    Replace("==", "=", StringComparison.Ordinal).
+                                                    Replace("!=", "<>", StringComparison.Ordinal).
+                                                    Replace("&&", "And", StringComparison.Ordinal).
+                                                    Replace("||", "Or", StringComparison.Ordinal).
+                                                    Replace("  ", " ", StringComparison.Ordinal).
+                                                    Replace("false", "False", StringComparison.Ordinal).
+                                                    Replace("true", "True", StringComparison.Ordinal)
 
                     Dim IfOrElseIfKeyword As SyntaxToken
                     If t.IsKind(CS.SyntaxKind.ElifDirectiveTrivia) Then
@@ -857,7 +857,7 @@ Namespace CSharpToVBCodeConverter.Util
                 Case CS.SyntaxKind.RegionDirectiveTrivia
                     Dim RegionDirective As CSS.RegionDirectiveTriviaSyntax = CType(StructuredTrivia, CSS.RegionDirectiveTriviaSyntax)
                     Dim EndOfDirectiveToken As SyntaxToken = RegionDirective.EndOfDirectiveToken
-                    Dim NameString As String = $"""{EndOfDirectiveToken.LeadingTrivia.ToString.Replace("""", "", StringComparison.InvariantCulture)}"""
+                    Dim NameString As String = $"""{EndOfDirectiveToken.LeadingTrivia.ToString.Replace("""", "", StringComparison.Ordinal)}"""
                     Dim RegionDirectiveTriviaNode As VBS.RegionDirectiveTriviaSyntax =
                             VBFactory.RegionDirectiveTrivia(
                                                     HashToken,
@@ -957,9 +957,9 @@ Namespace CSharpToVBCodeConverter.Util
                         Case CS.SyntaxKind.MultiLineCommentTrivia
                             Dim Lines() As String = Trivia.ToFullString.Substring(2).Split(CType(vbLf, Char))
                             For Each line As String In Lines
-                                If line.EndsWith("*/", StringComparison.InvariantCulture) Then
+                                If line.EndsWith("*/", StringComparison.Ordinal) Then
                                     TriviaList.Add(VBFactory.CommentTrivia($"' {RemoveLeadingSpacesStar(line.Substring(0, line.Length - 2))}"))
-                                    If Trivia.ToFullString.EndsWith(vbLf, StringComparison.InvariantCulture) Then
+                                    If Trivia.ToFullString.EndsWith(vbLf, StringComparison.Ordinal) Then
                                         TriviaList.Add(VBEOLTrivia)
                                     End If
                                 Else
@@ -981,7 +981,7 @@ Namespace CSharpToVBCodeConverter.Util
                             For Each t1 As SyntaxNode In sld.ChildNodes
                                 Dim Lines() As String = t1.ToFullString.Split(CType(vbLf, Char))
                                 For Each line As String In Lines
-                                    If line.StartsWith("/*", StringComparison.InvariantCulture) Then
+                                    If line.StartsWith("/*", StringComparison.Ordinal) Then
                                         TriviaList.Add(VBFactory.CommentTrivia($"' {RemoveLeadingSpacesStar(line.Substring(1, line.Length - 1))}"))
                                         TriviaList.Add(VBEOLTrivia)
                                     Else

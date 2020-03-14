@@ -55,8 +55,8 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim returnType As VBS.TypeSyntax = DirectCast(node.Type?.Accept(Me), VBS.TypeSyntax)
                 Dim EqualsLeadingTrivia As New List(Of SyntaxTrivia)
                 If returnType IsNot Nothing Then
-                    If returnType.ToString.StartsWith("[", StringComparison.InvariantCulture) Then
-                        Dim TReturnType As VBS.TypeSyntax = VBFactory.ParseTypeName(returnType.ToString.Substring(1).Replace("]", "", StringComparison.InvariantCulture)).WithTriviaFrom(returnType)
+                    If returnType.ToString.StartsWith("[", StringComparison.Ordinal) Then
+                        Dim TReturnType As VBS.TypeSyntax = VBFactory.ParseTypeName(returnType.ToString.Substring(1).Replace("]", "", StringComparison.Ordinal)).WithTriviaFrom(returnType)
                         If Not TReturnType.IsMissing Then
                             returnType = TReturnType
                         End If

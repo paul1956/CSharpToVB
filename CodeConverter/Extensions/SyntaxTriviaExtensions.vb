@@ -237,7 +237,7 @@ Namespace CSharpToVBCodeConverter.Util
                 Dim TextStrings() As String = Trivia.ToFullString.Split({vbCrLf}, StringSplitOptions.RemoveEmptyEntries)
                 For Each TriviaAsString In TextStrings
                     NewTriviaList.AddRange(LeadingTriviaList)
-                    NewTriviaList.Add(VBFactory.CommentTrivia($" ' {TriviaAsString}".Replace("  ", " ", StringComparison.InvariantCulture).TrimEnd))
+                    NewTriviaList.Add(VBFactory.CommentTrivia($" ' {TriviaAsString}".Replace("  ", " ", StringComparison.Ordinal).TrimEnd))
                     NewTriviaList.Add(VBEOLTrivia)
                 Next
                 If NewTriviaList.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
@@ -270,7 +270,7 @@ Namespace CSharpToVBCodeConverter.Util
                 SpaceTrivia,
                 LineContinuation,
                 SpaceTrivia,
-                VBFactory.CommentTrivia($"{Msg}{TriviaAsString}".Replace("  ", " ", StringComparison.InvariantCulture).TrimEnd)
+                VBFactory.CommentTrivia($"{Msg}{TriviaAsString}".Replace("  ", " ", StringComparison.Ordinal).TrimEnd)
                 }
             Return NewTriviaList
         End Function

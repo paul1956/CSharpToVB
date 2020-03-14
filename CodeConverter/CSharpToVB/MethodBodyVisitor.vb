@@ -602,11 +602,11 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 End If
                 Dim ExpressionBuilder As New StringBuilder
                 Dim ExpressionText As String = Expression.ToString.
-                                                    Replace(".", "Dot", StringComparison.InvariantCulture).
-                                                    Replace("""", "Quote", StringComparison.InvariantCulture).
-                                                    Replace("[", "OpenBracket", StringComparison.InvariantCulture).
-                                                    Replace("]", "CloseBracket", StringComparison.InvariantCulture).
-                                                    Replace(" ", "_", StringComparison.InvariantCulture)
+                                                    Replace(".", "Dot", StringComparison.Ordinal).
+                                                    Replace("""", "Quote", StringComparison.Ordinal).
+                                                    Replace("[", "OpenBracket", StringComparison.Ordinal).
+                                                    Replace("]", "CloseBracket", StringComparison.Ordinal).
+                                                    Replace(" ", "_", StringComparison.Ordinal)
                 Dim c As Char = ExpressionText(0)
                 If VB.SyntaxFacts.IsIdentifierStartCharacter(c) Then
                     ExpressionBuilder.Append("_")
@@ -912,7 +912,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         Dim Declarators As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(Names, AsNewClause, initializer:=Nothing))
                         Statement = VBFactory.LocalDeclarationStatement(DimModifier, Declarators)
                     End If
-                ElseIf node.ToString.StartsWith("(", StringComparison.InvariantCulture) AndAlso CS_Expression.IsKind(CS.SyntaxKind.InvocationExpression) Then
+                ElseIf node.ToString.StartsWith("(", StringComparison.Ordinal) AndAlso CS_Expression.IsKind(CS.SyntaxKind.InvocationExpression) Then
                     Dim InvovationExpression As CSS.InvocationExpressionSyntax = DirectCast(CS_Expression, CSS.InvocationExpressionSyntax)
                     Dim CS_InvocationExpression As CSS.InvocationExpressionSyntax = InvovationExpression
                     Dim exprNode As VBS.InvocationExpressionSyntax

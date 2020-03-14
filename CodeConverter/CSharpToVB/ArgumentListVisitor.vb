@@ -61,7 +61,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Try
                     If (Not node.RefKindKeyword.IsKind(CS.SyntaxKind.None)) AndAlso node.RefKindKeyword.Text = "ref" Then
                         Dim Expression As VBS.ExpressionSyntax = DirectCast(node.Expression.Accept(Me), VBS.ExpressionSyntax)
-                        Dim IdentifierString As String = Expression.ToString.Replace("[", "", StringComparison.InvariantCulture).Replace("]", "", StringComparison.InvariantCulture)
+                        Dim IdentifierString As String = Expression.ToString.Replace("[", "", StringComparison.Ordinal).Replace("]", "", StringComparison.Ordinal)
                         Dim StatementWithIssues As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
                         StatementWithIssues.AddMarker(FlagUnsupportedStatements(StatementWithIssues, $"ref keyword, fix variables starting with 'HandleRef_' below", CommentOutOriginalStatements:=False), StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
                         ArgumentWithTrivia = VBFactory.ParseExpression($"HandleRef_{IdentifierString}")
@@ -107,9 +107,9 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
 
                     If node.NameColon IsNot Nothing Then
                         name = VBFactory.NameColonEquals(DirectCast(node.NameColon.Name.Accept(Me), VBS.IdentifierNameSyntax))
-                        Dim NameWithOutColon As String = name.Name.ToString.Replace(":=", "", StringComparison.InvariantCulture)
-                        If NameWithOutColon.EndsWith("_Renamed", StringComparison.InvariantCulture) Then
-                            name = VBFactory.NameColonEquals(VBFactory.IdentifierName(NameWithOutColon.Replace("_Renamed", "", StringComparison.InvariantCulture)))
+                        Dim NameWithOutColon As String = name.Name.ToString.Replace(":=", "", StringComparison.Ordinal)
+                        If NameWithOutColon.EndsWith("_Renamed", StringComparison.Ordinal) Then
+                            name = VBFactory.NameColonEquals(VBFactory.IdentifierName(NameWithOutColon.Replace("_Renamed", "", StringComparison.Ordinal)))
                         End If
                     End If
 

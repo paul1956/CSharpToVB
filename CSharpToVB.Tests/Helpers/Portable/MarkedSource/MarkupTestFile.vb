@@ -206,7 +206,7 @@ Namespace Roslyn.Test.Utilities
         End Sub
 
         Private Sub AddMatch(input As String, value As String, currentIndex As Integer, matches As List(Of Tuple(Of Integer, String)))
-            Dim index As Integer = input.IndexOf(value, currentIndex, StringComparison.InvariantCulture)
+            Dim index As Integer = input.IndexOf(value, currentIndex, StringComparison.Ordinal)
             If index >= 0 Then
                 matches.Add(Tuple.Create(index, value))
             End If
