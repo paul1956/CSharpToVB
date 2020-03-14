@@ -1027,7 +1027,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     If TypeOf VisualBasicSyntaxNode1 Is VBS.QualifiedNameSyntax Then
                         ExplicitInterfaceIdentifier = DirectCast(VisualBasicSyntaxNode1, VBS.QualifiedNameSyntax)
                         IdString = ExplicitInterfaceIdentifier.Right.ToString
-                        Dim OpenParenIndex As Integer = IdString.IndexOf("("c, StringComparison.InvariantCulture)
+                        Dim OpenParenIndex As Integer = IdString.IndexOf("(", StringComparison.InvariantCulture)
                         If OpenParenIndex > 0 Then
                             IdString = IdString.Left(OpenParenIndex)
                         End If
