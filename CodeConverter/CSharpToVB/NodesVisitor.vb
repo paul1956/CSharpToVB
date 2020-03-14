@@ -4,7 +4,6 @@
 
 Imports System.Diagnostics.CodeAnalysis
 Imports System.Text
-Imports System.Windows.Forms
 
 Imports CSharpToVBCodeConverter.Util
 
@@ -57,8 +56,6 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
 
             Public Overrides Function VisitCompilationUnit(node As CompilationUnitSyntax) As VB.VisualBasicSyntaxNode
                 For Each [using] As UsingDirectiveSyntax In node.Usings
-                    Application.DoEvents()
-
                     If s_originalRequest.CancelToken.IsCancellationRequested Then
                         Throw New OperationCanceledException
                     End If
@@ -78,8 +75,6 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim ListOfAttributes As SyntaxList(Of VBS.AttributesStatementSyntax) = VBFactory.List(node.AttributeLists.Select(Function(a As AttributeListSyntax) VBFactory.AttributesStatement(VBFactory.SingletonList(DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))))
                 Dim MemberList As New List(Of VBS.StatementSyntax)
                 For Each m As MemberDeclarationSyntax In node.Members
-                    Application.DoEvents()
-
                     If s_originalRequest.CancelToken.IsCancellationRequested Then
                         Throw New OperationCanceledException
                     End If

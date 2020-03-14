@@ -4,7 +4,6 @@
 
 Imports System.Runtime.InteropServices
 Imports System.Text
-Imports System.Windows.Forms
 
 Imports CSharpToVBCodeConverter.Util
 
@@ -1676,7 +1675,6 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         If ReportProgress Then
                             s_originalRequest.Progress?.Report(New ProgressReport(i + 1, node.Expressions.Count))
                         End If
-                        Application.DoEvents()
 
                         If s_originalRequest.CancelToken.IsCancellationRequested Then
                             Exit For

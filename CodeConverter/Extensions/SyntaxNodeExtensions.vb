@@ -3,7 +3,6 @@
 ' See the LICENSE file in the project root for more information.
 Imports System.Runtime.CompilerServices
 Imports System.Text
-Imports System.Windows.Forms
 
 Imports CSharpToVBCodeConverter.DestVisualBasic
 
@@ -943,7 +942,6 @@ Namespace CSharpToVBCodeConverter.Util
 
         <Extension>
         Public Function ConvertTrivia(TriviaToConvert As IReadOnlyCollection(Of SyntaxTrivia)) As IEnumerable(Of SyntaxTrivia)
-            Application.DoEvents()
             Dim TriviaList As New List(Of SyntaxTrivia)
             If TriviaToConvert Is Nothing Then
                 Return TriviaList
@@ -1003,7 +1001,6 @@ Namespace CSharpToVBCodeConverter.Util
                             End If
                     End Select
                 Next
-                Application.DoEvents()
             Catch ex As OperationCanceledException
                 Throw
             Catch ex As Exception

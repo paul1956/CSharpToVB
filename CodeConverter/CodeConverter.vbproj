@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <RootNamespace></RootNamespace>
@@ -8,7 +8,6 @@
     <OptionInfer>Off</OptionInfer>
     <OptionStrict>On</OptionStrict>
     <AssemblyName>VB.CodeConverter</AssemblyName>
-    <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
   <PropertyGroup>
     <NeutralLanguage>en-US</NeutralLanguage>
