@@ -10,7 +10,7 @@ Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
 Public Module RestuructureSeparatedLists
     Public Property IgnoredIfDepth As Integer = 0
-
+    Public Property IfDepth As Integer = 0
     Friend Sub RestructureNodesAndSeparators(Of T As VB.VisualBasicSyntaxNode)(ByRef _OpenToken As SyntaxToken, ByRef Items As List(Of T), ByRef Separators As List(Of SyntaxToken), ByRef _CloseToken As SyntaxToken)
         Dim TokenLeadingTrivia As New List(Of SyntaxTrivia)
         Dim NewOpenToken As SyntaxToken = _OpenToken.WithModifiedTokenTrivia(LeadingToken:=True, AfterEOL:=False)

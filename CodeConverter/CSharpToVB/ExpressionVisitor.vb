@@ -317,7 +317,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Return VBFactory.BinaryExpression(kind:=VB.SyntaxKind.SubtractExpression, left:=DirectCast(expr.Accept(Me), VBS.ExpressionSyntax), operatorToken:=MinusToken, right:=VBFactory.NumericLiteralExpression(VBFactory.Literal(1)))
             End Function
 
-            Private Function RestructureTrivia(TriviaList As SyntaxTriviaList, FoundEOL As Boolean, ByRef OperatorTrailingTrivia As List(Of SyntaxTrivia)) As Boolean
+            Private Function RestructureTrivia(node As CSS.MemberAccessExpressionSyntax, TriviaList As SyntaxTriviaList, FoundEOL As Boolean, ByRef OperatorTrailingTrivia As List(Of SyntaxTrivia)) As Boolean
                 For Each Trivia As SyntaxTrivia In TriviaList
                     Select Case Trivia.RawKind
                         Case VB.SyntaxKind.CommentTrivia
@@ -327,8 +327,12 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                             FoundEOL = True
                         Case VB.SyntaxKind.WhitespaceTrivia
                             OperatorTrailingTrivia.Add(SpaceTrivia)
-                        Case VB.SyntaxKind.DisableWarningDirectiveTrivia, VB.SyntaxKind.EnableWarningDirectiveTrivia
+                        Case VB.SyntaxKind.DisableWarningDirectiveTrivia,
+                             VB.SyntaxKind.EnableWarningDirectiveTrivia
                             ' Ignore
+                        Case VB.SyntaxKind.IfDirectiveTrivia
+                            Dim StatementWithIssues As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
+                            StatementWithIssues.AddMarker(VBFactory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
                         Case Else
                             Stop
                     End Select
@@ -1808,18 +1812,21 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Select Case NewTrailingTrivia.Count
                     Case 0, 1
                     Case 2
+                        Dim LastTrivia As SyntaxTrivia = NewTrailingTrivia.Last
                         Select Case NewTrailingTrivia.First.RawKind
                             Case VB.SyntaxKind.EndOfLineTrivia
-                                If NewTrailingTrivia.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                                If LastTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
                                     NewTrailingTrivia.RemoveAt(1)
-                                ElseIf NewTrailingTrivia.Last.IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
+                                ElseIf LastTrivia.IsKind(VB.SyntaxKind.WhitespaceTrivia) OrElse
+                                    LastTrivia.IsKind(VB.SyntaxKind.EndIfDirectiveTrivia) Then
+                                    ' Ignore, it belongs here
                                 Else
                                     Stop
                                 End If
                             Case VB.SyntaxKind.WhitespaceTrivia
-                                If NewTrailingTrivia.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                                If LastTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
                                     NewTrailingTrivia.RemoveAt(1)
-                                ElseIf NewTrailingTrivia.Last.IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
+                                ElseIf LastTrivia.IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
                                     NewTrailingTrivia.RemoveAt(1)
                                 Else
                                     Stop
@@ -2161,8 +2168,8 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
 
                 If Expression.GetLastToken.ContainsEOLTrivia Then
                     Dim FoundEOL As Boolean = False
-                    FoundEOL = RestructureTrivia(TriviaList:=Expression.GetTrailingTrivia, FoundEOL, OperatorTrailingTrivia)
-                    FoundEOL = RestructureTrivia(TriviaList:=OperatorToken.LeadingTrivia, FoundEOL, OperatorTrailingTrivia)
+                    FoundEOL = RestructureTrivia(node, TriviaList:=Expression.GetTrailingTrivia, FoundEOL, OperatorTrailingTrivia)
+                    FoundEOL = RestructureTrivia(node, TriviaList:=OperatorToken.LeadingTrivia, FoundEOL, OperatorTrailingTrivia)
 
                     If FoundEOL Then
                         OperatorTrailingTrivia.Add(VBEOLTrivia)

@@ -121,6 +121,7 @@ Namespace CSharpToVBCodeConverter.Util
             Dim AfterLineContinuation As Boolean = LeadingToken
             Dim InitialTriviaList As New List(Of SyntaxTrivia)
             Dim TriviaListUBound As Integer
+            Dim FinalTrailingTriviaList As New List(Of SyntaxTrivia)
             If LeadingToken Then
                 FinalLeadingTriviaList.AddRange(Token.LeadingTrivia)
             Else
@@ -180,7 +181,7 @@ Namespace CSharpToVBCodeConverter.Util
                             FinalLeadingTriviaList.Add(Trivia)
                             AfterLineContinuation = False
                             AfterWhiteSpace = False
-                        Case VB.SyntaxKind.IfDirectiveTrivia, VB.SyntaxKind.DisabledTextTrivia, VB.SyntaxKind.EndIfDirectiveTrivia
+                        Case VB.SyntaxKind.IfDirectiveTrivia, VB.SyntaxKind.DisabledTextTrivia
                             AfterEOL = False
                             FinalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(Trivia))
                             Select Case NextTrivia.RawKind
@@ -193,6 +194,24 @@ Namespace CSharpToVBCodeConverter.Util
                                 Case Else
                                     Stop
                             End Select
+                        Case VB.SyntaxKind.EndIfDirectiveTrivia
+                            If Token.LeadingTrivia.ContainsDirectiveTrivia(VB.SyntaxKind.IfDirectiveTrivia, VB.SyntaxKind.ElseIfDirectiveTrivia) Then
+                                FinalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(Trivia))
+                                Select Case NextTrivia.RawKind
+                                    Case VB.SyntaxKind.None
+                                        FinalLeadingTriviaList.Add(VBEOLTrivia)
+                                    Case VB.SyntaxKind.WhitespaceTrivia
+                                        FinalLeadingTriviaList.Add(VBEOLTrivia)
+                                    Case VB.SyntaxKind.IfDirectiveTrivia, VB.SyntaxKind.DisabledTextTrivia, VB.SyntaxKind.EndIfDirectiveTrivia
+                                        FinalLeadingTriviaList.Add(VBEOLTrivia)
+                                    Case Else
+                                        Stop
+                                End Select
+                                Continue For
+                            End If
+                            AfterEOL = False
+                            FinalTrailingTriviaList.Add(VBEOLTrivia)
+                            FinalTrailingTriviaList.Add(Trivia)
                         Case Else
                             Stop
                     End Select
@@ -204,7 +223,6 @@ Namespace CSharpToVBCodeConverter.Util
             AfterWhiteSpace = False
             AfterLineContinuation = False
 
-            Dim FinalTrailingTriviaList As New List(Of SyntaxTrivia)
             If LeadingToken Then
                 For i As Integer = 0 To TriviaListUBound
                     Dim Trivia As SyntaxTrivia = InitialTriviaList(i)

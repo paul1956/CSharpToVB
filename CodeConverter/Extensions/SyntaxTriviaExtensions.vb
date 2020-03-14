@@ -158,6 +158,27 @@ Namespace CSharpToVBCodeConverter.Util
             Return False
         End Function
 
+        ''' <summary>
+        ''' Syntax Trivia in any Language
+        ''' </summary>
+        ''' <param name="TriviaList"></param>
+        ''' <returns>True if any Trivia is a Comment or a Directive</returns>
+        <Extension>
+        Public Function ContainsDirectiveTrivia(TriviaList As SyntaxTriviaList, ParamArray Kinds() As VB.SyntaxKind) As Boolean
+            If TriviaList.Count = 0 Then Return False
+            For Each t As SyntaxTrivia In TriviaList
+                If t.IsDirective Then
+                    For Each k As VB.SyntaxKind In Kinds
+                        If t.RawKind = k Then
+                            Return True
+                        End If
+                    Next
+                    Return False
+                End If
+            Next
+            Return False
+        End Function
+
         <Extension>
         Public Function ContainsCommentTrivia(TriviaList As SyntaxTriviaList) As Boolean
             If TriviaList.Count = 0 Then

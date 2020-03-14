@@ -699,8 +699,13 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                                 WithTrailingEOL
                                 StatementList.Add(ReturnStartementWithTrivia)
                             Else
+                                Dim newTrailingTrivia As New List(Of SyntaxTrivia)
+                                newTrailingTrivia.AddRange(ConvertTrivia(node.ExpressionBody.Expression.GetTrailingTrivia))
+                                If ReturnExpression.GetTrailingTrivia.ContainsCommentOrDirectiveTrivia Then
+                                    newTrailingTrivia.AddRange(ReturnExpression.GetTrailingTrivia)
+                                End If
                                 StatementList.Add(VBFactory.ReturnStatement(ReturnExpression).
-                                                      With(StatementLeadingTrivia, ConvertTrivia(node.ExpressionBody.Expression.GetTrailingTrivia)).
+                                                      With(StatementLeadingTrivia, newTrailingTrivia).
                                                       WithAppendedTrailingTrivia(ConvertTrivia(node.SemicolonToken.TrailingTrivia)).
                                                       WithTrailingEOL
                                                   )
