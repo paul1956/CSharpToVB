@@ -504,6 +504,14 @@ Public Class Form1
     End Sub
 
     Private Function Convert_Compile_Colorize(RequestToConvert As ConvertRequest, CSPreprocessorSymbols As List(Of String), VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)), OptionalReferences() As MetadataReference, CancelToken As CancellationToken) As Boolean
+        Dim UIContext As SynchronizationContext = SynchronizationContext.Current
+
+        Dim ReportException As Action(Of Exception) =
+            Sub(ex As Exception)
+                ' Use the Windows Forms synchronization context in order to call MsgBox from the UI thread.
+                UIContext.Post(Function(state) MsgBox(ex.Message, MsgBoxStyle.Critical, "Stack Overflow"), state:=Nothing)
+            End Sub
+
         Using ProgressBar As TextProgressBar = New TextProgressBar(ConversionProgressBar)
             ' The System.Progress class invokes the callback on the UI thread. It does this because we create the
             ' System.Progress object on the main thread. During creation, it reads SynchronizationContext.Current so
@@ -511,7 +519,7 @@ Public Class Form1
             ' IProgress.Report.
             Dim progress As New Progress(Of ProgressReport)(AddressOf ProgressBar.Update)
 
-            _resultOfConversion = ConvertInputRequest(RequestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences, AddressOf ReportException, progress, CancelToken)
+            _resultOfConversion = ConvertInputRequest(RequestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences, ReportException, progress, CancelToken)
         End Using
         mnuFileSaveAs.Enabled = Me._resultOfConversion.ResultStatus = ResultTriState.Success
         Select Case _resultOfConversion.ResultStatus
@@ -531,10 +539,6 @@ Public Class Form1
         End Select
         Return _resultOfConversion.ResultStatus <> ResultTriState.Failure
     End Function
-
-    Private Sub ReportException(Exception As Exception)
-        MsgBox(Exception.Message, MsgBoxStyle.Critical, "Stack Overflow")
-    End Sub
 
     ''' <summary>
     ''' Look in SearchBuffer for text and highlight it
