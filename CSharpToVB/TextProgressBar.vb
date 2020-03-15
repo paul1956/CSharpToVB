@@ -2,7 +2,6 @@
 Imports System.Threading
 
 Public Class TextProgressBar
-    Implements IProgress(Of ProgressReport)
     Implements IDisposable
 
     Private ReadOnly _defaultFont As New Font("Segoe UI", 9, FontStyle.Bold)
@@ -58,7 +57,7 @@ Public Class TextProgressBar
         End With
     End Sub
 
-    Public Sub Report(value As ProgressReport) Implements IProgress(Of ProgressReport).Report
+    Public Sub Update(value As ProgressReport)
         With _progressBar
             .Visible = value.Maximum = 0 OrElse value.Current < value.Maximum
             .Maximum = value.Maximum

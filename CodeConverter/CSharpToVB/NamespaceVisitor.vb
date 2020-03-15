@@ -4,7 +4,6 @@
 Imports System.Collections.Immutable
 Imports System.Runtime.InteropServices
 Imports System.Threading
-Imports System.Windows.Forms
 
 Imports CSharpToVBCodeConverter.Util
 
@@ -176,8 +175,6 @@ End Function
                 Dim classType As ITypeSymbol = CType(_mSemanticModel.GetDeclaredSymbol(node), ITypeSymbol)
 
                 For i As Integer = 0 To MembersLastIndex
-                    Application.DoEvents()
-
                     If s_originalRequest.CancelToken.IsCancellationRequested Then
                         Throw New OperationCanceledException
                     End If
@@ -538,8 +535,6 @@ End Function
                 Dim LastMemberIndex As Integer = node.Members.Count - 1
 
                 For i As Integer = 0 To LastMemberIndex
-                    Application.DoEvents()
-
                     If s_originalRequest.CancelToken.IsCancellationRequested Then
                         Throw New OperationCanceledException
                     End If

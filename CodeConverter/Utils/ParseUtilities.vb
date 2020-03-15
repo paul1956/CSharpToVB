@@ -3,7 +3,6 @@
 ' See the LICENSE file in the project root for more information.
 Imports System.IO
 Imports System.Threading
-Imports System.Windows.Forms
 
 Imports CSharpToVBCodeConverter.Util
 
@@ -27,8 +26,6 @@ Public Module ParseUtilities
 
         Try
             For Each Subdirectory As String In Directory.GetDirectories(DirPath)
-                Application.DoEvents()
-
                 If SkipTestResourceFiles AndAlso
                         (Subdirectory.EndsWith("Test\Resources", StringComparison.OrdinalIgnoreCase) OrElse
                          Subdirectory.EndsWith("Setup\Templates", StringComparison.OrdinalIgnoreCase)) Then
@@ -45,8 +42,6 @@ Public Module ParseUtilities
                 End If
             Next
             For Each File As String In Directory.GetFiles(path:=DirPath, searchPattern:=$"*.{SourceLanguageExtension}")
-                Application.DoEvents()
-
                 If Not ParseCSharpSource(File, New List(Of String)).
                     GetRoot.SyntaxTree.IsGeneratedCode(Function(t As SyntaxTrivia) As Boolean
                                                            Return t.IsComment OrElse t.IsRegularOrDocComment

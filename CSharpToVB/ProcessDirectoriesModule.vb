@@ -52,7 +52,7 @@ Public Module ProcessDirectoriesModule
     ''' <returns>
     ''' False if error and user wants to stop, True if success or user wants to ignore error
     ''' </returns>
-    Public Function ProcessDirectory(SourceDirectory As String, TargetDirectory As String, MeForm As Form1, StopButton As Button, RichTextBoxFileList As RichTextBox, ByRef LastFileNameWithPath As String, SourceLanguageExtension As String, ByRef FilesProcessed As Long, ByRef TotalFilesToProcess As Long, ProcessFile As Func(Of String, String, String, List(Of String), List(Of KeyValuePair(Of String, Object)), MetadataReference(), CancellationToken, Boolean), CancelToken As CancellationToken) As Boolean
+    Public Async Function ProcessDirectoryAsync(SourceDirectory As String, TargetDirectory As String, MeForm As Form1, StopButton As Button, RichTextBoxFileList As RichTextBox, SourceLanguageExtension As String, Stats As ProcessingStats, TotalFilesToProcess As Long, ProcessFileAsync As Func(Of String, String, String, List(Of String), List(Of KeyValuePair(Of String, Object)), MetadataReference(), CancellationToken, Task(Of Boolean)), CancelToken As CancellationToken) As Task(Of Boolean)
         If String.IsNullOrWhiteSpace(SourceDirectory) OrElse Not Directory.Exists(SourceDirectory) Then
             Return True
         End If
@@ -66,22 +66,22 @@ Public Module ProcessDirectoriesModule
                                         KeyValuePair.Create(Of String, Object)(My.Settings.Framework, True)
                                     }
             For Each PathWithFileName As String In DirectoryList
-                FilesProcessed += 1
-                If LastFileNameWithPath.Length = 0 OrElse LastFileNameWithPath = PathWithFileName Then
-                    LastFileNameWithPath = ""
+                Stats.FilesProcessed += 1
+                If Stats.LastFileNameWithPath.Length = 0 OrElse Stats.LastFileNameWithPath = PathWithFileName Then
+                    Stats.LastFileNameWithPath = ""
                     If RichTextBoxFileList IsNot Nothing Then
-                        RichTextBoxFileList.AppendText($"{FilesProcessed.ToString(Globalization.CultureInfo.InvariantCulture),-5} {PathWithFileName}{vbCrLf}")
+                        RichTextBoxFileList.AppendText($"{Stats.FilesProcessed.ToString(Globalization.CultureInfo.InvariantCulture),-5} {PathWithFileName}{vbCrLf}")
                         RichTextBoxFileList.Select(RichTextBoxFileList.TextLength, 0)
                         RichTextBoxFileList.ScrollToCaret()
                         Application.DoEvents()
                     End If
 
-                    If Not ProcessFile(PathWithFileName, TargetDirectory, SourceLanguageExtension, CSPreprocessorSymbols, VBPreprocessorSymbols, CSharpReferences(Assembly.Load("System.Windows.Forms").Location, OptionalReference:=Nothing).ToArray, CancelToken) Then
+                    If Not Await ProcessFileAsync(PathWithFileName, TargetDirectory, SourceLanguageExtension, CSPreprocessorSymbols, VBPreprocessorSymbols, CSharpReferences(Assembly.Load("System.Windows.Forms").Location, OptionalReference:=Nothing).ToArray, CancelToken).ConfigureAwait(True) Then
                         SetButtonStopAndCursor(MeForm:=MeForm, StopButton:=StopButton, StopButtonVisible:=False)
                         Return False
                     End If
                     If MeForm IsNot Nothing Then
-                        MeForm.FilesConversionProgress.Text = $"Processed {FilesProcessed:N0} of {TotalFilesToProcess:N0} Files"
+                        MeForm.FilesConversionProgress.Text = $"Processed {Stats.FilesProcessed:N0} of {TotalFilesToProcess:N0} Files"
                         Application.DoEvents()
                     End If
                 End If
@@ -103,7 +103,7 @@ Public Module ProcessDirectoriesModule
                 If (Subdirectory.EndsWith("Test\Resources", StringComparison.OrdinalIgnoreCase) OrElse Subdirectory.EndsWith("Setup\Templates", StringComparison.OrdinalIgnoreCase)) AndAlso (MeForm Is Nothing OrElse My.Settings.SkipTestResourceFiles) Then
                     Continue For
                 End If
-                If Not ProcessDirectory(Subdirectory, ConvertSourceToTargetDirectory(TargetDirectory, Subdirectory), MeForm, StopButton, RichTextBoxFileList, LastFileNameWithPath, SourceLanguageExtension, FilesProcessed, TotalFilesToProcess, ProcessFile, CancelToken) Then
+                If Not Await ProcessDirectoryAsync(Subdirectory, ConvertSourceToTargetDirectory(TargetDirectory, Subdirectory), MeForm, StopButton, RichTextBoxFileList, SourceLanguageExtension, Stats, TotalFilesToProcess, ProcessFileAsync, CancelToken).ConfigureAwait(True) Then
                     SetButtonStopAndCursor(MeForm:=MeForm, StopButton:=StopButton, StopButtonVisible:=False)
                     Return False
                 End If

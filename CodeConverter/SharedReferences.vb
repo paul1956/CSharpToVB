@@ -6,7 +6,6 @@ Imports System.Reflection
 Imports System.Reflection.Metadata
 Imports System.Reflection.PortableExecutable
 Imports System.Runtime.CompilerServices
-Imports System.Windows.Forms
 
 Imports Microsoft.CodeAnalysis
 
@@ -26,11 +25,9 @@ Public Module SharedReferences
             Return
         End If
         L.Add(FileNameWithPath)
-        Application.DoEvents()
         If hasMetadataOrIsAssembly.IsAssembly Then
             s_cSharpReferences.Add(MetadataReference.CreateFromFile(FileNameWithPath))
         End If
-        Application.DoEvents()
         s_visualBasicReferences.Add(MetadataReference.CreateFromFile(FileNameWithPath))
     End Sub
 
