@@ -1255,7 +1255,7 @@ Public Class Form1
 
     ' Print message for WorkspaceFailed event to help diagnosing project load failures.
     Private Sub MSBuildWorkspaceFailed(_1 As Object, e1 As WorkspaceDiagnosticEventArgs)
-        If MsgBox(e1.Diagnostic.Message, MsgBoxStyle.AbortRetryIgnore, "MSBuild Failed, abort will exit the application") = MsgBoxResult.Abort Then
+        If MsgBox($"OK will ignore the issue, cancel will exit the application.{vbCrLf}{vbCrLf}Details {e1.Diagnostic.Message}", MsgBoxStyle.OkCancel, "MSBuild Failed") = MsgBoxResult.Cancel Then
             End
         End If
     End Sub
