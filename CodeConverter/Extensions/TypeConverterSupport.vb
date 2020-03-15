@@ -256,7 +256,7 @@ Namespace CSharpToVBCodeConverter
 
             Dim keywordKind As VB.SyntaxKind = VB.SyntaxFacts.GetKeywordKind(id.ValueText)
             If VB.SyntaxFacts.IsKeywordKind(keywordKind) Then
-                Return MakeIdentifierUnique(id, BracketNeeded:=True, QualifiedNameOrTypeName:=IsQualifiedName)
+                Return MakeIdentifierUnique(id, BracketNeeded:=Not TypeOf id.Parent?.Parent Is CSS.MemberAccessExpressionSyntax, QualifiedNameOrTypeName:=IsQualifiedName)
             End If
             If IsTypeName Then
                 IsQualifiedName = True

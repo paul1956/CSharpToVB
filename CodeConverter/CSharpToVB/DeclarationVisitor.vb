@@ -704,13 +704,16 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                 If ReturnExpression.GetTrailingTrivia.ContainsCommentOrDirectiveTrivia Then
                                     newTrailingTrivia.AddRange(ReturnExpression.GetTrailingTrivia)
                                 End If
+                                If node.ExpressionBody.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
+                                    StatementLeadingTrivia.InsertRange(0, ConvertTrivia(node.ExpressionBody.GetLeadingTrivia))
+                                End If
                                 StatementList.Add(VBFactory.ReturnStatement(ReturnExpression).
                                                       With(StatementLeadingTrivia, newTrailingTrivia).
                                                       WithAppendedTrailingTrivia(ConvertTrivia(node.SemicolonToken.TrailingTrivia)).
                                                       WithTrailingEOL
                                                   )
-                            End If
-                            Statements = VBFactory.List(StatementList)
+                                End If
+                                Statements = VBFactory.List(StatementList)
                         End If
                     End If
                     block = ReplaceStatementsWithMarkedStatements(node, Statements)

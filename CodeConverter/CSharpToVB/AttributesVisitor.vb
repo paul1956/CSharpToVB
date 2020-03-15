@@ -50,11 +50,31 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     Dim LocalTrailingTrivia As New List(Of SyntaxTrivia)
                     Dim Item As VBS.ArgumentSyntax = DirectCast(node.Arguments(i).Accept(Me), VBS.ArgumentSyntax)
                     If Item.HasLeadingTrivia Then
-                        For Each t As SyntaxTrivia In Item.GetLeadingTrivia
-                            If t.IsComment Then
-                                TrailingTriviaList.Add(t)
+                        Dim triviaList As SyntaxTriviaList = Item.GetLeadingTrivia
+                        Dim TriviaCount As Integer = triviaList.Count - 1
+
+                        For i1 As Integer = 0 To TriviaCount
+
+                            Dim Trivia As SyntaxTrivia = triviaList(i1)
+                            Dim NextTrivia As SyntaxTrivia = If(i1 < TriviaCount, triviaList(i1 + 1), Nothing)
+                            If Trivia.IsComment Then
+                                TrailingTriviaList.Add(Trivia)
+                                If NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                                    i1 += 1
+                                End If
                             Else
-                                LocalLeadingTrivia.Add(t)
+                                If Trivia.IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
+                                    Select Case NextTrivia.RawKind
+                                        Case VB.SyntaxKind.EndOfLineTrivia
+                                            i1 += 2
+                                        Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.None
+                                        Case Else
+                                            Stop
+                                            LocalLeadingTrivia.Add(Trivia)
+                                    End Select
+                                Else
+                                    LocalLeadingTrivia.Add(Trivia)
+                                End If
                             End If
                         Next
                         Item = Item.WithLeadingTrivia(LocalLeadingTrivia)
