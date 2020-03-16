@@ -220,7 +220,7 @@ Partial Class Form1
         Me.mnuFileOpenProject.Size = New System.Drawing.Size(227, 22)
         Me.mnuFileOpenProject.Text = "Open Project..."
         '
-        'mnuEditSaveAs
+        'mnuFileSaveAs
         '
         Me.mnuFileSaveAs.Enabled = False
         Me.mnuFileSaveAs.Name = "mnuEditSaveAs"
@@ -253,7 +253,6 @@ Partial Class Form1
         Me.mnuFileSnippetSave.Name = "mnuFileSnippetSave"
         Me.mnuFileSnippetSave.Size = New System.Drawing.Size(124, 22)
         Me.mnuFileSnippetSave.Text = "Save"
-        '
         '
         'mnuFileSep6
         '
