@@ -34,12 +34,7 @@ Public Module ParseUtilities
                 If SkipBinAndObjFolders AndAlso (Subdirectory = "bin" OrElse Subdirectory = "obj" OrElse Subdirectory = "g") Then
                     Continue For
                 End If
-                Dim TempFileCount As Long = GetFileCount(Subdirectory, SourceLanguageExtension, SkipBinAndObjFolders, SkipTestResourceFiles, Depth + 1)
-                If Depth > 0 Then
-                    TotalFilesToProcess += TempFileCount
-                Else
-                    TotalFilesToProcess = TempFileCount
-                End If
+                TotalFilesToProcess += GetFileCount(Subdirectory, SourceLanguageExtension, SkipBinAndObjFolders, SkipTestResourceFiles, Depth + 1)
             Next
             For Each File As String In Directory.GetFiles(path:=DirPath, searchPattern:=$"*.{SourceLanguageExtension}")
                 If Not ParseCSharpSource(File, New List(Of String)).

@@ -2077,6 +2077,8 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         Case CS.SyntaxKind.SuppressNullableWarningExpression
                             ' TODO Handle better
                             Return NothingExpression
+                        Case CS.SyntaxKind.ArrayInitializerExpression
+                            Return NothingExpression
                         Case Else
                             Stop
                     End Select

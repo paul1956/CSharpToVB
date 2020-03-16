@@ -256,7 +256,13 @@ Namespace CSharpToVBCodeConverter
 
             Dim keywordKind As VB.SyntaxKind = VB.SyntaxFacts.GetKeywordKind(id.ValueText)
             If VB.SyntaxFacts.IsKeywordKind(keywordKind) Then
-                Return MakeIdentifierUnique(id, BracketNeeded:=Not TypeOf id.Parent?.Parent Is CSS.MemberAccessExpressionSyntax, QualifiedNameOrTypeName:=IsQualifiedName)
+                Dim bracketNeeded As Boolean = True
+                If keywordKind = VB.SyntaxKind.REMKeyword Then
+                    bracketNeeded = True
+                ElseIf TypeOf id.Parent?.Parent Is CSS.MemberAccessExpressionSyntax Then
+                    bracketNeeded = CType(id.Parent?.Parent, CSS.MemberAccessExpressionSyntax).Expression.ToString.Equals(id.ToString, StringComparison.Ordinal)
+                End If
+                Return MakeIdentifierUnique(id, bracketNeeded, QualifiedNameOrTypeName:=IsQualifiedName)
             End If
             If IsTypeName Then
                 IsQualifiedName = True

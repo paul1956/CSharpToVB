@@ -177,17 +177,21 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Return VBFactory.AccessorBlock(blockKind, stmt.WithConvertedTriviaFrom(OpenBrace).WithTrailingEOL, body, endStmt.WithConvertedTriviaFrom(CloseBrace)).WithConvertedTriviaFrom(node)
             End Function
 
-            Private Sub ConvertAndSplitAttributes(attributeLists As SyntaxList(Of CSS.AttributeListSyntax), <Out> ByRef Attributes As List(Of VBS.AttributeListSyntax), <Out> ByRef ReturnAttributes As SyntaxList(Of VBS.AttributeListSyntax))
+            Private Sub ConvertAndSplitAttributes(attributeLists As SyntaxList(Of CSS.AttributeListSyntax), <Out> ByRef Attributes As List(Of VBS.AttributeListSyntax), <Out> ByRef ReturnAttributes As SyntaxList(Of VBS.AttributeListSyntax), ByRef finalDirectiveTrivia As List(Of SyntaxTrivia))
                 Dim retAttr As List(Of VBS.AttributeListSyntax) = New List(Of VBS.AttributeListSyntax)()
                 Dim FirstAttribuate As Boolean = True
-                For Each attrList As CSS.AttributeListSyntax In attributeLists
+                Dim AttributeCount As Integer = attributeLists.Count - 1
+                Dim FinalEndIf As SyntaxTrivia = Nothing
+                For i As Integer = 0 To AttributeCount
+                    Dim attrList As CSS.AttributeListSyntax = attributeLists(i)
+
                     If attrList.Target Is Nothing OrElse Not attrList.Target.Identifier.IsKind(CS.SyntaxKind.ReturnKeyword) Then
                         Dim item As VBS.AttributeListSyntax = DirectCast(attrList.Accept(Me), VBS.AttributeListSyntax)
                         If FirstAttribuate Then
                             FirstAttribuate = False
                         Else
                             Dim itemLeadingTrivia As SyntaxTriviaList = item.GetLeadingTrivia
-                            If itemLeadingTrivia.ContainsCommentTrivia Then
+                            If itemLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
                                 Dim LeadingTriviaList As New List(Of SyntaxTrivia)
                                 Dim FirstComment As Boolean = True
                                 Dim NeedWhiteSpace As Boolean = True
@@ -209,6 +213,44 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                                 needLineContinuation = False
                                             End If
                                             LeadingTriviaList.Add(VBSyntaxTrivia)
+                                        Case VB.SyntaxKind.IfDirectiveTrivia
+                                            If FirstComment Then
+                                                FirstComment = False
+                                                If NeedWhiteSpace Then
+                                                    NeedWhiteSpace = False
+                                                    LeadingTriviaList.Add(SpaceTrivia)
+                                                End If
+                                                LeadingTriviaList.Add(LineContinuation)
+                                                LeadingTriviaList.Add(SpaceTrivia)
+                                                needLineContinuation = False
+                                            End If
+                                            LeadingTriviaList.Add(VBFactory.CommentTrivia($"Directive not allowed here {VBSyntaxTrivia.ToString}"))
+                                        Case VB.SyntaxKind.ElseDirectiveTrivia
+                                            If FirstComment Then
+                                                FirstComment = False
+                                                If NeedWhiteSpace Then
+                                                    NeedWhiteSpace = False
+                                                    LeadingTriviaList.Add(SpaceTrivia)
+                                                End If
+                                                LeadingTriviaList.Add(LineContinuation)
+                                                LeadingTriviaList.Add(SpaceTrivia)
+                                                needLineContinuation = False
+                                            End If
+                                            LeadingTriviaList.Add(VBFactory.CommentTrivia($"Directive not allowed here {VBSyntaxTrivia.ToString}"))
+                                        Case VB.SyntaxKind.ElseIfDirectiveTrivia
+                                            If FirstComment Then
+                                                FirstComment = False
+                                                If NeedWhiteSpace Then
+                                                    NeedWhiteSpace = False
+                                                    LeadingTriviaList.Add(SpaceTrivia)
+                                                End If
+                                                LeadingTriviaList.Add(LineContinuation)
+                                                LeadingTriviaList.Add(SpaceTrivia)
+                                                needLineContinuation = False
+                                            End If
+                                            LeadingTriviaList.Add(VBFactory.CommentTrivia($"Directive not allowed here {VBSyntaxTrivia.ToString}"))
+                                        Case VB.SyntaxKind.EndIfDirectiveTrivia
+                                            finalDirectiveTrivia.Add(VBSyntaxTrivia)
                                         Case VB.SyntaxKind.EndOfLineTrivia
                                             If NeedWhiteSpace Then
                                                 NeedWhiteSpace = False
@@ -365,7 +407,8 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             Public Overrides Function VisitConversionOperatorDeclaration(node As CSS.ConversionOperatorDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim AttributeLists As New List(Of VBS.AttributeListSyntax)
                 Dim ReturnAttributes As SyntaxList(Of VBS.AttributeListSyntax) = Nothing
-                ConvertAndSplitAttributes(node.AttributeLists, AttributeLists, ReturnAttributes)
+                Dim FinalTrailingDirective As New List(Of SyntaxTrivia)
+                ConvertAndSplitAttributes(node.AttributeLists, AttributeLists, ReturnAttributes, FinalTrailingDirective)
                 Dim parameterList As VBS.ParameterListSyntax = DirectCast(node.ParameterList?.Accept(Me), VBS.ParameterListSyntax).
                                                                     WithRestructuredingEOLTrivia
                 Dim Modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, IsModule, TokenContext.Member)
@@ -374,14 +417,16 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim Type As VBS.TypeSyntax = DirectCast(node.Type.Accept(Me), VBS.TypeSyntax).With({SpaceTrivia}, {SpaceTrivia})
                 Dim AsClause As VBS.SimpleAsClauseSyntax = VBFactory.SimpleAsClause(Nothing, Type)
                 Dim OperatorStatement As VBS.OperatorStatementSyntax = VBFactory.OperatorStatement(VBFactory.List(AttributeLists), VBFactory.TokenList(Modifiers), CTypeKeyword, parameterList, AsClause).WithTrailingEOL
+                If FinalTrailingDirective.Count > 0 Then
+                    OperatorStatement = OperatorStatement.WithAppendedTrailingTrivia(FinalTrailingDirective)
+                End If
+
                 Dim Statements As New SyntaxList(Of VBS.StatementSyntax)
 
                 If node.Body IsNot Nothing Then
                     Statements = VBFactory.List(node.Body.Statements.SelectMany(Function(s As CSS.StatementSyntax) s.Accept(visitor)))
                 ElseIf node.ExpressionBody IsNot Nothing Then
                     Statements = VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.ReturnStatement(DirectCast(node.ExpressionBody.Accept(Me), VBS.ExpressionSyntax)).WithTrailingEOL)
-                Else
-                    Stop
                 End If
                 Dim EndOperatorStatement As VBS.EndBlockStatementSyntax = VBFactory.EndBlockStatement(VB.SyntaxKind.EndOperatorStatement, EndKeyword, BlockKeyword).WithConvertedTriviaFrom(node.Body.GetBraces.Item2)
                 Dim OperatorBlock As VBS.OperatorBlockSyntax = VBFactory.OperatorBlock(OperatorStatement, Statements, EndOperatorStatement).WithConvertedTriviaFrom(node)
@@ -428,12 +473,16 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             Public Overrides Function VisitEventDeclaration(node As CSS.EventDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim Attributes As New List(Of VBS.AttributeListSyntax)
                 Dim ReturnAttributes As SyntaxList(Of VBS.AttributeListSyntax) = Nothing
-                ConvertAndSplitAttributes(node.AttributeLists, Attributes, ReturnAttributes)
+                Dim FinalTrailingDirective As New List(Of SyntaxTrivia)
+                ConvertAndSplitAttributes(node.AttributeLists, Attributes, ReturnAttributes, FinalTrailingDirective)
                 Dim Modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, IsModule, TokenContext.Member)
                 Dim Identifier As SyntaxToken = GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False).WithTrailingTrivia(SpaceTrivia)
                 Dim AsClause As VBS.SimpleAsClauseSyntax = VBFactory.SimpleAsClause(attributeLists:=ReturnAttributes, DirectCast(node.Type.Accept(Me), VBS.TypeSyntax))
                 Modifiers.Add(CustomKeyword)
                 Dim stmt As VBS.EventStatementSyntax = VBFactory.EventStatement(attributeLists:=VBFactory.List(Attributes), VBFactory.TokenList(Modifiers), Identifier, parameterList:=Nothing, AsClause, implementsClause:=Nothing).WithTrailingEOL
+                If FinalTrailingDirective.Count > 0 Then
+                    stmt = stmt.WithAppendedTrailingTrivia(FinalTrailingDirective)
+                End If
                 Dim EmptyBody As Boolean = True
                 For i As Integer = 0 To node.AccessorList.Accessors.Count - 1
                     Dim a As CSS.AccessorDeclarationSyntax = node.AccessorList.Accessors(i)
@@ -455,7 +504,11 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim id As SyntaxToken = VBFactory.Identifier(MakeVBSafeName(node.Declaration.Variables.Single().Identifier.ValueText))
                 Dim ReturnAttributes As New SyntaxList(Of VBS.AttributeListSyntax)
                 Dim AttributeList As New List(Of VBS.AttributeListSyntax)
-                ConvertAndSplitAttributes(node.AttributeLists, AttributeList, ReturnAttributes)
+                Dim FinalTrailingDirective As New List(Of SyntaxTrivia)
+                ConvertAndSplitAttributes(node.AttributeLists, AttributeList, ReturnAttributes, FinalTrailingDirective)
+                If FinalTrailingDirective.Count > 0 Then
+                    Stop
+                End If
                 Return VBFactory.EventStatement(VBFactory.List(AttributeList),
                                      VBFactory.TokenList(ConvertModifiers(node.Modifiers, IsModule, TokenContext.Member)),
                                                     id,
@@ -523,7 +576,8 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim id As SyntaxToken = VBFactory.Identifier("Item")
                 Dim Attributes As New List(Of VBS.AttributeListSyntax)
                 Dim ReturnAttributes As SyntaxList(Of VBS.AttributeListSyntax) = Nothing
-                ConvertAndSplitAttributes(node.AttributeLists, Attributes, ReturnAttributes)
+                Dim FinalTrailingDirective As New List(Of SyntaxTrivia)
+                ConvertAndSplitAttributes(node.AttributeLists, Attributes, ReturnAttributes, FinalTrailingDirective)
                 Dim isIterator As Boolean = False
                 Dim accessors As New List(Of VBS.AccessorBlockSyntax)()
                 If node.AccessorList IsNot Nothing Then
@@ -590,6 +644,9 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim NodeType As VBS.TypeSyntax = DirectCast(node.Type.Accept(Me), VBS.TypeSyntax)
                 Dim AsClause As VBS.SimpleAsClauseSyntax = VBFactory.SimpleAsClause(ReturnAttributes, NodeType.WithLeadingTrivia(SpaceTrivia))
                 Dim stmt As VBS.PropertyStatementSyntax = VBFactory.PropertyStatement(VBFactory.List(Attributes), VBFactory.TokenList(Modifiers), id, parameterList, AsClause, initializer:=Nothing, implementsClause:=Nothing).WithTrailingEOL
+                If FinalTrailingDirective.Count > 0 Then
+                    stmt = stmt.WithAppendedTrailingTrivia(FinalTrailingDirective)
+                End If
                 Dim accessorList As CSS.AccessorListSyntax = node.AccessorList
                 Dim EmptyAccessorListBodies As Boolean = True
                 If accessorList IsNot Nothing Then
@@ -628,10 +685,10 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim containingType As INamedTypeSymbol = methodInfo?.ContainingType
                 Dim Attributes As New List(Of VBS.AttributeListSyntax)
                 Dim ReturnAttributes As SyntaxList(Of VBS.AttributeListSyntax) = Nothing
-                ConvertAndSplitAttributes(node.AttributeLists, Attributes, ReturnAttributes)
+                Dim FunctionStatementTrailingTrivia As New List(Of SyntaxTrivia)
+                ConvertAndSplitAttributes(node.AttributeLists, Attributes, ReturnAttributes, FunctionStatementTrailingTrivia)
                 Dim ParameterList As VBS.ParameterListSyntax = DirectCast(node.ParameterList?.Accept(Me), VBS.ParameterListSyntax)
 
-                Dim FunctionStatementTrailingTrivia As New List(Of SyntaxTrivia)
                 ParameterList = RelocateDirectivesInTrailingTrivia(ParameterList, FunctionStatementTrailingTrivia)
                 Dim block As SyntaxList(Of VBS.StatementSyntax)? = Nothing
 
@@ -712,8 +769,8 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                                       WithAppendedTrailingTrivia(ConvertTrivia(node.SemicolonToken.TrailingTrivia)).
                                                       WithTrailingEOL
                                                   )
-                                End If
-                                Statements = VBFactory.List(StatementList)
+                            End If
+                            Statements = VBFactory.List(StatementList)
                         End If
                     End If
                     block = ReplaceStatementsWithMarkedStatements(node, Statements)
@@ -987,7 +1044,8 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             Public Overrides Function VisitOperatorDeclaration(node As CSS.OperatorDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim Attributes As New List(Of VBS.AttributeListSyntax)
                 Dim ReturnAttributes As SyntaxList(Of VBS.AttributeListSyntax) = Nothing
-                ConvertAndSplitAttributes(node.AttributeLists, Attributes, ReturnAttributes)
+                Dim FinalTrailingDirective As New List(Of SyntaxTrivia)
+                ConvertAndSplitAttributes(node.AttributeLists, Attributes, ReturnAttributes, FinalTrailingDirective)
                 Dim visitor As New MethodBodyVisitor(_mSemanticModel, Me)
                 Dim body As New SyntaxList(Of VBS.StatementSyntax)
                 If node.Body IsNot Nothing Then
@@ -1016,6 +1074,9 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     Case Else
                         Dim OperatorToken As SyntaxToken = ConvertOperatorDeclarationToken(lSyntaxKind)
                         Dim stmt As VBS.OperatorStatementSyntax = VBFactory.OperatorStatement(VBFactory.List(Attributes), VBFactory.TokenList(Modifiers), OperatorToken, parameterList, VBFactory.SimpleAsClause(ReturnAttributes, DirectCast(node.ReturnType.Accept(Me), VBS.TypeSyntax)))
+                        If FinalTrailingDirective.Count > 0 Then
+                            stmt = stmt.WithAppendedTrailingTrivia(FinalTrailingDirective)
+                        End If
                         Return VBFactory.OperatorBlock(stmt, body).WithConvertedTriviaFrom(node)
                 End Select
             End Function
@@ -1065,7 +1126,11 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 End If
                 Dim Attributes As New List(Of VBS.AttributeListSyntax)
                 Dim ReturnAttributes As SyntaxList(Of VBS.AttributeListSyntax) = Nothing
-                ConvertAndSplitAttributes(node.AttributeLists, Attributes, ReturnAttributes)
+                Dim FinalTrailingDirective As New List(Of SyntaxTrivia)
+                ConvertAndSplitAttributes(node.AttributeLists, Attributes, ReturnAttributes, FinalTrailingDirective)
+                If FinalTrailingDirective.Count > 0 Then
+                    Stop
+                End If
                 Dim isIterator As Boolean = False
                 Dim accessors As New List(Of VBS.AccessorBlockSyntax)
                 Dim Statements As SyntaxList(Of VBS.StatementSyntax)
