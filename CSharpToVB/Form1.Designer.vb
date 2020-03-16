@@ -937,7 +937,7 @@ Partial Class Form1
         '
         'StatusStripElapasedTimeLabel
         '
-        Me.StatusStripElapasedTimeLabel.AutoSize = False
+        Me.StatusStripElapasedTimeLabel.AutoSize = True
         Me.StatusStripElapasedTimeLabel.Name = "StatusStripElapasedTimeLabel"
         Me.StatusStripElapasedTimeLabel.Size = New System.Drawing.Size(150, 17)
         '

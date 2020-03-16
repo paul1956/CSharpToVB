@@ -865,16 +865,20 @@ Public Class Form1
                                 ).ConfigureAwait(True) Then
                 stopwatch.Stop()
                 If _cancellationTokenSource.Token.IsCancellationRequested Then
-                    MsgBox($"Conversion canceled, {Stats.FilesProcessed} files completed successfully.", Title:="C# to VB")
+                    MsgBox($"Conversion canceled, {Stats.FilesProcessed} files completed successfully.", MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground Or MsgBoxStyle.OkOnly, Title:="C# to VB")
                 Else
-                    MsgBox($"Conversion completed, {Stats.FilesProcessed} files completed successfully.", Title:="C# to VB")
+                    MsgBox($"Conversion completed, {Stats.FilesProcessed} files completed successfully.", MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground Or MsgBoxStyle.OkOnly, Title:="C# to VB")
+                    mnuOptionsStartFolderConvertFromLastFile.Checked = False
+                    My.Settings.StartFolderConvertFromLastFile = False
+                    My.Settings.Save()
+                    Application.DoEvents()
                 End If
             Else
                 stopwatch.Stop()
+                MsgBox($"Conversion stopped.", MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground Or MsgBoxStyle.OkOnly, Title:="C# to VB")
             End If
             Dim elapsed As TimeSpan = stopwatch.Elapsed
-            StatusStripElapasedTimeLabel.Text = $"H:{elapsed.Hours} M:{elapsed.Minutes} S:{elapsed.Seconds} MS:{elapsed.Milliseconds}"
-            MsgBox($"Conversion stopped.", Title:="C# to VB")
+            StatusStripElapasedTimeLabel.Text = $"Elapsed Time - {elapsed.Hours}:{elapsed.Minutes}:{elapsed.Seconds}.{elapsed.Milliseconds}"
         End Using
 
     End Sub
