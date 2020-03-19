@@ -203,7 +203,7 @@ Partial Class OptionsDialog
         Me.Controls.Add(Me.TableLayoutPanel1)
         Me.Controls.Add(Me.CSharpFooterTextBox)
         Me.Controls.Add(Me.Label4)
-        Me.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog
         Me.MaximizeBox = False
         Me.MinimizeBox = False
