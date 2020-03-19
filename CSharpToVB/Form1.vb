@@ -1240,7 +1240,7 @@ Public Class Form1
             AddHandler clsItem.Click, AddressOf mnu_MRUList_Click
             AddHandler clsItem.MouseDown, AddressOf mnu_MRUList_MouseDown
             ' insert into DropDownItems list...
-            mnuFile.DropDownItems.Insert(mnuFile.DropDownItems.Count - 11, clsItem)
+            mnuFile.DropDownItems.Insert(mnuFile.DropDownItems.Count - 10, clsItem)
         Next
         ' show separator...
         My.Settings.Save()

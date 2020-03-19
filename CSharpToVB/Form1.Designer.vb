@@ -167,7 +167,6 @@ Partial Class Form1
         Me.MenuStrip1.Padding = New System.Windows.Forms.Padding(7, 2, 0, 2)
         Me.MenuStrip1.Size = New System.Drawing.Size(1923, 24)
         Me.MenuStrip1.TabIndex = 7
-        Me.MenuStrip1.Text = "MenuStrip1"
         '
         'mnuFile
         '
@@ -223,7 +222,7 @@ Partial Class Form1
         'mnuFileSaveAs
         '
         Me.mnuFileSaveAs.Enabled = False
-        Me.mnuFileSaveAs.Name = "mnuEditSaveAs"
+        Me.mnuFileSaveAs.Name = "mnuFileSaveAs"
         Me.mnuFileSaveAs.ShortcutKeys = CType((System.Windows.Forms.Keys.Alt Or System.Windows.Forms.Keys.A), System.Windows.Forms.Keys)
         Me.mnuFileSaveAs.Size = New System.Drawing.Size(227, 22)
         Me.mnuFileSaveAs.Text = "Save &As..."
@@ -628,7 +627,7 @@ Partial Class Form1
         '
         'NetToolStripMenuItem
         '
-        Me.NetToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.NETFRAMEWORKToolStripMenuItem, Me.NET20ToolStripMenuItem, Me.NET35ToolStripMenuItem, Me.NET40ToolStripMenuItem, Me.NET45ToolStripMenuItem, Me.NET451ToolStripMenuItem, Me.NET452ToolStripMenuItem, Me.NET46ToolStripMenuItem, Me.NET461ToolStripMenuItem, Me.NET462ToolStripMenuItem, Me.NET47ToolStripMenuItem, Me.NET471ToolStripMenuItem, Me.NET48ToolStripMenuItem, Me.NET472ToolStripMenuItem})
+        Me.NetToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.NETFRAMEWORKToolStripMenuItem, Me.NET20ToolStripMenuItem, Me.NET35ToolStripMenuItem, Me.NET40ToolStripMenuItem, Me.NET45ToolStripMenuItem, Me.NET451ToolStripMenuItem, Me.NET452ToolStripMenuItem, Me.NET46ToolStripMenuItem, Me.NET461ToolStripMenuItem, Me.NET462ToolStripMenuItem, Me.NET47ToolStripMenuItem, Me.NET471ToolStripMenuItem, Me.NET472ToolStripMenuItem, Me.NET48ToolStripMenuItem})
         Me.NetToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
         Me.NetToolStripMenuItem.Name = "NetToolStripMenuItem"
         Me.NetToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
@@ -722,14 +721,6 @@ Partial Class Form1
         Me.NET471ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
         Me.NET471ToolStripMenuItem.Text = "NET471"
         '
-        'NET48ToolStripMenuItem
-        '
-        Me.NET48ToolStripMenuItem.CheckOnClick = True
-        Me.NET48ToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
-        Me.NET48ToolStripMenuItem.Name = "NET48ToolStripMenuItem"
-        Me.NET48ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
-        Me.NET48ToolStripMenuItem.Text = "NET48"
-        '
         'NET472ToolStripMenuItem
         '
         Me.NET472ToolStripMenuItem.CheckOnClick = True
@@ -737,6 +728,14 @@ Partial Class Form1
         Me.NET472ToolStripMenuItem.Name = "NET472ToolStripMenuItem"
         Me.NET472ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
         Me.NET472ToolStripMenuItem.Text = "NET472"
+        '
+        'NET48ToolStripMenuItem
+        '
+        Me.NET48ToolStripMenuItem.CheckOnClick = True
+        Me.NET48ToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.NET48ToolStripMenuItem.Name = "NET48ToolStripMenuItem"
+        Me.NET48ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.NET48ToolStripMenuItem.Text = "NET48"
         '
         'NETFRAMEWORKToolStripMenuItem
         '
