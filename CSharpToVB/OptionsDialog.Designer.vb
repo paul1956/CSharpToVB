@@ -98,7 +98,6 @@ Partial Class OptionsDialog
         '
         'ItemColor_ComboBox
         '
-        '
         Me.ItemColor_ComboBox.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed
         Me.ItemColor_ComboBox.DropDownHeight = 400
         Me.ItemColor_ComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
@@ -161,7 +160,6 @@ Partial Class OptionsDialog
         Me.Label4.Name = "Label4"
         Me.Label4.Size = New System.Drawing.Size(110, 15)
         Me.Label4.TabIndex = 6
-        Me.Label4.Text = "C# Template Footer"
         Me.Label4.Text = "C# Template Footer"
         '
         'LabelHorizontalLine
