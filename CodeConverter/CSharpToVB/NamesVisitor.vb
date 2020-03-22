@@ -109,7 +109,14 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     End If
                     Return WrapTypedNameIfNecessary(VBFactory.IdentifierName(GenerateSafeVBToken(node.Identifier, IsQualifiedName:=True, IsTypeName:=False)), node)
                 End If
-
+                If OriginalNameParent.IsKind(CS.SyntaxKind.SimpleAssignmentExpression) Then
+                    Dim AssignmentStatement As CSS.AssignmentExpressionSyntax = CType(OriginalNameParent, CSS.AssignmentExpressionSyntax)
+                    If node.ToString.Equals(AssignmentStatement.Left.ToString, StringComparison.Ordinal) AndAlso AssignmentStatement.Left.ToString.Equals(AssignmentStatement.Right.ToString, StringComparison.OrdinalIgnoreCase) Then
+                        If node.Ancestors().OfType(Of CSS.ConstructorDeclarationSyntax).Any Then
+                            Return VBFactory.SimpleMemberAccessExpression(VBFactory.MeExpression, VBFactory.IdentifierName(GenerateSafeVBToken(node.Identifier, IsQualifiedName:=True, IsTypeName:=False)))
+                        End If
+                    End If
+                End If
                 If TypeOf OriginalNameParent Is CSS.DeclarationExpressionSyntax Then
                     If node.ToString = "var" Then
                         Return PredefinedTypeObject
