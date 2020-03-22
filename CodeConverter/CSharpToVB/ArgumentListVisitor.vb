@@ -29,13 +29,18 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     Dim CS_Operation As Operations.IArgumentOperation = CType(_mSemanticModel.GetOperation(CS_Arguments(i)), Operations.IArgumentOperation)
                     Dim argument As VBS.ArgumentSyntax = DirectCast(CS_Arguments(i).Accept(Me), VBS.ArgumentSyntax)
                     If CS_Operation?.Value.Kind = OperationKind.DelegateCreation Then
-                        Dim LeadingTrivia As New List(Of SyntaxTrivia)
-                        LeadingTrivia.AddRange(argument.GetExpression.GetLeadingTrivia)
-                        If LeadingTrivia.Count >= 2 AndAlso LeadingTrivia(1).IsKind(VB.SyntaxKind.LineContinuationTrivia) Then
-                            argument = VBFactory.SimpleArgument(VBFactory.AddressOfExpression(AddressOfKeyword.WithTrailingTrivia(LeadingTrivia.GetRange(0, 1)), argument.GetExpression))
-                        Else
-                            argument = VBFactory.SimpleArgument(VBFactory.AddressOfExpression(argument.GetExpression))
-                        End If
+                        Dim getExpression As VBS.ExpressionSyntax = argument.GetExpression
+                        Select Case getExpression.Kind
+                            Case VisualBasic.SyntaxKind.MultiLineFunctionLambdaExpression, VisualBasic.SyntaxKind.SingleLineFunctionLambdaExpression
+                            Case Else
+                                Dim LeadingTrivia As New List(Of SyntaxTrivia)
+                                LeadingTrivia.AddRange(getExpression.GetLeadingTrivia)
+                                If LeadingTrivia.Count >= 2 AndAlso LeadingTrivia(1).IsKind(VB.SyntaxKind.LineContinuationTrivia) Then
+                                    argument = VBFactory.SimpleArgument(VBFactory.AddressOfExpression(AddressOfKeyword.WithTrailingTrivia(LeadingTrivia.GetRange(0, 1)), getExpression))
+                                Else
+                                    argument = VBFactory.SimpleArgument(VBFactory.AddressOfExpression(getExpression))
+                                End If
+                        End Select
                     End If
                     NodeList.Add(argument.WithModifiedNodeTrivia(SeparatorFollows:=SeparatorCount > i))
                     If SeparatorCount > i Then

@@ -181,7 +181,6 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim retAttr As List(Of VBS.AttributeListSyntax) = New List(Of VBS.AttributeListSyntax)()
                 Dim FirstAttribuate As Boolean = True
                 Dim AttributeCount As Integer = attributeLists.Count - 1
-                Dim FinalEndIf As SyntaxTrivia = Nothing
                 For i As Integer = 0 To AttributeCount
                     Dim attrList As CSS.AttributeListSyntax = attributeLists(i)
 
@@ -224,7 +223,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                                 LeadingTriviaList.Add(SpaceTrivia)
                                                 needLineContinuation = False
                                             End If
-                                            LeadingTriviaList.Add(VBFactory.CommentTrivia($"Directive not allowed here {VBSyntaxTrivia.ToString}"))
+                                            LeadingTriviaList.Add(VBFactory.CommentTrivia($"Directive not allowed here {VBSyntaxTrivia}"))
                                         Case VB.SyntaxKind.ElseDirectiveTrivia
                                             If FirstComment Then
                                                 FirstComment = False
@@ -236,7 +235,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                                 LeadingTriviaList.Add(SpaceTrivia)
                                                 needLineContinuation = False
                                             End If
-                                            LeadingTriviaList.Add(VBFactory.CommentTrivia($"Directive not allowed here {VBSyntaxTrivia.ToString}"))
+                                            LeadingTriviaList.Add(VBFactory.CommentTrivia($"Directive not allowed here {VBSyntaxTrivia}"))
                                         Case VB.SyntaxKind.ElseIfDirectiveTrivia
                                             If FirstComment Then
                                                 FirstComment = False
@@ -248,7 +247,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                                 LeadingTriviaList.Add(SpaceTrivia)
                                                 needLineContinuation = False
                                             End If
-                                            LeadingTriviaList.Add(VBFactory.CommentTrivia($"Directive not allowed here {VBSyntaxTrivia.ToString}"))
+                                            LeadingTriviaList.Add(VBFactory.CommentTrivia($"Directive not allowed here {VBSyntaxTrivia}"))
                                         Case VB.SyntaxKind.EndIfDirectiveTrivia
                                             finalDirectiveTrivia.Add(VBSyntaxTrivia)
                                         Case VB.SyntaxKind.EndOfLineTrivia

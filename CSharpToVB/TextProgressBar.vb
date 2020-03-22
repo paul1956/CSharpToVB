@@ -68,11 +68,11 @@ Public Class TextProgressBar
     End Sub
 
 #Region "IDisposable Support"
-    Private disposedValue As Boolean ' To detect redundant calls
+    Private _disposedValue As Boolean ' To detect redundant calls
 
     ' IDisposable
     Protected Overridable Sub Dispose(disposing As Boolean)
-        If Not disposedValue Then
+        If Not _disposedValue Then
             If disposing Then
                 _defaultFont.Dispose()
             End If
@@ -80,7 +80,7 @@ Public Class TextProgressBar
             ' TODO: free unmanaged resources (unmanaged objects) and override Finalize() below.
             ' TODO: set large fields to null.
         End If
-        disposedValue = True
+        _disposedValue = True
     End Sub
 
     ' TODO: override Finalize() only if Dispose(disposing As Boolean) above has code to free unmanaged resources.
