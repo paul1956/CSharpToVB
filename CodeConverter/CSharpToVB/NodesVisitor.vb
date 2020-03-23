@@ -78,7 +78,8 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     If s_originalRequest.CancelToken.IsCancellationRequested Then
                         Throw New OperationCanceledException
                     End If
-                    MemberList.Add(DirectCast(m.Accept(Me), VBS.StatementSyntax))
+                    Dim Statement As VBS.StatementSyntax = DirectCast(m.Accept(Me), VBS.StatementSyntax)
+                    MemberList.AddRange(ReplaceStatementWithMarkedStatements(m, Statement))
                 Next
                 Dim Members As SyntaxList(Of VBS.StatementSyntax) = VBFactory.List(MemberList)
                 Dim compilationUnitSyntax1 As VBS.CompilationUnitSyntax

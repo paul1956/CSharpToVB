@@ -174,6 +174,8 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         TrailingTrivia.Add(t)
                     Case VB.SyntaxKind.CommentTrivia
                         TrailingTrivia.Add(t)
+                    Case VB.SyntaxKind.DocumentationCommentTrivia
+                        TrailingTrivia.Add(t)
                     Case Else
                         Stop
                 End Select

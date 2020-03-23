@@ -192,11 +192,13 @@ End Function
                         Statement.IsKind(VB.SyntaxKind.FunctionStatement) OrElse
                         Statement.IsKind(VB.SyntaxKind.InterfaceBlock) OrElse
                         Statement.IsKind(VB.SyntaxKind.ModuleBlock) OrElse
-                        Statement.IsKind(VB.SyntaxKind.PropertyBlock) OrElse
                         Statement.IsKind(VB.SyntaxKind.StructureBlock) OrElse
                         Statement.IsKind(VB.SyntaxKind.SubBlock) OrElse
                         Statement.IsKind(VB.SyntaxKind.SubStatement) Then
                         members.Add(Statement.WithTrailingEOL)
+                    ElseIf Statement.IsKind(VB.SyntaxKind.PropertyBlock) Then
+                        members.AddRange(ReplaceStatementWithMarkedStatements(m, Statement.WithTrailingEOL))
+
                         ' Cases below are handled in-line
                     ElseIf Statement.IsKind(VB.SyntaxKind.ConstructorBlock) OrElse
                         Statement.IsKind(VB.SyntaxKind.DelegateFunctionStatement) OrElse
@@ -575,7 +577,7 @@ End Function
                     If Item Is Nothing Then
                         Members.Add(VBFactory.EmptyStatement.WithConvertedTriviaFrom(m))
                     Else
-                        Members.Add(Item)
+                        Members.AddRange(ReplaceStatementWithMarkedStatements(m, Item))
                     End If
                 Next
                 SyncLock s_usedStacks
@@ -615,7 +617,7 @@ End Function
                 Next
 
                 ' These errors are handled elsewhere just ignore
-                ReplaceStatementsWithMarkedStatements(node, VBFactory.SingletonList(Of VBS.StatementSyntax)(StructureBlock))
+                ReplaceStatementWithMarkedStatements(node, StructureBlock)
                 If ErrorModifiers.Count > 0 Then
                     StructureBlock = StructureBlock.WithPrependedLeadingTrivia(VBFactory.CommentTrivia($"' TODO TASK: VB has no direct equivalent to C# {String.Join(" or ", ErrorModifiers)} Structure"))
                 End If

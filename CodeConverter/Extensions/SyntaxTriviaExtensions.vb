@@ -153,6 +153,9 @@ Namespace CSharpToVBCodeConverter.Util
                 If t.RawKind = VB.SyntaxKind.DisabledTextTrivia Then
                     Continue For
                 End If
+                If t.IsKind(VB.SyntaxKind.DocumentationCommentTrivia) Then
+                    Return True
+                End If
                 Stop
             Next
             Return False

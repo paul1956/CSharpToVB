@@ -355,6 +355,10 @@ Public Module StatementMarker
         Return False
     End Function
 
+    Public Function ReplaceStatementWithMarkedStatements(node As CS.CSharpSyntaxNode, Statement As StatementSyntax) As SyntaxList(Of StatementSyntax)
+        Return ReplaceStatementsWithMarkedStatements(node, VBFactory.SingletonList(Statement))
+    End Function
+
     Public Function ReplaceStatementsWithMarkedStatements(node As CS.CSharpSyntaxNode, Statements As SyntaxList(Of StatementSyntax)) As SyntaxList(Of StatementSyntax)
         If s_statementDictionary.Count = 0 Then
             Return Statements
