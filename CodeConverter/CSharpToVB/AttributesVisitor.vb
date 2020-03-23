@@ -100,7 +100,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim FinalTrailingTriviaList As New List(Of SyntaxTrivia)
                 Dim FirstComment As Boolean = True
                 Dim NeedWhiteSpace As Boolean = True
-                Dim needLineContinuation As Boolean = True
+                Dim needLineContinuation As Boolean = False
                 For Each T As SyntaxTrivia In node.CloseBracketToken.TrailingTrivia
                     Dim VBSyntaxTrivia As SyntaxTrivia = ConvertTrivia(T)
                     Select Case VBSyntaxTrivia.RawKind

@@ -214,13 +214,18 @@ End Function
                     End If
                 Next
 
-                Dim id As SyntaxToken = GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False)
+                Dim id As SyntaxToken = GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False).WithConvertedTrailingTriviaFrom(node.Identifier)
 
                 members.AddRange(PatchInlineHelpers(node, IsModule))
 
                 Dim ListOfAttributes As SyntaxList(Of VBS.AttributeListSyntax) = VBFactory.List(node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))
                 Dim typeParameterList As VBS.TypeParameterListSyntax = DirectCast(node.TypeParameterList?.Accept(Me), VBS.TypeParameterListSyntax)
-
+                If typeParameterList IsNot Nothing Then
+                    If id.TrailingTrivia.ContainsCommentTrivia Then
+                        Stop
+                    End If
+                    id = id.WithTrailingTrivia(SpaceTrivia)
+                End If
                 Dim NotInsideClassOrStruct As Boolean = _isModuleStack.Count < 2 AndAlso IsNotInStructure(node)
 
                 If IsModule AndAlso NotInsideClassOrStruct Then

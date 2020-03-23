@@ -116,7 +116,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Return ParameterList
             End Function
 
-            Private Function ConvertAccessor(node As CSS.AccessorDeclarationSyntax, IsModule As Boolean, ByRef isIterator As Boolean) As VBS.AccessorBlockSyntax
+            Private Function ConvertAccessor(node As CSS.AccessorDeclarationSyntax, IsModule As Boolean, ByRef isIterator As Boolean, LongForm As Boolean) As VBS.AccessorBlockSyntax
                 Dim blockKind As VB.SyntaxKind
                 Dim stmt As VBS.AccessorStatementSyntax
                 Dim endStmt As VBS.EndBlockStatementSyntax
@@ -384,7 +384,8 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             Public Overrides Function VisitConstructorInitializer(node As CSS.ConstructorInitializerSyntax) As VB.VisualBasicSyntaxNode
                 Dim ArgumentList As VBS.ArgumentListSyntax = DirectCast((node?.ArgumentList.Accept(Me)), VBS.ArgumentListSyntax)
                 Dim SimpleMemberAccessExpression As VBS.MemberAccessExpressionSyntax
-                Dim MeOrMyExpression As VBS.ExpressionSyntax = If(TypeOf node.Parent.Parent Is CSS.StructDeclarationSyntax,
+                Dim parent As SyntaxNode = node.Parent.Parent
+                Dim MeOrMyExpression As VBS.ExpressionSyntax = If(TypeOf parent Is CSS.StructDeclarationSyntax OrElse TypeOf parent Is CSS.ClassDeclarationSyntax,
                                                             DirectCast(VBFactory.MeExpression(), VBS.ExpressionSyntax),
                                                             VBFactory.MyBaseExpression()).WithConvertedLeadingTriviaFrom(node.ColonToken)
 
@@ -495,7 +496,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     Return stmt.WithConvertedTriviaFrom(node)
                 Next
                 Dim accessors As VBS.AccessorBlockSyntax()
-                accessors = node.AccessorList?.Accessors.Select(Function(a As CSS.AccessorDeclarationSyntax) ConvertAccessor(a, IsModule:=IsModule, isIterator:=False)).ToArray()
+                accessors = node.AccessorList?.Accessors.Select(Function(a As CSS.AccessorDeclarationSyntax) ConvertAccessor(a, IsModule:=IsModule, isIterator:=False, LongForm:=False)).ToArray()
                 Return VBFactory.EventBlock(stmt, VBFactory.List(accessors)).WithConvertedTriviaFrom(node)
             End Function
 
@@ -582,7 +583,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 If node.AccessorList IsNot Nothing Then
                     For Each a As CSS.AccessorDeclarationSyntax In node.AccessorList.Accessors
                         Dim _isIterator As Boolean
-                        accessors.Add(ConvertAccessor(a, IsModule, _isIterator))
+                        accessors.Add(ConvertAccessor(a, IsModule, _isIterator, LongForm:=False))
                         isIterator = isIterator Or _isIterator
                     Next
                 End If
@@ -1172,9 +1173,10 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     accessors.Add(VBFactory.AccessorBlock(VB.SyntaxKind.GetAccessorBlock, VBFactory.GetAccessorStatement.WithTrailingEOL, Statements, VBFactory.EndGetStatement()))
                 Else
                     If node.AccessorList IsNot Nothing Then
+                        Dim longForm As Boolean = False
                         For Each a As CSS.AccessorDeclarationSyntax In node.AccessorList.Accessors
                             Dim _isIterator As Boolean
-                            accessors.Add(ConvertAccessor(a, IsModule, _isIterator))
+                            accessors.Add(ConvertAccessor(a, IsModule, _isIterator, longForm))
                             isIterator = isIterator Or _isIterator
                         Next
                     End If
