@@ -230,16 +230,42 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 End If
                 ' Extra to pick up more strings
                 If Node.ToString.
-                        Replace("(", "", StringComparison.Ordinal).
-                        Replace(")", "", StringComparison.Ordinal).
+                        TrimEnd(")"c).
+                        TrimEnd("("c).
                         EndsWith("tostring", StringComparison.OrdinalIgnoreCase) Then
                     Return True
                 End If
-                Dim _Typeinfo As TypeInfo = ModelExtensions.GetTypeInfo(_mSemanticModel, Node)
-                If _Typeinfo.Type?.ToString = "string" Then
+                Dim _Typeinfo As TypeInfo
+                If TypeOf Node Is CSS.BinaryExpressionSyntax Then
+                    Dim BinaryExpression As CSS.BinaryExpressionSyntax = CType(Node, CSS.BinaryExpressionSyntax)
+                    _Typeinfo = ModelExtensions.GetTypeInfo(_mSemanticModel, BinaryExpression.Left)
+                    If IsString(_Typeinfo) Then
+                        Return True
+                    End If
+                    _Typeinfo = ModelExtensions.GetTypeInfo(_mSemanticModel, BinaryExpression.Right)
+                ElseIf TypeOf Node Is CSS.MemberAccessExpressionSyntax Then
+                    Dim MemberAccessExpression As CSS.MemberAccessExpressionSyntax = CType(Node, CSS.MemberAccessExpressionSyntax)
+                    _Typeinfo = ModelExtensions.GetTypeInfo(_mSemanticModel, MemberAccessExpression.Expression)
+                Else
+                    _Typeinfo = ModelExtensions.GetTypeInfo(_mSemanticModel, Node)
+                End If
+                Return IsString(_Typeinfo)
+            End Function
+
+            Private Shared Function IsString(_Typeinfo As TypeInfo) As Boolean
+                Dim typeSymbol As ITypeSymbol = _Typeinfo.Type
+
+                If typeSymbol Is Nothing OrElse typeSymbol.IsErrorType Then
+                    Return False
+                End If
+
+                If typeSymbol.ToString.Replace("?", "", StringComparison.OrdinalIgnoreCase).Equals("string", StringComparison.OrdinalIgnoreCase) Then
                     Return True
                 End If
-                ' Need to check Type to see if we have any kind of string
+
+                If typeSymbol.ToString = "int" Then ' For debugging
+                    Return False
+                End If
                 Return False
             End Function
 
@@ -1621,7 +1647,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         ItemWithTrivia = e.Accept(Me).WithConvertedTriviaFrom(e).RemoveExtraLeadingEOL.NormalizeWhitespaceEx(useDefaultCasing:=True, indentation:="    ")
                         If TypeOf ItemWithTrivia Is VBS.NamedFieldInitializerSyntax Then
                             NamedFieldItems.Add(DirectCast(ItemWithTrivia, VBS.NamedFieldInitializerSyntax))
-                        ElseIf TypeOf ItemWithTrivia Is vbs.AssignmentStatementSyntax Then
+                        ElseIf TypeOf ItemWithTrivia Is VBS.AssignmentStatementSyntax Then
                             Dim StatementwithIssues As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
                             StatementwithIssues.AddMarker(FlagUnsupportedStatements(StatementwithIssues, $"C# Assignment Expression", CommentOutOriginalStatements:=True), StatementHandlingOption.ReplaceStatement, AllowDuplicates:=False)
                             Return Nothing
@@ -2068,7 +2094,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         Case CS.SyntaxKind.EqualsExpression, CS.SyntaxKind.NotEqualsExpression
                             Return VBFactory.CTypeExpression(
                                                       NothingExpression,
-                                                      ConvertToType("bool")
+                                                      VBFactory.PredefinedType(BooleanKeyword)
                                                       )
                         Case CS.SyntaxKind.Argument, CS.SyntaxKind.SimpleLambdaExpression
                             Return NothingExpression

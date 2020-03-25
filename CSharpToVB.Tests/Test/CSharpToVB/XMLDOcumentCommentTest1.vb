@@ -54,7 +54,7 @@ Imports Microsoft.CodeAnalysis.Diagnostics.PreferFrameworkType
 
 Namespace Microsoft.CodeAnalysis.CSharp.Diagnostics.Analyzers
 
-    <DiagnosticAnalyzer(LanguageNames.CSharp)> _
+    <DiagnosticAnalyzer(LanguageNames.CSharp)>
     Friend Class CSharpPreferFrameworkTypeDiagnosticAnalyzer
         Inherits PreferFrameworkTypeDiagnosticAnalyzerBase(Of SyntaxKind, ExpressionSyntax, PredefinedTypeSyntax)
 
