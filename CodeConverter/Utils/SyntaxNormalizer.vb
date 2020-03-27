@@ -752,15 +752,15 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         '''   implements IBar3
         '''   inherits Bar1
         '''
-        '''   Public Sub Boo()
-        '''   End Sub
+        ''' Public Sub Boo()
+        '''    End Sub
         ''' End Class
         '''
         ''' or
         '''
         ''' Class Goo
         '''
-        '''   Public Sub Boo()
+        ''' Public Sub Boo()
         '''   End Sub
         ''' End Class
         '''
@@ -1472,7 +1472,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
                 ' we only add one of the line breaks to trivia of this token. The remaining ones will be leading trivia
                 ' for the next token
                 Dim numLineBreaksAfter As Integer = If(_usePreserveCRLF, LineBreaksBetween(token, nextToken), If(LineBreaksBetween(token, nextToken) > 0, 1, 0))
-                Dim needsSeparatorAfter As Boolean = If(numLineBreaksAfter > 0, False, NeedsSeparator(token, nextToken))
+                Dim needsSeparatorAfter As Boolean = numLineBreaksAfter <= 0 AndAlso NeedsSeparator(token, nextToken)
 
                 _eolTraiingTriviaCount = 0
                 newToken = newToken.WithTrailingTrivia(

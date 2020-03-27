@@ -83,7 +83,7 @@ Namespace CSharpToVBCodeConverter.Util
             End If
 
             Dim typesToImplement As ImmutableArray(Of INamedTypeSymbol) = GetTypesToImplement(classOrStructType, interfacesOrAbstractClasses, allowReimplementation, CancelToken)
-            Return typesToImplement.SelectAsArray(Function(s As INamedTypeSymbol) (s, members:=GetImplementedMembers(classOrStructType, s, isImplemented, isValidImplementation, interfaceMemberGetter, CancelToken))).WhereAsArray(Function(t As (s As Microsoft.CodeAnalysis.INamedTypeSymbol, members As System.Collections.Immutable.ImmutableArray(Of Microsoft.CodeAnalysis.ISymbol))) t.members.Length > 0)
+            Return typesToImplement.SelectAsArray(Function(s As INamedTypeSymbol) (s, members:=GetImplementedMembers(classOrStructType, s, isImplemented, isValidImplementation, interfaceMemberGetter, CancelToken))).WhereAsArray(Function(t As (s As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))) t.members.Length > 0)
         End Function
 
         <Extension>
@@ -110,7 +110,7 @@ Namespace CSharpToVBCodeConverter.Util
             End If
 
             Dim typesToImplement As ImmutableArray(Of INamedTypeSymbol) = GetTypesToImplement(classOrStructType, interfacesOrAbstractClasses, allowReimplementation, CancelToken)
-            Return typesToImplement.SelectAsArray(Function(s As INamedTypeSymbol) (s, members:=GetUnimplementedMembers(classOrStructType, s, isImplemented, isValidImplementation, interfaceMemberGetter, CancelToken))).WhereAsArray(Function(t As (s As Microsoft.CodeAnalysis.INamedTypeSymbol, members As System.Collections.Immutable.ImmutableArray(Of Microsoft.CodeAnalysis.ISymbol))) t.members.Length > 0)
+            Return typesToImplement.SelectAsArray(Function(s As INamedTypeSymbol) (s, members:=GetUnimplementedMembers(classOrStructType, s, isImplemented, isValidImplementation, interfaceMemberGetter, CancelToken))).WhereAsArray(Function(t As (s As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))) t.members.Length > 0)
         End Function
 
         Private Function GetImplementedMembers(classOrStructType As INamedTypeSymbol, interfaceType As INamedTypeSymbol, isImplemented As Func(Of INamedTypeSymbol, ISymbol, Func(Of INamedTypeSymbol, ISymbol, Boolean), CancellationToken, Boolean), isValidImplementation As Func(Of INamedTypeSymbol, ISymbol, Boolean), interfaceMemberGetter As Func(Of INamedTypeSymbol, ISymbol, ImmutableArray(Of ISymbol)), CancelToken As CancellationToken) As ImmutableArray(Of ISymbol)

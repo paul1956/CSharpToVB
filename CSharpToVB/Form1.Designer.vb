@@ -45,7 +45,7 @@ Partial Class Form1
         Me.mnuFileLabelLastFolder = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuFileLastFolder = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuFileSep3 = New System.Windows.Forms.ToolStripSeparator()
-        Me.mnuFileOpenProject = New System.Windows.Forms.ToolStripMenuItem()
+        Me.mnuFileConvertProject = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuFileSaveAs = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuFileSep4 = New System.Windows.Forms.ToolStripSeparator()
         Me.mnuFileSnippet = New System.Windows.Forms.ToolStripMenuItem()
@@ -62,7 +62,6 @@ Partial Class Form1
         Me.mnuEditUndo = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuCompile = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuConvert = New System.Windows.Forms.ToolStripMenuItem()
-        Me.mnuConvertConvertProject = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuConvertConvertFolder = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuConvertConvertSnippet = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuOptions = New System.Windows.Forms.ToolStripMenuItem()
@@ -170,7 +169,7 @@ Partial Class Form1
         '
         'mnuFile
         '
-        Me.mnuFile.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuFileOpen, Me.mnuFileSep1, Me.mnuFileSep2, Me.mnuFileLabelLastFolder, Me.mnuFileLastFolder, Me.mnuFileSep3, Me.mnuFileOpenProject, Me.mnuFileSaveAs, Me.mnuFileSep4, Me.mnuFileSnippet, Me.mnuFileSep6, Me.mnuFileExit})
+        Me.mnuFile.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuFileOpen, Me.mnuFileSep1, Me.mnuFileSep2, Me.mnuFileLabelLastFolder, Me.mnuFileLastFolder, Me.mnuFileSep3, Me.mnuFileConvertProject, Me.mnuFileSaveAs, Me.mnuFileSep4, Me.mnuFileSnippet, Me.mnuFileSep6, Me.mnuFileExit})
         Me.mnuFile.Name = "mnuFile"
         Me.mnuFile.ShortcutKeys = CType((System.Windows.Forms.Keys.Alt Or System.Windows.Forms.Keys.F), System.Windows.Forms.Keys)
         Me.mnuFile.Size = New System.Drawing.Size(37, 20)
@@ -211,13 +210,13 @@ Partial Class Form1
         Me.mnuFileSep3.Name = "mnuFileSep3"
         Me.mnuFileSep3.Size = New System.Drawing.Size(224, 6)
         '
-        'mnuFileOpenProject
+        'mnuFileConvertProject
         '
-        Me.mnuFileOpenProject.Name = "mnuFileOpenProject"
-        Me.mnuFileOpenProject.ShortcutKeys = CType(((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.Shift) _
+        Me.mnuFileConvertProject.Name = "mnuFileConvertProject"
+        Me.mnuFileConvertProject.ShortcutKeys = CType(((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.Shift) _
             Or System.Windows.Forms.Keys.O), System.Windows.Forms.Keys)
-        Me.mnuFileOpenProject.Size = New System.Drawing.Size(227, 22)
-        Me.mnuFileOpenProject.Text = "Open Project..."
+        Me.mnuFileConvertProject.Size = New System.Drawing.Size(227, 22)
+        Me.mnuFileConvertProject.Text = "Convert Project..."
         '
         'mnuFileSaveAs
         '
@@ -322,18 +321,10 @@ Partial Class Form1
         '
         'mnuConvert
         '
-        Me.mnuConvert.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuConvertConvertProject, Me.mnuConvertConvertFolder, Me.mnuConvertConvertSnippet})
+        Me.mnuConvert.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuConvertConvertFolder, Me.mnuConvertConvertSnippet})
         Me.mnuConvert.Name = "mnuConvert"
         Me.mnuConvert.Size = New System.Drawing.Size(61, 20)
         Me.mnuConvert.Text = "Convert"
-        '
-        'mnuConvertConvertProject
-        '
-        Me.mnuConvertConvertProject.Enabled = False
-        Me.mnuConvertConvertProject.Name = "mnuConvertConvertProject"
-        Me.mnuConvertConvertProject.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.P), System.Windows.Forms.Keys)
-        Me.mnuConvertConvertProject.Size = New System.Drawing.Size(199, 22)
-        Me.mnuConvertConvertProject.Text = "Convert Project"
         '
         'mnuConvertConvertFolder
         '
@@ -1139,7 +1130,6 @@ Partial Class Form1
     Friend WithEvents mnuOptions As ToolStripMenuItem
     Friend WithEvents mnuOptionsAdvanced As ToolStripMenuItem
     Friend WithEvents mnuConvert As ToolStripMenuItem
-    Friend WithEvents mnuConvertConvertProject As ToolStripMenuItem
     Friend WithEvents mnuConvertConvertFolder As ToolStripMenuItem
     Friend WithEvents mnuConvertConvertSnippet As ToolStripMenuItem
     Friend WithEvents mnuHelp As ToolStripMenuItem
@@ -1188,7 +1178,7 @@ Partial Class Form1
     Friend WithEvents mnuFileOpen As ToolStripMenuItem
     Friend WithEvents OpenFileDialog1 As OpenFileDialog
     Friend WithEvents mnuFileSep2 As ToolStripSeparator
-    Friend WithEvents mnuFileOpenProject As ToolStripMenuItem
+    Friend WithEvents mnuFileConvertProject As ToolStripMenuItem
     Friend WithEvents mnuFileLastFolder As ToolStripMenuItem
     Friend WithEvents mnuOptionsEditIgnoreFilesWithErrorsList As ToolStripMenuItem
     Friend WithEvents SkipOptionsToolStripMenuItem As ToolStripMenuItem

@@ -1058,7 +1058,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                                                             IsTypeName:=False)
                                                         )
 
-                    Dim variableITypeSymbol As (_ITypeSymbol As ITypeSymbol, _Error As Boolean) = node.Expression.DetermineType(_semanticModel)
+                    Dim variableITypeSymbol As (_Error As Boolean, _ITypeSymbol As ITypeSymbol) = node.Expression.DetermineType(_semanticModel)
                     If variableITypeSymbol._Error = False Then
                         Dim _ITypeSymbol As ITypeSymbol = variableITypeSymbol._ITypeSymbol
                         variable = VBFactory.VariableDeclarator(VBFactory.SingletonSeparatedList(

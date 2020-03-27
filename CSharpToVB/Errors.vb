@@ -1,29 +1,29 @@
 ﻿' Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-'//-------------------------------------------------------------------------------------------------
-'//
-'//  Error code and strings for Compiler errors
-'//
-'//  ERRIDs should be defined in the following ranges:
-'//
-'//   500   -   999    - non localized ERRID (main DLL)
-'//   30000 - 59999    - localized ERRID     (international DLL)
-'//
-'//  The convention for naming ERRID's that take replacement strings is to give
-'//  them a number following the name (from 1-9) that indicates how many
-'//  arguments they expect.
-'//
-'//  DO NOT USE ANY NUMBERS EXCEPT THOSE EXPLICITLY LISTED AS BEING AVAILABLE.
-'//  IF YOU REUSE A NUMBER, LOCALIZATION WILL BE SCREWED UP!
-'//
-'//-------------------------------------------------------------------------------------------------
+'''-------------------------------------------------------------------------------------------------
+'''
+''' Error code and strings for Compiler errors
+'''
+''' ERRIDs should be defined in the following ranges:
+'''
+''' 500   -   999    - non localized ERRID (main DLL)
+''' 30000 - 59999    - localized ERRID     (international DLL)
+'''
+''' The convention for naming ERRID's that take replacement strings is to give
+''' them a number following the name (from 1-9) that indicates how many
+''' arguments they expect.
+'''
+''' DO NOT USE ANY NUMBERS EXCEPT THOSE EXPLICITLY LISTED AS BEING AVAILABLE.
+''' IF YOU REUSE A NUMBER, LOCALIZATION WILL BE SCREWED UP!
+'''
+'''-------------------------------------------------------------------------------------------------
 
-' //-------------------------------------------------------------------------------------------------
-' //
-' //
-' //  Manages the parse and compile errors.
-' //
-' //-------------------------------------------------------------------------------------------------
+'''-------------------------------------------------------------------------------------------------
+'''
+'''
+''' Manages the parse and compile errors.
+'''
+'''-------------------------------------------------------------------------------------------------
 
 Namespace Microsoft.CodeAnalysis.VisualBasic
 
@@ -80,17 +80,17 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ERRBadChecksumAlgorithm = 2045
         ERRMutuallyExclusiveOptions = 2046
 
-        '// The naming convention is that if your error requires arguments, to append
-        '// the number of args taken, e.g. AmbiguousName2
-        '//
+        ''' The naming convention is that if your error requires arguments, to append
+        ''' the number of args taken, e.g. AmbiguousName2
+        '''
         ERRInvalidInNamespace = 30001
 
         ERRUndefinedType1 = 30002
         ERRMissingNext = 30003
         ERRIllegalCharConstant = 30004
 
-        '//If you make any change involving these errors, such as creating more specific versions for use
-        '//in other contexts, please make sure to appropriately modify Bindable::ResolveOverloadingShouldSkipBadMember
+        ''' If you make any change involving these errors, such as creating more specific versions for use
+        ''' in other contexts, please make sure to appropriately modify Bindable::ResolveOverloadingShouldSkipBadMember
         ERRUnreferencedAssemblyEvent3 = 30005
 
         ERRUnreferencedModuleEvent3 = 30006
@@ -373,10 +373,10 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ERRIdentNotMemberOfInterface4 = 30401
         ERRImplementingInterfaceWithDifferentTupleNames5 = 30402
 
-        '//We intentionally use argument '3' for the delegate name. This makes generating overload resolution errors
-        '//easy. To make it more clear that were doing this, we name the message DelegateBindingMismatch3_2.
-        '//This differentiates its from DelegateBindingMismatch3_3, which actually takes 3 parameters instead of 2.
-        '//This is a workaround, but it makes the logic for reporting overload resolution errors easier error report more straight forward.
+        ''' We intentionally use argument '3' for the delegate name. This makes generating overload resolution errors
+        ''' easy. To make it more clear that were doing this, we name the message DelegateBindingMismatch3_2.
+        ''' This differentiates its from DelegateBindingMismatch3_3, which actually takes 3 parameters instead of 2.
+        ''' This is a workaround, but it makes the logic for reporting overload resolution errors easier error report more straight forward.
         'ERRDelegateBindingMismatch3_2 = 30408
         ERRWithEventsRequiresClass = 30412
 
@@ -548,8 +548,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ERRInvalidEnumBase = 30650
         ERRByRefIllegal1 = 30651
 
-        '//If you make any change involving these errors, such as creating more specific versions for use
-        '//in other contexts, please make sure to appropriately modify Bindable::ResolveOverloadingShouldSkipBadMember
+        ''' If you make any change involving these errors, such as creating more specific versions for use
+        ''' in other contexts, please make sure to appropriately modify Bindable::ResolveOverloadingShouldSkipBadMember
         ERRUnreferencedAssembly3 = 30652
 
         ERRUnreferencedModule3 = 30653
@@ -598,14 +598,14 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
 
         'ERRUnableToGetTempPath = 30698
         'ERRNameNotDeclaredDebug1 = 30699
-        '// This error should never be seen.
+        ''' This error should never be seen.
         'ERRNoSideEffects = 30700
         'ERRInvalidNothing = 30701
         'ERRIndexOutOfRange1 = 30702
         'ERRRuntimeException2 = 30703
         'ERRRuntimeException = 30704
         'ERRObjectReferenceIsNothing1 = 30705
-        '// This error should never be seen.
+        ''' This error should never be seen.
         'ERRExpressionNotValidInEE = 30706
         'ERRUnableToEvaluateExpression = 30707
         'ERRUnableToEvaluateLoops = 30708
@@ -732,7 +732,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         'ERRObsoleteLineKeyword = 30830            cut from Roslyn
         ERROverrideWithArrayVsParamArray2 = 30906
 
-        '// CONSIDER improve this error message
+        ''' CONSIDER improve this error message
         ERRCircularBaseDependencies4 = 30907
 
         ERRNestedBase2 = 30908
@@ -1043,10 +1043,10 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ERRExpectedWarningKeyword = 31218
         ERRInvalidHashAlgorithmName = 31219
 
-        '// NOTE: If you add any new errors that may be attached to a symbol during meta-import when it is marked as bad,
-        '//       particularly if it applies to method symbols, please appropriately modify Bindable::ResolveOverloadingShouldSkipBadMember.
-        '//       Failure to do so may break customer code.
-        '// AVAILABLE                             31220-31390
+        ''' NOTE: If you add any new errors that may be attached to a symbol during meta-import when it is marked as bad,
+        '''      particularly if it applies to method symbols, please appropriately modify Bindable::ResolveOverloadingShouldSkipBadMember.
+        '''      Failure to do so may break customer code.
+        ''' AVAILABLE                             31220-31390
 
         ERRInvalidSubsystemVersion = 31391
         ERRLibAnycpu32bitPreferredConflict = 31392
@@ -1113,11 +1113,11 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ERRInvalidFileAlignment = 31452
         ERRInvalidDebugInformationFormat = 31453
 
-        '// NOTE: If you add any new errors that may be attached to a symbol during meta-import when it is marked as bad,
-        '//       particularly if it applies to method symbols, please appropriately modify Bindable::ResolveOverloadingShouldSkipBadMember.
-        '//       Failure to do so may break customer code.
+        ''' NOTE: If you add any new errors that may be attached to a symbol during meta-import when it is marked as bad,
+        '''      particularly if it applies to method symbols, please appropriately modify Bindable::ResolveOverloadingShouldSkipBadMember.
+        '''      Failure to do so may break customer code.
 
-        '// AVAILABLE                             31451 - 31497
+        ''' AVAILABLE                             31451 - 31497
         ERRConstantStringTooLong = 31498
 
         ERRMustInheritEventNotOverridden = 31499
@@ -1140,17 +1140,17 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ERRSTAThreadAndMTAThread0 = 31512
         'ERRSTAThreadAndMTAThread1 = 31513
 
-        '//If you make any change involving this error, such as creating a more specific version for use
-        '//in a particular context, please make sure to appropriately modify Bindable::ResolveOverloadingShouldSkipBadMember
+        ''' If you make any change involving this error, such as creating a more specific version for use
+        ''' in a particular context, please make sure to appropriately modify Bindable::ResolveOverloadingShouldSkipBadMember
         ERRIndirectUnreferencedAssembly4 = 31515
 
         ERRBadAttributeNonPublicType1 = 31516
         ERRBadAttributeNonPublicContType2 = 31517
 
-        'ERRAlinkManifestFilepathTooLong = 31518       this scenario reports a more generic error
+        'ERRAlinkManifestFilepathTooLong = 31518     '  this scenario reports a more generic error
         ERRBadMetaDataReference1 = 31519
 
-        ' ERRErrorApplyingSecurityAttribute1 = 31520 ' ' we're now reporting more detailed diagnostics: ERRSecurityAttributeMissingAction,  ERRSecurityAttributeInvalidAction, ERRSecurityAttributeInvalidActionAssembly or ERRSecurityAttributeInvalidActionTypeOrMethod
+        ' ERRErrorApplyingSecurityAttribute1 = 31520 ' we're now reporting more detailed diagnostics: ERRSecurityAttributeMissingAction,  ERRSecurityAttributeInvalidAction, ERRSecurityAttributeInvalidActionAssembly or ERRSecurityAttributeInvalidActionTypeOrMethod
         'ERRDuplicateModuleAttribute1 = 31521
         ERRDllImportOnNonEmptySubOrFunction = 31522
 
@@ -1162,16 +1162,16 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
 
         ERRComClassOnGeneric = 31527
 
-        '//If you make any change involving this error, such as creating a more specific version for use
-        '//in a particular context, please make sure to appropriately modify Bindable::ResolveOverloadingShouldSkipBadMember
+        ''' If you make any change involving this error, such as creating a more specific version for use
+        ''' in a particular context, please make sure to appropriately modify Bindable::ResolveOverloadingShouldSkipBadMember
         'ERRIndirectUnreferencedAssembly3 = 31528
 
         ERRDllImportOnInstanceMethod = 31529
         ERRDllImportOnInterfaceMethod = 31530
         ERRDllImportNotLegalOnEventMethod = 31531
 
-        '//If you make any change involving these errors, such as creating more specific versions for use
-        '//in other contexts, please make sure to appropriately modify Bindable::ResolveOverloadingShouldSkipBadMember
+        ''' If you make any change involving these errors, such as creating more specific versions for use
+        ''' in other contexts, please make sure to appropriately modify Bindable::ResolveOverloadingShouldSkipBadMember
         'ERRIndirectUnreferencedProject3 = 31532
         'ERRIndirectUnreferencedProject2 = 31533
 
@@ -1437,10 +1437,10 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ERRBadNullTypeInCCExpression = 33111
         ERRNullableImplicit = 33112
 
-        '// NOTE: If you add any new errors that may be attached to a symbol during meta-import when it is marked as bad,
-        '//       particularly if it applies to method symbols, please appropriately modify Bindable::ResolveOverloadingShouldSkipBadMember.
-        '//       Failure to do so may break customer code.
-        '// AVAILABLE                             33113 - 34999
+        ''' NOTE: If you add any new errors that may be attached to a symbol during meta-import when it is marked as bad,
+        '''      particularly if it applies to method symbols, please appropriately modify Bindable::ResolveOverloadingShouldSkipBadMember.
+        '''      Failure to do so may break customer code.
+        ''' AVAILABLE                             33113 - 34999
 
         ERRMissingRuntimeHelper = 35000
 
@@ -1473,7 +1473,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ERRByRefParamInExpressionTree = 36538
         'ERRObjectInitializerBadValue = 36543
 
-        '// If you change this message, make sure to change message for QueryDuplicateAnonTypeMemberName1 as well!
+        ''' If you change this message, make sure to change message for QueryDuplicateAnonTypeMemberName1 as well!
         ERRDuplicateAnonTypeMemberName1 = 36547
 
         ERRBadAnonymousTypeForExprTree = 36548
@@ -1485,7 +1485,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ERRExtensionMethodOptionalFirstArg = 36553
         ERRExtensionMethodParamArrayFirstArg = 36554
 
-        '// If you change this message, make sure to change message for  QueryAnonymousTypeFieldNameInference as well!
+        ''' If you change this message, make sure to change message for  QueryAnonymousTypeFieldNameInference as well!
         'ERRBadOrCircularInitializerReference = 36555
         ERRAnonymousTypeFieldNameInference = 36556
 
@@ -1493,7 +1493,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ERRExtensionAttributeInvalid = 36558
         ERRAnonymousTypePropertyOutOfOrder1 = 36559
 
-        '// If you change this message, make sure to change message for  QueryAnonymousTypeDisallowsTypeChar as well!
+        ''' If you change this message, make sure to change message for  QueryAnonymousTypeDisallowsTypeChar as well!
         ERRAnonymousTypeDisallowsTypeChar = 36560
 
         ERRExtensionMethodUncallable1 = 36561
@@ -1550,11 +1550,11 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         'ERRNoQueryExpressionsInDebugger = 36609
         ERRQueryNameNotDeclared = 36610
 
-        '// Available 36611
+        ''' Available 36611
 
         ERRNestedFunctionArgumentNarrowing3 = 36612
 
-        '// If you change this message, make sure to change message for  QueryAnonTypeFieldXMLNameInference as well!
+        ''' If you change this message, make sure to change message for  QueryAnonTypeFieldXMLNameInference as well!
         ERRAnonTypeFieldXMLNameInference = 36613
 
         ERRQueryAnonTypeFieldXMLNameInference = 36614
@@ -1570,10 +1570,10 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ERREqualsTypeMismatch = 36621
         ERREqualsOperandIsBad = 36622
 
-        '// see 30581 (lambda version of AddressOf)
+        ''' see 30581 (lambda version of AddressOf)
         ERRLambdaNotDelegate1 = 36625
 
-        '// see 30939 (lambda version of AddressOf)
+        ''' see 30939 (lambda version of AddressOf)
         ERRLambdaNotCreatableDelegate1 = 36626
 
         'ERRNoLambdaExpressionsInDebugger = 36627
@@ -1588,8 +1588,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ERRAddressOfInSelectCaseExpr = 36636
         ERRNullableCharNotSupported = 36637
 
-        '// The follow error messages are paired with other query specific messages above.  Please
-        '// make sure to keep the two in sync
+        ''' The follow error messages are paired with other query specific messages above.  Please
+        ''' make sure to keep the two in sync
         ERRCannotLiftStructureMeLambda = 36638
 
         ERRCannotLiftByRefParamLambda1 = 36639
@@ -1639,8 +1639,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ERRMultilineLambdaMissingFunction = 36674
         ERRStatementLambdaInExpressionTree = 36675
 
-        ' //ERRStrictDisallowsImplicitLambda                 = 36676
-        ' // replaced by LambdaNoType and LambdaNoTypeObjectDisallowed and LambdaTooManyTypesObjectDisallowed
+        ''' ERRStrictDisallowsImplicitLambda                 = 36676
+        ''' replaced by LambdaNoType and LambdaNoTypeObjectDisallowed and LambdaTooManyTypesObjectDisallowed
         ERRAttributeOnLambdaReturnType = 36677
 
         ERRExpectedIdentifierOrGroup = 36707
@@ -1691,8 +1691,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ERRVarianceInByRefDisallowed1 = 36750
         ERRLambdaNoType = 36751
 
-        ' //ERRNoReturnStatementsForMultilineLambda  = 36752
-        ' // replaced by LambdaNoType and LambdaNoTypeObjectDisallowed
+        ''' ERRNoReturnStatementsForMultilineLambda  = 36752
+        ''' replaced by LambdaNoType and LambdaNoTypeObjectDisallowed
         'ERRCollectionInitializerArity2 = 36753
         ERRVarianceConversionFailedOut6 = 36754
 
@@ -1748,7 +1748,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ERRBadYieldInTryHandler = 36939
         ERRBadYieldInNonIteratorMethod = 36940
 
-        '// unused 36941
+        ''' unused 36941
         ERRBadReturnValueInIterator = 36942
 
         ERRBadAwaitInTryHandler = 36943
@@ -1935,7 +1935,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
 
         ERRValueTupleResolutionAmbiguous3 = 37305
 
-        '// WARNINGS BEGIN HERE
+        ''' WARNINGS BEGIN HERE
         WRNUseOfObsoleteSymbol2 = 40000
 
         WRNInvalidOverrideDueToTupleNames2 = 40001
@@ -2010,7 +2010,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         WRNUseSwitchInsteadOfAttribute = 41008
         WRNTupleLiteralNameMismatch = 41009
 
-        '// AVAILABLE                             41010 - 41199
+        ''' AVAILABLE                             41010 - 41199
         WRNReferencedAssemblyDoesNotHaveStrongName = 41997
 
         WRNRecursiveAddHandlerCall = 41998
@@ -2024,15 +2024,15 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ' WRNIndirectlyImplementedBaseMember5 = 42014 ' deprecated
         ' WRNImplementedBaseMember4 = 42015 ' deprecated
 
-        WRNImplicitConversionSubst1 = 42016 '// populated by 42350/42332/42336/42337/42338/42339/42340
+        WRNImplicitConversionSubst1 = 42016 ' populated by 42350/42332/42336/42337/42338/42339/42340
         WRNLateBindingResolution = 42017
         WRNObjectMath1 = 42018
         WRNObjectMath2 = 42019
-        WRNObjectAssumedVar1 = 42020  ' // populated by 42111/42346
-        WRNObjectAssumed1 = 42021  ' // populated by 42347/41005/42341/42342/42344/42345/42334/42343
-        WRNObjectAssumedProperty1 = 42022  ' // populated by 42348
+        WRNObjectAssumedVar1 = 42020  ' populated by 42111/42346
+        WRNObjectAssumed1 = 42021  ' populated by 42347/41005/42341/42342/42344/42345/42334/42343
+        WRNObjectAssumedProperty1 = 42022  ' populated by 42348
 
-        '// AVAILABLE                             42023
+        ''' AVAILABLE                             42023
 
         WRNUnusedLocal = 42024
         WRNSharedMemberThroughInstance = 42025
@@ -2050,16 +2050,16 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         WRNEqualToLiteralNothing = 42037
         WRNNotEqualToLiteralNothing = 42038
 
-        '// AVAILABLE                             42039 - 42098
+        ''' AVAILABLE                             42039 - 42098
         WRNUnusedLocalConst = 42099
 
-        '// UNAVAILABLE                           42100
+        ''' UNAVAILABLE                           42100
         WRNComClassInterfaceShadows5 = 42101
 
         WRNComClassPropertySetObject1 = 42102
 
-        '// only reference types are considered for definite assignment.
-        '// DefAsg's are all under VBadvanced
+        ''' only reference types are considered for definite assignment.
+        ''' DefAsg's are all under VBadvanced
         WRNDefAsgUseNullRef = 42104
 
         WRNDefAsgNoRetValFuncRef1 = 42105
@@ -2071,14 +2071,14 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         ' WRNFieldInForNotExplicit = 42110       'unused in Roslyn
         WRNStaticLocalNoInference = 42111
 
-        '// AVAILABLE                             42112 - 42202
+        ''' AVAILABLE                             42112 - 42202
         ' WRNSxSHigherIndirectRefEmitted4 = 42203    'unused in Roslyn
         ' WRNReferencedAssembliesAmbiguous6 = 42204  'unused in Roslyn
         ' WRNReferencedAssembliesAmbiguous4 = 42205  'unused in Roslyn
         ' WRNMaximumNumberOfWarnings = 42206     'unused in Roslyn
         WRNInvalidAssemblyName = 42207
 
-        '// AVAILABLE                             42209 - 42299
+        ''' AVAILABLE                             42209 - 42299
         WRNXMLDocBadXMLLine = 42300
 
         WRNXMLDocMoreThanOneCommentBlock = 42301
@@ -2110,20 +2110,20 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
 
         WRNLiftControlVariableQuery = 42327
         WRNRelDelegatePassedToRemoveHandler = 42328
-        ' WRNQueryMissingAsClauseinVarDecl = 42329     ' unused in Roslyn.
+        ' WRNQueryMissingAsClauseinVarDecl = 42329  ' unused in Roslyn.
 
         ' WRNLiftUsingVariableInLambda1 = 42330     ' unused in Roslyn.
-        ' WRNLiftUsingVariableInQuery1 = 42331     ' unused in Roslyn.
-        WRNAmbiguousCastConversion2 = 42332 '// substitutes into 42016
+        ' WRNLiftUsingVariableInQuery1 = 42331      ' unused in Roslyn.
+        WRNAmbiguousCastConversion2 = 42332         ' substitutes into 42016
 
         WRNVarianceDeclarationAmbiguous3 = 42333
         WRNArrayInitNoTypeObjectAssumed = 42334
         WRNTypeInferenceAssumed3 = 42335
-        WRNVarianceConversionFailedOut6 = 42336 '// substitutes into 42016
-        WRNVarianceConversionFailedIn6 = 42337 '// substitutes into 42016
-        WRNVarianceIEnumerableSuggestion3 = 42338 '// substitutes into 42016
-        WRNVarianceConversionFailedTryOut4 = 42339 '// substitutes into 42016
-        WRNVarianceConversionFailedTryIn4 = 42340 '// substitutes into 42016
+        WRNVarianceConversionFailedOut6 = 42336 ' substitutes into 42016
+        WRNVarianceConversionFailedIn6 = 42337 ' substitutes into 42016
+        WRNVarianceIEnumerableSuggestion3 = 42338 ' substitutes into 42016
+        WRNVarianceConversionFailedTryOut4 = 42339 ' substitutes into 42016
+        WRNVarianceConversionFailedTryIn4 = 42340 ' substitutes into 42016
         WRNIfNoTypeObjectAssumed = 42341
         WRNIfTooManyTypesObjectAssumed = 42342
         WRNArrayInitTooManyTypesObjectAssumed = 42343
@@ -2134,7 +2134,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         WRNMissingAsClauseinProperty = 42348
 
         WRNObsoleteIdentityDirectCastForValueType = 42349
-        WRNImplicitConversion2 = 42350 ' // substitutes into 42016
+        WRNImplicitConversion2 = 42350 ' substitutes into 42016
 
         WRNMutableStructureInUsing = 42351
         WRNMutableGenericStructureInUsing = 42352
@@ -2152,7 +2152,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         'WRNPDBConstantStringValueTooLong = 42363  we gave up on this warning. See comments in commonCompilation.Emit()
         WRNReturnTypeAttributeOnWriteOnlyProperty = 42364
 
-        ' // AVAILABLE 42365
+        ''' AVAILABLE 42365
 
         WRNInvalidVersionFormat = 42366
         WRNMainIgnored = 42367
@@ -2176,16 +2176,16 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
         WRNAttributeIgnoredWhenPublicSigning = 42379
         WRNExperimental = 42380
 
-        ' // AVAILABLE                             42381 - 49998
+        ''' AVAILABLE                             42381 - 49998
         ERRWRNNextAvailable = 42381
 
-        '// HIDDENS AND INFOS BEGIN HERE
+        ''' HIDDENS AND INFOS BEGIN HERE
         HDNUnusedImportClause = 50000
 
         HDNUnusedImportStatement = 50001
         INFUnableToLoadSomeTypesInAnalyzer = 50002
 
-        ' // AVAILABLE                             50003 - 54999
+        ''' AVAILABLE                             50003 - 54999
 
         ' Adding diagnostic arguments from resx file
         IDSProjectSettingsLocationName = 56000

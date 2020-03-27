@@ -11,9 +11,9 @@ Imports CSharpToVBApp.Microsoft.VisualBasic.CompilerServices
 Namespace Microsoft.VisualBasic.ApplicationServices
 
     ''' <summary>
-    '''  A class that contains the information about an Application. This information can be
-    '''  specified using the assembly attributes (contained in AssemblyInfo.vb file in case of
-    '''  a VB project in Visual Studio .NET).
+    ''' A class that contains the information about an Application. This information can be
+    ''' specified using the assembly attributes (contained in AssemblyInfo.vb file in case of
+    ''' a VB project in Visual Studio .NET).
     ''' </summary>
     ''' <remarks>This class is based on the FileVersionInfo class of the framework, but
     ''' reduced to a number of relevant properties.</remarks>

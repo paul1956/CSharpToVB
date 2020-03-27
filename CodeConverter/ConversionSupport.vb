@@ -55,7 +55,6 @@ Namespace CSharpToVBCodeConverter
             If OptionalReferences Is Nothing Then
                 Throw New ArgumentNullException(NameOf(OptionalReferences))
             End If
-
             Dim Tree As SyntaxTree = ParseCSharpSource(RequestToConvert.SourceCode, CSPreprocessorSymbols)
             Dim CSharpOptions As CS.CSharpCompilationOptions = New CS.CSharpCompilationOptions(
                                                 outputKind:=Nothing,

@@ -22,7 +22,6 @@ Partial Class OptionsDialog
     'Do not modify it using the code editor.
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
-        Me.components = New System.ComponentModel.Container()
         Me.TableLayoutPanel1 = New System.Windows.Forms.TableLayoutPanel()
         Me.OK_Button = New System.Windows.Forms.Button()
         Me.Cancel_Button = New System.Windows.Forms.Button()
@@ -42,9 +41,6 @@ Partial Class OptionsDialog
         Me.CheckBoxStrict = New System.Windows.Forms.CheckBox()
         Me.ComboBoxInfer = New System.Windows.Forms.ComboBox()
         Me.CheckBoxInfer = New System.Windows.Forms.CheckBox()
-        Me.OptionsBindingSource = New System.Windows.Forms.BindingSource(Me.components)
-        Me.TableLayoutPanel1.SuspendLayout()
-        CType(Me.OptionsBindingSource, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         'TableLayoutPanel1
@@ -53,8 +49,6 @@ Partial Class OptionsDialog
         Me.TableLayoutPanel1.ColumnCount = 2
         Me.TableLayoutPanel1.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
         Me.TableLayoutPanel1.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
-        Me.TableLayoutPanel1.Controls.Add(Me.OK_Button, 0, 0)
-        Me.TableLayoutPanel1.Controls.Add(Me.Cancel_Button, 1, 0)
         Me.TableLayoutPanel1.Location = New System.Drawing.Point(313, 252)
         Me.TableLayoutPanel1.Name = "TableLayoutPanel1"
         Me.TableLayoutPanel1.RowCount = 1
@@ -268,7 +262,7 @@ Partial Class OptionsDialog
         Me.Controls.Add(Me.UpdateColor_Button)
         Me.Controls.Add(Me.ItemColor_ComboBox)
         Me.Controls.Add(Me.TableLayoutPanel1)
-        Me.Font = New System.Drawing.Font("Segoe UI", 9.0!)
+        Me.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog
         Me.MaximizeBox = False
         Me.MinimizeBox = False
@@ -276,8 +270,6 @@ Partial Class OptionsDialog
         Me.ShowInTaskbar = False
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent
         Me.Text = "Options"
-        Me.TableLayoutPanel1.ResumeLayout(False)
-        CType(Me.OptionsBindingSource, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
         Me.PerformLayout()
 

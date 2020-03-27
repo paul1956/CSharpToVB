@@ -1,6 +1,7 @@
 ﻿' Licensed to the .NET Foundation under one or more agreements.
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
+
 Imports System.Runtime.CompilerServices
 
 Imports CSharpToVBCodeConverter
@@ -16,7 +17,7 @@ Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 Public Module ExpressionSyntaxSupport
 
     <Extension>
-    Friend Function DetermineType(expression As CSS.ExpressionSyntax, Model As SemanticModel) As (_ITypeSymbol As ITypeSymbol, _Error As Boolean)
+    Friend Function DetermineType(expression As CSS.ExpressionSyntax, Model As SemanticModel) As (_Error As Boolean, _ITypeSymbol As ITypeSymbol)
         ' If a parameter appears to have a void return type, then just use 'object' instead.
         Try
             If expression IsNot Nothing Then
@@ -24,9 +25,9 @@ Public Module ExpressionSyntaxSupport
                 Dim symbolInfo As SymbolInfo = Model.GetSymbolInfo(expression)
                 If typeInfo.Type IsNot Nothing Then
                     If (typeInfo.Type.IsErrorType) Then
-                        Return (Model.Compilation.ObjectType, _Error:=True)
+                        Return (_Error:=True, Model.Compilation.ObjectType)
                     ElseIf SymbolEqualityComparer.Default.Equals(typeInfo.Type, Model.Compilation.ObjectType) Then
-                        Return (Model.Compilation.ObjectType, _Error:=False)
+                        Return (_Error:=False, Model.Compilation.ObjectType)
                     End If
                 End If
                 Dim symbol As ISymbol = If(typeInfo.Type, symbolInfo.GetAnySymbol())
@@ -34,15 +35,15 @@ Public Module ExpressionSyntaxSupport
                     Dim _type As ITypeSymbol = TryCast(symbol, ITypeSymbol)
                     If _type IsNot Nothing Then
                         If symbol.Kind = SymbolKind.PointerType Then
-                            Return (_type, _Error:=True)
+                            Return (_Error:=True, _type)
                         End If
                         If _type.ToString.Contains("<anonymous type", StringComparison.Ordinal) OrElse
                             _type.ToString.StartsWith("(", StringComparison.Ordinal) Then
-                            Return (_type, _Error:=True)
+                            Return (_Error:=True, _type)
                         End If
-                        Return (_type, _Error:=False)
+                        Return (_Error:=False, _type)
                     End If
-                    Return (symbol.ConvertISymbolToType(Model.Compilation), False)
+                    Return (_Error:=False, symbol.ConvertISymbolToType(Model.Compilation))
                 End If
 
             End If
@@ -52,11 +53,11 @@ Public Module ExpressionSyntaxSupport
             Stop
             Throw
         End Try
-        Return (Model.Compilation.ObjectType, _Error:=True)
+        Return (_Error:=True, Model.Compilation.ObjectType)
     End Function
 
     <Extension>
-    Friend Function DetermineTypeSyntax(expression As CSS.ExpressionSyntax, Model As SemanticModel) As (_ITypeSymbol As VBS.TypeSyntax, _Error As Boolean)
+    Friend Function DetermineTypeSyntax(expression As CSS.ExpressionSyntax, Model As SemanticModel) As (_Error As Boolean, _ITypeSymbol As VBS.TypeSyntax)
         ' If a parameter appears to have a void return type, then just use 'object' instead.
         Try
             If expression IsNot Nothing Then
@@ -64,9 +65,9 @@ Public Module ExpressionSyntaxSupport
                 Dim symbolInfo As SymbolInfo = Model.GetSymbolInfo(expression)
                 If typeInfo.Type IsNot Nothing Then
                     If (typeInfo.Type.IsErrorType) Then
-                        Return (PredefinedTypeObject, _Error:=True)
+                        Return (_Error:=True, PredefinedTypeObject)
                     ElseIf SymbolEqualityComparer.Default.Equals(typeInfo.Type, Model.Compilation.ObjectType) Then
-                        Return (PredefinedTypeObject, _Error:=False)
+                        Return (_Error:=False, PredefinedTypeObject)
                     End If
                 End If
                 Dim symbol As ISymbol = If(typeInfo.Type, symbolInfo.GetAnySymbol())
@@ -74,16 +75,16 @@ Public Module ExpressionSyntaxSupport
                     Dim _type As ITypeSymbol = TryCast(symbol, ITypeSymbol)
                     If _type IsNot Nothing Then
                         If symbol.Kind = SymbolKind.PointerType Then
-                            Return (IntPtrType, _Error:=True)
+                            Return (_Error:=True, IntPtrType)
                         End If
                         If _type.ToString.Contains("<anonymous type", StringComparison.Ordinal) Then
-                            Return (PredefinedTypeObject, _Error:=True)
+                            Return (_Error:=True, PredefinedTypeObject)
                         End If
                         If _type.ToString.StartsWith("(", StringComparison.Ordinal) Then
-                            Return (CSharpConverter.ConvertCSTupleToVBType(_type.ToString), _Error:=False)
+                            Return (_Error:=False, CSharpConverter.ConvertCSTupleToVBType(_type.ToString))
                         End If
                     End If
-                    Return (ConvertToType(symbol.ConvertISymbolToType(Model.Compilation)), _Error:=False)
+                    Return (_Error:=False, ConvertToType(symbol.ConvertISymbolToType(Model.Compilation)))
                 End If
 
             End If
@@ -92,7 +93,7 @@ Public Module ExpressionSyntaxSupport
         Catch ex As Exception
             Stop
         End Try
-        Return (PredefinedTypeObject, _Error:=True)
+        Return (_Error:=True, PredefinedTypeObject)
     End Function
 
     <Extension>

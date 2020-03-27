@@ -42,13 +42,15 @@ Namespace CSharpToVBCodeConverter.Util
         ''' <summary>
         ''' Checks if 'symbol' is accessible from within 'within', which must be a INamedTypeSymbol
         ''' or an IAssemblySymbol.  If 'symbol' is accessed off of an expression then
-        ''' 'throughTypeOpt' is the type of that expression. This is needed to properly do protected
+        ''' "throughTypeOpt" is the type of that expression. This is needed to properly do protected
         ''' access checks. Sets "failedThroughTypeCheck" to true if this protected check failed.
         ''' </summary>
-        '// NOTE: I expect this function to be called a lot.  As such, I do not do any memory
-        '// allocations in the function itself (including not making any iterators).  This does mean
-        '// that certain helper functions that we'd like to call are in-lined in this method to
-        '// prevent the overhead of returning collections or enumerators.
+        ''' <remarks>
+        ''' NOTE: I expect this function to be called a lot.  As such, I do not do any memory
+        ''' allocations in the function itself (including not making any iterators).  This does mean
+        ''' that certain helper functions that we'd like to call are in-lined in this method to
+        ''' prevent the overhead of returning collections or enumerators.
+        '''</remarks>
         Private Function IsSymbolAccessibleCore(symbol As ISymbol, Within As ISymbol, throughTypeOpt As ITypeSymbol, ByRef failedThroughTypeCheck As Boolean) As Boolean ' must be assembly or named type symbol
             failedThroughTypeCheck = False
             Dim withinAssembly As IAssemblySymbol = If((TryCast(Within, IAssemblySymbol)), DirectCast(Within, INamedTypeSymbol).ContainingAssembly)

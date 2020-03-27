@@ -256,7 +256,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         AsClause = VBFactory.AsNewClause(CType(v.Initializer.Value.Accept(_NodesVisitor), VBS.NewExpressionSyntax))
                     ElseIf v.Initializer.Value.IsKind(CS.SyntaxKind.ImplicitArrayCreationExpression) Then
                     Else
-                        Dim Result As (_TypeSyntax As VBS.TypeSyntax, _Error As Boolean) = DetermineTypeSyntax(v.Initializer.Value, _Model)
+                        Dim Result As (_Error As Boolean, _TypeSyntax As VBS.TypeSyntax) = DetermineTypeSyntax(v.Initializer.Value, _Model)
                         If Not Result._Error Then
                             AsClause = VBFactory.SimpleAsClause(Result._TypeSyntax)
                         Else

@@ -94,7 +94,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim EndSubOrFunctionStatement As VBS.EndBlockStatementSyntax
                 Dim parameterList As VBS.ParameterListSyntax = VBFactory.ParameterList(VBFactory.SeparatedList(NodesList, Separators))
                 Dim IsFunction As Boolean = Not (symbol.ReturnsVoid OrElse TypeOf node.Body Is CSS.AssignmentExpressionSyntax)
-                Dim Braces As (SyntaxToken, SyntaxToken) = node.Body.GetBraces
+                Dim Braces As (LeftBrace As SyntaxToken, RightBrace As SyntaxToken) = node.Body.GetBraces
                 If IsFunction Then
                     Dim AddAsClause As Boolean = symbol.ReturnType.IsErrorType OrElse symbol.ReturnType.ToString.Contains("?", StringComparison.Ordinal)
                     Dim AsClause As VBS.SimpleAsClauseSyntax = If(AddAsClause,
@@ -102,10 +102,10 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                                                   VBFactory.SimpleAsClause(ConvertToType(symbol.ReturnType))
                                                                   )
                     header = VBFactory.FunctionLambdaHeader(VBFactory.List(Of VBS.AttributeListSyntax)(), VBFactory.TokenList(Modifiers), parameterList, asClause:=AsClause)
-                    EndSubOrFunctionStatement = VBFactory.EndFunctionStatement().WithConvertedTriviaFrom(Braces.Item2)
+                    EndSubOrFunctionStatement = VBFactory.EndFunctionStatement().WithConvertedTriviaFrom(Braces.RightBrace)
                 Else
                     header = VBFactory.SubLambdaHeader(VBFactory.List(Of VBS.AttributeListSyntax)(), VBFactory.TokenList(Modifiers), parameterList, asClause:=Nothing)
-                    EndSubOrFunctionStatement = VBFactory.EndSubStatement().WithConvertedTriviaFrom(Braces.Item2)
+                    EndSubOrFunctionStatement = VBFactory.EndSubStatement().WithConvertedTriviaFrom(Braces.RightBrace)
                 End If
                 If TypeOf block Is CSS.BlockSyntax Then
                     block = DirectCast(block, CSS.BlockSyntax).Statements
@@ -186,10 +186,10 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
 
                 Dim ExpressionKind As VB.SyntaxKind
                 If IsFunction Then
-                    EndBlock = VBFactory.EndBlockStatement(VB.SyntaxKind.EndFunctionStatement, FunctionKeyword).WithConvertedTriviaFrom(Braces.Item2)
+                    EndBlock = VBFactory.EndBlockStatement(VB.SyntaxKind.EndFunctionStatement, FunctionKeyword).WithConvertedTriviaFrom(Braces.RightBrace)
                     ExpressionKind = VB.SyntaxKind.MultiLineFunctionLambdaExpression
                 Else
-                    EndBlock = VBFactory.EndBlockStatement(VB.SyntaxKind.EndSubStatement, SubKeyword).WithConvertedTriviaFrom(Braces.Item2)
+                    EndBlock = VBFactory.EndBlockStatement(VB.SyntaxKind.EndSubStatement, SubKeyword).WithConvertedTriviaFrom(Braces.RightBrace)
                     ExpressionKind = VB.SyntaxKind.MultiLineSubLambdaExpression
                 End If
                 Return VBFactory.MultiLineLambdaExpression(kind:=ExpressionKind,
@@ -238,8 +238,15 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim _Typeinfo As TypeInfo
                 If TypeOf Node Is CSS.BinaryExpressionSyntax Then
                     Dim BinaryExpression As CSS.BinaryExpressionSyntax = CType(Node, CSS.BinaryExpressionSyntax)
+                    If Not BinaryExpression.IsKind(CS.SyntaxKind.AddExpression) Then
+                        Return False
+                    End If
+                    _Typeinfo = ModelExtensions.GetTypeInfo(_mSemanticModel, BinaryExpression)
+                    If _Typeinfo.IsString Then
+                        Return True
+                    End If
                     _Typeinfo = ModelExtensions.GetTypeInfo(_mSemanticModel, BinaryExpression.Left)
-                    If IsString(_Typeinfo) Then
+                    If _Typeinfo.IsString Then
                         Return True
                     End If
                     _Typeinfo = ModelExtensions.GetTypeInfo(_mSemanticModel, BinaryExpression.Right)
@@ -249,24 +256,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Else
                     _Typeinfo = ModelExtensions.GetTypeInfo(_mSemanticModel, Node)
                 End If
-                Return IsString(_Typeinfo)
-            End Function
-
-            Private Shared Function IsString(_Typeinfo As TypeInfo) As Boolean
-                Dim typeSymbol As ITypeSymbol = _Typeinfo.Type
-
-                If typeSymbol Is Nothing OrElse typeSymbol.IsErrorType Then
-                    Return False
-                End If
-
-                If typeSymbol.ToString.Replace("?", "", StringComparison.OrdinalIgnoreCase).Equals("string", StringComparison.OrdinalIgnoreCase) Then
-                    Return True
-                End If
-
-                If typeSymbol.ToString = "int" Then ' For debugging
-                    Return False
-                End If
-                Return False
+                Return _Typeinfo.IsString
             End Function
 
             Private Function MakeAssignmentStatement(node As CSS.AssignmentExpressionSyntax) As VBS.StatementSyntax

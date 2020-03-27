@@ -52,298 +52,262 @@ Namespace ConvertDirectory.Tests
             Return Task.FromResult(True)
         End Function
 
+        Private Async Function TextProcessDirectoryAsync(SourceDirectory As String) As Task(Of Boolean)
+            Return Await ProcessDirectoryAsync(SourceDirectory, TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None)
+        End Function
+
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryCodeStyleAsync() As Task
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "CodeStyle"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "CodeStyle")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryCompilersCore() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "Core"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "Core")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryCompilersCSharpCSC() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "CSharp", "CSC"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "CSharp", "CSC")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryCompilersCSharpCSharpAnalyzerDriver() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "CSharp", "CSharpAnalyzerDriver"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "CSharp", "CSharpAnalyzerDriver")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <Timeout(100000)>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryCompilersCSharpPortable() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "CSharp", "Portable"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "CSharp", "Portable")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryCompilersCSharpTestCommandLine() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "CSharp", "Test", "CommandLine"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "CSharp", "Test", "CommandLine")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryCompilersCSharpTestEmit() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "CSharp", "Test", "Emit"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "CSharp", "Test", "Emit")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryCompilersCSharpTestSemantic() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "CSharp", "Test", "Semantic"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "CSharp", "Test", "Semantic")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryCompilersCSharpTestSyntax() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "CSharp", "Test", "Syntax"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "CSharp", "Test", "Syntax")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryCompilersCSharpTestWinRT() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "CSharp", "Test", "WinRT"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "CSharp", "Test", "WinRT")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryCompilersExtension() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "Extension"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "Extension")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryCompilersRealParserTests() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "RealParserTests"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "RealParserTests")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryCompilersServerVBCSCompiler() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "Server", "VBCSCompiler"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "Server", "VBCSCompiler")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryCompilersServerVBCSCompilerTests() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "Server", "VBCSCompilerTests"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "Server", "VBCSCompilerTests")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryCompilersShared() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "Shared"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "Shared")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryCompilersTest() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "Test"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "Test")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryCompilersVisualStudio() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "VisualBasic"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Compilers", "VisualBasic")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryDependencies() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Dependencies"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Dependencies")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryDeployment() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Deployment"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Deployment")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryEditorFeaturesCore() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "EditorFeatures", "Core"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "EditorFeatures", "Core")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryEditorFeaturesCoreWpf() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "EditorFeatures", "Core.Wpf"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "EditorFeatures", "Core.Wpf")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryEditorFeaturesCSharp() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "EditorFeatures", "CSharp"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "EditorFeatures", "CSharp")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryEditorFeaturesCSharpTest() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "EditorFeatures", "CSharp.Test"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "EditorFeatures", "CSharp.Test")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryEditorFeaturesCSharpTest2() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "EditorFeatures", "CSharp.Test2"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "EditorFeatures", "CSharp.Test2")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryEditorFeaturesCSharpWpf() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "EditorFeatures", "CSharp.Wpf"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "EditorFeatures", "CSharp.Wpf")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryEditorFeaturesTest() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "EditorFeatures", "Test"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "EditorFeatures", "Test")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryEditorFeaturesTest2() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "EditorFeatures", "Test2"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "EditorFeatures", "Test2")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryEditorFeaturesTestUtilities() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "EditorFeatures", "TestUtilities"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "EditorFeatures", "TestUtilities")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryEditorFeaturesTestUtilities2() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "EditorFeatures", "TestUtilities2"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "EditorFeatures", "TestUtilities2")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryEditorFeaturesText() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "EditorFeatures", "Text"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "EditorFeatures", "Text")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryEditorFeaturesVisualBasic() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "EditorFeatures", "VisualBasic"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "EditorFeatures", "VisualBasic")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryEditorFeaturesVisualBasicTest() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "EditorFeatures", "VisualBasicTest"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "EditorFeatures", "VisualBasicTest")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryExpressionEvaluator() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "ExpressionEvaluator"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "ExpressionEvaluator")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryFeatures() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Features"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Features")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryInteractive() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Interactive"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Interactive")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryNuGet() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "NuGet"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "NuGet")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryScripting() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Scripting"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Scripting")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectorySetup() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Setup"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Setup")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryTest() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Test"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Test")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryTools() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Tools"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Tools")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryVisualStudio() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "VisualStudio"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "VisualStudio")), $"Failing file {_lastFileProcessed}")
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
         <ConditionalFact(NameOf(EnableRoslynTests))>
         Public Async Function ConvertDirectoryWorkspaces() As Task
-            Dim FilesProcessed As Long = 0
-            Assert.True(Await ProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Workspaces"), TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, RichTextBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf ProcessFileAsync, CancellationToken.None), $"Failing file {_lastFileProcessed}")
+            Assert.True(Await TextProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Workspaces")), $"Failing file {_lastFileProcessed}")
         End Function
 
     End Class
