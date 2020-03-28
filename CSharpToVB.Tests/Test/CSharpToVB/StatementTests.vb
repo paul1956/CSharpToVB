@@ -142,7 +142,7 @@ Option Strict Off
 Class TestClass
 
     Private Sub TestMethod()
-        Dim b As String = New String(""test"")
+        Dim b As New String(""test"")
     End Sub
 End Class")
         End Sub
@@ -162,7 +162,7 @@ Option Strict Off
 Class TestClass
 
     Private Sub TestMethod()
-        Dim b As String = New String(""test"")
+        Dim b As New String(""test"")
     End Sub
 End Class")
         End Sub

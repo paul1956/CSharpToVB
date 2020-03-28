@@ -2250,6 +2250,9 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     NewArgumentList.Add(argumentList.Arguments(argumentList.Arguments.Count - 1).RemoveDirectiveTrivia(FoundEOL))
                     argumentList = argumentList.WithArguments(VBFactory.SeparatedList(NewArgumentList, NewSeparatorList))
                 End If
+                If argumentList?.Arguments.Count = 0 Then
+                    argumentList = Nothing
+                End If
                 Return VBFactory.ObjectCreationExpression(VBFactory.List(Of VBS.AttributeListSyntax)(), type1, argumentList, initializer)
             End Function
 

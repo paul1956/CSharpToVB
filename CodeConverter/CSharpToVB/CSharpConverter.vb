@@ -274,10 +274,17 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim Initializer As VBS.EqualsValueSyntax = Nothing
                 If Not AsClause.IsKind(VB.SyntaxKind.AsNewClause) Then
                     Initializer = VBFactory.EqualsValue(Value.WithLeadingTrivia(SpaceTrivia))
+                    If Initializer.Value.IsKind(VB.SyntaxKind.ObjectCreationExpression) Then
+                        If AsClause IsNot Nothing AndAlso CType(AsClause, VBS.SimpleAsClauseSyntax).Type.ToString = CType(Value, VBS.ObjectCreationExpressionSyntax).Type.ToString Then
+                            AsClause = VBFactory.AsNewClause(CType(Value, VBS.ObjectCreationExpressionSyntax))
+                            Initializer = Nothing
+                        End If
+                    End If
                 End If
                 ' Get the names last to lead with var jsonWriter = new JsonWriter(stringWriter)
                 ' Which should be Dim jsonWriter_Renamed = new JsonWriter(stringWriter)
                 Dim Names As SeparatedSyntaxList(Of VBS.ModifiedIdentifierSyntax) = VBFactory.SingletonSeparatedList(DirectCast(v.Accept(_NodesVisitor), VBS.ModifiedIdentifierSyntax))
+
                 Dim Declator As VBS.VariableDeclaratorSyntax = VBFactory.VariableDeclarator(
                                                                                             Names,
                                                                                             AsClause,
