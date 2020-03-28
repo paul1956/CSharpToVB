@@ -140,7 +140,7 @@ Public Class Form1
     ''' Note that we are getting called on a secondary thread here which isn't necessarily
     ''' associated with any form.  Don't touch forms from this function.
     ''' </summary>
-    Private Sub MinimumSplashExposureTimeIsUp(ByVal sender As Object, ByVal e As System.Timers.ElapsedEventArgs)
+    Private Sub MinimumSplashExposureTimeIsUp(ByVal sender As Object, ByVal e As Timers.ElapsedEventArgs)
         If _splashTimer IsNot Nothing Then 'We only have a timer if there was a minimum timeout on the splash screen
             _splashTimer.Dispose()
             _splashTimer = Nothing
@@ -840,11 +840,21 @@ Public Class Form1
                         Case 0
                             References = SharedReferences.CSharpReferences("", Nothing).ToArray
                             MsgBox($"No framework is specified, processing will terminate!", MsgBoxStyle.Exclamation, "Framework Warning")
+                            Return False
                         Case 1
                             References = CSharpReferences(results(Framework).References, results(Framework).ProjectReferences).ToArray
                         Case Else
-                            References = CSharpReferences(results(Framework).References, results(Framework).ProjectReferences).ToArray
-                            MsgBox($"Only first framework({Framework}) will be used for conversion", MsgBoxStyle.Information, "Framework Warning")
+                            Dim F As New FrameworkSelectionDialog
+                            F.SetFrameworkList(FrameWorks)
+                            Dim Result As DialogResult = F.ShowDialog
+                            Framework = F.CurrentFramework
+                            F.Dispose()
+
+                            If Result = DialogResult.OK Then
+                                References = CSharpReferences(results(Framework).References, results(Framework).ProjectReferences).ToArray
+                            Else
+                                Return False
+                            End If
                     End Select
                     Dim xmlDoc As New XmlDocument With {
                                 .PreserveWhitespace = True
@@ -908,7 +918,7 @@ Public Class Form1
             ReferenceList.Add(MetadataReference.CreateFromFile(DLL_Path))
         Next
         For Each proj_Path As String In projectReferences
-            ReferenceList.Add(CompilationReference.CreateFromFile(proj_Path))
+            ReferenceList.Add(MetadataReference.CreateFromFile(proj_Path))
         Next
         Return ReferenceList
     End Function

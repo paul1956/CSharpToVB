@@ -876,7 +876,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
                 zGP_MarginLines.Widen(zPen)
             End If
 
-            Dim zRegion As New Region(MyBase.ClientRectangle)
+            Dim zRegion As New Region(ClientRectangle)
             ' ----------------------------------------------
             ' --- SeeThroughMode
             '   combine all the GraphicsPaths (= zGP_... ) and set them as the region for the control.

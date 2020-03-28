@@ -20,6 +20,8 @@ charset = utf-8-bom
 insert_final_newline = false
 trim_trailing_whitespace = true
 
+file_header_template= Licensed to the .NET Foundation under one or more agreements.\nThe .NET Foundation licenses this file to you under the MIT license.\nSee the LICENSE file in the project root for more information.
+
 # avoid this. unless absolutely necessary
 dotnet_style_qualification_for_field = false:suggestion
 dotnet_style_qualification_for_property = false:suggestion
@@ -73,7 +75,6 @@ dotnet_style_null_propagation = true:suggestion
 
 # C# files
 [*.cs]
-file_header_template= // Licensed to the .NET Foundation under one or more agreements.\n// The .NET Foundation licenses this file to you under the MIT license.\n// See the LICENSE file in the project root for more information.
 
 # New line preferences
 csharp_new_line_before_open_brace = all
@@ -146,8 +147,6 @@ csharp_space_between_square_brackets = false
 [*.vb]
 # Modifier preferences
 visual_basic_preferred_modifier_order = Partial,Default,Private,Protected,Public,Friend,NotOverridable,Overridable,MustOverride,Overloads,Overrides,MustInherit,NotInheritable,Static,Shared,Shadows,ReadOnly,WriteOnly,Dim,Const,WithEvents,Widening,Narrowing,Custom,Async:suggestion
-
-file_header_template= ' Licensed to the .NET Foundation under one or more agreements.\n' The .NET Foundation licenses this file to you under the MIT license.\n' See the LICENSE file in the project root for more information.
 
 # CA1031: Do not catch general exception types
 dotnet_diagnostic.CA1031.severity = silent

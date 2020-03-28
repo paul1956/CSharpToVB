@@ -1,11 +1,15 @@
-﻿Imports System.Globalization
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Imports System.Globalization
 
 Public NotInheritable Class SplashScreen1
 
     'TODO: This form can easily be set as the splash screen for the application by going to the "Application" tab
     '  of the Project Designer ("Properties" under the "Project" menu).
 
-    Private Sub SplashScreen1_Load(sender As Object, e As System.EventArgs) Handles Me.Load
+    Private Sub SplashScreen1_Load(sender As Object, e As EventArgs) Handles Me.Load
         'Set up the dialog text at runtime according to the application's assembly information.
 
         'TODO: Customize the application's assembly information in the "Application" pane of the project
