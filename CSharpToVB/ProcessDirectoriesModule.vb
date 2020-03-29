@@ -30,12 +30,12 @@ Public Module ProcessDirectoriesModule
         End Using
     End Function
 
-    Public Sub LocalUseWaitCursor(MeForm As Object, WaitCursorEnable As Boolean)
+    Public Sub LocalUseWaitCursor(MeForm As Form1, WaitCursorEnable As Boolean)
         If MeForm Is Nothing Then
             Exit Sub
         End If
-        If DirectCast(MeForm, Form1).UseWaitCursor <> WaitCursorEnable Then
-            DirectCast(MeForm, Form1).UseWaitCursor = WaitCursorEnable
+        If MeForm.UseWaitCursor <> WaitCursorEnable Then
+            MeForm.UseWaitCursor = WaitCursorEnable
             Application.DoEvents()
         End If
     End Sub
@@ -119,6 +119,10 @@ Public Module ProcessDirectoriesModule
         If StopButton IsNot Nothing Then
             StopButton.Visible = StopButtonVisible
         End If
+        Dim enableControl As Boolean = Not StopButtonVisible
+        MeForm.RichTextBoxConversionInput.Enabled = enableControl
+        MeForm.mnuFile.Enabled = enableControl
+        MeForm.mnuConvert.Enabled = enableControl
         LocalUseWaitCursor(MeForm:=MeForm, WaitCursorEnable:=StopButtonVisible)
     End Sub
 

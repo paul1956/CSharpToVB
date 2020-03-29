@@ -64,16 +64,11 @@ It will try to create a VB project File from the original C# project file.
 https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json is added to NuGet Package Source to find
 Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpecific attributes used for testing.
 
-New is Release 4.2.0.1
+New is Release 4.2.1.0
+- Some status is given during Convert Project during the long startup delay
+- Warning is given for non-SDK projects but the C# files are converted
+- Issues #27,  #28, #30, #32, #33 #34 are closed
 
-- The program did not deal well with bad C# code so there is now a new feature to add a fixed code fragment to make a fragment into a valid C# program
-- The Code Fragment can be edition under Options/Advanced Options
-- Ignoring errors that broke translated code have been removed, every valid program should compile without errors
-- Translation of #pragma disable/enable errors has been removed they the original pragma is now translated and then commented out.
-- After translating a folder the total time is displayed in the status bar
-- Code coverage is only done on CodeConverter Project.
-- Translated Attributes will end in a line continuation, Visual Studio can remove the unnecessary ones using code cleanup.
-- != was not being translated, this update fixes that
 
 ## Code Coverage
 ```

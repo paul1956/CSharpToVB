@@ -148,6 +148,7 @@ Partial Class Form1
         Me.RichTextBoxConversionOutput = New AdvancedRTB()
         Me.LineNumbers_For_RichTextBoxOutput = New LineNumbersForRichTextBox()
         Me.MenuStrip1.SuspendLayout()
+        Me.ProgressBar1 = New System.Windows.Forms.ProgressBar()
         Me.ContextMenuStrip1.SuspendLayout()
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -1083,11 +1084,20 @@ Partial Class Form1
         Me.LineNumbers_For_RichTextBoxOutput.TabIndex = 22
         Me.LineNumbers_For_RichTextBoxOutput.Visible = False
         '
+        'ProgressBar1
+        '
+        Me.ProgressBar1.Location = New System.Drawing.Point(385, 206)
+        Me.ProgressBar1.Name = "ProgressBar1"
+        Me.ProgressBar1.Size = New System.Drawing.Size(100, 23)
+        Me.ProgressBar1.Style = System.Windows.Forms.ProgressBarStyle.Blocks
+        Me.ProgressBar1.TabIndex = 1
+        '
         'Form1
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(7.0!, 15.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(1923, 637)
+        Me.Controls.Add(Me.ProgressBar1)
         Me.Controls.Add(Me.LabelErrorCount)
         Me.Controls.Add(Me.ButtonStopConversion)
         Me.Controls.Add(Me.SearchWhere)
@@ -1229,4 +1239,5 @@ Partial Class Form1
     Friend WithEvents StatusStripCurrentFileName As ToolStripStatusLabel
     Friend WithEvents FilesConversionProgress As ToolStripStatusLabel
     Friend WithEvents ConversionProgressBar As ToolStripProgressBar
+    Friend WithEvents ProgressBar1 As ProgressBar
 End Class

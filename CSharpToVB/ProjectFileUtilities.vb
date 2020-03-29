@@ -171,7 +171,7 @@ Public Module ProjectFileUtilities
 
             xmlDoc.Save(Path.Combine(ProjectSavePath, New FileInfo(currentProject.FilePath).Name.Replace(".csproj", ".vbproj", StringComparison.OrdinalIgnoreCase)))
         Else
-            msgbox("Project conversion only support SDK style projects")
+            MsgBox("Project conversion only support SDK style projects, project file will not be converted!", MsgBoxStyle.Information)
         End If
     End Sub
 

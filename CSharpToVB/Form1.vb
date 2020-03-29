@@ -9,22 +9,18 @@ Imports System.Security
 Imports System.Security.Permissions
 Imports System.Text
 Imports System.Threading
-Imports System.Xml
-Imports Buildalyzer
 Imports CSharpToVBApp
 
 Imports CSharpToVBCodeConverter
 Imports CSharpToVBCodeConverter.ConversionResult
-Imports CSharpToVBCodeConverter.Util
 
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Emit
 Imports Microsoft.VisualBasic.FileIO
-Imports Buildalyzer.Workspaces
 
 Imports VBMsgBox
 
-Public Class Form1
+Partial Public Class Form1
 #If Not netcoreapp5_0 Then
 
     'Minimum amount of time to show the splash screen. 0 means hide as soon as the app comes up.
@@ -494,7 +490,9 @@ Public Class Form1
                 _frameworkVersionList.Add(FrameworkVersion.Text, (FrameworkVersion, FrameworkType))
             Next
         Next
+        ProgressBar1.Visible = False
         CenterToScreen()
+        ProgressBar1.Location = New Point(ClientSize.Width \ 4, ClientSize.Height \ 2)
     End Sub
 
     Private Sub Form1_Resize(sender As Object, e As EventArgs) Handles Me.Resize
@@ -752,6 +750,9 @@ Public Class Form1
         If Directory.Exists(FolderName) Then
             Dim SourceLanguageExtension As String = "cs"
             Dim ProjectSavePath As String = GetFoldertSavePath(FolderName, SourceLanguageExtension, ConvertingProject:=False)
+            If String.IsNullOrWhiteSpace(ProjectSavePath) Then
+                Exit Sub
+            End If
             ' This path is a directory.
             Dim LastFileNameWithPath As String = If(My.Settings.StartFolderConvertFromLastFile, My.Settings.MRU_Data.Last, "")
             Dim Stats As New ProcessingStats(LastFileNameWithPath)
@@ -793,6 +794,8 @@ Public Class Form1
     Private Async Sub mnuFileOpenProject_Click(sender As Object, e As EventArgs) Handles mnuFileConvertProject.Click
         With OpenFileDialog1
             .AddExtension = True
+            .CheckFileExists = True
+            .CheckPathExists = True
             .DefaultExt = "cs"
             .FileName = ""
             '.Filter = "C# Project or Solution (*.csproj, *.sln)|*.csproj; *.sln"
@@ -804,124 +807,23 @@ Public Class Form1
             .ValidateNames = True
             ' InputLines is used for future progress bar
             If .ShowDialog = Global.System.Windows.Forms.DialogResult.OK Then
-                mnuConvertConvertFolder.Enabled = True
-                SetButtonStopAndCursor(MeForm:=Me, StopButton:=ButtonStopConversion, StopButtonVisible:=True)
-                If Await ProcessOneProject(.FileName, GetFoldertSavePath(Path.GetDirectoryName(.FileName), "cs", ConvertingProject:=True)).ConfigureAwait(True) Then
-                    MsgBox($"{If(_cancellationTokenSource.Token.IsCancellationRequested, "Conversion canceled", "Conversion completed")}, {FilesConversionProgress.Text.ToLower(Globalization.CultureInfo.CurrentCulture)} completed successfully.",
+                _cancellationTokenSource = New CancellationTokenSource
+                Dim projectSavePath As String = GetFoldertSavePath(Path.GetDirectoryName(.FileName), "cs", ConvertingProject:=True)
+                If Not String.IsNullOrWhiteSpace(projectSavePath) Then
+                    SetButtonStopAndCursor(MeForm:=Me, StopButton:=ButtonStopConversion, StopButtonVisible:=True)
+                    If Await ProcessOneProject(.FileName, projectSavePath, _cancellationTokenSource).ConfigureAwait(True) Then
+                        MsgBox($"{If(_cancellationTokenSource.Token.IsCancellationRequested, "Conversion canceled", "Conversion completed")}, {FilesConversionProgress.Text.ToLower(Globalization.CultureInfo.CurrentCulture)} completed successfully.",
                            MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground Or MsgBoxStyle.OkOnly,
                            Title:="C# to VB"
                            )
-                Else
-                    MsgBox($"Conversion stopped.", MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground Or MsgBoxStyle.OkOnly, Title:="C# to VB")
+                    Else
+                        MsgBox($"Conversion stopped.", MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground Or MsgBoxStyle.OkOnly, Title:="C# to VB")
+                    End If
+                    SetButtonStopAndCursor(MeForm:=Me, StopButton:=ButtonStopConversion, StopButtonVisible:=False)
                 End If
-                SetButtonStopAndCursor(MeForm:=Me, StopButton:=ButtonStopConversion, StopButtonVisible:=False)
-            Else
-                mnuConvertConvertFolder.Enabled = True
             End If
         End With
     End Sub
-
-    Private Async Function ProcessOneProject(sourceProjectNameWithPath As String, projectSavePath As String) As Task(Of Boolean)
-        Dim manager As AnalyzerManager = New AnalyzerManager()
-        Dim analyzer As ProjectAnalyzer = manager.GetProject(sourceProjectNameWithPath)
-        Dim results As AnalyzerResults = analyzer.Build()
-        Dim _sourceFiles As String() = results.First().SourceFiles
-        Using workspace As AdhocWorkspace = analyzer.GetWorkspace()
-            For Each currentProject As Project In workspace.CurrentSolution.Projects
-                If currentProject.HasDocuments Then
-                    If _cancellationTokenSource IsNot Nothing Then
-                        _cancellationTokenSource.Dispose()
-                    End If
-                    _cancellationTokenSource = New CancellationTokenSource
-                    Dim References() As MetadataReference
-                    Dim FrameWorks As List(Of String) = results.TargetFrameworks.ToList
-                    Dim Framework As String = FrameWorks(0)
-                    Select Case FrameWorks.Count
-                        Case 0
-                            References = SharedReferences.CSharpReferences("", Nothing).ToArray
-                            MsgBox($"No framework is specified, processing will terminate!", MsgBoxStyle.Exclamation, "Framework Warning")
-                            Return False
-                        Case 1
-                            References = CSharpReferences(results(Framework).References, results(Framework).ProjectReferences).ToArray
-                        Case Else
-                            Dim F As New FrameworkSelectionDialog
-                            F.SetFrameworkList(FrameWorks)
-                            Dim Result As DialogResult = F.ShowDialog
-                            Framework = F.CurrentFramework
-                            F.Dispose()
-
-                            If Result = DialogResult.OK Then
-                                References = CSharpReferences(results(Framework).References, results(Framework).ProjectReferences).ToArray
-                            Else
-                                Return False
-                            End If
-                    End Select
-                    Dim xmlDoc As New XmlDocument With {
-                                .PreserveWhitespace = True
-                            }
-                    xmlDoc.Load(currentProject.FilePath)
-                    Dim root As XmlNode = xmlDoc.FirstChild
-                    If root.Attributes.Count > 0 AndAlso root.Attributes(0).Name.Equals("SDK", StringComparison.OrdinalIgnoreCase) Then
-                        ConvertProjectFile(projectSavePath, currentProject, xmlDoc, root)
-                    End If
-
-                    RichTextBoxErrorList.Text = ""
-                    RichTextBoxFileList.Text = ""
-                    SetButtonStopAndCursor(Me, ButtonStopConversion, StopButtonVisible:=True)
-                    Dim FilesProcessed As Integer = 0
-                    Dim TotalFilesToProcess As Integer = currentProject.Documents.Count
-                    Dim CSPreprocessorSymbols As New List(Of String) From {
-                                            Framework
-                                        }
-                    Dim VBPreprocessorSymbols As New List(Of KeyValuePair(Of String, Object)) From {
-                                            KeyValuePair.Create(Of String, Object)(Framework, True)
-                                        }
-
-                    For Each document As Document In currentProject.Documents
-                        If ParseCSharpSource(document.GetTextAsync(Nothing).Result.ToString,
-                                             CSPreprocessorSymbols).GetRoot.SyntaxTree.IsGeneratedCode(Function(t As SyntaxTrivia) As Boolean
-                                                                                                           Return t.IsComment OrElse t.IsRegularOrDocComment
-                                                                                                       End Function, _cancellationTokenSource.Token) Then
-                            TotalFilesToProcess -= 1
-                            FilesConversionProgress.Text = $"Processed {FilesProcessed:N0} of {TotalFilesToProcess:N0} Files"
-                            Application.DoEvents()
-                            Continue For
-                        Else
-                            FilesProcessed += 1
-                            RichTextBoxFileList.AppendText($"{FilesProcessed.ToString(Globalization.CultureInfo.InvariantCulture),-5} {document.FilePath}{vbCrLf}")
-                            RichTextBoxFileList.Select(RichTextBoxFileList.TextLength, 0)
-                            RichTextBoxFileList.ScrollToCaret()
-                            FilesConversionProgress.Text = $"Processed {FilesProcessed:N0} of {TotalFilesToProcess:N0} Files"
-                            Application.DoEvents()
-                        End If
-                        If Not Await ProcessFileAsync(document.FilePath, DestinationFilePath(Path.GetDirectoryName(sourceProjectNameWithPath), projectSavePath, document), "cs", CSPreprocessorSymbols, VBPreprocessorSymbols, References, _cancellationTokenSource.Token).ConfigureAwait(True) _
-                                    OrElse _requestToConvert.CancelToken.IsCancellationRequested Then
-                            Return False
-                        End If
-                    Next document
-                End If
-            Next
-        End Using
-        Return True
-    End Function
-
-    Private Shared Function CSharpReferences(fileReferences As IEnumerable(Of String), projectReferences As IEnumerable(Of String)) As List(Of MetadataReference)
-        Dim ReferenceList As New List(Of MetadataReference)
-        'SystemReferences
-        For Each DLL_Path As String In fileReferences
-            If DLL_Path.EndsWith("System.EnterpriseServices.Wrapper.dll", StringComparison.Ordinal) Then
-                Continue For
-            End If
-            If Not File.Exists(DLL_Path) Then
-                Continue For
-            End If
-            ReferenceList.Add(MetadataReference.CreateFromFile(DLL_Path))
-        Next
-        For Each proj_Path As String In projectReferences
-            ReferenceList.Add(MetadataReference.CreateFromFile(proj_Path))
-        Next
-        Return ReferenceList
-    End Function
 
     Private Sub mnuFileSnippetLoadLast_Click(sender As Object, e As EventArgs) Handles mnuFileSnippetLoadLast.Click
         If My.Settings.ColorizeInput Then
@@ -1244,7 +1146,7 @@ Public Class Form1
             End If
             ' 5 second delay
             Const LoopSleep As Integer = 25
-            Dim Delay As Integer = CInt((1000 * My.Settings.ConversionDelay) / LoopSleep)
+            Dim Delay As Integer = (1000 * My.Settings.ConversionDelay) \ LoopSleep
             For i As Integer = 0 To Delay
                 Application.DoEvents()
                 Thread.Sleep(LoopSleep)
@@ -1270,7 +1172,7 @@ Public Class Form1
         RichTextBoxConversionOutput.Width = ClientSize.Width - (RichTextBoxConversionInput.Width + LineNumberInputWidth + LineNumberOutputWidth)
         RichTextBoxConversionOutput.Left = RichTextBoxConversionInput.Width + LineNumberInputWidth + LineNumberOutputWidth
 
-        Dim HalfClientWidth As Integer = CInt(ClientSize.Width / 2)
+        Dim HalfClientWidth As Integer = ClientSize.Width \ 2
         RichTextBoxErrorList.Left = HalfClientWidth
         RichTextBoxErrorList.Width = HalfClientWidth
         StatusStripCurrentFileName.Width = HalfClientWidth
