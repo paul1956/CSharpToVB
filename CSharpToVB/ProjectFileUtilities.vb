@@ -17,28 +17,33 @@ Public Module ProjectFileUtilities
     End Function
 
     Private Sub CopyFile(ProjectSavePath As String, currentProject As String, PartialPathWithFileName As String)
+        If String.IsNullOrWhiteSpace(ProjectSavePath) OrElse
+                String.IsNullOrWhiteSpace(currentProject) OrElse
+                String.IsNullOrWhiteSpace(PartialPathWithFileName) Then
+            Stop
+            Return
+        End If
         Dim DestFileNameWithPath As String = Path.Combine(ProjectSavePath, PartialPathWithFileName)
         Directory.CreateDirectory(Path.GetDirectoryName(DestFileNameWithPath))
         File.Copy(Path.Combine(New FileInfo(currentProject).Directory.FullName, PartialPathWithFileName), DestFileNameWithPath, overwrite:=True)
     End Sub
 
-    Friend Sub ConvertProjectFile(ProjectSavePath As String, currentProject As Project, xmlDoc As XmlDocument, root As XmlNode)
-        Debug.Assert(root IsNot Nothing)
+    Public Function ConvertProjectFile(ProjectSavePath As String, sourceFilePath As String, xmlDoc As XmlDocument) As XmlDocument
+        If xmlDoc Is Nothing Then
+            Throw New ArgumentNullException(NameOf(xmlDoc))
+        End If
 
-        Dim IsDesktopProject As Boolean = root.Attributes(0).Value = "Microsoft.NET.Sdk.WindowsDesktop"
-        If root.Attributes(0).Value = "Microsoft.NET.Sdk" OrElse IsDesktopProject Then
-            Dim FoundUseWindowsFormsWpf As Boolean = False
-            Dim FrameworkReferenceNodeIndex As Integer = -1
-            Dim PropertyGroupIndex As Integer = 0
+        Dim IsDesktopProject As Boolean = xmlDoc.FirstChild.Attributes(0).Value = "Microsoft.NET.Sdk.WindowsDesktop"
+        If xmlDoc.FirstChild.Attributes(0).Value.StartsWith("Microsoft.NET.Sdk", StringComparison.OrdinalIgnoreCase) OrElse IsDesktopProject Then
             Dim LeadingXMLSpace As XmlNode = xmlDoc.CreateDocumentFragment()
             LeadingXMLSpace.InnerXml = "    "
-            If root.HasChildNodes Then
+
+            If xmlDoc.FirstChild.HasChildNodes Then
                 Dim RemoveNode As XmlNode = Nothing
-                For i As Integer = 0 To root.ChildNodes.Count - 1
-                    Dim RootChildNode As XmlNode = root.ChildNodes(i)
+                For i As Integer = 0 To xmlDoc.FirstChild.ChildNodes.Count - 1
+                    Dim RootChildNode As XmlNode = xmlDoc.FirstChild.ChildNodes(i)
                     Select Case RootChildNode.Name
                         Case "PropertyGroup"
-                            PropertyGroupIndex = i
                             For J As Integer = 0 To RootChildNode.ChildNodes.Count - 1
                                 Dim PropertyGroupChildNode As XmlNode = RootChildNode.ChildNodes(J)
                                 Select Case PropertyGroupChildNode.Name
@@ -52,51 +57,54 @@ Public Module ProjectFileUtilities
                                         ' No change neccessary
                                     Case "GenerateAssemblyInfo"
                                         ' No change neccessary
+                                    Case "UserSecretsId"
+                                        ' No change neccessary
+                                    Case "AllowUnsafeBlocks"
+                                        ' No change neccessary"
                                     Case "UseWindowsForms"
-                                        FoundUseWindowsFormsWpf = True
+                                        ' No change neccessary
                                     Case "UseWpf"
-                                        FoundUseWindowsFormsWpf = True
+                                        ' No change neccessary
+                                    Case "LangVersion"
+                                        If PropertyGroupChildNode.InnerText.Equals("latest", StringComparison.OrdinalIgnoreCase) OrElse
+                                           PropertyGroupChildNode.InnerText.Equals("default", StringComparison.OrdinalIgnoreCase) Then
+                                            PropertyGroupChildNode.InnerText = "latest"
+                                        End If
                                     Case "#whitespace"
                                         ' Capture leading space
                                         If LeadingXMLSpace.InnerXml.Length = 0 Then
                                             LeadingXMLSpace.InnerXml = PropertyGroupChildNode.InnerXml
                                         End If
                                     Case "#comment"
-                                        root.ChildNodes(i).ChildNodes(J).Value = PropertyGroupChildNode.Value.Replace(".cs", ".vb", StringComparison.OrdinalIgnoreCase)
+                                        CType(xmlDoc.FirstChild, XmlNode).ChildNodes(i).ChildNodes(J).Value = PropertyGroupChildNode.Value.Replace(".cs", ".vb", StringComparison.OrdinalIgnoreCase)
                                     Case Else
                                         Stop
                                 End Select
                             Next J
                         Case "ItemGroup"
                             For J As Integer = 0 To RootChildNode.ChildNodes.Count - 1
-                                Dim xmlNode As XmlNode = root.ChildNodes(i).ChildNodes(J)
+                                Dim xmlNode As XmlNode = xmlDoc.FirstChild.ChildNodes(i).ChildNodes(J)
                                 Select Case RootChildNode.ChildNodes(J).Name
+                                        ' No change neccessary
                                     Case "FrameworkReference"
-                                        If RootChildNode.ChildNodes.Count = 3 AndAlso
-                                            RootChildNode.ChildNodes(0).Name = "#whitespace" AndAlso
-                                            RootChildNode.ChildNodes(0).Name = "#whitespace" Then
-                                            FrameworkReferenceNodeIndex = i
-                                        Else
-                                            RemoveNode = xmlNode
-                                        End If
                                     Case "#whitespace"
-                                                            ' Ignore
+                                        ' No change neccessary
                                     Case "#comment"
-                                        root.ChildNodes(i).ChildNodes(J).Value = xmlNode.Value.Replace(".cs", ".vb", StringComparison.OrdinalIgnoreCase)
+                                        CType(xmlDoc.FirstChild, XmlNode).ChildNodes(i).ChildNodes(J).Value = xmlNode.Value.Replace(".cs", ".vb", StringComparison.OrdinalIgnoreCase)
                                     Case "Compile"
                                         Dim CompileValue As String = ""
                                         For k As Integer = 0 To xmlNode.Attributes.Count - 1
                                             CompileValue = xmlNode.Attributes(k).Value
-                                            root.ChildNodes(i).ChildNodes(J).Attributes(k).Value = ChangeExtension(CompileValue, "cs", "vb")
+                                            CType(xmlDoc.FirstChild, XmlNode).ChildNodes(i).ChildNodes(J).Attributes(k).Value = ChangeExtension(CompileValue, "cs", "vb")
                                         Next k
                                         For k As Integer = 0 To xmlNode.ChildNodes.Count - 1
-                                            Select Case root.ChildNodes(i).ChildNodes(J).ChildNodes(k).Name
+                                            Select Case xmlDoc.FirstChild.ChildNodes(i).ChildNodes(J).ChildNodes(k).Name
                                                 Case "DependentUpon"
                                                     Dim DependentUponNodeValue As String = xmlNode.ChildNodes(k).ChildNodes(0).Value
                                                     If DependentUponNodeValue.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) Then
-                                                        root.ChildNodes(i).ChildNodes(J).ChildNodes(k).ChildNodes(0).Value = ChangeExtension(DependentUponNodeValue, "cs", "vb")
+                                                        CType(xmlDoc.FirstChild, XmlNode).ChildNodes(i).ChildNodes(J).ChildNodes(k).ChildNodes(0).Value = ChangeExtension(DependentUponNodeValue, "cs", "vb")
                                                     Else
-                                                        CopyFile(ProjectSavePath, currentProject.FilePath, Path.Combine(Path.GetDirectoryName(CompileValue), DependentUponNodeValue))
+                                                        CopyFile(ProjectSavePath, sourceFilePath, Path.Combine(Path.GetDirectoryName(CompileValue), DependentUponNodeValue))
                                                     End If
                                                 Case "#whitespace"
                                                     ' Ignore
@@ -106,13 +114,13 @@ Public Module ProjectFileUtilities
                                         Next k
                                     Case "EmbeddedResource"
                                         If xmlNode.Attributes(0).Value.EndsWith(".resx", StringComparison.OrdinalIgnoreCase) Then
-                                            CopyFile(ProjectSavePath, currentProject.FilePath, xmlNode.Attributes(0).Value)
+                                            CopyFile(ProjectSavePath, sourceFilePath, xmlNode.Attributes(0).Value)
                                         End If
                                         For k As Integer = 0 To xmlNode.ChildNodes.Count - 1
                                             Select Case xmlNode.ChildNodes(k).Name
                                                 Case "DependentUpon"
                                                     For l As Integer = 0 To xmlNode.ChildNodes(k).ChildNodes.Count - 1
-                                                        root.ChildNodes(i).ChildNodes(J).ChildNodes(k).ChildNodes(l).Value = ChangeExtension(xmlNode.ChildNodes(k).ChildNodes(l).Value, "cs", "vb")
+                                                        CType(xmlDoc.FirstChild, XmlNode).ChildNodes(i).ChildNodes(J).ChildNodes(k).ChildNodes(l).Value = ChangeExtension(xmlNode.ChildNodes(k).ChildNodes(l).Value, "cs", "vb")
                                                     Next l
                                                 Case "#whitespace"
                                                     ' Ignore
@@ -120,36 +128,28 @@ Public Module ProjectFileUtilities
                                                     Stop
                                             End Select
                                         Next k
+                                    Case "Content"
+                                        If Not String.IsNullOrWhiteSpace(sourceFilePath) Then
+                                            Dim SourceFileName As String = Path.Combine(New FileInfo(sourceFilePath).Directory.FullName, xmlNode.Attributes(0).Value)
+                                            If File.Exists(SourceFileName) Then
+                                                File.Copy(SourceFileName, Path.Combine(ProjectSavePath, xmlNode.Attributes(0).Value), overwrite:=True)
+                                            End If
+                                        End If
+                                    Case "None"
+                                        ' No change neccessary
                                     Case "PackageReference"
-                                        ' Ignore
+                                        ' No change neccessary
                                     Case "ProjectReference"
                                         xmlNode.Attributes(0).Value = xmlNode.Attributes(0).Value.Replace(".csproj", ".vbproj", StringComparison.OrdinalIgnoreCase)
                                     Case "Folder"
-                                        ' Ignore
-                                    Case "Content"
-                                        If xmlNode.Attributes(0).Name.ToUpperInvariant = "INCLUDE" Then
-                                            Dim SourceFileName As String = Path.Combine(New FileInfo(currentProject.FilePath).Directory.FullName, xmlNode.Attributes(0).Value)
-                                            If File.Exists(SourceFileName) Then
-                                                File.Copy(SourceFileName, Path.Combine(ProjectSavePath, xmlNode.Attributes(0).Value), overwrite:=True)
-                                            Else
-                                                If (Path.GetExtension(SourceFileName).ToUpperInvariant = ".TXT") Then
-                                                    Dim NewValue As String = ChangeExtension(xmlNode.Attributes(0).Value, "TXT", "md")
-                                                    SourceFileName = Path.ChangeExtension(SourceFileName, "md")
-                                                    If File.Exists(SourceFileName) Then
-                                                        File.Copy(SourceFileName, Path.Combine(ProjectSavePath, NewValue), overwrite:=True)
-                                                        root.ChildNodes(i).ChildNodes(J).Attributes(0).Value = NewValue
-                                                        xmlNode.Attributes(0).Value = NewValue
-                                                    End If
-                                                End If
-                                            End If
-                                        End If
+                                        ' No change neccessary
                                     Case Else
                                         Stop
                                 End Select
                             Next J
                         Case "#whitespace"
                         Case "#comment"
-                            root.ChildNodes(i).Value = RootChildNode.Value.Replace(".cs", ".vb", StringComparison.OrdinalIgnoreCase)
+                            CType(xmlDoc.FirstChild, XmlNode).ChildNodes(i).Value = RootChildNode.Value.Replace(".cs", ".vb", StringComparison.OrdinalIgnoreCase)
                         Case Else
                             Stop
                     End Select
@@ -158,22 +158,14 @@ Public Module ProjectFileUtilities
                     RemoveNode.RemoveAll()
                 End If
             End If
-            If FrameworkReferenceNodeIndex >= 0 Then
-                root.Attributes(0).Value = "Microsoft.NET.Sdk.WindowsDesktop"
-                root.ChildNodes(FrameworkReferenceNodeIndex).RemoveAll()
+            If Not String.IsNullOrWhiteSpace(ProjectSavePath) Then
+                xmlDoc.Save(Path.Combine(ProjectSavePath, New FileInfo(sourceFilePath).Name.Replace(".csproj", ".vbproj", StringComparison.OrdinalIgnoreCase)))
             End If
-            If Not FoundUseWindowsFormsWpf Then
-                Dim xmlDocFragment As XmlDocumentFragment = xmlDoc.CreateDocumentFragment()
-                xmlDocFragment.InnerXml = "<UseWindowsForms>true</UseWindowsForms>"                                                                '<UseWindowsForms>true</UseWindowsForms>
-                root.ChildNodes(PropertyGroupIndex).AppendChild(LeadingXMLSpace)
-                root.ChildNodes(PropertyGroupIndex).AppendChild(xmlDocFragment)
-            End If
-
-            xmlDoc.Save(Path.Combine(ProjectSavePath, New FileInfo(currentProject.FilePath).Name.Replace(".csproj", ".vbproj", StringComparison.OrdinalIgnoreCase)))
         Else
             MsgBox("Project conversion only support SDK style projects, project file will not be converted!", MsgBoxStyle.Information)
         End If
-    End Sub
+        Return xmlDoc
+    End Function
 
     Friend Function DestinationFilePath(ProjectDirectory As String, ProjectSavePath As String, DocumentName As Document) As String
         If String.IsNullOrWhiteSpace(ProjectSavePath) Then

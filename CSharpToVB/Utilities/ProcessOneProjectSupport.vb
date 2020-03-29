@@ -92,8 +92,8 @@ Partial Public Class Form1
                             }
                 xmlDoc.Load(currentProject.FilePath)
                 Dim root As XmlNode = xmlDoc.FirstChild
-                If root.Attributes.Count > 0 AndAlso root.Attributes(0).Name.Equals("SDK", StringComparison.OrdinalIgnoreCase) Then
-                    ConvertProjectFile(projectSavePath, currentProject, xmlDoc, root)
+                If root.Attributes.Count > 0 AndAlso root.Attributes(0).Name.StartsWith("Microsoft.NET.Sdk", StringComparison.OrdinalIgnoreCase) Then
+                    ConvertProjectFile(projectSavePath, currentProject.FilePath, xmlDoc)
                 End If
 
                 RichTextBoxErrorList.Text = ""
