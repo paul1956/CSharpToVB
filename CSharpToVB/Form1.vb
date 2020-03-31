@@ -57,8 +57,6 @@ Partial Public Class Form1
 
     Private _resultOfConversion As ConversionResult
 
-    Private _rtfLineStart As Integer
-
 #If Not netcoreapp5_0 Then
 
     Public Sub New()
@@ -512,7 +510,8 @@ Partial Public Class Form1
         ProgressBar1.Location = New Point(ClientSize.Width \ 4, ClientSize.Height \ 2)
         LabelProgress.Left = ProgressBar1.Left
         LabelProgress.Top = ProgressBar1.Top - (LabelProgress.Height * 2)
-        ToolTip1.SetToolTip(ListBoxFileList, "Double-Click to open C# and corresponding VB file if available")
+        ToolTipErrorList.SetToolTip(ListBoxErrorList, "Double-Click to scroll to VB error")
+        ToolTipFileList.SetToolTip(ListBoxFileList, "Double-Click to open C# and corresponding VB file if available")
         Application.DoEvents()
     End Sub
 
@@ -860,12 +859,16 @@ Partial Public Class Form1
                     Try
 
                         If Await ProcessOneProject(.FileName, projectSavePath, _cancellationTokenSource).ConfigureAwait(True) Then
+
                             MsgBox($"{If(_cancellationTokenSource.Token.IsCancellationRequested, "Conversion canceled", "Conversion completed")}, {FilesConversionProgress.Text.ToLower(Globalization.CultureInfo.CurrentCulture)} completed successfully.",
                                MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground Or MsgBoxStyle.OkOnly,
                                Title:="C# to VB"
                                )
                         Else
                             MsgBox($"Conversion stopped.", MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground Or MsgBoxStyle.OkOnly, Title:="C# to VB")
+                        End If
+                        If File.Exists(projectSavePath) Then
+                            Process.Start("explorer.exe", $"/root,{projectSavePath}")
                         End If
                     Catch ex As ObjectDisposedException
 
@@ -1245,32 +1248,27 @@ Partial Public Class Form1
     End Sub
 
     Private Sub ListboxErrorList_DoubleClick(sender As Object, e As EventArgs) Handles ListBoxErrorList.DoubleClick
-        If _rtfLineStart > 0 AndAlso RichTextBoxConversionOutput.SelectionStart <> _rtfLineStart Then
-            RichTextBoxConversionOutput.Select(_rtfLineStart, 0)
-            RichTextBoxConversionOutput.ScrollToCaret()
-        End If
-    End Sub
-
-    Private Sub ListBoxErrorList_MouseDown(sender As Object, e As MouseEventArgs) Handles ListBoxErrorList.MouseDown
         Dim box As ListBox = DirectCast(sender, ListBox)
         If box.Text.Length = 0 Then
             Exit Sub
         End If
-        Dim line As Integer = box.SelectedIndex
         Dim LineText As String = box.Text
         If Not LineText.StartsWith("BC", StringComparison.Ordinal) Then
             Exit Sub
         End If
-        If Not LineText.Contains(" Line = ", StringComparison.Ordinal) Then
+        Dim startIndex As Integer = LineText.IndexOf(" Line = ", StringComparison.OrdinalIgnoreCase) + 8
+        If startIndex <= 0 Then
             Exit Sub
         End If
-        Dim NumberCount As Integer = LineText.Substring(15).IndexOf(" ", StringComparison.Ordinal)
-        Dim ErrorLine As Integer = CInt(Val(box.Text.Substring(15, NumberCount)))
-        If ErrorLine <= 0 Then
-            Exit Sub
+        Dim count As Integer = LineText.Substring(startIndex).IndexOf(" ", StringComparison.OrdinalIgnoreCase)
+        Dim lineStartPosition As Integer = RichTextBoxConversionOutput.GetFirstCharIndexFromLine(CInt(LineText.Substring(startIndex, count)) - 1)
+
+        If lineStartPosition > 0 AndAlso RichTextBoxConversionOutput.SelectionStart <> lineStartPosition Then
+            RichTextBoxConversionOutput.Select(lineStartPosition, 0)
+            RichTextBoxConversionOutput.ScrollToCaret()
         End If
-        _rtfLineStart = RichTextBoxConversionOutput.GetFirstCharIndexFromLine(ErrorLine - 1)
     End Sub
+
     Private Sub ListBoxErrorList_Enter(sender As Object, e As EventArgs) Handles ListBoxErrorList.Enter
         CurrentBuffer = CType(sender, Control)
     End Sub

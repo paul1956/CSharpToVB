@@ -151,7 +151,8 @@ Partial Class Form1
         Me.ProgressBar1 = New System.Windows.Forms.ProgressBar()
         Me.LabelProgress = New System.Windows.Forms.Label()
         Me.ContextMenuStrip1.SuspendLayout()
-        Me.ToolTip1 = New System.Windows.Forms.ToolTip(Me.components)
+        Me.ToolTipFileList = New System.Windows.Forms.ToolTip(Me.components)
+        Me.ToolTipErrorList = New System.Windows.Forms.ToolTip(Me.components)
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SplitContainer1.Panel1.SuspendLayout()
@@ -1101,9 +1102,13 @@ Partial Class Form1
         Me.LabelProgress.TabIndex = 1
         Me.LabelProgress.Visible = False
         '
-        'ToolTip1
+        'ToolTipFileList
         '
-        Me.ToolTip1.ToolTipIcon = System.Windows.Forms.ToolTipIcon.Info
+        Me.ToolTipFileList.ToolTipIcon = System.Windows.Forms.ToolTipIcon.Info
+        '
+        'ToolTip2
+        '
+        Me.ToolTipErrorList.ToolTipIcon = System.Windows.Forms.ToolTipIcon.Info
         '
         'Form1
         '
@@ -1255,5 +1260,6 @@ Partial Class Form1
     Friend WithEvents ConversionProgressBar As ToolStripProgressBar
     Friend WithEvents ProgressBar1 As ProgressBar
     Friend WithEvents LabelProgress As Label
-    Friend WithEvents ToolTip1 As ToolTip
+    Friend WithEvents ToolTipFileList As ToolTip
+    Friend WithEvents ToolTipErrorList As ToolTip
 End Class

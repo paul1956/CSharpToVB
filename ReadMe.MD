@@ -64,11 +64,15 @@ It will try to create a VB project File from the original C# project file.
 https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json is added to NuGet Package Source to find
 Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpecific attributes used for testing.
 
-New is Release 4.2.4.0
+New in Release 4.2.4.0
 - Improved status is given during Convert Project during the long startup delay
 - Warning is given for non-SDK projects but the C# files are converted
 - Issues #27,  #28, #30, #32, #33, #34, #36 are closed
 - Issue #37 closed, double clicking on C# file is list will open it and converted VB file
+
+New in Release 4.2.5.0
+-                   double clicking on Error List line will scroll VB buffer to the error
+- Issue #29 closed, at the end of a project conversion the root of the VB project will open in explorer
 
 ## Code Coverage
 ```
