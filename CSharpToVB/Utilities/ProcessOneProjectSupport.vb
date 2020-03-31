@@ -36,26 +36,50 @@ Partial Public Class Form1
     End Function
 
     Private Async Function ProcessOneProject(sourceProjectNameWithPath As String, projectSavePath As String, _cancellationTokenSource As CancellationTokenSource) As Task(Of Boolean)
-        ProgressBar1.Maximum = 6
-        ProgressBar1.Value = 1
+        ListBoxErrorList.Text = ""
+        ListBoxFileList.Text = ""
+        LabelProgress.Text = "Getting Analyzer Manger"
+        LabelProgress.Visible = True
         ProgressBar1.Visible = True
-        Application.DoEvents()
-        Dim manager As AnalyzerManager = New AnalyzerManager()
-        ProgressBar1.Increment(1)
-        Application.DoEvents()
-        Dim analyzer As ProjectAnalyzer = manager.GetProject(sourceProjectNameWithPath)
-        ProgressBar1.Increment(1)
-        Application.DoEvents()
-        Dim results As AnalyzerResults = analyzer.Build()
-        ProgressBar1.Increment(1)
-        Application.DoEvents()
-        Dim _sourceFiles As String() = results.First().SourceFiles
-        ProgressBar1.Increment(1)
-        Application.DoEvents()
+        Dim TaskAnalyzerManager As Task(Of AnalyzerManager) = GetManager()
+        While Not TaskAnalyzerManager.IsCompleted
+
+            If _cancellationTokenSource.IsCancellationRequested Then
+                LabelProgress.Visible = False
+                ProgressBar1.Visible = False
+                Return False
+            End If
+            Await Task.Delay(100).ConfigureAwait(True)
+        End While
+        Dim manager As AnalyzerManager = TaskAnalyzerManager.Result
+
+        LabelProgress.Text = "Getting Project Analyzer"
+        Dim TaskAnalyzer As Task(Of ProjectAnalyzer) = GetAnalyzer(sourceProjectNameWithPath, manager)
+        While Not TaskAnalyzer.IsCompleted
+            If _cancellationTokenSource.IsCancellationRequested Then
+                LabelProgress.Visible = False
+                ProgressBar1.Visible = False
+                Return False
+            End If
+            Await Task.Delay(100).ConfigureAwait(True)
+        End While
+        Dim analyzer As ProjectAnalyzer = TaskAnalyzer.Result
+
+        LabelProgress.Text = "Getting Analyzer Results"
+        Dim TaskResults As Task(Of AnalyzerResults) = GetResults(analyzer)
+        While Not TaskResults.IsCompleted
+            If _cancellationTokenSource.IsCancellationRequested Then
+                LabelProgress.Visible = False
+                ProgressBar1.Visible = False
+                Return False
+            End If
+            Await Task.Delay(100).ConfigureAwait(True)
+        End While
+        Dim results As AnalyzerResults = TaskResults.Result
+
+        ProgressBar1.Visible = False
+        LabelProgress.Visible = False
         Using workspace As AdhocWorkspace = analyzer.GetWorkspace()
-            ProgressBar1.Increment(1)
-            Application.DoEvents()
-            ProgressBar1.Visible = False
             If Not workspace.CurrentSolution.Projects.Any Then
                 Return False
             End If
@@ -96,8 +120,6 @@ Partial Public Class Form1
                     ConvertProjectFile(projectSavePath, currentProject.FilePath, xmlDoc)
                 End If
 
-                RichTextBoxErrorList.Text = ""
-                RichTextBoxFileList.Text = ""
                 SetButtonStopAndCursor(Me, ButtonStopConversion, StopButtonVisible:=True)
                 Dim FilesProcessed As Integer = 0
                 Dim TotalFilesToProcess As Integer = currentProject.Documents.Count
@@ -108,8 +130,9 @@ Partial Public Class Form1
                                             KeyValuePair.Create(Of String, Object)(Framework, True)
                                         }
 
-                For Each document As Document In currentProject.Documents
-                    If ParseCSharpSource(document.GetTextAsync(Nothing).Result.ToString,
+                For Each currentDocument As Document In currentProject.Documents
+                    Dim targetFileWithPath As String = DestinationFilePath(Path.GetDirectoryName(sourceProjectNameWithPath), projectSavePath, currentDocument.FilePath)
+                    If ParseCSharpSource(currentDocument.GetTextAsync(Nothing).Result.ToString,
                                              CSPreprocessorSymbols).GetRoot.SyntaxTree.IsGeneratedCode(Function(t As SyntaxTrivia) As Boolean
                                                                                                            Return t.IsComment OrElse t.IsRegularOrDocComment
                                                                                                        End Function, _cancellationTokenSource.Token) Then
@@ -119,17 +142,16 @@ Partial Public Class Form1
                         Continue For
                     Else
                         FilesProcessed += 1
-                        RichTextBoxFileList.AppendText($"{FilesProcessed.ToString(Globalization.CultureInfo.InvariantCulture),-5} {document.FilePath}{vbCrLf}")
-                        RichTextBoxFileList.Select(RichTextBoxFileList.TextLength, 0)
-                        RichTextBoxFileList.ScrollToCaret()
+                        ListBoxFileList.Items.Add(New NumberedListItem($"{FilesProcessed.ToString(Globalization.CultureInfo.InvariantCulture),-5} {currentDocument.FilePath}", $"{targetFileWithPath}{Path.DirectorySeparatorChar}{Path.GetFileNameWithoutExtension(currentDocument.Name)}.vb"))
+                        ListBoxFileList.SelectedIndex = ListBoxFileList.Items.Count - 1
                         FilesConversionProgress.Text = $"Processed {FilesProcessed:N0} of {TotalFilesToProcess:N0} Files"
                         Application.DoEvents()
                     End If
-                    If Not Await ProcessFileAsync(document.FilePath, DestinationFilePath(Path.GetDirectoryName(sourceProjectNameWithPath), projectSavePath, document), "cs", CSPreprocessorSymbols, VBPreprocessorSymbols, References, _cancellationTokenSource.Token).ConfigureAwait(True) _
+                    If Not Await ProcessFileAsync(currentDocument.FilePath, targetFileWithPath, "cs", CSPreprocessorSymbols, VBPreprocessorSymbols, References, _cancellationTokenSource.Token).ConfigureAwait(True) _
                                     OrElse _requestToConvert.CancelToken.IsCancellationRequested Then
                         Return False
                     End If
-                Next document
+                Next currentDocument
             End If
         End Using
         RichTextBoxConversionInput.Text = ""
@@ -137,4 +159,19 @@ Partial Public Class Form1
         Return True
     End Function
 
+    Private Shared Async Function GetSourceFiles(results As AnalyzerResults) As Task(Of String())
+        Return Await Task.Run(Function() results.First().SourceFiles()).ConfigureAwait(True)
+    End Function
+
+    Private Shared Async Function GetResults(analyzer As ProjectAnalyzer) As Task(Of AnalyzerResults)
+        Return Await Task.Run(Function() analyzer.Build()).ConfigureAwait(True)
+    End Function
+
+    Private Shared Async Function GetAnalyzer(sourceProjectNameWithPath As String, manager As AnalyzerManager) As Task(Of ProjectAnalyzer)
+        Return Await Task.Run(Function() manager.GetProject(sourceProjectNameWithPath)).ConfigureAwait(True)
+    End Function
+
+    Private Shared Async Function GetManager() As Task(Of AnalyzerManager)
+        Return Await Task.Run(Function() New AnalyzerManager()).ConfigureAwait(True)
+    End Function
 End Class

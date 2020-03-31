@@ -49,7 +49,7 @@ Partial Public Class Form1
 
     Private _cancellationTokenSource As CancellationTokenSource
 
-    Private _currentBuffer As RichTextBox
+    Private _currentBuffer As Control
 
     Private _inColorize As Boolean
 
@@ -182,11 +182,11 @@ Partial Public Class Form1
 
 #End If
 
-    Private Property CurrentBuffer As RichTextBox
+    Private Property CurrentBuffer As Control
         Get
             Return _currentBuffer
         End Get
-        Set(value As RichTextBox)
+        Set(value As Control)
             _currentBuffer = value
             If value IsNot Nothing Then
                 _currentBuffer.Focus()
@@ -236,8 +236,7 @@ Partial Public Class Form1
         Try ' Prevent crash when exiting
             If failures IsNot Nothing Then
                 For Each dia As Diagnostic In failures
-                    RichTextBoxErrorList.AppendText($"{dia.Id} Line = {dia.Location.GetLineSpan.StartLinePosition.Line + 1} {dia.GetMessage}")
-                    RichTextBoxErrorList.AppendText(vbCrLf)
+                    ListBoxErrorList.Items.Add($"{dia.Id} Line = {dia.Location.GetLineSpan.StartLinePosition.Line + 1} {dia.GetMessage}")
                 Next
             End If
             Dim Progress As New TextProgressBar(ConversionProgressBar)
@@ -314,7 +313,11 @@ Partial Public Class Form1
     End Sub
 
     Private Sub ContextMenuCopy_Click(sender As Object, e As EventArgs) Handles ContextMenuCopy.Click
-        CType(ContextMenuStrip1.SourceControl, RichTextBox).Copy()
+        If TypeOf sender Is RichTextBox Then
+            CType(ContextMenuStrip1.SourceControl, RichTextBox).Copy()
+        Else
+            Clipboard.SetText(CType(ContextMenuStrip1.SourceControl, ListBox).SelectedItem.ToString)
+        End If
     End Sub
 
     Private Sub ContextMenuCut_Click(sender As Object, e As EventArgs) Handles ContextMenuCut.Click
@@ -323,6 +326,17 @@ Partial Public Class Form1
 
     Private Sub ContextMenuPaste_Click(sender As Object, e As EventArgs) Handles ContextMenuPaste.Click
         CType(ContextMenuStrip1.SourceControl, RichTextBox).Paste()
+    End Sub
+
+    Private Sub ContextMenuStrip1_Opening(sender As Object, e As CancelEventArgs) Handles ContextMenuStrip1.Opening
+        Dim ContextMenu As ContextMenuStrip = CType(sender, ContextMenuStrip)
+        If TypeOf CurrentBuffer Is RichTextBox Then
+            ContextMenu.Items(1).Visible = True
+            ContextMenu.Items(2).Visible = True
+        Else
+            ContextMenu.Items(1).Visible = False
+            ContextMenu.Items(2).Visible = False
+        End If
     End Sub
 
     Private Async Function Convert_Compile_ColorizeAsync(RequestToConvert As ConvertRequest, CSPreprocessorSymbols As List(Of String), VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)), OptionalReferences() As MetadataReference, CancelToken As CancellationToken) As Task(Of Boolean)
@@ -430,7 +444,7 @@ Partial Public Class Form1
         PictureBox1.Left = SearchDirection.Left + 2
         SearchWhere.SelectedIndex = 0
 
-        SplitContainer1.SplitterDistance = SplitContainer1.Height - RichTextBoxErrorList.Height
+        SplitContainer1.SplitterDistance = SplitContainer1.Height - (ListBoxErrorList.Height + 20)
 
         ' Load all settings
         If My.Settings.UpgradeRequired Then
@@ -474,6 +488,9 @@ Partial Public Class Form1
         Width = Screen.PrimaryScreen.Bounds.Width
         Height = CInt(Screen.PrimaryScreen.Bounds.Height * 0.95)
 
+        ListBoxFileList.Height = SplitContainer1.Panel2.ClientSize.Height
+        ListBoxErrorList.Height = SplitContainer1.Panel2.ClientSize.Height
+
         For Each FrameworkType As ToolStripMenuItem In FrameworkToolStripMenuItem.DropDownItems
             _frameworkTypeList.Add(FrameworkType.Text, FrameworkType)
             FrameworkType.Checked = False
@@ -493,6 +510,10 @@ Partial Public Class Form1
         ProgressBar1.Visible = False
         CenterToScreen()
         ProgressBar1.Location = New Point(ClientSize.Width \ 4, ClientSize.Height \ 2)
+        LabelProgress.Left = ProgressBar1.Left
+        LabelProgress.Top = ProgressBar1.Top - (LabelProgress.Height * 2)
+        ToolTip1.SetToolTip(ListBoxFileList, "Double-Click to open C# and corresponding VB file if available")
+        Application.DoEvents()
     End Sub
 
     Private Sub Form1_Resize(sender As Object, e As EventArgs) Handles Me.Resize
@@ -573,14 +594,18 @@ Partial Public Class Form1
         ResizeRichTextBuffers()
     End Sub
 
-    Private Function LoadInputBufferFromStream(LanguageExtension As String, fileStream As Stream) As Integer
+    Private Function LoadInputBufferFromStream(SourceFileNameWithPath As String) As Integer
         LocalUseWaitCursor(MeForm:=Me, WaitCursorEnable:=True)
-        Dim SourceText As String = GetFileTextFromStream(fileStream)
+        Dim SourceText As String
+        Using myFileStream As FileStream = File.OpenRead(path:=SourceFileNameWithPath)
+            SourceText = GetFileTextFromStream(myFileStream)
+        End Using
+
         Dim InputLines As Integer
         Dim ConversionInputLinesArray() As String = SourceText.SplitLines
         InputLines = ConversionInputLinesArray.Length
         If mnuOptionsColorizeSource.Checked Then
-            Colorize(GetClassifiedRanges(SourceCode:=ConversionInputLinesArray.Join(vbCrLf), Language:=If(LanguageExtension = "vb", LanguageNames.VisualBasic, LanguageNames.CSharp)), ConversionBuffer:=RichTextBoxConversionInput, Lines:=InputLines)
+            Colorize(GetClassifiedRanges(ConversionInputLinesArray.Join(vbCrLf), LanguageNames.CSharp), RichTextBoxConversionInput, InputLines)
         Else
             RichTextBoxConversionInput.Text = ConversionInputLinesArray.Join(vbCrLf)
         End If
@@ -588,9 +613,26 @@ Partial Public Class Form1
         Return InputLines
     End Function
 
+    Private Sub LoadOutputBufferFromStream(SourceFileNameWithPath As String)
+        LocalUseWaitCursor(MeForm:=Me, WaitCursorEnable:=True)
+        Dim SourceText As String
+        Using myFileStream As FileStream = File.OpenRead(path:=SourceFileNameWithPath)
+            SourceText = GetFileTextFromStream(myFileStream)
+        End Using
+        Dim InputLines As Integer
+        Dim ConversionInputLinesArray() As String = SourceText.SplitLines
+        InputLines = ConversionInputLinesArray.Length
+        If mnuOptionsColorizeSource.Checked Then
+            Colorize(GetClassifiedRanges(ConversionInputLinesArray.Join(vbCrLf), LanguageNames.VisualBasic), RichTextBoxConversionOutput, InputLines)
+        Else
+            RichTextBoxConversionOutput.Text = ConversionInputLinesArray.Join(vbCrLf)
+        End If
+        LocalUseWaitCursor(MeForm:=Me, WaitCursorEnable:=False)
+    End Sub
+
     Private Sub mnu_MRUList_Click(sender As Object, e As EventArgs)
         ' open the file...
-        OpenFile(DirectCast(sender, ToolStripItem).Tag.ToString().Substring(4), "cs")
+        OpenSourceFile(DirectCast(sender, ToolStripItem).Tag.ToString().Substring(4))
     End Sub
 
     Private Sub mnu_MRUList_MouseDown(sender As Object, e As MouseEventArgs)
@@ -606,7 +648,7 @@ Partial Public Class Form1
         If String.IsNullOrWhiteSpace(RichTextBoxConversionOutput.Text) Then
             Exit Sub
         End If
-        RichTextBoxErrorList.Text = ""
+        ListBoxErrorList.Text = ""
         Compile_Colorize(RichTextBoxConversionOutput.Text)
     End Sub
 
@@ -616,8 +658,8 @@ Partial Public Class Form1
 
     Private Async Sub mnuConvertConvertSnippet_Click(sender As Object, e As EventArgs) Handles mnuConvertConvertSnippet.Click
         SetButtonStopAndCursor(MeForm:=Me, StopButton:=ButtonStopConversion, StopButtonVisible:=True)
-        RichTextBoxErrorList.Text = ""
-        RichTextBoxFileList.Text = ""
+        ListBoxErrorList.Items.Clear()
+        ListBoxFileList.Items.Clear()
         LineNumbers_For_RichTextBoxOutput.Visible = False
         ResizeRichTextBuffers()
         If _cancellationTokenSource IsNot Nothing Then
@@ -702,12 +744,30 @@ Partial Public Class Form1
 
     End Sub
 
+    Private Sub mnuEdit_Click(sender As Object, e As EventArgs) Handles mnuEdit.Click
+        If TypeOf CurrentBuffer Is RichTextBox Then
+            mnuEditCut.Enabled = True
+            mnuEditPaste.Enabled = True
+            mnuEditUndo.Enabled = True
+        Else
+            mnuEditCut.Enabled = False
+            mnuEditPaste.Enabled = False
+            mnuEditUndo.Enabled = False
+        End If
+    End Sub
+
     Private Sub mnuEditCopy_Click(sender As Object, e As EventArgs) Handles mnuEditCopy.Click
-        CurrentBuffer.Copy()
+        If TypeOf CurrentBuffer Is RichTextBox Then
+            CType(CurrentBuffer, RichTextBox).Copy()
+        Else
+            Clipboard.SetText(CType(CurrentBuffer, ListBox).Text)
+        End If
     End Sub
 
     Private Sub mnuEditCut_Click(sender As Object, e As EventArgs) Handles mnuEditCut.Click
-        CurrentBuffer.Cut()
+        If TypeOf CurrentBuffer Is RichTextBox Then
+            CType(CurrentBuffer, RichTextBox).Cut()
+        End If
     End Sub
 
     Private Sub mnuEditFind_Click(sender As Object, e As EventArgs) Handles mnuEditFind.Click
@@ -715,29 +775,15 @@ Partial Public Class Form1
     End Sub
 
     Private Sub mnuEditPaste_Click(sender As Object, e As EventArgs) Handles mnuEditPaste.Click
-        RichTextBoxConversionInput.SelectedText = Clipboard.GetText(TextDataFormat.Text)
-    End Sub
-
-    Private Sub mnuEditSaveAs_Click(sender As Object, e As EventArgs) Handles mnuFileSaveAs.Click
-
-        SaveFileDialog1.AddExtension = True
-        SaveFileDialog1.CreatePrompt = False
-        SaveFileDialog1.DefaultExt = "vb"
-        SaveFileDialog1.FileName = Path.ChangeExtension(OpenFileDialog1.SafeFileName, "vb")
-        SaveFileDialog1.Filter = "VB Code Files (*.vb)|*.vb"
-        SaveFileDialog1.FilterIndex = 0
-        SaveFileDialog1.OverwritePrompt = True
-        SaveFileDialog1.SupportMultiDottedExtensions = False
-        SaveFileDialog1.Title = $"Save {SaveFileDialog1.DefaultExt} Output..."
-        SaveFileDialog1.ValidateNames = True
-        Dim FileSaveResult As DialogResult = SaveFileDialog1.ShowDialog
-        If FileSaveResult = DialogResult.OK Then
-            RichTextBoxConversionOutput.SaveFile(SaveFileDialog1.FileName, RichTextBoxStreamType.PlainText)
+        If TypeOf CurrentBuffer Is RichTextBox Then
+            CType(CurrentBuffer, RichTextBox).SelectedText = Clipboard.GetText(TextDataFormat.Text)
         End If
     End Sub
 
     Private Sub mnuEditUndo_Click(sender As Object, e As EventArgs) Handles mnuEditUndo.Click
-        CurrentBuffer.Undo()
+        If TypeOf CurrentBuffer Is RichTextBox Then
+            CType(CurrentBuffer, RichTextBox).Undo()
+        End If
     End Sub
 
     Private Sub mnuFileExit_Click(sender As Object, e As EventArgs) Handles mnuFileExit.Click
@@ -776,15 +822,15 @@ Partial Public Class Form1
             .DefaultExt = LanguageExtension
             .InitialDirectory = My.Settings.DefaultProjectDirectory
             .FileName = ""
-            .Filter = If(LanguageExtension = "vb", "VB Code Files (*.vb)|*.vb", "C# Code Files (*.cs)|*.cs")
+            .Filter = "C# Code Files (*.cs)|*.cs"
             SaveFileDialog1.FilterIndex = 0
             .Multiselect = False
             .ReadOnlyChecked = True
-            .Title = $"Open {LanguageExtension.ToUpperInvariant} Source file"
+            .Title = $"Open C# Source file"
             .ValidateNames = True
             If .ShowDialog = DialogResult.OK Then
                 mnuConvertConvertFolder.Enabled = False
-                OpenFile(OpenFileDialog1.FileName, LanguageExtension)
+                OpenSourceFile(OpenFileDialog1.FileName)
             Else
                 mnuConvertConvertFolder.Enabled = True
             End If
@@ -811,23 +857,46 @@ Partial Public Class Form1
                 Dim projectSavePath As String = GetFoldertSavePath(Path.GetDirectoryName(.FileName), "cs", ConvertingProject:=True)
                 If Not String.IsNullOrWhiteSpace(projectSavePath) Then
                     SetButtonStopAndCursor(MeForm:=Me, StopButton:=ButtonStopConversion, StopButtonVisible:=True)
-                    If Await ProcessOneProject(.FileName, projectSavePath, _cancellationTokenSource).ConfigureAwait(True) Then
-                        MsgBox($"{If(_cancellationTokenSource.Token.IsCancellationRequested, "Conversion canceled", "Conversion completed")}, {FilesConversionProgress.Text.ToLower(Globalization.CultureInfo.CurrentCulture)} completed successfully.",
-                           MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground Or MsgBoxStyle.OkOnly,
-                           Title:="C# to VB"
-                           )
-                    Else
-                        MsgBox($"Conversion stopped.", MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground Or MsgBoxStyle.OkOnly, Title:="C# to VB")
-                    End If
+                    Try
+
+                        If Await ProcessOneProject(.FileName, projectSavePath, _cancellationTokenSource).ConfigureAwait(True) Then
+                            MsgBox($"{If(_cancellationTokenSource.Token.IsCancellationRequested, "Conversion canceled", "Conversion completed")}, {FilesConversionProgress.Text.ToLower(Globalization.CultureInfo.CurrentCulture)} completed successfully.",
+                               MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground Or MsgBoxStyle.OkOnly,
+                               Title:="C# to VB"
+                               )
+                        Else
+                            MsgBox($"Conversion stopped.", MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground Or MsgBoxStyle.OkOnly, Title:="C# to VB")
+                        End If
+                    Catch ex As ObjectDisposedException
+
+                    End Try
                     SetButtonStopAndCursor(MeForm:=Me, StopButton:=ButtonStopConversion, StopButtonVisible:=False)
                 End If
             End If
         End With
     End Sub
 
+    Private Sub mnuFileSaveAs_Click(sender As Object, e As EventArgs) Handles mnuFileSaveAs.Click
+
+        SaveFileDialog1.AddExtension = True
+        SaveFileDialog1.CreatePrompt = False
+        SaveFileDialog1.DefaultExt = "vb"
+        SaveFileDialog1.FileName = Path.ChangeExtension(OpenFileDialog1.SafeFileName, "vb")
+        SaveFileDialog1.Filter = "VB Code Files (*.vb)|*.vb"
+        SaveFileDialog1.FilterIndex = 0
+        SaveFileDialog1.OverwritePrompt = True
+        SaveFileDialog1.SupportMultiDottedExtensions = False
+        SaveFileDialog1.Title = $"Save {SaveFileDialog1.DefaultExt} Output..."
+        SaveFileDialog1.ValidateNames = True
+        Dim FileSaveResult As DialogResult = SaveFileDialog1.ShowDialog
+        If FileSaveResult = DialogResult.OK Then
+            RichTextBoxConversionOutput.SaveFile(SaveFileDialog1.FileName, RichTextBoxStreamType.PlainText)
+        End If
+    End Sub
+
     Private Sub mnuFileSnippetLoadLast_Click(sender As Object, e As EventArgs) Handles mnuFileSnippetLoadLast.Click
         If My.Settings.ColorizeInput Then
-            mnuConvertConvertSnippet.Enabled = 0 <> LoadInputBufferFromStream("CS", File.OpenRead(path:=s_snippetFileWithPath))
+            mnuConvertConvertSnippet.Enabled = 0 <> LoadInputBufferFromStream(s_snippetFileWithPath)
         Else
             RichTextBoxConversionInput.LoadFile(s_snippetFileWithPath, RichTextBoxStreamType.PlainText)
         End If
@@ -905,7 +974,7 @@ Partial Public Class Form1
         IgnoreFilesWithErrorsDialog.ShowDialog(Me)
         If Not String.IsNullOrWhiteSpace(IgnoreFilesWithErrorsDialog.FileToLoad) Then
             mnuConvertConvertFolder.Enabled = False
-            OpenFile(IgnoreFilesWithErrorsDialog.FileToLoad, "cs")
+            OpenSourceFile(IgnoreFilesWithErrorsDialog.FileToLoad)
         End If
         IgnoreFilesWithErrorsDialog.Dispose()
     End Sub
@@ -1018,10 +1087,8 @@ Partial Public Class Form1
 
     End Sub
 
-    Private Sub OpenFile(FileNameWithPath As String, LanguageExtension As String)
-        Using myFileStream As FileStream = File.OpenRead(path:=FileNameWithPath)
-            mnuConvertConvertSnippet.Enabled = LoadInputBufferFromStream(LanguageExtension, myFileStream) <> 0
-        End Using
+    Private Sub OpenSourceFile(FileNameWithPath As String)
+        mnuConvertConvertSnippet.Enabled = LoadInputBufferFromStream(FileNameWithPath) <> 0
         MRU_AddTo(FileNameWithPath)
     End Sub
 
@@ -1068,15 +1135,14 @@ Partial Public Class Form1
     ''' <returns>
     ''' False if error and user wants to stop, True if success or user wants to ignore error
     ''' </returns>
-    <SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification:="Prevent Crash on Exit")>
     Private Async Function ProcessAllFilesAsync(SourceDirectory As String, TargetDirectory As String, SourceLanguageExtension As String, Stats As ProcessingStats, CancelToken As CancellationToken) As Task(Of Boolean)
         Try
-            RichTextBoxErrorList.Text = ""
-            RichTextBoxFileList.Text = ""
+            ListBoxErrorList.Items.Clear()
+            ListBoxFileList.Items.Clear()
             SetButtonStopAndCursor(Me, ButtonStopConversion, StopButtonVisible:=True)
             Dim TotalFilesToProcess As Long = GetFileCount(SourceDirectory, SourceLanguageExtension, My.Settings.SkipBinAndObjFolders, My.Settings.SkipTestResourceFiles)
             ' Process the list of files found in the directory.
-            Return Await ProcessDirectoryAsync(SourceDirectory, TargetDirectory, MeForm:=Me, ButtonStopConversion, RichTextBoxFileList, SourceLanguageExtension, Stats, TotalFilesToProcess, AddressOf ProcessFileAsync, CancelToken).ConfigureAwait(True)
+            Return Await ProcessDirectoryAsync(SourceDirectory, TargetDirectory, MeForm:=Me, ButtonStopConversion, ListBoxFileList, SourceLanguageExtension, Stats, TotalFilesToProcess, AddressOf ProcessFileAsync, CancelToken).ConfigureAwait(True)
         Catch ex As OperationCanceledException
             ConversionProgressBar.Value = 0
         Catch ex As Exception
@@ -1103,8 +1169,7 @@ Partial Public Class Form1
         ButtonStopConversion.Visible = True
         RichTextBoxConversionOutput.Text = ""
         MRU_AddTo(SourceFileNameWithPath)
-        Dim fsRead As FileStream = File.OpenRead(SourceFileNameWithPath)
-        Dim lines As Integer = LoadInputBufferFromStream(SourceLanguageExtension, fsRead)
+        Dim lines As Integer = LoadInputBufferFromStream(SourceFileNameWithPath)
         If lines > 0 Then
             _requestToConvert = New ConvertRequest(My.Settings.SkipAutoGenerated, New Progress(Of ProgressReport)(AddressOf New TextProgressBar(ConversionProgressBar).Update), _cancellationTokenSource.Token) With {
                 .SourceCode = RichTextBoxConversionInput.Text
@@ -1123,7 +1188,7 @@ Partial Public Class Form1
                         If Not My.Settings.IgnoreFileList.Contains(SourceFileNameWithPath) Then
                             My.Settings.IgnoreFileList.Add(SourceFileNameWithPath)
                             My.Settings.Save()
-                            RichTextBoxErrorList.Text = ""
+                            ListBoxErrorList.Text = ""
                             LineNumbers_For_RichTextBoxInput.Visible = My.Settings.ShowSourceLineNumbers
                             LineNumbers_For_RichTextBoxOutput.Visible = My.Settings.ShowDestinationLineNumbers
                         End If
@@ -1167,35 +1232,32 @@ Partial Public Class Form1
         Dim LineNumberOutputWidth As Integer = If(LineNumbers_For_RichTextBoxOutput.Visible, LineNumbers_For_RichTextBoxOutput.Width, 0)
 
         RichTextBoxConversionInput.Width = CInt((ClientSize.Width / 2 + 0.5)) - LineNumberInputWidth
-        RichTextBoxFileList.Width = CInt(ClientSize.Width / 2 + 0.5)
+        ListBoxFileList.Width = CInt(ClientSize.Width / 2 + 0.5)
 
         RichTextBoxConversionOutput.Width = ClientSize.Width - (RichTextBoxConversionInput.Width + LineNumberInputWidth + LineNumberOutputWidth)
         RichTextBoxConversionOutput.Left = RichTextBoxConversionInput.Width + LineNumberInputWidth + LineNumberOutputWidth
 
         Dim HalfClientWidth As Integer = ClientSize.Width \ 2
-        RichTextBoxErrorList.Left = HalfClientWidth
-        RichTextBoxErrorList.Width = HalfClientWidth
+        ListBoxErrorList.Left = HalfClientWidth
+        ListBoxErrorList.Width = HalfClientWidth
         StatusStripCurrentFileName.Width = HalfClientWidth
 
     End Sub
 
-    Private Sub RichTexBoxErrorList_DoubleClick(sender As Object, e As EventArgs) Handles RichTextBoxErrorList.DoubleClick
+    Private Sub ListboxErrorList_DoubleClick(sender As Object, e As EventArgs) Handles ListBoxErrorList.DoubleClick
         If _rtfLineStart > 0 AndAlso RichTextBoxConversionOutput.SelectionStart <> _rtfLineStart Then
             RichTextBoxConversionOutput.Select(_rtfLineStart, 0)
             RichTextBoxConversionOutput.ScrollToCaret()
         End If
     End Sub
 
-    Private Sub RichTexBoxErrorList_MouseDown(sender As Object, e As MouseEventArgs) Handles RichTextBoxErrorList.MouseDown
-        Dim box As RichTextBox = DirectCast(sender, RichTextBox)
-        If box.TextLength = 0 Then
+    Private Sub ListBoxErrorList_MouseDown(sender As Object, e As MouseEventArgs) Handles ListBoxErrorList.MouseDown
+        Dim box As ListBox = DirectCast(sender, ListBox)
+        If box.Text.Length = 0 Then
             Exit Sub
         End If
-        Dim index As Integer = box.GetCharIndexFromPosition(e.Location)
-        Dim line As Integer = box.GetLineFromCharIndex(index)
-        Dim lineStart As Integer = box.GetFirstCharIndexFromLine(line)
-        Dim AfterEquals As Integer = box.GetFirstCharIndexFromLine(line) + 15
-        Dim LineText As String = box.Text.Substring(box.GetFirstCharIndexFromLine(line))
+        Dim line As Integer = box.SelectedIndex
+        Dim LineText As String = box.Text
         If Not LineText.StartsWith("BC", StringComparison.Ordinal) Then
             Exit Sub
         End If
@@ -1203,11 +1265,47 @@ Partial Public Class Form1
             Exit Sub
         End If
         Dim NumberCount As Integer = LineText.Substring(15).IndexOf(" ", StringComparison.Ordinal)
-        Dim ErrorLine As Integer = CInt(Val(box.Text.Substring(AfterEquals, NumberCount)))
+        Dim ErrorLine As Integer = CInt(Val(box.Text.Substring(15, NumberCount)))
         If ErrorLine <= 0 Then
             Exit Sub
         End If
         _rtfLineStart = RichTextBoxConversionOutput.GetFirstCharIndexFromLine(ErrorLine - 1)
+    End Sub
+    Private Sub ListBoxErrorList_Enter(sender As Object, e As EventArgs) Handles ListBoxErrorList.Enter
+        CurrentBuffer = CType(sender, Control)
+    End Sub
+
+    Private Sub ListBoxErrorList_MouseEnter(sender As Object, e As EventArgs) Handles ListBoxErrorList.MouseEnter
+        CurrentBuffer = CType(sender, Control)
+    End Sub
+
+    Private Sub ListBoxFileList_DoubleClick(sender As Object, e As EventArgs) Handles ListBoxFileList.DoubleClick
+        Dim FileList As ListBox = CType(sender, ListBox)
+        If FileList.Items.Count = 0 Then
+            Exit Sub
+        End If
+        Dim item As NumberedListItem = CType(FileList.SelectedItem, NumberedListItem)
+
+
+        Dim SourceFileNameWithPath As String = item.SourceFileWithPath
+        If String.IsNullOrWhiteSpace(SourceFileNameWithPath) OrElse Not File.Exists(SourceFileNameWithPath) Then
+            Exit Sub
+        End If
+        LoadInputBufferFromStream(SourceFileNameWithPath)
+        Dim ConvertedFileNameWithPath As String = item.ValueItem
+        If Not File.Exists(ConvertedFileNameWithPath) Then
+            Exit Sub
+        End If
+
+        LoadOutputBufferFromStream(ConvertedFileNameWithPath)
+    End Sub
+
+    Private Sub ListBoxFileList_Enter(sender As Object, e As EventArgs) Handles ListBoxFileList.Enter
+        CurrentBuffer = CType(sender, Control)
+    End Sub
+
+    Private Sub ListBoxFileList_MouseEnter(sender As Object, e As EventArgs) Handles ListBoxFileList.MouseEnter
+        CurrentBuffer = CType(sender, Control)
     End Sub
 
     Private Sub RichTextBoxConversionInput_Enter(sender As Object, e As EventArgs) Handles RichTextBoxConversionInput.Enter
@@ -1225,14 +1323,6 @@ Partial Public Class Form1
         mnuConvertConvertFolder.Enabled = InputBufferInUse
         If mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
             Colorize(GetClassifiedRanges(SourceCode:=RichTextBoxConversionInput.Text, LanguageNames.CSharp), ConversionBuffer:=RichTextBoxConversionInput, Lines:=RichTextBoxConversionInput.Lines.Length)
-        End If
-        If Not RichTextBoxConversionInput.Text.StartsWith(My.Settings.BoilerPlateHeader.Replace(vbCrLf, vbLf, StringComparison.Ordinal), StringComparison.Ordinal) Then
-            Dim SelectStart As Integer = RichTextBoxConversionInput.SelectionStart
-            Dim SelectLength As Integer = RichTextBoxConversionInput.SelectionLength
-            RichTextBoxConversionInput.SelectAll()
-            RichTextBoxConversionInput.SelectionProtected = False
-            RichTextBoxConversionInput.SelectionStart = SelectStart
-            RichTextBoxConversionInput.SelectionLength = SelectLength
         End If
     End Sub
 
@@ -1255,21 +1345,6 @@ Partial Public Class Form1
         MsgBox($"Vertical Right Clicked At: {loc}, VScrollPos = {p} ")
     End Sub
 
-    Private Sub RichTextBoxErrorList_Enter(sender As Object, e As EventArgs) Handles RichTextBoxErrorList.Enter
-        CurrentBuffer = CType(sender, RichTextBox)
-    End Sub
-
-    Private Sub RichTextBoxErrorList_MouseEnter(sender As Object, e As EventArgs) Handles RichTextBoxErrorList.MouseEnter
-        CurrentBuffer = CType(sender, RichTextBox)
-    End Sub
-
-    Private Sub RichTextBoxFileList_Enter(sender As Object, e As EventArgs) Handles RichTextBoxFileList.Enter
-        CurrentBuffer = CType(sender, RichTextBox)
-    End Sub
-
-    Private Sub RichTextBoxFileList_MouseEnter(sender As Object, e As EventArgs) Handles RichTextBoxFileList.MouseEnter
-        CurrentBuffer = CType(sender, RichTextBox)
-    End Sub
 
     Private Sub SearchBoxVisibility(Visible As Boolean)
         SearchDirection.Visible = Visible
@@ -1300,8 +1375,8 @@ Partial Public Class Form1
     End Sub
 
     Private Sub SplitContainer1_SplitterMoved(sender As Object, e As SplitterEventArgs) Handles SplitContainer1.SplitterMoved
-        RichTextBoxFileList.Height = SplitContainer1.Panel2.ClientSize.Height - 1
-        RichTextBoxErrorList.Height = SplitContainer1.Panel2.ClientSize.Height - 1
+        ListBoxFileList.Height = SplitContainer1.Panel2.ClientSize.Height
+        ListBoxErrorList.Height = SplitContainer1.Panel2.ClientSize.Height
     End Sub
 
     Private Sub StatusStripCurrentFileName_MouseDown(sender As Object, e As MouseEventArgs) Handles StatusStripCurrentFileName.MouseDown

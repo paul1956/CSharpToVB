@@ -167,11 +167,12 @@ Public Module ProjectFileUtilities
         Return xmlDoc
     End Function
 
-    Friend Function DestinationFilePath(ProjectDirectory As String, ProjectSavePath As String, DocumentName As Document) As String
+    Friend Function DestinationFilePath(ProjectDirectory As String, ProjectSavePath As String, SourceDocumentFileNameWithPath As String
+                                        ) As String
         If String.IsNullOrWhiteSpace(ProjectSavePath) Then
             Return String.Empty
         End If
-        Dim SubPathFromProject As String = Path.GetDirectoryName(DocumentName.FilePath).Replace(ProjectDirectory, "", StringComparison.OrdinalIgnoreCase).Trim("\"c)
+        Dim SubPathFromProject As String = Path.GetDirectoryName(SourceDocumentFileNameWithPath).Replace(ProjectDirectory, "", StringComparison.OrdinalIgnoreCase).Trim("\"c)
         Dim PathToSaveDirectory As String = Path.Combine(ProjectSavePath, SubPathFromProject)
         If Not Directory.Exists(PathToSaveDirectory) Then
             Directory.CreateDirectory(PathToSaveDirectory)

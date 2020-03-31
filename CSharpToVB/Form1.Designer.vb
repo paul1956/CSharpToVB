@@ -141,15 +141,17 @@ Partial Class Form1
         Me.StatusStripSpacer = New System.Windows.Forms.ToolStripStatusLabel()
         Me.ConversionProgressBar = New System.Windows.Forms.ToolStripProgressBar()
         Me.FilesConversionProgress = New System.Windows.Forms.ToolStripStatusLabel()
-        Me.RichTextBoxFileList = New System.Windows.Forms.RichTextBox()
-        Me.RichTextBoxErrorList = New System.Windows.Forms.RichTextBox()
+        Me.ListBoxFileList = New System.Windows.Forms.ListBox()
+        Me.ListBoxErrorList = New System.Windows.Forms.ListBox()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
         Me.LineNumbers_For_RichTextBoxInput = New LineNumbersForRichTextBox()
         Me.RichTextBoxConversionOutput = New AdvancedRTB()
         Me.LineNumbers_For_RichTextBoxOutput = New LineNumbersForRichTextBox()
         Me.MenuStrip1.SuspendLayout()
         Me.ProgressBar1 = New System.Windows.Forms.ProgressBar()
+        Me.LabelProgress = New System.Windows.Forms.Label()
         Me.ContextMenuStrip1.SuspendLayout()
+        Me.ToolTip1 = New System.Windows.Forms.ToolTip(Me.components)
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SplitContainer1.Panel1.SuspendLayout()
@@ -166,7 +168,7 @@ Partial Class Form1
         Me.MenuStrip1.Name = "MenuStrip1"
         Me.MenuStrip1.Padding = New System.Windows.Forms.Padding(7, 2, 0, 2)
         Me.MenuStrip1.Size = New System.Drawing.Size(1923, 24)
-        Me.MenuStrip1.TabIndex = 7
+        Me.MenuStrip1.TabIndex = 0
         '
         'mnuFile
         '
@@ -817,7 +819,7 @@ Partial Class Form1
         Me.SearchInput.Location = New System.Drawing.Point(933, 1)
         Me.SearchInput.Name = "SearchInput"
         Me.SearchInput.Size = New System.Drawing.Size(195, 23)
-        Me.SearchInput.TabIndex = 10
+        Me.SearchInput.TabIndex = 2
         '
         'ImageList1
         '
@@ -833,7 +835,7 @@ Partial Class Form1
         Me.SearchDirection.Location = New System.Drawing.Point(1142, 1)
         Me.SearchDirection.Name = "SearchDirection"
         Me.SearchDirection.Size = New System.Drawing.Size(61, 24)
-        Me.SearchDirection.TabIndex = 11
+        Me.SearchDirection.TabIndex = 3
         '
         'SearchWhere
         '
@@ -843,7 +845,7 @@ Partial Class Form1
         Me.SearchWhere.Location = New System.Drawing.Point(737, 1)
         Me.SearchWhere.Name = "SearchWhere"
         Me.SearchWhere.Size = New System.Drawing.Size(185, 23)
-        Me.SearchWhere.TabIndex = 14
+        Me.SearchWhere.TabIndex = 4
         '
         'InputFolderBrowserDialog1
         '
@@ -864,7 +866,7 @@ Partial Class Form1
         Me.ButtonStopConversion.Location = New System.Drawing.Point(1250, 0)
         Me.ButtonStopConversion.Name = "ButtonStopConversion"
         Me.ButtonStopConversion.Size = New System.Drawing.Size(110, 23)
-        Me.ButtonStopConversion.TabIndex = 19
+        Me.ButtonStopConversion.TabIndex = 5
         Me.ButtonStopConversion.Text = "Stop Conversion"
         Me.ButtonStopConversion.UseVisualStyleBackColor = True
         Me.ButtonStopConversion.Visible = False
@@ -875,7 +877,7 @@ Partial Class Form1
         Me.LabelErrorCount.Location = New System.Drawing.Point(1463, 4)
         Me.LabelErrorCount.Name = "LabelErrorCount"
         Me.LabelErrorCount.Size = New System.Drawing.Size(110, 15)
-        Me.LabelErrorCount.TabIndex = 20
+        Me.LabelErrorCount.TabIndex = 5
         Me.LabelErrorCount.Text = "Number of Errors: 0"
         '
         'SplitContainer1
@@ -896,11 +898,11 @@ Partial Class Form1
         '
         'SplitContainer1.Panel2
         '
-        Me.SplitContainer1.Panel2.Controls.Add(Me.RichTextBoxFileList)
-        Me.SplitContainer1.Panel2.Controls.Add(Me.RichTextBoxErrorList)
+        Me.SplitContainer1.Panel2.Controls.Add(Me.ListBoxFileList)
+        Me.SplitContainer1.Panel2.Controls.Add(Me.ListBoxErrorList)
         Me.SplitContainer1.Size = New System.Drawing.Size(1923, 591)
         Me.SplitContainer1.SplitterDistance = 470
-        Me.SplitContainer1.SplitterWidth = 5
+        Me.SplitContainer1.SplitterWidth = 4
         Me.SplitContainer1.TabIndex = 22
         '
         'RichTextBoxConversionInput
@@ -912,7 +914,7 @@ Partial Class Form1
         Me.RichTextBoxConversionInput.Location = New System.Drawing.Point(23, 0)
         Me.RichTextBoxConversionInput.Name = "RichTextBoxConversionInput"
         Me.RichTextBoxConversionInput.Size = New System.Drawing.Size(1221, 163)
-        Me.RichTextBoxConversionInput.TabIndex = 9
+        Me.RichTextBoxConversionInput.TabIndex = 0
         Me.RichTextBoxConversionInput.Text = ""
         Me.RichTextBoxConversionInput.WordWrap = False
         '
@@ -922,7 +924,7 @@ Partial Class Form1
         Me.StatusStrip1.Location = New System.Drawing.Point(0, 428)
         Me.StatusStrip1.Name = "StatusStrip1"
         Me.StatusStrip1.Size = New System.Drawing.Size(1923, 22)
-        Me.StatusStrip1.TabIndex = 2
+        Me.StatusStrip1.TabIndex = 6
         Me.StatusStrip1.Text = "StatusStrip1"
         '
         'StatusStripElapasedTimeLabel
@@ -964,29 +966,26 @@ Partial Class Form1
         Me.FilesConversionProgress.Name = "FilesConversionProgress"
         Me.FilesConversionProgress.Size = New System.Drawing.Size(250, 18)
         '
-        'RichTextBoxFileList
+        'ListBoxErrorList
         '
-        Me.RichTextBoxFileList.ContextMenuStrip = Me.ContextMenuStrip1
-        Me.RichTextBoxFileList.DetectUrls = False
-        Me.RichTextBoxFileList.HideSelection = False
-        Me.RichTextBoxFileList.Location = New System.Drawing.Point(0, 0)
-        Me.RichTextBoxFileList.Name = "RichTextBoxFileList"
-        Me.RichTextBoxFileList.Size = New System.Drawing.Size(1245, 110)
-        Me.RichTextBoxFileList.TabIndex = 0
-        Me.RichTextBoxFileList.Text = ""
-        Me.RichTextBoxFileList.WordWrap = False
+        Me.ListBoxErrorList.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.ListBoxErrorList.ContextMenuStrip = Me.ContextMenuStrip1
+        Me.ListBoxErrorList.Location = New System.Drawing.Point(1273, 0)
+        Me.ListBoxErrorList.Name = "ListBoxErrorList"
+        Me.ListBoxErrorList.ScrollAlwaysVisible = True
+        Me.ListBoxErrorList.Size = New System.Drawing.Size(924, 115)
+        Me.ListBoxErrorList.TabIndex = 1
         '
-        'RichTextBoxErrorList
+        'ListBoxFileList
         '
-        Me.RichTextBoxErrorList.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.RichTextBoxErrorList.ContextMenuStrip = Me.ContextMenuStrip1
-        Me.RichTextBoxErrorList.DetectUrls = False
-        Me.RichTextBoxErrorList.Location = New System.Drawing.Point(1273, 0)
-        Me.RichTextBoxErrorList.Name = "RichTextBoxErrorList"
-        Me.RichTextBoxErrorList.Size = New System.Drawing.Size(924, 110)
-        Me.RichTextBoxErrorList.TabIndex = 1
-        Me.RichTextBoxErrorList.Text = ""
-        Me.RichTextBoxErrorList.WordWrap = False
+        Me.ListBoxFileList.ContextMenuStrip = Me.ContextMenuStrip1
+        Me.ListBoxFileList.Location = New System.Drawing.Point(0, 0)
+        Me.ListBoxFileList.Name = "ListBoxFileList"
+        Me.ListBoxFileList.ScrollAlwaysVisible = True
+        Me.ListBoxFileList.SelectionMode = SelectionMode.One
+        Me.ListBoxFileList.Size = New System.Drawing.Size(1245, 115)
+        Me.ListBoxFileList.TabIndex = 0
+        Me.ListBoxFileList.Text = ""
         '
         'OpenFileDialog1
         '
@@ -1041,7 +1040,7 @@ Partial Class Form1
         Me.RichTextBoxConversionOutput.Location = New System.Drawing.Point(999, 0)
         Me.RichTextBoxConversionOutput.Name = "RichTextBoxConversionOutput"
         Me.RichTextBoxConversionOutput.Size = New System.Drawing.Size(924, 163)
-        Me.RichTextBoxConversionOutput.TabIndex = 10
+        Me.RichTextBoxConversionOutput.TabIndex = 1
         Me.RichTextBoxConversionOutput.Text = ""
         Me.RichTextBoxConversionOutput.VScrollPos = 0
         Me.RichTextBoxConversionOutput.WordWrap = False
@@ -1089,8 +1088,22 @@ Partial Class Form1
         Me.ProgressBar1.Location = New System.Drawing.Point(385, 206)
         Me.ProgressBar1.Name = "ProgressBar1"
         Me.ProgressBar1.Size = New System.Drawing.Size(100, 23)
-        Me.ProgressBar1.Style = System.Windows.Forms.ProgressBarStyle.Blocks
+        Me.ProgressBar1.Style = System.Windows.Forms.ProgressBarStyle.Marquee
         Me.ProgressBar1.TabIndex = 1
+        '
+        'LabelProgress
+        '
+        Me.LabelProgress.AutoSize = True
+        Me.LabelProgress.Location = New System.Drawing.Point(385, 196)
+        Me.LabelProgress.Name = "ProgressBar1"
+        Me.LabelProgress.Text = "Step"
+        Me.LabelProgress.Size = New System.Drawing.Size(100, 23)
+        Me.LabelProgress.TabIndex = 1
+        Me.LabelProgress.Visible = False
+        '
+        'ToolTip1
+        '
+        Me.ToolTip1.ToolTipIcon = System.Windows.Forms.ToolTipIcon.Info
         '
         'Form1
         '
@@ -1098,6 +1111,7 @@ Partial Class Form1
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(1923, 637)
         Me.Controls.Add(Me.ProgressBar1)
+        Me.Controls.Add(Me.LabelProgress)
         Me.Controls.Add(Me.LabelErrorCount)
         Me.Controls.Add(Me.ButtonStopConversion)
         Me.Controls.Add(Me.SearchWhere)
@@ -1168,10 +1182,10 @@ Partial Class Form1
     Friend WithEvents SplitContainer1 As SplitContainer
     Friend WithEvents RichTextBoxConversionOutput As AdvancedRTB
     Friend WithEvents RichTextBoxConversionInput As RichTextBox
-    Friend WithEvents RichTextBoxErrorList As RichTextBox
+    Friend WithEvents ListBoxErrorList As ListBox
     Friend WithEvents LineNumbers_For_RichTextBoxInput As LineNumbersForRichTextBox
     Friend WithEvents LineNumbers_For_RichTextBoxOutput As LineNumbersForRichTextBox
-    Friend WithEvents RichTextBoxFileList As RichTextBox
+    Friend WithEvents ListBoxFileList As ListBox
     Friend WithEvents mnuOptionsStartFolderConvertFromLastFile As ToolStripMenuItem
     Friend WithEvents mnuFileExit As ToolStripMenuItem
     Friend WithEvents mnuFileSep6 As ToolStripSeparator
@@ -1240,4 +1254,6 @@ Partial Class Form1
     Friend WithEvents FilesConversionProgress As ToolStripStatusLabel
     Friend WithEvents ConversionProgressBar As ToolStripProgressBar
     Friend WithEvents ProgressBar1 As ProgressBar
+    Friend WithEvents LabelProgress As Label
+    Friend WithEvents ToolTip1 As ToolTip
 End Class
