@@ -19,7 +19,6 @@ Partial Public Class Form1
 
     Private Shared Function CSharpReferences(fileReferences As IEnumerable(Of String), projectReferences As IEnumerable(Of String)) As List(Of MetadataReference)
         Dim ReferenceList As New List(Of MetadataReference)
-        'SystemReferences
         For Each DLL_Path As String In fileReferences
             If DLL_Path.EndsWith("System.EnterpriseServices.Wrapper.dll", StringComparison.Ordinal) Then
                 Continue For
@@ -35,82 +34,40 @@ Partial Public Class Form1
         Return ReferenceList
     End Function
 
-    Private Async Function ProcessOneProject(sourceProjectNameWithPath As String, projectSavePath As String, _cancellationTokenSource As CancellationTokenSource) As Task(Of Boolean)
-        ListBoxErrorList.Text = ""
-        ListBoxFileList.Text = ""
-        LabelProgress.Text = "Getting Analyzer Manger"
-        LabelProgress.Visible = True
-        ProgressBar1.Visible = True
-        Dim TaskAnalyzerManager As Task(Of AnalyzerManager) = GetManager()
-        While Not TaskAnalyzerManager.IsCompleted
+    Private Shared Async Function GetAnalyzer(sourceProjectNameWithPath As String, manager As AnalyzerManager) As Task(Of ProjectAnalyzer)
+        Return Await Task.Run(Function() manager.GetProject(sourceProjectNameWithPath)).ConfigureAwait(True)
+    End Function
 
-            If _cancellationTokenSource.IsCancellationRequested Then
-                LabelProgress.Visible = False
-                ProgressBar1.Visible = False
-                Return False
-            End If
-            Await Task.Delay(100).ConfigureAwait(True)
-        End While
-        Dim manager As AnalyzerManager = TaskAnalyzerManager.Result
+    Private Shared Async Function GetManager() As Task(Of AnalyzerManager)
+        Return Await Task.Run(Function() New AnalyzerManager()).ConfigureAwait(True)
+    End Function
 
-        LabelProgress.Text = "Getting Project Analyzer"
-        Dim TaskAnalyzer As Task(Of ProjectAnalyzer) = GetAnalyzer(sourceProjectNameWithPath, manager)
-        While Not TaskAnalyzer.IsCompleted
-            If _cancellationTokenSource.IsCancellationRequested Then
-                LabelProgress.Visible = False
-                ProgressBar1.Visible = False
-                Return False
-            End If
-            Await Task.Delay(100).ConfigureAwait(True)
-        End While
-        Dim analyzer As ProjectAnalyzer = TaskAnalyzer.Result
+    Private Shared Async Function GetResults(analyzer As ProjectAnalyzer) As Task(Of AnalyzerResults)
+        Return Await Task.Run(Function() analyzer.Build()).ConfigureAwait(True)
+    End Function
 
-        LabelProgress.Text = "Getting Analyzer Results"
-        Dim TaskResults As Task(Of AnalyzerResults) = GetResults(analyzer)
-        While Not TaskResults.IsCompleted
-            If _cancellationTokenSource.IsCancellationRequested Then
-                LabelProgress.Visible = False
-                ProgressBar1.Visible = False
-                Return False
-            End If
-            Await Task.Delay(100).ConfigureAwait(True)
-        End While
-        Dim results As AnalyzerResults = TaskResults.Result
-
-        ProgressBar1.Visible = False
-        LabelProgress.Visible = False
-        Using workspace As AdhocWorkspace = analyzer.GetWorkspace()
-            If Not workspace.CurrentSolution.Projects.Any Then
-                Return False
-            End If
-            Dim currentProject As Project = workspace.CurrentSolution.Projects(0)
-            If currentProject.HasDocuments Then
-                If _cancellationTokenSource.IsCancellationRequested Then
-                    Return False
-                End If
-                Dim References() As MetadataReference
-                Dim FrameWorks As List(Of String) = results.TargetFrameworks.ToList
-                Dim Framework As String = FrameWorks(0)
-                Select Case FrameWorks.Count
+    Private Shared Function TryGetFramework(TargetFrameworks As List(Of String), ByRef framework As String) As Boolean
+        Select Case TargetFrameworks.Count
                     Case 0
-                        References = SharedReferences.CSharpReferences("", Nothing).ToArray
-                        MsgBox($"No framework is specified, processing will terminate!", MsgBoxStyle.Exclamation, "Framework Warning")
                         Return False
                     Case 1
-                        References = CSharpReferences(results(Framework).References, results(Framework).ProjectReferences).ToArray
+                framework = TargetFrameworks(0)
                     Case Else
-                        Dim F As New FrameworkSelectionDialog
-                        F.SetFrameworkList(FrameWorks)
-                        Dim Result As DialogResult = F.ShowDialog
+                Using F As New FrameworkSelectionDialog
+                    F.SetFrameworkList(TargetFrameworks)
+                    If F.ShowDialog <> DialogResult.OK Then
+                        Return False
+                    End If
                         Framework = F.CurrentFramework
-                        F.Dispose()
+                End Using
+        End Select
+        Return True
+    End Function
 
-                        If Result = DialogResult.OK Then
-                            References = CSharpReferences(results(Framework).References, results(Framework).ProjectReferences).ToArray
-                        Else
+    Private Async Function ProcessOneProjectCore(currentProject As Project, sourceProjectNameWithPath As String, projectSavePath As String, Framework As String, References As MetadataReference()) As Task(Of Boolean)
+        If _cancellationTokenSource.IsCancellationRequested Then
                             Return False
                         End If
-                End Select
                 Dim xmlDoc As New XmlDocument With {
                                 .PreserveWhitespace = True
                             }
@@ -120,7 +77,6 @@ Partial Public Class Form1
                     ConvertProjectFile(projectSavePath, currentProject.FilePath, xmlDoc)
                 End If
 
-                SetButtonStopAndCursor(Me, ButtonStopConversion, StopButtonVisible:=True)
                 Dim FilesProcessed As Integer = 0
                 Dim TotalFilesToProcess As Integer = currentProject.Documents.Count
                 Dim CSPreprocessorSymbols As New List(Of String) From {
@@ -131,6 +87,9 @@ Partial Public Class Form1
                                         }
 
                 For Each currentDocument As Document In currentProject.Documents
+            If _cancellationTokenSource.IsCancellationRequested Then
+                Return False
+            End If
                     Dim targetFileWithPath As String = DestinationFilePath(Path.GetDirectoryName(sourceProjectNameWithPath), projectSavePath, currentDocument.FilePath)
                     If ParseCSharpSource(currentDocument.GetTextAsync(Nothing).Result.ToString,
                                              CSPreprocessorSymbols).GetRoot.SyntaxTree.IsGeneratedCode(Function(t As SyntaxTrivia) As Boolean
@@ -152,26 +111,56 @@ Partial Public Class Form1
                         Return False
                     End If
                 Next currentDocument
+        Return True
+    End Function
+
+    Private Async Function ProcessOneProjectUI(manager As AnalyzerManager, sourceProjectNameWithPath As String, projectSavePath As String, _cancellationTokenSource As CancellationTokenSource) As Task(Of Boolean)
+        LabelProgress.Text = "Getting Project Analyzer"
+        Dim TaskAnalyzer As Task(Of ProjectAnalyzer) = GetAnalyzer(sourceProjectNameWithPath, manager)
+        While Not TaskAnalyzer.IsCompleted
+            If _cancellationTokenSource.IsCancellationRequested Then
+                Return False
             End If
+            Await Task.Delay(100).ConfigureAwait(True)
+        End While
+        Dim analyzer As ProjectAnalyzer = TaskAnalyzer.Result
+
+        LabelProgress.Text = "Getting Analyzer Results"
+        Dim TaskResults As Task(Of AnalyzerResults) = GetResults(analyzer)
+        While Not TaskResults.IsCompleted
+            If _cancellationTokenSource.IsCancellationRequested Then
+                Return False
+            End If
+            Await Task.Delay(100).ConfigureAwait(True)
+        End While
+        Dim results As AnalyzerResults = TaskResults.Result
+        LabelProgress.Visible = False
+        ProgressBar1.Visible = False
+        Dim Framework As String = String.Empty
+        If TryGetFramework(results.TargetFrameworks.ToList, Framework) Then
+            Using workspace As AdhocWorkspace = analyzer.GetWorkspace()
+                If Not workspace.CurrentSolution.Projects.Any Then
+                    Return False
+                End If
+                Dim currentProject As Project = workspace.CurrentSolution.Projects(0)
+                Await ProcessOneProjectCore(
+                        currentProject,
+                        sourceProjectNameWithPath,
+                        projectSavePath,
+                        Framework,
+                        CSharpReferences(
+                                        results(Framework).References,
+                                        results(Framework).ProjectReferences).ToArray
+                                        ).ConfigureAwait(True)
         End Using
+        Else
+            SetButtonStopAndCursor(Me, ButtonStopConversion, StopButtonVisible:=False)
+            MsgBox($"No framework is specified, processing project will terminate!", MsgBoxStyle.Exclamation, "Framework Warning")
+        End If
+
         RichTextBoxConversionInput.Text = ""
         RichTextBoxConversionOutput.Text = ""
         Return True
     End Function
 
-    Private Shared Async Function GetSourceFiles(results As AnalyzerResults) As Task(Of String())
-        Return Await Task.Run(Function() results.First().SourceFiles()).ConfigureAwait(True)
-    End Function
-
-    Private Shared Async Function GetResults(analyzer As ProjectAnalyzer) As Task(Of AnalyzerResults)
-        Return Await Task.Run(Function() analyzer.Build()).ConfigureAwait(True)
-    End Function
-
-    Private Shared Async Function GetAnalyzer(sourceProjectNameWithPath As String, manager As AnalyzerManager) As Task(Of ProjectAnalyzer)
-        Return Await Task.Run(Function() manager.GetProject(sourceProjectNameWithPath)).ConfigureAwait(True)
-    End Function
-
-    Private Shared Async Function GetManager() As Task(Of AnalyzerManager)
-        Return Await Task.Run(Function() New AnalyzerManager()).ConfigureAwait(True)
-    End Function
 End Class

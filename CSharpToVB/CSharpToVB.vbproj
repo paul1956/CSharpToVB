@@ -23,7 +23,7 @@
     <Description>Convert C# to VB, it can convert snippits, files, projects and folders. It expects valid C# code and does not handle bad code well.</Description>
     <RepositoryType>GitHub</RepositoryType>
     <ApplicationIcon>Icons\CStoVB.ico</ApplicationIcon>
-    <Version>4.2.5.0</Version>
+    <Version>4.2.6.0</Version>
     <Product>CSharp To VB Converter</Product>
     <Copyright>Copyright (c) .NET Foundation and Contributors</Copyright>
     <PackageId>CSharp To VB Converter</PackageId>

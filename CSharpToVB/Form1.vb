@@ -9,6 +9,9 @@ Imports System.Security
 Imports System.Security.Permissions
 Imports System.Text
 Imports System.Threading
+
+Imports Buildalyzer
+
 Imports CSharpToVBApp
 
 Imports CSharpToVBCodeConverter
@@ -857,9 +860,23 @@ Partial Public Class Form1
                 If Not String.IsNullOrWhiteSpace(projectSavePath) Then
                     SetButtonStopAndCursor(MeForm:=Me, StopButton:=ButtonStopConversion, StopButtonVisible:=True)
                     Try
+                        ListBoxErrorList.Text = ""
+                        ListBoxFileList.Text = ""
+                        LabelProgress.Text = "Getting Analyzer Manger"
+                        LabelProgress.Visible = True
+                        ProgressBar1.Visible = True
+                        Dim TaskAnalyzerManager As Task(Of AnalyzerManager) = GetManager()
+                        While Not TaskAnalyzerManager.IsCompleted
 
-                        If Await ProcessOneProject(.FileName, projectSavePath, _cancellationTokenSource).ConfigureAwait(True) Then
+                            If _cancellationTokenSource.IsCancellationRequested Then
+                                LabelProgress.Visible = False
+                                ProgressBar1.Visible = False
+                                Exit Try
+                            End If
+                            Await Task.Delay(100).ConfigureAwait(True)
+                        End While
 
+                        If Await ProcessOneProjectUI(TaskAnalyzerManager.Result, sourceProjectNameWithPath:= .FileName, projectSavePath, _cancellationTokenSource).ConfigureAwait(True) Then
                             MsgBox($"{If(_cancellationTokenSource.Token.IsCancellationRequested, "Conversion canceled", "Conversion completed")}, {FilesConversionProgress.Text.ToLower(Globalization.CultureInfo.CurrentCulture)} completed successfully.",
                                MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground Or MsgBoxStyle.OkOnly,
                                Title:="C# to VB"
@@ -871,9 +888,9 @@ Partial Public Class Form1
                             Process.Start("explorer.exe", $"/root,{projectSavePath}")
                         End If
                     Catch ex As ObjectDisposedException
-
+                    Finally
+                        SetButtonStopAndCursor(Me, ButtonStopConversion, StopButtonVisible:=False)
                     End Try
-                    SetButtonStopAndCursor(MeForm:=Me, StopButton:=ButtonStopConversion, StopButtonVisible:=False)
                 End If
             End If
         End With

@@ -27,7 +27,7 @@ description: "C# to VB Converter"
 - Code Converter
 
 ## Updated
-- 03/27/2020
+- 04/01/2020
 
 ## Description
 This application will convert C# to VB while trying to preserve comments, formatting and as many Directives
@@ -71,8 +71,13 @@ New in Release 4.2.4.0
 - Issue #37 closed, double clicking on C# file is list will open it and converted VB file
 
 New in Release 4.2.5.0
--                   double clicking on Error List line will scroll VB buffer to the error
+- Double clicking on Error List line will scroll VB buffer to the error
 - Issue #29 closed, at the end of a project conversion the root of the VB project will open in explorer
+
+New in Release 4.2.6.0
+- Restructure Convert Project to enable better error handling, better progress messages
+- and prepare for Convert Solution
+
 
 ## Code Coverage
 ```
