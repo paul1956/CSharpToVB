@@ -75,8 +75,10 @@ New in Release 4.2.5.0
 - Issue #29 closed, at the end of a project conversion the root of the VB project will open in explorer
 
 New in Release 4.2.6.0
-- Restructure Convert Project to enable better error handling, better progress messages
-- and prepare for Convert Solution
+- Restructure Convert Project to enable better error handling, better progress messages and prepare for Convert Solution
+
+New in Release 4.2.7.0
+- Added Tests for 3 major Core project types and fixed bugs found in project translation
 
 
 ## Code Coverage

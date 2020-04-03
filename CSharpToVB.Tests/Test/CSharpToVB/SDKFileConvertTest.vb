@@ -15,6 +15,7 @@ Namespace ProjectFile.Tests
                 <RootNamespace>Microsoft.eShopWeb.Web</RootNamespace>
                 <UserSecretsId>aspnet-Web2-12345678-1234-5678-9E49-1CCCD7FE85F7</UserSecretsId>
                 <LangVersion>latest</LangVersion>
+                <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
             </PropertyGroup>
 
             <ItemGroup>
@@ -31,42 +32,21 @@ Namespace ProjectFile.Tests
             </ItemGroup>
             <ItemGroup>
                 <Folder Include="wwwroot\fonts\"/>
-                <Folder Include="wwwroot\lib\"/>
             </ItemGroup>
             <ItemGroup>
                 <ProjectReference Include="..\ApplicationCore\ApplicationCore.csproj"/>
             </ItemGroup>
             <ItemGroup>
-                <None Include="compilerconfig.json"/>
                 <None Include="wwwroot\images\products\1.png"/>
             </ItemGroup>
             <ItemGroup>
                 <Content Update="appsettings.json">
                     <CopyToOutputDirectory>Always</CopyToOutputDirectory>
                 </Content>
-                <Content Update="Views\Shared\_Layout.cshtml">
-                    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-                </Content>
             </ItemGroup>
         </Project>
 
-            Dim sourceXmlDoc As New XmlDocument With {
-                                .PreserveWhitespace = True
-                            }
-            sourceXmlDoc.LoadXml(_originalProjectFile.ToString)
-
-            Dim actualProjectFile As XmlDocument = ConvertProjectFile("", "", sourceXmlDoc)
-            Dim ResultXmlDoc As New XmlDocument With {
-                                .PreserveWhitespace = True
-                            }
-            ResultXmlDoc.LoadXml(_originalProjectFile.ToString)
-            Assert.Equal(actualProjectFile.Value, ResultXmlDoc.Value)
-        End Sub
-
-        <Fact>
-        Public Shared Sub ConvertClassProjectFileTest()
-
-            Dim _originalProjectFile As XElement =
+            Dim _expectedProjectFile As XElement =
         <Project Sdk="Microsoft.NET.Sdk.Web">
             <PropertyGroup>
                 <TargetFramework>netcoreapp3.1</TargetFramework>
@@ -89,21 +69,16 @@ Namespace ProjectFile.Tests
             </ItemGroup>
             <ItemGroup>
                 <Folder Include="wwwroot\fonts\"/>
-                <Folder Include="wwwroot\lib\"/>
             </ItemGroup>
             <ItemGroup>
                 <ProjectReference Include="..\ApplicationCore\ApplicationCore.csproj"/>
             </ItemGroup>
             <ItemGroup>
-                <None Include="compilerconfig.json"/>
                 <None Include="wwwroot\images\products\1.png"/>
             </ItemGroup>
             <ItemGroup>
                 <Content Update="appsettings.json">
                     <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-                </Content>
-                <Content Update="Views\Shared\_Layout.cshtml">
-                    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
                 </Content>
             </ItemGroup>
         </Project>
@@ -113,12 +88,163 @@ Namespace ProjectFile.Tests
                             }
             sourceXmlDoc.LoadXml(_originalProjectFile.ToString)
 
-            Dim actualProjectFile As XmlDocument = ConvertProjectFile("", "", sourceXmlDoc)
-            Dim ResultXmlDoc As New XmlDocument With {
+            Dim sourceProjectFile As XmlDocument = ConvertProjectFile("", "", sourceXmlDoc)
+            Dim expectedXmlDoc As New XmlDocument With {
                                 .PreserveWhitespace = True
                             }
-            ResultXmlDoc.LoadXml(_originalProjectFile.ToString)
-            Assert.Equal(actualProjectFile.Value, ResultXmlDoc.Value)
+            expectedXmlDoc.LoadXml(_expectedProjectFile.ToString)
+            Assert.Equal(expectedXmlDoc.InnerText, sourceProjectFile.InnerText)
+        End Sub
+
+        <Fact>
+        Public Shared Sub ConvertClassProjectFileTest()
+
+            Dim _originalProjectFile As XElement =
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <AssemblyName>System.Windows.Forms</AssemblyName>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <CLSCompliant>true</CLSCompliant>
+        <Nullable>enable</Nullable>
+
+        <NoWarn>$(NoWarn);618</NoWarn>
+        <DefineConstants>$(DefineConstants);OPTIMIZED_MEASUREMENTDC;</DefineConstants>
+        <Win32Manifest>Resources\System\Windows\Forms\XPThemes.manifest</Win32Manifest>
+        <Deterministic>true</Deterministic>
+        <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
+        <UsePublicApiAnalyzers>true</UsePublicApiAnalyzers>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\System.Windows.Forms.Primitives\src\System.Windows.Forms.Primitives.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Win32.Registry" Version="$(MicrosoftWin32RegistryPackageVersion)"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Include="..\..\Common\src\RTLAwareMessageBox.cs" Link="Common\RTLAwareMessageBox.cs"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Update="Resources\SR.resx">
+            <GenerateSource>true</GenerateSource>
+            <Namespace>System</Namespace>
+        </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="Resources\System\Windows\Forms\Animation.ico">
+            <LogicalName>System.Windows.Forms.Animation</LogicalName>
+        </EmbeddedResource>
+    </ItemGroup>
+</Project>
+
+            Dim _expectedProjectFile As XElement =
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <AssemblyName>System.Windows.Forms</AssemblyName>
+        <CLSCompliant>true</CLSCompliant>
+        <Nullable>enable</Nullable>
+
+        <DefineConstants>$(DefineConstants);OPTIMIZED_MEASUREMENTDC;</DefineConstants>
+        <Win32Manifest>Resources\System\Windows\Forms\XPThemes.manifest</Win32Manifest>
+        <Deterministic>true</Deterministic>
+        <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
+        <UsePublicApiAnalyzers>true</UsePublicApiAnalyzers>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\System.Windows.Forms.Primitives\src\System.Windows.Forms.Primitives.vbproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Win32.Registry" Version="$(MicrosoftWin32RegistryPackageVersion)"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Include="..\..\Common\src\RTLAwareMessageBox.vb" Link="Common\RTLAwareMessageBox.vb"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Update="Resources\SR.resx">
+            <GenerateSource>true</GenerateSource>
+            <Namespace>System</Namespace>
+        </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="Resources\System\Windows\Forms\Animation.ico">
+            <LogicalName>System.Windows.Forms.Animation</LogicalName>
+        </EmbeddedResource>
+    </ItemGroup>
+</Project>
+            Dim sourceXmlDoc As New XmlDocument With {
+                                .PreserveWhitespace = True
+                            }
+            sourceXmlDoc.LoadXml(_originalProjectFile.ToString)
+
+            Dim sourceProjectFile As XmlDocument = ConvertProjectFile("", "", sourceXmlDoc)
+            Dim expectedXmlDoc As New XmlDocument With {
+                                .PreserveWhitespace = True
+                            }
+            expectedXmlDoc.LoadXml(_expectedProjectFile.ToString)
+            Assert.Equal(expectedXmlDoc.InnerText, sourceProjectFile.InnerText)
+        End Sub
+
+        <Fact>
+        Public Shared Sub ConvertWinFormsProjectFileTest()
+
+            Dim _originalProjectFile As XElement =
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework Condition="'$(TargetFrameworkOverride)' == ''">netcoreapp5.0</TargetFramework>
+        <TargetFramework Condition="'$(TargetFrameworkOverride)' != ''">TargetFrameworkOverride</TargetFramework>
+        <RootNamespace>Company.WinFormsApplication1</RootNamespace>
+        <StartupObject>Company.WinFormsApplication1.Form1</StartupObject>
+        <LangVersion Condition="'$(langVersion)' != ''">$(ProjectLanguageVersion)</LangVersion>
+        <UseWindowsForms>true</UseWindowsForms>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Import Include="System.Data"/>
+    </ItemGroup>
+
+</Project>
+            Dim _expectedProjectFile As XElement =
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework Condition="'$(TargetFrameworkOverride)' == ''">netcoreapp5.0</TargetFramework>
+        <TargetFramework Condition="'$(TargetFrameworkOverride)' != ''">TargetFrameworkOverride</TargetFramework>
+        <RootNamespace>Company.WinFormsApplication1</RootNamespace>
+        <StartupObject>Company.WinFormsApplication1.Form1</StartupObject>
+        <LangVersion Condition="'$(langVersion)' != ''">$(ProjectLanguageVersion)</LangVersion>
+        <UseWindowsForms>true</UseWindowsForms>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Import Include="System.Data"/>
+    </ItemGroup>
+
+</Project>
+            Dim sourceXmlDoc As New XmlDocument With {
+                                .PreserveWhitespace = True
+                            }
+            sourceXmlDoc.LoadXml(_originalProjectFile.ToString)
+
+            Dim sourceProjectFile As XmlDocument = ConvertProjectFile("", "", sourceXmlDoc)
+            Dim expectedXmlDoc As New XmlDocument With {
+                                .PreserveWhitespace = True
+                            }
+            expectedXmlDoc.LoadXml(_expectedProjectFile.ToString)
+            Assert.Equal(expectedXmlDoc.InnerText, sourceProjectFile.InnerText)
         End Sub
     End Class
 End Namespace
