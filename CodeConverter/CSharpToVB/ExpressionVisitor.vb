@@ -263,15 +263,15 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim LeftNode As VBS.ExpressionSyntax = DirectCast(node.Left.Accept(Me), VBS.ExpressionSyntax)
                 If CS.CSharpExtensions.Kind(node) = CS.SyntaxKind.CoalesceAssignmentExpression Then
                     Dim PossibleNullNode As VBS.ExpressionSyntax = DirectCast(node.Right.Accept(Me).WithLeadingTrivia(SpaceTrivia), VBS.ExpressionSyntax)
-                    Dim IsNothingCondition As VBS.ExpressionSyntax = VBFactory.IsExpression(LeftNode, NothingExpression).With({SpaceTrivia}, {SpaceTrivia})
-                    Dim AssignmentStatement As VBS.AssignmentStatementSyntax = VBFactory.SimpleAssignmentStatement(LeftNode, PossibleNullNode)
+                    Dim rightBinaryExpression As VBS.BinaryConditionalExpressionSyntax = VBFactory.BinaryConditionalExpression(LeftNode.WithoutTrivia, PossibleNullNode)
+                    Dim AssignmentStatement As VBS.AssignmentStatementSyntax = VBFactory.SimpleAssignmentStatement(LeftNode, rightBinaryExpression)
                     Dim LeadingTrivia As New List(Of SyntaxTrivia)
                     If AssignmentStatement.HasLeadingTrivia Then
                         LeadingTrivia.AddRange(AssignmentStatement.GetLeadingTrivia)
                         AssignmentStatement = AssignmentStatement.WithLeadingTrivia(SpaceTrivia)
                     End If
                     Dim AssignmentStatements As SyntaxList(Of VBS.StatementSyntax) = VBFactory.SingletonList(Of VBS.StatementSyntax)(AssignmentStatement)
-                    Return VBFactory.SingleLineIfStatement(IsNothingCondition, AssignmentStatements, elseClause:=Nothing).With(LeadingTrivia, ConvertTrivia(node.GetTrailingTrivia))
+                    Return AssignmentStatement.With(LeadingTrivia, ConvertTrivia(node.GetTrailingTrivia))
                 End If
                 Dim kind As VB.SyntaxKind = ConvertCSExpressionsKindToVBKind(CS.CSharpExtensions.Kind(node))
                 Dim OperatorToken As SyntaxToken = ExpressionKindToOperatorToken(kind)

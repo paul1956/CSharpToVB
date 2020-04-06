@@ -1165,6 +1165,16 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                             ReturnStatement
                         }
                         Statements = ReplaceStatementsWithMarkedStatements(node, VBFactory.List(StatementList))
+                    ElseIf TypeOf ExpressionSyntaxNode Is VBS.AssignmentStatementSyntax Then
+                        Dim AssignmentStatement As VBS.AssignmentStatementSyntax = DirectCast(ExpressionSyntaxNode, VBS.AssignmentStatementSyntax).WithTrailingEOL
+                        Dim ReturnStatement As VBS.ReturnStatementSyntax = VBFactory.ReturnStatement(AssignmentStatement.Left.WithoutLeadingTrivia).
+                                                WithLeadingTrivia(AssignmentStatement.GetLeadingTrivia)
+                        ReturnStatement = ReturnStatement.RelocateDirectivesInLeadingTrivia
+                        Dim StatementList As New List(Of VBS.StatementSyntax) From {
+                            AssignmentStatement,
+                            ReturnStatement
+                        }
+                        Statements = ReplaceStatementsWithMarkedStatements(node, VBFactory.List(StatementList))
                     ElseIf TypeOf ExpressionSyntaxNode Is VBS.ExpressionSyntax Then
                         Dim ReturnedExpression As VBS.ExpressionSyntax = DirectCast(ExpressionSyntaxNode, VBS.ExpressionSyntax)
                         If ReturnedExpression Is Nothing Then

@@ -24,9 +24,7 @@ Public NotInheritable Class SplashScreen1
         '  Version control's design-time text to "Version {0}.{1:00}.{2}.{3}" or something similar.  See
         '  String.Format() in Help for more information.
         '
-        '    Version.Text = System.String.Format(Version.Text, My.Application.Info.Version.Major, My.Application.Info.Version.Minor, My.Application.Info.Version.Build, My.Application.Info.Version.Revision)
-
-        Version.Text = String.Format(CultureInfo.InvariantCulture, Version.Text, My.Info.Version.Major, My.Info.Version.Minor)
+        Version.Text = String.Format(CultureInfo.InvariantCulture, Version.Text, My.Info.Version.Major, My.Info.Version.Minor, My.Info.Version.Build, My.Info.Version.Revision)
 
         'Copyright info
         Copyright.Text = My.Info.Copyright

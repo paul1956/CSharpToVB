@@ -449,14 +449,13 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             End Function
 
             Private Function ConvertSwitchSection(section As CSS.SwitchSectionSyntax) As VBS.CaseBlockSyntax
-                Dim NewDimStatements As New List(Of VBS.StatementSyntax)
+                Dim NewLeadingStatements As New List(Of VBS.StatementSyntax)
                 If section.Labels.OfType(Of CSS.DefaultSwitchLabelSyntax)().Any() Then
-                    Return VBFactory.CaseElseBlock(VBFactory.CaseElseStatement(VBFactory.ElseCaseClause()), ConvertSwitchSectionBlock(section, NewDimStatements))
+                    Return VBFactory.CaseElseBlock(VBFactory.CaseElseStatement(VBFactory.ElseCaseClause()), ConvertSwitchSectionBlock(section, NewLeadingStatements))
                 End If
                 Dim LabelList As New List(Of VBS.CaseClauseSyntax)
                 Dim CS_LabelTrivia As New List(Of SyntaxTrivia)
                 Dim NewLeadingTrivia As New List(Of SyntaxTrivia)
-                Dim NeedWarningMessage As Boolean = False
                 NewLeadingTrivia.AddRange(ConvertTrivia(section.GetLeadingTrivia))
                 ' Find Case leading space
                 For Each CaseLabel As CSS.SwitchLabelSyntax In section.Labels
@@ -496,7 +495,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                     Dim variable As VBS.VariableDeclaratorSyntax = VBFactory.VariableDeclarator(SeparatedSyntaxList, VBFactory.SimpleAsClause(Type), Initializer)
                                     Dim Declarators As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(variable)
 
-                                    NewDimStatements.Add(VBFactory.LocalDeclarationStatement(DimModifier, Declarators))
+                                    NewLeadingStatements.Add(VBFactory.LocalDeclarationStatement(DimModifier, Declarators))
                                     CaseLabelExpression = DirectCast(Pattern.Designation.Accept(_nodesVisitor), VBS.ExpressionSyntax)
                                 End If
                             ElseIf TypeOf PatternLabel.Pattern Is CSS.VarPatternSyntax Then
@@ -519,7 +518,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                     Dim ModifiedIdentifier As VBS.ModifiedIdentifierSyntax = VBFactory.ModifiedIdentifier(Identifier.WithTrailingTrivia(SpaceTrivia))
                                     Dim Variable As VBS.VariableDeclaratorSyntax = VBFactory.VariableDeclarator(VBFactory.SingletonSeparatedList(ModifiedIdentifier), AsClause, Initializer)
                                     Dim Declarators As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(Variable)
-                                    NewDimStatements.Add(VBFactory.LocalDeclarationStatement(DimModifier, Declarators).WithTrailingEOL)
+                                    NewLeadingStatements.Add(VBFactory.LocalDeclarationStatement(DimModifier, Declarators).WithTrailingEOL)
                                     CaseLabelExpression = VBFactory.IdentifierName("Else")
                                 Else
                                     CaseLabelExpression = Nothing
@@ -531,9 +530,6 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                             Else
                                 CaseLabelExpression = Nothing
                                 Stop
-                            End If
-                            If PatternLabel.WhenClause IsNot Nothing Then
-                                NeedWarningMessage = True
                             End If
                         Case Else
                             CaseLabelExpression = Nothing
@@ -547,13 +543,11 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                             LabelList.Add(VBFactory.SimpleCaseClause(CaseLabelExpression))
                         Else
                             ' TODO use line continuation instead of space
-                            LabelList.Add(VBFactory.SimpleCaseClause(VBFactory.AndAlsoExpression(CaseLabelExpression.WithTrailingTrivia(SpaceTrivia), CaseLabelWhenExpression).WithLeadingTrivia(SpaceTrivia)))
+                            LabelList.Add(VBFactory.SimpleCaseClause(CaseLabelExpression.WithTrailingTrivia(SpaceTrivia)))
+                            NewLeadingStatements.Add(VBFactory.SingleLineIfStatement(VBFactory.UnaryExpression(VB.SyntaxKind.NotExpression, NotKeyword, CaseLabelExpression.WithTrailingTrivia(SpaceTrivia)), VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.ExitSelectStatement), elseClause:=Nothing).WithTrailingEOL)
                         End If
                     End If
                 Next
-                If NeedWarningMessage Then
-                    NewLeadingTrivia.AddRange(section.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=True, "VB has no equivalent to the C# 'when' clause in 'case' statements"))
-                End If
                 Dim CommentString As New StringBuilder
                 For Each t As SyntaxTrivia In ConvertTrivia(CS_LabelTrivia)
                     Select Case t.RawKind
@@ -573,7 +567,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     TrailingTrivia.Add(VBEOLTrivia)
                 End If
                 Dim CaseStatement As VBS.CaseStatementSyntax = VBFactory.CaseStatement(VBFactory.SeparatedList(LabelList)).With(NewLeadingTrivia, TrailingTrivia).WithTrailingEOL
-                Return VBFactory.CaseBlock(CaseStatement, ConvertSwitchSectionBlock(section, NewDimStatements))
+                Return VBFactory.CaseBlock(CaseStatement, ConvertSwitchSectionBlock(section, NewLeadingStatements))
             End Function
 
             Private Function ConvertSwitchSectionBlock(section As CSS.SwitchSectionSyntax, Statements As List(Of VBS.StatementSyntax)) As SyntaxList(Of VBS.StatementSyntax)
@@ -582,7 +576,9 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim ClosingBraceLeadingTrivia As New List(Of SyntaxTrivia)
                 For Each s As CSS.StatementSyntax In section.Statements
                     If s Is lastStatement AndAlso TypeOf s Is CSS.BreakStatementSyntax Then
-                        Statements.Add(VBFactory.EmptyStatement.WithConvertedTriviaFrom(lastStatement))
+                        If lastStatement.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
+                            Statements.Add(VBFactory.EmptyStatement.WithConvertedTriviaFrom(lastStatement))
+                        End If
                         Continue For
                     End If
                     Statements.AddRange(ConvertBlock(s, OpenBraceTrailingTrivia, ClosingBraceLeadingTrivia))
@@ -1449,9 +1445,6 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim FinallyBlock As VBS.FinallyBlockSyntax = Nothing
                 If node.Finally IsNot Nothing Then
                     Dim FinallyStatements As SyntaxList(Of VBS.StatementSyntax) = ConvertBlock(node.[Finally].Block, OpenBraceTrailingTrivia, ClosingBraceLeadingTrivia)
-                    'If OpenBraceTrailingTrivia.Count > 0 OrElse ClosingBraceLeadingTrivia.Count > 0 Then
-                    '    Stop
-                    'End If
                     FinallyBlock = VBFactory.FinallyBlock(FinallyStatements).WithPrependedLeadingTrivia(TriviaList)
                     TriviaList.Clear()
                     If FinallyBlock.Statements(0).IsKind(VB.SyntaxKind.EmptyStatement) Then

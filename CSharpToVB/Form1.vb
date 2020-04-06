@@ -20,6 +20,7 @@ Imports CSharpToVBCodeConverter.ConversionResult
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Emit
 Imports Microsoft.VisualBasic.FileIO
+Imports Microsoft.Win32
 
 Imports VBMsgBox
 
@@ -131,6 +132,38 @@ Partial Public Class Form1
         End SyncLock
     End Sub
 
+    Private Sub launchBrowser(url As String)
+        Dim browserPath As String = "%ProgramFiles(x86)%\Internet Explorer\iexplore.exe"
+        Dim msgResult As MsgBoxResult = MsgBoxResult.Ok
+        Using userChoiceKey As RegistryKey = Registry.CurrentUser.OpenSubKey("Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice")
+            If userChoiceKey IsNot Nothing Then
+                Dim progIdObject As Object = userChoiceKey.GetValue("Progid")
+                If progIdObject IsNot Nothing Then
+                    Dim progIdValue As String = CStr(progIdObject)
+                    If progIdValue IsNot Nothing Then
+                        If progIdValue.Contains("chrome", StringComparison.OrdinalIgnoreCase) Then
+                            browserPath = "%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe"
+                            'ElseIf progIdValue.Contains("firefox", StringComparison.OrdinalIgnoreCase) Then
+                            '    browserPath = "firefox.exe"
+                        ElseIf progIdValue.Contains("msedgehtm", StringComparison.OrdinalIgnoreCase) Then
+                            browserPath = "%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe"
+                            'ElseIf progIdValue.Contains("safari", StringComparison.OrdinalIgnoreCase) Then
+                            '    browserPath = "safari.exe"
+                            'ElseIf progIdValue.Contains("opera", StringComparison.OrdinalIgnoreCase) Then
+                            '    browserPath = "opera.exe"
+                        Else
+                            msgResult = MsgBox($"Your default browser {progIdValue} is not supported, iExplorer will be used if you select OK!, please enter an issue with its 'Progid' and full path", MsgBoxStyle.OkCancel)
+                        End If
+                    End If
+                End If
+            End If
+        End Using
+        If msgResult = MsgBoxResult.Ok Then
+            Dim info As New ProcessStartInfo(System.Environment.ExpandEnvironmentVariables(browserPath), url)
+            Process.Start(info)
+        End If
+    End Sub
+
     ''' <summary>
     ''' If a splash screen has a minimum time out, then once that is up we check to see whether
     ''' we should close the splash screen.  If the main form has activated then we close it.
@@ -203,7 +236,7 @@ Partial Public Class Form1
 
         Dim builder As New StringBuilder()
         For i As Integer = 0 To Exceptions.Count - 1
-            builder.AppendFormat(Globalization.CultureInfo.InvariantCulture, "----- Exception {0} of {1} -----" & System.Environment.NewLine, i + 1, Exceptions.Count)
+            builder.AppendFormat(Globalization.CultureInfo.InvariantCulture, "----- Exception {0} Of {1} -----" & System.Environment.NewLine, i + 1, Exceptions.Count)
             builder.AppendLine(Exceptions(i).ToString())
         Next i
         Return builder.ToString()
@@ -288,7 +321,7 @@ Partial Public Class Form1
     Private Sub Compile_Colorize(TextToCompile As String)
         Dim CompileResult As (Success As Boolean, EmitResult As EmitResult) = CompileVisualBasicString(TextToCompile, DiagnosticSeverity.Error, _resultOfConversion)
 
-        LabelErrorCount.Text = $"Number of Errors: {_resultOfConversion.GetFilteredListOfFailures().Count}"
+        LabelErrorCount.Text = $"Number Of Errors:  {_resultOfConversion.GetFilteredListOfFailures().Count}"
         Dim FragmentRange As IEnumerable(Of Range) = GetClassifiedRanges(TextToCompile, LanguageNames.VisualBasic)
 
         If CompileResult.Success AndAlso CompileResult.EmitResult.Success Then
@@ -314,7 +347,7 @@ Partial Public Class Form1
     End Sub
 
     Private Sub ContextMenuCopy_Click(sender As Object, e As EventArgs) Handles ContextMenuCopy.Click
-        If TypeOf sender Is RichTextBox Then
+        If TypeOf ContextMenuStrip1.SourceControl Is RichTextBox Then
             CType(ContextMenuStrip1.SourceControl, RichTextBox).Copy()
         Else
             Clipboard.SetText(CType(ContextMenuStrip1.SourceControl, ListBox).SelectedItem.ToString)
@@ -678,14 +711,14 @@ Partial Public Class Form1
         Dim VBPreprocessorSymbols As New List(Of KeyValuePair(Of String, Object)) From {
             KeyValuePair.Create(Of String, Object)(My.Settings.Framework, True)
         }
-        Await Convert_Compile_ColorizeAsync(_requestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences:=SharedReferences.CSharpReferences(Assembly.Load("System.Windows.Forms").Location, Nothing).ToArray, CancelToken:=_cancellationTokenSource.Token).ConfigureAwait(True)
+        Dim DontDisplayLineNumbers As Boolean = Await Convert_Compile_ColorizeAsync(_requestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences:=SharedReferences.CSharpReferences(Assembly.Load("System.Windows.Forms").Location, Nothing).ToArray, CancelToken:=_cancellationTokenSource.Token).ConfigureAwait(True)
         If _requestToConvert.CancelToken.IsCancellationRequested Then
             MsgBox($"Conversion canceled.", MsgBoxStyle.Information, Title:="C# to VB")
             ConversionProgressBar.Value = 0
         End If
         mnuConvertConvertFolder.Enabled = True
         SetButtonStopAndCursor(MeForm:=Me, StopButton:=ButtonStopConversion, StopButtonVisible:=False)
-        LineNumbers_For_RichTextBoxOutput.Visible = True
+        LineNumbers_For_RichTextBoxOutput.Visible = (Not DontDisplayLineNumbers) OrElse My.Settings.ShowDestinationLineNumbers
     End Sub
 
     Private Async Sub mnuConvertFolder_Click(sender As Object, e As EventArgs) Handles mnuConvertConvertFolder.Click
@@ -940,6 +973,20 @@ Partial Public Class Form1
         Dim About As New AboutBox1
         About.ShowDialog()
         About.Dispose()
+    End Sub
+
+    Private Sub mnuHelpReportIssueMenuItem_Click(sender As Object, e As EventArgs) Handles mnuHelpReportIssueMenuItem.Click
+        Dim webAddress As String = "http://github.com/paul1956/CSharpToVB/issues"
+        Try
+            'Devices.Mouse.OverrideCursor = Cursors.AppStarting
+            Cursor = Cursors.AppStarting
+            launchBrowser(webAddress)
+        Catch ex As Exception
+            Stop
+        Finally
+            Cursor = Cursors.AppStarting
+            'Devices.Mouse.OverrideCursor = Nothing
+        End Try
     End Sub
 
     Private Sub mnuOptionsAddFilesToIgnoreFilesEithErrorsList_Click(sender As Object, e As EventArgs) Handles mnuOptionsAddFilesToIgnoreFilesEithErrorsList.Click

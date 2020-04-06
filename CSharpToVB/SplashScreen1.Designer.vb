@@ -79,7 +79,7 @@ Partial Class SplashScreen1
         Me.Version.Name = "Version"
         Me.Version.Size = New System.Drawing.Size(127, 23)
         Me.Version.TabIndex = 1
-        Me.Version.Text = "Version {0}.{1:00}"
+        Me.Version.Text = "Version {0}.{1:00}.{2}.{3}"
         Me.Version.TextAlign = System.Drawing.ContentAlignment.MiddleRight
         '
         'Copyright

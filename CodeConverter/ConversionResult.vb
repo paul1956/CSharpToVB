@@ -71,6 +71,13 @@ Namespace CSharpToVBCodeConverter
         End Function
 
         Public Function GetFilteredListOfFailures() As List(Of Diagnostic)
+            If _filteredListOfFailures IsNot Nothing Then
+                For Each d As Diagnostic In _filteredListOfFailures
+                    If d.Id = "BC30689" Then
+                        Return New List(Of Diagnostic)
+                    End If
+                Next
+            End If
             Return _filteredListOfFailures
         End Function
 

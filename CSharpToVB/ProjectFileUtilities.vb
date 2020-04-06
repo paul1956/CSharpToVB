@@ -47,8 +47,7 @@ Public Module ProjectFileUtilities
                         Case "#whitespace"
                             ' No change necessary
                         Case "PropertyGroup"
-                            Dim PropertyGroupLastIndex As Integer = xmlDoc.FirstChild.ChildNodes(i).ChildNodes.Count - 1
-                            For J As Integer = 0 To PropertyGroupLastIndex
+                            For J As Integer = 0 To xmlDoc.FirstChild.ChildNodes(i).ChildNodes.Count - 1
                                 Dim PropertyGroupChildNode As XmlNode = xmlDoc.FirstChild.ChildNodes(i).ChildNodes(J)
                                 Select Case PropertyGroupChildNode.Name
                                     Case "AssemblyName", "CLSCompliant",
@@ -66,10 +65,6 @@ Public Module ProjectFileUtilities
                                             NodesToBeRemoved.Add((i, J - 1))
                                         End If
                                         NodesToBeRemoved.Add((i, J))
-                                        'If J + 1 < PropertyGroupLastIndex AndAlso xmlDoc.FirstChild.ChildNodes(i).ChildNodes(J + 1).Name = "#whitespace" Then
-                                        '    J += 1
-                                        '    NodesToBeRemoved.Add((i, J))
-                                        'End If
                                     Case "LangVersion"
                                         If Not (PropertyGroupChildNode.InnerText.Equals("latest", StringComparison.OrdinalIgnoreCase) OrElse
                                            PropertyGroupChildNode.InnerText.Equals("default", StringComparison.OrdinalIgnoreCase) OrElse

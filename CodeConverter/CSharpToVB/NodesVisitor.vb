@@ -16,6 +16,7 @@ Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
+Imports Microsoft.CodeAnalysis.VisualBasic
 
 Namespace CSharpToVBCodeConverter.DestVisualBasic
 
@@ -33,7 +34,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             Public ReadOnly _allImports As List(Of VBS.ImportsStatementSyntax) = New List(Of VBS.ImportsStatementSyntax)()
             Public ReadOnly _inlineAssignHelperMarkers As List(Of CSS.BaseTypeDeclarationSyntax) = New List(Of CSS.BaseTypeDeclarationSyntax)()
             Private ReadOnly _reportException As Action(Of Exception)
-
+            Private _membersList As SyntaxList(Of VBS.StatementSyntax)
             Public Sub New(lSemanticModel As SemanticModel, ReportException As Action(Of Exception))
                 _mSemanticModel = lSemanticModel
                 _reportException = ReportException
@@ -66,21 +67,24 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     externList.Add(extern.Accept(Me))
                 Next
 
-                Dim Options As SyntaxList(Of VBS.OptionStatementSyntax) = VBFactory.List(Of VBS.OptionStatementSyntax)
-                Options = Options.Add(VBFactory.OptionStatement(ExplicitToken, OffToken))
-                Options = Options.Add(VBFactory.OptionStatement(InferToken, OnToken))
+                Dim Options As SyntaxList(Of VBS.OptionStatementSyntax)
+                Options = VBFactory.List(Of VBS.OptionStatementSyntax)
+                Options = Options.Add(VBFactory.OptionStatement(ExplicitToken, OffToken).WithTrailingEOL)
+                Options = Options.Add(VBFactory.OptionStatement(InferToken, OnToken).WithTrailingEOL)
                 Options = Options.Add(VBFactory.OptionStatement(StrictToken, OffToken).WithTrailingEOL)
-
+                _membersList = New SyntaxList(Of Syntax.StatementSyntax)
                 Dim ListOfAttributes As SyntaxList(Of VBS.AttributesStatementSyntax) = VBFactory.List(node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) VBFactory.AttributesStatement(VBFactory.SingletonList(DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))))
-                Dim MemberList As New List(Of VBS.StatementSyntax)
                 For Each m As CSS.MemberDeclarationSyntax In node.Members
                     If s_originalRequest.CancelToken.IsCancellationRequested Then
                         Throw New OperationCanceledException
                     End If
                     Dim Statement As VBS.StatementSyntax = DirectCast(m.Accept(Me), VBS.StatementSyntax)
-                    MemberList.AddRange(ReplaceStatementWithMarkedStatements(m, Statement))
+                    If Statement IsNot Nothing Then
+                        _membersList = _membersList.AddRange(ReplaceStatementWithMarkedStatements(m, Statement))
+                    Else
+                        Options = New SyntaxList(Of VBS.OptionStatementSyntax)
+                    End If
                 Next
-                Dim Members As SyntaxList(Of VBS.StatementSyntax) = VBFactory.List(MemberList)
                 Dim compilationUnitSyntax1 As VBS.CompilationUnitSyntax
                 Dim EndOfFIleTokenWithTrivia As SyntaxToken = EndOfFileToken.WithConvertedTriviaFrom(node.EndOfFileToken)
 
@@ -89,13 +93,13 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         VBFactory.List(Of VBS.OptionStatementSyntax)(),
                         VBFactory.List(_allImports),
                         ListOfAttributes,
-                        Members).WithTriviaFrom(externList(0))
+                        _membersList).WithTriviaFrom(externList(0))
                 ElseIf _allImports.Count > 0 Then
-                    If Members.Count > 0 AndAlso Members(0).HasLeadingTrivia Then
-                        If (TypeOf Members(0) IsNot VBS.NamespaceBlockSyntax AndAlso TypeOf Members(0) IsNot VBS.ModuleBlockSyntax) OrElse
-                            Members(0).GetLeadingTrivia.ToFullString.Contains("auto-generated", StringComparison.OrdinalIgnoreCase) Then
+                    If _membersList.Count > 0 AndAlso _membersList(0).HasLeadingTrivia Then
+                        If (TypeOf _membersList(0) IsNot VBS.NamespaceBlockSyntax AndAlso TypeOf _membersList(0) IsNot VBS.ModuleBlockSyntax) OrElse
+                            _membersList(0).GetLeadingTrivia.ToFullString.Contains("auto-generated", StringComparison.OrdinalIgnoreCase) Then
                             Dim HeadingTriviaList As New List(Of SyntaxTrivia)
-                            HeadingTriviaList.AddRange(Members(0).GetLeadingTrivia)
+                            HeadingTriviaList.AddRange(_membersList(0).GetLeadingTrivia)
                             If HeadingTriviaList(0).IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
                                 HeadingTriviaList.RemoveAt(0)
                                 If HeadingTriviaList.Count > 0 Then
@@ -103,8 +107,8 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                 End If
                             End If
                             Dim NewMemberList As New SyntaxList(Of VBS.StatementSyntax)
-                            NewMemberList = NewMemberList.Add(Members(0).WithLeadingTrivia(SpaceTrivia))
-                            Members = NewMemberList.AddRange(Members.RemoveAt(0))
+                            NewMemberList = NewMemberList.Add(_membersList(0).WithLeadingTrivia(SpaceTrivia))
+                            _membersList = NewMemberList.AddRange(_membersList.RemoveAt(0))
                             Dim NewLeadingTrivia As New List(Of SyntaxTrivia)
                             ' Remove Leading whitespace
                             For Each t As SyntaxTrivia In HeadingTriviaList
@@ -119,7 +123,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                                                 Options,
                                                                 VBFactory.List(_allImports),
                                                                 ListOfAttributes,
-                                                                Members,
+                                                                _membersList,
                                                                 EndOfFIleTokenWithTrivia
                                                                 )
                 Else
@@ -127,7 +131,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                                                 Options,
                                                                 VBFactory.List(_allImports),
                                                                 ListOfAttributes,
-                                                                Members,
+                                                                _membersList,
                                                                 EndOfFIleTokenWithTrivia)
                 End If
                 If HasMarkerError() Then
@@ -166,6 +170,12 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
 
                 StatementWithIssue.AddMarker(DeclarationToBeAdded, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
                 Return value
+            End Function
+
+            Public Overrides Function VisitGlobalStatement(node As CSS.GlobalStatementSyntax) As VisualBasicSyntaxNode
+                Dim MethodBodyVisitor As New MethodBodyVisitor(_mSemanticModel, Me)
+                _membersList = _membersList.AddRange(node.Statement.Accept(MethodBodyVisitor))
+                Return Nothing
             End Function
 
             Public Overrides Function VisitImplicitElementAccess(node As CSS.ImplicitElementAccessSyntax) As VB.VisualBasicSyntaxNode

@@ -80,7 +80,15 @@ New in Release 4.2.6.0
 New in Release 4.2.7.0
 - Added Tests for 3 major Core project types and fixed bugs found in project translation
 
-
+New in Release 4.2.8.0
+- Fix conversion of x ??= y to use x = If(x, y)
+- If you just type a random Snippet that does not look like a program this version will not try compile it, and will be able to convert anything that can be converted inside a function.
+- Fix version display in splash screen
+- Add ability to open some default browsers at the GitHub issues page for this repo. Currently only iE, Chrome and Edge are supported, if you would like additional browsers supported open an issue with browser ProgID from registry and full path.
+- Fix case when handling
+- Fix coalescing assignment operator handling
+- Fix formatting around deleted break statements
+ 
 ## Code Coverage
 ```
 +------------------+--------+--------+--------+

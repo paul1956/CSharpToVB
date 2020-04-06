@@ -67,7 +67,7 @@ Public Class OptionsDialog
         End If
     End Sub
 
-    Private Class MyListItem
+    Friend Class MyListItem
 
         Public Sub New(pText As String, pValue As String)
             _Text = pText
