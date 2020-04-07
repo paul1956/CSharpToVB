@@ -26,7 +26,31 @@
     <Setting Name="MRU_Data" Type="System.Collections.Specialized.StringCollection" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="PauseConvertOnSuccess" Type="System.Boolean" Scope="User">
+      <Setting Name="OptionCompare" Type="System.String" Scope="User">
+          <Value Profile="(Default)">Text</Value>
+      </Setting>
+      <Setting Name="OptionCompareIncludeInCode" Type="System.Boolean" Scope="User">
+          <Value Profile="(Default)">True</Value>
+      </Setting>
+      <Setting Name="OptionExplicit" Type="System.String" Scope="User">
+          <Value Profile="(Default)">On</Value>
+      </Setting>
+      <Setting Name="OptionExplicitIncludeInCode" Type="System.Boolean" Scope="User">
+          <Value Profile="(Default)">True</Value>
+      </Setting>
+      <Setting Name="OptionInfer" Type="System.String" Scope="User">
+          <Value Profile="(Default)">Off</Value>
+      </Setting>
+      <Setting Name="OptionInferIncludeInCode" Type="System.Boolean" Scope="User">
+          <Value Profile="(Default)">True</Value>
+      </Setting>
+      <Setting Name="OptionStrict" Type="System.String" Scope="User">
+          <Value Profile="(Default)">On</Value>
+      </Setting>
+      <Setting Name="OptionStrictIncludeInCode" Type="System.Boolean" Scope="User">
+          <Value Profile="(Default)">True</Value>
+      </Setting>
+      <Setting Name="PauseConvertOnSuccess" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="ShowDestinationLineNumbers" Type="System.Boolean" Scope="User">

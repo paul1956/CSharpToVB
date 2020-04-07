@@ -9,14 +9,15 @@ Imports CSharpToVBCodeConverter.Util
 
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Simplification
+Imports Microsoft.CodeAnalysis.VisualBasic
 
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
-Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
+
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
-Imports Microsoft.CodeAnalysis.VisualBasic
+Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace CSharpToVBCodeConverter.DestVisualBasic
 
@@ -28,16 +29,19 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             ' This file contains all the stuff accessed by multiple Visitor functions in Class NodeVisitor and Visitors that
             ' had no better home.
 
+            Private ReadOnly _defaultVBOptions As DefaultVBOptions
             Private ReadOnly _isModuleStack As New Stack(Of Boolean)
             Private ReadOnly _mSemanticModel As SemanticModel
+            Private ReadOnly _reportException As Action(Of Exception)
+            Private _membersList As SyntaxList(Of VBS.StatementSyntax)
             Private _placeholder As Integer = 1
             Public ReadOnly _allImports As List(Of VBS.ImportsStatementSyntax) = New List(Of VBS.ImportsStatementSyntax)()
             Public ReadOnly _inlineAssignHelperMarkers As List(Of CSS.BaseTypeDeclarationSyntax) = New List(Of CSS.BaseTypeDeclarationSyntax)()
-            Private ReadOnly _reportException As Action(Of Exception)
-            Private _membersList As SyntaxList(Of VBS.StatementSyntax)
-            Public Sub New(lSemanticModel As SemanticModel, ReportException As Action(Of Exception))
+
+            Public Sub New(lSemanticModel As SemanticModel, DefaultVBOptions As DefaultVBOptions, ReportException As Action(Of Exception))
                 _mSemanticModel = lSemanticModel
                 _reportException = ReportException
+                _defaultVBOptions = DefaultVBOptions
             End Sub
 
             Public ReadOnly Property IsModule As Boolean
@@ -48,6 +52,26 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     Return _isModuleStack.Peek
                 End Get
             End Property
+
+            Private Shared Function MapVBOptions(DefaultVBOptions As DefaultVBOptions) As SyntaxList(Of VBS.OptionStatementSyntax)
+                Dim Options As New SyntaxList(Of VBS.OptionStatementSyntax)
+                With DefaultVBOptions
+                    If .OptionCompareInclude Then
+                        Options = Options.Add(VBFactory.OptionStatement(CompareToken, If(.OptionCompare = "Text", TextToken, BinaryToken)).WithTrailingEOL)
+                    End If
+                    If .OptionExplicitInclude Then
+                        Options = Options.Add(VBFactory.OptionStatement(ExplicitToken, If(.OptionExplicit = "On", OnToken, OffToken)).WithTrailingEOL)
+                    End If
+                    If .OptionInferInclude Then
+                        Options = Options.Add(VBFactory.OptionStatement(InferToken, If(.OptionInfer = "On", OnToken, OffToken)).WithTrailingEOL)
+
+                    End If
+                    If .OptionStrictInclude Then
+                        Options = Options.Add(VBFactory.OptionStatement(StrictToken, If(.OptionStrict = "On", OnToken, OffToken)).WithTrailingEOL)
+                    End If
+                End With
+                Return Options
+            End Function
 
             <ExcludeFromCodeCoverage>
             Public Overrides Function DefaultVisit(node As SyntaxNode) As VB.VisualBasicSyntaxNode
@@ -67,11 +91,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     externList.Add(extern.Accept(Me))
                 Next
 
-                Dim Options As SyntaxList(Of VBS.OptionStatementSyntax)
-                Options = VBFactory.List(Of VBS.OptionStatementSyntax)
-                Options = Options.Add(VBFactory.OptionStatement(ExplicitToken, OffToken).WithTrailingEOL)
-                Options = Options.Add(VBFactory.OptionStatement(InferToken, OnToken).WithTrailingEOL)
-                Options = Options.Add(VBFactory.OptionStatement(StrictToken, OffToken).WithTrailingEOL)
+                Dim Options As SyntaxList(Of VBS.OptionStatementSyntax) = MapVBOptions(_defaultVBOptions)
                 _membersList = New SyntaxList(Of Syntax.StatementSyntax)
                 Dim ListOfAttributes As SyntaxList(Of VBS.AttributesStatementSyntax) = VBFactory.List(node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) VBFactory.AttributesStatement(VBFactory.SingletonList(DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))))
                 For Each m As CSS.MemberDeclarationSyntax In node.Members
@@ -265,7 +285,6 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         TypeName = CType(Designation.Type.Accept(Me), VBS.TypeSyntax)
                     End If
 
-
                     Dim SeparatedListOfvariableDeclarations As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) =
                         VBFactory.SingletonSeparatedList(
                             VBFactory.VariableDeclarator(
@@ -318,7 +337,6 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     End If
                 End If
                 Dim ResultVariable As VBS.VariableDeclaratorSyntax = VBFactory.VariableDeclarator(VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(ResultNameToken)), AsClause, initializer:=Nothing)
-
 
                 Dim Blocks As New SyntaxList(Of VBS.CaseBlockSyntax)
                 For i As Integer = 0 To node.Arms.Count - 1

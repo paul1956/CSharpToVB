@@ -55,6 +55,8 @@ Partial Public Class Form1
 
     Private _currentBuffer As Control
 
+    Private _defaultVBOptions As DefaultVBOptions
+
     Private _inColorize As Boolean
 
     Private _requestToConvert As ConvertRequest
@@ -389,7 +391,7 @@ Partial Public Class Form1
             ' IProgress.Report.
             Dim progress As New Progress(Of ProgressReport)(AddressOf ProgressBar.Update)
 
-            _resultOfConversion = Await Task.Run(Function() ConvertInputRequest(RequestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences, ReportException, progress, CancelToken)).ConfigureAwait(True)
+            _resultOfConversion = Await Task.Run(Function() ConvertInputRequest(RequestToConvert, _defaultVBOptions, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences, ReportException, progress, CancelToken)).ConfigureAwait(True)
         End Using
         mnuFileSaveAs.Enabled = Me._resultOfConversion.ResultStatus = ResultTriState.Success
         Select Case _resultOfConversion.ResultStatus
@@ -548,6 +550,9 @@ Partial Public Class Form1
         LabelProgress.Top = ProgressBar1.Top - (LabelProgress.Height * 2)
         ToolTipErrorList.SetToolTip(ListBoxErrorList, "Double-Click to scroll to VB error")
         ToolTipFileList.SetToolTip(ListBoxFileList, "Double-Click to open C# and corresponding VB file if available")
+        With My.Settings
+            _defaultVBOptions = New DefaultVBOptions(.OptionCompare, .OptionCompareIncludeInCode, .OptionExplicit, .OptionExplicitIncludeInCode, .OptionInfer, .OptionInferIncludeInCode, .OptionStrict, .OptionStrictIncludeInCode)
+        End With
         Application.DoEvents()
     End Sub
 

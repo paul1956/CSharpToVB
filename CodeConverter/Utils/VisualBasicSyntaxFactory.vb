@@ -170,11 +170,14 @@ Public Module VisualBasicSyntaxFactory
 
 #Region "Options"
 
+    Public ReadOnly BinaryToken As SyntaxToken = SyntaxFactory.Token(SyntaxKind.BinaryKeyword)
+    Public ReadOnly CompareToken As SyntaxToken = SyntaxFactory.Token(SyntaxKind.CompareKeyword)
     Public ReadOnly ExplicitToken As SyntaxToken = SyntaxFactory.Token(SyntaxKind.ExplicitKeyword)
     Public ReadOnly InferToken As SyntaxToken = SyntaxFactory.Token(SyntaxKind.InferKeyword)
-    Public ReadOnly StrictToken As SyntaxToken = SyntaxFactory.Token(SyntaxKind.StrictKeyword)
-    Public ReadOnly OnToken As SyntaxToken = SyntaxFactory.Token(SyntaxKind.OnKeyword)
     Public ReadOnly OffToken As SyntaxToken = SyntaxFactory.Token(SyntaxKind.OffKeyword)
+    Public ReadOnly OnToken As SyntaxToken = SyntaxFactory.Token(SyntaxKind.OnKeyword)
+    Public ReadOnly StrictToken As SyntaxToken = SyntaxFactory.Token(SyntaxKind.StrictKeyword)
+    Public ReadOnly TextToken As SyntaxToken = SyntaxFactory.Token(SyntaxKind.TextKeyword)
 
 #End Region
 

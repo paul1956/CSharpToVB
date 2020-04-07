@@ -120,7 +120,103 @@ Namespace CSharpToVBApp.My_Project
                 Me("MRU_Data") = value
             End Set
         End Property
-        
+
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("Text")>
+        Public Property OptionCompare() As String
+            Get
+                Return CType(Me("OptionCompare"), String)
+            End Get
+            Set
+                Me("OptionCompare") = Value
+            End Set
+        End Property
+
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("True")>
+        Public Property OptionCompareIncludeInCode() As Boolean
+            Get
+                Return CType(Me("OptionCompareIncludeInCode"), Boolean)
+            End Get
+            Set
+                Me("OptionCompareIncludeInCode") = Value
+            End Set
+        End Property
+
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("On")>
+        Public Property OptionExplicit() As String
+            Get
+                Return CType(Me("OptionExplicit"), String)
+            End Get
+            Set
+                Me("OptionExplicit") = Value
+            End Set
+        End Property
+
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("True")>
+        Public Property OptionExplicitIncludeInCode() As Boolean
+            Get
+                Return CType(Me("OptionExplicitIncludeInCode"), Boolean)
+            End Get
+            Set
+                Me("OptionExplicitIncludeInCode") = Value
+            End Set
+        End Property
+
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("Off")>
+        Public Property OptionInfer() As String
+            Get
+                Return CType(Me("OptionInfer"), String)
+            End Get
+            Set
+                Me("OptionInfer") = Value
+            End Set
+        End Property
+
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("True")>
+        Public Property OptionInferIncludeInCode() As Boolean
+            Get
+                Return CType(Me("OptionInferIncludeInCode"), Boolean)
+            End Get
+            Set
+                Me("OptionInferIncludeInCode") = Value
+            End Set
+        End Property
+
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("On")>
+        Public Property OptionStrict() As String
+            Get
+                Return CType(Me("OptionStrict"), String)
+            End Get
+            Set
+                Me("OptionStrict") = Value
+            End Set
+        End Property
+
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("True")>
+        Public Property OptionStrictIncludeInCode() As Boolean
+            Get
+                Return CType(Me("OptionStrictIncludeInCode"), Boolean)
+            End Get
+            Set
+                Me("OptionStrictIncludeInCode") = Value
+            End Set
+        End Property
+
         <Global.System.Configuration.UserScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
          Global.System.Configuration.DefaultSettingValueAttribute("False")>  _

@@ -5,7 +5,6 @@
 Public Class OptionsDialog
     Private _selectedColor As Color
     Private _selectedColorName As String = "default"
-
     Private Sub Cancel_Button_Click(sender As Object, e As EventArgs) Handles Cancel_Button.Click
         DialogResult = DialogResult.Cancel
         Close()
@@ -35,10 +34,19 @@ Public Class OptionsDialog
         My.Settings.DefaultProjectDirectory = CType(ProjectDirectoryList.SelectedItem, MyListItem).Value
         My.Settings.Save()
         DialogResult = DialogResult.OK
-        ColorSelector.WriteColorDictionaryToFile()
         Cursor = Cursors.WaitCursor
         Application.DoEvents()
+        ColorSelector.WriteColorDictionaryToFile()
         Cursor = Cursors.Default
+        My.Settings.OptionCompare = ComboBoxCompare.SelectedItem.ToString
+        My.Settings.OptionCompareIncludeInCode = CheckBoxCompare.Checked
+        My.Settings.OptionExplicit = ComboBoxExplicit.SelectedItem.ToString
+        My.Settings.OptionExplicitIncludeInCode = CheckBoxExplicit.Checked
+        My.Settings.OptionInfer = ComboBoxInfer.SelectedItem.ToString
+        My.Settings.OptionInferIncludeInCode = CheckBoxInfer.Checked
+        My.Settings.OptionStrict = ComboBoxStrict.SelectedItem.ToString
+        My.Settings.OptionStrictIncludeInCode = CheckBoxStrict.Checked
+        My.Settings.Save()
         Application.DoEvents()
         Close()
     End Sub
@@ -57,6 +65,14 @@ Public Class OptionsDialog
             ItemColor_ComboBox.Items.Add(Name)
         Next Name
         ItemColor_ComboBox.SelectedIndex = ItemColor_ComboBox.FindStringExact("default")
+        ComboBoxCompare.SelectedItem = My.Settings.OptionCompare
+        ComboBoxExplicit.SelectedItem = My.Settings.OptionExplicit
+        ComboBoxInfer.SelectedItem = My.Settings.OptionInfer
+        ComboBoxStrict.SelectedItem = My.Settings.OptionStrict
+        CheckBoxCompare.Checked = My.Settings.OptionCompareIncludeInCode
+        CheckBoxExplicit.Checked = My.Settings.OptionExplicitIncludeInCode
+        CheckBoxInfer.Checked = My.Settings.OptionInferIncludeInCode
+        CheckBoxStrict.Checked = My.Settings.OptionStrictIncludeInCode
     End Sub
 
     Private Sub UpdateColor_Button_Click(sender As Object, e As EventArgs) Handles UpdateColor_Button.Click

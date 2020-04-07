@@ -89,19 +89,25 @@ New in Release 4.2.8.0
 - Fix coalescing assignment operator handling
 - Fix formatting around deleted break statements
  
+ New in Release 4.2.9.0
+- Allow user to specify what Visual Basic Options are included in converted file. Tests will continue to use existing behavior.
+- Options are specified under Advanced Options menu and are saved per user.
+- About Box has been modified to show CodeConverter version information
+- Update <RepositoryType>git</RepositoryType> in project files
+
 ## Code Coverage
 ```
 +------------------+--------+--------+--------+
 | Module           | Line   | Branch | Method |
 +------------------+--------+--------+--------+
-| VB.CodeConverter | 79.21% | 72.33% | 87.19% |
+| VB.CodeConverter | 79.08% | 72.29% | 87.04% |
 +------------------+--------+--------+--------+
 
 +---------+--------+--------+--------+
 |         | Line   | Branch | Method |
 +---------+--------+--------+--------+
-| Total   | 79.21% | 72.33% | 87.19% |
+| Total   | 79.08% | 72.29% | 87.04% |
 +---------+--------+--------+--------+
-| Average | 79.2%  | 72.33% | 87.19% |
+| Average | 79.08% | 72.29% | 87.04% |
 +---------+--------+--------+--------+
 ```
