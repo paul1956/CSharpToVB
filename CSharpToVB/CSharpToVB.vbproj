@@ -23,7 +23,7 @@
     <Description>Convert C# to VB, it can convert snippets, files, projects and folders.</Description>
     <RepositoryType>git</RepositoryType>
     <ApplicationIcon>Icons\CStoVB.ico</ApplicationIcon>
-    <Version>4.2.9.0</Version>
+    <Version>4.2.10.0</Version>
     <Product>CSharp To VB Converter</Product>
     <Copyright>Copyright (c) .NET Foundation and Contributors</Copyright>
     <PackageId>CSharp To VB Converter</PackageId>
@@ -69,6 +69,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="My Project\Application.Designer.vb">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Application.myapp</DependentUpon>
+    </Compile>
     <Compile Update="My Project\Settings.Designer.vb">
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <AutoGen>True</AutoGen>
@@ -77,6 +82,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="My Project\Application.myapp">
+      <Generator>MyApplicationCodeGenerator</Generator>
+      <LastGenOutput>Application.Designer.vb</LastGenOutput>
+    </None>
     <None Update="My Project\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>

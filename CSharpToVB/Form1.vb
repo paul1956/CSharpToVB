@@ -5,14 +5,13 @@ Imports System.ComponentModel
 Imports System.Diagnostics.CodeAnalysis
 Imports System.IO
 Imports System.Reflection
-Imports System.Security
-Imports System.Security.Permissions
 Imports System.Text
 Imports System.Threading
 
 Imports Buildalyzer
 
 Imports CSharpToVBApp
+Imports CSharpToVBApp.Microsoft.VisualBasic.ApplicationServices
 
 Imports CSharpToVBCodeConverter
 Imports CSharpToVBCodeConverter.ConversionResult
@@ -25,25 +24,13 @@ Imports Microsoft.Win32
 Imports VBMsgBox
 
 Partial Public Class Form1
-#If Not netcoreapp5_0 Then
 
-    'Minimum amount of time to show the splash screen. 0 means hide as soon as the app comes up.
-    Private ReadOnly _minimumSplashExposure As Integer = 5000
-
-    Private ReadOnly _splashLock As New Object
-
-    ' We only need to show the splash screen once.
-    ' Protect the user from himself If they are overriding our app model.
-    Private _didSplashScreen As Boolean
-
-    'For splash screens with a minimum display time, this let's us know when that time has expired and it is ok to close the splash screen.
-    Private _ok2CloseSplashScreen As Boolean
-
-    Private _splashScreen As Form = New SplashScreen1
-
-    Private _splashTimer As Timers.Timer
-
-#End If
+    Private WithEvents MyApplication As New WindowsFormsApplicationBase With {
+            .IsSingleInstance = True,
+            .EnableVisualStyles = True,
+            .SaveMySettingsOnExit = True,
+            .ShutdownStyle = ShutdownMode.AfterMainFormCloses
+        }
 
     Private Shared ReadOnly s_snippetFileWithPath As String = Path.Combine(SpecialDirectories.MyDocuments, "CSharpToVBLastSnippet.RTF")
 
@@ -63,160 +50,14 @@ Partial Public Class Form1
 
     Private _resultOfConversion As ConversionResult
 
-#If Not netcoreapp5_0 Then
-
     Public Sub New()
-        ShowSplashScreen()
-
-        ' This call is required by the designer.
         InitializeComponent()
 
-        'block until the splash screen time is up.  See MinimumSplashExposureTimeIsUp() which releases us
-        While Not _ok2CloseSplashScreen
-            Application.DoEvents() 'In case Load() event, which we are waiting for, is doing stuff that requires windows messages.  our timer message doesn't count because it is on another thread.
-        End While
-
-        HideSplashScreen()
-
-        ' Add any initialization after the InitializeComponent() call.
     End Sub
 
-    'used to marshal a call to Dispose on the Splash Screen
-    Private Delegate Sub DisposeDelegate()
-
-    ''' <summary>
-    ''' Provides access to the splash screen for this application
-    ''' </summary>
-    Public Property SplashScreen() As Form
-        Get
-            Return _splashScreen
-        End Get
-        Set(ByVal value As Form)
-            If value IsNot Nothing AndAlso value Is Me Then 'allow for the case where they set splash screen = nothing and mainForm is currently nothing
-                Throw New ArgumentException(GetResourceString("Splash screen and main form cannot be the same form."))
-            End If
-            _splashScreen = value
-        End Set
-    End Property
-
-    ''' <summary>
-    ''' Displays the splash screen.  We get called here from a different thread than what the
-    ''' main form is starting up on.  This allows us to process events for the Splash screen so
-    ''' it doesn't freeze up while the main form is getting it together.
-    ''' </summary>
-    Private Sub DisplaySplash()
-        Debug.Assert(_splashScreen IsNot Nothing, "We should have never get here if there is no splash screen")
-        If _splashTimer IsNot Nothing Then 'We only have a timer if there is a minimum time that the splash screen is supposed to be displayed.
-            _splashTimer.Enabled = True 'enable the timer now that we are about to show the splash screen
-        End If
-        Application.Run(_splashScreen)
+    Protected Overrides Sub Finalize()
+        MyBase.Finalize()
     End Sub
-
-    ''' <summary>
-    ''' Hide the splash screen.  The splash screen was created on another thread
-    ''' thread (main thread) than the one it was run on (secondary thread for the
-    ''' splash screen so it doesn't block app startup. We need to invoke the close.
-    ''' This function gets called from the main thread by the app fx.
-    ''' </summary>
-    <EditorBrowsable(EditorBrowsableState.Advanced)>
-    <SecuritySafeCritical()>
-    Protected Sub HideSplashScreen()
-        SyncLock _splashLock 'This ultimately wasn't necessary.  I suppose we better keep it for backwards compat
-            Call New UIPermission(UIPermissionWindow.AllWindows).Assert()
-            Activate()
-            PermissionSet.RevertAssert() 'CLR also reverts if we throw or when we return from this function
-            If _splashScreen IsNot Nothing AndAlso Not _splashScreen.IsDisposed Then
-                Dim TheBigGoodbye As New DisposeDelegate(AddressOf _splashScreen.Dispose)
-                _splashScreen.Invoke(TheBigGoodbye)
-                _splashScreen = Nothing
-            End If
-            BringToFront()
-        End SyncLock
-    End Sub
-
-    Private Sub launchBrowser(url As String)
-        Dim browserPath As String = "%ProgramFiles(x86)%\Internet Explorer\iexplore.exe"
-        Dim msgResult As MsgBoxResult = MsgBoxResult.Ok
-        Using userChoiceKey As RegistryKey = Registry.CurrentUser.OpenSubKey("Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice")
-            If userChoiceKey IsNot Nothing Then
-                Dim progIdObject As Object = userChoiceKey.GetValue("Progid")
-                If progIdObject IsNot Nothing Then
-                    Dim progIdValue As String = CStr(progIdObject)
-                    If progIdValue IsNot Nothing Then
-                        If progIdValue.Contains("chrome", StringComparison.OrdinalIgnoreCase) Then
-                            browserPath = "%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe"
-                            'ElseIf progIdValue.Contains("firefox", StringComparison.OrdinalIgnoreCase) Then
-                            '    browserPath = "firefox.exe"
-                        ElseIf progIdValue.Contains("msedgehtm", StringComparison.OrdinalIgnoreCase) Then
-                            browserPath = "%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe"
-                            'ElseIf progIdValue.Contains("safari", StringComparison.OrdinalIgnoreCase) Then
-                            '    browserPath = "safari.exe"
-                            'ElseIf progIdValue.Contains("opera", StringComparison.OrdinalIgnoreCase) Then
-                            '    browserPath = "opera.exe"
-                        Else
-                            msgResult = MsgBox($"Your default browser {progIdValue} is not supported, iExplorer will be used if you select OK!, please enter an issue with its 'Progid' and full path", MsgBoxStyle.OkCancel)
-                        End If
-                    End If
-                End If
-            End If
-        End Using
-        If msgResult = MsgBoxResult.Ok Then
-            Dim info As New ProcessStartInfo(System.Environment.ExpandEnvironmentVariables(browserPath), url)
-            Process.Start(info)
-        End If
-    End Sub
-
-    ''' <summary>
-    ''' If a splash screen has a minimum time out, then once that is up we check to see whether
-    ''' we should close the splash screen.  If the main form has activated then we close it.
-    ''' Note that we are getting called on a secondary thread here which isn't necessarily
-    ''' associated with any form.  Don't touch forms from this function.
-    ''' </summary>
-    Private Sub MinimumSplashExposureTimeIsUp(ByVal sender As Object, ByVal e As Timers.ElapsedEventArgs)
-        If _splashTimer IsNot Nothing Then 'We only have a timer if there was a minimum timeout on the splash screen
-            _splashTimer.Dispose()
-            _splashTimer = Nothing
-        End If
-        _ok2CloseSplashScreen = True
-    End Sub
-
-    ''' <summary>
-    ''' Uses the extensibility model to see if there is a splash screen provided for this app and if there is,
-    ''' displays it.
-    ''' </summary>
-    <EditorBrowsable(EditorBrowsableState.Advanced)>
-    Protected Sub ShowSplashScreen()
-        If Not _didSplashScreen Then
-            _didSplashScreen = True
-            If _splashScreen Is Nothing Then
-                _splashScreen.ShowDialog()
-            End If
-            If _splashScreen IsNot Nothing Then
-                'Some splash screens have minimum face time they are supposed to get.  We'll set up a time to let us know when we can take it down.
-                If _minimumSplashExposure > 0 Then
-                    _ok2CloseSplashScreen = False 'Don't close until the timer expires.
-                    _splashTimer = New Timers.Timer(_minimumSplashExposure)
-                    AddHandler _splashTimer.Elapsed, AddressOf MinimumSplashExposureTimeIsUp
-                    _splashTimer.AutoReset = False
-                    'We'll enable it in DisplaySplash() once the splash screen thread gets running
-                Else
-                    _ok2CloseSplashScreen = True 'No timeout so just close it when then main form comes up
-                End If
-                'Run the splash screen on another thread so we don't starve it for events and painting while the main form gets its act together
-                Dim SplashThread As New Thread(AddressOf DisplaySplash)
-                SplashThread.Start()
-            End If
-        End If
-    End Sub
-
-    Shared Sub main()
-        Application.EnableVisualStyles()
-        Dim mainForm As New Form1()
-        Application.Run(mainForm)
-        mainForm.Dispose()
-    End Sub
-
-#End If
 
     Private Property CurrentBuffer As Control
         Get
@@ -553,6 +394,7 @@ Partial Public Class Form1
         With My.Settings
             _defaultVBOptions = New DefaultVBOptions(.OptionCompare, .OptionCompareIncludeInCode, .OptionExplicit, .OptionExplicitIncludeInCode, .OptionInfer, .OptionInferIncludeInCode, .OptionStrict, .OptionStrictIncludeInCode)
         End With
+
         Application.DoEvents()
     End Sub
 
@@ -614,6 +456,38 @@ Partial Public Class Form1
         Return CreateDirectoryIfNonexistent(Path.Combine(SolutionRoot, PathFromSolutionRoot.Join(Path.DirectorySeparatorChar)))
     End Function
 
+    Private Sub launchBrowser(url As String)
+        Dim browserPath As String = "%ProgramFiles(x86)%\Internet Explorer\iexplore.exe"
+        Dim msgResult As MsgBoxResult = MsgBoxResult.Ok
+        Using userChoiceKey As RegistryKey = Registry.CurrentUser.OpenSubKey("Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice")
+            If userChoiceKey IsNot Nothing Then
+                Dim progIdObject As Object = userChoiceKey.GetValue("Progid")
+                If progIdObject IsNot Nothing Then
+                    Dim progIdValue As String = CStr(progIdObject)
+                    If progIdValue IsNot Nothing Then
+                        If progIdValue.Contains("chrome", StringComparison.OrdinalIgnoreCase) Then
+                            browserPath = "%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe"
+                            'ElseIf progIdValue.Contains("firefox", StringComparison.OrdinalIgnoreCase) Then
+                            '    browserPath = "firefox.exe"
+                        ElseIf progIdValue.Contains("msedgehtm", StringComparison.OrdinalIgnoreCase) Then
+                            browserPath = "%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe"
+                            'ElseIf progIdValue.Contains("safari", StringComparison.OrdinalIgnoreCase) Then
+                            '    browserPath = "safari.exe"
+                            'ElseIf progIdValue.Contains("opera", StringComparison.OrdinalIgnoreCase) Then
+                            '    browserPath = "opera.exe"
+                        Else
+                            msgResult = MsgBox($"Your default browser {progIdValue} is not supported, iExplorer will be used if you select OK!, please enter an issue with its 'Progid' and full path", MsgBoxStyle.OkCancel)
+                        End If
+                    End If
+                End If
+            End If
+        End Using
+        If msgResult = MsgBoxResult.Ok Then
+            Dim info As New ProcessStartInfo(System.Environment.ExpandEnvironmentVariables(browserPath), url)
+            Process.Start(info)
+        End If
+    End Sub
+
     Private Sub LineNumbers_For_RichTextBoxInput_Resize(sender As Object, e As EventArgs) Handles LineNumbers_For_RichTextBoxInput.Resize
         ResizeRichTextBuffers()
     End Sub
@@ -632,6 +506,64 @@ Partial Public Class Form1
     Private Sub LineNumbers_For_RichTextBoxOutput_VisibleChanged(sender As Object, e As EventArgs) Handles LineNumbers_For_RichTextBoxOutput.VisibleChanged
         mnuViewShowDestinationLineNumbers.Checked = LineNumbers_For_RichTextBoxOutput.Visible
         ResizeRichTextBuffers()
+    End Sub
+
+    Private Sub ListboxErrorList_DoubleClick(sender As Object, e As EventArgs) Handles ListBoxErrorList.DoubleClick
+        Dim box As ListBox = DirectCast(sender, ListBox)
+        If box.Text.Length = 0 Then
+            Exit Sub
+        End If
+        Dim LineText As String = box.Text
+        If Not LineText.StartsWith("BC", StringComparison.Ordinal) Then
+            Exit Sub
+        End If
+        Dim startIndex As Integer = LineText.IndexOf(" Line = ", StringComparison.OrdinalIgnoreCase) + 8
+        If startIndex <= 0 Then
+            Exit Sub
+        End If
+        Dim count As Integer = LineText.Substring(startIndex).IndexOf(" ", StringComparison.OrdinalIgnoreCase)
+        Dim lineStartPosition As Integer = RichTextBoxConversionOutput.GetFirstCharIndexFromLine(CInt(LineText.Substring(startIndex, count)) - 1)
+
+        If lineStartPosition > 0 AndAlso RichTextBoxConversionOutput.SelectionStart <> lineStartPosition Then
+            RichTextBoxConversionOutput.Select(lineStartPosition, 0)
+            RichTextBoxConversionOutput.ScrollToCaret()
+        End If
+    End Sub
+
+    Private Sub ListBoxErrorList_Enter(sender As Object, e As EventArgs) Handles ListBoxErrorList.Enter
+        CurrentBuffer = CType(sender, Control)
+    End Sub
+
+    Private Sub ListBoxErrorList_MouseEnter(sender As Object, e As EventArgs) Handles ListBoxErrorList.MouseEnter
+        CurrentBuffer = CType(sender, Control)
+    End Sub
+
+    Private Sub ListBoxFileList_DoubleClick(sender As Object, e As EventArgs) Handles ListBoxFileList.DoubleClick
+        Dim FileList As ListBox = CType(sender, ListBox)
+        If FileList.Items.Count = 0 Then
+            Exit Sub
+        End If
+        Dim item As NumberedListItem = CType(FileList.SelectedItem, NumberedListItem)
+
+        Dim SourceFileNameWithPath As String = item.SourceFileWithPath
+        If String.IsNullOrWhiteSpace(SourceFileNameWithPath) OrElse Not File.Exists(SourceFileNameWithPath) Then
+            Exit Sub
+        End If
+        LoadInputBufferFromStream(SourceFileNameWithPath)
+        Dim ConvertedFileNameWithPath As String = item.ValueItem
+        If Not File.Exists(ConvertedFileNameWithPath) Then
+            Exit Sub
+        End If
+
+        LoadOutputBufferFromStream(ConvertedFileNameWithPath)
+    End Sub
+
+    Private Sub ListBoxFileList_Enter(sender As Object, e As EventArgs) Handles ListBoxFileList.Enter
+        CurrentBuffer = CType(sender, Control)
+    End Sub
+
+    Private Sub ListBoxFileList_MouseEnter(sender As Object, e As EventArgs) Handles ListBoxFileList.MouseEnter
+        CurrentBuffer = CType(sender, Control)
     End Sub
 
     Private Function LoadInputBufferFromStream(SourceFileNameWithPath As String) As Integer
@@ -1316,65 +1248,6 @@ Partial Public Class Form1
 
     End Sub
 
-    Private Sub ListboxErrorList_DoubleClick(sender As Object, e As EventArgs) Handles ListBoxErrorList.DoubleClick
-        Dim box As ListBox = DirectCast(sender, ListBox)
-        If box.Text.Length = 0 Then
-            Exit Sub
-        End If
-        Dim LineText As String = box.Text
-        If Not LineText.StartsWith("BC", StringComparison.Ordinal) Then
-            Exit Sub
-        End If
-        Dim startIndex As Integer = LineText.IndexOf(" Line = ", StringComparison.OrdinalIgnoreCase) + 8
-        If startIndex <= 0 Then
-            Exit Sub
-        End If
-        Dim count As Integer = LineText.Substring(startIndex).IndexOf(" ", StringComparison.OrdinalIgnoreCase)
-        Dim lineStartPosition As Integer = RichTextBoxConversionOutput.GetFirstCharIndexFromLine(CInt(LineText.Substring(startIndex, count)) - 1)
-
-        If lineStartPosition > 0 AndAlso RichTextBoxConversionOutput.SelectionStart <> lineStartPosition Then
-            RichTextBoxConversionOutput.Select(lineStartPosition, 0)
-            RichTextBoxConversionOutput.ScrollToCaret()
-        End If
-    End Sub
-
-    Private Sub ListBoxErrorList_Enter(sender As Object, e As EventArgs) Handles ListBoxErrorList.Enter
-        CurrentBuffer = CType(sender, Control)
-    End Sub
-
-    Private Sub ListBoxErrorList_MouseEnter(sender As Object, e As EventArgs) Handles ListBoxErrorList.MouseEnter
-        CurrentBuffer = CType(sender, Control)
-    End Sub
-
-    Private Sub ListBoxFileList_DoubleClick(sender As Object, e As EventArgs) Handles ListBoxFileList.DoubleClick
-        Dim FileList As ListBox = CType(sender, ListBox)
-        If FileList.Items.Count = 0 Then
-            Exit Sub
-        End If
-        Dim item As NumberedListItem = CType(FileList.SelectedItem, NumberedListItem)
-
-
-        Dim SourceFileNameWithPath As String = item.SourceFileWithPath
-        If String.IsNullOrWhiteSpace(SourceFileNameWithPath) OrElse Not File.Exists(SourceFileNameWithPath) Then
-            Exit Sub
-        End If
-        LoadInputBufferFromStream(SourceFileNameWithPath)
-        Dim ConvertedFileNameWithPath As String = item.ValueItem
-        If Not File.Exists(ConvertedFileNameWithPath) Then
-            Exit Sub
-        End If
-
-        LoadOutputBufferFromStream(ConvertedFileNameWithPath)
-    End Sub
-
-    Private Sub ListBoxFileList_Enter(sender As Object, e As EventArgs) Handles ListBoxFileList.Enter
-        CurrentBuffer = CType(sender, Control)
-    End Sub
-
-    Private Sub ListBoxFileList_MouseEnter(sender As Object, e As EventArgs) Handles ListBoxFileList.MouseEnter
-        CurrentBuffer = CType(sender, Control)
-    End Sub
-
     Private Sub RichTextBoxConversionInput_Enter(sender As Object, e As EventArgs) Handles RichTextBoxConversionInput.Enter
         CurrentBuffer = CType(sender, RichTextBox)
     End Sub
@@ -1411,7 +1284,6 @@ Partial Public Class Form1
         Dim p As Integer = CType(sender, AdvancedRTB).VScrollPos
         MsgBox($"Vertical Right Clicked At: {loc}, VScrollPos = {p} ")
     End Sub
-
 
     Private Sub SearchBoxVisibility(Visible As Boolean)
         SearchDirection.Visible = Visible
@@ -1487,6 +1359,20 @@ Partial Public Class Form1
         End If
         ' display MRU if there are any items to display...
         MRU_Update()
+    End Sub
+
+    Shared Sub main()
+        Dim MyForm As New Form1
+        Application.EnableVisualStyles()
+        MyForm.MyApplication.Run({""})
+        MyForm.Dispose()
+    End Sub
+
+    Public Sub MeStartupNextInstance(
+           ByVal sender As Object,
+           ByVal e As StartupNextInstanceEventArgs
+        ) Handles MyApplication.StartupNextInstance
+        Stop
     End Sub
 
 End Class

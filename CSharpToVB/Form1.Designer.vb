@@ -13,14 +13,6 @@ Partial Class Form1
                 If _cancellationTokenSource IsNot Nothing Then
                     _cancellationTokenSource.Dispose()
                 End If
-#If Not netcoreapp5_0 Then
-                If _splashScreen IsNot Nothing Then
-                    _splashScreen.Dispose()
-                End If
-                If _splashTimer IsNot Nothing Then
-                    _splashTimer.Dispose()
-                End If
-#End If
             End If
         Finally
             MyBase.Dispose(disposing)

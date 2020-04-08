@@ -95,6 +95,10 @@ New in Release 4.2.8.0
 - About Box has been modified to show CodeConverter version information
 - Update <RepositoryType>git</RepositoryType> in project files
 
+ New in Release 4.2.10.0
+ - Improve Startup Screen
+ - Make single instance (great example of doing in Core using NamedPipes)
+
 ## Code Coverage
 ```
 +------------------+--------+--------+--------+
