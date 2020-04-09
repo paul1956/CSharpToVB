@@ -1,23 +1,19 @@
-﻿Imports System.Xml.Serialization
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
 
-Public Class NamedPipeXMLData
-    Private _commandLineArguments As New List(Of String)
+Imports System.Xml.Serialization
+Namespace Microsoft.VisualBasic.ApplicationServices
+    Public Class NamedPipeXMLData
+        Sub New()
 
-    Sub New()
+        End Sub
 
-    End Sub
+        ''' <summary>
+        '''     A list of command line arguments.
+        ''' </summary>
+        <XmlElement("CommandLineArguments")>
+        Friend Property CommandLineArguments As New List(Of String)
 
-    ''' <summary>
-    '''     A list of command line arguments.
-    ''' </summary>
-    <XmlElement("CommandLineArguments")>
-    Public Property CommandLineArguments As List(Of String)
-        Get
-            Return _commandLineArguments
-        End Get
-        Set(value As List(Of String))
-            _commandLineArguments = value
-        End Set
-    End Property
-
-End Class
+    End Class
+End Namespace

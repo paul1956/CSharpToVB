@@ -99,6 +99,8 @@ New in Release 4.2.8.0
  - Improve Startup Screen
  - Make single instance (great example of doing in Core using NamedPipes)
 
+  New in Release 4.2.10.1
+  - Minor formatting updates
 ## Code Coverage
 ```
 +------------------+--------+--------+--------+
