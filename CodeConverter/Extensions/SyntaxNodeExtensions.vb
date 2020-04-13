@@ -872,7 +872,7 @@ Namespace CSharpToVBCodeConverter.Util
                     Dim xmlNodes As New List(Of VBS.XmlNodeSyntax)
                     For i As Integer = 0 To SingleLineDocumentationComment.Content.Count - 1
                         Dim node As CSS.XmlNodeSyntax = SingleLineDocumentationComment.Content(i)
-                        If (Not node.IsKind(CS.SyntaxKind.XmlText)) AndAlso node.GetLeadingTrivia.Count > 0 AndAlso node.GetLeadingTrivia.First.IsKind(CS.SyntaxKind.DocumentationCommentExteriorTrivia) Then
+                        If (Not node.IsKind(CS.SyntaxKind.XmlText)) AndAlso node.GetLeadingTrivia.Any AndAlso node.GetLeadingTrivia.First.IsKind(CS.SyntaxKind.DocumentationCommentExteriorTrivia) Then
                             If i < SingleLineDocumentationComment.Content.Count - 1 Then
                                 Dim NextNode As CSS.XmlNodeSyntax = SingleLineDocumentationComment.Content(i + 1)
                                 If (Not NextNode.IsKind(CS.SyntaxKind.XmlText)) OrElse

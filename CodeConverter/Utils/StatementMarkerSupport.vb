@@ -20,6 +20,9 @@ Public Module StatementMarker
     Private ReadOnly s_statementSupportTupleList As New List(Of (Index As Integer, Statement As VisualBasic.VisualBasicSyntaxNode, RemoveStatement As StatementHandlingOption))
     Private s_nextIndex As Integer = 0
 
+    Public Function StatementDictionaryEmpty() As Boolean
+        Return Not s_statementDictionary.Any
+    End Function
     Public Enum StatementHandlingOption
         PrependStatement ' Perpend original statement
         ReplaceStatement ' Replace original statement with new statement
@@ -137,7 +140,7 @@ Public Module StatementMarker
             NewTrailingTrivia.AddRange(ConvertTrivia(node.GetTrailingTrivia))
         Else
             Dim CS_LeadingTrivia As SyntaxTriviaList = node.GetLeadingTrivia
-            If CS_LeadingTrivia.Count > 0 AndAlso CS_LeadingTrivia.First.IsKind(CS.SyntaxKind.WhitespaceTrivia) Then
+            If CS_LeadingTrivia.Any AndAlso CS_LeadingTrivia.First.IsKind(CS.SyntaxKind.WhitespaceTrivia) Then
                 NewTrailingTrivia.AddRange(ConvertTrivia({CS_LeadingTrivia(0)}))
             End If
             ' NewTrailingTrivia.Add(VB_EOLTrivia)
@@ -166,6 +169,10 @@ Public Module StatementMarker
         Dim StatementWithIssues As CS.CSharpSyntaxNode = node
         While StatementWithIssues IsNot Nothing
             If TypeOf StatementWithIssues Is CSS.FieldDeclarationSyntax Then
+                Exit While
+            End If
+
+            If TypeOf StatementWithIssues Is CSS.ArrowExpressionClauseSyntax Then
                 Exit While
             End If
 
@@ -306,7 +313,7 @@ Public Module StatementMarker
                 s_statementDictionary.Remove(node)
             End If
         Next
-        If s_statementDictionary.Count = 0 Then
+        If StatementDictionaryEmpty() Then
             s_statementSupportTupleList.Clear()
         End If
         Return StatementList
@@ -349,7 +356,7 @@ Public Module StatementMarker
     ''' </summary>
     ''' <returns>True if there are statements left out of translation</returns>
     Public Function HasMarkerError() As Boolean
-        If s_statementDictionary.Count > 0 Then
+        If s_statementDictionary.Any Then
             Return True
         End If
         Return False
@@ -360,6 +367,9 @@ Public Module StatementMarker
     End Function
 
     Public Function ReplaceStatementsWithMarkedStatements(node As CS.CSharpSyntaxNode, Statements As SyntaxList(Of StatementSyntax)) As SyntaxList(Of StatementSyntax)
+        If node Is Nothing Then
+            Return Statements
+        End If
         If s_statementDictionary.Count = 0 Then
             Return Statements
         End If
@@ -382,11 +392,11 @@ Public Module StatementMarker
             End If
         Next
         s_statementDictionary.Remove(node)
-        If s_statementDictionary.Count = 0 Then
+        If StatementDictionaryEmpty() Then
             s_statementSupportTupleList.Clear()
         End If
         If Not RemoveStatement Then
-            If NewNodesList.Count > 0 Then
+            If NewNodesList.Any Then
                 If NewNodesList(0).IsKind(VisualBasic.SyntaxKind.EmptyStatement) Then
                     Dim TempStatement As StatementSyntax = NewNodesList(0)
                     NewNodesList.RemoveAt(0)
@@ -408,8 +418,8 @@ Public Module StatementMarker
     ''' <param name="comment"></param>
     ''' <returns></returns>
     Public Function WrapInComment(nodes As SyntaxList(Of StatementSyntax), NodeWithComments As CSS.StatementSyntax, comment As String) As SyntaxList(Of StatementSyntax)
-        If nodes.Count > 0 Then
-            nodes = nodes.Replace(nodes(0), nodes(0).WithConvertedTriviaFrom(NodeWithComments).WithPrependedLeadingTrivia(VBFactory.CommentTrivia($"' BEGIN TODO: {comment}")))
+        If nodes.Any Then
+            nodes = nodes.Replace(nodes(0), nodes(0).WithConvertedTriviaFrom(NodeWithComments).WithPrependedLeadingTrivia(VBFactory.CommentTrivia($"' BEGIN TODO: {comment}")).WithTrailingEOL)
             nodes = nodes.Add(VBFactory.EmptyStatement.WithLeadingTrivia(VBEOLTrivia, VBFactory.CommentTrivia($"' END TODO: {comment}")))
         End If
         Return nodes

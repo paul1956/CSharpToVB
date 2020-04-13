@@ -268,7 +268,7 @@ Class TestClass
 
     Private Function GetConvertMethodForKeywordOrNull(type As SyntaxNode) As Boolean
         Dim _convertedType As Microsoft.CodeAnalysis.ITypeSymbol = semanticModel.GetTypeInfo(type).ConvertedType
-        Dim convertMethodName As Microsoft.CodeAnalysis.ITypeSymbol = Nothing
+        Dim convertMethodName As Object = Nothing
         Return createConvertMethodsLookupByReturnType.TryGetValue(_convertedType, convertMethodName)
     End Function
 End Class")

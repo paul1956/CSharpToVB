@@ -79,6 +79,14 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 End If
 
                 Dim TypeArgumentList As VBS.TypeArgumentListSyntax = DirectCast(node.TypeArgumentList.Accept(Me), VBS.TypeArgumentListSyntax)
+                If node.Parent.IsKind(CS.SyntaxKind.MethodDeclaration) Then
+                    If CType(node.Parent, CSS.MethodDeclarationSyntax).ReturnType.Equals(node) Then
+                        Return WrapTypedNameIfNecessary(VBFactory.GenericName(GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=True).WithTrailingTrivia, TypeArgumentList), node)
+                    End If
+                End If
+                If node.Parent.IsKind(CS.SyntaxKind.ObjectCreationExpression) Then
+                    Return WrapTypedNameIfNecessary(VBFactory.GenericName(GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=True).WithTrailingTrivia, TypeArgumentList), node)
+                End If
                 Return WrapTypedNameIfNecessary(VBFactory.GenericName(GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False).WithTrailingTrivia, TypeArgumentList), node)
             End Function
 
@@ -112,6 +120,10 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 If OriginalNameParent.IsKind(CS.SyntaxKind.SimpleAssignmentExpression) Then
                     Dim AssignmentStatement As CSS.AssignmentExpressionSyntax = CType(OriginalNameParent, CSS.AssignmentExpressionSyntax)
                     If node.ToString.Equals(AssignmentStatement.Left.ToString, StringComparison.Ordinal) AndAlso AssignmentStatement.Left.ToString.Equals(AssignmentStatement.Right.ToString, StringComparison.OrdinalIgnoreCase) Then
+                        If OriginalNameParent.IsParentKind(CSharp.SyntaxKind.ObjectInitializerExpression) Then
+                            Dim name As VBS.IdentifierNameSyntax = VBFactory.IdentifierName(GenerateSafeVBToken(node.Identifier, IsQualifiedName:=True, IsTypeName:=True))
+                            Return name
+                        End If
                         If node.Ancestors().OfType(Of CSS.ConstructorDeclarationSyntax).Any Then
                             Dim name As VBS.IdentifierNameSyntax = VBFactory.IdentifierName(GenerateSafeVBToken(node.Identifier, IsQualifiedName:=True, IsTypeName:=False))
                             If node.Parent.IsParentKind(CS.SyntaxKind.ObjectInitializerExpression) Then

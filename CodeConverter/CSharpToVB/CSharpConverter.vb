@@ -293,7 +293,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Declator = Declator.WithModifiedNodeTrailingTrivia(SeparatorFollows:=False)
                 declarators.Add(Declator)
             Next
-            If declaratorsWithoutInitializers.Count > 0 Then
+            If declaratorsWithoutInitializers.Any Then
                 Dim ModifiedIdentifierList As New List(Of VBS.ModifiedIdentifierSyntax)
                 For Each d As CSS.VariableDeclaratorSyntax In declaratorsWithoutInitializers
                     Dim dTrailingTrivia As SyntaxTriviaList = d.GetTrailingTrivia

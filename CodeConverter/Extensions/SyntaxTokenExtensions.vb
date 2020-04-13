@@ -4,6 +4,8 @@
 
 Imports System.Runtime.CompilerServices
 
+Imports CSharpToVBCodeConverter.Util
+
 Imports Microsoft.CodeAnalysis
 
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
@@ -11,6 +13,17 @@ Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 
 Namespace CSharpToVBCodeConverter.Util
     Public Module SyntaxTokenExtensions
+
+        <Extension>
+        Friend Function Contains(tokens As SyntaxTokenList, Kind As CSharp.SyntaxKind, ByRef Result As Boolean) As Boolean
+            Result = tokens.Contains(Kind)
+            Return Result
+        End Function
+
+        <Extension>
+        Friend Function Contains(tokens As SyntaxTokenList, Kind As CSharp.SyntaxKind) As Boolean
+            Return tokens.Contains(Function(m As SyntaxToken) m.IsKind(Kind))
+        End Function
 
         <Extension>
         Friend Function WithPrependedLeadingTrivia(token As SyntaxToken, trivia As IEnumerable(Of SyntaxTrivia)) As SyntaxToken

@@ -42,8 +42,6 @@ Partial Public Class Form1
 
     Private _currentBuffer As Control
 
-    Private _defaultVBOptions As DefaultVBOptions
-
     Private _inColorize As Boolean
 
     Private _requestToConvert As ConvertRequest
@@ -52,11 +50,6 @@ Partial Public Class Form1
 
     Public Sub New()
         InitializeComponent()
-
-    End Sub
-
-    Protected Overrides Sub Finalize()
-        MyBase.Finalize()
     End Sub
 
     Private Property CurrentBuffer As Control
@@ -232,7 +225,11 @@ Partial Public Class Form1
             ' IProgress.Report.
             Dim progress As New Progress(Of ProgressReport)(AddressOf ProgressBar.Update)
 
-            _resultOfConversion = Await Task.Run(Function() ConvertInputRequest(RequestToConvert, _defaultVBOptions, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences, ReportException, progress, CancelToken)).ConfigureAwait(True)
+            With My.Settings
+                Dim _defaultVBOptions As New DefaultVBOptions(.OptionCompare, .OptionCompareIncludeInCode, .OptionExplicit, .OptionExplicitIncludeInCode, .OptionInfer, .OptionInferIncludeInCode, .OptionStrict, .OptionStrictIncludeInCode)
+                _resultOfConversion = Await Task.Run(Function() ConvertInputRequest(RequestToConvert, _defaultVBOptions, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences, ReportException, progress, CancelToken)).ConfigureAwait(True)
+            End With
+
         End Using
         mnuFileSaveAs.Enabled = Me._resultOfConversion.ResultStatus = ResultTriState.Success
         Select Case _resultOfConversion.ResultStatus
@@ -391,10 +388,6 @@ Partial Public Class Form1
         LabelProgress.Top = ProgressBar1.Top - (LabelProgress.Height * 2)
         ToolTipErrorList.SetToolTip(ListBoxErrorList, "Double-Click to scroll to VB error")
         ToolTipFileList.SetToolTip(ListBoxFileList, "Double-Click to open C# and corresponding VB file if available")
-        With My.Settings
-            _defaultVBOptions = New DefaultVBOptions(.OptionCompare, .OptionCompareIncludeInCode, .OptionExplicit, .OptionExplicitIncludeInCode, .OptionInfer, .OptionInferIncludeInCode, .OptionStrict, .OptionStrictIncludeInCode)
-        End With
-
         Application.DoEvents()
     End Sub
 

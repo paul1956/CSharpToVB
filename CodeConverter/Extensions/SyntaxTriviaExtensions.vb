@@ -133,7 +133,9 @@ Namespace CSharpToVBCodeConverter.Util
         ''' <returns>True if any Trivia is a Comment or a Directive</returns>
         <Extension>
         Public Function ContainsCommentOrDirectiveTrivia(TriviaList As SyntaxTriviaList) As Boolean
-            If TriviaList.Count = 0 Then Return False
+            If TriviaList.Count = 0 Then
+                Return False
+            End If
             For Each t As SyntaxTrivia In TriviaList
                 If t.IsWhitespaceOrEndOfLine Then
                     Continue For
@@ -148,6 +150,9 @@ Namespace CSharpToVBCodeConverter.Util
                     Continue For
                 End If
                 If t.RawKind = VB.SyntaxKind.SkippedTokensTrivia Then
+                    Continue For
+                End If
+                If t.RawKind = CS.SyntaxKind.SkippedTokensTrivia Then
                     Continue For
                 End If
                 If t.RawKind = VB.SyntaxKind.DisabledTextTrivia Then

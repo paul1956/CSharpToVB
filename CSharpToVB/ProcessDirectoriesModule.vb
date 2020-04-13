@@ -115,6 +115,9 @@ Public Module ProcessDirectoriesModule
     End Function
 
     Friend Sub SetButtonStopAndCursor(MeForm As Form1, StopButton As Button, StopButtonVisible As Boolean)
+        If MeForm Is Nothing Then
+            Exit Sub
+        End If
         If StopButton IsNot Nothing Then
             StopButton.Visible = StopButtonVisible
         End If

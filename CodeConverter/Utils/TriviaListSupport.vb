@@ -124,7 +124,12 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
         End Function
 
         Friend Function TriviaIsIdentical(LeadingTrivia As SyntaxTriviaList, NodeLeadingTrivia As List(Of SyntaxTrivia)) As Boolean
-            If LeadingTrivia.Count <> NodeLeadingTrivia.Count Then Return False
+            If LeadingTrivia.Count <> NodeLeadingTrivia.Count Then
+                Return False
+            End If
+            If Not (LeadingTrivia.ContainsCommentOrDirectiveTrivia OrElse NodeLeadingTrivia.ContainsCommentOrDirectiveTrivia) Then
+                Return False
+            End If
             For i As Integer = 0 To LeadingTrivia.Count - 1
                 If LeadingTrivia(i).ToFullString.Trim <> NodeLeadingTrivia(i).ToFullString.Trim Then
                     Return False

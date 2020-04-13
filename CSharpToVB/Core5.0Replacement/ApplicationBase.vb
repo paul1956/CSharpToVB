@@ -23,7 +23,7 @@ Namespace Microsoft.VisualBasic.ApplicationServices
         ''' <returns>A string containing the value of the environment variable.</returns>
         ''' <exception cref="System.ArgumentNullException">if name is Nothing.</exception>
         ''' <exception cref="System.ArgumentException">if the specified environment variable does not exist.</exception>
-        Public Shared Function GetEnvironmentVariable(ByVal name As String) As String
+        Public Overridable Function GetEnvironmentVariable(ByVal name As String) As String
             Return Environment.GetEnvironmentVariable(name)
         End Function
     End Class 'ApplicationBase

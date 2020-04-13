@@ -108,21 +108,21 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim compilationUnitSyntax1 As VBS.CompilationUnitSyntax
                 Dim EndOfFIleTokenWithTrivia As SyntaxToken = EndOfFileToken.WithConvertedTriviaFrom(node.EndOfFileToken)
 
-                If externList.Count > 0 Then
+                If externList.Any Then
                     compilationUnitSyntax1 = VBFactory.CompilationUnit(
                         VBFactory.List(Of VBS.OptionStatementSyntax)(),
                         VBFactory.List(_allImports),
                         ListOfAttributes,
                         _membersList).WithTriviaFrom(externList(0))
-                ElseIf _allImports.Count > 0 Then
-                    If _membersList.Count > 0 AndAlso _membersList(0).HasLeadingTrivia Then
+                ElseIf _allImports.Any Then
+                    If _membersList.Any AndAlso _membersList(0).HasLeadingTrivia Then
                         If (TypeOf _membersList(0) IsNot VBS.NamespaceBlockSyntax AndAlso TypeOf _membersList(0) IsNot VBS.ModuleBlockSyntax) OrElse
                             _membersList(0).GetLeadingTrivia.ToFullString.Contains("auto-generated", StringComparison.OrdinalIgnoreCase) Then
                             Dim HeadingTriviaList As New List(Of SyntaxTrivia)
                             HeadingTriviaList.AddRange(_membersList(0).GetLeadingTrivia)
                             If HeadingTriviaList(0).IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
                                 HeadingTriviaList.RemoveAt(0)
-                                If HeadingTriviaList.Count > 0 Then
+                                If HeadingTriviaList.Any Then
                                     HeadingTriviaList.Add(VBEOLTrivia)
                                 End If
                             End If
@@ -255,11 +255,11 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         )
 
                 If Node.Parent.IsKind(CS.SyntaxKind.DeclarationExpression) Then
-                    ' var quanity
+                    ' var quantity
                     Dim Designation As CSS.DeclarationExpressionSyntax = CType(Node.Parent, CSS.DeclarationExpressionSyntax)
-                    ' out var quanity
+                    ' out var quantity
                     Dim Declaration As CSS.ArgumentSyntax = CType(Designation.Parent, CSS.ArgumentSyntax)
-                    ' (item.tostring, out var quanity)
+                    ' (item.tostring, out var quantity)
                     Dim TypeName As VBS.TypeSyntax
                     If Designation.Type.IsVar Then
                         TypeName = VBFactory.PredefinedType(ObjectKeyword)
@@ -273,9 +273,21 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                 Dim Expression As CSS.MemberAccessExpressionSyntax = TryCast(Invocation.Expression, CSS.MemberAccessExpressionSyntax)
                                 If Expression IsNot Nothing Then
                                     If Expression.Name.Identifier.ValueText = "TryGetValue" Then
-                                        Dim _Typeinfo As TypeInfo = ModelExtensions.GetTypeInfo(_mSemanticModel, ArgumentList.Arguments(0).Expression)
-                                        If _Typeinfo.Type IsNot Nothing Then
-                                            TypeName = ConvertToType(_Typeinfo.Type)
+                                        Dim expression1 As CSS.ExpressionSyntax
+                                        If TypeOf Invocation.Expression Is CSS.MemberAccessExpressionSyntax Then
+                                            expression1 = CType(Invocation.Expression, CSS.MemberAccessExpressionSyntax).Expression
+                                            Dim _Typeinfo As TypeInfo = ModelExtensions.GetTypeInfo(_mSemanticModel, expression1)
+                                            If _Typeinfo.Type IsNot Nothing Then
+                                                If Not _Typeinfo.Type.IsErrorType Then
+                                                    TypeName = ConvertToType(_Typeinfo.Type)
+                                                    If TypeOf TypeName Is VBS.GenericNameSyntax Then
+                                                        Dim _arguments As SeparatedSyntaxList(Of VBS.TypeSyntax) = CType(TypeName, VBS.GenericNameSyntax).TypeArgumentList.Arguments
+                                                        If _arguments.Count = 2 Then
+                                                            TypeName = _arguments(1)
+                                                        End If
+                                                    End If
+                                                End If
+                                            End If
                                         End If
                                     End If
                                 End If

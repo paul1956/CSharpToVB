@@ -27,6 +27,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             [Readonly]
             XMLComment
             Struct
+            [Property]
         End Enum
 
         Private Function ConvertModifier(m As SyntaxToken, IsModule As Boolean, context As TokenContext, ByRef FoundVisibility As Boolean) As SyntaxToken
@@ -89,7 +90,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                             Continue For
                         End If
                     ElseIf i = CS_Modifiers.Count - 1 Then
-                        If LeadingTrivia.Count > 0 AndAlso Not LeadingTrivia.Last.IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
+                        If LeadingTrivia.Any AndAlso Not LeadingTrivia.Last.IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
                             FirstModifier = False
                             Yield VB_Modifier.WithPrependedLeadingTrivia(LeadingTrivia).WithTrailingTrivia()
                             LeadingTrivia.Clear()
@@ -134,11 +135,11 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
 
         Private Function CSharpDefaultVisibility(context As TokenContext) As SyntaxToken
             Select Case context
-                Case TokenContext.[Global]
+                Case TokenContext.Global
                     Return FriendKeyword
                 Case TokenContext.Local, TokenContext.Member, TokenContext.VariableOrConst
                     Return PrivateKeyword
-                Case TokenContext.[New]
+                Case TokenContext.New, TokenContext.Property
                     Return EmptyToken
             End Select
 
@@ -192,7 +193,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             End If
             If NodeModifier.TrailingTrivia.ContainsCommentOrDirectiveTrivia Then
                 StatementLeadingTrivia.AddRange(RelocateDirectiveDisabledTrivia(NodeModifier.TrailingTrivia, StatementTrailingTrivia, RemoveEOL:=False))
-                If StatementLeadingTrivia.Count > 0 AndAlso StatementLeadingTrivia.Last.RawKind <> VB.SyntaxKind.EndOfLineTrivia Then
+                If StatementLeadingTrivia.Any AndAlso StatementLeadingTrivia.Last.RawKind <> VB.SyntaxKind.EndOfLineTrivia Then
                     StatementLeadingTrivia.Add(VBEOLTrivia)
                 End If
                 Return NodeModifier.WithTrailingTrivia(SpaceTrivia)
@@ -540,7 +541,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim NewAttributLeadingTrivia As New SyntaxTriviaList
                 If i = 0 Then
                     StatementLeadingTrivia.AddRange(AttributeList.GetLeadingTrivia)
-                    If StatementLeadingTrivia.Count > 0 AndAlso StatementLeadingTrivia.Last.IsWhitespaceOrEndOfLine Then
+                    If StatementLeadingTrivia.Any AndAlso StatementLeadingTrivia.Last.IsWhitespaceOrEndOfLine Then
                         NewAttributeLeadingTrivia = NewAttributeLeadingTrivia.Add(AttributeList.GetLeadingTrivia.Last)
                     Else
                         NewAttributeLeadingTrivia = NewAttributeLeadingTrivia.Add(SpaceTrivia)

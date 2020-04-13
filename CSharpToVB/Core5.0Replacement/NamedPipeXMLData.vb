@@ -9,11 +9,13 @@ Namespace Microsoft.VisualBasic.ApplicationServices
 
         End Sub
 
+#Disable Warning CA2227 ' Collection properties should be read only
         ''' <summary>
         '''     A list of command line arguments.
         ''' </summary>
         <XmlElement("CommandLineArguments")>
-        Friend Property CommandLineArguments As New List(Of String)
+        Public Property CommandLineArguments As New List(Of String)
+#Enable Warning CA2227 ' Collection properties should be read only
 
     End Class
 End Namespace

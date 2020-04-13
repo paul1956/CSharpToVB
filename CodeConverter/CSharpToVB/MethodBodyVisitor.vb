@@ -131,7 +131,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         Dim StatementList As New List(Of VBS.StatementSyntax)
                         For i As Integer = 0 To NodeBlock.Statements.Count - 1
                             Dim Statements As List(Of VBS.StatementSyntax) = NodeBlock.Statements(i).Accept(Me).ToList
-                            If i = 0 AndAlso Statements.Count > 0 Then
+                            If i = 0 AndAlso Statements.Any Then
                                 Statements(0) = Statements(0).WithPrependedLeadingTrivia(OpenBraceLeadingTrivia)
                             End If
                             StatementList.AddRange(Statements)
@@ -163,7 +163,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 If catchClause.Declaration Is Nothing Then
                     Return VBFactory.CatchBlock(VBFactory.CatchStatement().WithTrailingTrivia(VBEOLTrivia).WithAppendedTrailingTrivia(ClosingBraceLeadingTrivia), statements)
                 End If
-                If OpenBraceTrailingTrivia.Count > 0 OrElse ClosingBraceLeadingTrivia.Count > 0 Then
+                If OpenBraceTrailingTrivia.Any OrElse ClosingBraceLeadingTrivia.Any Then
                     statements = statements.Replace(statements(0), statements(0).WithPrependedLeadingTrivia(OpenBraceTrailingTrivia))
                     Dim laststatement As Integer = statements.Count - 1
                     statements = statements.Replace(statements(laststatement), statements(laststatement).WithAppendedTrailingTrivia(ClosingBraceLeadingTrivia))
@@ -292,7 +292,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     End If
                 End If
 
-                If ForStatementTrailingTrivia.Count > 0 AndAlso ForStatementTrailingTrivia.ContainsCommentOrDirectiveTrivia AndAlso Not ForStatementTrailingTrivia(0).IsEndOfLine Then
+                If ForStatementTrailingTrivia.Any AndAlso ForStatementTrailingTrivia.ContainsCommentOrDirectiveTrivia AndAlso Not ForStatementTrailingTrivia(0).IsEndOfLine Then
                     ForStatementTrailingTrivia.Insert(0, VBEOLTrivia)
                 End If
 
@@ -582,10 +582,10 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         Continue For
                     End If
                     Statements.AddRange(ConvertBlock(s, OpenBraceTrailingTrivia, ClosingBraceLeadingTrivia))
-                    If OpenBraceTrailingTrivia.Count > 0 Then
+                    If OpenBraceTrailingTrivia.Any Then
                         Statements(0) = Statements.First.WithPrependedLeadingTrivia(OpenBraceTrailingTrivia)
                     End If
-                    If ClosingBraceLeadingTrivia.Count > 0 Then
+                    If ClosingBraceLeadingTrivia.Any Then
                         Statements(Statements.Count - 1) = Statements.Last.WithAppendedTrailingTrivia(ClosingBraceLeadingTrivia)
                     End If
                 Next
@@ -840,7 +840,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim OpenBraceTrailingTrivia As New List(Of SyntaxTrivia)
                 Dim ClosingBraceLeadingTrivia As New List(Of SyntaxTrivia)
                 Dim stmt As SyntaxList(Of VBS.StatementSyntax) = ConvertBlock(node.Statement, OpenBraceTrailingTrivia, ClosingBraceLeadingTrivia)
-                'If OpenBraceTrailingTrivia.Count > 0 OrElse ClosingBraceLeadingTrivia.Count > 0 Then
+                'If OpenBraceTrailingTrivia.Any OrElse ClosingBraceLeadingTrivia.Any Then
                 '    Stop
                 'End If
                 Dim DoStatement As VBS.DoStatementSyntax = VBFactory.DoStatement(VB.SyntaxKind.SimpleDoStatement)
@@ -1183,7 +1183,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
 
                 StatementTrailingTrivia.AddRange(ConvertTrivia(node.CloseParenToken.LeadingTrivia))
                 StatementTrailingTrivia.AddRange(ConvertTrivia(node.CloseParenToken.TrailingTrivia))
-                If StatementTrailingTrivia.Count > 0 AndAlso Not StatementTrailingTrivia(0).IsEndOfLine Then
+                If StatementTrailingTrivia.Any AndAlso Not StatementTrailingTrivia(0).IsEndOfLine Then
                     StatementTrailingTrivia.Insert(0, VBEOLTrivia)
                 End If
                 Dim ConditionWithTrivia As VBS.ExpressionSyntax = DirectCast(node.Condition.Accept(_nodesVisitor).WithAppendedTrailingTrivia(ConvertTrivia(node.Condition.GetTrailingTrivia)).WithModifiedNodeTrivia(SeparatorFollows:=True), VBS.ExpressionSyntax)
@@ -1274,7 +1274,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim OpenBraceTrailingTrivia As New List(Of SyntaxTrivia)
                 Dim ClosingBraceLeadingTrivia As New List(Of SyntaxTrivia)
                 Dim Statements As SyntaxList(Of VBS.StatementSyntax) = ConvertBlock(node.Statement, OpenBraceTrailingTrivia, ClosingBraceLeadingTrivia)
-                If OpenBraceTrailingTrivia.Count > 0 OrElse ClosingBraceLeadingTrivia.Count > 0 Then
+                If OpenBraceTrailingTrivia.Any OrElse ClosingBraceLeadingTrivia.Any Then
                     'Stop
                 End If
                 Return VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.LabelStatement(GenerateSafeVBToken(node.Identifier,
@@ -1453,7 +1453,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     End If
                 End If
                 Dim EndTryStatement As VBS.EndBlockStatementSyntax = VBFactory.EndTryStatement()
-                If node.Catches.Count > 0 Then
+                If node.Catches.Any Then
                     EndTryStatement = EndTryStatement.WithConvertedTriviaFrom(node.Catches.Last.Block.GetBraces.Item2)
                 Else
                     EndTryStatement = EndTryStatement.WithLeadingTrivia(ClosingBraceLeadingTrivia)
@@ -1462,7 +1462,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     EndTryStatement = EndTryStatement.WithLeadingTrivia(TriviaList)
                 End If
                 Dim TryBlockStatements As SyntaxList(Of VBS.StatementSyntax) = ConvertBlock(node.Block, OpenBraceTrailingTrivia, ClosingBraceLeadingTrivia)
-                If ClosingBraceLeadingTrivia.Count > 0 Then
+                If ClosingBraceLeadingTrivia.Any Then
                     If FinallyBlock IsNot Nothing Then
                         FinallyBlock = FinallyBlock.WithPrependedLeadingTrivia(ClosingBraceLeadingTrivia)
                     End If
@@ -1578,7 +1578,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         Declarators.Add(Declator)
                     End If
                 Next
-                If declaratorsWithoutInitializers.Count > 0 Then
+                If declaratorsWithoutInitializers.Any Then
                     Stop
                 End If
                 Dim LocalDeclarationStatement As VBS.LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(
@@ -1596,7 +1596,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim OpenBraceTrailingTrivia As New List(Of SyntaxTrivia)
                 Dim ClosingBraceLeadingTrivia As New List(Of SyntaxTrivia)
                 Dim WhileStatements As SyntaxList(Of VBS.StatementSyntax) = ConvertBlock(node.Statement, OpenBraceTrailingTrivia, ClosingBraceLeadingTrivia)
-                If OpenBraceTrailingTrivia.Count > 0 Then
+                If OpenBraceTrailingTrivia.Any Then
                     WhileStatements = WhileStatements.Replace(WhileStatements.First, WhileStatements.First.WithPrependedLeadingTrivia(OpenBraceTrailingTrivia))
                     OpenBraceTrailingTrivia.Clear()
                 End If

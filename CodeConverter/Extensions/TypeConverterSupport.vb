@@ -38,7 +38,7 @@ Namespace CSharpToVBCodeConverter
                 Dim VarDecl As CSS.VariableDeclaratorSyntax = CType(id.Parent, CSS.VariableDeclaratorSyntax)
                 Dim FieldDeclatationOrNothing As CSS.FieldDeclarationSyntax = VarDecl.FirstAncestorOrSelf(Of CSS.FieldDeclarationSyntax)
                 If Char.IsLower(CChar(ConvertedIdentifier.Left(1))) AndAlso FieldDeclatationOrNothing IsNot Nothing Then
-                    If FieldDeclatationOrNothing.Modifiers.Count > 0 AndAlso FieldDeclatationOrNothing.Modifiers.Contains(Function(t As SyntaxToken) t.IsKind(CS.SyntaxKind.PrivateKeyword)) Then
+                    If FieldDeclatationOrNothing.Modifiers.Any AndAlso FieldDeclatationOrNothing.Modifiers.Contains(Function(t As SyntaxToken) t.IsKind(CS.SyntaxKind.PrivateKeyword)) Then
                         IsFieldIdentifier = True
                     End If
                 End If

@@ -42,7 +42,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Next
                 StatementTrailingTrivia.AddRange(ConvertTrivia(CS_ArgumentList.CloseParenToken.LeadingTrivia))
                 StatementTrailingTrivia.AddRange(ConvertTrivia(CS_ArgumentList.CloseParenToken.TrailingTrivia))
-                If StatementTrailingTrivia.Count > 0 AndAlso StatementTrailingTrivia(0).IsDirective Then
+                If StatementTrailingTrivia.Any AndAlso StatementTrailingTrivia(0).IsDirective Then
                     StatementTrailingTrivia.Insert(0, VBEOLTrivia)
                 End If
                 Return ExpressionStatement.WithPrependedLeadingTrivia(StatementLeadingTrivia).

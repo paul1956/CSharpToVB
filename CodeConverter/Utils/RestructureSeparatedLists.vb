@@ -22,7 +22,7 @@ Public Module RestuructureSeparatedLists
             Separators(i) = newSeparators
         Next
         Dim LastItemEndsWithEOL As Boolean = False
-        If Items.Count > 0 Then
+        If Items.Any Then
             Dim NewItem As T = Items.Last.WithModifiedNodeTrivia(SeparatorFollows:=False)
             Items(Items.Count - 1) = NewItem
             LastItemEndsWithEOL = Items.Last.HasTrailingTrivia AndAlso Items.Last.GetTrailingTrivia.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia)

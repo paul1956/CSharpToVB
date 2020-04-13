@@ -607,12 +607,12 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
                         Not (Trivia.IsKind(SyntaxKind.ColonTrivia) AndAlso tokenParent IsNot Nothing AndAlso tokenParent.IsKind(SyntaxKind.LabelStatement)) AndAlso
                         Not (tokenParent IsNot Nothing AndAlso tokenParent.Parent IsNot Nothing AndAlso tokenParent.Parent.IsKind(SyntaxKind.CrefReference)) AndAlso
                         (
-                            (currentTriviaList.Count > 0 AndAlso NeedsSeparatorBetween(currentTriviaList.Last()) AndAlso Not EndsInLineBreak(currentTriviaList.Last())) OrElse
+                            (currentTriviaList.Any AndAlso NeedsSeparatorBetween(currentTriviaList.Last()) AndAlso Not EndsInLineBreak(currentTriviaList.Last())) OrElse
                             (currentTriviaList.Count = 0 AndAlso isTrailing)
                         )
 
                     Dim needsLineBreak As Boolean = NeedsLineBreakBefore(Trivia) OrElse
-                        (currentTriviaList.Count > 0 AndAlso NeedsLineBreakBetween(currentTriviaList.Last(), Trivia, isTrailing))
+                        (currentTriviaList.Any AndAlso NeedsLineBreakBetween(currentTriviaList.Last(), Trivia, isTrailing))
 
                     If needsLineBreak AndAlso Not _afterLineBreak Then
                         If _eolTraiingTriviaCount = 0 Then
@@ -673,7 +673,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
                 Next
 
                 If lineBreaksAfter > 0 Then
-                    If currentTriviaList.Count > 0 AndAlso EndsInLineBreak(currentTriviaList.Last()) Then
+                    If currentTriviaList.Any AndAlso EndsInLineBreak(currentTriviaList.Last()) Then
                         lineBreaksAfter -= 1
                     End If
 
@@ -769,11 +769,11 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         ''' </summary>
         Private Sub VisitTypeBlockSyntax(node As TypeBlockSyntax)
 
-            Dim hasImplements As Boolean = node.Implements.Count > 0
-            Dim hasInherits As Boolean = node.Inherits.Count > 0
+            Dim hasImplements As Boolean = node.Implements.Any
+            Dim hasInherits As Boolean = node.Inherits.Any
 
             ' add a line break between begin statement and the ones from the statement list
-            If Not hasInherits AndAlso Not hasImplements AndAlso node.Members.Count > 0 Then
+            If Not hasInherits AndAlso Not hasImplements AndAlso node.Members.Any Then
                 AddLinebreaksAfterTokenIfNeeded(node.BlockStatement.GetLastToken(), 2)
             Else
                 AddLinebreaksAfterTokenIfNeeded(node.BlockStatement.GetLastToken(), 1)
@@ -1273,7 +1273,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         ''' Separate each member of a namespace with an empty line.
         ''' </summary>
         Public Overrides Function VisitNamespaceBlock(node As NamespaceBlockSyntax) As SyntaxNode
-            If node.Members.Count > 0 Then
+            If node.Members.Any Then
                 ' Add an empty line after the namespace begin if there
                 ' is not a namespace declaration as first member
                 If node.Members(0).Kind <> SyntaxKind.NamespaceBlock Then
@@ -1450,7 +1450,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
                 Dim LeadingTrivia As SyntaxTriviaList = token.LeadingTrivia
 
                 If _previousToken.IsKind(SyntaxKind.GreaterThanToken) AndAlso token.IsKind(SyntaxKind.LessThanToken) Then
-                    Do While LeadingTrivia.Count > 0 AndAlso LeadingTrivia(0).IsKind(SyntaxKind.EndOfLineTrivia)
+                    Do While LeadingTrivia.Any AndAlso LeadingTrivia(0).IsKind(SyntaxKind.EndOfLineTrivia)
                         LeadingTrivia = LeadingTrivia.RemoveAt(0)
                     Loop
 

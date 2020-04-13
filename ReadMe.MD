@@ -27,7 +27,7 @@ description: "C# to VB Converter"
 - Code Converter
 
 ## Updated
-- 04/01/2020
+- 04/12/2020
 
 ## Description
 This application will convert C# to VB while trying to preserve comments, formatting and as many Directives
@@ -64,21 +64,24 @@ It will try to create a VB project File from the original C# project file.
 https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json is added to NuGet Package Source to find
 Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpecific attributes used for testing.
 
-New in Release 4.2.4.0
-- Improved status is given during Convert Project during the long startup delay
-- Warning is given for non-SDK projects but the C# files are converted
-- Issues #27,  #28, #30, #32, #33, #34, #36 are closed
-- Issue #37 closed, double clicking on C# file is list will open it and converted VB file
+  New in Release 4.3.0.0
+  - Major rewrite of ArrowExpressionClauseSyntax handling
+  - Fix issue #24 You can now specify VB Options that are included in converted file and what values the Options are
+  - Fixes changing Options included in converted file reflected without restarting application
+  - Fix issues #36, #37, #38, #39, #40, #41, $43, #44 and #46 Issue details can be found here https://github.com/paul1956/CSharpToVB/issues
 
-New in Release 4.2.5.0
-- Double clicking on Error List line will scroll VB buffer to the error
-- Issue #29 closed, at the end of a project conversion the root of the VB project will open in explorer
+  New in Release 4.2.10.1
+  - Minor formatting updates
 
-New in Release 4.2.6.0
-- Restructure Convert Project to enable better error handling, better progress messages and prepare for Convert Solution
+ New in Release 4.2.10.0
+ - Improve Startup Screen
+ - Make single instance (great example of doing in Core using NamedPipes)
 
-New in Release 4.2.7.0
-- Added Tests for 3 major Core project types and fixed bugs found in project translation
+ New in Release 4.2.9.0
+- Allow user to specify what Visual Basic Options are included in converted file. Tests will continue to use existing behavior.
+- Options are specified under Advanced Options menu and are saved per user.
+- About Box has been modified to show CodeConverter version information
+- Update <RepositoryType>git</RepositoryType> in project files
 
 New in Release 4.2.8.0
 - Fix conversion of x ??= y to use x = If(x, y)
@@ -89,31 +92,36 @@ New in Release 4.2.8.0
 - Fix coalescing assignment operator handling
 - Fix formatting around deleted break statements
  
- New in Release 4.2.9.0
-- Allow user to specify what Visual Basic Options are included in converted file. Tests will continue to use existing behavior.
-- Options are specified under Advanced Options menu and are saved per user.
-- About Box has been modified to show CodeConverter version information
-- Update <RepositoryType>git</RepositoryType> in project files
+New in Release 4.2.7.0
+- Added Tests for 3 major Core project types and fixed bugs found in project translation
 
- New in Release 4.2.10.0
- - Improve Startup Screen
- - Make single instance (great example of doing in Core using NamedPipes)
+New in Release 4.2.6.0
+- Restructure Convert Project to enable better error handling, better progress messages and prepare for Convert Solution
 
-  New in Release 4.2.10.1
-  - Minor formatting updates
+New in Release 4.2.5.0
+- Double clicking on Error List line will scroll VB buffer to the error
+- Issue #29 closed, at the end of a project conversion the root of the VB project will open in explorer
+
+New in Release 4.2.4.0
+- Improved status is given during Convert Project during the long startup delay
+- Warning is given for non-SDK projects but the C# files are converted
+- Issues #27,  #28, #30, #32, #33, #34, #36 are closed
+- Issue #37 closed, double clicking on C# file is list will open it and converted VB file
+
+
 ## Code Coverage
 ```
 +------------------+--------+--------+--------+
 | Module           | Line   | Branch | Method |
 +------------------+--------+--------+--------+
-| VB.CodeConverter | 79.08% | 72.29% | 87.04% |
+| VB.CodeConverter | 79.14% | 72.45% | 86.59% |
 +------------------+--------+--------+--------+
 
 +---------+--------+--------+--------+
 |         | Line   | Branch | Method |
 +---------+--------+--------+--------+
-| Total   | 79.08% | 72.29% | 87.04% |
+| Total   | 79.14% | 72.45% | 86.59% |
 +---------+--------+--------+--------+
-| Average | 79.08% | 72.29% | 87.04% |
+| Average | 79.14% | 72.45% | 86.59% |
 +---------+--------+--------+--------+
 ```

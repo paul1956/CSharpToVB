@@ -64,7 +64,7 @@ Namespace Microsoft.CodeAnalysis
             Dim stack As Stack(Of ChildSyntaxList.Enumerator) = s_childEnumeratorStackPool.Allocate()
             Try
                 stack.Push(current.ChildNodesAndTokens().GetEnumerator())
-                While stack.Count > 0
+                While stack.Any
                     Dim en As ChildSyntaxList.Enumerator = stack.Pop()
                     If en.MoveNext() Then
                         Dim child As SyntaxNodeOrToken = en.Current

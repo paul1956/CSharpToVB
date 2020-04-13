@@ -119,10 +119,10 @@ End Function
                         TypeSyntaxArray = _Type.BaseList?.Types.Select(Function(t As CSS.BaseTypeSyntax) DirectCast(t.Type.Accept(Me), VBS.TypeSyntax)).ToArray()
                         If TypeSyntaxArray?.Length > 0 Then [inherits].Add(VBFactory.InheritsStatement(TypeSyntaxArray).withConvertedLeadingTriviaFrom(_Type.BaseList.ColonToken))
                 End Select
-                If [implements].Count > 0 Then
+                If [implements].Any Then
                     [implements]([implements].Count - 1) = [implements].Last.WithTrailingEOL
                 End If
-                If [inherits].Count > 0 Then
+                If [inherits].Any Then
                     [inherits]([inherits].Count - 1) = [inherits].Last.WithTrailingEOL
                 End If
             End Sub
@@ -159,7 +159,7 @@ End Function
                 SyncLock s_usedStacks
                     s_usedStacks.Push(s_usedIdentifiers)
                     s_usedIdentifiers.Clear()
-                    _isModuleStack.Push(node.Modifiers.Any(CS.SyntaxKind.StaticKeyword) And node.TypeParameterList Is Nothing)
+                    _isModuleStack.Push(node.Modifiers.Contains(CS.SyntaxKind.StaticKeyword) And node.TypeParameterList Is Nothing)
                     If s_implementedMembers.Any Then
                         s_implementedMembersStack.Push(s_implementedMembers)
                         s_implementedMembers = (New List(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))).ToImmutableArray
@@ -197,7 +197,15 @@ End Function
                         Statement.IsKind(VB.SyntaxKind.SubStatement) Then
                         members.Add(Statement.WithTrailingEOL)
                     ElseIf Statement.IsKind(VB.SyntaxKind.PropertyBlock) Then
-                        members.AddRange(ReplaceStatementWithMarkedStatements(m, Statement.WithTrailingEOL))
+                        If TypeOf m Is CSS.PropertyDeclarationSyntax Then
+                            If CType(m, CSS.PropertyDeclarationSyntax).ExpressionBody Is Nothing Then
+                                members.AddRange(ReplaceStatementWithMarkedStatements(m, Statement.WithTrailingEOL))
+                            Else
+                                members.AddRange(ReplaceStatementWithMarkedStatements(CType(m, CSS.PropertyDeclarationSyntax).ExpressionBody, Statement.WithTrailingEOL))
+                            End If
+                        Else
+                            members.AddRange(ReplaceStatementWithMarkedStatements(m, Statement.WithTrailingEOL))
+                        End If
 
                         ' Cases below are handled in-line
                     ElseIf Statement.IsKind(VB.SyntaxKind.ConstructorBlock) OrElse
@@ -212,7 +220,13 @@ End Function
                         members.Add(Statement.WithConvertedTriviaFrom(m).WithTrailingEOL)
                     End If
                     If i = 0 Then
-                        members(0) = members(0).WithPrependedLeadingTrivia(ConvertOpenBraceTrivia(node.OpenBraceToken))
+                        If node.OpenBraceToken.LeadingTrivia.ContainsCommentOrDirectiveTrivia Then
+                            If members.Any Then
+                                members(0) = members(0).WithPrependedLeadingTrivia(ConvertOpenBraceTrivia(node.OpenBraceToken))
+                            Else
+                                Stop
+                            End If
+                        End If
                     End If
                 Next
 
@@ -241,7 +255,7 @@ End Function
                                                                             id,
                                                                             typeParameterList
                                                                             ).WithPrependedLeadingTrivia(PrependedTrivia).
-                                                                            RestructureAttributesAndModifiers(ListOfAttributes.Count > 0, ModuleModifiers.Count > 0), VBS.ModuleStatementSyntax).WithTrailingEOL
+                                                                            RestructureAttributesAndModifiers(ListOfAttributes.Any, ModuleModifiers.Any), VBS.ModuleStatementSyntax).WithTrailingEOL
 
                     ModuleStatement = DirectCast(PrependStatementWithMarkedStatementTrivia(node, ModuleStatement), VBS.ModuleStatementSyntax)
                     Dim EndModule As VBS.EndBlockStatementSyntax = VBFactory.EndModuleStatement().WithConvertedTriviaFrom(node.CloseBraceToken)
@@ -273,7 +287,7 @@ End Function
                                                                             id,
                                                                             typeParameterList
                                                                             ).WithPrependedLeadingTrivia(PrependedTrivia).
-                                                                            RestructureAttributesAndModifiers(ListOfAttributes.Count > 0, ClassModifiers.Count > 0), VBS.ClassStatementSyntax)
+                                                                            RestructureAttributesAndModifiers(ListOfAttributes.Any, ClassModifiers.Any), VBS.ClassStatementSyntax)
                     ClassStatement = DirectCast(PrependStatementWithMarkedStatementTrivia(node, ClassStatement), VBS.ClassStatementSyntax)
                     If [inherits].Count = 0 AndAlso [implements].Count = 0 Then
                         ClassStatement = ClassStatement.WithTrailingEOL
@@ -358,7 +372,7 @@ End Function
             Public Overrides Function VisitEnumDeclaration(node As CSS.EnumDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim members As New List(Of VBS.StatementSyntax)
                 Dim CS_Members As SeparatedSyntaxList(Of CSS.EnumMemberDeclarationSyntax) = node.Members
-                If CS_Members.Count > 0 Then
+                If CS_Members.Any Then
                     Dim CS_Separators As New List(Of SyntaxToken)
                     CS_Separators.AddRange(node.Members.GetSeparators)
 
@@ -446,7 +460,7 @@ End Function
                                                                                                EnumKeyword.WithConvertedTriviaFrom(node.EnumKeyword),
                                                                                                identifier:=GenerateSafeVBToken(id:=node.Identifier, IsQualifiedName:=False, IsTypeName:=False),
                                                                                                UnderlyingType).
-                                                                                       RestructureAttributesAndModifiers(ListOfAttributes.Count > 0, Modifiers.Count > 0), VBS.EnumStatementSyntax)
+                                                                                       RestructureAttributesAndModifiers(ListOfAttributes.Any, Modifiers.Any), VBS.EnumStatementSyntax)
 
                 Dim EndBlockStatement As VBS.EndBlockStatementSyntax = VBFactory.EndEnumStatement().WithConvertedTriviaFrom(node.CloseBraceToken)
                 Dim EnumBlock As VBS.EnumBlockSyntax = VBFactory.EnumBlock(EnumStatement.WithTrailingEOL,
@@ -478,7 +492,7 @@ End Function
                 End SyncLock
                 Dim ListOfAttributes As SyntaxList(Of VBS.AttributeListSyntax) = VBFactory.List(node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))
                 Dim Modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, IsModule, TokenContext.InterfaceOrModule)
-                If node.Modifiers.ToString.Contains("unsafe", StringComparison.Ordinal) Then
+                If node.Modifiers.Contains(CS.SyntaxKind.UnsafeKeyword) Then
                     Return FlagUnsupportedStatements(node, "unsafe interfaces", CommentOutOriginalStatements:=True)
                 End If
                 Dim members As New List(Of VBS.StatementSyntax)
@@ -493,7 +507,7 @@ End Function
                 Dim Identifier As SyntaxToken = GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False)
                 Dim TypeParameterList As VBS.TypeParameterListSyntax = DirectCast(node.TypeParameterList?.Accept(Me), VBS.TypeParameterListSyntax)
                 Dim StatementLeadingTrivia As New List(Of SyntaxTrivia)
-                If node.Modifiers.Count > 0 AndAlso Modifiers.Count = 0 Then
+                If node.Modifiers.Any AndAlso Modifiers.Count = 0 Then
                     StatementLeadingTrivia.AddRange(ConvertTrivia(node.Modifiers(0).LeadingTrivia()))
                     Return FlagUnsupportedStatements(node, "Directive within Statement", CommentOutOriginalStatements:=True)
                 Else
@@ -504,7 +518,7 @@ End Function
                                                                     VBFactory.TokenList(Modifiers),
                                                                     InterfaceKeyword.WithLeadingTrivia(StatementLeadingTrivia),
                                                                     Identifier,
-                                                                    TypeParameterList).RestructureAttributesAndModifiers(ListOfAttributes.Count > 0, Modifiers.Count > 0),
+                                                                    TypeParameterList).RestructureAttributesAndModifiers(ListOfAttributes.Any, Modifiers.Any),
                                                                             VBS.InterfaceStatementSyntax
                                                                             ).WithTrailingEOL
                 Dim [inherits] As List(Of VBS.InheritsStatementSyntax) = New List(Of VBS.InheritsStatementSyntax)()
@@ -546,7 +560,7 @@ End Function
                         Throw New OperationCanceledException
                     End If
                     members.Add(DirectCast(node.Members(i).Accept(Me), VBS.StatementSyntax))
-                    If i = 0 AndAlso LeadingTrivia.Count > 0 Then
+                    If i = 0 AndAlso LeadingTrivia.Any Then
                         members(0) = members(0).WithPrependedLeadingTrivia(LeadingTrivia)
                     End If
                     If i = LastMemberIndex Then
@@ -597,7 +611,7 @@ End Function
                                                                             StructureKeyword.WithConvertedTriviaFrom(node.Keyword),
                                                                             GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False),
                                                                             TypeParameterList
-                                                                            ).RestructureAttributesAndModifiers(ListOfAttributes.Count > 0, Modifiers.Count > 0), VBS.StructureStatementSyntax).WithTrailingEOL
+                                                                            ).RestructureAttributesAndModifiers(ListOfAttributes.Any, Modifiers.Any), VBS.StructureStatementSyntax).WithTrailingEOL
 
                 Dim StructureBlock As VBS.StructureBlockSyntax = VBFactory.StructureBlock(
                                                     StructureStatement,
@@ -618,7 +632,7 @@ End Function
 
                 ' These errors are handled elsewhere just ignore
                 ReplaceStatementWithMarkedStatements(node, StructureBlock)
-                If ErrorModifiers.Count > 0 Then
+                If ErrorModifiers.Any Then
                     StructureBlock = StructureBlock.WithPrependedLeadingTrivia(VBFactory.CommentTrivia($"' TODO TASK: VB has no direct equivalent to C# {String.Join(" or ", ErrorModifiers)} Structure"))
                 End If
                 Return StructureBlock
@@ -642,7 +656,7 @@ End Function
                 Dim clause As VBS.ImportsClauseSyntax = VBFactory.SimpleImportsClause([Alias], ImportsName)
                 Dim import As VBS.ImportsStatementSyntax = VBFactory.ImportsStatement(VBFactory.SingletonSeparatedList(clause)).WithConvertedTriviaFrom(node)
                 Dim MatchNotFound As Boolean = True
-                If _allImports.Count > 0 Then
+                If _allImports.Any Then
                     For Each ImportStatement As VBS.ImportsStatementSyntax In _allImports
                         Dim ImportsClause As VBS.SimpleImportsClauseSyntax = DirectCast(ImportStatement.ImportsClauses(0), VBS.SimpleImportsClauseSyntax)
                         If ImportsClause.Alias IsNot Nothing AndAlso ImportsClause.Alias.ToString = [Alias]?.ToString Then

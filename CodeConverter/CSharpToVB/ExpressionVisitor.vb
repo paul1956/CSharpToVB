@@ -75,7 +75,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             Private Function ConvertLambdaExpression(node As CSS.AnonymousFunctionExpressionSyntax, block As Object, parameters As SeparatedSyntaxList(Of CSS.ParameterSyntax), CS_Modifiers As SyntaxTokenList) As VBS.LambdaExpressionSyntax
                 Dim NodesList As New List(Of VBS.ParameterSyntax)
                 Dim Separators As New List(Of SyntaxToken)
-                If parameters.Count > 0 Then
+                If parameters.Any Then
                     Dim SeparatorCount As Integer = parameters.SeparatorCount
                     Dim CS_Separators As New List(Of SyntaxToken)
                     CS_Separators.AddRange(parameters.GetSeparators)
@@ -1659,7 +1659,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 If node.Parent.IsKind(CS.SyntaxKind.ElementAccessExpression) Then
                     CloseBraceTokenWithTrivia = CloseBraceTokenWithTrivia.WithTrailingTrivia(SpaceTrivia)
                 End If
-                If ExpressionItems.Count > 0 Then
+                If ExpressionItems.Any Then
                     RestructureNodesAndSeparators(OpenBraceTokenWithTrivia, ExpressionItems, Separators, CloseBraceTokenWithTrivia)
                     Dim ExpressionInitializers As SeparatedSyntaxList(Of VBS.ExpressionSyntax) = VBFactory.SeparatedList(ExpressionItems, Separators)
                     Return VBFactory.CollectionInitializer(OpenBraceTokenWithTrivia, ExpressionInitializers, CloseBraceTokenWithTrivia).WithConvertedLeadingTriviaFrom(node.NewKeyword)
@@ -1757,13 +1757,13 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     Dim CloseBraceTokenWithTrivia As SyntaxToken = VisualBasicSyntaxFactory.CloseBraceToken.With(CLoseBracketLeadingTriva, CLoseBracketTrailingTriva)
                     If node.IsKind(CS.SyntaxKind.ObjectInitializerExpression) Then
                         Dim WithKeywordWithTrivia As SyntaxToken = WithKeyword.WithTrailingTrivia(VBEOLTrivia)
-                        If Fields.Count > 0 Then
+                        If Fields.Any Then
                             RestructureNodesAndSeparators(OpenBraceTokenWithTrivia, Fields, Separators, CloseBraceTokenWithTrivia)
                             Return VBFactory.ObjectMemberInitializer(WithKeywordWithTrivia, OpenBraceTokenWithTrivia, VBFactory.SeparatedList(Fields, Separators), CloseBraceTokenWithTrivia).WithConvertedTriviaFrom(node)
                         End If
                         RestructureNodesAndSeparators(OpenBraceTokenWithTrivia, Expressions, Separators, CloseBraceTokenWithTrivia)
 
-                        If Expressions.Count > 0 Then
+                        If Expressions.Any Then
                             If Not Expressions(ExpressionLastIndex).ContainsEOLTrivia Then
                                 Expressions(ExpressionLastIndex) = Expressions(ExpressionLastIndex).WithAppendedTrailingTrivia(VBEOLTrivia)
                                 Return VBFactory.ObjectCollectionInitializer(VBFactory.CollectionInitializer(OpenBraceTokenWithTrivia, VBFactory.SeparatedList(Expressions.OfType(Of VBS.ExpressionSyntax), Separators), CloseBraceTokenWithTrivia))
@@ -2122,6 +2122,13 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 End If
 
                 Dim Expression As VBS.ExpressionSyntax = DirectCast(node.Expression.Accept(Me), VBS.ExpressionSyntax).WithConvertedTriviaFrom(node.Expression)
+                Dim ValueText As String
+                If node.Expression.IsKind(CS.SyntaxKind.IdentifierName) Then
+                    ValueText = CType(Expression, VBS.IdentifierNameSyntax).Identifier.ValueText
+                    If ValueText.EndsWith("_renamed", StringComparison.OrdinalIgnoreCase) Then
+                        Expression = VBFactory.ParseExpression($"Me.{ValueText.Replace("_renamed", "", StringComparison.OrdinalIgnoreCase)})").WithTriviaFrom(Expression)
+                    End If
+                End If
 
                 If TypeOf Expression Is VBS.NewExpressionSyntax AndAlso Not TypeOf Expression Is VBS.ArrayCreationExpressionSyntax Then
                     Dim UniqueName As String = MethodBodyVisitor.GetUniqueVariableNameInScope(node, "tempVar", _mSemanticModel)
@@ -2181,6 +2188,12 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 End If
                 Dim OperatorToken As SyntaxToken = DotToken.With(ConvertTrivia(node.OperatorToken.LeadingTrivia).ToList, OperatorTrailingTrivia)
                 Dim Name As VBS.SimpleNameSyntax = DirectCast(node.Name.Accept(Me).With(NewNameLeadingTrivia, ConvertTrivia(node.Name.GetTrailingTrivia)), VBS.SimpleNameSyntax)
+                ValueText = Name.Identifier.ValueText
+                Dim keywordKind As VB.SyntaxKind = VB.SyntaxFacts.GetKeywordKind(valueText)
+                If VB.SyntaxFacts.IsKeywordKind(keywordKind) Then
+                    Dim nameSyntax As IdentifierNameSyntax = VBFactory.IdentifierName($"[{ValueText}]")
+                    Name = Name.WithIdentifier(nameSyntax.Identifier)
+                End If
                 OperatorTrailingTrivia.Clear()
 
                 If Expression.GetLastToken.ContainsEOLTrivia Then

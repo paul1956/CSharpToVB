@@ -62,7 +62,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         End If
 
                     End If
-                    If returnType.GetTrailingTrivia.Count > 0 AndAlso returnType.GetTrailingTrivia.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                    If returnType.GetTrailingTrivia.Any AndAlso returnType.GetTrailingTrivia.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
                         Dim TrailingTrivia As New List(Of SyntaxTrivia)
                         TrailingTrivia.AddRange(returnType.GetTrailingTrivia)
                         Dim Index As Integer = TrailingTrivia.Count - 1
@@ -85,10 +85,10 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
 
                 Dim newAttributes As VBS.AttributeListSyntax()
                 Dim modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, IsModule, TokenContext.Local)
-                If (modifiers.Count = 0 AndAlso returnType IsNot Nothing) OrElse node.Modifiers.Any(CS.SyntaxKind.ThisKeyword) Then
+                If (modifiers.Count = 0 AndAlso returnType IsNot Nothing) OrElse node.Modifiers.Contains(CS.SyntaxKind.ThisKeyword) Then
                     modifiers = VBFactory.TokenList(ByValKeyword).ToList
                     newAttributes = Array.Empty(Of VBS.AttributeListSyntax)
-                ElseIf node.Modifiers.Any(CS.SyntaxKind.OutKeyword) Then
+                ElseIf node.Modifiers.Contains(CS.SyntaxKind.OutKeyword) Then
                     newAttributes = {VBFactory.AttributeList(VBFactory.SingletonSeparatedList(VBFactory.Attribute(RuntimeInteropServicesOut)))}
                 Else
                     newAttributes = Array.Empty(Of VBS.AttributeListSyntax)
@@ -105,7 +105,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 If DefaultValue IsNot Nothing Then
                     modifiers.Add(OptionalKeyword.WithLeadingTrivia(TypeLeadingTrivia))
                 End If
-                If modifiers.Count > 0 AndAlso Not modifiers(0).RawKind = VB.SyntaxKind.ByValKeyword Then
+                If modifiers.Any AndAlso Not modifiers(0).RawKind = VB.SyntaxKind.ByValKeyword Then
                     If modifiers(0).RawKind = VB.SyntaxKind.OptionalKeyword OrElse
                         modifiers(0).RawKind = VB.SyntaxKind.ParamArrayKeyword Then
                         modifiers(0) = modifiers(0).WithLeadingTrivia(TypeLeadingTrivia)
@@ -129,7 +129,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim ParameterLeadingTrivia As New List(Of SyntaxTrivia)
                 Dim LeadingIndent As SyntaxTrivia = SpaceTrivia
 
-                If OriginalAttributeListWithTrivia.Count > 0 Then
+                If OriginalAttributeListWithTrivia.Any Then
                     For I As Integer = 0 To OriginalAttributeListWithTrivia.Count - 1
                         Dim AttributeLeadingTrivia As New List(Of SyntaxTrivia)
                         Dim AttributeTrailingTrivia As New List(Of SyntaxTrivia)
@@ -161,7 +161,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                     End If
                                     NeedEOL = False
                                 Case VB.SyntaxKind.WhitespaceTrivia
-                                    If AttributeLeadingTrivia.Count > 0 AndAlso AttributeLeadingTrivia?.Last.RawKind <> VB.SyntaxKind.WhitespaceTrivia Then
+                                    If AttributeLeadingTrivia.Any AndAlso AttributeLeadingTrivia?.Last.RawKind <> VB.SyntaxKind.WhitespaceTrivia Then
                                         AttributeLeadingTrivia.Add(SpaceTrivia)
                                     End If
                                     NeedEOL = False
