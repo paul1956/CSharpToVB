@@ -27,6 +27,18 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             Private Const IEnumerable As String = "IEnumerable"
             Private Const IEnumerableOf As String = "IEnumerable(Of "
 
+            Private Shared Function ConvertStatementIntoComment(node As CSS.ConditionalAccessExpressionSyntax) As List(Of SyntaxTrivia)
+                Dim LeadTriviaList As New List(Of SyntaxTrivia)
+                Dim stringList As String() = node.ToFullString.SplitLines
+                LeadTriviaList.Add(VBEOLTrivia)
+                LeadTriviaList.Add(VBFactory.CommentTrivia($"' TODO VB does not allow directives here, original statement"))
+                For Each s As String In stringList
+                    LeadTriviaList.Add(VBEOLTrivia)
+                    LeadTriviaList.Add(VBFactory.CommentTrivia($"'    {s}"))
+                Next
+                Return LeadTriviaList
+            End Function
+
             Private Shared Function GetTypeSyntaxFromInterface(expressionConvertedType As ITypeSymbol) As VBS.TypeSyntax
 
                 If Not expressionConvertedType.AllInterfaces.Any Then
@@ -89,14 +101,24 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 End If
 
                 Dim header As VBS.LambdaHeaderSyntax
-                Dim symbol As IMethodSymbol = TryCast(ModelExtensions.GetSymbolInfo(_mSemanticModel, node).Symbol, IMethodSymbol)
+                Dim symbol As IMethodSymbol = Nothing
+                Dim returnsVoid As Boolean = True
+                Dim isErrorType As Boolean = True
+                Try
+                    Dim _symbolInfo As SymbolInfo = ModelExtensions.GetSymbolInfo(_mSemanticModel, node)
+                    symbol = TryCast(_symbolInfo.Symbol, IMethodSymbol)
+                    returnsVoid = symbol.ReturnsVoid
+                    isErrorType = symbol.ReturnType.IsErrorType
+                Catch ex As Exception
+
+                End Try
+                Dim IsFunction As Boolean = Not (returnsVoid OrElse TypeOf node.Body Is CSS.AssignmentExpressionSyntax)
                 Dim Modifiers As List(Of SyntaxToken) = ConvertModifiers(CS_Modifiers, IsModule, TokenContext.Local)
                 Dim EndSubOrFunctionStatement As VBS.EndBlockStatementSyntax
                 Dim parameterList As VBS.ParameterListSyntax = VBFactory.ParameterList(VBFactory.SeparatedList(NodesList, Separators))
-                Dim IsFunction As Boolean = Not (symbol.ReturnsVoid OrElse TypeOf node.Body Is CSS.AssignmentExpressionSyntax)
                 Dim Braces As (LeftBrace As SyntaxToken, RightBrace As SyntaxToken) = node.Body.GetBraces
                 If IsFunction Then
-                    Dim AddAsClause As Boolean = symbol.ReturnType.IsErrorType OrElse symbol.ReturnType.ToString.Contains("?", StringComparison.Ordinal)
+                    Dim AddAsClause As Boolean = isErrorType OrElse symbol.ReturnType.ToString.Contains("?", StringComparison.Ordinal)
                     Dim AsClause As VBS.SimpleAsClauseSyntax = If(AddAsClause,
                                                                   Nothing,
                                                                   VBFactory.SimpleAsClause(ConvertToType(symbol.ReturnType))
@@ -236,26 +258,29 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     Return True
                 End If
                 Dim _Typeinfo As TypeInfo
-                If TypeOf Node Is CSS.BinaryExpressionSyntax Then
-                    Dim BinaryExpression As CSS.BinaryExpressionSyntax = CType(Node, CSS.BinaryExpressionSyntax)
-                    If Not BinaryExpression.IsKind(CS.SyntaxKind.AddExpression) Then
-                        Return False
+                Try
+                    If TypeOf Node Is CSS.BinaryExpressionSyntax Then
+                        Dim BinaryExpression As CSS.BinaryExpressionSyntax = CType(Node, CSS.BinaryExpressionSyntax)
+                        If Not BinaryExpression.IsKind(CS.SyntaxKind.AddExpression) Then
+                            Return False
+                        End If
+                        _Typeinfo = ModelExtensions.GetTypeInfo(_mSemanticModel, BinaryExpression)
+                        If _Typeinfo.IsString Then
+                            Return True
+                        End If
+                        _Typeinfo = ModelExtensions.GetTypeInfo(_mSemanticModel, BinaryExpression.Left)
+                        If _Typeinfo.IsString Then
+                            Return True
+                        End If
+                        _Typeinfo = ModelExtensions.GetTypeInfo(_mSemanticModel, BinaryExpression.Right)
+                    ElseIf TypeOf Node Is CSS.MemberAccessExpressionSyntax Then
+                        _Typeinfo = ModelExtensions.GetTypeInfo(_mSemanticModel, CType(Node, CSS.MemberAccessExpressionSyntax).Expression)
+                    Else
+                        _Typeinfo = ModelExtensions.GetTypeInfo(_mSemanticModel, Node)
                     End If
-                    _Typeinfo = ModelExtensions.GetTypeInfo(_mSemanticModel, BinaryExpression)
-                    If _Typeinfo.IsString Then
-                        Return True
-                    End If
-                    _Typeinfo = ModelExtensions.GetTypeInfo(_mSemanticModel, BinaryExpression.Left)
-                    If _Typeinfo.IsString Then
-                        Return True
-                    End If
-                    _Typeinfo = ModelExtensions.GetTypeInfo(_mSemanticModel, BinaryExpression.Right)
-                ElseIf TypeOf Node Is CSS.MemberAccessExpressionSyntax Then
-                    Dim MemberAccessExpression As CSS.MemberAccessExpressionSyntax = CType(Node, CSS.MemberAccessExpressionSyntax)
-                    _Typeinfo = ModelExtensions.GetTypeInfo(_mSemanticModel, MemberAccessExpression.Expression)
-                Else
-                    _Typeinfo = ModelExtensions.GetTypeInfo(_mSemanticModel, Node)
-                End If
+                Catch ex As Exception
+
+                End Try
                 Return _Typeinfo.IsString
             End Function
 
@@ -812,7 +837,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                             SimpleAs = VBFactory.SimpleAsClause(AsKeyword.WithTrailingTrivia(SpaceTrivia), attributeLists:=Nothing, TupleType.WithLeadingTrivia(SpaceTrivia)).WithLeadingTrivia(SpaceTrivia)
                                         End If
                                     Else
-                                        Dim GenericType As TypeSyntax = ConvertToType(Type.ToString)
+                                        Dim GenericType As VBS.TypeSyntax = ConvertToType(Type.ToString)
                                         SimpleAs = VBFactory.SimpleAsClause(AsKeyword.WithTrailingTrivia(SpaceTrivia), attributeLists:=Nothing, GenericType.WithLeadingTrivia(SpaceTrivia)).WithLeadingTrivia(SpaceTrivia)
                                     End If
                                 End If
@@ -1420,9 +1445,12 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     TrailingTriviaList.AddRange(expression.WithRestructuredingEOLTrivia.GetTrailingTrivia)
                     expression = expression.WithoutTrailingTrivia
                 End If
+                If node.OperatorToken.ContainsDirectives Then
+                    Dim StatementWithIssues As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
+                    StatementWithIssues.AddMarker(VBFactory.EmptyStatement().WithLeadingTrivia(ConvertStatementIntoComment(node)).WithTrailingEOL, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
+                End If
                 Return VBFactory.ConditionalAccessExpression(expression, QuestionToken.WithTrailingTrivia(TrailingTriviaList), DirectCast(node.WhenNotNull.Accept(Me), VBS.ExpressionSyntax)).WithConvertedTriviaFrom(node)
             End Function
-
             Public Overrides Function VisitConditionalExpression(node As CSS.ConditionalExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Dim NodesOrTokens As New List(Of SyntaxNodeOrToken) From {
                     node.Condition,
@@ -1440,19 +1468,19 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim CS_WhenTrue As CSS.ExpressionSyntax = node.WhenTrue
                 Dim WhenTrue As VBS.ExpressionSyntax = Nothing
                 If Not CS_WhenTrue.IsKind(CS.SyntaxKind.ThrowExpression) Then
-                    WhenTrue = DirectCast(ConvertAndModifyNodeTrivia(node.WhenTrue.Accept(Me), NodesOrTokens, 2), VBS.ExpressionSyntax)
+                    WhenTrue = DirectCast(ConvertAndModifyNodeTrivia(node.WhenTrue.Accept(Me), NodesOrTokens, Index:=2), VBS.ExpressionSyntax)
                 End If
 
-                Dim FirstCommaToken As SyntaxToken = ConvertAndModifyTokenTrivia(CommaToken, NodesOrTokens, 1)
+                Dim FirstCommaToken As SyntaxToken = ConvertAndModifyTokenTrivia(CommaToken, NodesOrTokens, Index:=1)
 
                 Dim CS_WhenFalse As CSS.ExpressionSyntax = node.WhenFalse
                 Dim WhenFalse As VBS.ExpressionSyntax = Nothing
                 If Not CS_WhenFalse.IsKind(CS.SyntaxKind.ThrowExpression) Then
-                    WhenFalse = DirectCast(ConvertAndModifyNodeTrivia(node.WhenFalse.Accept(Me), NodesOrTokens, 4), VBS.ExpressionSyntax)
+                    WhenFalse = DirectCast(ConvertAndModifyNodeTrivia(node.WhenFalse.Accept(Me), NodesOrTokens, Index:=4), VBS.ExpressionSyntax)
                 End If
 
                 Dim IfKeywordWithTrivia As SyntaxToken = IfKeyword.WithConvertedLeadingTriviaFrom(node.Condition.GetFirstToken)
-                Dim SecondCommaToken As SyntaxToken = ConvertAndModifyTokenTrivia(CommaToken, NodesOrTokens, 3)
+                Dim SecondCommaToken As SyntaxToken = ConvertAndModifyTokenTrivia(CommaToken, NodesOrTokens, Index:=3)
 
                 If Not CS_WhenFalse.IsKind(CS.SyntaxKind.ThrowExpression) AndAlso Not CS_WhenTrue.IsKind(CS.SyntaxKind.ThrowExpression) Then
                     Return VBFactory.TernaryConditionalExpression(
@@ -1575,7 +1603,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         Dim OffsetFromLength As VBS.ExpressionSyntax = CType(RangeExpression.RightOperand.Accept(Me), VBS.ExpressionSyntax)
                         RightOperand = VBFactory.ParseExpression($"{LeftExpression}.Length{OffsetFromLength}")
                     Else
-                        RightOperand = CType(RangeExpression.RightOperand?.Accept(Me), ExpressionSyntax)
+                        RightOperand = CType(RangeExpression.RightOperand?.Accept(Me), VBS.ExpressionSyntax)
                     End If
                     If LeftOperand Is Nothing Then
                         Return VBFactory.ParseExpression($"{LeftExpression}.Substring(0, {RightOperand})")
@@ -2189,9 +2217,9 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim OperatorToken As SyntaxToken = DotToken.With(ConvertTrivia(node.OperatorToken.LeadingTrivia).ToList, OperatorTrailingTrivia)
                 Dim Name As VBS.SimpleNameSyntax = DirectCast(node.Name.Accept(Me).With(NewNameLeadingTrivia, ConvertTrivia(node.Name.GetTrailingTrivia)), VBS.SimpleNameSyntax)
                 ValueText = Name.Identifier.ValueText
-                Dim keywordKind As VB.SyntaxKind = VB.SyntaxFacts.GetKeywordKind(valueText)
+                Dim keywordKind As VB.SyntaxKind = VB.SyntaxFacts.GetKeywordKind(ValueText)
                 If VB.SyntaxFacts.IsKeywordKind(keywordKind) Then
-                    Dim nameSyntax As IdentifierNameSyntax = VBFactory.IdentifierName($"[{ValueText}]")
+                    Dim nameSyntax As VBS.IdentifierNameSyntax = VBFactory.IdentifierName($"[{ValueText}]")
                     Name = Name.WithIdentifier(nameSyntax.Identifier)
                 End If
                 OperatorTrailingTrivia.Clear()

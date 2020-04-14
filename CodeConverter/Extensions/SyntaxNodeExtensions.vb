@@ -660,6 +660,8 @@ Namespace CSharpToVBCodeConverter.Util
                                 Return node
                             ElseIf TrailingTrivia.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
                                 Return node.WithTrailingTrivia(VBEOLTrivia)
+                            ElseIf TrailingTrivia.Last.IsDirective Then
+                                Return node
                             End If
                             Stop
                         Case VB.SyntaxKind.CommentTrivia
@@ -775,7 +777,7 @@ Namespace CSharpToVBCodeConverter.Util
 
                 Case CS.SyntaxKind.ErrorDirectiveTrivia
                     Dim ErrorDirective As CSS.ErrorDirectiveTriviaSyntax = DirectCast(StructuredTrivia, CSS.ErrorDirectiveTriviaSyntax)
-                    Return VBFactory.CommentTrivia($"' TODO: Check VB does not support Error Directive Trivia, Original Directive {ErrorDirective.ToFullString}")
+                    Return VBFactory.CommentTrivia($"' TODO: Check VB does not support Error Directive Trivia, Original Directive {ErrorDirective.ToFullString.WithoutNewLines(" "c)}")
                 Case CS.SyntaxKind.IfDirectiveTrivia
                     If t.Token.Parent?.AncestorsAndSelf.OfType(Of CSS.InitializerExpressionSyntax).Any Then
                         IgnoredIfDepth += 1

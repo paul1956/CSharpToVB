@@ -263,7 +263,7 @@ Namespace CSharpToVBCodeConverter.Util
                 NewTriviaList.AddRange(LeadingTriviaList)
                 NewTriviaList.Add(VBFactory.CommentTrivia($" ' TODO VB does not allow Disabled Text here, original text:"))
                 NewTriviaList.Add(VBEOLTrivia)
-                Dim TextStrings() As String = Trivia.ToFullString.Split({vbCrLf}, StringSplitOptions.RemoveEmptyEntries)
+                Dim TextStrings() As String = Trivia.ToFullString.SplitLines
                 For Each TriviaAsString In TextStrings
                     NewTriviaList.AddRange(LeadingTriviaList)
                     NewTriviaList.Add(VBFactory.CommentTrivia($" ' {TriviaAsString}".Replace("  ", " ", StringComparison.Ordinal).TrimEnd))

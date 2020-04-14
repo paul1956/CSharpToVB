@@ -289,19 +289,23 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             Private Function GetNodeBodyStatements(NodeExpressionBody As CSS.ArrowExpressionClauseSyntax) As SyntaxList(Of VBS.StatementSyntax)
                 Dim Statement As VBS.StatementSyntax
                 Dim ExpressionBody As VB.VisualBasicSyntaxNode = NodeExpressionBody.Accept(Me)
-                If TypeOf ExpressionBody Is VBS.ThrowStatementSyntax Then
-                    Statement = DirectCast(ExpressionBody, VBS.ThrowStatementSyntax)
-                ElseIf TypeOf ExpressionBody Is VBS.AssignmentStatementSyntax Then
-                    Statement = DirectCast(ExpressionBody, VBS.AssignmentStatementSyntax)
-                ElseIf TypeOf ExpressionBody Is VBS.ConditionalAccessExpressionSyntax Then
-                    Statement = VBFactory.ExpressionStatement(DirectCast(ExpressionBody, VBS.ExpressionSyntax))
-                ElseIf TypeOf ExpressionBody Is VBS.AddRemoveHandlerStatementSyntax Then
+                If TypeOf ExpressionBody Is VBS.TryBlockSyntax Then
+                    Dim TryBlock As VBS.TryBlockSyntax = CType(ExpressionBody, VBS.TryBlockSyntax)
+                    Dim StatementList As SyntaxList(Of VBS.StatementSyntax) = ReplaceStatementWithMarkedStatements(NodeExpressionBody, TryBlock.Statements(0))
+                    For i As Integer = 1 To TryBlock.Statements.Count - 1
+                        StatementList = StatementList.Add(TryBlock.Statements(i))
+                    Next
+                    Return StatementList
+                ElseIf TypeOf ExpressionBody Is VBS.AssignmentStatementSyntax OrElse
+                        TypeOf ExpressionBody Is VBS.AddRemoveHandlerStatementSyntax OrElse
+                        TypeOf ExpressionBody Is VBS.ThrowStatementSyntax Then
                     Statement = DirectCast(ExpressionBody, VBS.StatementSyntax)
                 Else
-                    Statement = VBFactory.ReturnStatement(DirectCast(ExpressionBody, VBS.ExpressionSyntax))
+                    Dim LeadingTrivia As New List(Of SyntaxTrivia)
+                    LeadingTrivia.AddRange(ExpressionBody.GetLeadingTrivia)
+                    Statement = VBFactory.ReturnStatement(DirectCast(ExpressionBody.WithLeadingTrivia(SpaceTrivia), VBS.ExpressionSyntax)).WithLeadingTrivia(LeadingTrivia)
                 End If
                 Return ReplaceStatementWithMarkedStatements(NodeExpressionBody, Statement.WithTrailingEOL)
-
             End Function
 
             Public Overrides Function VisitAnonymousObjectMemberDeclarator(node As CSS.AnonymousObjectMemberDeclaratorSyntax) As VB.VisualBasicSyntaxNode
@@ -670,6 +674,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 ParameterList = RelocateDirectivesInTrailingTrivia(ParameterList, FunctionStatementTrailingTrivia)
                 Dim block As SyntaxList(Of VBS.StatementSyntax)? = Nothing
 
+                Dim FunctionStatementLeadingTrivia As New List(Of SyntaxTrivia)
                 If node.Body IsNot Nothing Then
                     Dim StatementNodes As New List(Of VBS.StatementSyntax)
                     For i As Integer = 0 To node.Body.Statements.Count - 1
@@ -684,73 +689,18 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     Next
                     block = VBFactory.List(StatementNodes)
                 ElseIf node.ExpressionBody IsNot Nothing Then
-                    Dim Expression1 As VB.VisualBasicSyntaxNode = node.ExpressionBody.Expression.Accept(Me)
-                    If Expression1 Is Nothing Then
+                    Dim Statements As SyntaxList(Of VBS.StatementSyntax)
+                    If node.ExpressionBody.Expression Is Nothing Then
                         Return PrependStatementWithMarkedStatementTrivia(node, VBFactory.EmptyStatement.WithConvertedTriviaFrom(node))
                     End If
-                    Dim Statements As New SyntaxList(Of VBS.StatementSyntax)
-                    If ReturnVoid Then
-                        Select Case Expression1.Kind
-                            Case VB.SyntaxKind.SimpleAssignmentStatement
-                                Statements = VBFactory.SingletonList(DirectCast(Expression1, VBS.StatementSyntax))
-                            Case VB.SyntaxKind.InvocationExpression
-                                Dim LeadingTrivia As New List(Of SyntaxTrivia)
-                                LeadingTrivia.AddRange(Expression1.GetLeadingTrivia)
-                                Expression1 = Expression1.WithLeadingTrivia(SpaceTrivia)
-                                Statements = ReplaceStatementWithMarkedStatements(node.ExpressionBody, VBFactory.CallStatement(DirectCast(Expression1, VBS.ExpressionSyntax)).WithLeadingTrivia(LeadingTrivia))
-                            Case VB.SyntaxKind.ConditionalAccessExpression
-                                Statements = ReplaceStatementWithMarkedStatements(node.ExpressionBody, VBFactory.ExpressionStatement(DirectCast(Expression1, VBS.ExpressionSyntax)))
-                            Case VB.SyntaxKind.ThrowStatement
-                                Statements = VBFactory.SingletonList(DirectCast(Expression1, VBS.StatementSyntax))
-                            Case VB.SyntaxKind.TryBlock
-                                For Each Statement As VBS.StatementSyntax In CType(Expression1, VBS.TryBlockSyntax).Statements
-                                    Statements = Statements.Add(Statement)
-                                Next
-                            Case Else
-                                Statements = Nothing
-                                Stop
-                        End Select
+                    If node.ExpressionBody.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
+                        FunctionStatementLeadingTrivia.AddRange(ConvertTrivia(node.ExpressionBody.GetLeadingTrivia))
+                        Statements = GetNodeBodyStatements(node.ExpressionBody.WithoutLeadingTrivia)
                     Else
-                        If TypeOf Expression1 Is VBS.ThrowStatementSyntax Then
-                            Statements = VBFactory.SingletonList(Of VBS.StatementSyntax)(DirectCast(Expression1, VBS.ThrowStatementSyntax))
-                        Else
-                            Dim ReturnExpression As VBS.ExpressionSyntax
-                            Dim StatementList As New List(Of VBS.StatementSyntax)
-                            If TypeOf Expression1 Is VBS.AssignmentStatementSyntax Then
-                                Dim Assignment As VBS.AssignmentStatementSyntax = DirectCast(Expression1, VBS.AssignmentStatementSyntax)
-                                StatementList.Add(Assignment.WithoutTrivia)
-                                ReturnExpression = Assignment.Left.WithTriviaFrom(Expression1)
-                            Else
-                                ReturnExpression = DirectCast(Expression1, VBS.ExpressionSyntax)
-                            End If
-                            Dim StatementLeadingTrivia As New List(Of SyntaxTrivia)
-                            Dim StatementTrailingTrivia As New List(Of SyntaxTrivia)
-                            If node.ExpressionBody.Expression.IsKind(CS.SyntaxKind.DefaultLiteralExpression) Then
-                                StatementLeadingTrivia.InsertRange(0, CheckCorrectnessLeadingTrivia(DirectCast(Nothing, CS.CSharpSyntaxNode), AttemptToPortMade:=True, "VB Does not support ""Default"""))
-                                Dim ReturnStatement As VBS.ReturnStatementSyntax = VBFactory.ReturnStatement(ReturnExpression.WithLeadingTrivia(SpaceTrivia))
-                                Dim ReturnStartementWithTrivia As VBS.ReturnStatementSyntax = ReturnStatement.
-                                                With(StatementLeadingTrivia, ConvertTrivia(node.ExpressionBody.Expression.GetTrailingTrivia)).
-                                                WithAppendedTrailingTrivia(ConvertTrivia(node.SemicolonToken.TrailingTrivia)).
-                                                WithTrailingEOL
-                                StatementList.AddRange(ReplaceStatementWithMarkedStatements(node, ReturnStartementWithTrivia))
-                            Else
-                                Dim newTrailingTrivia As New List(Of SyntaxTrivia)
-                                newTrailingTrivia.AddRange(ConvertTrivia(node.ExpressionBody.Expression.GetTrailingTrivia))
-                                If ReturnExpression.GetTrailingTrivia.ContainsCommentOrDirectiveTrivia Then
-                                    newTrailingTrivia.AddRange(ReturnExpression.GetTrailingTrivia)
-                                End If
-                                If node.ExpressionBody.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
-                                    StatementLeadingTrivia.InsertRange(0, ConvertTrivia(node.ExpressionBody.GetLeadingTrivia))
-                                End If
-                                StatementList.AddRange(ReplaceStatementWithMarkedStatements(node.ExpressionBody, VBFactory.ReturnStatement(ReturnExpression).
-                                                      With(StatementLeadingTrivia, newTrailingTrivia).
-                                                      WithAppendedTrailingTrivia(ConvertTrivia(node.SemicolonToken.TrailingTrivia)).
-                                                      WithTrailingEOL
-                                                  ))
-                            End If
-                            Statements = VBFactory.List(StatementList)
-                        End If
+                        Statements = GetNodeBodyStatements(node.ExpressionBody)
+
                     End If
+                    Statements = GetNodeBodyStatements(node.ExpressionBody)
                     block = ReplaceStatementsWithMarkedStatements(node, Statements)
                 End If
                 If node.Modifiers.Contains(CS.SyntaxKind.ExternKeyword) Then
@@ -811,7 +761,6 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     End If
                 End If
 
-                Dim FunctionStatementLeadingTrivia As New List(Of SyntaxTrivia)
                 If Attributes.Any Then
                     FunctionStatementLeadingTrivia.AddRange(Attributes(0).GetLeadingTrivia)
                     Attributes(0) = Attributes(0).WithLeadingTrivia(SpaceTrivia)

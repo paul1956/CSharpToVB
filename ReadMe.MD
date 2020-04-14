@@ -64,6 +64,10 @@ It will try to create a VB project File from the original C# project file.
 https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json is added to NuGet Package Source to find
 Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpecific attributes used for testing.
 
+  New in Release 4.3.0.1
+  - Minor fix for Deconstruction inside ArrowExpressionClauseSyntax
+  - Add comment to show original code where directives are removed in ArrowExpressionClauseSyntax
+
   New in Release 4.3.0.0
   - Major rewrite of ArrowExpressionClauseSyntax handling
   - Fix issue #24 You can now specify VB Options that are included in converted file and what values the Options are
