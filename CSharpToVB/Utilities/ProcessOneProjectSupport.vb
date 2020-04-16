@@ -34,7 +34,7 @@ Partial Public Class Form1
         Return ReferenceList
     End Function
 
-    Private Shared Async Function GetAnalyzer(sourceProjectNameWithPath As String, manager As AnalyzerManager) As Task(Of ProjectAnalyzer)
+    Private Shared Async Function GetAnalyzer(sourceProjectNameWithPath As String, manager As IAnalyzerManager) As Task(Of IProjectAnalyzer)
         Return Await Task.Run(Function() manager.GetProject(sourceProjectNameWithPath)).ConfigureAwait(True)
     End Function
 
@@ -42,7 +42,7 @@ Partial Public Class Form1
         Return Await Task.Run(Function() New AnalyzerManager()).ConfigureAwait(True)
     End Function
 
-    Private Shared Async Function GetResults(analyzer As ProjectAnalyzer) As Task(Of AnalyzerResults)
+    Private Shared Async Function GetResults(analyzer As ProjectAnalyzer) As Task(Of IAnalyzerResults)
         Return Await Task.Run(Function() analyzer.Build()).ConfigureAwait(True)
     End Function
 
@@ -116,29 +116,28 @@ Partial Public Class Form1
 
     Private Async Function ProcessOneProjectUI(manager As AnalyzerManager, sourceProjectNameWithPath As String, projectSavePath As String, _cancellationTokenSource As CancellationTokenSource) As Task(Of Boolean)
         LabelProgress.Text = "Getting Project Analyzer"
-        Dim TaskAnalyzer As Task(Of ProjectAnalyzer) = GetAnalyzer(sourceProjectNameWithPath, manager)
+        Dim TaskAnalyzer As Task(Of IProjectAnalyzer) = GetAnalyzer(sourceProjectNameWithPath, manager)
         While Not TaskAnalyzer.IsCompleted
             If _cancellationTokenSource.IsCancellationRequested Then
                 Return False
             End If
             Await Task.Delay(100).ConfigureAwait(True)
         End While
-        Dim analyzer As ProjectAnalyzer = TaskAnalyzer.Result
 
         LabelProgress.Text = "Getting Analyzer Results"
-        Dim TaskResults As Task(Of AnalyzerResults) = GetResults(analyzer)
+        Dim TaskResults As Task(Of IAnalyzerResults) = GetResults(CType(TaskAnalyzer.Result, ProjectAnalyzer))
         While Not TaskResults.IsCompleted
             If _cancellationTokenSource.IsCancellationRequested Then
                 Return False
             End If
             Await Task.Delay(100).ConfigureAwait(True)
         End While
-        Dim results As AnalyzerResults = TaskResults.Result
+        Dim results As IAnalyzerResults = TaskResults.Result
         LabelProgress.Visible = False
         ProgressBar1.Visible = False
         Dim Framework As String = String.Empty
         If TryGetFramework(results.TargetFrameworks.ToList, Framework) Then
-            Using workspace As AdhocWorkspace = analyzer.GetWorkspace()
+            Using workspace As AdhocWorkspace = CType(TaskAnalyzer.Result, ProjectAnalyzer).GetWorkspace()
                 If Not workspace.CurrentSolution.Projects.Any Then
                     Return False
                 End If
@@ -152,7 +151,7 @@ Partial Public Class Form1
                                         results(Framework).References,
                                         results(Framework).ProjectReferences).ToArray
                                         ).ConfigureAwait(True)
-        End Using
+            End Using
         Else
             SetButtonStopAndCursor(Me, ButtonStopConversion, StopButtonVisible:=False)
             MsgBox($"No framework is specified, processing project will terminate!", MsgBoxStyle.Exclamation, "Framework Warning")

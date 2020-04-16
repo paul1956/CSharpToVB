@@ -66,6 +66,7 @@ Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpec
 
   New in Release 4.3.0.3
   - Fix #45 missing () when Properties are called
+  - Upgrade Buildalyzer
 
   New in Release 4.3.0.2
   - Fix #14 formatting of Array Literals
