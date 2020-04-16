@@ -1852,7 +1852,6 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     Throw UnreachableException
                 End If
                 Dim Expression As VBS.ExpressionSyntax = DirectCast(node.Expression.Accept(Me), VBS.ExpressionSyntax).WithoutTrailingTrivia
-
                 Dim ArgumentList1 As VBS.ArgumentListSyntax = DirectCast(node.ArgumentList.Accept(Me), VBS.ArgumentListSyntax)
                 Dim NewTrailingTrivia As List(Of SyntaxTrivia) = ArgumentList1.GetTrailingTrivia.ToList
                 NewTrailingTrivia.AddRange(ConvertTrivia(node.GetTrailingTrivia))
@@ -1884,8 +1883,17 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     Case Else
 
                 End Select
-                Dim invocationExpressionSyntax1 As VBS.InvocationExpressionSyntax = VBFactory.InvocationExpression(Expression, ArgumentList1).WithConvertedLeadingTriviaFrom(node).WithTrailingTrivia(NewTrailingTrivia)
-                Return invocationExpressionSyntax1
+                Dim invocationExpressionSyntax1 As VBS.InvocationExpressionSyntax = VBFactory.InvocationExpression(Expression, ArgumentList1).WithConvertedLeadingTriviaFrom(node)
+                Dim methodInfo As TypeInfo
+                Try
+                    methodInfo = ModelExtensions.GetTypeInfo(_mSemanticModel, node.Expression)
+                Catch ex As Exception
+
+                End Try
+                If methodInfo.Type?.Name = "Func" Then
+                    Return VBFactory.InvocationExpression(invocationExpressionSyntax1.WithoutTrailingTrivia, VBFactory.ArgumentList()).WithTrailingTrivia(NewTrailingTrivia)
+                End If
+                Return invocationExpressionSyntax1.WithTrailingTrivia(NewTrailingTrivia)
             End Function
 
             ''' <summary>
