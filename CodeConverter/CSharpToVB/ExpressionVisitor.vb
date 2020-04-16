@@ -1663,6 +1663,10 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     Dim ItemWithTrivia As VB.VisualBasicSyntaxNode
                     Try
                         ItemWithTrivia = e.Accept(Me).WithConvertedTriviaFrom(e).RemoveExtraLeadingEOL.NormalizeWhitespaceEx(useDefaultCasing:=True, indentation:="    ")
+                        Dim LeadingTrivia As SyntaxTriviaList = e.GetLeadingTrivia
+                        If LeadingTrivia.Any AndAlso LeadingTrivia.Last.IsKind(CS.SyntaxKind.WhitespaceTrivia) Then
+                            ItemWithTrivia = ItemWithTrivia.WithPrependedLeadingTrivia(ConvertTrivia(LeadingTrivia.Last))
+                        End If
                         If TypeOf ItemWithTrivia Is VBS.NamedFieldInitializerSyntax Then
                             NamedFieldItems.Add(DirectCast(ItemWithTrivia, VBS.NamedFieldInitializerSyntax))
                         ElseIf TypeOf ItemWithTrivia Is VBS.AssignmentStatementSyntax Then
