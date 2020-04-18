@@ -48,17 +48,17 @@ Partial Public Class Form1
 
     Private Shared Function TryGetFramework(TargetFrameworks As List(Of String), ByRef framework As String) As Boolean
         Select Case TargetFrameworks.Count
-                    Case 0
-                        Return False
-                    Case 1
+            Case 0
+                Return False
+            Case 1
                 framework = TargetFrameworks(0)
-                    Case Else
+            Case Else
                 Using F As New FrameworkSelectionDialog
                     F.SetFrameworkList(TargetFrameworks)
                     If F.ShowDialog <> DialogResult.OK Then
                         Return False
                     End If
-                        Framework = F.CurrentFramework
+                    framework = F.CurrentFramework
                 End Using
         End Select
         Return True
@@ -66,51 +66,51 @@ Partial Public Class Form1
 
     Private Async Function ProcessOneProjectCore(currentProject As Project, sourceProjectNameWithPath As String, projectSavePath As String, Framework As String, References As MetadataReference()) As Task(Of Boolean)
         If _cancellationTokenSource.IsCancellationRequested Then
-                            Return False
-                        End If
-                Dim xmlDoc As New XmlDocument With {
-                                .PreserveWhitespace = True
-                            }
-                xmlDoc.Load(currentProject.FilePath)
-                Dim root As XmlNode = xmlDoc.FirstChild
-                If root.Attributes.Count > 0 AndAlso root.Attributes(0).Name.StartsWith("Microsoft.NET.Sdk", StringComparison.OrdinalIgnoreCase) Then
-                    ConvertProjectFile(projectSavePath, currentProject.FilePath, xmlDoc)
-                End If
+            Return False
+        End If
+        Dim xmlDoc As New XmlDocument With {
+                        .PreserveWhitespace = True
+                    }
+        xmlDoc.Load(currentProject.FilePath)
+        Dim root As XmlNode = xmlDoc.FirstChild
+        If root.Attributes.Count > 0 AndAlso root.Attributes(0).Name.StartsWith("Microsoft.NET.Sdk", StringComparison.OrdinalIgnoreCase) Then
+            ConvertProjectFile(projectSavePath, currentProject.FilePath, xmlDoc)
+        End If
 
-                Dim FilesProcessed As Integer = 0
-                Dim TotalFilesToProcess As Integer = currentProject.Documents.Count
-                Dim CSPreprocessorSymbols As New List(Of String) From {
-                                            Framework
-                                        }
-                Dim VBPreprocessorSymbols As New List(Of KeyValuePair(Of String, Object)) From {
-                                            KeyValuePair.Create(Of String, Object)(Framework, True)
-                                        }
+        Dim FilesProcessed As Integer = 0
+        Dim TotalFilesToProcess As Integer = currentProject.Documents.Count
+        Dim CSPreprocessorSymbols As New List(Of String) From {
+                                    Framework
+                                }
+        Dim VBPreprocessorSymbols As New List(Of KeyValuePair(Of String, Object)) From {
+                                    KeyValuePair.Create(Of String, Object)(Framework, True)
+                                }
 
-                For Each currentDocument As Document In currentProject.Documents
+        For Each currentDocument As Document In currentProject.Documents
             If _cancellationTokenSource.IsCancellationRequested Then
                 Return False
             End If
-                    Dim targetFileWithPath As String = DestinationFilePath(Path.GetDirectoryName(sourceProjectNameWithPath), projectSavePath, currentDocument.FilePath)
-                    If ParseCSharpSource(currentDocument.GetTextAsync(Nothing).Result.ToString,
-                                             CSPreprocessorSymbols).GetRoot.SyntaxTree.IsGeneratedCode(Function(t As SyntaxTrivia) As Boolean
-                                                                                                           Return t.IsComment OrElse t.IsRegularOrDocComment
-                                                                                                       End Function, _cancellationTokenSource.Token) Then
-                        TotalFilesToProcess -= 1
-                        FilesConversionProgress.Text = $"Processed {FilesProcessed:N0} of {TotalFilesToProcess:N0} Files"
-                        Application.DoEvents()
-                        Continue For
-                    Else
-                        FilesProcessed += 1
-                        ListBoxFileList.Items.Add(New NumberedListItem($"{FilesProcessed.ToString(Globalization.CultureInfo.InvariantCulture),-5} {currentDocument.FilePath}", $"{targetFileWithPath}{Path.DirectorySeparatorChar}{Path.GetFileNameWithoutExtension(currentDocument.Name)}.vb"))
-                        ListBoxFileList.SelectedIndex = ListBoxFileList.Items.Count - 1
-                        FilesConversionProgress.Text = $"Processed {FilesProcessed:N0} of {TotalFilesToProcess:N0} Files"
-                        Application.DoEvents()
-                    End If
-                    If Not Await ProcessFileAsync(currentDocument.FilePath, targetFileWithPath, "cs", CSPreprocessorSymbols, VBPreprocessorSymbols, References, _cancellationTokenSource.Token).ConfigureAwait(True) _
-                                    OrElse _requestToConvert.CancelToken.IsCancellationRequested Then
-                        Return False
-                    End If
-                Next currentDocument
+            Dim targetFileWithPath As String = DestinationFilePath(Path.GetDirectoryName(sourceProjectNameWithPath), projectSavePath, currentDocument.FilePath)
+            If ParseCSharpSource(currentDocument.GetTextAsync(Nothing).Result.ToString,
+                                     CSPreprocessorSymbols).GetRoot.SyntaxTree.IsGeneratedCode(Function(t As SyntaxTrivia) As Boolean
+                                                                                                   Return t.IsComment OrElse t.IsRegularOrDocComment
+                                                                                               End Function, _cancellationTokenSource.Token) Then
+                TotalFilesToProcess -= 1
+                FilesConversionProgress.Text = $"Processed {FilesProcessed:N0} of {TotalFilesToProcess:N0} Files"
+                Application.DoEvents()
+                Continue For
+            Else
+                FilesProcessed += 1
+                ListBoxFileList.Items.Add(New NumberedListItem($"{FilesProcessed.ToString(Globalization.CultureInfo.InvariantCulture),-5} {currentDocument.FilePath}", $"{targetFileWithPath}{Path.DirectorySeparatorChar}{Path.GetFileNameWithoutExtension(currentDocument.Name)}.vb"))
+                ListBoxFileList.SelectedIndex = ListBoxFileList.Items.Count - 1
+                FilesConversionProgress.Text = $"Processed {FilesProcessed:N0} of {TotalFilesToProcess:N0} Files"
+                Application.DoEvents()
+            End If
+            If Not Await ProcessFileAsync(currentDocument.FilePath, targetFileWithPath, "cs", CSPreprocessorSymbols, VBPreprocessorSymbols, References, _cancellationTokenSource.Token).ConfigureAwait(True) _
+                            OrElse _requestToConvert.CancelToken.IsCancellationRequested Then
+                Return False
+            End If
+        Next currentDocument
         Return True
     End Function
 

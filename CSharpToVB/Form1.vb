@@ -667,45 +667,45 @@ Partial Public Class Form1
                 SourceFolderName = .SelectedPath
                 ProjectSavePath = GetFoldertSavePath((.SelectedPath), "cs", ConvertingProject:=False)
             End With
-            If Not Directory.Exists(SourceFolderName) Then
-                MsgBox($"{SourceFolderName} is not a directory.", Title:="C# to VB")
-                Exit Sub
-            End If
-            If String.IsNullOrWhiteSpace(ProjectSavePath) Then
-                MsgBox($"Conversion aborted.", Title:="C# to VB")
-                Exit Sub
-            End If
-            Dim LastFileNameWithPath As String = If(My.Settings.StartFolderConvertFromLastFile, My.Settings.MRU_Data.Last, "")
-            Dim Stats As New ProcessingStats(LastFileNameWithPath)
-            _cancellationTokenSource = New CancellationTokenSource
-            StatusStripElapasedTimeLabel.Text = ""
-            ' Create new stopwatch
-            Dim stopwatch As New Stopwatch()
-            ' Begin timing
-            stopwatch.Start()
-            If Await ProcessAllFilesAsync(SourceFolderName,
-                                ProjectSavePath,
-                                "cs",
-                                Stats,
-                                _cancellationTokenSource.Token
-                                ).ConfigureAwait(True) Then
-                stopwatch.Stop()
-                If _cancellationTokenSource.Token.IsCancellationRequested Then
-                    MsgBox($"Conversion canceled, {Stats.FilesProcessed} files completed successfully.", MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground Or MsgBoxStyle.OkOnly, Title:="C# to VB")
-                Else
-                    MsgBox($"Conversion completed, {Stats.FilesProcessed} files completed successfully.", MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground Or MsgBoxStyle.OkOnly, Title:="C# to VB")
-                    mnuOptionsStartFolderConvertFromLastFile.Checked = False
-                    My.Settings.StartFolderConvertFromLastFile = False
-                    My.Settings.Save()
-                    Application.DoEvents()
-                End If
-            Else
-                stopwatch.Stop()
-                MsgBox($"Conversion stopped.", MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground Or MsgBoxStyle.OkOnly, Title:="C# to VB")
-            End If
-            Dim elapsed As TimeSpan = stopwatch.Elapsed
-            StatusStripElapasedTimeLabel.Text = $"Elapsed Time - {elapsed.Hours}:{elapsed.Minutes}:{elapsed.Seconds}.{elapsed.Milliseconds}"
         End Using
+        If Not Directory.Exists(SourceFolderName) Then
+            MsgBox($"{SourceFolderName} is not a directory.", Title:="C# to VB")
+            Exit Sub
+        End If
+        If String.IsNullOrWhiteSpace(ProjectSavePath) Then
+            MsgBox($"Conversion aborted.", Title:="C# to VB")
+            Exit Sub
+        End If
+        Dim LastFileNameWithPath As String = If(My.Settings.StartFolderConvertFromLastFile, My.Settings.MRU_Data.Last, "")
+        Dim Stats As New ProcessingStats(LastFileNameWithPath)
+        _cancellationTokenSource = New CancellationTokenSource
+        StatusStripElapasedTimeLabel.Text = ""
+        ' Create new stopwatch
+        Dim stopwatch As New Stopwatch()
+        ' Begin timing
+        stopwatch.Start()
+        If Await ProcessAllFilesAsync(SourceFolderName,
+                            ProjectSavePath,
+                            "cs",
+                            Stats,
+                            _cancellationTokenSource.Token
+                            ).ConfigureAwait(True) Then
+            stopwatch.Stop()
+            If _cancellationTokenSource.Token.IsCancellationRequested Then
+                MsgBox($"Conversion canceled, {Stats.FilesProcessed} files completed successfully.", MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground Or MsgBoxStyle.OkOnly, Title:="C# to VB")
+            Else
+                MsgBox($"Conversion completed, {Stats.FilesProcessed} files completed successfully.", MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground Or MsgBoxStyle.OkOnly, Title:="C# to VB")
+                mnuOptionsStartFolderConvertFromLastFile.Checked = False
+                My.Settings.StartFolderConvertFromLastFile = False
+                My.Settings.Save()
+                Application.DoEvents()
+            End If
+        Else
+            stopwatch.Stop()
+            MsgBox($"Conversion stopped.", MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground Or MsgBoxStyle.OkOnly, Title:="C# to VB")
+        End If
+        Dim elapsed As TimeSpan = stopwatch.Elapsed
+        StatusStripElapasedTimeLabel.Text = $"Elapsed Time - {elapsed.Hours}:{elapsed.Minutes}:{elapsed.Seconds}.{elapsed.Milliseconds}"
 
     End Sub
 
@@ -823,8 +823,10 @@ Partial Public Class Form1
                 If Not String.IsNullOrWhiteSpace(projectSavePath) Then
                     SetButtonStopAndCursor(MeForm:=Me, StopButton:=ButtonStopConversion, StopButtonVisible:=True)
                     Try
-                        ListBoxErrorList.Text = ""
-                        ListBoxFileList.Text = ""
+                        ListBoxErrorList.Items.Clear()
+                        ListBoxFileList.Items.Clear()
+                        RichTextBoxConversionInput.Clear()
+                        RichTextBoxConversionOutput.Clear()
                         LabelProgress.Text = "Getting Analyzer Manger"
                         LabelProgress.Visible = True
                         ProgressBar1.Visible = True
