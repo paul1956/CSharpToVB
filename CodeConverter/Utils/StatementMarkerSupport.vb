@@ -56,22 +56,22 @@ Public Module StatementMarker
                 NewTrivia = NewTrivia.Add(VBEOLTrivia)
             Next
         End If
-        Dim sb As New StringBuilder
+        Dim strBuilder As New StringBuilder
         For Each chr As String In FullString
             If chr.IsNewLine Then
-                If sb.Length > 0 Then
-                    NewTrivia = NewTrivia.Add(VBFactory.CommentTrivia($"' {sb.ToString.Trim}"))
+                If strBuilder.Length > 0 Then
+                    NewTrivia = NewTrivia.Add(VBFactory.CommentTrivia($"' {strBuilder.ToString.Trim}"))
                     NewTrivia = NewTrivia.Add(VBEOLTrivia)
-                    sb.Clear()
+                    strBuilder.Clear()
                 End If
             ElseIf chr = vbTab Then
-                sb.Append("    ")
+                strBuilder.Append("    ")
             Else
-                sb.Append(chr)
+                strBuilder.Append(chr)
             End If
         Next
-        If sb.Length > 0 Then
-            NewTrivia = NewTrivia.Add(VBFactory.CommentTrivia($"' {sb}"))
+        If strBuilder.Length > 0 Then
+            NewTrivia = NewTrivia.Add(VBFactory.CommentTrivia($"' {strBuilder}"))
             NewTrivia = NewTrivia.Add(VBEOLTrivia)
         End If
 

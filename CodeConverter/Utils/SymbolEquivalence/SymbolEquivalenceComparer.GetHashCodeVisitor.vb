@@ -202,8 +202,7 @@ Partial Friend Class SymbolEquivalenceComparer
             End If
 
             If x.TypeParameterKind = TypeParameterKind.Type AndAlso x.ContainingType.IsAnonymousType Then
-                ' Anonymous type type parameters compare by index as well to prevent
-                ' recursion.
+                ' Anonymous type, type parameters compare by index as well to prevent recursion.
                 Return currentHash
             End If
 

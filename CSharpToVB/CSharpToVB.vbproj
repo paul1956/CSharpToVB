@@ -26,8 +26,8 @@
     <Product>CSharp To VB Converter</Product>
     <Copyright>Copyright (c) .NET Foundation and Contributors</Copyright>
     <PackageId>CSharp To VB Converter</PackageId>
-    <AssemblyVersion>4.3.1.0</AssemblyVersion>
-    <FileVersion>4.3.1.0</FileVersion>
+    <AssemblyVersion>4.3.1.1</AssemblyVersion>
+    <FileVersion>4.3.1.1</FileVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <NoWarn />

@@ -63,6 +63,9 @@ It will try to create a VB project File from the original C# project file.
 
 https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json is added to NuGet Package Source to find
 Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpecific attributes used for testing.
+  New in Release 4.3.1.1
+  - Spelling corrections
+
   New in Release 4.3.1.0
   - Support double-click in file list Window to open C# and VB File for Folder Convert in addition to Project Convert 
 
@@ -103,7 +106,7 @@ New in Release 4.2.8.0
 - Fix conversion of x ??= y to use x = If(x, y)
 - If you just type a random Snippet that does not look like a program this version will not try compile it, and will be able to convert anything that can be converted inside a function.
 - Fix version display in splash screen
-- Add ability to open some default browsers at the GitHub issues page for this repo. Currently only iE, Chrome and Edge are supported, if you would like additional browsers supported open an issue with browser ProgID from registry and full path.
+- Add ability to open some default browsers at the GitHub issues page for this Repo. Currently only iE, Chrome and Edge are supported, if you would like additional browsers supported open an issue with browser ProgID from registry and full path.
 - Fix case when handling
 - Fix coalescing assignment operator handling
 - Fix formatting around deleted break statements

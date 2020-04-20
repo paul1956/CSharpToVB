@@ -254,7 +254,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 If Node.ToString.
                         TrimEnd(")"c).
                         TrimEnd("("c).
-                        EndsWith("tostring", StringComparison.OrdinalIgnoreCase) Then
+                        EndsWith("ToString", StringComparison.OrdinalIgnoreCase) Then
                     Return True
                 End If
                 Dim _Typeinfo As TypeInfo

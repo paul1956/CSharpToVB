@@ -13,7 +13,6 @@ Imports System.Reflection
 Imports System.Runtime.InteropServices
 Imports System.Runtime.Serialization
 Imports System.Security
-Imports System.Security.AccessControl
 Imports System.Security.Permissions
 Imports System.Security.Principal
 Imports System.Threading
@@ -195,7 +194,7 @@ Namespace Microsoft.VisualBasic.ApplicationServices
         'Whether we have made it through the processing of OnInitialize
         Private _shutdownStyle As ShutdownMode
 
-        'For splash screens with a minimum display time, this let's us know when that time has expired and it is ok to close the splash screen.
+        'For splash screens with a minimum display time, this let's us know when that time has expired and it is OK to close the splash screen.
         Private _splashScreen As Form
 
         Private _splashTimer As Timers.Timer
@@ -519,8 +518,13 @@ Namespace Microsoft.VisualBasic.ApplicationServices
                     _mutexSingleInstance.WaitOne()
                     ' Maximum wait 3 seconds
                     _namedPipeClientStream.Connect(3000)
-                Catch ex As Exception When TypeOf ex Is IOException OrElse TypeOf ex Is ObjectDisposedException
+                Catch ex As Exception When TypeOf ex Is IOException OrElse TypeOf ex Is TimeoutException
                     ' Error connecting or sending
+                    Throw New CantStartSingleInstanceException
+                Catch ex As ObjectDisposedException
+                    ' EndWaitForConnection will throw exception when someone closes the pipe before connection made
+                    ' In that case we don't create any more pipes and just return
+                    ' This will happen when app is closing and our pipe is closed/disposed
                 Finally
                     _mutexSingleInstance.ReleaseMutex()
                 End Try
@@ -562,7 +566,10 @@ Namespace Microsoft.VisualBasic.ApplicationServices
                         Else
                             Throw New CantStartSingleInstanceException()
                         End If
-                    Catch ex As Exception When TypeOf ex Is IOException OrElse TypeOf ex Is ObjectDisposedException
+                    Catch ex As Exception When TypeOf ex Is IOException OrElse TypeOf ex Is TimeoutException
+                        ' Error connecting or sending
+                        Throw New CantStartSingleInstanceException
+                    Catch ex As ObjectDisposedException
                         ' EndWaitForConnection will throw exception when someone closes the pipe before connection made
                         ' In that case we don't create any more pipes and just return
                         ' This will happen when app is closing and our pipe is closed/disposed
@@ -583,27 +590,6 @@ Namespace Microsoft.VisualBasic.ApplicationServices
         ''' <param name="namedPipeID"></param>
         ''' <returns>The applications Unique NamedPipeServerStream</returns>
         Private Function NamedPipeServerCreateServer(namedPipeID As String) As NamedPipeServerStream
-            ' Create a new pipe accessible by local authenticated users, disallow network
-            'var sidAuthUsers = new SecurityIdentifier(WellKnownSidType.AuthenticatedUserSid, null);
-            Dim sidNetworkService As New SecurityIdentifier(WellKnownSidType.NetworkServiceSid, Nothing)
-            Dim sidWorld As New SecurityIdentifier(WellKnownSidType.WorldSid, Nothing)
-
-            Dim pipeSecurity As New PipeSecurity
-
-            ' Deny network access to the pipe
-            Dim accessRule As New PipeAccessRule(sidNetworkService, PipeAccessRights.ReadWrite, AccessControlType.Deny)
-            pipeSecurity.AddAccessRule(accessRule)
-
-            ' Allow Everyone to read/write
-            accessRule = New PipeAccessRule(sidWorld, PipeAccessRights.ReadWrite, AccessControlType.Allow)
-            pipeSecurity.AddAccessRule(accessRule)
-
-            ' Current user is the owner
-            Dim sidOwner As SecurityIdentifier = WindowsIdentity.GetCurrent().Owner
-            If sidOwner IsNot Nothing Then
-                accessRule = New PipeAccessRule(sidOwner, PipeAccessRights.FullControl, AccessControlType.Allow)
-                pipeSecurity.AddAccessRule(accessRule)
-            End If
             Dim namedPipeServerStream As NamedPipeServerStream = Nothing
             Try
                 ' Create pipe and start the async connection wait
@@ -677,7 +663,7 @@ Namespace Microsoft.VisualBasic.ApplicationServices
         <EditorBrowsable(EditorBrowsableState.Advanced)>
         <SecuritySafeCritical()>
         Protected Sub HideSplashScreen()
-            SyncLock _splashLock 'This ultimately wasn't necessary.  I suppose we better keep it for backwards compat
+            SyncLock _splashLock 'This ultimately wasn't necessary.  I suppose we better keep it for backwards comparability
                 'Dev10 590587 - we now activate the main form before calling Dispose on the Splash screen. (we're just
                 '       swapping the order of the two If blocks). This is to fix the issue where the main form
                 '       doesn't come to the front after the Splash screen disappears
@@ -736,7 +722,7 @@ Namespace Microsoft.VisualBasic.ApplicationServices
                 ShowSplashScreen()
             End If
 
-            _finishedOnInitilaize = True 'we are now at a point where we can allow the network object to be created since the iprincipal is on the thread by now.
+            _finishedOnInitilaize = True 'we are now at a point where we can allow the network object to be created since the iPrincipal is on the thread by now.
             Return True 'true means to not bail out but keep on running after OnIntiailize() finishes
         End Function
 
@@ -856,7 +842,7 @@ Namespace Microsoft.VisualBasic.ApplicationServices
             If Not _didSplashScreen Then
                 _didSplashScreen = True
                 If _splashScreen Is Nothing Then
-                    OnCreateSplashScreen() 'If the user specified a splash screen, the designer will have overriden this method to set it
+                    OnCreateSplashScreen() 'If the user specified a splash screen, the designer will have overridden this method to set it
                 End If
                 If _splashScreen IsNot Nothing Then
                     'Some splash screens have minimum face time they are supposed to get.  We'll set up a time to let us know when we can take it down.
@@ -904,7 +890,7 @@ Namespace Microsoft.VisualBasic.ApplicationServices
             'CONSIDER: We may want to make this public so users can set up what Single-Instance means to them, e.g. for us, separate paths mean different instances, etc.
 
             Dim permissions As New PermissionSet(PermissionState.None)
-            permissions.AddPermission(New FileIOPermission(PermissionState.Unrestricted)) 'Chicken and egg problem.  All I need is PathDiscovery for the location of this assembly but to get the location of the assembly (see Getname below) I need to know the path which I can't get without asserting...
+            permissions.AddPermission(New FileIOPermission(PermissionState.Unrestricted)) 'Chicken and egg problem.  All I need is PathDiscovery for the location of this assembly but to get the location of the assembly (see GetName below) I need to know the path which I can't get without asserting...
             permissions.AddPermission(New SecurityPermission(SecurityPermissionFlag.UnmanagedCode))
             permissions.Assert()
 
@@ -959,6 +945,13 @@ Namespace Microsoft.VisualBasic.ApplicationServices
                 ' We are not the first instance send payload And stop loading
                 ' Notify first instance by sending args
                 NamedPipeClientSendOptions(namedPipeID, commandLine)
+            Catch ex As Exception When TypeOf ex Is IOException OrElse TypeOf ex Is TimeoutException
+                ' Error connecting or sending
+                Throw New CantStartSingleInstanceException
+            Catch ex As ObjectDisposedException
+                ' EndWaitForConnection will throw exception when someone closes the pipe before connection made
+                ' In that case we don't create any more pipes and just return
+                ' This will happen when app is closing and our pipe is closed/disposed
             Finally
                 If _namedPipeServerStream IsNot Nothing Then
                     If _namedPipeServerStream.IsConnected Then
@@ -1005,7 +998,7 @@ Namespace Microsoft.VisualBasic.ApplicationServices
                         'Note: Initially I used Process::MainWindowHandle to obtain an open form.  But that is bad for two reasons:
                         '1 - It appears to be broken and returns NULL sometimes even when there is still a window around.  WinForms people are looking at that issue.
                         '2 - It returns the first window it hits from enum thread windows, which is not necessarily a windows forms form, so that doesn't help us even if it did work
-                        'all the time.  So I'll use one of our open forms.  We may not necessairily get a visible form here but that's ok.  Some apps may run on an invisible window
+                        'all the time.  So I'll use one of our open forms.  We may not necessarily get a visible form here but that's OK.  Some apps may run on an invisible window
                         'and we need to keep them going until all windows close.
                         MainForm = forms(0)
                     Else
