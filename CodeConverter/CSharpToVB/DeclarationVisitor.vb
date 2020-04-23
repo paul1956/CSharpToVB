@@ -463,7 +463,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim FinalTrailingDirective As New List(Of SyntaxTrivia)
                 ConvertAndSplitAttributes(node.AttributeLists, Attributes, ReturnAttributes, FinalTrailingDirective)
                 Dim Modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, IsModule, TokenContext.Member)
-                Dim Identifier As SyntaxToken = GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False).WithTrailingTrivia(SpaceTrivia)
+                Dim Identifier As SyntaxToken = GenerateSafeVBToken(node.Identifier).WithTrailingTrivia(SpaceTrivia)
                 Dim AsClause As VBS.SimpleAsClauseSyntax = VBFactory.SimpleAsClause(attributeLists:=ReturnAttributes, DirectCast(node.Type.Accept(Me), VBS.TypeSyntax))
                 Modifiers.Add(CustomKeyword)
                 Dim stmt As VBS.EventStatementSyntax = VBFactory.EventStatement(attributeLists:=VBFactory.List(Attributes), VBFactory.TokenList(Modifiers), Identifier, parameterList:=Nothing, AsClause, implementsClause:=Nothing).WithTrailingEOL
@@ -659,7 +659,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     s_usedStacks.Push(s_usedIdentifiers)
                 End SyncLock
 
-                Dim id As SyntaxToken = GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False)
+                Dim id As SyntaxToken = GenerateSafeVBToken(node.Identifier)
                 Dim visitor As New MethodBodyVisitor(_mSemanticModel, Me)
 
                 Dim methodInfo As ISymbol = ModelExtensions.GetDeclaredSymbol(_mSemanticModel, node)
@@ -1056,7 +1056,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim Identifier As SyntaxToken
                 Dim propertyStatement As VBS.PropertyStatementSyntax
                 If node.ExplicitInterfaceSpecifier Is Nothing Then
-                    Identifier = GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False)
+                    Identifier = GenerateSafeVBToken(node.Identifier)
                     Dim PropertySymbol As ISymbol = _mSemanticModel.GetDeclaredSymbol(node)
                     ImplementsClause = s_implementedMembers.GetImplementsClauseForProperty(CType(PropertySymbol, IPropertySymbol))
                 Else

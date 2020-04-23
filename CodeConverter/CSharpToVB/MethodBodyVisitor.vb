@@ -84,70 +84,69 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
 
                 If TypeOf node.[Else].Statement Is CSS.IfStatementSyntax Then
                     Dim [elseIf] As CSS.IfStatementSyntax = DirectCast(node.[Else].Statement, CSS.IfStatementSyntax)
-                    Dim ElseIFKeywordWithTrivia As SyntaxToken = ElseIfKeyword.WithLeadingTrivia(ConvertTrivia(node.[Else].Statement.GetLeadingTrivia)).WithPrependedLeadingTrivia(ConvertTrivia(node.[Else].GetLeadingTrivia))
-                    Dim NewThenTrailingTrivia As New List(Of SyntaxTrivia)
-                    Dim Condition As VBS.ExpressionSyntax = DirectCast([elseIf].Condition.Accept(_nodesVisitor), VBS.ExpressionSyntax)
-                    NewThenTrailingTrivia.AddRange(Condition.GetTrailingTrivia)
+                    Dim elseIFKeywordWithTrivia As SyntaxToken = ElseIfKeyword.WithLeadingTrivia(ConvertTrivia(node.[Else].Statement.GetLeadingTrivia)).WithPrependedLeadingTrivia(ConvertTrivia(node.[Else].GetLeadingTrivia))
+                    Dim newThenTrailingTrivia As New List(Of SyntaxTrivia)
+                    Dim condition As VBS.ExpressionSyntax = DirectCast([elseIf].Condition.Accept(_nodesVisitor), VBS.ExpressionSyntax)
+                    newThenTrailingTrivia.AddRange(condition.GetTrailingTrivia)
                     If node.CloseParenToken.HasLeadingTrivia AndAlso node.CloseParenToken.LeadingTrivia.ContainsCommentOrDirectiveTrivia Then
-                        NewThenTrailingTrivia.AddRange(ConvertTrivia(node.CloseParenToken.LeadingTrivia))
+                        newThenTrailingTrivia.AddRange(ConvertTrivia(node.CloseParenToken.LeadingTrivia))
                     End If
-                    'NewThenTrailingTrivia.AddRange(ConvertTrivia([elseIf].GetLeadingTrivia))
-                    Dim ThenKeywordWIthTrivia As SyntaxToken = ThenKeyword.WithTrailingTrivia(NewThenTrailingTrivia)
-                    Dim ElseIfStatement As VBS.ElseIfStatementSyntax = VBFactory.ElseIfStatement(ElseIFKeywordWithTrivia, Condition.WithTrailingTrivia(SpaceTrivia), ThenKeywordWIthTrivia)
-                    Dim ElseIfBlock As VBS.ElseIfBlockSyntax = VBFactory.ElseIfBlock(ElseIfStatement.WithTrailingEOL, ConvertBlock([elseIf].Statement, OpenBraceTrailingTrivia, CloseBraceLeadingTrivia))
+                    Dim thenKeywordWithTrivia As SyntaxToken = ThenKeyword.WithTrailingTrivia(newThenTrailingTrivia)
+                    Dim elseIfStatement As VBS.ElseIfStatementSyntax = VBFactory.ElseIfStatement(elseIFKeywordWithTrivia, condition.WithTrailingTrivia(SpaceTrivia), thenKeywordWithTrivia)
+                    Dim elseIfBlock As VBS.ElseIfBlockSyntax = VBFactory.ElseIfBlock(elseIfStatement.WithTrailingEOL, ConvertBlock([elseIf].Statement, OpenBraceTrailingTrivia, CloseBraceLeadingTrivia))
                     If Not OpenBraceTrailingTrivia.ContainsCommentOrDirectiveTrivia Then
                         OpenBraceTrailingTrivia.Clear()
                     End If
                     If Not CloseBraceLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
                         CloseBraceLeadingTrivia.Clear()
                     End If
-                    elseIfBlocks.Add(ElseIfBlock)
+                    elseIfBlocks.Add(elseIfBlock)
                     CollectElseBlocks([elseIf], elseIfBlocks, elseBlock, OpenBraceTrailingTrivia, CloseBraceLeadingTrivia)
                 Else
-                    Dim Statements As SyntaxList(Of VBS.StatementSyntax) = ConvertBlock(node.[Else].Statement, OpenBraceTrailingTrivia, CloseBraceLeadingTrivia)
-                    Dim TrailingTriviaList As New List(Of SyntaxTrivia)
+                    Dim statements As SyntaxList(Of VBS.StatementSyntax) = ConvertBlock(node.[Else].Statement, OpenBraceTrailingTrivia, CloseBraceLeadingTrivia)
+                    Dim trailingTriviaList As New List(Of SyntaxTrivia)
                     If node.Else.Statement.GetBraces.Item1.HasTrailingTrivia Then
-                        TrailingTriviaList.AddRange(ConvertTrivia(node.Else.Statement.GetBraces.Item1.TrailingTrivia))
+                        trailingTriviaList.AddRange(ConvertTrivia(node.Else.Statement.GetBraces.Item1.TrailingTrivia))
                     End If
-                    Dim ElseStatement As VBS.ElseStatementSyntax = VBFactory.ElseStatement(ElseKeyword.WithConvertedLeadingTriviaFrom(node.Else.ElseKeyword)).WithTrailingTrivia(TrailingTriviaList)
+                    Dim elseStatement As VBS.ElseStatementSyntax = VBFactory.ElseStatement(ElseKeyword.WithConvertedLeadingTriviaFrom(node.Else.ElseKeyword)).WithTrailingTrivia(trailingTriviaList)
 
-                    elseBlock = VBFactory.ElseBlock(ElseStatement, Statements).WithPrependedLeadingTrivia(OpenBraceTrailingTrivia).WithAppendedTrailingTrivia(CloseBraceLeadingTrivia)
+                    elseBlock = VBFactory.ElseBlock(elseStatement, statements).WithPrependedLeadingTrivia(OpenBraceTrailingTrivia).WithAppendedTrailingTrivia(CloseBraceLeadingTrivia)
                     OpenBraceTrailingTrivia.Clear()
                     CloseBraceLeadingTrivia.Clear()
                 End If
             End Sub
 
-            Private Function ConvertBlock(node As CSS.StatementSyntax, ByRef OpenBraceTrailiningTrivia As List(Of SyntaxTrivia), ByRef CloseBraceLeadingTrivia As List(Of SyntaxTrivia)) As SyntaxList(Of VBS.StatementSyntax)
-                Dim Braces As (OpenBrace As SyntaxToken, CloseBrace As SyntaxToken) = node.GetBraces
-                Dim OpenBrace As SyntaxToken = If(Braces.OpenBrace = Nothing, New SyntaxToken, Braces.OpenBrace)
-                Dim OpenBraceLeadingTrivia As New List(Of SyntaxTrivia)
-                OpenBraceLeadingTrivia.AddRange(ConvertTrivia(OpenBrace.LeadingTrivia))
-                OpenBraceTrailiningTrivia.AddRange(ConvertTrivia(OpenBrace.TrailingTrivia))
-                Dim CloseBrace As SyntaxToken = If(Braces.CloseBrace = Nothing, New SyntaxToken, Braces.CloseBrace)
-                CloseBraceLeadingTrivia.AddRange(ConvertTrivia(CloseBrace.LeadingTrivia))
+            Private Function ConvertBlock(node As CSS.StatementSyntax, ByRef openBraceTrailiningTrivia As List(Of SyntaxTrivia), ByRef closeBraceLeadingTrivia As List(Of SyntaxTrivia)) As SyntaxList(Of VBS.StatementSyntax)
+                Dim csBraces As (OpenBrace As SyntaxToken, CloseBrace As SyntaxToken) = node.GetBraces
+                Dim csOpenBrace As SyntaxToken = If(csBraces.OpenBrace = Nothing, New SyntaxToken, csBraces.OpenBrace)
+                Dim openBraceLeadingTrivia As New List(Of SyntaxTrivia)
+                openBraceLeadingTrivia.AddRange(ConvertTrivia(csOpenBrace.LeadingTrivia))
+                openBraceTrailiningTrivia.AddRange(ConvertTrivia(csOpenBrace.TrailingTrivia))
+                Dim csCloseBrace As SyntaxToken = If(csBraces.CloseBrace = Nothing, New SyntaxToken, csBraces.CloseBrace)
+                closeBraceLeadingTrivia.AddRange(ConvertTrivia(csCloseBrace.LeadingTrivia))
                 Select Case True
                     Case TypeOf node Is CSS.BlockSyntax
-                        Dim NodeBlock As CSS.BlockSyntax = DirectCast(node, CSS.BlockSyntax)
-                        Dim StatementList As New List(Of VBS.StatementSyntax)
-                        For i As Integer = 0 To NodeBlock.Statements.Count - 1
-                            Dim Statements As List(Of VBS.StatementSyntax) = NodeBlock.Statements(i).Accept(Me).ToList
+                        Dim nodeBlock As CSS.BlockSyntax = DirectCast(node, CSS.BlockSyntax)
+                        Dim vbBlock As New List(Of VBS.StatementSyntax)
+                        For i As Integer = 0 To nodeBlock.Statements.Count - 1
+                            Dim Statements As List(Of VBS.StatementSyntax) = nodeBlock.Statements(i).Accept(Me).ToList
                             If i = 0 AndAlso Statements.Any Then
-                                Statements(0) = Statements(0).WithPrependedLeadingTrivia(OpenBraceLeadingTrivia)
+                                Statements(0) = Statements(0).WithPrependedLeadingTrivia(openBraceLeadingTrivia)
                             End If
-                            StatementList.AddRange(Statements)
+                            vbBlock.AddRange(Statements)
                         Next
 
-                        If StatementList.Count = 0 Then
-                            StatementList.Add(VBFactory.EmptyStatement.WithConvertedTriviaFrom(NodeBlock))
+                        If vbBlock.Count = 0 Then
+                            vbBlock.Add(VBFactory.EmptyStatement.WithConvertedTriviaFrom(nodeBlock))
                         Else
-                            If Not (StatementList.First.IsKind(VB.SyntaxKind.EmptyStatement) OrElse
-                                   (StatementList.First.IsKind(VB.SyntaxKind.TryBlock) AndAlso StatementList.First.GetLeadingTrivia.Count = 1)
+                            If Not (vbBlock.First.IsKind(VB.SyntaxKind.EmptyStatement) OrElse
+                                   (vbBlock.First.IsKind(VB.SyntaxKind.TryBlock) AndAlso vbBlock.First.GetLeadingTrivia.Count = 1)
                                     ) Then
-                                StatementList.Item(0) = StatementList(0).WithLeadingTrivia(ConvertTrivia(NodeBlock.Statements(0).GetLeadingTrivia)).WithPrependedLeadingTrivia(ConvertTrivia(node.GetLeadingTrivia))
+                                vbBlock.Item(0) = vbBlock(0).WithLeadingTrivia(ConvertTrivia(nodeBlock.Statements(0).GetLeadingTrivia)).WithPrependedLeadingTrivia(ConvertTrivia(node.GetLeadingTrivia))
                             End If
-                            StatementList.Item(StatementList.Count - 1) = StatementList.Last.WithTrailingTrivia(ConvertTrivia(NodeBlock.Statements.Last.GetTrailingTrivia)).WithTrailingEOL
+                            vbBlock.Item(vbBlock.Count - 1) = vbBlock.Last.WithTrailingTrivia(ConvertTrivia(nodeBlock.Statements.Last.GetTrailingTrivia)).WithTrailingEOL
                         End If
-                        Return VBFactory.List(StatementList)
+                        Return VBFactory.List(vbBlock)
                     Case TypeOf node Is CSS.EmptyStatementSyntax
                         Return VBFactory.List(Of VBS.StatementSyntax)()
                 End Select
@@ -156,36 +155,36 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             End Function
 
             Private Function ConvertCatchClause(index As Integer, catchClause As CSS.CatchClauseSyntax) As VBS.CatchBlockSyntax
-                Dim OpenBraceTrailingTrivia As New List(Of SyntaxTrivia)
-                Dim ClosingBraceLeadingTrivia As New List(Of SyntaxTrivia)
-                Dim statements As SyntaxList(Of VBS.StatementSyntax) = ConvertBlock(catchClause.Block, OpenBraceTrailingTrivia, ClosingBraceLeadingTrivia)
+                Dim openBraceTrailingTrivia As New List(Of SyntaxTrivia)
+                Dim closingBraceLeadingTrivia As New List(Of SyntaxTrivia)
+                Dim vbStatements As SyntaxList(Of VBS.StatementSyntax) = ConvertBlock(catchClause.Block, openBraceTrailingTrivia, closingBraceLeadingTrivia)
 
                 If catchClause.Declaration Is Nothing Then
-                    Return VBFactory.CatchBlock(VBFactory.CatchStatement().WithTrailingTrivia(VBEOLTrivia).WithAppendedTrailingTrivia(ClosingBraceLeadingTrivia), statements)
+                    Return VBFactory.CatchBlock(VBFactory.CatchStatement().WithTrailingTrivia(VBEOLTrivia).WithAppendedTrailingTrivia(closingBraceLeadingTrivia), vbStatements)
                 End If
-                If OpenBraceTrailingTrivia.Any OrElse ClosingBraceLeadingTrivia.Any Then
-                    statements = statements.Replace(statements(0), statements(0).WithPrependedLeadingTrivia(OpenBraceTrailingTrivia))
-                    Dim laststatement As Integer = statements.Count - 1
-                    statements = statements.Replace(statements(laststatement), statements(laststatement).WithAppendedTrailingTrivia(ClosingBraceLeadingTrivia))
+                If openBraceTrailingTrivia.Any OrElse closingBraceLeadingTrivia.Any Then
+                    vbStatements = vbStatements.Replace(vbStatements(0), vbStatements(0).WithPrependedLeadingTrivia(openBraceTrailingTrivia))
+                    Dim laststatement As Integer = vbStatements.Count - 1
+                    vbStatements = vbStatements.Replace(vbStatements(laststatement), vbStatements(laststatement).WithAppendedTrailingTrivia(closingBraceLeadingTrivia))
                 End If
                 Dim type As VBS.TypeSyntax = DirectCast(catchClause.Declaration.Type.Accept(_nodesVisitor), VBS.TypeSyntax)
                 Dim simpleTypeName As String
                 simpleTypeName = If(TypeOf type Is VBS.QualifiedNameSyntax, DirectCast(type, VBS.QualifiedNameSyntax).Right.ToString(), type.ToString())
                 Dim identifier As SyntaxToken = If(catchClause.Declaration.Identifier.IsKind(CS.SyntaxKind.None),
                                                         VBFactory.Identifier($"__unused{simpleTypeName}{index + 1}__"),
-                                                        GenerateSafeVBToken(catchClause.Declaration.Identifier, IsQualifiedName:=False, IsTypeName:=False))
-                Dim WhenClause As VBS.CatchFilterClauseSyntax = If(catchClause.Filter Is Nothing, Nothing, VBFactory.CatchFilterClause(filter:=DirectCast(catchClause.Filter.FilterExpression.Accept(_nodesVisitor), VBS.ExpressionSyntax)))
-                Dim CatchStatement As VBS.CatchStatementSyntax = VBFactory.CatchStatement(
+                                                        GenerateSafeVBToken(catchClause.Declaration.Identifier))
+                Dim whenClause As VBS.CatchFilterClauseSyntax = If(catchClause.Filter Is Nothing, Nothing, VBFactory.CatchFilterClause(filter:=DirectCast(catchClause.Filter.FilterExpression.Accept(_nodesVisitor), VBS.ExpressionSyntax)))
+                Dim catchStatement As VBS.CatchStatementSyntax = VBFactory.CatchStatement(
                                                                     VBFactory.IdentifierName(identifier),
                                                                     VBFactory.SimpleAsClause(type),
-                                                                    WhenClause).
+                                                                    whenClause).
                                                                     WithConvertedLeadingTriviaFrom(catchClause)
-                If Not CatchStatement.HasTrailingTrivia Then
-                    CatchStatement = CatchStatement.WithTrailingTrivia(VBEOLTrivia)
-                ElseIf CatchStatement.GetTrailingTrivia.Last <> VBEOLTrivia Then
-                    CatchStatement = CatchStatement.WithTrailingTrivia(VBEOLTrivia)
+                If Not catchStatement.HasTrailingTrivia Then
+                    catchStatement = catchStatement.WithTrailingTrivia(VBEOLTrivia)
+                ElseIf catchStatement.GetTrailingTrivia.Last <> VBEOLTrivia Then
+                    catchStatement = catchStatement.WithTrailingTrivia(VBEOLTrivia)
                 End If
-                Return VBFactory.CatchBlock(CatchStatement, statements)
+                Return VBFactory.CatchBlock(catchStatement, vbStatements)
             End Function
 
             Private Function ConvertForToSimpleForNext(node As CSS.ForStatementSyntax, <Out> ByRef block As VBS.StatementSyntax, ByRef HasVariable As Boolean) As Boolean
@@ -252,10 +251,16 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     If FromValue Is Nothing Then
                         Return False
                     End If
-                    ControlVariable = VBFactory.VariableDeclarator(VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(GenerateSafeVBToken(v.Identifier,
-                                                                                                                                                     IsQualifiedName:=False,
-                                                                                                                                                     IsTypeName:=False))),
-                                                                                                                                asClause:=If(node.Declaration.Type.IsVar, Nothing, VBFactory.SimpleAsClause(DirectCast(node.Declaration.Type.Accept(_nodesVisitor), VBS.TypeSyntax))), initializer:=Nothing)
+                    Dim names As SeparatedSyntaxList(Of VBS.ModifiedIdentifierSyntax) = VBFactory.SingletonSeparatedList(
+                        VBFactory.ModifiedIdentifier(
+                            GenerateSafeVBToken(v.Identifier,
+                                                IsQualifiedName:=False,
+                                                IsTypeName:=False)
+                                                        )
+                                                    )
+                    ControlVariable = VBFactory.VariableDeclarator(names,
+                                                                asClause:=If(node.Declaration.Type.IsVar, Nothing, VBFactory.SimpleAsClause(DirectCast(node.Declaration.Type.Accept(_nodesVisitor), VBS.TypeSyntax))),
+                                                                initializer:=Nothing)
                 Else
                     Dim initializer As CSS.AssignmentExpressionSyntax = TryCast(node.Initializers.FirstOrDefault(), CSS.AssignmentExpressionSyntax)
                     If initializer Is Nothing OrElse Not initializer.IsKind(CS.SyntaxKind.SimpleAssignmentExpression) Then

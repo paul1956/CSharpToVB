@@ -55,8 +55,10 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     symbolInfo = ModelExtensions.GetSymbolInfo(_mSemanticModel, originalName)
                 Catch ex As OperationCanceledException
                     Throw
+                Catch ex As ArgumentException
+                    Return name
                 Catch ex As Exception
-                    ' Ignore
+                    Throw
                 End Try
                 Dim symbol As ISymbol = If(symbolInfo.Symbol, symbolInfo.CandidateSymbols.FirstOrDefault())
                 If symbol?.IsKind(SymbolKind.Method) Then
@@ -87,7 +89,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 If node.Parent.IsKind(CS.SyntaxKind.ObjectCreationExpression) Then
                     Return WrapTypedNameIfNecessary(VBFactory.GenericName(GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=True).WithTrailingTrivia, TypeArgumentList), node)
                 End If
-                Return WrapTypedNameIfNecessary(VBFactory.GenericName(GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False).WithTrailingTrivia, TypeArgumentList), node)
+                Return WrapTypedNameIfNecessary(VBFactory.GenericName(GenerateSafeVBToken(node.Identifier).WithTrailingTrivia, TypeArgumentList), node)
             End Function
 
             Public Overrides Function VisitIdentifierName(node As CSS.IdentifierNameSyntax) As VB.VisualBasicSyntaxNode
@@ -106,7 +108,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         If ParentAsMemberAccessExpression.Expression.IsKind(CS.SyntaxKind.IdentifierName) Then
                             Dim IdentifierExpression As CSS.IdentifierNameSyntax = DirectCast(ParentAsMemberAccessExpression.Expression, CSS.IdentifierNameSyntax)
                             If IdentifierExpression.Identifier.ToString = node.Identifier.ToString Then
-                                Return WrapTypedNameIfNecessary(VBFactory.IdentifierName(GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False)), node)
+                                Return WrapTypedNameIfNecessary(VBFactory.IdentifierName(GenerateSafeVBToken(node.Identifier)), node)
                             End If
                         End If
                     End If

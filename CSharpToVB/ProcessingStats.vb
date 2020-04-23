@@ -9,4 +9,5 @@ Public NotInheritable Class ProcessingStats
 
     Public Property LastFileNameWithPath As String
     Public Property FilesProcessed As Long
+    Public Property TotalFilesToProcess As Long
 End Class

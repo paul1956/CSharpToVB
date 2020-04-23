@@ -173,12 +173,11 @@ End Function
                 ConvertBaseList(node, [inherits], [implements], s_implementedMembers)
 
                 Dim classType As ITypeSymbol = CType(_mSemanticModel.GetDeclaredSymbol(node), ITypeSymbol)
-
-                For i As Integer = 0 To MembersLastIndex
+                For Each e As IndexStruct(Of CSS.MemberDeclarationSyntax) In node.Members.WithIndex
                     If s_originalRequest.CancelToken.IsCancellationRequested Then
                         Throw New OperationCanceledException
                     End If
-                    Dim m As CSS.MemberDeclarationSyntax = node.Members(i)
+                    Dim m As CSS.MemberDeclarationSyntax = e.Value
                     Dim Statement As VBS.StatementSyntax = DirectCast(m.Accept(Me), VBS.StatementSyntax)
 
                     ' Cases below are handled by RestructureAttributesAndModifiers
@@ -219,7 +218,7 @@ End Function
                     Else
                         members.Add(Statement.WithConvertedTriviaFrom(m).WithTrailingEOL)
                     End If
-                    If i = 0 Then
+                    If e.IsFirst Then
                         If node.OpenBraceToken.LeadingTrivia.ContainsCommentOrDirectiveTrivia Then
                             If members.Any Then
                                 members(0) = members(0).WithPrependedLeadingTrivia(ConvertOpenBraceTrivia(node.OpenBraceToken))
@@ -230,7 +229,7 @@ End Function
                     End If
                 Next
 
-                Dim id As SyntaxToken = GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False).WithConvertedTrailingTriviaFrom(node.Identifier)
+                Dim id As SyntaxToken = GenerateSafeVBToken(node.Identifier).WithConvertedTrailingTriviaFrom(node.Identifier)
 
                 members.AddRange(PatchInlineHelpers(node, IsModule))
 
@@ -353,7 +352,7 @@ End Function
             End Function
 
             Public Overrides Function VisitDelegateDeclaration(node As CSS.DelegateDeclarationSyntax) As VB.VisualBasicSyntaxNode
-                Dim Identifier As SyntaxToken = GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False)
+                Dim Identifier As SyntaxToken = GenerateSafeVBToken(node.Identifier)
                 Dim methodInfo As INamedTypeSymbol = TryCast(ModelExtensions.GetDeclaredSymbol(_mSemanticModel, node), INamedTypeSymbol)
                 Dim AttributeLists As SyntaxList(Of VBS.AttributeListSyntax) = VBFactory.List(node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))
                 Dim Modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, IsModule)
@@ -458,7 +457,7 @@ End Function
                 Dim EnumStatement As VBS.EnumStatementSyntax = DirectCast(VBFactory.EnumStatement(ListOfAttributes,
                                                                                                VBFactory.TokenList(Modifiers),
                                                                                                EnumKeyword.WithConvertedTriviaFrom(node.EnumKeyword),
-                                                                                               identifier:=GenerateSafeVBToken(id:=node.Identifier, IsQualifiedName:=False, IsTypeName:=False),
+                                                                                               identifier:=GenerateSafeVBToken(id:=node.Identifier),
                                                                                                UnderlyingType).
                                                                                        RestructureAttributesAndModifiers(ListOfAttributes.Any, Modifiers.Any), VBS.EnumStatementSyntax)
 
@@ -472,7 +471,7 @@ End Function
 
             Public Overrides Function VisitEnumMemberDeclaration(node As CSS.EnumMemberDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim initializer As VBS.ExpressionSyntax = DirectCast(node.EqualsValue?.Value.Accept(Me), VBS.ExpressionSyntax)
-                Return VBFactory.EnumMemberDeclaration(VBFactory.List(node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) DirectCast(a.Accept(Me), VBS.AttributeListSyntax))), GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False), initializer:=If(initializer Is Nothing, Nothing, VBFactory.EqualsValue(initializer))).WithConvertedTriviaFrom(node)
+                Return VBFactory.EnumMemberDeclaration(VBFactory.List(node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) DirectCast(a.Accept(Me), VBS.AttributeListSyntax))), GenerateSafeVBToken(node.Identifier), initializer:=If(initializer Is Nothing, Nothing, VBFactory.EqualsValue(initializer))).WithConvertedTriviaFrom(node)
             End Function
 
             Public Overrides Function VisitExplicitInterfaceSpecifier(node As CSS.ExplicitInterfaceSpecifierSyntax) As VB.VisualBasicSyntaxNode
@@ -496,15 +495,14 @@ End Function
                     Return FlagUnsupportedStatements(node, "unsafe interfaces", CommentOutOriginalStatements:=True)
                 End If
                 Dim members As New List(Of VBS.StatementSyntax)
-                For i As Integer = 0 To node.Members.Count - 1
-                    Dim m As CSS.MemberDeclarationSyntax = node.Members(i)
-                    If i = 0 AndAlso node.OpenBraceToken.LeadingTrivia.ContainsCommentOrDirectiveTrivia Then
-                        members.Add(DirectCast(m.Accept(Me), VBS.StatementSyntax).WithPrependedLeadingTrivia(ConvertTrivia(node.OpenBraceToken.LeadingTrivia)))
+                For Each e As IndexStruct(Of CSS.MemberDeclarationSyntax) In node.Members.WithIndex
+                    If e.IsFirst AndAlso node.OpenBraceToken.LeadingTrivia.ContainsCommentOrDirectiveTrivia Then
+                        members.Add(DirectCast(e.Value.Accept(Me), VBS.StatementSyntax).WithPrependedLeadingTrivia(ConvertTrivia(node.OpenBraceToken.LeadingTrivia)))
                     Else
-                        members.Add(DirectCast(m.Accept(Me), VBS.StatementSyntax))
+                        members.Add(DirectCast(e.Value.Accept(Me), VBS.StatementSyntax))
                     End If
                 Next
-                Dim Identifier As SyntaxToken = GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False)
+                Dim Identifier As SyntaxToken = GenerateSafeVBToken(node.Identifier)
                 Dim TypeParameterList As VBS.TypeParameterListSyntax = DirectCast(node.TypeParameterList?.Accept(Me), VBS.TypeParameterListSyntax)
                 Dim StatementLeadingTrivia As New List(Of SyntaxTrivia)
                 If node.Modifiers.Any AndAlso Modifiers.Count = 0 Then
@@ -553,24 +551,23 @@ End Function
 
                 Dim LeadingTrivia As List(Of SyntaxTrivia) = ConvertOpenBraceTrivia(node.OpenBraceToken)
                 Dim members As New List(Of VBS.StatementSyntax)
-                Dim LastMemberIndex As Integer = node.Members.Count - 1
 
-                For i As Integer = 0 To LastMemberIndex
+                For Each e As IndexStruct(Of CSS.MemberDeclarationSyntax) In node.Members.WithIndex
                     If s_originalRequest.CancelToken.IsCancellationRequested Then
                         Throw New OperationCanceledException
                     End If
-                    members.Add(DirectCast(node.Members(i).Accept(Me), VBS.StatementSyntax))
-                    If i = 0 AndAlso LeadingTrivia.Any Then
+                    members.Add(DirectCast(e.Value.Accept(Me), VBS.StatementSyntax))
+                    If e.IsFirst AndAlso LeadingTrivia.Any Then
                         members(0) = members(0).WithPrependedLeadingTrivia(LeadingTrivia)
                     End If
-                    If i = LastMemberIndex Then
-                        members(LastMemberIndex) = members.Last.
-                                                        WithAppendedTrailingTrivia(ConvertTrivia(node.CloseBraceToken.LeadingTrivia)).
-                                                        WithAppendedTrailingTrivia(ConvertTrivia(node.CloseBraceToken.TrailingTrivia))
+                    If e.IsLast Then
+                        members(e.Index) = members.Last.
+                                                            WithAppendedTrailingTrivia(ConvertTrivia(node.CloseBraceToken.LeadingTrivia)).
+                                                            WithAppendedTrailingTrivia(ConvertTrivia(node.CloseBraceToken.TrailingTrivia))
                     End If
                 Next
 
-                Dim NamespaceStatement As VBS.NamespaceStatementSyntax = VBFactory.NamespaceStatement(NamespaceKeyword, DirectCast(node.Name.Accept(Me), VBS.NameSyntax))
+                    Dim NamespaceStatement As VBS.NamespaceStatementSyntax = VBFactory.NamespaceStatement(NamespaceKeyword, DirectCast(node.Name.Accept(Me), VBS.NameSyntax))
                 Dim members1 As SyntaxList(Of VBS.StatementSyntax) = VBFactory.List(members)
                 Dim EndNamespaceStatement As VBS.EndBlockStatementSyntax = VBFactory.EndNamespaceStatement
                 Dim namespaceBlock As VBS.NamespaceBlockSyntax = VBFactory.NamespaceBlock(NamespaceStatement, members1, EndNamespaceStatement).WithConvertedTriviaFrom(node)
@@ -609,7 +606,7 @@ End Function
                 StructureStatement = DirectCast(VBFactory.StructureStatement(ListOfAttributes,
                                                                             VBFactory.TokenList(Modifiers),
                                                                             StructureKeyword.WithConvertedTriviaFrom(node.Keyword),
-                                                                            GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False),
+                                                                            GenerateSafeVBToken(node.Identifier),
                                                                             TypeParameterList
                                                                             ).RestructureAttributesAndModifiers(ListOfAttributes.Any, Modifiers.Any), VBS.StructureStatementSyntax).WithTrailingEOL
 
@@ -648,7 +645,7 @@ End Function
                 Dim Identifier As SyntaxToken
                 If node.[Alias] IsNot Nothing Then
                     Dim name As CSS.IdentifierNameSyntax = node.[Alias].Name
-                    Identifier = GenerateSafeVBToken(name.Identifier, IsQualifiedName:=False, IsTypeName:=False)
+                    Identifier = GenerateSafeVBToken(name.Identifier)
                     [Alias] = VBFactory.ImportAliasClause(Identifier)
                 End If
                 ImportsName = DirectCast(node.Name.Accept(Me), VBS.NameSyntax)

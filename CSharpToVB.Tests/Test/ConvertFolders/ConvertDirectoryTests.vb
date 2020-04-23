@@ -30,7 +30,7 @@ Namespace ConvertDirectory.Tests
         End Property
 
         Private Async Function TestProcessDirectoryAsync(SourceDirectory As String) As Task(Of Boolean)
-            Return Await ProcessDirectoryAsync(SourceDirectory, TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, ListBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), TotalFilesToProcess:=0, AddressOf TestProcessFileAsync, CancellationToken.None)
+            Return Await ProcessDirectoryAsync(SourceDirectory, TargetDirectory:="", MeForm:=Nothing, StopButton:=Nothing, ListBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), AddressOf TestProcessFileAsync, CancellationToken.None)
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>

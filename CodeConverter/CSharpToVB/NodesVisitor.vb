@@ -170,7 +170,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
 
                 Dim SeparatedSyntaxListOfModifiedIdentifier As SeparatedSyntaxList(Of VBS.ModifiedIdentifierSyntax) =
                         VBFactory.SingletonSeparatedList(
-                            VBFactory.ModifiedIdentifier(GenerateSafeVBToken(Designation.Identifier, IsQualifiedName:=False, IsTypeName:=False)))
+                            VBFactory.ModifiedIdentifier(GenerateSafeVBToken(Designation.Identifier)))
                 Dim VariableType As VBS.TypeSyntax = DirectCast(node.Type.Accept(Me), VBS.TypeSyntax)
 
                 Dim SeparatedListOfvariableDeclarations As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) =
@@ -246,7 +246,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             ''' <returns></returns>
             ''' <remarks>Added by PC</remarks>
             Public Overrides Function VisitSingleVariableDesignation(Node As CSS.SingleVariableDesignationSyntax) As VB.VisualBasicSyntaxNode
-                Dim Identifier As SyntaxToken = GenerateSafeVBToken(Node.Identifier, IsQualifiedName:=False, IsTypeName:=False)
+                Dim Identifier As SyntaxToken = GenerateSafeVBToken(Node.Identifier)
                 Dim IdentifierExpression As VBS.IdentifierNameSyntax = VBFactory.IdentifierName(Identifier)
                 Dim ModifiedIdentifier As VBS.ModifiedIdentifierSyntax = VBFactory.ModifiedIdentifier(Identifier).WithTrailingTrivia(SpaceTrivia)
                 Dim SeparatedSyntaxListOfModifiedIdentifier As SeparatedSyntaxList(Of VBS.ModifiedIdentifierSyntax) =
@@ -395,7 +395,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         Dim _tryCast As VBS.TryCastExpressionSyntax = VBFactory.TryCastExpression(governingExpression, VariableType.WithLeadingTrivia(SpaceTrivia))
                         If Pattern.Designation.IsKind(CS.SyntaxKind.SingleVariableDesignation) Then
                             Dim designation As CSS.SingleVariableDesignationSyntax = CType(Pattern.Designation, CSS.SingleVariableDesignationSyntax)
-                            Dim identifierToken As SyntaxToken = GenerateSafeVBToken(designation.Identifier, IsQualifiedName:=False, IsTypeName:=False)
+                            Dim identifierToken As SyntaxToken = GenerateSafeVBToken(designation.Identifier)
                             If Not SwitchVariableDeclared Then
                                 Dim SeparatedSyntaxListOfModifiedIdentifier As SeparatedSyntaxList(Of VBS.ModifiedIdentifierSyntax) =
                                         VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(identifierToken))
@@ -445,11 +445,11 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         Dim Statements As SyntaxList(Of VBS.StatementSyntax)
                         Dim Identifier As SyntaxToken
                         If TypeOf VarPattern.Designation Is CSS.SingleVariableDesignationSyntax Then
-                            Identifier = GenerateSafeVBToken(id:=DirectCast(VarPattern.Designation, CSS.SingleVariableDesignationSyntax).Identifier, IsQualifiedName:=False, IsTypeName:=False)
+                            Identifier = GenerateSafeVBToken(id:=DirectCast(VarPattern.Designation, CSS.SingleVariableDesignationSyntax).Identifier)
                         ElseIf TypeOf VarPattern.Designation Is CSS.ParenthesizedVariableDesignationSyntax Then
                             Dim sBuilder As New StringBuilder
                             CreateDesignationName(ProcessVariableDesignation(CType(VarPattern.Designation, CSS.ParenthesizedVariableDesignationSyntax)), sBuilder)
-                            Identifier = GenerateSafeVBToken(id:=CS.SyntaxFactory.Identifier(sBuilder.ToString), IsQualifiedName:=False, IsTypeName:=False)
+                            Identifier = GenerateSafeVBToken(id:=CS.SyntaxFactory.Identifier(sBuilder.ToString))
                         Else
                             Stop
                             Throw UnreachableException
@@ -513,7 +513,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             End Function
 
             Public Overrides Function VisitVariableDeclarator(node As CSS.VariableDeclaratorSyntax) As VB.VisualBasicSyntaxNode
-                Dim Identifier As SyntaxToken = GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False)
+                Dim Identifier As SyntaxToken = GenerateSafeVBToken(node.Identifier)
                 Dim ArgumentList As New List(Of VBS.ArgumentSyntax)
                 If node.ArgumentList Is Nothing Then
                     Return VBFactory.ModifiedIdentifier(Identifier).WithTrailingTrivia(SpaceTrivia)

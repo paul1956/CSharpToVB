@@ -239,8 +239,13 @@ Namespace CSharpToVBCodeConverter
             End Select
         End Function
 
-        Public Function GenerateSafeVBToken(id As String, IsQualifiedName As Boolean, IsTypeName As Boolean) As SyntaxToken
-            Return GenerateSafeVBToken(CS.SyntaxFactory.Identifier(id), IsQualifiedName, IsTypeName)
+        ''' <summary>
+        ''' Returns Safe VB Name with QualifiedName and TypeName both false
+        ''' </summary>
+        ''' <param name="id"></param>
+        ''' <returns></returns>
+        Public Function GenerateSafeVBToken(id As SyntaxToken) As SyntaxToken
+            Return GenerateSafeVBToken(id, IsQualifiedName:=False, IsTypeName:=False)
         End Function
 
         ''' <summary>

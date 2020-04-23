@@ -553,8 +553,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
                 Next
 
                 Dim MinLeadingSpaces As Integer = 0
-                For i As Integer = 0 To triviaList.Count - 1
-                    Dim Trivia As SyntaxTrivia = triviaList(i)
+                For Each e As IndexStruct(Of SyntaxTrivia) In triviaList.WithIndex
+                    Dim Trivia As SyntaxTrivia = e.Value
                     ' just keep non whitespace trivia
                     If Trivia.IsKind(SyntaxKind.WhitespaceTrivia) Then
                         If _usePreserveCRLF AndAlso Not _afterIndentation Then
@@ -562,7 +562,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
                         End If
                         Continue For
                     ElseIf Trivia.FullWidth = 0 OrElse
-                         (Trivia.IsKind(SyntaxKind.EndOfLineTrivia) And Not _usePreserveCRLF) Then
+                             (Trivia.IsKind(SyntaxKind.EndOfLineTrivia) And Not _usePreserveCRLF) Then
                         Continue For
                     End If
                     If Trivia.IsKind(SyntaxKind.EndOfLineTrivia) Then
@@ -571,7 +571,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
                                 currentTriviaList.Add(GetEndOfLine())
                                 _eolTraiingTriviaCount += 1
                             Else
-                                If currentTriviaList.Last.IsKind(SyntaxKind.CommentTrivia) AndAlso i < triviaList.Count - 1 Then
+                                If currentTriviaList.Last.IsKind(SyntaxKind.CommentTrivia) AndAlso Not e.islast Then
                                     currentTriviaList.Add(VBEOLTrivia)
                                 End If
                                 Continue For
@@ -604,15 +604,15 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
                     ' check if there's a separator or a line break needed between the trivia itself
                     Dim tokenParent As SyntaxNode = Trivia.Token.Parent
                     Dim needsSeparator As Boolean =
-                        Not (Trivia.IsKind(SyntaxKind.ColonTrivia) AndAlso tokenParent IsNot Nothing AndAlso tokenParent.IsKind(SyntaxKind.LabelStatement)) AndAlso
-                        Not (tokenParent IsNot Nothing AndAlso tokenParent.Parent IsNot Nothing AndAlso tokenParent.Parent.IsKind(SyntaxKind.CrefReference)) AndAlso
-                        (
-                            (currentTriviaList.Any AndAlso NeedsSeparatorBetween(currentTriviaList.Last()) AndAlso Not EndsInLineBreak(currentTriviaList.Last())) OrElse
-                            (currentTriviaList.Count = 0 AndAlso isTrailing)
-                        )
+                            Not (Trivia.IsKind(SyntaxKind.ColonTrivia) AndAlso tokenParent IsNot Nothing AndAlso tokenParent.IsKind(SyntaxKind.LabelStatement)) AndAlso
+                            Not (tokenParent IsNot Nothing AndAlso tokenParent.Parent IsNot Nothing AndAlso tokenParent.Parent.IsKind(SyntaxKind.CrefReference)) AndAlso
+                            (
+                                (currentTriviaList.Any AndAlso NeedsSeparatorBetween(currentTriviaList.Last()) AndAlso Not EndsInLineBreak(currentTriviaList.Last())) OrElse
+                                (currentTriviaList.Count = 0 AndAlso isTrailing)
+                            )
 
                     Dim needsLineBreak As Boolean = NeedsLineBreakBefore(Trivia) OrElse
-                        (currentTriviaList.Any AndAlso NeedsLineBreakBetween(currentTriviaList.Last(), Trivia, isTrailing))
+                            (currentTriviaList.Any AndAlso NeedsLineBreakBetween(currentTriviaList.Last(), Trivia, isTrailing))
 
                     If needsLineBreak AndAlso Not _afterLineBreak Then
                         If _eolTraiingTriviaCount = 0 Then
@@ -638,7 +638,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
                         _afterIndentation = False
                     End If
                     Dim NeedExtraSpace As Boolean = _isInStructuredTrivia AndAlso
-                            SyntaxFactory.DocumentationCommentExteriorTrivia(SyntaxFacts.GetText(SyntaxKind.DocumentationCommentExteriorTrivia)).ToString = Trivia.ToString
+                                SyntaxFactory.DocumentationCommentExteriorTrivia(SyntaxFacts.GetText(SyntaxKind.DocumentationCommentExteriorTrivia)).ToString = Trivia.ToString
                     If Trivia.HasStructure Then
                         Dim structuredTrivia As SyntaxTrivia = VisitStructuredTrivia(Trivia)
                         currentTriviaList.Add(structuredTrivia)

@@ -44,7 +44,6 @@ Partial Friend Class SymbolEquivalenceComparer
     Private ReadOnly _equivalenceVisitors As ImmutableArray(Of EquivalenceVisitor)
     Private ReadOnly _getHashCodeVisitors As ImmutableArray(Of GetHashCodeVisitor)
 
-    Public Shared ReadOnly s_ignoreAssembliesInstance As New SymbolEquivalenceComparer(assemblyComparerOpt:=Nothing, distinguishRefFromOut:=False)
     Public Shared ReadOnly s_instance As New SymbolEquivalenceComparer(SimpleNameAssemblyComparer.Instance, distinguishRefFromOut:=False)
 
     Friend Sub New(assemblyComparerOpt As IEqualityComparer(Of IAssemblySymbol), distinguishRefFromOut As Boolean)
@@ -172,7 +171,7 @@ Partial Friend Class SymbolEquivalenceComparer
     ''' with equivalent non-nested named type key-value pairs that are contained in different assemblies.
     ''' These equivalent named type key-value pairs represent possibly equivalent forwarded types, but this API doesn't perform any type forwarding equivalence checks.
     ''' </summary>
-    ''' <remarks>This API is only supported for <see cref="SymbolEquivalenceComparer.s_ignoreAssembliesInstance"/>.</remarks>
+    ''' <remarks>This API is only supported for <see cref="SymbolEquivalenceComparer.ignoreAssembliesInstance"/>.</remarks>
 
     Public Shadows Function Equals(x As ISymbol, y As ISymbol, equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol)) As Boolean
         Debug.Assert(_assemblyComparerOpt Is Nothing)

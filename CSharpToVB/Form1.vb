@@ -395,6 +395,44 @@ Partial Public Class Form1
         ResizeRichTextBuffers()
     End Sub
 
+    Private Function GetFileCount(DirPath As String, SourceLanguageExtension As String, SkipBinAndObjFolders As Boolean, SkipTestResourceFiles As Boolean, Optional Depth As Integer = 0) As Long
+        Dim TotalFilesToProcess As Long = 0L
+
+        Try
+            For Each Subdirectory As String In Directory.GetDirectories(DirPath)
+                If SkipTestResourceFiles AndAlso
+                        (Subdirectory.EndsWith("Test\Resources", StringComparison.OrdinalIgnoreCase) OrElse
+                         Subdirectory.EndsWith("Setup\Templates", StringComparison.OrdinalIgnoreCase)) Then
+                    Continue For
+                End If
+                Dim SubdirectoryName As String = Path.GetFileName(Subdirectory)
+                If SkipBinAndObjFolders AndAlso (SubdirectoryName = "bin" OrElse
+                    SubdirectoryName = "obj" OrElse
+                    SubdirectoryName = "g") Then
+                    Continue For
+                End If
+                TotalFilesToProcess += GetFileCount(Subdirectory, SourceLanguageExtension, SkipBinAndObjFolders, SkipTestResourceFiles, Depth + 1)
+            Next
+            For Each File As String In Directory.GetFiles(path:=DirPath, searchPattern:=$"*.{SourceLanguageExtension}")
+                If Not ParseCSharpSource(File, New List(Of String)).
+                    GetRoot.SyntaxTree.IsGeneratedCode(Function(t As SyntaxTrivia) As Boolean
+                                                           Return t.IsComment OrElse t.IsRegularOrDocComment
+                                                       End Function, CancellationToken.None) Then
+                    TotalFilesToProcess += 1
+                End If
+            Next
+        Catch ex As OperationCanceledException
+            Throw
+        Catch ua As UnauthorizedAccessException
+            ' Ignore
+        Catch ex As Exception
+            Stop
+            Throw
+        End Try
+
+        Return TotalFilesToProcess
+    End Function
+
     ''' <summary>
     ''' To work with Git we need to create a new folder tree from the parent of this project
     ''' </summary>
@@ -1139,9 +1177,9 @@ Partial Public Class Form1
             ListBoxErrorList.Items.Clear()
             ListBoxFileList.Items.Clear()
             SetButtonStopAndCursor(Me, ButtonStopConversion, StopButtonVisible:=True)
-            Dim TotalFilesToProcess As Long = GetFileCount(SourceDirectory, SourceLanguageExtension, My.Settings.SkipBinAndObjFolders, My.Settings.SkipTestResourceFiles)
+            Stats.TotalFilesToProcess = GetFileCount(SourceDirectory, SourceLanguageExtension, My.Settings.SkipBinAndObjFolders, My.Settings.SkipTestResourceFiles)
             ' Process the list of files found in the directory.
-            Return Await ProcessDirectoryAsync(SourceDirectory, TargetDirectory, MeForm:=Me, ButtonStopConversion, ListBoxFileList, SourceLanguageExtension, Stats, TotalFilesToProcess, AddressOf ProcessFileAsync, CancelToken).ConfigureAwait(True)
+            Return Await ProcessDirectoryAsync(SourceDirectory, TargetDirectory, MeForm:=Me, ButtonStopConversion, ListBoxFileList, SourceLanguageExtension, Stats, AddressOf ProcessFileAsync, CancelToken).ConfigureAwait(True)
         Catch ex As OperationCanceledException
             ConversionProgressBar.Value = 0
         Catch ex As Exception
@@ -1195,12 +1233,14 @@ Partial Public Class Form1
                 End Select
             Else
                 If Not String.IsNullOrWhiteSpace(TargetDirectory) Then
-                    If Not _requestToConvert.CancelToken.IsCancellationRequested Then
-                        Dim NewFileName As String = Path.ChangeExtension(New FileInfo(SourceFileNameWithPath).Name, If(SourceLanguageExtension = "vb", "cs", "vb"))
-                        WriteTextToStream(TargetDirectory, NewFileName, RichTextBoxConversionOutput.Text)
-                    Else
+                    If _requestToConvert.CancelToken.IsCancellationRequested Then
                         Return False
                     End If
+                    If LabelErrorCount.Text = "File Skipped" Then
+                        Return True
+                    End If
+                    Dim NewFileName As String = Path.ChangeExtension(New FileInfo(SourceFileNameWithPath).Name, If(SourceLanguageExtension = "vb", "cs", "vb"))
+                    WriteTextToStream(TargetDirectory, NewFileName, RichTextBoxConversionOutput.Text)
                 End If
                 If My.Settings.PauseConvertOnSuccess Then
                     If MsgBox($"{SourceFileNameWithPath} successfully converted, Continue?", MsgBoxStyle.MsgBoxSetForeground Or MsgBoxStyle.YesNo) = MsgBoxResult.No Then
@@ -1216,7 +1256,6 @@ Partial Public Class Form1
                 Thread.Sleep(LoopSleep)
                 If CancelToken.IsCancellationRequested Then
                     Return False
-
                 End If
             Next
             Application.DoEvents()

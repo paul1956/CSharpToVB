@@ -24,22 +24,20 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     Yield DirectCast(body.SelectOrGroup.Accept(Me), VBS.QueryClauseSyntax)
                 Else
                     Dim group As CSS.GroupClauseSyntax = DirectCast(body.SelectOrGroup, CSS.GroupClauseSyntax)
-                    Dim Items As VBS.ExpressionRangeVariableSyntax = VBFactory.ExpressionRangeVariable(DirectCast(group.GroupExpression.Accept(Me), VBS.ExpressionSyntax))
-                    Dim Identifier As VBS.ModifiedIdentifierSyntax = VBFactory.ModifiedIdentifier(GeneratePlaceholder("groupByKey"))
-                    Dim NameEquals As VBS.VariableNameEqualsSyntax = VBFactory.VariableNameEquals(Identifier)
-                    Dim Expression As VBS.ExpressionSyntax = DirectCast(group.ByExpression.Accept(Me), VBS.ExpressionSyntax)
-                    Dim Keys As VBS.ExpressionRangeVariableSyntax
-                    Dim FunctionName As SyntaxToken
+                    Dim items As VBS.ExpressionRangeVariableSyntax = VBFactory.ExpressionRangeVariable(DirectCast(group.GroupExpression.Accept(Me), VBS.ExpressionSyntax))
+                    Dim nameEquals As VBS.VariableNameEqualsSyntax = VBFactory.VariableNameEquals(VBFactory.ModifiedIdentifier(GeneratePlaceholder("groupByKey")))
+                    Dim expression As VBS.ExpressionSyntax = DirectCast(group.ByExpression.Accept(Me), VBS.ExpressionSyntax)
+                    Dim keys As VBS.ExpressionRangeVariableSyntax
+                    Dim functionName As SyntaxToken
                     If body.Continuation Is Nothing Then
-                        Keys = VBFactory.ExpressionRangeVariable(Expression)
-                        FunctionName = VBFactory.Identifier("Group")
+                        keys = VBFactory.ExpressionRangeVariable(expression)
+                        functionName = VBFactory.Identifier("Group")
                     Else
-                        Keys = VBFactory.ExpressionRangeVariable(NameEquals, Expression)
-                        FunctionName = GenerateSafeVBToken(body.Continuation.Identifier, IsQualifiedName:=False, IsTypeName:=False)
+                        keys = VBFactory.ExpressionRangeVariable(nameEquals, expression)
+                        functionName = GenerateSafeVBToken(body.Continuation.Identifier)
                     End If
-                    Dim Aggregation As VBS.FunctionAggregationSyntax = VBFactory.FunctionAggregation(FunctionName)
-                    Dim AggrationRange As VBS.AggregationRangeVariableSyntax = VBFactory.AggregationRangeVariable(Aggregation)
-                    Yield VBFactory.GroupByClause(VBFactory.SingletonSeparatedList(Items), VBFactory.SingletonSeparatedList(Keys), VBFactory.SingletonSeparatedList(AggrationRange))
+                    Dim aggrationRange As VBS.AggregationRangeVariableSyntax = VBFactory.AggregationRangeVariable(VBFactory.FunctionAggregation(functionName))
+                    Yield VBFactory.GroupByClause(VBFactory.SingletonSeparatedList(items), VBFactory.SingletonSeparatedList(keys), VBFactory.SingletonSeparatedList(aggrationRange))
                     If body.Continuation?.Body IsNot Nothing Then
                         For Each clause As VBS.QueryClauseSyntax In ConvertQueryBody(body.Continuation.Body)
                             Yield clause
@@ -57,9 +55,9 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 If expression Is Nothing Then
                     Return Nothing
                 End If
-                Dim identifier As VBS.ModifiedIdentifierSyntax = VBFactory.ModifiedIdentifier(GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False))
-                Dim CollectionRangevariable As VBS.CollectionRangeVariableSyntax = VBFactory.CollectionRangeVariable(identifier, expression)
-                Return VBFactory.FromClause(CollectionRangevariable).WithConvertedTriviaFrom(node)
+                Dim identifier As VBS.ModifiedIdentifierSyntax = VBFactory.ModifiedIdentifier(GenerateSafeVBToken(node.Identifier))
+                Dim collectionRangevariable As VBS.CollectionRangeVariableSyntax = VBFactory.CollectionRangeVariable(identifier, expression)
+                Return VBFactory.FromClause(collectionRangevariable).WithConvertedTriviaFrom(node)
             End Function
 
             Public Overrides Function VisitJoinClause(node As CSS.JoinClauseSyntax) As VB.VisualBasicSyntaxNode
@@ -67,7 +65,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     Return VBFactory.GroupJoinClause(
                         VBFactory.SingletonSeparatedList(
                             VBFactory.CollectionRangeVariable(
-                                                            VBFactory.ModifiedIdentifier(GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False)
+                                                            VBFactory.ModifiedIdentifier(GenerateSafeVBToken(node.Identifier)
                                                             ), If(node.Type Is Nothing, Nothing, VBFactory.SimpleAsClause(DirectCast(node.Type.Accept(Me), VBS.TypeSyntax))),
                                                                DirectCast(node.InExpression.Accept(Me), VBS.ExpressionSyntax))),
                         VBFactory.SingletonSeparatedList(
@@ -78,22 +76,20 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                                         ),
                         VBFactory.SingletonSeparatedList(
                                                         VBFactory.AggregationRangeVariable(
-                                                                                            VBFactory.VariableNameEquals(VBFactory.ModifiedIdentifier(GenerateSafeVBToken(node.Into.Identifier, IsQualifiedName:=False, IsTypeName:=False))
+                                                                                            VBFactory.VariableNameEquals(VBFactory.ModifiedIdentifier(GenerateSafeVBToken(node.Into.Identifier))
                                                                                             ),
                         VBFactory.GroupAggregation()))).WithConvertedTriviaFrom(node)
                 Else
                     Return VBFactory.SimpleJoinClause(
-                        VBFactory.SingletonSeparatedList(VBFactory.CollectionRangeVariable(VBFactory.ModifiedIdentifier(GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False)), If(node.Type Is Nothing, Nothing, VBFactory.SimpleAsClause(DirectCast(node.Type.Accept(Me), VBS.TypeSyntax))), DirectCast(node.InExpression.Accept(Me), VBS.ExpressionSyntax))), VBFactory.SingletonSeparatedList(VBFactory.JoinCondition(DirectCast(node.LeftExpression.Accept(Me), VBS.ExpressionSyntax), DirectCast(node.RightExpression.Accept(Me), VBS.ExpressionSyntax)))).WithConvertedTriviaFrom(node)
+                        VBFactory.SingletonSeparatedList(VBFactory.CollectionRangeVariable(VBFactory.ModifiedIdentifier(GenerateSafeVBToken(node.Identifier)), If(node.Type Is Nothing, Nothing, VBFactory.SimpleAsClause(DirectCast(node.Type.Accept(Me), VBS.TypeSyntax))), DirectCast(node.InExpression.Accept(Me), VBS.ExpressionSyntax))), VBFactory.SingletonSeparatedList(VBFactory.JoinCondition(DirectCast(node.LeftExpression.Accept(Me), VBS.ExpressionSyntax), DirectCast(node.RightExpression.Accept(Me), VBS.ExpressionSyntax)))).WithConvertedTriviaFrom(node)
                 End If
             End Function
 
             Public Overrides Function VisitLetClause(node As CSS.LetClauseSyntax) As VB.VisualBasicSyntaxNode
-                Dim Identifier As SyntaxToken = GenerateSafeVBToken(node.Identifier, IsQualifiedName:=False, IsTypeName:=False)
-                Dim ModifiedIdentifier As VBS.ModifiedIdentifierSyntax = VBFactory.ModifiedIdentifier(Identifier)
-                Dim NameEquals As VBS.VariableNameEqualsSyntax = VBFactory.VariableNameEquals(ModifiedIdentifier)
-                Dim Expression As VBS.ExpressionSyntax = DirectCast(node.Expression.Accept(Me), VBS.ExpressionSyntax)
-                Dim ExpressionRangeVariable As VBS.ExpressionRangeVariableSyntax = VBFactory.ExpressionRangeVariable(NameEquals, Expression)
-                Return VBFactory.LetClause(VBFactory.SingletonSeparatedList(ExpressionRangeVariable)).WithConvertedTriviaFrom(node)
+                Dim nameEquals As VBS.VariableNameEqualsSyntax = VBFactory.VariableNameEquals(VBFactory.ModifiedIdentifier(GenerateSafeVBToken(node.Identifier)))
+                Dim expression As VBS.ExpressionSyntax = DirectCast(node.Expression.Accept(Me), VBS.ExpressionSyntax)
+                Dim expressionRangeVariable As VBS.ExpressionRangeVariableSyntax = VBFactory.ExpressionRangeVariable(nameEquals, expression)
+                Return VBFactory.LetClause(VBFactory.SingletonSeparatedList(expressionRangeVariable)).WithConvertedTriviaFrom(node)
             End Function
 
             Public Overrides Function VisitOrderByClause(node As CSS.OrderByClauseSyntax) As VB.VisualBasicSyntaxNode
@@ -110,10 +106,10 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
 
             Public Overrides Function VisitQueryExpression(node As CSS.QueryExpressionSyntax) As VB.VisualBasicSyntaxNode
                 ' From trivia handled in VisitFromClause
-                Dim FromClause As VBS.QueryClauseSyntax = DirectCast(node.FromClause.Accept(Me), VBS.QueryClauseSyntax)
-                Dim BodyClauses As IEnumerable(Of VBS.QueryClauseSyntax) = node.Body.Clauses.Select(Function(c As CSS.QueryClauseSyntax) DirectCast(c.Accept(Me).WithConvertedTriviaFrom(c), VBS.QueryClauseSyntax))
-                Dim Body As IEnumerable(Of VBS.QueryClauseSyntax) = ConvertQueryBody(node.Body)
-                Return VBFactory.QueryExpression(VBFactory.SingletonList(FromClause).AddRange(BodyClauses).AddRange(Body)).WithConvertedTriviaFrom(node)
+                Dim fromClause As VBS.QueryClauseSyntax = DirectCast(node.FromClause.Accept(Me), VBS.QueryClauseSyntax)
+                Dim bodyClauses As IEnumerable(Of VBS.QueryClauseSyntax) = node.Body.Clauses.Select(Function(c As CSS.QueryClauseSyntax) DirectCast(c.Accept(Me).WithConvertedTriviaFrom(c), VBS.QueryClauseSyntax))
+                Dim body As IEnumerable(Of VBS.QueryClauseSyntax) = ConvertQueryBody(node.Body)
+                Return VBFactory.QueryExpression(VBFactory.SingletonList(fromClause).AddRange(bodyClauses).AddRange(body)).WithConvertedTriviaFrom(node)
             End Function
 
             Public Overrides Function VisitSelectClause(node As CSS.SelectClauseSyntax) As VB.VisualBasicSyntaxNode

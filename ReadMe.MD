@@ -27,7 +27,7 @@ description: "C# to VB Converter"
 - Code Converter
 
 ## Updated
-- 04/12/2020
+- 04/22/2020
 
 ## Description
 This application will convert C# to VB while trying to preserve comments, formatting and as many Directives
@@ -54,7 +54,6 @@ selected and you switch to convert a new folder the application will immediately
 need to deselect the option. You can show or hide line numbers from the View Menu.
 
 Work to be done:
-Handle .DLL's from C# project file
 There are several Stop statements for debugging, and if you continue past them reasonable things will
 happen but a better translation is possible.
 
@@ -63,6 +62,13 @@ It will try to create a VB project File from the original C# project file.
 
 https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json is added to NuGet Package Source to find
 Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpecific attributes used for testing.
+  New in Release 4.3.2.0
+  - Implement For Each with Index Extension and start using it
+  - Catch ArgumentException where expected and allow throw other exceptions
+  - Start changing locals to begin with lowercase character(s)
+  - Fix long outstanding issue where ignored files were being written to output directory as empty files and total files was calculated correctly.
+  - Fix deconstruction tuple elements when elements are constructed on left of equals for example (EvalStackFrame frameOpt, IOperation operationOpt) = _evalStack.Pop();
+
   New in Release 4.3.1.1
   - Spelling corrections
 

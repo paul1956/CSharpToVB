@@ -207,7 +207,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     TupleElements.Add(ConvertToType(TuplePart(0).ToString(Globalization.CultureInfo.InvariantCulture)).ToString)
                 Else
                     Dim Identifier As SyntaxToken = CSharp.SyntaxFactory.Identifier(TuplePart(1))
-                    TupleElements.Add($"{GenerateSafeVBToken(Identifier, IsQualifiedName:=False, IsTypeName:=False).ValueText} As {ConvertToType(TuplePart(0).ToString(Globalization.CultureInfo.InvariantCulture))}")
+                    TupleElements.Add($"{GenerateSafeVBToken(Identifier).ValueText} As {ConvertToType(TuplePart(0).ToString(Globalization.CultureInfo.InvariantCulture))}")
                 End If
             Next
             Return $"({String.Join(", ", TupleElements)})"

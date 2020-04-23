@@ -1,10 +1,6 @@
 ﻿' Licensed to the .NET Foundation under one or more agreements.
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
-Imports System.IO
-Imports System.Threading
-
-Imports CSharpToVBCodeConverter.Util
 
 Imports Microsoft.CodeAnalysis
 
@@ -19,41 +15,6 @@ Public Module ParseUtilities
                                         DocumentationMode.Parse,
                                         SourceCodeKind.Script,
                                         CSPreprocessorSymbols)
-    End Function
-
-    Public Function GetFileCount(DirPath As String, SourceLanguageExtension As String, SkipBinAndObjFolders As Boolean, SkipTestResourceFiles As Boolean, Optional Depth As Integer = 0) As Long
-        Dim TotalFilesToProcess As Long = 0L
-
-        Try
-            For Each Subdirectory As String In Directory.GetDirectories(DirPath)
-                If SkipTestResourceFiles AndAlso
-                        (Subdirectory.EndsWith("Test\Resources", StringComparison.OrdinalIgnoreCase) OrElse
-                         Subdirectory.EndsWith("Setup\Templates", StringComparison.OrdinalIgnoreCase)) Then
-                    Continue For
-                End If
-                If SkipBinAndObjFolders AndAlso (Subdirectory = "bin" OrElse Subdirectory = "obj" OrElse Subdirectory = "g") Then
-                    Continue For
-                End If
-                TotalFilesToProcess += GetFileCount(Subdirectory, SourceLanguageExtension, SkipBinAndObjFolders, SkipTestResourceFiles, Depth + 1)
-            Next
-            For Each File As String In Directory.GetFiles(path:=DirPath, searchPattern:=$"*.{SourceLanguageExtension}")
-                If Not ParseCSharpSource(File, New List(Of String)).
-                    GetRoot.SyntaxTree.IsGeneratedCode(Function(t As SyntaxTrivia) As Boolean
-                                                           Return t.IsComment OrElse t.IsRegularOrDocComment
-                                                       End Function, CancellationToken.None) Then
-                    TotalFilesToProcess += 1
-                End If
-            Next
-        Catch ex As OperationCanceledException
-            Throw
-        Catch ua As UnauthorizedAccessException
-            ' Ignore
-        Catch ex As Exception
-            Stop
-            Throw
-        End Try
-
-        Return TotalFilesToProcess
     End Function
 
     Public Function GetVBParseOptions(VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object))) As VB.VisualBasicParseOptions
