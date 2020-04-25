@@ -232,8 +232,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
                 _indentations.EnsureCapacity(capacity)
             End If
 
-            For i As Integer = _indentations.Count To count
-                Dim text As String = If(i = 0, "", _indentations(i - 1).ToString() & _indentWhitespace)
+            For Index As Integer = _indentations.Count To count
+                Dim text As String = If(Index = 0, "", _indentations(Index - 1).ToString() & _indentWhitespace)
                 _indentations.Add(If(_useElasticTrivia, SyntaxFactory.ElasticWhitespace(text), SyntaxFactory.Whitespace(text)))
             Next
 
@@ -543,7 +543,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
 
             Dim currentTriviaList As ArrayBuilder(Of SyntaxTrivia) = ArrayBuilder(Of SyntaxTrivia).GetInstance()
             Try
-                For i As Integer = 1 To lineBreaksBefore
+                For index As Integer = 1 To lineBreaksBefore
                     If _eolLeadingTriviaCount < 2 Then
                         currentTriviaList.Add(GetEndOfLine())
                         _eolLeadingTriviaCount += 1
@@ -571,7 +571,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
                                 currentTriviaList.Add(GetEndOfLine())
                                 _eolTraiingTriviaCount += 1
                             Else
-                                If currentTriviaList.Last.IsKind(SyntaxKind.CommentTrivia) AndAlso Not e.islast Then
+                                If currentTriviaList.Last.IsKind(SyntaxKind.CommentTrivia) AndAlso Not e.IsLast Then
                                     currentTriviaList.Add(VBEOLTrivia)
                                 End If
                                 Continue For
@@ -677,7 +677,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
                         lineBreaksAfter -= 1
                     End If
 
-                    For i As Integer = 0 To lineBreaksAfter - 1
+                    For index As Integer = 0 To lineBreaksAfter - 1
                         If Not isTrailing Then
                             Throw UnexpectedValue("IsTrailing")
                         End If
@@ -688,7 +688,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
                         _eolTraiingTriviaCount += 1
                         _afterLineBreak = True
                         _afterIndentation = False
-                    Next i
+                    Next index
 
                 ElseIf mustHaveSeparator Then
                     currentTriviaList.Add(GetSpace())

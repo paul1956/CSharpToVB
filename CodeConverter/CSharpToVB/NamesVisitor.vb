@@ -122,7 +122,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 If OriginalNameParent.IsKind(CS.SyntaxKind.SimpleAssignmentExpression) Then
                     Dim AssignmentStatement As CSS.AssignmentExpressionSyntax = CType(OriginalNameParent, CSS.AssignmentExpressionSyntax)
                     If node.ToString.Equals(AssignmentStatement.Left.ToString, StringComparison.Ordinal) AndAlso AssignmentStatement.Left.ToString.Equals(AssignmentStatement.Right.ToString, StringComparison.OrdinalIgnoreCase) Then
-                        If OriginalNameParent.IsParentKind(CSharp.SyntaxKind.ObjectInitializerExpression) Then
+                        If OriginalNameParent.IsParentKind(CS.SyntaxKind.ObjectInitializerExpression) Then
                             Dim name As VBS.IdentifierNameSyntax = VBFactory.IdentifierName(GenerateSafeVBToken(node.Identifier, IsQualifiedName:=True, IsTypeName:=True))
                             Return name
                         End If

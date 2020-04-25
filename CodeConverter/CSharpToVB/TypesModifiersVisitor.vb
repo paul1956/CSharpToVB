@@ -177,16 +177,18 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             Public Overrides Function VisitTypeParameterList(node As CSS.TypeParameterListSyntax) As VB.VisualBasicSyntaxNode
                 Dim Nodes As New List(Of VBS.TypeParameterSyntax)
                 Dim Separators As New List(Of SyntaxToken)
-                Dim CS_Separators As New List(Of SyntaxToken)
-                CS_Separators.AddRange(node.Parameters.GetSeparators)
+                Dim csSeparators As New List(Of SyntaxToken)
+                csSeparators.AddRange(node.Parameters.GetSeparators)
                 Dim FinalTrailingTrivia As New List(Of SyntaxTrivia)
-                For i As Integer = 0 To node.Parameters.Count - 2
-                    Dim p As CSS.TypeParameterSyntax = node.Parameters(i)
-                    Dim ItemWithTrivia As VBS.TypeParameterSyntax = DirectCast(p.Accept(Me), VBS.TypeParameterSyntax)
-                    FinalTrailingTrivia.AddRange(ItemWithTrivia.GetLeadingTrivia)
+                For index As Integer = 0 To node.Parameters.Count - 2
+                    Dim param As CSS.TypeParameterSyntax = node.Parameters(index)
+                    Dim ItemWithTrivia As VBS.TypeParameterSyntax = DirectCast(param.Accept(Me), VBS.TypeParameterSyntax)
+                    If ItemWithTrivia.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
+                        FinalTrailingTrivia.AddRange(ItemWithTrivia.GetLeadingTrivia)
+                    End If
                     FinalTrailingTrivia.AddRange(ItemWithTrivia.GetTrailingTrivia)
                     Nodes.Add(ItemWithTrivia.WithLeadingTrivia(SpaceTrivia).WithTrailingTrivia(SpaceTrivia))
-                    Separators.Add(CommaToken.WithConvertedTriviaFrom(CS_Separators(i)))
+                    Separators.Add(CommaToken.WithConvertedTriviaFrom(csSeparators(index)))
                 Next
                 Nodes.Add(DirectCast(node.Parameters.Last.Accept(Me).WithConvertedTrailingTriviaFrom(node.Parameters.Last), VBS.TypeParameterSyntax))
                 Dim SeparatedList As SeparatedSyntaxList(Of VBS.TypeParameterSyntax) = VBFactory.SeparatedList(Nodes, Separators)

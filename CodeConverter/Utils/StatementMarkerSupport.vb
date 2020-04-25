@@ -133,36 +133,35 @@ Public Module StatementMarker
     End Function
 
     Friend Function FlagUnsupportedStatements(node As CS.CSharpSyntaxNode, UnsupportedFeature As String, CommentOutOriginalStatements As Boolean) As EmptyStatementSyntax
-        Dim NewLeadingTrivia As New List(Of SyntaxTrivia)
-        Dim NewTrailingTrivia As New List(Of SyntaxTrivia)
+        Dim newLeadingTrivia As New List(Of SyntaxTrivia)
+        Dim newTrailingTrivia As New List(Of SyntaxTrivia)
         If CommentOutOriginalStatements Then
-            NewLeadingTrivia.AddRange(ConvertTrivia(node.GetLeadingTrivia))
-            NewTrailingTrivia.AddRange(ConvertTrivia(node.GetTrailingTrivia))
+            newLeadingTrivia.AddRange(ConvertTrivia(node.GetLeadingTrivia))
+            newTrailingTrivia.AddRange(ConvertTrivia(node.GetTrailingTrivia))
         Else
-            Dim CS_LeadingTrivia As SyntaxTriviaList = node.GetLeadingTrivia
-            If CS_LeadingTrivia.Any AndAlso CS_LeadingTrivia.First.IsKind(CS.SyntaxKind.WhitespaceTrivia) Then
-                NewTrailingTrivia.AddRange(ConvertTrivia({CS_LeadingTrivia(0)}))
+            Dim csLeadingTrivia As SyntaxTriviaList = node.GetLeadingTrivia
+            If csLeadingTrivia.Any AndAlso csLeadingTrivia.First.IsKind(CS.SyntaxKind.WhitespaceTrivia) Then
+                newTrailingTrivia.AddRange(ConvertTrivia({csLeadingTrivia(0)}))
             End If
             ' NewTrailingTrivia.Add(VB_EOLTrivia)
         End If
-        NewLeadingTrivia.Add(VBFactory.CommentTrivia($"' TODO: VB does not support {UnsupportedFeature}."))
-        NewLeadingTrivia.Add(VBEOLTrivia)
+        newLeadingTrivia.Add(VBFactory.CommentTrivia($"' TODO: Visual Basic does not support {UnsupportedFeature}."))
+        newLeadingTrivia.Add(VBEOLTrivia)
         If CommentOutOriginalStatements Then
-            NewLeadingTrivia.Add(VBEOLTrivia)
-            NewLeadingTrivia.Add(VBFactory.CommentTrivia($"' Original Statement:"))
-            NewLeadingTrivia.Add(VBEOLTrivia)
-            Dim NodeSplit() As String = node.ToString.SplitLines
+            newLeadingTrivia.Add(VBEOLTrivia)
+            newLeadingTrivia.Add(VBFactory.CommentTrivia($"' Original Statement:"))
+            newLeadingTrivia.Add(VBEOLTrivia)
             ' Match #
-            For i As Integer = 0 To NodeSplit.Length - 1
-                If NodeSplit(i).TrimStart(" "c).StartsWith("#", StringComparison.Ordinal) Then
-                    NewLeadingTrivia.AddRange(ConvertDirectiveTrivia(NodeSplit(i)))
+            For Each e As IndexStruct(Of String) In node.ToString.SplitLines().WithIndex
+                If e.Value.TrimStart(" "c).StartsWith("#", StringComparison.Ordinal) Then
+                    newLeadingTrivia.AddRange(ConvertDirectiveTrivia(e.Value))
                 Else
-                    NewLeadingTrivia.Add(VBFactory.CommentTrivia($"' {NodeSplit(i)}"))
+                    newLeadingTrivia.Add(VBFactory.CommentTrivia($"' {e.Value}"))
                 End If
-                NewLeadingTrivia.Add(VBEOLTrivia)
+                newLeadingTrivia.Add(VBEOLTrivia)
             Next
         End If
-        Return VBFactory.EmptyStatement.With(NewLeadingTrivia, NewTrailingTrivia)
+        Return VBFactory.EmptyStatement.With(newLeadingTrivia, newTrailingTrivia)
     End Function
 
     Friend Function GetStatementwithIssues(node As CS.CSharpSyntaxNode) As CS.CSharpSyntaxNode

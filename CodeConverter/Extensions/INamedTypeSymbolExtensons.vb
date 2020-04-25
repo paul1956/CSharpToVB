@@ -161,18 +161,18 @@ Namespace CSharpToVBCodeConverter.Util
             Return classOrStructType.FindImplementationForInterfaceMember(member) IsNot Nothing
         End Function
 
-        Private Function ImplementsMethodOrProperty(Of T As ISymbol)(cS_MethodOrProperty As T, interfaceMethodOrProperty As T, ByRef SimpleName As VBS.SimpleNameSyntax) As Boolean
-            If cS_MethodOrProperty.Name <> interfaceMethodOrProperty.Name Then
+        Private Function ImplementsMethodOrProperty(Of T As ISymbol)(csMethodOrProperty As T, interfaceMethodOrProperty As T, ByRef SimpleName As VBS.SimpleNameSyntax) As Boolean
+            If csMethodOrProperty.Name <> interfaceMethodOrProperty.Name Then
                 Return False
             End If
-            If TypeOf cS_MethodOrProperty Is IMethodSymbol Then
-                Dim CS_Method As IMethodSymbol = CType(cS_MethodOrProperty, IMethodSymbol)
+            If TypeOf csMethodOrProperty Is IMethodSymbol Then
+                Dim csMethod As IMethodSymbol = CType(csMethodOrProperty, IMethodSymbol)
                 Dim interfaceMethod As IMethodSymbol = CType(interfaceMethodOrProperty, IMethodSymbol)
-                If CS_Method.Parameters.Length <> interfaceMethod.Parameters.Length Then
+                If csMethod.Parameters.Length <> interfaceMethod.Parameters.Length Then
                     Return False
                 End If
-                For i As Integer = 0 To CS_Method.Parameters.Length - 1
-                    If CS_Method.Parameters(i).[Type].Name <> interfaceMethod.Parameters(i).[Type].Name Then
+                For Each e As IndexStruct(Of IParameterSymbol) In csMethod.Parameters.WithIndex
+                    If e.Value.[Type].Name <> interfaceMethod.Parameters(e.Index).[Type].Name Then
                         Return False
                     End If
                 Next
@@ -304,7 +304,7 @@ Namespace CSharpToVBCodeConverter.Util
         End Function
 
         <Extension>
-        Friend Function GetImplementsClauseForMethod(ListOfRequiredInterfaces As ImmutableArray(Of (InterfaceName As INamedTypeSymbol, MethodList As ImmutableArray(Of ISymbol))), CS_Method As IMethodSymbol) As VBS.ImplementsClauseSyntax
+        Friend Function GetImplementsClauseForMethod(ListOfRequiredInterfaces As ImmutableArray(Of (InterfaceName As INamedTypeSymbol, MethodList As ImmutableArray(Of ISymbol))), csMethod As IMethodSymbol) As VBS.ImplementsClauseSyntax
             If Not ListOfRequiredInterfaces.Any Then
                 Return Nothing
             End If
@@ -314,7 +314,7 @@ Namespace CSharpToVBCodeConverter.Util
                 For Each InterfaceMethod As ISymbol In entry.MethodList
                     Dim _Right As VBS.SimpleNameSyntax = Nothing
                     If TypeOf InterfaceMethod Is IMethodSymbol Then
-                        If ImplementsMethodOrProperty(CS_Method, CType(InterfaceMethod, IMethodSymbol), _Right) Then
+                        If ImplementsMethodOrProperty(csMethod, CType(InterfaceMethod, IMethodSymbol), _Right) Then
                             Dim QualifiedName As VBS.QualifiedNameSyntax = CType(ConvertISymbolToNameSyntaxInterfaceName(InterfaceMethod), VBS.QualifiedNameSyntax)
                             SeparatedList.Add(VBFactory.QualifiedName(QualifiedName, _Right))
                             Exit For
@@ -329,7 +329,7 @@ Namespace CSharpToVBCodeConverter.Util
         End Function
 
         <Extension>
-        Friend Function GetImplementsClauseForProperty(ListOfRequiredInterfaces As ImmutableArray(Of (InterfaceName As INamedTypeSymbol, MethodList As ImmutableArray(Of ISymbol))), CS_Property As IPropertySymbol) As VBS.ImplementsClauseSyntax
+        Friend Function GetImplementsClauseForProperty(ListOfRequiredInterfaces As ImmutableArray(Of (InterfaceName As INamedTypeSymbol, MethodList As ImmutableArray(Of ISymbol))), csProperty As IPropertySymbol) As VBS.ImplementsClauseSyntax
             If Not ListOfRequiredInterfaces.Any Then
                 Return Nothing
             End If
@@ -339,7 +339,7 @@ Namespace CSharpToVBCodeConverter.Util
                 For Each InterfaceProperty As ISymbol In entry.MethodList
                     Dim _Right As VBS.SimpleNameSyntax = Nothing
                     If TypeOf InterfaceProperty Is IPropertySymbol Then
-                        If ImplementsMethodOrProperty(CS_Property, CType(InterfaceProperty, IPropertySymbol), _Right) Then
+                        If ImplementsMethodOrProperty(csProperty, CType(InterfaceProperty, IPropertySymbol), _Right) Then
                             Dim QualifiedName As VBS.QualifiedNameSyntax = CType(ConvertISymbolToNameSyntaxInterfaceName(InterfaceProperty), VBS.QualifiedNameSyntax)
                             SeparatedList.Add(VBFactory.QualifiedName(QualifiedName, _Right))
                             Exit For

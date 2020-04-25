@@ -13,7 +13,6 @@ Imports Microsoft.CodeAnalysis.Simplification
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
-Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
@@ -84,25 +83,24 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Return expression IsNot Nothing
             End Function
 
-            Private Function ConvertLambdaExpression(node As CSS.AnonymousFunctionExpressionSyntax, block As Object, parameters As SeparatedSyntaxList(Of CSS.ParameterSyntax), CS_Modifiers As SyntaxTokenList) As LambdaExpressionSyntax
-                Dim NodesList As New List(Of ParameterSyntax)
-                Dim Separators As New List(Of SyntaxToken)
+            Private Function ConvertLambdaExpression(node As CSS.AnonymousFunctionExpressionSyntax, block As Object, parameters As SeparatedSyntaxList(Of CSS.ParameterSyntax), Modifiers As SyntaxTokenList) As LambdaExpressionSyntax
+                Dim vbNodes As New List(Of ParameterSyntax)
+                Dim vbSeparators As New List(Of SyntaxToken)
                 If parameters.Any Then
-                    Dim SeparatorCount As Integer = parameters.SeparatorCount
-                    Dim CS_Separators As New List(Of SyntaxToken)
-                    CS_Separators.AddRange(parameters.GetSeparators)
+                    Dim csSeparators As New List(Of SyntaxToken)
+                    csSeparators.AddRange(parameters.GetSeparators)
 
-                    For i As Integer = 0 To SeparatorCount - 1
-                        NodesList.Add(DirectCast(parameters(i).Accept(Me), ParameterSyntax))
-                        Separators.Add(CommaToken.WithConvertedTriviaFrom(CS_Separators(i)))
+                    For index As Integer = 0 To parameters.SeparatorCount - 1
+                        vbNodes.Add(DirectCast(parameters(index).Accept(Me), ParameterSyntax))
+                        vbSeparators.Add(CommaToken.WithConvertedTriviaFrom(csSeparators(index)))
                     Next
-                    NodesList.Add(DirectCast(parameters.Last.Accept(Me), ParameterSyntax))
+                    vbNodes.Add(DirectCast(parameters.Last.Accept(Me), ParameterSyntax))
                 End If
 
-                Dim lambdaHeader As LambdaHeaderSyntax
-                Dim symbol As IMethodSymbol = Nothing
-                Dim returnsVoid As Boolean = True
                 Dim isErrorType As Boolean = True
+                Dim lambdaHeader As LambdaHeaderSyntax
+                Dim returnsVoid As Boolean = True
+                Dim symbol As IMethodSymbol = Nothing
                 Try
                     Dim _symbolInfo As SymbolInfo = ModelExtensions.GetSymbolInfo(_mSemanticModel, node)
                     symbol = TryCast(_symbolInfo.Symbol, IMethodSymbol)
@@ -110,13 +108,15 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     isErrorType = symbol.ReturnType.IsErrorType
                 Catch ex As ArgumentException
                     ' Ignore this is expected
+                Catch ex As OperationCanceledException
+                    Throw
                 Catch ex As Exception
                     Stop
                 End Try
                 Dim isFunction As Boolean = Not (returnsVoid OrElse TypeOf node.Body Is CSS.AssignmentExpressionSyntax)
-                Dim modifiersList As List(Of SyntaxToken) = ConvertModifiers(CS_Modifiers, IsModule, TokenContext.Local)
+                Dim modifiersList As List(Of SyntaxToken) = ConvertModifiers(Modifiers, IsModule, TokenContext.Local)
                 Dim endSubOrFunctionStatement As EndBlockStatementSyntax
-                Dim parameterList As ParameterListSyntax = VBFactory.ParameterList(VBFactory.SeparatedList(NodesList, Separators))
+                Dim parameterList As ParameterListSyntax = VBFactory.ParameterList(VBFactory.SeparatedList(vbNodes, vbSeparators))
                 Dim csBraces As (LeftBrace As SyntaxToken, RightBrace As SyntaxToken) = node.Body.GetBraces
                 Dim asClause As AsClauseSyntax
                 If isFunction Then
@@ -245,10 +245,10 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Try
                     LeftNodeTypeInfo = ModelExtensions.GetTypeInfo(_mSemanticModel, node.Left)
                     RightNodeTypeInfo = ModelExtensions.GetTypeInfo(_mSemanticModel, node.Right)
-                Catch ex As OperationCanceledException
-                    Throw
                 Catch ex As ArgumentException
                     ' ignore
+                Catch ex As OperationCanceledException
+                    Throw
                 Catch ex As Exception
                     Stop
                 End Try
@@ -315,10 +315,10 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim OperatorToken As SyntaxToken = ExpressionKindToOperatorToken(kind)
                 Dim RightNode As ExpressionSyntax
                 If node.Right.IsKind(CS.SyntaxKind.CoalesceExpression) Then
-                    Dim CS_Right As CSS.BinaryExpressionSyntax = DirectCast(node.Right, CSS.BinaryExpressionSyntax)
-                    If CS_Right.Right.IsKind(CS.SyntaxKind.ThrowExpression) Then
-                        Dim TestNode As ExpressionSyntax = DirectCast(CS_Right.Left.Accept(Me).WithLeadingTrivia(SpaceTrivia), ExpressionSyntax)
-                        Dim SecondExpression As ThrowStatementSyntax = DirectCast(CS_Right.Right.Accept(Me).WithConvertedTriviaFrom(CS_Right.Right), ThrowStatementSyntax).WithTrailingEOL
+                    Dim csRight As CSS.BinaryExpressionSyntax = DirectCast(node.Right, CSS.BinaryExpressionSyntax)
+                    If csRight.Right.IsKind(CS.SyntaxKind.ThrowExpression) Then
+                        Dim TestNode As ExpressionSyntax = DirectCast(csRight.Left.Accept(Me).WithLeadingTrivia(SpaceTrivia), ExpressionSyntax)
+                        Dim SecondExpression As ThrowStatementSyntax = DirectCast(csRight.Right.Accept(Me).WithConvertedTriviaFrom(csRight.Right), ThrowStatementSyntax).WithTrailingEOL
                         Dim Statements As SyntaxList(Of StatementSyntax) = VBFactory.SingletonList(Of StatementSyntax)(SecondExpression)
 
                         Dim Condition As ExpressionSyntax = VBFactory.IsExpression(TestNode, NothingExpression)
@@ -327,7 +327,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                                                                                           elseClause:=Nothing)
                         Dim StatementWithIssues As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
                         StatementWithIssues.AddMarker(IfBlock, StatementHandlingOption.PrependStatement, AllowDuplicates:=False)
-                        RightNode = DirectCast(CS_Right.Left.Accept(Me), ExpressionSyntax)
+                        RightNode = DirectCast(csRight.Left.Accept(Me), ExpressionSyntax)
                     Else
                         RightNode = DirectCast(node.Right.Accept(Me), ExpressionSyntax)
                     End If
@@ -398,119 +398,119 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 If NodesOrTokens Is Nothing Then
                     Throw New ArgumentNullException(NameOf(NodesOrTokens))
                 End If
-                Dim AfterWhiteSpace As Boolean = False
-                Dim AfterLineContinuation As Boolean = False
-                Dim InitialTriviaList As List(Of SyntaxTrivia) = ConvertTrivia(NodesOrTokens(Index).GetLeadingTrivia).ToList
-                Dim InitialTriviaListUBound As Integer = InitialTriviaList.Count - 1
-                Dim FirstTrivia As Boolean = True
-                Dim FinalLeadingTriviaList As New List(Of SyntaxTrivia)
-                For i As Integer = 0 To InitialTriviaListUBound
-                    Dim Trivia As SyntaxTrivia = InitialTriviaList(i)
-                    Dim nextTrivia As SyntaxTrivia = If(i < InitialTriviaListUBound, InitialTriviaList(i + 1), New SyntaxTrivia)
+                Dim afterWhiteSpace As Boolean = False
+                Dim afterLineContinuation As Boolean = False
+                Dim initialTriviaList As List(Of SyntaxTrivia) = ConvertTrivia(NodesOrTokens(Index).GetLeadingTrivia).ToList
+                Dim initialTriviaListUBound As Integer = initialTriviaList.Count - 1
+                Dim firstTrivia As Boolean = True
+                Dim finalLeadingTriviaList As New List(Of SyntaxTrivia)
+                For triviaListIndex As Integer = 0 To initialTriviaListUBound
+                    Dim Trivia As SyntaxTrivia = initialTriviaList(triviaListIndex)
+                    Dim nextTrivia As SyntaxTrivia = If(triviaListIndex < initialTriviaListUBound, initialTriviaList(triviaListIndex + 1), New SyntaxTrivia)
                     Select Case Trivia.RawKind
                         Case VB.SyntaxKind.WhitespaceTrivia
-                            AfterLineContinuation = False
-                            AfterWhiteSpace = True
-                            FirstTrivia = False
-                            FinalLeadingTriviaList.Add(Trivia)
+                            afterLineContinuation = False
+                            afterWhiteSpace = True
+                            firstTrivia = False
+                            finalLeadingTriviaList.Add(Trivia)
                         Case VB.SyntaxKind.EndOfLineTrivia
                             ' we want to skip any leading trivia
-                            If Not FirstTrivia Then
-                                FinalLeadingTriviaList.Add(Trivia)
-                                AfterLineContinuation = False
-                                AfterWhiteSpace = False
+                            If Not firstTrivia Then
+                                finalLeadingTriviaList.Add(Trivia)
+                                afterLineContinuation = False
+                                afterWhiteSpace = False
                                 If Index < NodesOrTokens.Count - 1 Then
-                                    If FinalLeadingTriviaList.Count = 0 Then
-                                        FinalLeadingTriviaList.Add(SpaceTrivia)
-                                        FinalLeadingTriviaList.Add(LineContinuation)
+                                    If finalLeadingTriviaList.Count = 0 Then
+                                        finalLeadingTriviaList.Add(SpaceTrivia)
+                                        finalLeadingTriviaList.Add(LineContinuation)
                                     End If
                                 End If
                             End If
                         Case VB.SyntaxKind.CommentTrivia
-                            FirstTrivia = False
-                            If Not AfterWhiteSpace Then
-                                FinalLeadingTriviaList.Add(SpaceTrivia)
+                            firstTrivia = False
+                            If Not afterWhiteSpace Then
+                                finalLeadingTriviaList.Add(SpaceTrivia)
                             End If
-                            FinalLeadingTriviaList.Add(LineContinuation)
-                            FinalLeadingTriviaList.Add(Trivia)
+                            finalLeadingTriviaList.Add(LineContinuation)
+                            finalLeadingTriviaList.Add(Trivia)
                             If Not nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                                FinalLeadingTriviaList.Add(VBEOLTrivia)
+                                finalLeadingTriviaList.Add(VBEOLTrivia)
                             End If
                         Case VB.SyntaxKind.DisableWarningDirectiveTrivia, VB.SyntaxKind.EnableWarningDirectiveTrivia
-                            FirstTrivia = False
+                            firstTrivia = False
                             Stop
                         Case VB.SyntaxKind.IfDirectiveTrivia
-                            FirstTrivia = False
-                            FinalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(Trivia))
+                            firstTrivia = False
+                            finalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(Trivia))
                         Case VB.SyntaxKind.DisabledTextTrivia
-                            FirstTrivia = False
-                            FinalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(Trivia))
+                            firstTrivia = False
+                            finalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(Trivia))
                         Case VB.SyntaxKind.ElseDirectiveTrivia
-                            FirstTrivia = False
-                            FinalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(Trivia))
+                            firstTrivia = False
+                            finalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(Trivia))
                         Case VB.SyntaxKind.EndIfDirectiveTrivia
-                            FirstTrivia = False
-                            FinalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(Trivia))
+                            firstTrivia = False
+                            finalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(Trivia))
                         Case Else
                             Stop
                     End Select
                 Next
-                InitialTriviaList.Clear()
-                InitialTriviaList.AddRange(ConvertTrivia(NodesOrTokens(Index).GetTrailingTrivia))
-                InitialTriviaListUBound = InitialTriviaList.Count - 1
+                initialTriviaList.Clear()
+                initialTriviaList.AddRange(ConvertTrivia(NodesOrTokens(Index).GetTrailingTrivia))
+                initialTriviaListUBound = initialTriviaList.Count - 1
 
-                Dim FinalTrailingTriviaList As New List(Of SyntaxTrivia)
-                For i As Integer = 0 To InitialTriviaListUBound
-                    Dim Trivia As SyntaxTrivia = InitialTriviaList(i)
-                    Select Case Trivia.RawKind
+                Dim finalTrailingTriviaList As New List(Of SyntaxTrivia)
+                For initialTriviaIndex As Integer = 0 To initialTriviaList.Count - 1
+                    Dim trivia As SyntaxTrivia = initialTriviaList(initialTriviaIndex)
+                    Select Case trivia.RawKind
                         Case VB.SyntaxKind.WhitespaceTrivia
-                            FinalTrailingTriviaList.Add(Trivia)
+                            finalTrailingTriviaList.Add(trivia)
                         Case VB.SyntaxKind.EndOfLineTrivia
                             ' What to do depends on whats next
                             If Index < NodesOrTokens.Count - 1 Then
                                 Dim j As Integer
                                 Dim NewWhiteSpaceString As String = ""
-                                If i < InitialTriviaListUBound Then
-                                    For j = i + 1 To InitialTriviaListUBound
-                                        If InitialTriviaList(j).RawKind = VB.SyntaxKind.WhitespaceTrivia Then
-                                            NewWhiteSpaceString &= InitialTriviaList(j).ToString
-                                            i += 1
+                                If initialTriviaIndex < initialTriviaListUBound Then
+                                    For j = initialTriviaIndex + 1 To initialTriviaListUBound
+                                        If initialTriviaList(j).RawKind = VB.SyntaxKind.WhitespaceTrivia Then
+                                            NewWhiteSpaceString &= initialTriviaList(j).ToString
+                                            initialTriviaIndex += 1
                                         Else
                                             Exit For
                                         End If
                                     Next
                                 End If
-                                If j = 0 OrElse j < InitialTriviaListUBound AndAlso InitialTriviaList(j).RawKind = VB.SyntaxKind.CommentTrivia Then
+                                If j = 0 OrElse j < initialTriviaListUBound AndAlso initialTriviaList(j).RawKind = VB.SyntaxKind.CommentTrivia Then
                                     If String.IsNullOrWhiteSpace(NewWhiteSpaceString) Then
-                                        FinalTrailingTriviaList.Add(SpaceTrivia)
+                                        finalTrailingTriviaList.Add(SpaceTrivia)
                                     Else
-                                        FinalTrailingTriviaList.Add(VBFactory.WhitespaceTrivia(NewWhiteSpaceString))
+                                        finalTrailingTriviaList.Add(VBFactory.WhitespaceTrivia(NewWhiteSpaceString))
                                     End If
-                                    FinalTrailingTriviaList.Add(LineContinuation)
-                                    FinalTrailingTriviaList.Add(Trivia)
-                                    AfterLineContinuation = True
+                                    finalTrailingTriviaList.Add(LineContinuation)
+                                    finalTrailingTriviaList.Add(trivia)
+                                    afterLineContinuation = True
                                 Else
-                                    FinalTrailingTriviaList.Add(Trivia)
+                                    finalTrailingTriviaList.Add(trivia)
                                     If Not String.IsNullOrWhiteSpace(NewWhiteSpaceString) Then
-                                        FinalTrailingTriviaList.Add(VBFactory.WhitespaceTrivia(NewWhiteSpaceString))
+                                        finalTrailingTriviaList.Add(VBFactory.WhitespaceTrivia(NewWhiteSpaceString))
                                     End If
                                 End If
                             Else
-                                FinalTrailingTriviaList.Add(Trivia)
-                                AfterLineContinuation = False
-                                AfterWhiteSpace = False
+                                finalTrailingTriviaList.Add(trivia)
+                                afterLineContinuation = False
+                                afterWhiteSpace = False
                             End If
                         Case VB.SyntaxKind.CommentTrivia
-                            If Not AfterWhiteSpace Then
-                                FinalTrailingTriviaList.Add(SpaceTrivia)
+                            If Not afterWhiteSpace Then
+                                finalTrailingTriviaList.Add(SpaceTrivia)
                             End If
-                            If Not AfterLineContinuation Then
-                                FinalTrailingTriviaList.Add(LineContinuation)
-                                FinalTrailingTriviaList.Add(SpaceTrivia)
+                            If Not afterLineContinuation Then
+                                finalTrailingTriviaList.Add(LineContinuation)
+                                finalTrailingTriviaList.Add(SpaceTrivia)
                             End If
-                            FinalTrailingTriviaList.Add(Trivia)
-                            AfterLineContinuation = False
-                            AfterWhiteSpace = False
+                            finalTrailingTriviaList.Add(trivia)
+                            afterLineContinuation = False
+                            afterWhiteSpace = False
                         Case Else
                             Stop
                     End Select
@@ -518,101 +518,99 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 If Node Is Nothing Then
                     Throw New ArgumentNullException(NameOf(Node))
                 End If
-                Return Node.With(FinalLeadingTriviaList, FinalTrailingTriviaList)
+                Return Node.With(finalLeadingTriviaList, finalTrailingTriviaList)
             End Function
 
             Public Shared Function ConvertAndModifyTokenTrivia(Token As SyntaxToken, NodesOrTokens As List(Of SyntaxNodeOrToken), Index As Integer) As SyntaxToken
                 If NodesOrTokens Is Nothing Then
                     Throw New ArgumentNullException(NameOf(NodesOrTokens))
                 End If
-                Dim InitialTriviaList As List(Of SyntaxTrivia) = ConvertTrivia(NodesOrTokens(Index).GetLeadingTrivia).ToList
-                Dim InitialTriviaListUBound As Integer = InitialTriviaList.Count - 1
-                Dim AfterWhiteSpace As Boolean = False
-                Dim AfterLineContinuation As Boolean = False
-                Dim FinalLeadingTriviaList As New List(Of SyntaxTrivia)
-                For i As Integer = 0 To InitialTriviaListUBound
-                    Dim Trivia As SyntaxTrivia = InitialTriviaList(i)
+                Dim initialTriviaList As List(Of SyntaxTrivia) = ConvertTrivia(NodesOrTokens(Index).GetLeadingTrivia).ToList
+                Dim initialTriviaListUBound As Integer = initialTriviaList.Count - 1
+                Dim afterWhiteSpace As Boolean = False
+                Dim afterLineContinuation As Boolean = False
+                Dim finalLeadingTriviaList As New List(Of SyntaxTrivia)
+                For initialTriviaIndex As Integer = 0 To initialTriviaListUBound
+                    Dim Trivia As SyntaxTrivia = initialTriviaList(initialTriviaIndex)
                     Select Case Trivia.RawKind
                         Case VB.SyntaxKind.WhitespaceTrivia
-                            AfterLineContinuation = False
-                            AfterWhiteSpace = True
-                            FinalLeadingTriviaList.Add(Trivia)
+                            afterLineContinuation = False
+                            afterWhiteSpace = True
+                            finalLeadingTriviaList.Add(Trivia)
                         Case VB.SyntaxKind.EndOfLineTrivia
-                            FinalLeadingTriviaList.Add(Trivia)
-                            AfterLineContinuation = False
-                            AfterWhiteSpace = False
+                            finalLeadingTriviaList.Add(Trivia)
+                            afterLineContinuation = False
+                            afterWhiteSpace = False
                             ' What I do depends on whats next
-                            If i < InitialTriviaListUBound Then
+                            If initialTriviaIndex < initialTriviaListUBound Then
                                 Dim j As Integer
-                                Dim NewWhiteSpaceString As String = ""
-                                For j = i + 1 To InitialTriviaListUBound
-                                    If InitialTriviaList(j).RawKind = VB.SyntaxKind.WhitespaceTrivia Then
-                                        NewWhiteSpaceString &= InitialTriviaList(j).ToString
-                                        i += 1
+                                Dim newWhiteSpaceString As String = ""
+                                For j = initialTriviaIndex + 1 To initialTriviaListUBound
+                                    If initialTriviaList(j).RawKind = VB.SyntaxKind.WhitespaceTrivia Then
+                                        newWhiteSpaceString &= initialTriviaList(j).ToString
+                                        initialTriviaIndex += 1
                                     Else
                                         Exit For
                                     End If
                                 Next
-                                If j < InitialTriviaListUBound AndAlso InitialTriviaList(j).RawKind = VB.SyntaxKind.CommentTrivia Then
-                                    If String.IsNullOrWhiteSpace(NewWhiteSpaceString) Then
-                                        FinalLeadingTriviaList.Add(SpaceTrivia)
+                                If j < initialTriviaListUBound AndAlso initialTriviaList(j).RawKind = VB.SyntaxKind.CommentTrivia Then
+                                    If String.IsNullOrWhiteSpace(newWhiteSpaceString) Then
+                                        finalLeadingTriviaList.Add(SpaceTrivia)
                                     Else
-                                        FinalLeadingTriviaList.Add(VBFactory.WhitespaceTrivia(NewWhiteSpaceString))
+                                        finalLeadingTriviaList.Add(VBFactory.WhitespaceTrivia(newWhiteSpaceString))
                                     End If
-                                    FinalLeadingTriviaList.Add(LineContinuation)
-                                    AfterLineContinuation = True
+                                    finalLeadingTriviaList.Add(LineContinuation)
+                                    afterLineContinuation = True
                                 Else
-                                    If Not String.IsNullOrWhiteSpace(NewWhiteSpaceString) Then
-                                        FinalLeadingTriviaList.Add(VBFactory.WhitespaceTrivia(NewWhiteSpaceString))
+                                    If Not String.IsNullOrWhiteSpace(newWhiteSpaceString) Then
+                                        finalLeadingTriviaList.Add(VBFactory.WhitespaceTrivia(newWhiteSpaceString))
                                     End If
                                 End If
                             End If
                         Case VB.SyntaxKind.CommentTrivia
-                            If Not AfterWhiteSpace Then
-                                FinalLeadingTriviaList.Add(SpaceTrivia)
+                            If Not afterWhiteSpace Then
+                                finalLeadingTriviaList.Add(SpaceTrivia)
                             End If
-                            If Not AfterLineContinuation Then
-                                FinalLeadingTriviaList.Add(LineContinuation)
-                                FinalLeadingTriviaList.Add(SpaceTrivia)
+                            If Not afterLineContinuation Then
+                                finalLeadingTriviaList.Add(LineContinuation)
+                                finalLeadingTriviaList.Add(SpaceTrivia)
                             End If
-                            FinalLeadingTriviaList.Add(Trivia)
-                            AfterLineContinuation = False
-                            AfterWhiteSpace = False
+                            finalLeadingTriviaList.Add(Trivia)
+                            afterLineContinuation = False
+                            afterWhiteSpace = False
                         Case VB.SyntaxKind.EndIfDirectiveTrivia
-                            FinalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(Trivia))
-                            FinalLeadingTriviaList.Add(VBEOLTrivia)
-                            AfterLineContinuation = False
-                            AfterWhiteSpace = False
+                            finalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(Trivia))
+                            finalLeadingTriviaList.Add(VBEOLTrivia)
+                            afterLineContinuation = False
+                            afterWhiteSpace = False
                         Case Else
                             Stop
                     End Select
                 Next
-                InitialTriviaList.Clear()
-                InitialTriviaList.AddRange(ConvertTrivia(NodesOrTokens(Index).GetTrailingTrivia))
-                InitialTriviaListUBound = InitialTriviaList.Count - 1
-
+                initialTriviaList.Clear()
+                initialTriviaList.AddRange(ConvertTrivia(NodesOrTokens(Index).GetTrailingTrivia))
                 Dim FinalTrailingTriviaList As New List(Of SyntaxTrivia)
-                For i As Integer = 0 To InitialTriviaListUBound
-                    Dim Trivia As SyntaxTrivia = InitialTriviaList(i)
+                For Each e As IndexStruct(Of SyntaxTrivia) In initialTriviaList.WithIndex
+                    Dim Trivia As SyntaxTrivia = e.Value
                     Select Case Trivia.RawKind
                         Case VB.SyntaxKind.WhitespaceTrivia
                             FinalTrailingTriviaList.Add(Trivia)
-                            AfterWhiteSpace = True
+                            afterWhiteSpace = True
                         Case VB.SyntaxKind.EndOfLineTrivia
                             FinalTrailingTriviaList.Add(Trivia)
-                            AfterWhiteSpace = False
+                            afterWhiteSpace = False
                         Case VB.SyntaxKind.CommentTrivia
-                            If Not AfterWhiteSpace = True Then
+                            If Not afterWhiteSpace = True Then
                                 FinalTrailingTriviaList.Add(SpaceTrivia)
                             End If
                             FinalTrailingTriviaList.Add(LineContinuation)
                             FinalTrailingTriviaList.Add(Trivia)
-                            AfterWhiteSpace = False
+                            afterWhiteSpace = False
                         Case Else
                             Stop
                     End Select
                 Next
-                Return Token.With(FinalLeadingTriviaList, FinalTrailingTriviaList)
+                Return Token.With(finalLeadingTriviaList, FinalTrailingTriviaList)
             End Function
 
             Public Shared Function GetElementType(_ITypeSymbol As ITypeSymbol) As TypeSyntax
@@ -688,13 +686,13 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 If node.ParameterList IsNot Nothing Then
                     Parameters = CType((node.ParameterList?.Parameters), SeparatedSyntaxList(Of CSS.ParameterSyntax))
                 End If
-                Return ConvertLambdaExpression(node:=node, block:=node.Block.Statements, parameters:=Parameters, CS_Modifiers:=VBFactory.TokenList(node.AsyncKeyword)).WithConvertedTriviaFrom(node)
+                Return ConvertLambdaExpression(node:=node, block:=node.Block.Statements, parameters:=Parameters, Modifiers:=VBFactory.TokenList(node.AsyncKeyword)).WithConvertedTriviaFrom(node)
             End Function
 
             Public Overrides Function VisitAnonymousObjectCreationExpression(node As CSS.AnonymousObjectCreationExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Dim FieldInitializers As New List(Of FieldInitializerSyntax)
-                For i As Integer = 0 To node.Initializers.Count - 1
-                    Dim Initializer As CSS.AnonymousObjectMemberDeclaratorSyntax = node.Initializers(i)
+                For Each e As IndexStruct(Of CSS.AnonymousObjectMemberDeclaratorSyntax) In node.Initializers.WithIndex
+                    Dim Initializer As CSS.AnonymousObjectMemberDeclaratorSyntax = e.Value
                     Dim LeadingTrivia As SyntaxTriviaList = VBFactory.TriviaList(ConvertTrivia(Initializer.GetLeadingTrivia))
                     If LeadingTrivia.ContainsCommentOrDirectiveTrivia Then
                         If Not LeadingTrivia.ContainsEndIfTrivia Then
@@ -710,8 +708,8 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     Dim FieldLeadingTrivia As SyntaxTriviaList = Field.GetLeadingTrivia
                     Dim Comment As String = ""
                     Dim NewFieldLeadingTrivia As New List(Of SyntaxTrivia)
-                    For j As Integer = 0 To FieldLeadingTrivia.Count - 1
-                        Dim t As SyntaxTrivia = FieldLeadingTrivia(j)
+                    For Each trivia As IndexStruct(Of SyntaxTrivia) In FieldLeadingTrivia.WithIndex
+                        Dim t As SyntaxTrivia = trivia.Value
                         Select Case t.RawKind
                             Case VB.SyntaxKind.WhitespaceTrivia
                                 If FirstTrivia = True Then
@@ -719,7 +717,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                 End If
                             Case VB.SyntaxKind.EndOfLineTrivia
                                 If FoundComment Then
-                                    If j = FieldLeadingTrivia.Count - 1 Then
+                                    If trivia.IsLast Then
                                         NewFieldLeadingTrivia.Add(t)
                                     End If
                                     ' skip EOL's
@@ -816,16 +814,16 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         If node.Left.IsKind(CS.SyntaxKind.DeclarationExpression) Then
                             Dim nodeLeft As CSS.DeclarationExpressionSyntax = DirectCast(node.Left, CSS.DeclarationExpressionSyntax)
                             Dim designation As CSS.ParenthesizedVariableDesignationSyntax = DirectCast(nodeLeft.Designation, CSS.ParenthesizedVariableDesignationSyntax)
-                            For i As Integer = 0 To designation.Variables.Count - 1
-                                If designation.Variables(i).RawKind = CS.SyntaxKind.ParenthesizedVariableDesignation Then
+                            For Each e As IndexStruct(Of CSS.VariableDesignationSyntax) In designation.Variables.WithIndex
+                                If e.Value.RawKind = CS.SyntaxKind.ParenthesizedVariableDesignation Then
                                     Dim sBuilder As New StringBuilder
-                                    CreateDesignationName(ProcessVariableDesignation(CType(designation.Variables(i), CSS.ParenthesizedVariableDesignationSyntax)), sBuilder)
+                                    CreateDesignationName(ProcessVariableDesignation(CType(e.Value, CSS.ParenthesizedVariableDesignationSyntax)), sBuilder)
                                     VariableNames.Add(sBuilder.ToString)
                                 Else
-                                    If designation.Variables(i).IsKind(CS.SyntaxKind.DiscardDesignation) Then
+                                    If e.Value.IsKind(CS.SyntaxKind.DiscardDesignation) Then
                                         VariableNames.Add("__DiscardDesignation__")
                                     Else
-                                        VariableNames.Add(designation.Variables(i).Accept(Me).ToString)
+                                        VariableNames.Add(e.Value.Accept(Me).ToString)
                                     End If
                                 End If
                             Next
@@ -862,11 +860,11 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                 tempIdentifier = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(identifierName))
                             End If
                             Dim variableDeclaration As SeparatedSyntaxList(Of VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(tempIdentifier, asClause:=simpleAs, initializer))
-                            Dim dimStatement As LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(dimModifiersTokens, variableDeclaration).WithPrependedLeadingTrivia(VBFactory.CommentTrivia($" ' TODO: VB has no equivalent to C# deconstruction declarations, an attempt was made to convert."), VBEOLTrivia)
+                            Dim dimStatement As LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(dimModifiersTokens, variableDeclaration).WithPrependedLeadingTrivia(VBFactory.CommentTrivia($" ' TODO: Visual Basic has no equivalent to C# deconstruction declarations, an attempt was made to convert."), VBEOLTrivia)
                             StatementList = StatementList.Add(dimStatement)
 
-                            For i As Integer = 0 To VariableNames.Count - 1
-                                If VariableNames(i) = "__DiscardDesignation__" Then
+                            For variableIndex As Integer = 0 To VariableNames.Count - 1
+                                If VariableNames(variableIndex) = "__DiscardDesignation__" Then
                                     Continue For
                                 End If
                                 Dim AsClause As AsClauseSyntax = Nothing
@@ -877,18 +875,18 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                     If nodeLeft.Type.IsVar OrElse tupleType Is Nothing Then
                                         AsClause = Nothing
                                     Else
-                                        If TypeOf tupleType.Elements(i) Is NamedTupleElementSyntax Then
-                                            TempType = CType(tupleType.Elements(i), NamedTupleElementSyntax).AsClause.Type
+                                        If TypeOf tupleType.Elements(variableIndex) Is NamedTupleElementSyntax Then
+                                            TempType = CType(tupleType.Elements(variableIndex), NamedTupleElementSyntax).AsClause.Type
                                         Else
-                                            TempType = VBFactory.ParseTypeName(tupleType.Elements(i).ToString)
+                                            TempType = VBFactory.ParseTypeName(tupleType.Elements(variableIndex).ToString)
                                         End If
                                         AsClause = VBFactory.SimpleAsClause(TempType)
                                     End If
                                 End If
-                                initializer = VBFactory.EqualsValue(VBFactory.InvocationExpression(VBFactory.ParseExpression($"{identifierName}.Item{i + 1}")))
+                                initializer = VBFactory.EqualsValue(VBFactory.InvocationExpression(VBFactory.ParseExpression($"{identifierName}.Item{variableIndex + 1}")))
                                 Dim Declarators As SeparatedSyntaxList(Of VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(
                                                                             VBFactory.VariableDeclarator(
-                                                                            VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(VariableNames(i))),
+                                                                            VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(VariableNames(variableIndex))),
                                                                             AsClause,
                                                                             initializer)
                                                                         )
@@ -945,6 +943,8 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                                 TupleList.Add("_")
                                             End If
                                         Next
+                                    Catch ex As OperationCanceledException
+                                        Throw
                                     Catch ex As Exception
                                         Stop
                                     End Try
@@ -954,8 +954,8 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                             End If
                             Dim builder As New StringBuilder()
                             builder.Append("(")
-                            For i As Integer = 0 To TupleList.Count - 2
-                                builder.Append(TupleList(i) & ", ")
+                            For Each e As IndexStruct(Of String) In TupleList.WithIndex
+                                builder.Append(e.Value & ", ")
                             Next
                             builder.Append(TupleList.Last & ")")
                             Dim TupleType As String = builder.ToString
@@ -966,13 +966,12 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                             Dim VariableDeclaration As SeparatedSyntaxList(Of VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(Names, SimpleAs, initializer))
                             Dim DimStatement As LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(dimModifiersTokens, VariableDeclaration)
                             StatementList = StatementList.Add(DimStatement)
-
-                            For i As Integer = 0 To VariableNames.Count - 1
-                                If VariableNames(i) = "underscore" Then
+                            For Each e As IndexStruct(Of String) In VariableNames.WithIndex
+                                If e.Value = "underscore" Then
                                     Continue For
                                 End If
-                                Dim NewLeftNode As ExpressionSyntax = VBFactory.IdentifierName(VariableNames(i))
-                                Dim NewRightNode As ExpressionSyntax = VBFactory.InvocationExpression(VBFactory.ParseExpression($"{IdentifierName}.Item{i + 1}"))
+                                Dim NewLeftNode As ExpressionSyntax = VBFactory.IdentifierName(e.Value)
+                                Dim NewRightNode As ExpressionSyntax = VBFactory.InvocationExpression(VBFactory.ParseExpression($"{IdentifierName}.Item{e.Index + 1}"))
                                 Dim kind As VB.SyntaxKind = ConvertCSExpressionsKindToVBKind(CS.CSharpExtensions.Kind(node))
                                 Dim OperatorToken As SyntaxToken = ExpressionKindToOperatorToken(kind)
                                 Dim AssignmentStatement As AssignmentStatementSyntax = VBFactory.AssignmentStatement(kind,
@@ -1077,16 +1076,15 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         kind = VB.SyntaxKind.ConcatenateExpression
                         Dim vbNode As VB.VisualBasicSyntaxNode = CType(csNodesOrTokens(0), CSS.ExpressionSyntax).Accept(Me)
                         leftVBNode = ConvertAndModifyNodeTrivia(vbNode, csNodesOrTokens, 0)
-                        For i As Integer = 1 To csNodesOrTokens.Count - 1
-                            vbOperatorToken = ConvertAndModifyTokenTrivia(AmpersandToken, csNodesOrTokens, i)
-                            vbNode = CType(csNodesOrTokens(i + 1), CSS.ExpressionSyntax).Accept(Me)
-                            rightVBNode = ConvertAndModifyNodeTrivia(vbNode, csNodesOrTokens, i + 1)
+                        For nodeOrTokenIndex As Integer = 1 To csNodesOrTokens.Count - 1 Step 2
+                            vbOperatorToken = ConvertAndModifyTokenTrivia(AmpersandToken, csNodesOrTokens, nodeOrTokenIndex)
+                            vbNode = CType(csNodesOrTokens(nodeOrTokenIndex + 1), CSS.ExpressionSyntax).Accept(Me)
+                            rightVBNode = ConvertAndModifyNodeTrivia(vbNode, csNodesOrTokens, nodeOrTokenIndex + 1)
                             leftVBNode = VBFactory.ConcatenateExpression(
                                                             DirectCast(leftVBNode, ExpressionSyntax),
                                                             vbOperatorToken,
                                                             DirectCast(rightVBNode, ExpressionSyntax)
                                                             )
-                            i += 1
                         Next
                         Return leftVBNode
                     End If
@@ -1492,24 +1490,24 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
 
                 Dim Condition As ExpressionSyntax = DirectCast(ConvertAndModifyNodeTrivia(node.Condition.Accept(Me), NodesOrTokens, 0), ExpressionSyntax)
 
-                Dim CS_WhenTrue As CSS.ExpressionSyntax = node.WhenTrue
+                Dim csWhenTrue As CSS.ExpressionSyntax = node.WhenTrue
                 Dim WhenTrue As ExpressionSyntax = Nothing
-                If Not CS_WhenTrue.IsKind(CS.SyntaxKind.ThrowExpression) Then
+                If Not csWhenTrue.IsKind(CS.SyntaxKind.ThrowExpression) Then
                     WhenTrue = DirectCast(ConvertAndModifyNodeTrivia(node.WhenTrue.Accept(Me), NodesOrTokens, Index:=2), ExpressionSyntax)
                 End If
 
                 Dim FirstCommaToken As SyntaxToken = ConvertAndModifyTokenTrivia(CommaToken, NodesOrTokens, Index:=1)
 
-                Dim CS_WhenFalse As CSS.ExpressionSyntax = node.WhenFalse
+                Dim csWhenFalse As CSS.ExpressionSyntax = node.WhenFalse
                 Dim WhenFalse As ExpressionSyntax = Nothing
-                If Not CS_WhenFalse.IsKind(CS.SyntaxKind.ThrowExpression) Then
+                If Not csWhenFalse.IsKind(CS.SyntaxKind.ThrowExpression) Then
                     WhenFalse = DirectCast(ConvertAndModifyNodeTrivia(node.WhenFalse.Accept(Me), NodesOrTokens, Index:=4), ExpressionSyntax)
                 End If
 
                 Dim IfKeywordWithTrivia As SyntaxToken = IfKeyword.WithConvertedLeadingTriviaFrom(node.Condition.GetFirstToken)
                 Dim SecondCommaToken As SyntaxToken = ConvertAndModifyTokenTrivia(CommaToken, NodesOrTokens, Index:=3)
 
-                If Not CS_WhenFalse.IsKind(CS.SyntaxKind.ThrowExpression) AndAlso Not CS_WhenTrue.IsKind(CS.SyntaxKind.ThrowExpression) Then
+                If Not csWhenFalse.IsKind(CS.SyntaxKind.ThrowExpression) AndAlso Not csWhenTrue.IsKind(CS.SyntaxKind.ThrowExpression) Then
                     Return VBFactory.TernaryConditionalExpression(
                     IfKeywordWithTrivia,
                     OpenParenToken,
@@ -1522,13 +1520,13 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 End If
                 Dim ThrowStatement As ThrowStatementSyntax
                 Dim ResultExpression As ExpressionSyntax
-                If Not CS_WhenFalse.IsKind(CS.SyntaxKind.ThrowExpression) Then
-                    ThrowStatement = DirectCast(CS_WhenTrue.Accept(Me).WithConvertedTriviaFrom(CS_WhenTrue), ThrowStatementSyntax).WithTrailingEOL
-                    ResultExpression = DirectCast(CS_WhenFalse.Accept(Me).WithConvertedTriviaFrom(CS_WhenFalse), ExpressionSyntax)
+                If Not csWhenFalse.IsKind(CS.SyntaxKind.ThrowExpression) Then
+                    ThrowStatement = DirectCast(csWhenTrue.Accept(Me).WithConvertedTriviaFrom(csWhenTrue), ThrowStatementSyntax).WithTrailingEOL
+                    ResultExpression = DirectCast(csWhenFalse.Accept(Me).WithConvertedTriviaFrom(csWhenFalse), ExpressionSyntax)
                 Else
                     Condition = VBFactory.NotExpression(Condition.WithoutTrivia)
-                    ThrowStatement = DirectCast(CS_WhenFalse.Accept(Me).WithConvertedTriviaFrom(CS_WhenFalse), ThrowStatementSyntax).WithTrailingEOL
-                    ResultExpression = DirectCast(CS_WhenTrue.Accept(Me).WithConvertedTriviaFrom(CS_WhenTrue), ExpressionSyntax)
+                    ThrowStatement = DirectCast(csWhenFalse.Accept(Me).WithConvertedTriviaFrom(csWhenFalse), ThrowStatementSyntax).WithTrailingEOL
+                    ResultExpression = DirectCast(csWhenTrue.Accept(Me).WithConvertedTriviaFrom(csWhenTrue), ExpressionSyntax)
                 End If
                 Dim Statements As SyntaxList(Of StatementSyntax) = VBFactory.SingletonList(Of StatementSyntax)(ThrowStatement)
 
@@ -1680,17 +1678,15 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             End Function
 
             Public Overrides Function VisitImplicitArrayCreationExpression(node As CSS.ImplicitArrayCreationExpressionSyntax) As VB.VisualBasicSyntaxNode
-                Dim CS_Separators As IEnumerable(Of SyntaxToken) = node.Initializer.Expressions.GetSeparators
+                Dim csSeparators As IEnumerable(Of SyntaxToken) = node.Initializer.Expressions.GetSeparators
                 Dim ExpressionItems As New List(Of ExpressionSyntax)
                 Dim NamedFieldItems As New List(Of FieldInitializerSyntax)
                 Dim Separators As New List(Of SyntaxToken)
-                Dim SeparatorCount As Integer = node.Initializer.Expressions.Count - 1
-                For i As Integer = 0 To SeparatorCount
-                    Dim e As CSS.ExpressionSyntax = node.Initializer.Expressions(i)
+                For Each e As IndexStruct(Of CSS.ExpressionSyntax) In node.Initializer.Expressions.WithIndex
                     Dim ItemWithTrivia As VB.VisualBasicSyntaxNode
                     Try
-                        ItemWithTrivia = e.Accept(Me).WithConvertedTriviaFrom(e).RemoveExtraLeadingEOL.NormalizeWhitespaceEx(useDefaultCasing:=True, indentation:="    ")
-                        Dim LeadingTrivia As SyntaxTriviaList = e.GetLeadingTrivia
+                        ItemWithTrivia = e.Value.Accept(Me).WithConvertedTriviaFrom(e.Value).RemoveExtraLeadingEOL.NormalizeWhitespaceEx(useDefaultCasing:=True, indentation:="    ")
+                        Dim LeadingTrivia As SyntaxTriviaList = e.Value.GetLeadingTrivia
                         If LeadingTrivia.Any AndAlso LeadingTrivia.Last.IsKind(CS.SyntaxKind.WhitespaceTrivia) Then
                             ItemWithTrivia = ItemWithTrivia.WithPrependedLeadingTrivia(ConvertTrivia(LeadingTrivia.Last))
                         End If
@@ -1709,8 +1705,8 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         Stop
                         Throw
                     End Try
-                    If SeparatorCount > i Then
-                        Separators.Add(CommaToken.WithConvertedTrailingTriviaFrom(CS_Separators(i)))
+                    If Not e.IsLast Then
+                        Separators.Add(CommaToken.WithConvertedTrailingTriviaFrom(csSeparators(e.Index)))
                     End If
                 Next
                 Dim OpenBraceTokenWithTrivia As SyntaxToken = OpenBraceToken.WithConvertedTriviaFrom(node.Initializer.OpenBraceToken)
@@ -1732,12 +1728,12 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             Public Overrides Function VisitInitializerExpression(node As CSS.InitializerExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Try
 
-                    Dim CS_Separators As IEnumerable(Of SyntaxToken) = node.Expressions.GetSeparators
+                    Dim csSeparators As IEnumerable(Of SyntaxToken) = node.Expressions.GetSeparators
                     Dim Expressions As New List(Of ExpressionSyntax)
                     Dim Fields As New List(Of FieldInitializerSyntax)
                     Dim Separators As New List(Of SyntaxToken)
                     Dim ExpressionLastIndex As Integer = node.Expressions.Count - 1
-                    Dim FinalSeparator As Boolean = CS_Separators.Any AndAlso ExpressionLastIndex <> CS_Separators.Count
+                    Dim FinalSeparator As Boolean = csSeparators.Any AndAlso ExpressionLastIndex <> csSeparators.Count
                     Dim OpenBraceTokenWithTrivia As SyntaxToken = OpenBraceToken.WithConvertedTriviaFrom(node.OpenBraceToken)
                     Dim ReportProgress As Boolean = ExpressionLastIndex > 500
 
@@ -1746,15 +1742,15 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     End If
                     ' Figuring out this without using Accept is complicated below is safe but not fast
                     Dim ItemIsField As Boolean = node.Expressions.Any AndAlso TypeOf node.Expressions(0).Accept(Me) Is FieldInitializerSyntax
-                    For i As Integer = 0 To ExpressionLastIndex
+                    For expressionIndex As Integer = 0 To ExpressionLastIndex
                         If ReportProgress Then
-                            s_originalRequest.Progress?.Report(New ProgressReport(i + 1, node.Expressions.Count))
+                            s_originalRequest.Progress?.Report(New ProgressReport(expressionIndex + 1, node.Expressions.Count))
                         End If
 
                         If s_originalRequest.CancelToken.IsCancellationRequested Then
                             Exit For
                         End If
-                        Dim Item As VB.VisualBasicSyntaxNode = node.Expressions(i).Accept(Me)
+                        Dim Item As VB.VisualBasicSyntaxNode = node.Expressions(expressionIndex).Accept(Me)
                         Try
                             If ItemIsField Then
                                 Fields.Add(DirectCast(Item.RemoveExtraLeadingEOL, FieldInitializerSyntax))
@@ -1768,31 +1764,31 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                             Stop
                         End Try
 
-                        If ExpressionLastIndex > i Then
-                            Separators.Add(CommaToken.WithConvertedTrailingTriviaFrom(CS_Separators(i)))
+                        If ExpressionLastIndex > expressionIndex Then
+                            Separators.Add(CommaToken.WithConvertedTrailingTriviaFrom(csSeparators(expressionIndex)))
                         Else
                             If FinalSeparator Then
                                 If ItemIsField Then
-                                    Fields(i) = Fields(i).WithAppendedTrailingTrivia(ConvertTrivia(CS_Separators.Last.TrailingTrivia))
+                                    Fields(expressionIndex) = Fields(expressionIndex).WithAppendedTrailingTrivia(ConvertTrivia(csSeparators.Last.TrailingTrivia))
                                 Else
-                                    Expressions(i) = Expressions(i).WithAppendedTrailingTrivia(ConvertTrivia(CS_Separators.Last.TrailingTrivia))
+                                    Expressions(expressionIndex) = Expressions(expressionIndex).WithAppendedTrailingTrivia(ConvertTrivia(csSeparators.Last.TrailingTrivia))
                                 End If
                             End If
                         End If
                     Next
-                    Dim CLoseBracketLeadingTriva As List(Of SyntaxTrivia) = ConvertTrivia(node.CloseBraceToken.LeadingTrivia).ToList
-                    If CLoseBracketLeadingTriva.Any Then
-                        If CLoseBracketLeadingTriva.First.IsKind(VB.SyntaxKind.CommentTrivia) Then
-                            CLoseBracketLeadingTriva.Insert(1, VBEOLTrivia)
+                    Dim CloseBracketLeadingTriva As List(Of SyntaxTrivia) = ConvertTrivia(node.CloseBraceToken.LeadingTrivia).ToList
+                    If CloseBracketLeadingTriva.Any Then
+                        If CloseBracketLeadingTriva.First.IsKind(VB.SyntaxKind.CommentTrivia) Then
+                            CloseBracketLeadingTriva.Insert(1, VBEOLTrivia)
                         End If
                     End If
                     Dim CLoseBracketTrailingTriva As List(Of SyntaxTrivia) = ConvertTrivia(node.CloseBraceToken.TrailingTrivia).ToList
-                    If CLoseBracketLeadingTriva.ContainsCommentOrDirectiveTrivia Then
+                    If CloseBracketLeadingTriva.ContainsCommentOrDirectiveTrivia Then
                         Dim FoundEOF As Boolean = False
                         Dim FoundCommentOrDirective As Boolean = False
                         Dim NewCLoseBracketLeadingTriva As New List(Of SyntaxTrivia)
-                        For i As Integer = 0 To CLoseBracketLeadingTriva.Count - 1
-                            Dim t As SyntaxTrivia = CLoseBracketLeadingTriva(i)
+                        For Each e As IndexStruct(Of SyntaxTrivia) In CloseBracketLeadingTriva.WithIndex
+                            Dim t As SyntaxTrivia = e.Value
                             If FoundCommentOrDirective OrElse t.IsDirective Or t.IsComment Then
                                 If Not (FoundEOF OrElse FoundCommentOrDirective) Then
                                     NewCLoseBracketLeadingTriva.Add(VBEOLTrivia)
@@ -1810,10 +1806,10 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                     FoundEOF = True
                             End Select
                         Next
-                        CLoseBracketLeadingTriva = NewCLoseBracketLeadingTriva
+                        CloseBracketLeadingTriva = NewCLoseBracketLeadingTriva
                     End If
 
-                    Dim CloseBraceTokenWithTrivia As SyntaxToken = VisualBasicSyntaxFactory.CloseBraceToken.With(CLoseBracketLeadingTriva, CLoseBracketTrailingTriva)
+                    Dim CloseBraceTokenWithTrivia As SyntaxToken = VisualBasicSyntaxFactory.CloseBraceToken.With(CloseBracketLeadingTriva, CLoseBracketTrailingTriva)
                     If node.IsKind(CS.SyntaxKind.ObjectInitializerExpression) Then
                         Dim WithKeywordWithTrivia As SyntaxToken = WithKeyword.WithTrailingTrivia(VBEOLTrivia)
                         If Fields.Any Then
@@ -1989,16 +1985,16 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     ElseIf TypeOf VarPattern.Designation Is CSS.ParenthesizedVariableDesignationSyntax Then
                         Dim Designation As CSS.ParenthesizedVariableDesignationSyntax = DirectCast(VarPattern.Designation, CSS.ParenthesizedVariableDesignationSyntax)
                         Dim VariableNames As New List(Of String)
-                        For i As Integer = 0 To Designation.Variables.Count - 1
-                            If Designation.Variables(i).RawKind = CS.SyntaxKind.ParenthesizedVariableDesignation Then
+                        For Each e As IndexStruct(Of CSS.VariableDesignationSyntax) In Designation.Variables.WithIndex
+                            If e.Value.RawKind = CS.SyntaxKind.ParenthesizedVariableDesignation Then
                                 Dim sBuilder As New StringBuilder
-                                CreateDesignationName(ProcessVariableDesignation(CType(Designation.Variables(i), CSS.ParenthesizedVariableDesignationSyntax)), sBuilder)
+                                CreateDesignationName(ProcessVariableDesignation(CType(e.Value, CSS.ParenthesizedVariableDesignationSyntax)), sBuilder)
                                 VariableNames.Add(sBuilder.ToString)
                             Else
-                                If Designation.Variables(i).IsKind(CS.SyntaxKind.DiscardDesignation) Then
+                                If e.Value.IsKind(CS.SyntaxKind.DiscardDesignation) Then
                                     VariableNames.Add("__DiscardDesignation__")
                                 Else
-                                    VariableNames.Add(Designation.Variables(i).Accept(Me).ToString)
+                                    VariableNames.Add(e.Value.Accept(Me).ToString)
                                 End If
                             End If
                         Next
@@ -2232,8 +2228,8 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                 Stop
                         End Select
                     Next
-                    For i As Integer = 0 To OldNameLeadingTrivia.Count - 1
-                        Dim t As SyntaxTrivia = OldNameLeadingTrivia(i)
+                    For Each e As IndexStruct(Of SyntaxTrivia) In OldNameLeadingTrivia.WithIndex
+                        Dim t As SyntaxTrivia = e.Value
                         Select Case t.RawKind
                             Case VB.SyntaxKind.WhitespaceTrivia
                                 NewNameLeadingTrivia.Add(t)
@@ -2321,9 +2317,9 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     Dim NewSeparatorList As New List(Of SyntaxToken)
                     Dim FoundEOL As Boolean = False
 
-                    For I As Integer = 0 To argumentList.Arguments.Count - 2
-                        NewArgumentList.Add(argumentList.Arguments(I).RemoveDirectiveTrivia(FoundEOL))
-                        NewSeparatorList.Add(argumentList.Arguments.GetSeparator(I).RemoveDirectiveTrivia(FoundEOL))
+                    For index As Integer = 0 To argumentList.Arguments.Count - 2
+                        NewArgumentList.Add(argumentList.Arguments(index).RemoveDirectiveTrivia(FoundEOL))
+                        NewSeparatorList.Add(argumentList.Arguments.GetSeparator(index).RemoveDirectiveTrivia(FoundEOL))
                     Next
                     NewArgumentList.Add(argumentList.Arguments(argumentList.Arguments.Count - 1).RemoveDirectiveTrivia(FoundEOL))
                     argumentList = argumentList.WithArguments(VBFactory.SeparatedList(NewArgumentList, NewSeparatorList))
@@ -2597,55 +2593,53 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             Public Overrides Function VisitTupleExpression(node As CSS.TupleExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Dim lArgumentSyntax As New List(Of SimpleArgumentSyntax)
                 If TypeOf node.Arguments(0).Expression IsNot CSS.DeclarationExpressionSyntax Then
-                    For i As Integer = 0 To node.Arguments.Count - 1
-                        Dim a As CSS.ArgumentSyntax = node.Arguments(i)
-                        Dim Argument As SimpleArgumentSyntax = DirectCast(a.Accept(Me), SimpleArgumentSyntax)
-                        Dim AfterWhiteSpace As Boolean = False
-                        Dim InitialTriviaList As List(Of SyntaxTrivia) = Argument.GetLeadingTrivia.ToList
-                        Dim TriviaListUBound As Integer = InitialTriviaList.Count - 1
-                        Dim FinalLeadingTriviaList As New List(Of SyntaxTrivia)
-                        For j As Integer = 0 To TriviaListUBound
-                            Dim Trivia As SyntaxTrivia = InitialTriviaList(j)
+                    For Each e As IndexStruct(Of CSS.ArgumentSyntax) In node.Arguments.WithIndex
+                        Dim argument As SimpleArgumentSyntax = DirectCast(e.Value.Accept(Me), SimpleArgumentSyntax)
+                        Dim afterWhiteSpace As Boolean = False
+                        Dim initialTriviaList As List(Of SyntaxTrivia) = argument.GetLeadingTrivia.ToList
+                        Dim finalLeadingTriviaList As New List(Of SyntaxTrivia)
+                        For j As Integer = 0 To initialTriviaList.Count - 1
+                            Dim Trivia As SyntaxTrivia = initialTriviaList(j)
                             Select Case Trivia.RawKind
                                 Case VB.SyntaxKind.WhitespaceTrivia
-                                    AfterWhiteSpace = True
-                                    FinalLeadingTriviaList.Add(Trivia)
+                                    afterWhiteSpace = True
+                                    finalLeadingTriviaList.Add(Trivia)
                                 Case VB.SyntaxKind.EndOfLineTrivia
-                                    FinalLeadingTriviaList.Add(Trivia)
-                                    AfterWhiteSpace = False
-                                    If j < TriviaListUBound Then
-                                        If FinalLeadingTriviaList.Count = 0 Then
-                                            FinalLeadingTriviaList.Add(SpaceTrivia)
-                                            FinalLeadingTriviaList.Add(LineContinuation)
+                                    finalLeadingTriviaList.Add(Trivia)
+                                    afterWhiteSpace = False
+                                    If j < initialTriviaList.Count - 1 Then
+                                        If finalLeadingTriviaList.Count = 0 Then
+                                            finalLeadingTriviaList.Add(SpaceTrivia)
+                                            finalLeadingTriviaList.Add(LineContinuation)
                                         End If
                                     End If
                                 Case VB.SyntaxKind.CommentTrivia
-                                    If Not FinalLeadingTriviaList.Last.IsKind(VB.SyntaxKind.LineContinuationTrivia) Then
-                                        If Not AfterWhiteSpace Then
-                                            FinalLeadingTriviaList.Add(SpaceTrivia)
+                                    If Not finalLeadingTriviaList.Last.IsKind(VB.SyntaxKind.LineContinuationTrivia) Then
+                                        If Not afterWhiteSpace Then
+                                            finalLeadingTriviaList.Add(SpaceTrivia)
                                         End If
-                                        FinalLeadingTriviaList.Add(LineContinuation)
+                                        finalLeadingTriviaList.Add(LineContinuation)
                                     End If
 
-                                    FinalLeadingTriviaList.Add(Trivia)
-                                    If j < TriviaListUBound AndAlso Not InitialTriviaList(j + 1).IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                                        FinalLeadingTriviaList.Add(VBEOLTrivia)
+                                    finalLeadingTriviaList.Add(Trivia)
+                                    If j < initialTriviaList.Count - 1 AndAlso Not initialTriviaList(j + 1).IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                                        finalLeadingTriviaList.Add(VBEOLTrivia)
                                     End If
                                 Case VB.SyntaxKind.DisableWarningDirectiveTrivia
                                     GetStatementwithIssues(node).AddMarker(VBFactory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
                                 Case VB.SyntaxKind.EnableWarningDirectiveTrivia
                                     GetStatementwithIssues(node).AddMarker(VBFactory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.AppendEmptyStatement, AllowDuplicates:=True)
                                 Case VB.SyntaxKind.LineContinuationTrivia
-                                    If FinalLeadingTriviaList.Last.IsKind(VB.SyntaxKind.LineContinuationTrivia) Then
+                                    If finalLeadingTriviaList.Last.IsKind(VB.SyntaxKind.LineContinuationTrivia) Then
                                         Continue For
                                     End If
-                                    AfterWhiteSpace = False
-                                    FinalLeadingTriviaList.Add(LineContinuation)
+                                    afterWhiteSpace = False
+                                    finalLeadingTriviaList.Add(LineContinuation)
                                 Case Else
                                     Stop
                             End Select
                         Next
-                        lArgumentSyntax.Add(Argument.WithLeadingTrivia(FinalLeadingTriviaList))
+                        lArgumentSyntax.Add(argument.WithLeadingTrivia(finalLeadingTriviaList))
                     Next
                     Return VBFactory.TupleExpression(VBFactory.SeparatedList(lArgumentSyntax))
                 End If

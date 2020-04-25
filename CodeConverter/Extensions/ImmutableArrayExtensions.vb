@@ -37,15 +37,15 @@ Public Module ImmutableArrayExtensions
         Dim all As Boolean = True
 
         Dim n As Integer = array.Length
-        For i As Integer = 0 To n - 1
-            Dim a As T = array(i)
+        For index As Integer = 0 To n - 1
+            Dim a As T = array(index)
             If predicate(a) Then
                 none = False
                 If all Then
                     Continue For
                 End If
 
-                Debug.Assert(i > 0)
+                Debug.Assert(index > 0)
                 If builder Is Nothing Then
                     builder = ArrayBuilder(Of T).GetInstance()
                 End If
@@ -57,17 +57,17 @@ Public Module ImmutableArrayExtensions
                     Continue For
                 End If
 
-                Debug.Assert(i > 0)
+                Debug.Assert(index > 0)
                 If all Then
                     Debug.Assert(builder Is Nothing)
                     all = False
                     builder = ArrayBuilder(Of T).GetInstance()
-                    For j As Integer = 0 To i - 1
+                    For j As Integer = 0 To index - 1
                         builder.Add(array(j))
                     Next j
                 End If
             End If
-        Next i
+        Next index
 
         If builder IsNot Nothing Then
             Debug.Assert(Not all)

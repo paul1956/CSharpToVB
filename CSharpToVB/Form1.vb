@@ -71,10 +71,10 @@ Partial Public Class Form1
         End If
 
         Dim builder As New StringBuilder()
-        For i As Integer = 0 To Exceptions.Count - 1
-            builder.AppendFormat(Globalization.CultureInfo.InvariantCulture, "----- Exception {0} Of {1} -----" & System.Environment.NewLine, i + 1, Exceptions.Count)
-            builder.AppendLine(Exceptions(i).ToString())
-        Next i
+        For index As Integer = 0 To Exceptions.Count - 1
+            builder.AppendFormat(Globalization.CultureInfo.InvariantCulture, "----- Exception {0} Of {1} -----" & System.Environment.NewLine, index + 1, Exceptions.Count)
+            builder.AppendLine(Exceptions(index).ToString())
+        Next index
         Return builder.ToString()
     End Function
 
@@ -301,8 +301,8 @@ Partial Public Class Form1
 
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles Me.Load
         Dim items(ImageList1.Images.Count - 1) As String
-        For i As Integer = 0 To ImageList1.Images.Count - 1
-            items(i) = "Item " & i.ToString(Globalization.CultureInfo.InvariantCulture)
+        For index As Integer = 0 To ImageList1.Images.Count - 1
+            items(index) = "Item " & index.ToString(Globalization.CultureInfo.InvariantCulture)
         Next
         SearchDirection.Items.AddRange(items)
         SearchDirection.DropDownStyle = ComboBoxStyle.DropDownList
@@ -1251,7 +1251,7 @@ Partial Public Class Form1
             ' 5 second delay
             Const LoopSleep As Integer = 25
             Dim Delay As Integer = (1000 * My.Settings.ConversionDelay) \ LoopSleep
-            For i As Integer = 0 To Delay
+            For index As Integer = 0 To Delay
                 Application.DoEvents()
                 Thread.Sleep(LoopSleep)
                 If CancelToken.IsCancellationRequested Then

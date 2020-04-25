@@ -10,7 +10,7 @@ Namespace Microsoft.CodeAnalysis
         Private Const None As Integer = 0
 
         Private Shared ReadOnly s_childEnumeratorStackPool As New ObjectPool(Of Stack(Of ChildSyntaxList.Enumerator))(Function() New Stack(Of ChildSyntaxList.Enumerator)(), 10)
-        Public Shared ReadOnly Instance As SyntaxNavigator = New SyntaxNavigator()
+        Public Shared ReadOnly s_instance As SyntaxNavigator = New SyntaxNavigator()
 
         Private Sub New()
         End Sub
@@ -25,7 +25,6 @@ Namespace Microsoft.CodeAnalysis
                 If trivia.HasStructure AndAlso stepInto(trivia) Then
                     Dim [structure] As SyntaxNode = trivia.GetStructure()
                     Dim token As SyntaxToken = GetFirstToken([structure], predicate, stepInto)
-                    'BC30518: Overload resolution failed because no accessible 'GetFirstToken' can be called with these arguments:
                     If token.RawKind <> None Then
                         Return token
                     End If

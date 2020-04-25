@@ -170,11 +170,11 @@ Partial Friend Class SymbolEquivalenceComparer
                     Return False
                 End If
 
-                For i As Integer = 0 To xElements.Length - 1
-                    If Not AreEquivalent(xElements(i).Type, yElements(i).Type, equivalentTypesWithDifferingAssemblies) Then
+                For index As Integer = 0 To xElements.Length - 1
+                    If Not AreEquivalent(xElements(index).Type, yElements(index).Type, equivalentTypesWithDifferingAssemblies) Then
                         Return False
                     End If
-                Next i
+                Next
 
                 Return True
             End If
@@ -313,11 +313,11 @@ Partial Friend Class SymbolEquivalenceComparer
                 Return False
             End If
 
-            For i As Integer = 0 To count - 1
-                If Not _symbolEquivalenceComparer.ParameterEquivalenceComparer.Equals(xParameters(i), yParameters(i), equivalentTypesWithDifferingAssemblies, compareParameterName, isParameterNameCaseSensitive) Then
+            For index As Integer = 0 To count - 1
+                If Not _symbolEquivalenceComparer.ParameterEquivalenceComparer.Equals(xParameters(index), yParameters(index), equivalentTypesWithDifferingAssemblies, compareParameterName, isParameterNameCaseSensitive) Then
                     Return False
                 End If
-            Next i
+            Next index
 
             Return True
         End Function
@@ -350,11 +350,11 @@ Partial Friend Class SymbolEquivalenceComparer
                 Return False
             End If
 
-            For i As Integer = 0 To count - 1
-                If Not AreEquivalent(xTypeArguments(i), yTypeArguments(i), equivalentTypesWithDifferingAssemblies) Then
+            For index As Integer = 0 To count - 1
+                If Not AreEquivalent(xTypeArguments(index), yTypeArguments(index), equivalentTypesWithDifferingAssemblies) Then
                     Return False
                 End If
-            Next i
+            Next
 
             Return True
         End Function
@@ -394,11 +394,11 @@ Partial Friend Class SymbolEquivalenceComparer
                 Return False
             End If
 
-            For i As Integer = 0 To x.Length - 1
-                If Not AreEquivalent(x(i), y(i), equivalentTypesWithDifferingAssemblies) Then
+            For index As Integer = 0 To x.Length - 1
+                If Not AreEquivalent(x(index), y(index), equivalentTypesWithDifferingAssemblies) Then
                     Return False
                 End If
-            Next i
+            Next index
 
             Return True
         End Function

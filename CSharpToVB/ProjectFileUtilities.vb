@@ -24,9 +24,9 @@ Public Module ProjectFileUtilities
                 String.IsNullOrWhiteSpace(PartialPathWithFileName) Then
             Return
         End If
-        Dim DestFileNameWithPath As String = Path.Combine(ProjectSavePath, PartialPathWithFileName)
-        Directory.CreateDirectory(Path.GetDirectoryName(DestFileNameWithPath))
-        File.Copy(Path.Combine(New FileInfo(currentProject).Directory.FullName, PartialPathWithFileName), DestFileNameWithPath, overwrite:=True)
+        Dim destFileNameWithPath As String = Path.Combine(ProjectSavePath, PartialPathWithFileName)
+        Directory.CreateDirectory(Path.GetDirectoryName(destFileNameWithPath))
+        File.Copy(Path.Combine(New FileInfo(currentProject).Directory.FullName, PartialPathWithFileName), destFileNameWithPath, overwrite:=True)
     End Sub
 
     Public Function ConvertProjectFile(ProjectSavePath As String, sourceFilePath As String, xmlDoc As XmlDocument) As XmlDocument
@@ -34,71 +34,72 @@ Public Module ProjectFileUtilities
         If xmlDoc Is Nothing Then
             Throw New ArgumentNullException(NameOf(xmlDoc))
         End If
-        Dim NodesToBeRemoved As New List(Of (PropertyIndex As Integer, ChildIndex As Integer))
+        Dim nodesToBeRemoved As New List(Of (PropertyIndex As Integer, ChildIndex As Integer))
 
-        Dim IsDesktopProject As Boolean = xmlDoc.FirstChild.Attributes(0).Value = "Microsoft.NET.Sdk.WindowsDesktop"
+        Dim isDesktopProject As Boolean = xmlDoc.FirstChild.Attributes(0).Value = "Microsoft.NET.Sdk.WindowsDesktop"
         If xmlDoc.FirstChild.Attributes(0).Value.StartsWith("Microsoft.NET.Sdk", StringComparison.OrdinalIgnoreCase) Then
-            Dim LeadingXMLSpace As XmlNode = xmlDoc.CreateDocumentFragment()
-            LeadingXMLSpace.InnerXml = "    "
+            Dim leadingXMLSpace As XmlNode = xmlDoc.CreateDocumentFragment()
+            leadingXMLSpace.InnerXml = "    "
 
             If xmlDoc.FirstChild.HasChildNodes Then
-                For i As Integer = 0 To xmlDoc.FirstChild.ChildNodes.Count - 1
-                    Select Case xmlDoc.FirstChild.ChildNodes(i).Name
+                For index As Integer = 0 To xmlDoc.FirstChild.ChildNodes.Count - 1
+                    Select Case xmlDoc.FirstChild.ChildNodes(index).Name
                         Case "#whitespace"
                             ' No change necessary
                         Case "PropertyGroup"
-                            For J As Integer = 0 To xmlDoc.FirstChild.ChildNodes(i).ChildNodes.Count - 1
-                                Dim PropertyGroupChildNode As XmlNode = xmlDoc.FirstChild.ChildNodes(i).ChildNodes(J)
-                                Select Case PropertyGroupChildNode.Name
+                            For childIndex As Integer = 0 To xmlDoc.FirstChild.ChildNodes(index).ChildNodes.Count - 1
+                                Dim propertyGroupChildNode As XmlNode = xmlDoc.FirstChild.ChildNodes(index).ChildNodes(childIndex)
+                                Select Case propertyGroupChildNode.Name
                                     Case "AssemblyName", "CLSCompliant",
                                          "DefineConstants", "Deterministic",
-                                         "GenerateAssemblyInfo", "Nullable",
-                                         "OutputType", "ProduceReferenceAssembly",
+                                         "GenerateAssemblyInfo",
+                                         "Nullable", "OutputType",
+                                         "ProduceReferenceAssembly",
                                          "RootNamespace", "StartupObject",
                                          "TargetFramework", "UsePublicApiAnalyzers",
-                                         "UserSecretsId",
-                                         "UseWindowsForms", "UseWpf",
-                                         "Win32Manifest", "#whitespace"
+                                         "UserSecretsId", "UseWindowsForms",
+                                         "UseWpf", "Win32Manifest",
+                                         "#whitespace"
                                        ' No change necessary
                                     Case "AllowUnsafeBlocks", "NoWarn"
-                                        If J > 0 AndAlso xmlDoc.FirstChild.ChildNodes(i).ChildNodes(J - 1).Name = "#whitespace" Then
-                                            NodesToBeRemoved.Add((i, J - 1))
+                                        If childIndex > 0 AndAlso xmlDoc.FirstChild.ChildNodes(index).ChildNodes(childIndex - 1).Name = "#whitespace" Then
+                                            nodesToBeRemoved.Add((index, childIndex - 1))
                                         End If
-                                        NodesToBeRemoved.Add((i, J))
+                                        nodesToBeRemoved.Add((index, childIndex))
                                     Case "LangVersion"
-                                        If Not (PropertyGroupChildNode.InnerText.Equals("latest", StringComparison.OrdinalIgnoreCase) OrElse
-                                           PropertyGroupChildNode.InnerText.Equals("default", StringComparison.OrdinalIgnoreCase) OrElse
-                                           PropertyGroupChildNode.InnerText.StartsWith("$", StringComparison.OrdinalIgnoreCase)) Then
-                                            PropertyGroupChildNode.InnerText = PropertyGroupChildNode.InnerText.Replace(PropertyGroupChildNode.InnerText, "latest", StringComparison.OrdinalIgnoreCase)
+                                        If Not (propertyGroupChildNode.InnerText.Equals("latest", StringComparison.OrdinalIgnoreCase) OrElse
+                                           propertyGroupChildNode.InnerText.Equals("default", StringComparison.OrdinalIgnoreCase) OrElse
+                                           propertyGroupChildNode.InnerText.StartsWith("$", StringComparison.OrdinalIgnoreCase)) Then
+                                            propertyGroupChildNode.InnerText = propertyGroupChildNode.InnerText.Replace(propertyGroupChildNode.InnerText, "latest", StringComparison.OrdinalIgnoreCase)
                                         End If
                                     Case "#comment"
-                                        xmlDoc.FirstChild.ChildNodes(i).ChildNodes(J).InnerText = PropertyGroupChildNode.InnerText.Replace(".cs", ".vb", StringComparison.OrdinalIgnoreCase)
+                                        xmlDoc.FirstChild.ChildNodes(index).ChildNodes(childIndex).InnerText = propertyGroupChildNode.InnerText.Replace(".cs", ".vb", StringComparison.OrdinalIgnoreCase)
                                     Case Else
                                         Stop
                                 End Select
-                            Next J
+                            Next childIndex
                         Case "ItemGroup"
-                            For J As Integer = 0 To xmlDoc.FirstChild.ChildNodes(i).ChildNodes.Count - 1
-                                Dim xmlNode As XmlNode = xmlDoc.FirstChild.ChildNodes(i).ChildNodes(J)
+                            For childIndex As Integer = 0 To xmlDoc.FirstChild.ChildNodes(index).ChildNodes.Count - 1
+                                Dim xmlNode As XmlNode = xmlDoc.FirstChild.ChildNodes(index).ChildNodes(childIndex)
                                 Select Case xmlNode.Name
                                     Case "FrameworkReference", "#whitespace"
                                        ' No change necessary
                                     Case "#comment"
-                                        xmlDoc.FirstChild.ChildNodes(i).ChildNodes(J).InnerText = xmlNode.InnerText.Replace(".cs", ".vb", StringComparison.OrdinalIgnoreCase)
+                                        xmlDoc.FirstChild.ChildNodes(index).ChildNodes(childIndex).InnerText = xmlNode.InnerText.Replace(".cs", ".vb", StringComparison.OrdinalIgnoreCase)
                                     Case "Compile"
-                                        Dim CompileValue As String = ""
+                                        Dim compileValue As String = ""
                                         For k As Integer = 0 To xmlNode.Attributes.Count - 1
-                                            CompileValue = xmlNode.Attributes(k).Value
-                                            xmlDoc.FirstChild.ChildNodes(i).ChildNodes(J).Attributes(k).Value = ChangeExtension(CompileValue, "cs", "vb")
+                                            compileValue = xmlNode.Attributes(k).Value
+                                            xmlDoc.FirstChild.ChildNodes(index).ChildNodes(childIndex).Attributes(k).Value = ChangeExtension(compileValue, "cs", "vb")
                                         Next
                                         For k As Integer = 0 To xmlNode.ChildNodes.Count - 1
                                             Select Case xmlNode.ChildNodes(k).Name
                                                 Case "DependentUpon"
-                                                    Dim DependentUponNodeValue As String = xmlNode.ChildNodes(k).ChildNodes(0).Value
-                                                    If DependentUponNodeValue.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) Then
-                                                        xmlDoc.FirstChild.ChildNodes(i).ChildNodes(J).ChildNodes(k).ChildNodes(0).Value = ChangeExtension(DependentUponNodeValue, "cs", "vb")
+                                                    Dim dependentUponNodeValue As String = xmlNode.ChildNodes(k).ChildNodes(0).Value
+                                                    If dependentUponNodeValue.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) Then
+                                                        xmlDoc.FirstChild.ChildNodes(index).ChildNodes(childIndex).ChildNodes(k).ChildNodes(0).Value = ChangeExtension(dependentUponNodeValue, "cs", "vb")
                                                     Else
-                                                        CopyFile(ProjectSavePath, sourceFilePath, Path.Combine(Path.GetDirectoryName(CompileValue), DependentUponNodeValue))
+                                                        CopyFile(ProjectSavePath, sourceFilePath, Path.Combine(Path.GetDirectoryName(compileValue), dependentUponNodeValue))
                                                     End If
                                                 Case "#whitespace"
                                                     ' No change necessary
@@ -114,7 +115,7 @@ Public Module ProjectFileUtilities
                                             Select Case xmlNode.ChildNodes(k).Name
                                                 Case "DependentUpon"
                                                     For l As Integer = 0 To xmlNode.ChildNodes(k).ChildNodes.Count - 1
-                                                        xmlDoc.FirstChild.ChildNodes(i).ChildNodes(J).ChildNodes(k).ChildNodes(l).Value = ChangeExtension(xmlNode.ChildNodes(k).ChildNodes(l).Value, "cs", "vb")
+                                                        xmlDoc.FirstChild.ChildNodes(index).ChildNodes(childIndex).ChildNodes(k).ChildNodes(l).Value = ChangeExtension(xmlNode.ChildNodes(k).ChildNodes(l).Value, "cs", "vb")
                                                     Next l
                                                 Case "GenerateSource", "LogicalName", "Namespace", "#whitespace"
                                                     ' No change necessary
@@ -124,29 +125,29 @@ Public Module ProjectFileUtilities
                                         Next k
                                     Case "Content"
                                         If Not String.IsNullOrWhiteSpace(sourceFilePath) Then
-                                            Dim SourceFileName As String = Path.Combine(New FileInfo(sourceFilePath).Directory.FullName, xmlNode.Attributes(0).Value)
-                                            If File.Exists(SourceFileName) Then
-                                                File.Copy(SourceFileName, Path.Combine(ProjectSavePath, xmlNode.Attributes(0).Value), overwrite:=True)
+                                            Dim sourceFileName As String = Path.Combine(New FileInfo(sourceFilePath).Directory.FullName, xmlNode.Attributes(0).Value)
+                                            If File.Exists(sourceFileName) Then
+                                                File.Copy(sourceFileName, Path.Combine(ProjectSavePath, xmlNode.Attributes(0).Value), overwrite:=True)
                                             End If
                                         End If
                                     Case "Folder", "Import", "None", "PackageReference"
                                         ' No change necessary
                                     Case "ProjectReference"
-                                        xmlDoc.FirstChild.ChildNodes(i).ChildNodes(J).Attributes(0).Value = xmlNode.Attributes(0).Value.Replace(".csproj", ".vbproj", StringComparison.OrdinalIgnoreCase)
+                                        xmlDoc.FirstChild.ChildNodes(index).ChildNodes(childIndex).Attributes(0).Value = xmlNode.Attributes(0).Value.Replace(".csproj", ".vbproj", StringComparison.OrdinalIgnoreCase)
                                     Case Else
                                         Stop
                                 End Select
-                            Next J
+                            Next childIndex
                         Case "#comment"
-                            xmlDoc.FirstChild.ChildNodes(i).Value = xmlDoc.FirstChild.ChildNodes(i).Value.Replace(".cs", ".vb", StringComparison.OrdinalIgnoreCase)
+                            xmlDoc.FirstChild.ChildNodes(index).Value = xmlDoc.FirstChild.ChildNodes(index).Value.Replace(".cs", ".vb", StringComparison.OrdinalIgnoreCase)
                         Case Else
                             Stop
                     End Select
-                Next i
+                Next index
 
-                If NodesToBeRemoved.Count > 0 Then
-                    For i As Integer = NodesToBeRemoved.Count - 1 To 0 Step -1
-                        xmlDoc.FirstChild.ChildNodes(NodesToBeRemoved(i).PropertyIndex).RemoveChild(xmlDoc.FirstChild.ChildNodes(NodesToBeRemoved(i).PropertyIndex).ChildNodes(NodesToBeRemoved(i).ChildIndex))
+                If nodesToBeRemoved.Count > 0 Then
+                    For index As Integer = nodesToBeRemoved.Count - 1 To 0 Step -1
+                        xmlDoc.FirstChild.ChildNodes(nodesToBeRemoved(index).PropertyIndex).RemoveChild(xmlDoc.FirstChild.ChildNodes(nodesToBeRemoved(index).PropertyIndex).ChildNodes(nodesToBeRemoved(index).ChildIndex))
                     Next
                 End If
             End If
@@ -164,12 +165,12 @@ Public Module ProjectFileUtilities
         If String.IsNullOrWhiteSpace(ProjectSavePath) Then
             Return String.Empty
         End If
-        Dim SubPathFromProject As String = Path.GetDirectoryName(SourceDocumentFileNameWithPath).Replace(ProjectDirectory, "", StringComparison.OrdinalIgnoreCase).Trim("\"c)
-        Dim PathToSaveDirectory As String = Path.Combine(ProjectSavePath, SubPathFromProject)
-        If Not Directory.Exists(PathToSaveDirectory) Then
-            Directory.CreateDirectory(PathToSaveDirectory)
+        Dim subpathFromProject As String = Path.GetDirectoryName(SourceDocumentFileNameWithPath).Replace(ProjectDirectory, "", StringComparison.OrdinalIgnoreCase).Trim("\"c)
+        Dim pathToSaveDirectory As String = Path.Combine(ProjectSavePath, subpathFromProject)
+        If Not Directory.Exists(pathToSaveDirectory) Then
+            Directory.CreateDirectory(pathToSaveDirectory)
         End If
-        Return PathToSaveDirectory
+        Return pathToSaveDirectory
     End Function
 
     Friend Function CreateDirectoryIfNonexistent(SolutionRoot As String) As String

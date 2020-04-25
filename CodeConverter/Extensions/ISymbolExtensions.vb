@@ -18,7 +18,7 @@ Namespace CSharpToVBCodeConverter.Util
             [Private]
         End Enum
 
-        Private Function IsNonNestedTypeAccessible(assembly As IAssemblySymbol, declaredAccessibility As Microsoft.CodeAnalysis.Accessibility, within As ISymbol) As Boolean
+        Private Function IsNonNestedTypeAccessible(assembly As IAssemblySymbol, declaredAccessibility As Accessibility, within As ISymbol) As Boolean
             Dim withinAssembly As IAssemblySymbol = If((TryCast(within, IAssemblySymbol)), DirectCast(within, INamedTypeSymbol).ContainingAssembly)
             Select Case declaredAccessibility
                 Case Microsoft.CodeAnalysis.Accessibility.NotApplicable, Microsoft.CodeAnalysis.Accessibility.Public

@@ -294,9 +294,14 @@ End Function
                         If ClassStatement.GetTrailingTrivia.ContainsCommentOrDirectiveTrivia Then
                             Dim OldTrailingTrivia As SyntaxTriviaList = ClassStatement.GetTrailingTrivia
                             Dim NewTrailingTrivia As New List(Of SyntaxTrivia)
-                            For i As Integer = 0 To OldTrailingTrivia.Count - 1
-                                Dim Trivia As SyntaxTrivia = OldTrailingTrivia(i)
-                                Dim NextTrivia As SyntaxTrivia = If(i < OldTrailingTrivia.Count - 2, OldTrailingTrivia(i + 1), Nothing)
+                            Dim SkipNext As Boolean = False
+                            For Each e As IndexStruct(Of SyntaxTrivia) In OldTrailingTrivia.WithIndex
+                                If SkipNext Then
+                                    SkipNext = False
+                                    Continue For
+                                End If
+                                Dim Trivia As SyntaxTrivia = e.Value
+                                Dim NextTrivia As SyntaxTrivia = If(Not e.IsLast, OldTrailingTrivia(e.Index + 1), Nothing)
                                 Dim FoundSpace As Boolean = False
                                 Select Case Trivia.RawKind
                                     Case VB.SyntaxKind.WhitespaceTrivia
@@ -312,7 +317,7 @@ End Function
                                         If NextTrivia.IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
                                             NewTrailingTrivia.Add(VBEOLTrivia)
                                             NewTrailingTrivia.Add(NextTrivia)
-                                            i += 1
+                                            SkipNext = True
                                         End If
                                     Case VB.SyntaxKind.CommentTrivia
                                         If Not FoundSpace Then
@@ -370,33 +375,36 @@ End Function
 
             Public Overrides Function VisitEnumDeclaration(node As CSS.EnumDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim members As New List(Of VBS.StatementSyntax)
-                Dim CS_Members As SeparatedSyntaxList(Of CSS.EnumMemberDeclarationSyntax) = node.Members
-                If CS_Members.Any Then
-                    Dim CS_Separators As New List(Of SyntaxToken)
-                    CS_Separators.AddRange(node.Members.GetSeparators)
+                Dim csMembers As SeparatedSyntaxList(Of CSS.EnumMemberDeclarationSyntax) = node.Members
+                If csMembers.Any Then
+                    Dim csSeparators As New List(Of SyntaxToken)
+                    csSeparators.AddRange(node.Members.GetSeparators)
 
-                    Dim CS_IdentifierTrailingTrivia As SyntaxTriviaList
-                    Dim CS_SeparatorTrailingTrivia As SyntaxTriviaList
-                    Dim MovedTrailingSpace As String = ""
-                    Dim TranslatedEnumSatement As VBS.StatementSyntax
-                    Dim LeadingTrivia As List(Of SyntaxTrivia) = ConvertOpenBraceTrivia(node.OpenBraceToken)
-                    For i As Integer = 0 To CS_Members.Count - 2
-                        CS_IdentifierTrailingTrivia = CS_Members(i).Identifier.TrailingTrivia
-                        If CS_IdentifierTrailingTrivia.Count = 1 AndAlso CS_IdentifierTrailingTrivia(0).IsWhitespace Then
-                            MovedTrailingSpace &= CS_IdentifierTrailingTrivia(0).ToString & " "
-                        ElseIf CS_IdentifierTrailingTrivia.Count = 0 Then
-                            MovedTrailingSpace &= " "
+                    Dim csIdentifierTrailingTrivia As SyntaxTriviaList
+                    Dim csSeparatorTrailingTrivia As SyntaxTriviaList
+                    Dim movedTrailingSpace As String = ""
+                    Dim vbEnumSatement As VBS.StatementSyntax
+                    Dim leadingTrivia As List(Of SyntaxTrivia) = ConvertOpenBraceTrivia(node.OpenBraceToken)
+                    For Each e As IndexStruct(Of CSS.EnumMemberDeclarationSyntax) In csMembers.WithIndex
+                        If e.IsLast Then
+                            Exit For
+                        End If
+                        csIdentifierTrailingTrivia = e.Value.Identifier.TrailingTrivia
+                        If csIdentifierTrailingTrivia.Count = 1 AndAlso csIdentifierTrailingTrivia(0).IsWhitespace Then
+                            movedTrailingSpace &= csIdentifierTrailingTrivia(0).ToString & " "
+                        ElseIf csIdentifierTrailingTrivia.Count = 0 Then
+                            movedTrailingSpace &= " "
                         Else
                             Stop
                         End If
-                        TranslatedEnumSatement = DirectCast(CS_Members(i).Accept(Me), VBS.StatementSyntax)
-                        CS_SeparatorTrailingTrivia = CS_Separators(i).TrailingTrivia
-                        If CS_SeparatorTrailingTrivia.Any Then
-                            If CS_SeparatorTrailingTrivia(0).IsKind(CS.SyntaxKind.WhitespaceTrivia) Then
-                                MovedTrailingSpace &= CS_SeparatorTrailingTrivia(0).ToString
-                                CS_SeparatorTrailingTrivia = CS_SeparatorTrailingTrivia.RemoveAt(0)
-                                CS_SeparatorTrailingTrivia = CS_SeparatorTrailingTrivia.Insert(0, CS.SyntaxFactory.Whitespace(MovedTrailingSpace))
-                            ElseIf CS_SeparatorTrailingTrivia(0).IsWhitespace Then
+                        vbEnumSatement = DirectCast(e.Value.Accept(Me), VBS.StatementSyntax)
+                        csSeparatorTrailingTrivia = csSeparators(e.Index).TrailingTrivia
+                        If csSeparatorTrailingTrivia.Any Then
+                            If csSeparatorTrailingTrivia(0).IsKind(CS.SyntaxKind.WhitespaceTrivia) Then
+                                movedTrailingSpace &= csSeparatorTrailingTrivia(0).ToString
+                                csSeparatorTrailingTrivia = csSeparatorTrailingTrivia.RemoveAt(0)
+                                csSeparatorTrailingTrivia = csSeparatorTrailingTrivia.Insert(0, CS.SyntaxFactory.Whitespace(movedTrailingSpace))
+                            ElseIf csSeparatorTrailingTrivia(0).IsWhitespace Then
                                 ' ignore
                             Else
                                 Stop
@@ -404,38 +412,38 @@ End Function
                         Else
                             Stop
                         End If
-                        If i = 0 Then
-                            members.Add(TranslatedEnumSatement.WithPrependedLeadingTrivia(LeadingTrivia).WithTrailingTrivia(ConvertTrivia(CS_SeparatorTrailingTrivia)))
+                        If e.IsFirst Then
+                            members.Add(vbEnumSatement.WithPrependedLeadingTrivia(leadingTrivia).WithTrailingTrivia(ConvertTrivia(csSeparatorTrailingTrivia)))
                         Else
-                            members.Add(TranslatedEnumSatement.WithTrailingTrivia(ConvertTrivia(CS_SeparatorTrailingTrivia)))
+                            members.Add(vbEnumSatement.WithTrailingTrivia(ConvertTrivia(csSeparatorTrailingTrivia)))
                         End If
-                        MovedTrailingSpace = ""
+                        movedTrailingSpace = ""
                     Next
-                    If CS_Separators.Count = 0 OrElse CS_Separators.Count <> CS_Members.Count Then
-                        CS_SeparatorTrailingTrivia = New SyntaxTriviaList
+                    If csSeparators.Count = 0 OrElse csSeparators.Count <> csMembers.Count Then
+                        csSeparatorTrailingTrivia = New SyntaxTriviaList
                     Else
-                        CS_SeparatorTrailingTrivia = CS_Separators.Last.TrailingTrivia
+                        csSeparatorTrailingTrivia = csSeparators.Last.TrailingTrivia
                     End If
-                    If CS_IdentifierTrailingTrivia.Any AndAlso CS_IdentifierTrailingTrivia(0).IsWhitespace Then
-                        MovedTrailingSpace &= CS_IdentifierTrailingTrivia(0).ToString
-                    ElseIf CS_IdentifierTrailingTrivia.Count = 0 Then
+                    If csIdentifierTrailingTrivia.Any AndAlso csIdentifierTrailingTrivia(0).IsWhitespace Then
+                        movedTrailingSpace &= csIdentifierTrailingTrivia(0).ToString
+                    ElseIf csIdentifierTrailingTrivia.Count = 0 Then
                     Else
                         Stop
                     End If
-                    TranslatedEnumSatement = DirectCast(CS_Members.Last.Accept(Me), VBS.StatementSyntax)
-                    If MovedTrailingSpace.Any Then
-                        Dim MemberLastTrailingTrivia As SyntaxTriviaList = CS_Members.Last.GetTrailingTrivia
-                        If CS_SeparatorTrailingTrivia.Any AndAlso CS_SeparatorTrailingTrivia(0).IsKind(CS.SyntaxKind.WhitespaceTrivia) Then
-                            MovedTrailingSpace &= CS_SeparatorTrailingTrivia(0).ToString
-                            CS_SeparatorTrailingTrivia = CS_SeparatorTrailingTrivia.RemoveAt(0)
-                            CS_SeparatorTrailingTrivia = CS_SeparatorTrailingTrivia.Insert(0, CS.SyntaxFactory.Whitespace(MovedTrailingSpace))
-                        ElseIf CS_Members.Last.HasTrailingTrivia Then
+                    vbEnumSatement = DirectCast(csMembers.Last.Accept(Me), VBS.StatementSyntax)
+                    If movedTrailingSpace.Any Then
+                        Dim MemberLastTrailingTrivia As SyntaxTriviaList = csMembers.Last.GetTrailingTrivia
+                        If csSeparatorTrailingTrivia.Any AndAlso csSeparatorTrailingTrivia(0).IsKind(CS.SyntaxKind.WhitespaceTrivia) Then
+                            movedTrailingSpace &= csSeparatorTrailingTrivia(0).ToString
+                            csSeparatorTrailingTrivia = csSeparatorTrailingTrivia.RemoveAt(0)
+                            csSeparatorTrailingTrivia = csSeparatorTrailingTrivia.Insert(0, CS.SyntaxFactory.Whitespace(movedTrailingSpace))
+                        ElseIf csMembers.Last.HasTrailingTrivia Then
                             If MemberLastTrailingTrivia(0).IsKind(CS.SyntaxKind.WhitespaceTrivia) Then
-                                MovedTrailingSpace &= MemberLastTrailingTrivia(0).ToString
+                                movedTrailingSpace &= MemberLastTrailingTrivia(0).ToString
                                 MemberLastTrailingTrivia = MemberLastTrailingTrivia.RemoveAt(0)
-                                MemberLastTrailingTrivia = MemberLastTrailingTrivia.Insert(0, CS.SyntaxFactory.Whitespace(MovedTrailingSpace))
-                                CS_Members = CS_Members.Replace(CS_Members.Last, CS_Members.Last.WithTrailingTrivia(MemberLastTrailingTrivia))
-                            ElseIf CS_Members.Last.GetTrailingTrivia(0).IsWhitespace Then
+                                MemberLastTrailingTrivia = MemberLastTrailingTrivia.Insert(0, CS.SyntaxFactory.Whitespace(movedTrailingSpace))
+                                csMembers = csMembers.Replace(csMembers.Last, csMembers.Last.WithTrailingTrivia(MemberLastTrailingTrivia))
+                            ElseIf csMembers.Last.GetTrailingTrivia(0).IsWhitespace Then
                                 ' ignore
                             Else
                                 Stop
@@ -443,10 +451,10 @@ End Function
                         End If
                     End If
 
-                    If CS_Members.Count = 1 Then
-                        members.Add(DirectCast(CS_Members.Last.Accept(Me), VBS.StatementSyntax).WithPrependedLeadingTrivia(LeadingTrivia).WithAppendedTrailingTrivia(ConvertTrivia(CS_SeparatorTrailingTrivia)))
+                    If csMembers.Count = 1 Then
+                        members.Add(DirectCast(csMembers.Last.Accept(Me), VBS.StatementSyntax).WithPrependedLeadingTrivia(leadingTrivia).WithAppendedTrailingTrivia(ConvertTrivia(csSeparatorTrailingTrivia)))
                     Else
-                        members.Add(DirectCast(CS_Members.Last.Accept(Me), VBS.StatementSyntax).WithAppendedTrailingTrivia(ConvertTrivia(CS_SeparatorTrailingTrivia)))
+                        members.Add(DirectCast(csMembers.Last.Accept(Me), VBS.StatementSyntax).WithAppendedTrailingTrivia(ConvertTrivia(csSeparatorTrailingTrivia)))
                     End If
                 End If
 
@@ -562,12 +570,12 @@ End Function
                     End If
                     If e.IsLast Then
                         members(e.Index) = members.Last.
-                                                            WithAppendedTrailingTrivia(ConvertTrivia(node.CloseBraceToken.LeadingTrivia)).
-                                                            WithAppendedTrailingTrivia(ConvertTrivia(node.CloseBraceToken.TrailingTrivia))
+                            WithAppendedTrailingTrivia(ConvertTrivia(node.CloseBraceToken.LeadingTrivia)).
+                            WithAppendedTrailingTrivia(ConvertTrivia(node.CloseBraceToken.TrailingTrivia))
                     End If
                 Next
 
-                    Dim NamespaceStatement As VBS.NamespaceStatementSyntax = VBFactory.NamespaceStatement(NamespaceKeyword, DirectCast(node.Name.Accept(Me), VBS.NameSyntax))
+                Dim NamespaceStatement As VBS.NamespaceStatementSyntax = VBFactory.NamespaceStatement(NamespaceKeyword, DirectCast(node.Name.Accept(Me), VBS.NameSyntax))
                 Dim members1 As SyntaxList(Of VBS.StatementSyntax) = VBFactory.List(members)
                 Dim EndNamespaceStatement As VBS.EndBlockStatementSyntax = VBFactory.EndNamespaceStatement
                 Dim namespaceBlock As VBS.NamespaceBlockSyntax = VBFactory.NamespaceBlock(NamespaceStatement, members1, EndNamespaceStatement).WithConvertedTriviaFrom(node)

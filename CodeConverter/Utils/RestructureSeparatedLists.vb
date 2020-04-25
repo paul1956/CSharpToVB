@@ -15,11 +15,11 @@ Public Module RestuructureSeparatedLists
         Dim TokenLeadingTrivia As New List(Of SyntaxTrivia)
         Dim NewOpenToken As SyntaxToken = _OpenToken.WithModifiedTokenTrivia(LeadingToken:=True, AfterEOL:=False)
         _OpenToken = NewOpenToken
-        For i As Integer = 0 To Items.Count - 2
-            Dim NewItem As T = Items(i).WithModifiedNodeTrivia(SeparatorFollows:=True)
-            Items(i) = NewItem
-            Dim newSeparators As SyntaxToken = Separators(i).WithModifiedTokenTrivia(LeadingToken:=False, AfterEOL:=False)
-            Separators(i) = newSeparators
+        For index As Integer = 0 To Items.Count - 2
+            Dim NewItem As T = Items(index).WithModifiedNodeTrivia(SeparatorFollows:=True)
+            Items(index) = NewItem
+            Dim newSeparators As SyntaxToken = Separators(index).WithModifiedTokenTrivia(LeadingToken:=False, AfterEOL:=False)
+            Separators(index) = newSeparators
         Next
         Dim LastItemEndsWithEOL As Boolean = False
         If Items.Any Then

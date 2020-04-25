@@ -363,18 +363,18 @@ Public Module NewLine
         Dim length As Integer = Nothing
         Dim type As UnicodeNewline = Nothing
 
-        For i As Integer = 0 To text.Length - 1
-            Dim ch As Char = text.Chars(i)
+        For index As Integer = 0 To text.Length - 1
+            Dim ch As Char = text.Chars(index)
             ' Do not delete the next line
-            Dim j As Integer = i
+            Dim j As Integer = index
             If TryGetDelimiterLengthAndType(ch, length, type, Function() If(j < text.Length - 1, text.Chars(j + 1), ControlChars.NullChar)) Then
                 result.Add(sb.ToString)
                 sb.Length = 0
-                i += length - 1
+                index += length - 1
                 Continue For
             End If
             sb.Append(ch)
-        Next i
+        Next index
         If sb.Length > 0 Then
             result.Add(sb.ToString)
         End If
@@ -405,16 +405,16 @@ Public Module NewLine
         Dim length As Integer = Nothing
         Dim type As UnicodeNewline = Nothing
 
-        For i As Integer = 0 To text.Length - 1
-            Dim ch As Char = text.Chars(i)
+        For index As Integer = 0 To text.Length - 1
+            Dim ch As Char = text.Chars(index)
             ' Do not delete the next line
-            Dim j As Integer = i
+            Dim j As Integer = index
             If TryGetDelimiterLengthAndType(ch, length, type, Function() If(j < text.Length - 1, text.Chars(j + 1), SubstituteChar)) Then
-                i += length - 1
+                index += length - 1
                 Continue For
             End If
             sb.Append(ch)
-        Next i
+        Next index
         Return sb.ToString
     End Function
 

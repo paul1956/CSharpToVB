@@ -195,16 +195,15 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 VBFactory.XmlElementEndTag(DirectCast(StartTag.Name, VBS.XmlNameSyntax).WithConvertedTriviaFrom(node.EndTag)),
                 VBFactory.XmlElementEndTag(DirectCast(node.EndTag.Name.Accept(Me), VBS.XmlNameSyntax)))
             Try
-                For i As Integer = 0 To node.Content.Count - 1
-                    Dim C As CSS.XmlNodeSyntax = node.Content(i)
-                    Dim Node1 As VBS.XmlNodeSyntax = CType(C.Accept(Me).WithConvertedTriviaFrom(C), VBS.XmlNodeSyntax)
+                For Each e As IndexStruct(Of CSS.XmlNodeSyntax) In node.Content.WithIndex
+                    Dim vbNode As VBS.XmlNodeSyntax = CType(e.Value.Accept(Me).WithConvertedTriviaFrom(e.Value), VBS.XmlNodeSyntax)
                     If NoEndTag Then
-                        Dim LastToken As SyntaxToken = Node1.GetLastToken
+                        Dim LastToken As SyntaxToken = vbNode.GetLastToken
                         If LastToken.ValueText.IsNewLine Then
-                            Node1 = Node1.ReplaceToken(LastToken, DirectCast(Nothing, SyntaxToken))
+                            vbNode = vbNode.ReplaceToken(LastToken, DirectCast(Nothing, SyntaxToken))
                         End If
                     End If
-                    Content = Content.Add(Node1)
+                    Content = Content.Add(vbNode)
                 Next
 
                 If node.EndTag?.HasLeadingTrivia AndAlso node.EndTag.GetLeadingTrivia(0).IsKind(CS.SyntaxKind.DocumentationCommentExteriorTrivia) Then

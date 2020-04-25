@@ -108,6 +108,8 @@ Namespace CSharpToVBCodeConverter
                 Else
                     Return New ConversionResult(Array.Empty(Of Exception))
                 End If
+            Catch ex As OperationCanceledException
+                Throw
             Catch ex As Exception
                 Return New ConversionResult(ex)
             End Try

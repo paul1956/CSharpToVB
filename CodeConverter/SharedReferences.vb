@@ -48,7 +48,7 @@ Public Module SharedReferences
         Next
 
         ' ComponentModelEditorBrowsable
-        Location = GetType(System.ComponentModel.EditorBrowsableAttribute).GetAssemblyLocation
+        Location = GetType(ComponentModel.EditorBrowsableAttribute).GetAssemblyLocation
         AddReferences(s_referencePath, Location)
 
         ' SystemCore

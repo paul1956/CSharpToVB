@@ -48,18 +48,18 @@ Public Module TestUtilities
 
     Friend Function HomogenizeEol(str As String) As String
         Dim sb As New StringBuilder()
-        For i As Integer = 0 To str.Length - 1
-            Dim ch As Char = str.Chars(i)
-            Dim possibleNewline As Integer = NewLine.GetDelimiterLength(ch, If(i + 1 < str.Length, str.Chars(i + 1), ControlChars.NullChar))
+        For index As Integer = 0 To str.Length - 1
+            Dim ch As Char = str.Chars(index)
+            Dim possibleNewline As Integer = NewLine.GetDelimiterLength(ch, If(index + 1 < str.Length, str.Chars(index + 1), ControlChars.NullChar))
             If possibleNewline > 0 Then
                 sb.AppendLine()
                 If possibleNewline = 2 Then
-                    i += 1
+                    index += 1
                 End If
             Else
                 sb.Append(ch)
             End If
-        Next i
+        Next index
         Return sb.ToString()
     End Function
 

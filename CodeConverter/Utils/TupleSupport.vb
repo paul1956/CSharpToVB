@@ -44,8 +44,12 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             Dim ElementList As List(Of String) = ConvertTupleToVBTypeStrings(CSNamedTypeString, IncludeName:=True)
             Dim builder As New StringBuilder
             builder.Append("(")
-            For i As Integer = 0 To ElementList.Count - 2
-                builder.Append(ElementList(i) & ", ")
+            For Each e As IndexStruct(Of String) In ElementList.WithIndex
+
+            Next
+            For Each e As IndexStruct(Of String) In ElementList.WithIndex
+                If e.IsLast Then Exit For
+                builder.Append($"{e.Value}, ")
             Next
             builder.Append(ElementList.Last & ")")
             Dim TupleType As String = builder.ToString & If(IsArray, "()", "") & If(Nullable, "?", "")
@@ -61,22 +65,22 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             Return VBFactory.NamedTupleElement(VBFactory.Identifier(MakeVBSafeName(TupleElement.Name)), AsClause)
         End Function
 
-        Friend Shared Function ConvertTupleToVBTypeStrings(CSNamedTypeString As String, IncludeName As Boolean) As List(Of String)
+        Friend Shared Function ConvertTupleToVBTypeStrings(CSharpNamedTypeString As String, IncludeName As Boolean) As List(Of String)
             Dim currentChar As String
             Dim openLT As Integer
             Dim openParen As Integer
             Dim tmpString As New StringBuilder
             Dim ElementList As New List(Of String)
 
-            For i As Integer = 0 To CSNamedTypeString.Length - 1
-                currentChar = CSNamedTypeString(i)
+            For currentIndex As Integer = 0 To CSharpNamedTypeString.Length - 1
+                currentChar = CSharpNamedTypeString(currentIndex)
                 Select Case currentChar
                     Case "<"
                         openLT = 1
                         tmpString.Append(currentChar)
                         While openLT <> 0
-                            i += 1
-                            currentChar = CSNamedTypeString(i)
+                            currentIndex += 1
+                            currentChar = CSharpNamedTypeString(currentIndex)
                             Select Case currentChar
                                 Case ">"
                                     openLT -= 1
@@ -95,11 +99,11 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                     tmpString.Append(currentChar)
                             End Select
                         End While
-                        i += 1
-                        If i >= CSNamedTypeString.Length - 1 OrElse Not ".[".Contains(CSNamedTypeString(i), StringComparison.OrdinalIgnoreCase) Then
-                            Dim commaIndex As Integer = CSNamedTypeString.IndexOf(",", i, StringComparison.OrdinalIgnoreCase)
+                        currentIndex += 1
+                        If currentIndex >= CSharpNamedTypeString.Length - 1 OrElse Not ".[".Contains(CSharpNamedTypeString(currentIndex), StringComparison.OrdinalIgnoreCase) Then
+                            Dim commaIndex As Integer = CSharpNamedTypeString.IndexOf(",", currentIndex, StringComparison.OrdinalIgnoreCase)
                             If IncludeName Then
-                                Dim name As String = ExtractName(CSNamedTypeString, i, commaIndex)
+                                Dim name As String = ExtractName(CSharpNamedTypeString, currentIndex, commaIndex)
                                 If name.Length = 0 Then
                                     ElementList.Add($"{ConvertToType(tmpString.ToString)}")
                                 Else
@@ -113,14 +117,14 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                 ElementList.Add(ConvertToType(tmpString.ToString).ToString)
                             End If
                             tmpString.Clear()
-                            i = commaIndex + 1
+                            currentIndex = commaIndex + 1
                         End If
                     Case " " ' variable name
-                        Dim commaIndex As Integer = CSNamedTypeString.IndexOf(",", i + 1, StringComparison.OrdinalIgnoreCase)
+                        Dim commaIndex As Integer = CSharpNamedTypeString.IndexOf(",", currentIndex + 1, StringComparison.OrdinalIgnoreCase)
                         Dim TypePart As String = ConvertToType(tmpString.ToString).ToString
                         If IncludeName Then
-                            i += 1
-                            Dim name As String = ExtractName(CSNamedTypeString, i, commaIndex)
+                            currentIndex += 1
+                            Dim name As String = ExtractName(CSharpNamedTypeString, currentIndex, commaIndex)
                             ElementList.Add($"{MakeVBSafeName(name)} As {TypePart}")
                         Else
                             ElementList.Add(TypePart)
@@ -129,17 +133,17 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         If commaIndex < 0 Then
                             Exit For
                         End If
-                        i = commaIndex + 1
+                        currentIndex = commaIndex + 1
                     Case ","
                         ElementList.Add(ConvertToType(tmpString.ToString).ToString)
                         tmpString.Clear()
-                        i += If(CSNamedTypeString(i + 1) = " ", 1, 0)
+                        currentIndex += If(CSharpNamedTypeString(currentIndex + 1) = " ", 1, 0)
                     Case ")"
                         Dim TypePart As String = ConvertToType(tmpString.ToString).ToString
-                        Dim commaIndex As Integer = CSNamedTypeString.IndexOf(",", i + 1, StringComparison.OrdinalIgnoreCase)
+                        Dim commaIndex As Integer = CSharpNamedTypeString.IndexOf(",", currentIndex + 1, StringComparison.OrdinalIgnoreCase)
                         If IncludeName Then
-                            i += 1
-                            Dim name As String = ExtractName(CSNamedTypeString, i, commaIndex)
+                            currentIndex += 1
+                            Dim name As String = ExtractName(CSharpNamedTypeString, currentIndex, commaIndex)
                             If commaIndex < 0 Then
                                 ElementList.Add($"{MakeVBSafeName(name)} As {TypePart}")
                                 Exit For
@@ -151,11 +155,11 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     Case "?"
                         ElementList.Add("Object")
                         tmpString.Clear()
-                        Dim commaIndex As Integer = CSNamedTypeString.IndexOf(",", i + 1, StringComparison.OrdinalIgnoreCase)
+                        Dim commaIndex As Integer = CSharpNamedTypeString.IndexOf(",", currentIndex + 1, StringComparison.OrdinalIgnoreCase)
                         If commaIndex < 0 Then
                             Exit For
                         End If
-                        i = commaIndex + 1
+                        currentIndex = commaIndex + 1
                     Case "("
                         If tmpString.Length <> 0 Then
                             Stop
@@ -163,8 +167,8 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         openParen += 1
                         tmpString.Append("(")
                         While openParen <> 0
-                            i += 1
-                            currentChar = CSNamedTypeString(i)
+                            currentIndex += 1
+                            currentChar = CSharpNamedTypeString(currentIndex)
                             Select Case currentChar
                                 Case ")"
                                     openParen -= 1
@@ -183,11 +187,11 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         subTupleList.AddRange(ConvertTupleToVBTypeStrings(tmpString.ToString.Substring(1, tmpString.Length - 2), IncludeName))
                         ElementList.Add($"({subTupleList.ToArray.JoinLines(", ")})")
                         tmpString.Clear()
-                        Dim commaIndex As Integer = CSNamedTypeString.IndexOf(",", i + 1, StringComparison.OrdinalIgnoreCase)
+                        Dim commaIndex As Integer = CSharpNamedTypeString.IndexOf(",", currentIndex + 1, StringComparison.OrdinalIgnoreCase)
                         If commaIndex < 0 Then
                             Exit For
                         End If
-                        i = commaIndex + 1
+                        currentIndex = commaIndex + 1
                     Case Else
                         tmpString.Append(currentChar)
                 End Select

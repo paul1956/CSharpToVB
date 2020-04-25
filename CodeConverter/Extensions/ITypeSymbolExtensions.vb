@@ -138,7 +138,7 @@ Namespace CSharpToVBCodeConverter.Util
 
         ' Is a member with declared accessibility "declaredAccessiblity" accessible from within
         ' "within", which must be a named type or an assembly.
-        Friend Function IsMemberAccessible(containingType As INamedTypeSymbol, declaredAccessibility As Microsoft.CodeAnalysis.Accessibility, within As ISymbol, throughTypeOpt As ITypeSymbol, ByRef failedThroughTypeCheck As Boolean) As Boolean
+        Friend Function IsMemberAccessible(containingType As INamedTypeSymbol, declaredAccessibility As Accessibility, within As ISymbol, throughTypeOpt As ITypeSymbol, ByRef failedThroughTypeCheck As Boolean) As Boolean
             failedThroughTypeCheck = False
 
             Dim originalContainingType As INamedTypeSymbol = containingType.OriginalDefinition

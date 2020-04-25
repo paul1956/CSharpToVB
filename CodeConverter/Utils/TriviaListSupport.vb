@@ -87,22 +87,22 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
         End Function
 
         Friend Function TranslateTokenList(ChildTokens As IEnumerable(Of SyntaxToken)) As SyntaxTokenList
-            Dim NewTokenList As New SyntaxTokenList
+            Dim newTokenList As New SyntaxTokenList
             For Each token As SyntaxToken In ChildTokens
-                Dim NewLeadingTriviaList As New SyntaxTriviaList
-                Dim NewTrailingTriviaList As New SyntaxTriviaList
+                Dim newLeadingTriviaList As New SyntaxTriviaList
+                Dim newTrailingTriviaList As New SyntaxTriviaList
 
-                Dim TokenText As String = token.Text
-                Dim ValueText As String = token.ValueText
+                Dim tokenText As String = token.Text
+                Dim valueText As String = token.ValueText
                 If token.HasLeadingTrivia Then
                     For Each t As SyntaxTrivia In token.LeadingTrivia
                         If t.IsKind(CS.SyntaxKind.DocumentationCommentExteriorTrivia) Then
-                            NewLeadingTriviaList = NewLeadingTriviaList.Add(VBFactory.DocumentationCommentExteriorTrivia(token.LeadingTrivia(0).
+                            newLeadingTriviaList = newLeadingTriviaList.Add(VBFactory.DocumentationCommentExteriorTrivia(token.LeadingTrivia(0).
                                                                                                                          ToString().
                                                                                                                          Replace("///", "'''", StringComparison.Ordinal)))
-                            If Not TokenText.StartsWith(" ", StringComparison.Ordinal) Then
-                                TokenText = " " & TokenText
-                                ValueText = " " & ValueText
+                            If Not tokenText.StartsWith(" ", StringComparison.Ordinal) Then
+                                tokenText = " " & tokenText
+                                valueText = " " & valueText
                             End If
                         Else
                             Stop
@@ -111,16 +111,16 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 End If
                 Select Case token.RawKind
                     Case CS.SyntaxKind.XmlTextLiteralToken
-                        NewTokenList = NewTokenList.Add(VBFactory.XmlTextLiteralToken(NewLeadingTriviaList, TokenText, ValueText, NewTrailingTriviaList))
+                        newTokenList = newTokenList.Add(VBFactory.XmlTextLiteralToken(newLeadingTriviaList, tokenText, valueText, newTrailingTriviaList))
                     Case CS.SyntaxKind.XmlTextLiteralNewLineToken
-                        NewTokenList = NewTokenList.Add(VBFactory.XmlTextNewLine(text:=vbCrLf, value:=vbCrLf, NewLeadingTriviaList, NewTrailingTriviaList))
+                        newTokenList = newTokenList.Add(VBFactory.XmlTextNewLine(text:=vbCrLf, value:=vbCrLf, newLeadingTriviaList, newTrailingTriviaList))
                     Case CS.SyntaxKind.XmlEntityLiteralToken
-                        NewTokenList = NewTokenList.Add(VBFactory.XmlEntityLiteralToken(NewLeadingTriviaList, TokenText, ValueText, NewTrailingTriviaList))
+                        newTokenList = newTokenList.Add(VBFactory.XmlEntityLiteralToken(newLeadingTriviaList, tokenText, valueText, newTrailingTriviaList))
                     Case Else
                         Stop
                 End Select
             Next
-            Return NewTokenList
+            Return newTokenList
         End Function
 
         Friend Function TriviaIsIdentical(LeadingTrivia As SyntaxTriviaList, NodeLeadingTrivia As List(Of SyntaxTrivia)) As Boolean
@@ -130,8 +130,9 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             If Not (LeadingTrivia.ContainsCommentOrDirectiveTrivia OrElse NodeLeadingTrivia.ContainsCommentOrDirectiveTrivia) Then
                 Return False
             End If
-            For i As Integer = 0 To LeadingTrivia.Count - 1
-                If LeadingTrivia(i).ToFullString.Trim <> NodeLeadingTrivia(i).ToFullString.Trim Then
+
+            For index As Integer = 0 To LeadingTrivia.Count - 1
+                If LeadingTrivia(index).ToFullString.Trim <> NodeLeadingTrivia(index).ToFullString.Trim Then
                     Return False
                 End If
             Next

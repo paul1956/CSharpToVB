@@ -109,10 +109,9 @@ Public Module ExpressionSyntaxSupport
 
         Dim OldTriviaList As New List(Of SyntaxTrivia)
         OldTriviaList.AddRange(Expression.GetLeadingTrivia)
-        Dim InitialTriviaListUBound As Integer = OldTriviaList.Count - 1
-        For i As Integer = 0 To InitialTriviaListUBound
-            Dim Trivia As SyntaxTrivia = OldTriviaList(i)
-            Dim nextTrivia As SyntaxTrivia = If(i < InitialTriviaListUBound, OldTriviaList(i + 1), New SyntaxTrivia)
+        For Each e As IndexStruct(Of SyntaxTrivia) In OldTriviaList.WithIndex
+            Dim Trivia As SyntaxTrivia = e.Value
+            Dim nextTrivia As SyntaxTrivia = If(Not e.IsLast, OldTriviaList(e.Index + 1), New SyntaxTrivia)
             Select Case Trivia.RawKind
                 Case VB.SyntaxKind.WhitespaceTrivia
                     If NeedLineContinuation AndAlso Not nextTrivia.IsNone Then
@@ -150,21 +149,6 @@ Public Module ExpressionSyntaxSupport
                     AfterEOL = False
                     AfterWhiteSpace = False
                     NeedLineContinuation = False
-                    'Case VB.SyntaxKind.DisableWarningDirectiveTrivia, VB.SyntaxKind.EnableWarningDirectiveTrivia
-                    '    FirstTrivia = False
-                    '    Stop
-                    'Case VB.SyntaxKind.IfDirectiveTrivia
-                    '    FirstTrivia = False
-                    '    FinalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(Trivia))
-                    'Case VB.SyntaxKind.DisabledTextTrivia
-                    '    FirstTrivia = False
-                    '    FinalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(Trivia))
-                    'Case VB.SyntaxKind.ElseDirectiveTrivia
-                    '    FirstTrivia = False
-                    '    FinalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(Trivia))
-                    'Case VB.SyntaxKind.EndIfDirectiveTrivia
-                    '    FirstTrivia = False
-                    '    FinalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(Trivia))
                 Case Else
                     Stop
             End Select

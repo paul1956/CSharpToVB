@@ -164,16 +164,16 @@ Namespace CSharpToVBCodeConverter
                         EndIndex = PossibleTypes.Length
                     ElseIf EndIndex > FirstLessThan Then
                         Dim OpenParenCount As Integer = 0
-                        For i As Integer = FirstLessThan To PossibleTypes.Length - 1
-                            Select Case PossibleTypes.Substring(i, 1)
+                        For currentIndex As Integer = FirstLessThan To PossibleTypes.Length - 1
+                            Select Case PossibleTypes.Substring(currentIndex, 1)
                                 Case "("
                                     OpenParenCount += 1
                                 Case ")"
                                     OpenParenCount -= 1
-                                    EndIndex = i + 1
+                                    EndIndex = currentIndex + 1
                                 Case ","
                                     If OpenParenCount = 0 Then
-                                        EndIndex = i
+                                        EndIndex = currentIndex
                                         Exit For
                                     End If
                             End Select

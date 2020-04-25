@@ -170,9 +170,9 @@ Namespace CodeConverter.Tests
 
         Private Shared Function FindFirstDifferenceColumn(DesiredLine As String, ActualLine As String) As (ColumnIndex As Integer, Character As String)
             Dim minLength As Integer = Math.Min(DesiredLine.Length, ActualLine.Length) - 1
-            For i As Integer = 0 To minLength
-                If Not DesiredLine.Substring(i, 1).Equals(ActualLine.Substring(i, 1), StringComparison.CurrentCulture) Then
-                    Return (i + 1, $"Expected Character ""{DesiredLine.Substring(i, 1)}"", Actual Character ""{ActualLine.Substring(i, 1)}""")
+            For index As Integer = 0 To minLength
+                If Not DesiredLine.Chars(index).Equals(ActualLine.Chars(index)) Then
+                    Return (index + 1, $"Expected Character ""{DesiredLine.Substring(index, 1)}"", Actual Character ""{ActualLine.Substring(index, 1)}""")
                 End If
             Next
 #Disable Warning CC0013 ' Use Ternary operator.
@@ -187,12 +187,12 @@ Namespace CodeConverter.Tests
         Private Shared Function FindFirstDifferenceLine(DesiredText As String, ActualText As String) As String
             Dim Desiredlines() As String = DesiredText.SplitLines()
             Dim ActuaLines() As String = ActualText.SplitLines()
-            For i As Integer = 0 To Math.Min(Desiredlines.GetUpperBound(0), ActuaLines.GetUpperBound(0))
-                Dim DesiredLine As String = Desiredlines(i)
-                Dim ActualLine As String = ActuaLines(i)
+            For index As Integer = 0 To Math.Min(Desiredlines.GetUpperBound(0), ActuaLines.GetUpperBound(0))
+                Dim DesiredLine As String = Desiredlines(index)
+                Dim ActualLine As String = ActuaLines(index)
                 If Not DesiredLine.Equals(ActualLine, StringComparison.CurrentCulture) Then
                     Dim p As (ColumnIndex As Integer, Character As String) = FindFirstDifferenceColumn(DesiredLine, ActualLine)
-                    Return $"{vbCrLf}Expected Line_{i + 1} {DesiredLine}{vbCrLf}Actual Line___{i + 1} {ActualLine}{vbCrLf}Column {p.ColumnIndex} {p.Character}"
+                    Return $"{vbCrLf}Expected Line_{index + 1} {DesiredLine}{vbCrLf}Actual Line___{index + 1} {ActualLine}{vbCrLf}Column {p.ColumnIndex} {p.Character}"
                 End If
             Next
             Return "Files identical"

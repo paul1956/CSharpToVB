@@ -4,6 +4,7 @@
 
 Imports System.Text
 Imports CS = Microsoft.CodeAnalysis.CSharp
+Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
@@ -67,18 +68,18 @@ Namespace CSharpToVBCodeConverter
             Return Id
         End Function
 
-        Friend Function ProcessVariableDesignation(node As CS.Syntax.ParenthesizedVariableDesignationSyntax) As List(Of VBS.ModifiedIdentifierSyntax)
-            Dim Variables As New List(Of VBS.ModifiedIdentifierSyntax)
-            For i As Integer = 0 To node.Variables.Count - 1
-                Dim VariableDeclarator As VBS.ModifiedIdentifierSyntax
-                If node.Variables(i).RawKind = CS.SyntaxKind.DiscardDesignation Then
-                    VariableDeclarator = VBFactory.ModifiedIdentifier("_")
+        Friend Function ProcessVariableDesignation(node As CSS.ParenthesizedVariableDesignationSyntax) As List(Of VBS.ModifiedIdentifierSyntax)
+            Dim vbVariables As New List(Of VBS.ModifiedIdentifierSyntax)
+            For Each e As IndexStruct(Of CSS.VariableDesignationSyntax) In node.Variables.WithIndex
+                Dim vbVariableDeclarator As VBS.ModifiedIdentifierSyntax
+                If e.Value.RawKind = CS.SyntaxKind.DiscardDesignation Then
+                    vbVariableDeclarator = VBFactory.ModifiedIdentifier("_")
                 Else
-                    VariableDeclarator = VBFactory.ModifiedIdentifier(MakeVBSafeName(node.Variables(i).ToString))
+                    vbVariableDeclarator = VBFactory.ModifiedIdentifier(MakeVBSafeName(e.Value.ToString))
                 End If
-                Variables.Add(VariableDeclarator)
+                vbVariables.Add(vbVariableDeclarator)
             Next
-            Return Variables
+            Return vbVariables
         End Function
 
     End Module

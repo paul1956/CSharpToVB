@@ -38,17 +38,17 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             Return Token.WithConvertedTriviaFrom(m)
         End Function
 
-        Private Iterator Function ConvertModifiersCore(CS_Modifiers As IEnumerable(Of SyntaxToken), IsModule As Boolean, Context As TokenContext) As IEnumerable(Of SyntaxToken)
+        Private Iterator Function ConvertModifiersCore(csModifiers As IEnumerable(Of SyntaxToken), IsModule As Boolean, Context As TokenContext) As IEnumerable(Of SyntaxToken)
             Dim FoundVisibility As Boolean = False
             Dim LeadingTrivia As New List(Of SyntaxTrivia)
             Dim FirstModifier As Boolean = True
-            If CS_Modifiers.Any Then
-                LeadingTrivia.AddRange(ConvertTrivia(CS_Modifiers(0).LeadingTrivia))
+            If csModifiers.Any Then
+                LeadingTrivia.AddRange(ConvertTrivia(csModifiers(0).LeadingTrivia))
             End If
 
             If Context <> TokenContext.Local AndAlso Context <> TokenContext.InterfaceOrModule AndAlso Context <> TokenContext.Class Then
                 Dim visibility As Boolean = False
-                For Each token As SyntaxToken In CS_Modifiers
+                For Each token As SyntaxToken In csModifiers
                     If IsVisibility(token, Context) Then
                         visibility = True
                         Exit For
@@ -68,12 +68,12 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     FoundVisibility = Not DefaultVisibility.IsKind(VB.SyntaxKind.EmptyToken)
                 End If
             End If
-            For i As Integer = 0 To CS_Modifiers.Count - 1
-                Dim CS_Modifier As SyntaxToken = CS_Modifiers(i)
-                If i = 0 AndAlso Not FirstModifier Then
-                    CS_Modifier = CS_Modifier.WithLeadingTrivia(CSSpaceTrivia)
+            For Each e As IndexStruct(Of SyntaxToken) In csModifiers.WithIndex
+                Dim csModifier As SyntaxToken = e.Value
+                If e.IsFirst AndAlso Not FirstModifier Then
+                    csModifier = csModifier.WithLeadingTrivia(CSSpaceTrivia)
                 End If
-                Dim VB_Modifier As SyntaxToken = ConvertModifier(CS_Modifier, IsModule, Context, FoundVisibility)
+                Dim VB_Modifier As SyntaxToken = ConvertModifier(csModifier, IsModule, Context, FoundVisibility)
                 Dim TrailingTrivia As New List(Of SyntaxTrivia)
 
                 ' If there is only empty Token then attach leading trivia to it otherwise ignore
@@ -89,7 +89,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                             Yield VB_Modifier.WithTrailingTrivia()
                             Continue For
                         End If
-                    ElseIf i = CS_Modifiers.Count - 1 Then
+                    ElseIf e.IsLast Then
                         If LeadingTrivia.Any AndAlso Not LeadingTrivia.Last.IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
                             FirstModifier = False
                             Yield VB_Modifier.WithPrependedLeadingTrivia(LeadingTrivia).WithTrailingTrivia()
@@ -105,7 +105,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     Continue For
                 End If
 
-                If IgnoreInContext(CS_Modifier, Context) Then
+                If IgnoreInContext(csModifier, Context) Then
                     If FirstModifier Then
                         VB_Modifier = VB_Modifier.WithLeadingTrivia(LeadingTrivia)
                         FirstModifier = False
@@ -316,243 +316,246 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
         End Function
 
         <Extension>
-        Public Function RestructureAttributesAndModifiers(VBStatementNode As VBS.StatementSyntax, HasAttributes As Boolean, HasModifiers As Boolean) As VBS.StatementSyntax
+        Public Function RestructureAttributesAndModifiers(Statement As VBS.StatementSyntax, HasAttributes As Boolean, HasModifiers As Boolean) As VBS.StatementSyntax
             If Not (HasAttributes OrElse HasModifiers) Then
-                Return VBStatementNode
+                Return Statement
             End If
 
-            Dim AttributeLists As New List(Of VBS.AttributeListSyntax)
-            Dim KeywordLeadingTrivia As SyntaxTriviaList
-            Dim NewAttributeLeadingTrivia As SyntaxTriviaList
-            Dim NewModifiers As New SyntaxTokenList
-            Dim StatementLeadingTrivia As New List(Of SyntaxTrivia)
-            Dim StatementTrailingTrivia As New List(Of SyntaxTrivia)
+            Dim attributeLists As New List(Of VBS.AttributeListSyntax)
+            Dim keywordLeadingTrivia As SyntaxTriviaList
+            Dim newAttributeLeadingTrivia As SyntaxTriviaList
+            Dim newModifiers As New SyntaxTokenList
+            Dim statementLeadingTrivia As New List(Of SyntaxTrivia)
+            Dim statementTrailingTrivia As New List(Of SyntaxTrivia)
 
-            If TypeOf VBStatementNode Is VBS.ClassStatementSyntax Then
-                Dim ClassStatement As VBS.ClassStatementSyntax = DirectCast(VBStatementNode, VBS.ClassStatementSyntax)
+            If TypeOf Statement Is VBS.ClassStatementSyntax Then
+                Dim classStatement As VBS.ClassStatementSyntax = DirectCast(Statement, VBS.ClassStatementSyntax)
                 If HasAttributes Then
-                    RestructureAttributeList(ClassStatement.AttributeLists, AttributeLists, NewAttributeLeadingTrivia, StatementLeadingTrivia, StatementTrailingTrivia)
-                    ClassStatement = ClassStatement.WithAttributeLists(VBFactory.List(AttributeLists))
+                    RestructureAttributeList(classStatement.AttributeLists, attributeLists, newAttributeLeadingTrivia, statementLeadingTrivia, statementTrailingTrivia)
+                    classStatement = classStatement.WithAttributeLists(VBFactory.List(attributeLists))
                 End If
 
                 If HasModifiers Then
-                    For i As Integer = 0 To ClassStatement.Modifiers.Count - 1
-                        NewModifiers = NewModifiers.Add(RestructureModifier(ClassStatement.Modifiers(i), i, Not StatementLeadingTrivia.ContainsCommentOrDirectiveTrivia, StatementLeadingTrivia, StatementTrailingTrivia))
+                    For index As Integer = 0 To classStatement.Modifiers.Count - 1
+                        newModifiers = newModifiers.Add(RestructureModifier(classStatement.Modifiers(index), index, Not statementLeadingTrivia.ContainsCommentOrDirectiveTrivia, statementLeadingTrivia, statementTrailingTrivia))
                     Next
-                    ClassStatement = ClassStatement.WithModifiers(NewModifiers)
+                    classStatement = classStatement.WithModifiers(newModifiers)
                 End If
 
-                KeywordLeadingTrivia = RelocateDirectiveDisabledTrivia(ClassStatement.ClassKeyword.LeadingTrivia, StatementTrailingTrivia, RemoveEOL:=False)
-                Dim NewClassKeyword As SyntaxToken = ClassStatement.ClassKeyword.WithLeadingTrivia(KeywordLeadingTrivia)
-                Dim NewKeywordLeadingTrivia As SyntaxTriviaList = RelocateLeadingCommentTrivia(NewClassKeyword.LeadingTrivia, StatementLeadingTrivia)
-                Return ClassStatement.ReplaceToken(ClassStatement.ClassKeyword, NewClassKeyword.WithLeadingTrivia(NewKeywordLeadingTrivia)).
-                                                                        WithLeadingTrivia(StatementLeadingTrivia).
-                                                                        WithAppendedTrailingTrivia(StatementTrailingTrivia)
+                keywordLeadingTrivia = RelocateDirectiveDisabledTrivia(classStatement.ClassKeyword.LeadingTrivia, statementTrailingTrivia, RemoveEOL:=False)
+                Dim newClassKeyword As SyntaxToken = classStatement.ClassKeyword.WithLeadingTrivia(keywordLeadingTrivia)
+                Dim newKeywordLeadingTrivia As SyntaxTriviaList = RelocateLeadingCommentTrivia(newClassKeyword.LeadingTrivia, statementLeadingTrivia)
+                Return classStatement.ReplaceToken(classStatement.ClassKeyword, newClassKeyword.WithLeadingTrivia(newKeywordLeadingTrivia)).
+                                                                        WithLeadingTrivia(statementLeadingTrivia).
+                                                                        WithAppendedTrailingTrivia(statementTrailingTrivia)
             End If
 
-            If TypeOf VBStatementNode Is VBS.EnumStatementSyntax Then
-                Dim EnumStatement As VBS.EnumStatementSyntax = DirectCast(VBStatementNode, VBS.EnumStatementSyntax)
+            If TypeOf Statement Is VBS.EnumStatementSyntax Then
+                Dim EnumStatement As VBS.EnumStatementSyntax = DirectCast(Statement, VBS.EnumStatementSyntax)
 
                 If HasAttributes Then
-                    RestructureAttributeList(EnumStatement.AttributeLists, AttributeLists, NewAttributeLeadingTrivia, StatementLeadingTrivia, StatementTrailingTrivia)
-                    EnumStatement = EnumStatement.WithAttributeLists(VBFactory.List(AttributeLists))
+                    RestructureAttributeList(EnumStatement.AttributeLists, attributeLists, newAttributeLeadingTrivia, statementLeadingTrivia, statementTrailingTrivia)
+                    EnumStatement = EnumStatement.WithAttributeLists(VBFactory.List(attributeLists))
                 End If
 
                 If HasModifiers Then
-                    For i As Integer = 0 To EnumStatement.Modifiers.Count - 1
-                        NewModifiers = NewModifiers.Add(RestructureModifier(EnumStatement.Modifiers(i), i, Not StatementLeadingTrivia.ContainsCommentOrDirectiveTrivia, StatementLeadingTrivia, StatementTrailingTrivia))
+                    For index As Integer = 0 To EnumStatement.Modifiers.Count - 1
+                        newModifiers = newModifiers.Add(RestructureModifier(EnumStatement.Modifiers(index), index, Not statementLeadingTrivia.ContainsCommentOrDirectiveTrivia, statementLeadingTrivia, statementTrailingTrivia))
                     Next
-                    EnumStatement = EnumStatement.WithModifiers(NewModifiers)
+                    EnumStatement = EnumStatement.WithModifiers(newModifiers)
                 End If
 
-                KeywordLeadingTrivia = RelocateDirectiveDisabledTrivia(EnumStatement.EnumKeyword.LeadingTrivia, StatementTrailingTrivia, RemoveEOL:=False)
-                Dim NewEnumKeyword As SyntaxToken = EnumStatement.EnumKeyword.WithLeadingTrivia(KeywordLeadingTrivia)
+                keywordLeadingTrivia = RelocateDirectiveDisabledTrivia(EnumStatement.EnumKeyword.LeadingTrivia, statementTrailingTrivia, RemoveEOL:=False)
+                Dim NewEnumKeyword As SyntaxToken = EnumStatement.EnumKeyword.WithLeadingTrivia(keywordLeadingTrivia)
                 Return EnumStatement.ReplaceToken(EnumStatement.EnumKeyword, NewEnumKeyword).
-                                                                        WithLeadingTrivia(StatementLeadingTrivia).
-                                                                        WithAppendedTrailingTrivia(StatementTrailingTrivia)
+                                                                        WithLeadingTrivia(statementLeadingTrivia).
+                                                                        WithAppendedTrailingTrivia(statementTrailingTrivia)
             End If
 
-            If TypeOf VBStatementNode Is VBS.FieldDeclarationSyntax Then
-                Dim FieldStatement As VBS.FieldDeclarationSyntax = DirectCast(VBStatementNode, VBS.FieldDeclarationSyntax)
+            If TypeOf Statement Is VBS.FieldDeclarationSyntax Then
+                Dim FieldStatement As VBS.FieldDeclarationSyntax = DirectCast(Statement, VBS.FieldDeclarationSyntax)
 
                 If HasAttributes Then
-                    RestructureAttributeList(FieldStatement.AttributeLists, AttributeLists, NewAttributeLeadingTrivia, StatementLeadingTrivia, StatementTrailingTrivia)
-                    FieldStatement = FieldStatement.WithAttributeLists(VBFactory.List(AttributeLists))
+                    RestructureAttributeList(FieldStatement.AttributeLists, attributeLists, newAttributeLeadingTrivia, statementLeadingTrivia, statementTrailingTrivia)
+                    FieldStatement = FieldStatement.WithAttributeLists(VBFactory.List(attributeLists))
                 End If
 
                 If HasModifiers Then
-                    For i As Integer = 0 To FieldStatement.Modifiers.Count - 1
-                        NewModifiers = NewModifiers.Add(RestructureModifier(FieldStatement.Modifiers(i), i, Not StatementLeadingTrivia.ContainsCommentOrDirectiveTrivia, StatementLeadingTrivia, StatementTrailingTrivia))
+                    For index As Integer = 0 To FieldStatement.Modifiers.Count - 1
+                        newModifiers = newModifiers.Add(RestructureModifier(FieldStatement.Modifiers(index), index, Not statementLeadingTrivia.ContainsCommentOrDirectiveTrivia, statementLeadingTrivia, statementTrailingTrivia))
                     Next
-                    FieldStatement = FieldStatement.WithModifiers(NewModifiers)
+                    FieldStatement = FieldStatement.WithModifiers(newModifiers)
                 End If
-                StatementTrailingTrivia.AddRange(FieldStatement.GetTrailingTrivia)
-                Return FieldStatement.With(StatementLeadingTrivia, StatementTrailingTrivia)
+                statementTrailingTrivia.AddRange(FieldStatement.GetTrailingTrivia)
+                Return FieldStatement.With(statementLeadingTrivia, statementTrailingTrivia)
             End If
 
-            If TypeOf VBStatementNode Is VBS.InterfaceStatementSyntax Then
-                Dim InterfaceStatement As VBS.InterfaceStatementSyntax = DirectCast(VBStatementNode, VBS.InterfaceStatementSyntax)
+            If TypeOf Statement Is VBS.InterfaceStatementSyntax Then
+                Dim InterfaceStatement As VBS.InterfaceStatementSyntax = DirectCast(Statement, VBS.InterfaceStatementSyntax)
 
                 If HasAttributes Then
-                    RestructureAttributeList(InterfaceStatement.AttributeLists, AttributeLists, NewAttributeLeadingTrivia, StatementLeadingTrivia, StatementTrailingTrivia)
-                    InterfaceStatement = InterfaceStatement.WithAttributeLists(VBFactory.List(AttributeLists)).WithLeadingTrivia(StatementLeadingTrivia)
+                    RestructureAttributeList(InterfaceStatement.AttributeLists, attributeLists, newAttributeLeadingTrivia, statementLeadingTrivia, statementTrailingTrivia)
+                    InterfaceStatement = InterfaceStatement.WithAttributeLists(VBFactory.List(attributeLists)).WithLeadingTrivia(statementLeadingTrivia)
                 End If
 
                 If HasModifiers Then
-                    For i As Integer = 0 To InterfaceStatement.Modifiers.Count - 1
-                        NewModifiers = NewModifiers.Add(RestructureModifier(InterfaceStatement.Modifiers(i), i, Not StatementLeadingTrivia.ContainsCommentOrDirectiveTrivia, StatementLeadingTrivia, StatementTrailingTrivia))
+                    For index As Integer = 0 To InterfaceStatement.Modifiers.Count - 1
+                        newModifiers = newModifiers.Add(RestructureModifier(InterfaceStatement.Modifiers(index), index, Not statementLeadingTrivia.ContainsCommentOrDirectiveTrivia, statementLeadingTrivia, statementTrailingTrivia))
                     Next
-                    InterfaceStatement = InterfaceStatement.WithModifiers(NewModifiers)
+                    InterfaceStatement = InterfaceStatement.WithModifiers(newModifiers)
                 End If
 
-                KeywordLeadingTrivia = RelocateDirectiveDisabledTrivia(InterfaceStatement.InterfaceKeyword.LeadingTrivia, StatementTrailingTrivia, RemoveEOL:=False)
-                Dim InterfaceKeyword As SyntaxToken = InterfaceStatement.InterfaceKeyword.WithLeadingTrivia(KeywordLeadingTrivia)
+                keywordLeadingTrivia = RelocateDirectiveDisabledTrivia(InterfaceStatement.InterfaceKeyword.LeadingTrivia, statementTrailingTrivia, RemoveEOL:=False)
+                Dim InterfaceKeyword As SyntaxToken = InterfaceStatement.InterfaceKeyword.WithLeadingTrivia(keywordLeadingTrivia)
                 Return InterfaceStatement.ReplaceToken(InterfaceStatement.InterfaceKeyword, InterfaceKeyword).
-                                                                    WithLeadingTrivia(StatementLeadingTrivia).
-                                                                    WithAppendedTrailingTrivia(StatementTrailingTrivia)
+                                                                    WithLeadingTrivia(statementLeadingTrivia).
+                                                                    WithAppendedTrailingTrivia(statementTrailingTrivia)
             End If
 
-            If TypeOf VBStatementNode Is VBS.MethodStatementSyntax Then
-                Dim MethodStatement As VBS.MethodStatementSyntax = DirectCast(VBStatementNode, VBS.MethodStatementSyntax)
+            If TypeOf Statement Is VBS.MethodStatementSyntax Then
+                Dim MethodStatement As VBS.MethodStatementSyntax = DirectCast(Statement, VBS.MethodStatementSyntax)
 
                 If HasAttributes Then
-                    RestructureAttributeList(MethodStatement.AttributeLists, AttributeLists, NewAttributeLeadingTrivia, StatementLeadingTrivia, StatementTrailingTrivia)
-                    MethodStatement = MethodStatement.WithAttributeLists(VBFactory.List(AttributeLists))
+                    RestructureAttributeList(MethodStatement.AttributeLists, attributeLists, newAttributeLeadingTrivia, statementLeadingTrivia, statementTrailingTrivia)
+                    MethodStatement = MethodStatement.WithAttributeLists(VBFactory.List(attributeLists))
                 End If
 
                 If HasModifiers Then
-                    For i As Integer = 0 To MethodStatement.Modifiers.Count - 1
-                        NewModifiers = NewModifiers.Add(RestructureModifier(MethodStatement.Modifiers(i), i, Not StatementLeadingTrivia.ContainsCommentOrDirectiveTrivia, StatementLeadingTrivia, StatementTrailingTrivia))
+                    For index As Integer = 0 To MethodStatement.Modifiers.Count - 1
+                        newModifiers = newModifiers.Add(RestructureModifier(MethodStatement.Modifiers(index), index, Not statementLeadingTrivia.ContainsCommentOrDirectiveTrivia, statementLeadingTrivia, statementTrailingTrivia))
                     Next
-                    MethodStatement = MethodStatement.WithModifiers(NewModifiers)
+                    MethodStatement = MethodStatement.WithModifiers(newModifiers)
                 End If
 
-                KeywordLeadingTrivia = RelocateDirectiveDisabledTrivia(MethodStatement.SubOrFunctionKeyword.LeadingTrivia, StatementTrailingTrivia, RemoveEOL:=False)
-                Dim NewSubOrFunctionKeyword As SyntaxToken = MethodStatement.SubOrFunctionKeyword.WithLeadingTrivia(KeywordLeadingTrivia)
-                Return MethodStatement.ReplaceToken(MethodStatement.SubOrFunctionKeyword, NewSubOrFunctionKeyword).
-                                                                        WithLeadingTrivia(StatementLeadingTrivia).
-                                                                        WithAppendedTrailingTrivia(StatementTrailingTrivia)
+                keywordLeadingTrivia = RelocateDirectiveDisabledTrivia(MethodStatement.SubOrFunctionKeyword.LeadingTrivia, statementTrailingTrivia, RemoveEOL:=False)
+                Dim NewSubOrFunctionKeyword As SyntaxToken = MethodStatement.SubOrFunctionKeyword.WithLeadingTrivia(keywordLeadingTrivia)
+                Return MethodStatement.ReplaceToken(
+                                MethodStatement.SubOrFunctionKeyword,
+                                NewSubOrFunctionKeyword
+                                ).
+                            WithLeadingTrivia(statementLeadingTrivia).
+                            WithAppendedTrailingTrivia(statementTrailingTrivia)
             End If
 
-            If TypeOf VBStatementNode Is VBS.ModuleStatementSyntax Then
-                Dim ModuleStatement As VBS.ModuleStatementSyntax = DirectCast(VBStatementNode, VBS.ModuleStatementSyntax)
+            If TypeOf Statement Is VBS.ModuleStatementSyntax Then
+                Dim moduleStatement As VBS.ModuleStatementSyntax = DirectCast(Statement, VBS.ModuleStatementSyntax)
 
                 If HasAttributes Then
-                    RestructureAttributeList(ModuleStatement.AttributeLists, AttributeLists, NewAttributeLeadingTrivia, StatementLeadingTrivia, StatementTrailingTrivia)
-                    ModuleStatement = ModuleStatement.WithAttributeLists(VBFactory.List(AttributeLists))
+                    RestructureAttributeList(moduleStatement.AttributeLists, attributeLists, newAttributeLeadingTrivia, statementLeadingTrivia, statementTrailingTrivia)
+                    moduleStatement = moduleStatement.WithAttributeLists(VBFactory.List(attributeLists))
                 End If
 
                 If HasModifiers Then
-                    For i As Integer = 0 To ModuleStatement.Modifiers.Count - 1
-                        NewModifiers = NewModifiers.Add(RestructureModifier(ModuleStatement.Modifiers(i), i, Not StatementLeadingTrivia.ContainsCommentOrDirectiveTrivia, StatementLeadingTrivia, StatementTrailingTrivia))
+                    For index As Integer = 0 To moduleStatement.Modifiers.Count - 1
+                        newModifiers = newModifiers.Add(RestructureModifier(moduleStatement.Modifiers(index), index, Not statementLeadingTrivia.ContainsCommentOrDirectiveTrivia, statementLeadingTrivia, statementTrailingTrivia))
                     Next
-                    ModuleStatement = ModuleStatement.WithModifiers(NewModifiers)
+                    moduleStatement = moduleStatement.WithModifiers(newModifiers)
                 End If
 
-                KeywordLeadingTrivia = RelocateDirectiveDisabledTrivia(ModuleStatement.ModuleKeyword.LeadingTrivia, StatementTrailingTrivia, RemoveEOL:=False)
-                Dim NewModuleKeyword As SyntaxToken = ModuleStatement.ModuleKeyword.WithLeadingTrivia(KeywordLeadingTrivia)
-                Return ModuleStatement.ReplaceToken(ModuleStatement.ModuleKeyword, NewModuleKeyword).
-                                                                        WithLeadingTrivia(StatementLeadingTrivia).
-                                                                        WithAppendedTrailingTrivia(StatementTrailingTrivia)
+                keywordLeadingTrivia = RelocateDirectiveDisabledTrivia(moduleStatement.ModuleKeyword.LeadingTrivia, statementTrailingTrivia, RemoveEOL:=False)
+                Dim newModuleKeyword As SyntaxToken = moduleStatement.ModuleKeyword.WithLeadingTrivia(keywordLeadingTrivia)
+                Return moduleStatement.ReplaceToken(moduleStatement.ModuleKeyword, newModuleKeyword).
+                                                                        WithLeadingTrivia(statementLeadingTrivia).
+                                                                        WithAppendedTrailingTrivia(statementTrailingTrivia)
             End If
 
-            If TypeOf VBStatementNode Is VBS.PropertyBlockSyntax Then
-                Dim PropertyBlock As VBS.PropertyBlockSyntax = DirectCast(VBStatementNode, VBS.PropertyBlockSyntax)
+            If TypeOf Statement Is VBS.PropertyBlockSyntax Then
+                Dim PropertyBlock As VBS.PropertyBlockSyntax = DirectCast(Statement, VBS.PropertyBlockSyntax)
                 Dim PropertyStatement As VBS.PropertyStatementSyntax = PropertyBlock.PropertyStatement
 
                 If HasAttributes Then
-                    RestructureAttributeList(PropertyStatement.AttributeLists, AttributeLists, NewAttributeLeadingTrivia, StatementLeadingTrivia, StatementTrailingTrivia)
-                    PropertyStatement = PropertyStatement.WithAttributeLists(VBFactory.List(AttributeLists))
+                    RestructureAttributeList(PropertyStatement.AttributeLists, attributeLists, newAttributeLeadingTrivia, statementLeadingTrivia, statementTrailingTrivia)
+                    PropertyStatement = PropertyStatement.WithAttributeLists(VBFactory.List(attributeLists))
                 End If
 
                 If HasModifiers Then
-                    For i As Integer = 0 To PropertyStatement.Modifiers.Count - 1
-                        NewModifiers = NewModifiers.Add(RestructureModifier(PropertyStatement.Modifiers(i), i, Not StatementLeadingTrivia.ContainsCommentOrDirectiveTrivia, StatementLeadingTrivia, StatementTrailingTrivia))
+                    For index As Integer = 0 To PropertyStatement.Modifiers.Count - 1
+                        newModifiers = newModifiers.Add(RestructureModifier(PropertyStatement.Modifiers(index), index, Not statementLeadingTrivia.ContainsCommentOrDirectiveTrivia, statementLeadingTrivia, statementTrailingTrivia))
                     Next
-                    PropertyStatement = PropertyStatement.WithModifiers(NewModifiers)
+                    PropertyStatement = PropertyStatement.WithModifiers(newModifiers)
                 End If
-                KeywordLeadingTrivia = RelocateDirectiveDisabledTrivia(PropertyStatement.PropertyKeyword.LeadingTrivia, StatementTrailingTrivia, RemoveEOL:=False)
-                Dim NewPropertyKeyword As SyntaxToken = PropertyStatement.PropertyKeyword.WithLeadingTrivia(KeywordLeadingTrivia)
+                keywordLeadingTrivia = RelocateDirectiveDisabledTrivia(PropertyStatement.PropertyKeyword.LeadingTrivia, statementTrailingTrivia, RemoveEOL:=False)
+                Dim NewPropertyKeyword As SyntaxToken = PropertyStatement.PropertyKeyword.WithLeadingTrivia(keywordLeadingTrivia)
                 Dim NewPropertyStatement As VBS.PropertyStatementSyntax = PropertyStatement.ReplaceToken(PropertyStatement.PropertyKeyword, NewPropertyKeyword)
-                Dim NewPropertyBlock As VBS.PropertyBlockSyntax = PropertyBlock.WithPropertyStatement(NewPropertyStatement.WithLeadingTrivia(StatementLeadingTrivia))
+                Dim NewPropertyBlock As VBS.PropertyBlockSyntax = PropertyBlock.WithPropertyStatement(NewPropertyStatement.WithLeadingTrivia(statementLeadingTrivia))
                 If Not NewPropertyBlock.GetTrailingTrivia.Last.IsEndOfLine Then
-                    StatementTrailingTrivia.Add(VBEOLTrivia)
+                    statementTrailingTrivia.Add(VBEOLTrivia)
                 End If
-                Return NewPropertyBlock.WithAppendedTrailingTrivia(StatementTrailingTrivia)
+                Return NewPropertyBlock.WithAppendedTrailingTrivia(statementTrailingTrivia)
             End If
 
-            If TypeOf VBStatementNode Is VBS.StructureStatementSyntax Then
-                Dim StructureStatement As VBS.StructureStatementSyntax = DirectCast(VBStatementNode, VBS.StructureStatementSyntax)
+            If TypeOf Statement Is VBS.StructureStatementSyntax Then
+                Dim StructureStatement As VBS.StructureStatementSyntax = DirectCast(Statement, VBS.StructureStatementSyntax)
 
                 If HasAttributes Then
-                    RestructureAttributeList(StructureStatement.AttributeLists, AttributeLists, NewAttributeLeadingTrivia, StatementLeadingTrivia, StatementTrailingTrivia)
-                    StructureStatement = StructureStatement.WithAttributeLists(VBFactory.List(AttributeLists))
+                    RestructureAttributeList(StructureStatement.AttributeLists, attributeLists, newAttributeLeadingTrivia, statementLeadingTrivia, statementTrailingTrivia)
+                    StructureStatement = StructureStatement.WithAttributeLists(VBFactory.List(attributeLists))
                 End If
 
                 If HasModifiers Then
-                    For i As Integer = 0 To StructureStatement.Modifiers.Count - 1
-                        NewModifiers = NewModifiers.Add(RestructureModifier(StructureStatement.Modifiers(i), i, Not StatementLeadingTrivia.ContainsCommentOrDirectiveTrivia, StatementLeadingTrivia, StatementTrailingTrivia))
+                    For index As Integer = 0 To StructureStatement.Modifiers.Count - 1
+                        newModifiers = newModifiers.Add(RestructureModifier(StructureStatement.Modifiers(index), index, Not statementLeadingTrivia.ContainsCommentOrDirectiveTrivia, statementLeadingTrivia, statementTrailingTrivia))
                     Next
-                    StructureStatement = StructureStatement.WithModifiers(NewModifiers)
+                    StructureStatement = StructureStatement.WithModifiers(newModifiers)
                 End If
 
-                KeywordLeadingTrivia = RelocateDirectiveDisabledTrivia(StructureStatement.StructureKeyword.LeadingTrivia, StatementTrailingTrivia, RemoveEOL:=True)
-                Dim NewStructureKeyword As SyntaxToken = StructureStatement.StructureKeyword.WithLeadingTrivia(KeywordLeadingTrivia)
+                keywordLeadingTrivia = RelocateDirectiveDisabledTrivia(StructureStatement.StructureKeyword.LeadingTrivia, statementTrailingTrivia, RemoveEOL:=True)
+                Dim NewStructureKeyword As SyntaxToken = StructureStatement.StructureKeyword.WithLeadingTrivia(keywordLeadingTrivia)
                 Return StructureStatement.ReplaceToken(StructureStatement.StructureKeyword, NewStructureKeyword).
-                                                                         WithLeadingTrivia(StatementLeadingTrivia).
-                                                                         WithAppendedTrailingTrivia(StatementTrailingTrivia)
+                                                                         WithLeadingTrivia(statementLeadingTrivia).
+                                                                         WithAppendedTrailingTrivia(statementTrailingTrivia)
             End If
-            If TypeOf VBStatementNode Is VBS.SubNewStatementSyntax Then
-                Dim SubNewStatement As VBS.SubNewStatementSyntax = DirectCast(VBStatementNode, VBS.SubNewStatementSyntax)
+            If TypeOf Statement Is VBS.SubNewStatementSyntax Then
+                Dim SubNewStatement As VBS.SubNewStatementSyntax = DirectCast(Statement, VBS.SubNewStatementSyntax)
 
                 If HasAttributes Then
-                    RestructureAttributeList(SubNewStatement.AttributeLists, AttributeLists, NewAttributeLeadingTrivia, StatementLeadingTrivia, StatementTrailingTrivia)
-                    SubNewStatement = SubNewStatement.WithAttributeLists(VBFactory.List(AttributeLists))
+                    RestructureAttributeList(SubNewStatement.AttributeLists, attributeLists, newAttributeLeadingTrivia, statementLeadingTrivia, statementTrailingTrivia)
+                    SubNewStatement = SubNewStatement.WithAttributeLists(VBFactory.List(attributeLists))
                 End If
 
                 If HasModifiers Then
-                    For i As Integer = 0 To SubNewStatement.Modifiers.Count - 1
-                        NewModifiers = NewModifiers.Add(RestructureModifier(SubNewStatement.Modifiers(i), i, Not StatementLeadingTrivia.ContainsCommentOrDirectiveTrivia, StatementLeadingTrivia, StatementTrailingTrivia))
+                    For index As Integer = 0 To SubNewStatement.Modifiers.Count - 1
+                        newModifiers = newModifiers.Add(RestructureModifier(SubNewStatement.Modifiers(index), index, Not statementLeadingTrivia.ContainsCommentOrDirectiveTrivia, statementLeadingTrivia, statementTrailingTrivia))
                     Next
-                    SubNewStatement = SubNewStatement.WithModifiers(NewModifiers)
+                    SubNewStatement = SubNewStatement.WithModifiers(newModifiers)
                 End If
 
-                KeywordLeadingTrivia = RelocateDirectiveDisabledTrivia(SubNewStatement.SubKeyword.LeadingTrivia, StatementTrailingTrivia, RemoveEOL:=False)
-                Dim NewSubKeyword As SyntaxToken = SubNewStatement.SubKeyword.WithLeadingTrivia(KeywordLeadingTrivia)
-                Return SubNewStatement.ReplaceToken(SubNewStatement.SubKeyword, NewSubKeyword).
-                                                                        WithLeadingTrivia(StatementLeadingTrivia).
-                                                                        WithAppendedTrailingTrivia(StatementTrailingTrivia)
+                keywordLeadingTrivia = RelocateDirectiveDisabledTrivia(SubNewStatement.SubKeyword.LeadingTrivia, statementTrailingTrivia, RemoveEOL:=False)
+                Dim newSubKeyword As SyntaxToken = SubNewStatement.SubKeyword.WithLeadingTrivia(keywordLeadingTrivia)
+                Return SubNewStatement.ReplaceToken(SubNewStatement.SubKeyword, newSubKeyword).
+                                                                        WithLeadingTrivia(statementLeadingTrivia).
+                                                                        WithAppendedTrailingTrivia(statementTrailingTrivia)
             End If
 
             Throw UnreachableException
-            Return VBStatementNode
+            Return Statement
         End Function
 
-        Private Function RestructureAttributeList(CS_AttributeLists1 As SyntaxList(Of VBS.AttributeListSyntax), AttributeLists As List(Of VBS.AttributeListSyntax), ByRef NewAttributeLeadingTrivia As SyntaxTriviaList, ByRef StatementLeadingTrivia As List(Of SyntaxTrivia), ByRef StatementTrailingTrivia As List(Of SyntaxTrivia)) As Boolean
-            Dim FoundDirective As Boolean = False
-            Dim FoundTheory As Boolean = False
-            Dim IsTheoryOrInlineData As Boolean
-            For i As Integer = 0 To CS_AttributeLists1.Count - 1
-                Dim AttributeList As VBS.AttributeListSyntax = CS_AttributeLists1(i)
-                IsTheoryOrInlineData = AttributeList.Attributes.FirstOrDefault.ToString.Contains({"Theory", "InlineData"}, StringComparison.OrdinalIgnoreCase)
-                If IsTheoryOrInlineData Then
-                    FoundTheory = True
+        Private Function RestructureAttributeList(vbAttributeLists As SyntaxList(Of VBS.AttributeListSyntax), AttributeLists As List(Of VBS.AttributeListSyntax), ByRef NewAttributeLeadingTrivia As SyntaxTriviaList, ByRef StatementLeadingTrivia As List(Of SyntaxTrivia), ByRef StatementTrailingTrivia As List(Of SyntaxTrivia)) As Boolean
+            Dim foundDirective As Boolean = False
+            Dim foundTheory As Boolean = False
+            Dim isTheoryOrInlineData As Boolean
+            For Each e As IndexStruct(Of VBS.AttributeListSyntax) In vbAttributeLists.WithIndex
+                Dim attributeList As VBS.AttributeListSyntax = e.Value
+                isTheoryOrInlineData = attributeList.Attributes.FirstOrDefault.ToString.Contains({"Theory", "InlineData"}, StringComparison.OrdinalIgnoreCase)
+                If isTheoryOrInlineData Then
+                    foundTheory = True
                 End If
                 Dim NewAttributLeadingTrivia As New SyntaxTriviaList
-                If i = 0 Then
-                    StatementLeadingTrivia.AddRange(AttributeList.GetLeadingTrivia)
+                If e.IsFirst Then
+                    StatementLeadingTrivia.AddRange(attributeList.GetLeadingTrivia)
                     If StatementLeadingTrivia.Any AndAlso StatementLeadingTrivia.Last.IsWhitespaceOrEndOfLine Then
-                        NewAttributeLeadingTrivia = NewAttributeLeadingTrivia.Add(AttributeList.GetLeadingTrivia.Last)
+                        NewAttributeLeadingTrivia = NewAttributeLeadingTrivia.Add(attributeList.GetLeadingTrivia.Last)
                     Else
                         NewAttributeLeadingTrivia = NewAttributeLeadingTrivia.Add(SpaceTrivia)
                     End If
                 Else
-                    RelocateAttributeDirectiveDisabledTrivia(CS_AttributeLists1(i).GetLeadingTrivia, FoundDirective, IsTheoryOrInlineData, StatementLeadingTrivia, StatementTrailingTrivia)
+                    RelocateAttributeDirectiveDisabledTrivia(e.Value.GetLeadingTrivia, foundDirective, isTheoryOrInlineData, StatementLeadingTrivia, StatementTrailingTrivia)
                 End If
-                Dim NewAttributeTrailingTrivia As SyntaxTriviaList = RelocateDirectiveDisabledTrivia(CS_AttributeLists1(i).GetTrailingTrivia, StatementTrailingTrivia, RemoveEOL:=False)
-                AttributeLists.Add(AttributeList.With(NewAttributeLeadingTrivia, NewAttributeTrailingTrivia))
+                Dim newAttributeTrailingTrivia As SyntaxTriviaList = RelocateDirectiveDisabledTrivia(e.Value.GetTrailingTrivia, StatementTrailingTrivia, RemoveEOL:=False)
+                AttributeLists.Add(attributeList.With(NewAttributeLeadingTrivia, newAttributeTrailingTrivia))
             Next
-            Return FoundTheory
+            Return foundTheory
         End Function
 
     End Module

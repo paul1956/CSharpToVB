@@ -34,9 +34,8 @@ Namespace CSharpToVBCodeConverter.Util
         Private Sub HandleCollisions(isFixed As IList(Of Boolean), names As IList(Of String), name As String, collisionIndices As List(Of Integer), canUse As Func(Of String, Boolean), Optional isCaseSensitive As Boolean = True)
             Dim suffix As Integer = 1
             Dim comparer As StringComparer = If(isCaseSensitive, StringComparer.Ordinal, StringComparer.OrdinalIgnoreCase)
-            For i As Integer = 0 To collisionIndices.Count - 1
-                Dim collisionIndex As Integer = collisionIndices(i)
-                If isFixed(collisionIndex) Then
+            For Each e As IndexStruct(Of Integer) In collisionIndices.WithIndex
+                If isFixed(e.Value) Then
                     ' can't do anything about this name.
                     Continue For
                 End If
@@ -46,11 +45,11 @@ Namespace CSharpToVBCodeConverter.Util
                     suffix += 1
                     If Not names.Contains(newName, comparer) AndAlso canUse(newName) Then
                         ' Found a name that doesn't conflict with anything else.
-                        names(collisionIndex) = newName
+                        names(e.Value) = newName
                         Exit Do
                     End If
                 Loop
-            Next i
+            Next
         End Sub
 
         ''' <summary>

@@ -30,27 +30,21 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             If ArgumentList.Arguments.Count = 0 Then
                 Return False
             End If
-            For i As Integer = 0 To ArgumentList.Arguments.Count - 1
-                For Each t As SyntaxTrivia In ArgumentList.Arguments(i).GetLeadingTrivia
+            For Each e As IndexStruct(Of CSS.ArgumentSyntax) In ArgumentList.Arguments.WithIndex
+                For Each t As SyntaxTrivia In e.Value.GetLeadingTrivia
                     Select Case t.RawKind
-                        Case CS.SyntaxKind.IfDirectiveTrivia
-                            Return True
-                        Case CS.SyntaxKind.DisabledTextTrivia
-                            Return True
-                        Case CS.SyntaxKind.ElseDirectiveTrivia
-                            Return True
-                        Case CS.SyntaxKind.ElifDirectiveTrivia
-                            Return True
-                        Case CS.SyntaxKind.EndIfDirectiveTrivia
+                        Case CS.SyntaxKind.DisabledTextTrivia,
+                             CS.SyntaxKind.ElifDirectiveTrivia,
+                             CS.SyntaxKind.ElseDirectiveTrivia,
+                             CS.SyntaxKind.EndIfDirectiveTrivia,
+                             CS.SyntaxKind.IfDirectiveTrivia
                             Return True
                         Case CS.SyntaxKind.NullableDirectiveTrivia
                             Return False
-                        Case CS.SyntaxKind.WhitespaceTrivia
+                        Case CS.SyntaxKind.EndOfLineTrivia,
+                             CS.SyntaxKind.SingleLineCommentTrivia,
+                             CS.SyntaxKind.WhitespaceTrivia
                             ' ignore
-                        Case CS.SyntaxKind.SingleLineCommentTrivia
-                            ' ignore
-                        Case CS.SyntaxKind.EndOfLineTrivia
-                            ' Ignore
                         Case Else
                             Debug.WriteLine($"Unknown TriviaKind {CType(t.RawKind, CS.SyntaxKind)} in ContainsConditionalDirective")
                             Stop

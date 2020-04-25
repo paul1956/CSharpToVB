@@ -55,9 +55,9 @@ Public Class OptionsDialog
         ProjectDirectoryList.Items.Add(New MyListItem("Projects", GetLatestVisualStudioProjectPath))
         ProjectDirectoryList.Items.Add(New MyListItem("Repos", GetAlternetVisualStudioProjectsPath))
         ProjectDirectoryList.SelectedIndex = 0
-        For i As Integer = 0 To ProjectDirectoryList.Items.Count - 1
-            If CType(ProjectDirectoryList.Items(i), MyListItem).Value = My.Settings.DefaultProjectDirectory Then
-                ProjectDirectoryList.SelectedIndex = i
+        For index As Integer = 0 To ProjectDirectoryList.Items.Count - 1
+            If CType(ProjectDirectoryList.Items(index), MyListItem).Value = My.Settings.DefaultProjectDirectory Then
+                ProjectDirectoryList.SelectedIndex = index
                 Exit For
             End If
         Next

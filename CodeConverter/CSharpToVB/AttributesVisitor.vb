@@ -43,22 +43,19 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             End Function
 
             Public Overrides Function VisitAttributeArgumentList(node As CSS.AttributeArgumentListSyntax) As VB.VisualBasicSyntaxNode
-                Dim ArgumentNodes As New List(Of VBS.ArgumentSyntax)
-                Dim TrailingTriviaList As New List(Of SyntaxTrivia)
-                For i As Integer = 0 To node.Arguments.Count - 1
-                    Dim LocalLeadingTrivia As New List(Of SyntaxTrivia)
-                    Dim LocalTrailingTrivia As New List(Of SyntaxTrivia)
-                    Dim Item As VBS.ArgumentSyntax = DirectCast(node.Arguments(i).Accept(Me), VBS.ArgumentSyntax)
+                Dim vbArguments As New List(Of VBS.ArgumentSyntax)
+                Dim trailingTriviaList As New List(Of SyntaxTrivia)
+                For Each e As IndexStruct(Of CSS.AttributeArgumentSyntax) In node.Arguments.WithIndex
+                    Dim localLeadingTrivia As New List(Of SyntaxTrivia)
+                    Dim localTrailingTrivia As New List(Of SyntaxTrivia)
+                    Dim Item As VBS.ArgumentSyntax = DirectCast(e.Value.Accept(Me), VBS.ArgumentSyntax)
                     If Item.HasLeadingTrivia Then
                         Dim triviaList As SyntaxTriviaList = Item.GetLeadingTrivia
-                        Dim TriviaCount As Integer = triviaList.Count - 1
-
-                        For i1 As Integer = 0 To TriviaCount
-
+                        For i1 As Integer = 0 To triviaList.Count - 1
                             Dim Trivia As SyntaxTrivia = triviaList(i1)
-                            Dim NextTrivia As SyntaxTrivia = If(i1 < TriviaCount, triviaList(i1 + 1), Nothing)
+                            Dim NextTrivia As SyntaxTrivia = If(i1 < triviaList.Count - 1, triviaList(i1 + 1), Nothing)
                             If Trivia.IsComment Then
-                                TrailingTriviaList.Add(Trivia)
+                                trailingTriviaList.Add(Trivia)
                                 If NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
                                     i1 += 1
                                 End If
@@ -70,34 +67,34 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                         Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.None
                                         Case Else
                                             Stop
-                                            LocalLeadingTrivia.Add(Trivia)
+                                            localLeadingTrivia.Add(Trivia)
                                     End Select
                                 Else
-                                    LocalLeadingTrivia.Add(Trivia)
+                                    localLeadingTrivia.Add(Trivia)
                                 End If
                             End If
                         Next
-                        Item = Item.WithLeadingTrivia(LocalLeadingTrivia)
+                        Item = Item.WithLeadingTrivia(localLeadingTrivia)
                     End If
                     If Item.HasTrailingTrivia Then
                         For Each t As SyntaxTrivia In Item.GetTrailingTrivia
                             If t.IsComment OrElse t.IsEndOfLine Then
-                                TrailingTriviaList.Add(t)
+                                trailingTriviaList.Add(t)
                             Else
-                                LocalTrailingTrivia.Add(t)
+                                localTrailingTrivia.Add(t)
                             End If
                         Next
                     End If
-                    Item = Item.WithTrailingTrivia(LocalTrailingTrivia)
-                    ArgumentNodes.Add(Item)
+                    Item = Item.WithTrailingTrivia(localTrailingTrivia)
+                    vbArguments.Add(Item)
                 Next
-                Return VBFactory.ArgumentList(OpenParenToken, VBFactory.SeparatedList(ArgumentNodes), CloseParenToken).WithConvertedLeadingTriviaFrom(node).WithTrailingTrivia(TrailingTriviaList).WithAppendedTrailingTrivia(ConvertTrivia(node.GetTrailingTrivia))
+                Return VBFactory.ArgumentList(OpenParenToken, VBFactory.SeparatedList(vbArguments), CloseParenToken).WithConvertedLeadingTriviaFrom(node).WithTrailingTrivia(trailingTriviaList).WithAppendedTrailingTrivia(ConvertTrivia(node.GetTrailingTrivia))
             End Function
 
             Public Overrides Function VisitAttributeList(node As CSS.AttributeListSyntax) As VB.VisualBasicSyntaxNode
-                Dim CS_Separators As IEnumerable(Of SyntaxToken) = node.Attributes.GetSeparators
+                Dim csSeparators As IEnumerable(Of SyntaxToken) = node.Attributes.GetSeparators
                 Dim LessThanTokenWithTrivia As SyntaxToken = LessThanToken.WithConvertedTriviaFrom(node.OpenBracketToken)
-                Dim FinalTrailingTriviaList As New List(Of SyntaxTrivia)
+                Dim finalTrailingTriviaList As New List(Of SyntaxTrivia)
                 Dim FirstComment As Boolean = True
                 Dim NeedWhiteSpace As Boolean = True
                 Dim needLineContinuation As Boolean = False
@@ -105,45 +102,45 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     Dim VBSyntaxTrivia As SyntaxTrivia = ConvertTrivia(T)
                     Select Case VBSyntaxTrivia.RawKind
                         Case VB.SyntaxKind.WhitespaceTrivia
-                            FinalTrailingTriviaList.Add(VBSyntaxTrivia)
+                            finalTrailingTriviaList.Add(VBSyntaxTrivia)
                             NeedWhiteSpace = False
                         Case VB.SyntaxKind.CommentTrivia
                             If FirstComment Then
                                 FirstComment = False
                                 If NeedWhiteSpace Then
                                     NeedWhiteSpace = False
-                                    FinalTrailingTriviaList.Add(SpaceTrivia)
+                                    finalTrailingTriviaList.Add(SpaceTrivia)
                                 End If
-                                FinalTrailingTriviaList.Add(LineContinuation)
+                                finalTrailingTriviaList.Add(LineContinuation)
                                 needLineContinuation = False
                             End If
-                            FinalTrailingTriviaList.Add(VBSyntaxTrivia)
+                            finalTrailingTriviaList.Add(VBSyntaxTrivia)
                         Case VB.SyntaxKind.EndOfLineTrivia
                             If NeedWhiteSpace Then
                                 NeedWhiteSpace = False
-                                FinalTrailingTriviaList.Add(SpaceTrivia)
+                                finalTrailingTriviaList.Add(SpaceTrivia)
                             End If
                             If needLineContinuation Then
-                                FinalTrailingTriviaList.Add(LineContinuation)
+                                finalTrailingTriviaList.Add(LineContinuation)
                                 needLineContinuation = False
                                 NeedWhiteSpace = True
                             End If
-                            FinalTrailingTriviaList.Add(VBSyntaxTrivia)
+                            finalTrailingTriviaList.Add(VBSyntaxTrivia)
                         Case Else
                             Stop
                             NeedWhiteSpace = True
                     End Select
                 Next
-                Dim GreaterThenTokenWithTrivia As SyntaxToken = GreaterThanToken.WithTrailingTrivia(FinalTrailingTriviaList)
+                Dim GreaterThenTokenWithTrivia As SyntaxToken = GreaterThanToken.WithTrailingTrivia(finalTrailingTriviaList)
 
                 Dim AttributeList As New List(Of VBS.AttributeSyntax)
                 Dim Separators As New List(Of SyntaxToken)
                 Dim SeparatorCount As Integer = node.Attributes.Count - 1
-                For i As Integer = 0 To SeparatorCount
-                    Dim e As CSS.AttributeSyntax = node.Attributes(i)
+                For index As Integer = 0 To SeparatorCount
+                    Dim e As CSS.AttributeSyntax = node.Attributes(index)
                     AttributeList.Add(DirectCast(e.Accept(Me), VBS.AttributeSyntax).RemoveExtraLeadingEOL)
-                    If SeparatorCount > i Then
-                        Separators.Add(CommaToken.WithConvertedTrailingTriviaFrom(CS_Separators(i)))
+                    If SeparatorCount > index Then
+                        Separators.Add(CommaToken.WithConvertedTrailingTriviaFrom(csSeparators(index)))
                     End If
                 Next
                 RestructureNodesAndSeparators(LessThanTokenWithTrivia, AttributeList, Separators, GreaterThenTokenWithTrivia)

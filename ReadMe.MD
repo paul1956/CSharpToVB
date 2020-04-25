@@ -63,7 +63,7 @@ It will try to create a VB project File from the original C# project file.
 https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json is added to NuGet Package Source to find
 Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpecific attributes used for testing.
   New in Release 4.3.2.0
-  - Implement For Each with Index Extension and start using it
+  - Implement For Each with Index Extension and using it where possible
   - Catch ArgumentException where expected and allow throw other exceptions
   - Start changing locals to begin with lowercase character(s)
   - Fix long outstanding issue where ignored files were being written to output directory as empty files and total files was calculated correctly.
@@ -136,17 +136,17 @@ New in Release 4.2.4.0
 
 ## Code Coverage
 ```
-+------------------+--------+--------+--------+
-| Module           | Line   | Branch | Method |
-+------------------+--------+--------+--------+
-| VB.CodeConverter | 79.19% | 72.5%  | 86.61% |
-+------------------+--------+--------+--------+
++------------------+-------+--------+--------+
+| Module           | Line  | Branch | Method |
++------------------+-------+--------+--------+
+| VB.CodeConverter | 79.4% | 72.77% | 87.41% |
++------------------+-------+--------+--------+
 
-+---------+--------+--------+--------+
-|         | Line   | Branch | Method |
-+---------+--------+--------+--------+
-| Total   | 79.19% | 72.5%  | 86.61% |
-+---------+--------+--------+--------+
-| Average | 79.19% | 72.5%  | 86.61% |
-+---------+--------+--------+--------+
++---------+-------+--------+--------+
+|         | Line  | Branch | Method |
++---------+-------+--------+--------+
+| Total   | 79.4% | 72.77% | 87.41% |
++---------+-------+--------+--------+
+| Average | 79.4% | 72.77% | 87.41% |
++---------+-------+--------+--------+
 ```

@@ -16,8 +16,8 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
     Public Module ArgumentSupport
 
         <Extension>
-        Friend Function RestructureArguments(VB_Node As VBS.StatementSyntax, CS_ArgumentList As CSS.ArgumentListSyntax) As VBS.StatementSyntax
-            If Not CS_ArgumentList.ContainsConditionalDirective Then
+        Friend Function RestructureArguments(VB_Node As VBS.StatementSyntax, csArgumentList As CSS.ArgumentListSyntax) As VBS.StatementSyntax
+            If Not csArgumentList.ContainsConditionalDirective Then
                 Return VB_Node
             End If
 
@@ -29,19 +29,16 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 If Expr.ArgumentList.Arguments.Count = 0 Then
                     Return VB_Node
                 End If
-                For i As Integer = 0 To CS_ArgumentList.Arguments.Count - 1
-                    Dim ArgumentLeadingTrivia As SyntaxTriviaList = VBFactory.TriviaList(ConvertTrivia(CS_ArgumentList.Arguments(i).GetLeadingTrivia))
-                    Dim NewArgumentLeadingTrivia As SyntaxTriviaList = RelocateDirectiveDisabledTrivia(ArgumentLeadingTrivia, StatementLeadingTrivia, RemoveEOL:=True)
-
-                    Dim ArgumentTrailingTrivia As SyntaxTriviaList = VBFactory.TriviaList(ConvertTrivia(CS_ArgumentList.Arguments(i).GetTrailingTrivia))
-                    Dim NewArgumentTrailingTrivia As SyntaxTriviaList = RelocateDirectiveDisabledTrivia(ArgumentTrailingTrivia, StatementTrailingTrivia, RemoveEOL:=False)
-
-                    Dim m As VBS.ArgumentSyntax = Expr.ArgumentList.Arguments(i)
-                    ExpressionStatement = ExpressionStatement.ReplaceNode(m,
-                                                    m.With(NewArgumentLeadingTrivia, NewArgumentTrailingTrivia))
+                For Each e As IndexStruct(Of CSS.ArgumentSyntax) In csArgumentList.Arguments.WithIndex
+                    Dim newArgumentLeadingTrivia As SyntaxTriviaList = RelocateDirectiveDisabledTrivia(VBFactory.TriviaList(ConvertTrivia(e.Value.GetLeadingTrivia)), StatementLeadingTrivia, RemoveEOL:=True)
+                    Dim newArgumentTrailingTrivia As SyntaxTriviaList = RelocateDirectiveDisabledTrivia(VBFactory.TriviaList(ConvertTrivia(e.Value.GetTrailingTrivia)), StatementTrailingTrivia, RemoveEOL:=False)
+                    ExpressionStatement = ExpressionStatement.ReplaceNode(
+                                            Expr.ArgumentList.Arguments(e.Index),
+                                            Expr.ArgumentList.Arguments(e.Index).With(newArgumentLeadingTrivia, newArgumentTrailingTrivia)
+                                            )
                 Next
-                StatementTrailingTrivia.AddRange(ConvertTrivia(CS_ArgumentList.CloseParenToken.LeadingTrivia))
-                StatementTrailingTrivia.AddRange(ConvertTrivia(CS_ArgumentList.CloseParenToken.TrailingTrivia))
+                StatementTrailingTrivia.AddRange(ConvertTrivia(csArgumentList.CloseParenToken.LeadingTrivia))
+                StatementTrailingTrivia.AddRange(ConvertTrivia(csArgumentList.CloseParenToken.TrailingTrivia))
                 If StatementTrailingTrivia.Any AndAlso StatementTrailingTrivia(0).IsDirective Then
                     StatementTrailingTrivia.Insert(0, VBEOLTrivia)
                 End If
