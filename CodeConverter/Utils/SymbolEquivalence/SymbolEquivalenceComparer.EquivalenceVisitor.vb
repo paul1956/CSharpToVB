@@ -27,7 +27,7 @@ Partial Friend Class SymbolEquivalenceComparer
                 Return True
             End If
 
-            If (kind1 = MethodKind.Ordinary AndAlso kind2.IsPropertyAccessor()) OrElse (kind1.IsPropertyAccessor() AndAlso kind2 = MethodKind.Ordinary) Then
+            If (kind1 = MethodKind.Ordinary AndAlso IsPropertyAccessor(kind2)) OrElse (IsPropertyAccessor(kind1) AndAlso kind2 = MethodKind.Ordinary) Then
                 Return True
             End If
 
@@ -83,8 +83,6 @@ Partial Friend Class SymbolEquivalenceComparer
                     Return NamedTypesAreEquivalent(DirectCast(x, INamedTypeSymbol), DirectCast(y, INamedTypeSymbol), equivalentTypesWithDifferingAssemblies)
                 Case SymbolKind.Namespace
                     Return NamespacesAreEquivalent(DirectCast(x, INamespaceSymbol), DirectCast(y, INamespaceSymbol), equivalentTypesWithDifferingAssemblies)
-                Case SymbolKind.Parameter
-                    Return ParametersAreEquivalent(DirectCast(x, IParameterSymbol), DirectCast(y, IParameterSymbol), equivalentTypesWithDifferingAssemblies)
                 Case SymbolKind.PointerType
                     Return PointerTypesAreEquivalent(DirectCast(x, IPointerTypeSymbol), DirectCast(y, IPointerTypeSymbol), equivalentTypesWithDifferingAssemblies)
                 Case SymbolKind.Property
@@ -143,18 +141,6 @@ Partial Friend Class SymbolEquivalenceComparer
             End If
         End Function
 
-        ''' <summary>
-        ''' Worker for comparing two named types for equivalence. Note: The two
-        ''' types must have the same TypeKind.
-        ''' </summary>
-        ''' <param name="x">The first type to compare</param>
-        ''' <param name="y">The second type to compare</param>
-        ''' <param name="equivalentTypesWithDifferingAssemblies">
-        ''' Map of equivalent non-nested types to be populated, such that each key-value pair of named types are equivalent but reside in different assemblies.
-        ''' This map is populated only if we are ignoring assemblies for symbol equivalence comparison, i.e. <see cref="_assemblyComparerOpt"/> is true.
-        ''' </param>
-        ''' <returns>True if the two types are equivalent.</returns>
-
         Private Function HandleNamedTypesWorker(x As INamedTypeSymbol, y As INamedTypeSymbol, equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol)) As Boolean
             Debug.Assert(GetTypeKind(x) = GetTypeKind(y))
 
@@ -204,6 +190,17 @@ Partial Friend Class SymbolEquivalenceComparer
             Return IsConstructedFromSelf(x) OrElse x.IsUnboundGenericType OrElse TypeArgumentsAreEquivalent(x.TypeArguments, y.TypeArguments, equivalentTypesWithDifferingAssemblies)
         End Function
 
+        ''' <summary>
+        ''' Worker for comparing two named types for equivalence. Note: The two
+        ''' types must have the same TypeKind.
+        ''' </summary>
+        ''' <param name="x">The first type to compare</param>
+        ''' <param name="y">The second type to compare</param>
+        ''' <param name="equivalentTypesWithDifferingAssemblies">
+        ''' Map of equivalent non-nested types to be populated, such that each key-value pair of named types are equivalent but reside in different assemblies.
+        ''' This map is populated only if we are ignoring assemblies for symbol equivalence comparison, i.e. <see cref="_assemblyComparerOpt"/> is true.
+        ''' </param>
+        ''' <returns>True if the two types are equivalent.</returns>
         Private Function MethodsAreEquivalent(x As IMethodSymbol, y As IMethodSymbol, equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol)) As Boolean
             If Not AreCompatibleMethodKinds(x.MethodKind, y.MethodKind) Then
                 Return False
@@ -322,10 +319,6 @@ Partial Friend Class SymbolEquivalenceComparer
             Return True
         End Function
 
-        Private Function ParametersAreEquivalent(x As IParameterSymbol, y As IParameterSymbol, equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol)) As Boolean
-            Return x.IsRefOrOut() = y.IsRefOrOut() AndAlso x.Name = y.Name AndAlso AreEquivalent(x.CustomModifiers, y.CustomModifiers, equivalentTypesWithDifferingAssemblies) AndAlso AreEquivalent(x.Type, y.Type, equivalentTypesWithDifferingAssemblies) AndAlso AreEquivalent(x.ContainingSymbol, y.ContainingSymbol, equivalentTypesWithDifferingAssemblies)
-        End Function
-
         Private Function PointerTypesAreEquivalent(x As IPointerTypeSymbol, y As IPointerTypeSymbol, equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol)) As Boolean
             Return AreEquivalent(x.CustomModifiers, y.CustomModifiers, equivalentTypesWithDifferingAssemblies) AndAlso AreEquivalent(x.PointedAtType, y.PointedAtType, equivalentTypesWithDifferingAssemblies)
         End Function
@@ -405,6 +398,10 @@ Partial Friend Class SymbolEquivalenceComparer
 
         Friend Function ReturnTypesAreEquivalent(x As IMethodSymbol, y As IMethodSymbol, Optional equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol) = Nothing) As Boolean
             Return _symbolEquivalenceComparer.SignatureTypeEquivalenceComparer.Equals(x.ReturnType, y.ReturnType, equivalentTypesWithDifferingAssemblies) AndAlso AreEquivalent(x.ReturnTypeCustomModifiers, y.ReturnTypeCustomModifiers, equivalentTypesWithDifferingAssemblies)
+        End Function
+
+        Public Shared Function IsPropertyAccessor(kind As MethodKind) As Boolean
+            Return kind = MethodKind.PropertyGet OrElse kind = MethodKind.PropertySet
         End Function
 
         Public Function AreEquivalent(x As ISymbol, y As ISymbol, equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol)) As Boolean

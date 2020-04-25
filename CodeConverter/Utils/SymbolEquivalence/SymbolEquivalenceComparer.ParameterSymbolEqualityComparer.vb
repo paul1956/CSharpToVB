@@ -4,8 +4,6 @@
 
 Imports System.Diagnostics.CodeAnalysis
 
-Imports HashLibrary
-
 Imports Microsoft.CodeAnalysis
 
 ' Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
@@ -61,7 +59,7 @@ Partial Friend Class SymbolEquivalenceComparer
                 Return 0
             End If
 
-            Return CodeRefactoringHash.Combine(x.IsRefOrOut(), _symbolEqualityComparer.SignatureTypeEquivalenceComparer.GetHashCode(x.Type))
+            Return x.GetHashCode
         End Function
 
     End Class

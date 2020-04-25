@@ -122,7 +122,7 @@ Partial Friend Class SymbolEquivalenceComparer
         End Function
 
         Private Function CombineHashCodes(x As IParameterSymbol, currentHash As Integer) As Integer
-            Return CodeRefactoringHash.Combine(x.IsRefOrOut(), CodeRefactoringHash.Combine(x.Name, GetHashCode(x.Type, GetHashCode(x.ContainingSymbol, currentHash))))
+            Return CodeRefactoringHash.Combine(x.GetHashCode, CodeRefactoringHash.Combine(x.Name, GetHashCode(x.Type, GetHashCode(x.ContainingSymbol, currentHash))))
         End Function
 
         Private Function CombineHashCodes(x As IPointerTypeSymbol, currentHash As Integer) As Integer
