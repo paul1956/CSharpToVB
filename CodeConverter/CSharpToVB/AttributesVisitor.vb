@@ -45,7 +45,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             Public Overrides Function VisitAttributeArgumentList(node As CSS.AttributeArgumentListSyntax) As VB.VisualBasicSyntaxNode
                 Dim vbArguments As New List(Of VBS.ArgumentSyntax)
                 Dim trailingTriviaList As New List(Of SyntaxTrivia)
-                For Each e As IndexStruct(Of CSS.AttributeArgumentSyntax) In node.Arguments.WithIndex
+                For Each e As IndexClass(Of CSS.AttributeArgumentSyntax) In node.Arguments.WithIndex
                     Dim localLeadingTrivia As New List(Of SyntaxTrivia)
                     Dim localTrailingTrivia As New List(Of SyntaxTrivia)
                     Dim Item As VBS.ArgumentSyntax = DirectCast(e.Value.Accept(Me), VBS.ArgumentSyntax)

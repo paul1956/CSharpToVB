@@ -195,7 +195,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 VBFactory.XmlElementEndTag(DirectCast(StartTag.Name, VBS.XmlNameSyntax).WithConvertedTriviaFrom(node.EndTag)),
                 VBFactory.XmlElementEndTag(DirectCast(node.EndTag.Name.Accept(Me), VBS.XmlNameSyntax)))
             Try
-                For Each e As IndexStruct(Of CSS.XmlNodeSyntax) In node.Content.WithIndex
+                For Each e As IndexClass(Of CSS.XmlNodeSyntax) In node.Content.WithIndex
                     Dim vbNode As VBS.XmlNodeSyntax = CType(e.Value.Accept(Me).WithConvertedTriviaFrom(e.Value), VBS.XmlNodeSyntax)
                     If NoEndTag Then
                         Dim LastToken As SyntaxToken = vbNode.GetLastToken

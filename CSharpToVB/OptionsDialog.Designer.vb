@@ -41,6 +41,7 @@ Partial Class OptionsDialog
         Me.CheckBoxStrict = New System.Windows.Forms.CheckBox()
         Me.ComboBoxInfer = New System.Windows.Forms.ComboBox()
         Me.CheckBoxInfer = New System.Windows.Forms.CheckBox()
+        Me.TableLayoutPanel1.SuspendLayout()
         Me.SuspendLayout()
         '
         'TableLayoutPanel1
@@ -272,6 +273,7 @@ Partial Class OptionsDialog
         Me.ShowInTaskbar = False
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent
         Me.Text = "Options"
+        Me.TableLayoutPanel1.ResumeLayout(False)
         Me.ResumeLayout(False)
         Me.PerformLayout()
 

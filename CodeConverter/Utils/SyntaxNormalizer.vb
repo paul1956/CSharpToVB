@@ -553,7 +553,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
                 Next
 
                 Dim MinLeadingSpaces As Integer = 0
-                For Each e As IndexStruct(Of SyntaxTrivia) In triviaList.WithIndex
+                For Each e As IndexClass(Of SyntaxTrivia) In triviaList.WithIndex
                     Dim Trivia As SyntaxTrivia = e.Value
                     ' just keep non whitespace trivia
                     If Trivia.IsKind(SyntaxKind.WhitespaceTrivia) Then

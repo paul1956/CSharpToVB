@@ -88,7 +88,7 @@ Namespace ProjectFile.Tests
                             }
             sourceXmlDoc.LoadXml(_originalProjectFile.ToString)
 
-            Dim sourceProjectFile As XmlDocument = ConvertProjectFile("", "", sourceXmlDoc)
+            Dim sourceProjectFile As XmlDocument = ConvertProjectFile(sourceXmlDoc, "", "")
             Dim expectedXmlDoc As New XmlDocument With {
                                 .PreserveWhitespace = True
                             }
@@ -187,7 +187,7 @@ Namespace ProjectFile.Tests
                             }
             sourceXmlDoc.LoadXml(_originalProjectFile.ToString)
 
-            Dim sourceProjectFile As XmlDocument = ConvertProjectFile("", "", sourceXmlDoc)
+            Dim sourceProjectFile As XmlDocument = ConvertProjectFile(sourceXmlDoc, "", "")
             Dim expectedXmlDoc As New XmlDocument With {
                                 .PreserveWhitespace = True
                             }
@@ -239,7 +239,7 @@ Namespace ProjectFile.Tests
                             }
             sourceXmlDoc.LoadXml(_originalProjectFile.ToString)
 
-            Dim sourceProjectFile As XmlDocument = ConvertProjectFile("", "", sourceXmlDoc)
+            Dim sourceProjectFile As XmlDocument = ConvertProjectFile(sourceXmlDoc, "", "")
             Dim expectedXmlDoc As New XmlDocument With {
                                 .PreserveWhitespace = True
                             }

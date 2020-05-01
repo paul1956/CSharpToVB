@@ -44,10 +44,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             Dim ElementList As List(Of String) = ConvertTupleToVBTypeStrings(CSNamedTypeString, IncludeName:=True)
             Dim builder As New StringBuilder
             builder.Append("(")
-            For Each e As IndexStruct(Of String) In ElementList.WithIndex
-
-            Next
-            For Each e As IndexStruct(Of String) In ElementList.WithIndex
+            For Each e As IndexClass(Of String) In ElementList.WithIndex
                 If e.IsLast Then Exit For
                 builder.Append($"{e.Value}, ")
             Next
@@ -189,6 +186,9 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         tmpString.Clear()
                         Dim commaIndex As Integer = CSharpNamedTypeString.IndexOf(",", currentIndex + 1, StringComparison.OrdinalIgnoreCase)
                         If commaIndex < 0 Then
+                            Exit For
+                        End If
+                        If commaIndex = -1 Then
                             Exit For
                         End If
                         currentIndex = commaIndex + 1

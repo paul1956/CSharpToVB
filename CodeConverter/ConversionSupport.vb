@@ -56,60 +56,64 @@ Namespace CSharpToVBCodeConverter
                 Throw New ArgumentNullException(NameOf(OptionalReferences))
             End If
             Dim Tree As SyntaxTree = ParseCSharpSource(RequestToConvert.SourceCode, CSPreprocessorSymbols)
-            Dim CSharpOptions As CS.CSharpCompilationOptions = New CS.CSharpCompilationOptions(
-                                                outputKind:=Nothing,
-                                                reportSuppressedDiagnostics:=False,
-                                                moduleName:=Nothing,
-                                                mainTypeName:=Nothing,
-                                                scriptClassName:=Nothing,
-                                                usings:=Nothing,
-                                                OptimizationLevel.Debug,
-                                                checkOverflow:=False,
-                                                allowUnsafe:=True,
-                                                cryptoKeyContainer:=Nothing,
-                                                cryptoKeyFile:=Nothing,
-                                                cryptoPublicKey:=Nothing,
-                                                delaySign:=Nothing,
-                                                Platform.AnyCpu,
-                                                ReportDiagnostic.Default,
-                                                warningLevel:=4,
-                                                specificDiagnosticOptions:=Nothing,
-                                                concurrentBuild:=True,
-                                                deterministic:=False,
-                                                xmlReferenceResolver:=Nothing,
-                                                sourceReferenceResolver:=Nothing,
-                                                metadataReferenceResolver:=Nothing,
-                                                assemblyIdentityComparer:=Nothing,
-                                                strongNameProvider:=Nothing,
-                                                publicSign:=False
-                                                )
-            Dim compilation As Compilation = CS.CSharpCompilation.Create(
-                                                        assemblyName:=NameOf(Conversion),
-                                                        syntaxTrees:={Tree},
-                                                        OptionalReferences,
-                                                        options:=CSharpOptions)
+            Dim CSharpOptions As CS.CSharpCompilationOptions =
+                New CS.CSharpCompilationOptions(
+                                outputKind:=Nothing,
+                                reportSuppressedDiagnostics:=False,
+                                moduleName:=Nothing,
+                                mainTypeName:=Nothing,
+                                scriptClassName:=Nothing,
+                                usings:=Nothing,
+                                OptimizationLevel.Debug,
+                                checkOverflow:=False,
+                                allowUnsafe:=True,
+                                cryptoKeyContainer:=Nothing,
+                                cryptoKeyFile:=Nothing,
+                                cryptoPublicKey:=Nothing,
+                                delaySign:=Nothing,
+                                Platform.AnyCpu,
+                                ReportDiagnostic.Default,
+                                warningLevel:=4,
+                                specificDiagnosticOptions:=Nothing,
+                                concurrentBuild:=True,
+                                deterministic:=False,
+                                xmlReferenceResolver:=Nothing,
+                                sourceReferenceResolver:=Nothing,
+                                metadataReferenceResolver:=Nothing,
+                                assemblyIdentityComparer:=Nothing,
+                                strongNameProvider:=Nothing,
+                                publicSign:=False
+                                )
+            Dim compilation As Compilation =
+                CS.CSharpCompilation.Create(assemblyName:=NameOf(Conversion),
+                                            {Tree},
+                                            OptionalReferences,
+                                            CSharpOptions
+                                            )
             Try
                 Dim SourceTree As CS.CSharpSyntaxNode = DirectCast(Tree.GetRoot, CS.CSharpSyntaxNode)
-                If Not SourceTree.SyntaxTree.IsGeneratedCode(Function(t As SyntaxTrivia) As Boolean
-                                                                 Return t.IsComment OrElse t.IsRegularOrDocComment
-                                                             End Function, CancelToken) Then
-                    Dim ConvertedNode As VB.VisualBasicSyntaxNode = CSharpConverter.Convert(
-                                    SourceTree,
-                                    codeWithOptions.Request.SkipAutoGenerated,
-                                    DefaultVBOptions,
-                                    compilation.GetSemanticModel(Tree, ignoreAccessibility:=True),
-                                    ReportException,
-                                    mProgress,
-                                    CancelToken
-                                    )
+                If RequestToConvert.SkipAutoGenerated AndAlso
+                    SourceTree.SyntaxTree.IsGeneratedCode(Function(t As SyntaxTrivia) As Boolean
+                                                              Return t.IsComment OrElse t.IsRegularOrDocComment
+                                                          End Function, CancelToken) Then
+                    Return New ConversionResult(Array.Empty(Of Exception))
+                Else
+                    Dim ConvertedNode As VB.VisualBasicSyntaxNode =
+                            CSharpConverter.Convert(
+                                SourceTree,
+                                codeWithOptions.Request.SkipAutoGenerated,
+                                DefaultVBOptions,
+                                compilation.GetSemanticModel(Tree, ignoreAccessibility:=True),
+                                ReportException,
+                                mProgress,
+                                CancelToken
+                                )
                     s_usedStacks.Clear()
                     s_usedIdentifiers.Clear()
                     Return New ConversionResult(ConvertedNode, LanguageNames.CSharp, LanguageNames.VisualBasic, VBPreprocessorSymbols)
-                Else
-                    Return New ConversionResult(Array.Empty(Of Exception))
                 End If
             Catch ex As OperationCanceledException
-                Throw
+                Return New ConversionResult(Array.Empty(Of Exception))
             Catch ex As Exception
                 Return New ConversionResult(ex)
             End Try

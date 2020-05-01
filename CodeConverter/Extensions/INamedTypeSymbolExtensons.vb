@@ -171,7 +171,7 @@ Namespace CSharpToVBCodeConverter.Util
                 If csMethod.Parameters.Length <> interfaceMethod.Parameters.Length Then
                     Return False
                 End If
-                For Each e As IndexStruct(Of IParameterSymbol) In csMethod.Parameters.WithIndex
+                For Each e As IndexClass(Of IParameterSymbol) In csMethod.Parameters.WithIndex
                     If e.Value.[Type].Name <> interfaceMethod.Parameters(e.Index).[Type].Name Then
                         Return False
                     End If

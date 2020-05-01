@@ -71,7 +71,7 @@ Partial Class FrameworkSelectionDialog
         Me.CheckedListBox1.Size = New System.Drawing.Size(194, 76)
         Me.CheckedListBox1.TabIndex = 1
         '
-        'Dialog1
+        'FrameworkSelectionDialog
         '
         Me.AcceptButton = Me.OK_Button
         Me.AutoScaleDimensions = New System.Drawing.SizeF(7.0!, 15.0!)
@@ -83,10 +83,10 @@ Partial Class FrameworkSelectionDialog
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog
         Me.MaximizeBox = False
         Me.MinimizeBox = False
-        Me.Name = "Dialog1"
+        Me.Name = "FrameworkSelectionDialog"
         Me.ShowInTaskbar = False
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent
-        Me.Text = "Dialog1"
+        Me.Text = "Select Framework"
         Me.TableLayoutPanel1.ResumeLayout(False)
         Me.ResumeLayout(False)
 

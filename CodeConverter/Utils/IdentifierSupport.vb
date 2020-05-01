@@ -70,7 +70,7 @@ Namespace CSharpToVBCodeConverter
 
         Friend Function ProcessVariableDesignation(node As CSS.ParenthesizedVariableDesignationSyntax) As List(Of VBS.ModifiedIdentifierSyntax)
             Dim vbVariables As New List(Of VBS.ModifiedIdentifierSyntax)
-            For Each e As IndexStruct(Of CSS.VariableDesignationSyntax) In node.Variables.WithIndex
+            For Each e As IndexClass(Of CSS.VariableDesignationSyntax) In node.Variables.WithIndex
                 Dim vbVariableDeclarator As VBS.ModifiedIdentifierSyntax
                 If e.Value.RawKind = CS.SyntaxKind.DiscardDesignation Then
                     vbVariableDeclarator = VBFactory.ModifiedIdentifier("_")

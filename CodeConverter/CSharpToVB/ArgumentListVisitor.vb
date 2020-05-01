@@ -167,7 +167,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim csSeparators As IEnumerable(Of SyntaxToken) = csVisitorArguments.GetSeparators
                 Dim nodeList As New List(Of VBS.TypeSyntax)
                 Dim separators As New List(Of SyntaxToken)
-                For Each e As IndexStruct(Of CSS.TypeSyntax) In csVisitorArguments.WithIndex
+                For Each e As IndexClass(Of CSS.TypeSyntax) In csVisitorArguments.WithIndex
                     nodeList.Add(DirectCast(e.Value.Accept(Me), VBS.TypeSyntax))
                     If Not e.IsLast Then
                         separators.Add(CommaToken.WithConvertedTrailingTriviaFrom(csSeparators(e.Index)))

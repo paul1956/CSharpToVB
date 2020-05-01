@@ -29,7 +29,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 If Expr.ArgumentList.Arguments.Count = 0 Then
                     Return VB_Node
                 End If
-                For Each e As IndexStruct(Of CSS.ArgumentSyntax) In csArgumentList.Arguments.WithIndex
+                For Each e As IndexClass(Of CSS.ArgumentSyntax) In csArgumentList.Arguments.WithIndex
                     Dim newArgumentLeadingTrivia As SyntaxTriviaList = RelocateDirectiveDisabledTrivia(VBFactory.TriviaList(ConvertTrivia(e.Value.GetLeadingTrivia)), StatementLeadingTrivia, RemoveEOL:=True)
                     Dim newArgumentTrailingTrivia As SyntaxTriviaList = RelocateDirectiveDisabledTrivia(VBFactory.TriviaList(ConvertTrivia(e.Value.GetTrailingTrivia)), StatementTrailingTrivia, RemoveEOL:=False)
                     ExpressionStatement = ExpressionStatement.ReplaceNode(

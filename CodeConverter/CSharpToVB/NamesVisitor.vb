@@ -157,7 +157,8 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 ' The trivial on node reflects the wrong place on the file as order is switched so don't convert trivia here
                 If TypeOf OriginalNameParent Is CSS.AliasQualifiedNameSyntax Then
                     If node.Identifier.ValueText = "global" Then
-                        If GetStatementwithIssues(node).IsKind(CS.SyntaxKind.UsingDirective) Then
+                        Dim cSharpNode As CS.CSharpSyntaxNode = GetStatementwithIssues(node, ReportErrors:=False)
+                        If cSharpNode IsNot Nothing AndAlso cSharpNode.IsKind(CS.SyntaxKind.UsingDirective) Then
                             Return VBFactory.ParseExpression("[Global]")
                         Else
                             Return VBFactory.ParseExpression("Global")

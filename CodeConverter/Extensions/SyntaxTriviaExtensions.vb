@@ -176,6 +176,9 @@ Namespace CSharpToVBCodeConverter.Util
             If TriviaList.Count = 0 Then Return False
             For Each t As SyntaxTrivia In TriviaList
                 If t.IsDirective Then
+                    If Kinds.Length = 0 Then
+                        Return True
+                    End If
                     For Each k As VB.SyntaxKind In Kinds
                         If t.RawKind = k Then
                             Return True

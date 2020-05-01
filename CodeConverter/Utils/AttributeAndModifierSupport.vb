@@ -68,7 +68,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     FoundVisibility = Not DefaultVisibility.IsKind(VB.SyntaxKind.EmptyToken)
                 End If
             End If
-            For Each e As IndexStruct(Of SyntaxToken) In csModifiers.WithIndex
+            For Each e As IndexClass(Of SyntaxToken) In csModifiers.WithIndex
                 Dim csModifier As SyntaxToken = e.Value
                 If e.IsFirst AndAlso Not FirstModifier Then
                     csModifier = csModifier.WithLeadingTrivia(CSSpaceTrivia)
@@ -336,8 +336,10 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 End If
 
                 If HasModifiers Then
+                    For Each e As IndexClass(Of SyntaxToken) In classStatement.Modifiers.WithIndex
+                        newModifiers = newModifiers.Add(RestructureModifier(e.Value, e.Index, Not statementLeadingTrivia.ContainsCommentOrDirectiveTrivia, statementLeadingTrivia, statementTrailingTrivia))
+                    Next
                     For index As Integer = 0 To classStatement.Modifiers.Count - 1
-                        newModifiers = newModifiers.Add(RestructureModifier(classStatement.Modifiers(index), index, Not statementLeadingTrivia.ContainsCommentOrDirectiveTrivia, statementLeadingTrivia, statementTrailingTrivia))
                     Next
                     classStatement = classStatement.WithModifiers(newModifiers)
                 End If
@@ -535,7 +537,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             Dim foundDirective As Boolean = False
             Dim foundTheory As Boolean = False
             Dim isTheoryOrInlineData As Boolean
-            For Each e As IndexStruct(Of VBS.AttributeListSyntax) In vbAttributeLists.WithIndex
+            For Each e As IndexClass(Of VBS.AttributeListSyntax) In vbAttributeLists.WithIndex
                 Dim attributeList As VBS.AttributeListSyntax = e.Value
                 isTheoryOrInlineData = attributeList.Attributes.FirstOrDefault.ToString.Contains({"Theory", "InlineData"}, StringComparison.OrdinalIgnoreCase)
                 If isTheoryOrInlineData Then

@@ -109,7 +109,32 @@ Namespace CSharpToVBApp.My_Project
                 Me("LastPath") = value
             End Set
         End Property
-        
+
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("")>
+        Public Property LastProject() As String
+            Get
+                Return CType(Me("LastProject"), String)
+            End Get
+            Set
+                Me("LastProject") = Value
+            End Set
+        End Property
+
+
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("")>
+        Public Property LastSolution() As String
+            Get
+                Return CType(Me("LastSolution"), String)
+            End Get
+            Set
+                Me("LastSolution") = Value
+            End Set
+        End Property
+
         <Global.System.Configuration.UserScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute()>  _
         Public Property MRU_Data() As Global.System.Collections.Specialized.StringCollection

@@ -154,8 +154,8 @@ Partial Public Class Form1
         _inColorize = False
     End Sub
 
-    Private Sub Compile_Colorize(TextToCompile As String)
-        Dim CompileResult As (Success As Boolean, EmitResult As EmitResult) = CompileVisualBasicString(TextToCompile, DiagnosticSeverity.Error, _resultOfConversion)
+    Private Sub Compile_Colorize(TextToCompile As String, VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)))
+        Dim CompileResult As (Success As Boolean, EmitResult As EmitResult) = CompileVisualBasicString(TextToCompile, VBPreprocessorSymbols, DiagnosticSeverity.Error, _resultOfConversion)
 
         LabelErrorCount.Text = $"Number Of Errors:  {_resultOfConversion.GetFilteredListOfFailures().Count}"
         Dim FragmentRange As IEnumerable(Of Range) = GetClassifiedRanges(TextToCompile, LanguageNames.VisualBasic)
@@ -215,7 +215,9 @@ Partial Public Class Form1
         Dim ReportException As Action(Of Exception) =
             Sub(ex As Exception)
                 ' Use the Windows Forms synchronization context in order to call MsgBox from the UI thread.
-                UIContext.Post(Function(state) MsgBox(ex.Message, MsgBoxStyle.Critical, "Stack Overflow"), state:=Nothing)
+                UIContext.Post(Function(state) MsgBox(ex.Message,
+                                                      MsgBoxStyle.OkOnly Or MsgBoxStyle.Critical Or MsgBoxStyle.MsgBoxSetForeground,
+                                                      "Stack Overflow"), state:=Nothing)
             End Sub
 
         Using ProgressBar As TextProgressBar = New TextProgressBar(ConversionProgressBar)
@@ -224,17 +226,32 @@ Partial Public Class Form1
             ' that it knows how to get back to the main thread to invoke the callback there no matter what thread calls
             ' IProgress.Report.
             Dim progress As New Progress(Of ProgressReport)(AddressOf ProgressBar.Update)
-
+            Dim defaultVBOptions As New DefaultVBOptions
             With My.Settings
-                Dim _defaultVBOptions As New DefaultVBOptions(.OptionCompare, .OptionCompareIncludeInCode, .OptionExplicit, .OptionExplicitIncludeInCode, .OptionInfer, .OptionInferIncludeInCode, .OptionStrict, .OptionStrictIncludeInCode)
-                _resultOfConversion = Await Task.Run(Function() ConvertInputRequest(RequestToConvert, _defaultVBOptions, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences, ReportException, progress, CancelToken)).ConfigureAwait(True)
+                defaultVBOptions = New DefaultVBOptions(.OptionCompare, .OptionCompareIncludeInCode, .OptionExplicit, .OptionExplicitIncludeInCode, .OptionInfer, .OptionInferIncludeInCode, .OptionStrict, .OptionStrictIncludeInCode)
             End With
+            _resultOfConversion = Await Task.Run(Function() ConvertInputRequest(
+                                                    RequestToConvert,
+                                                    defaultVBOptions,
+                                                    CSPreprocessorSymbols,
+                                                    VBPreprocessorSymbols,
+                                                    OptionalReferences,
+                                                    ReportException,
+                                                    progress,
+                                                    CancelToken)
+                                                    ).ConfigureAwait(True)
 
         End Using
-        mnuFileSaveAs.Enabled = Me._resultOfConversion.ResultStatus = ResultTriState.Success
+
+        If _resultOfConversion Is Nothing Then
+            mnuFileSaveAs.Enabled = False
+            Return False
+        Else
+            mnuFileSaveAs.Enabled = Me._resultOfConversion.ResultStatus = ResultTriState.Success
+        End If
         Select Case _resultOfConversion.ResultStatus
             Case ResultTriState.Success
-                Compile_Colorize(_resultOfConversion.ConvertedCode)
+                Compile_Colorize(_resultOfConversion.ConvertedCode, VBPreprocessorSymbols)
                 Dim FilteredErrorCount As Integer = _resultOfConversion.GetFilteredListOfFailures().Count
                 LabelErrorCount.Text = $"Number of Errors: {FilteredErrorCount}"
                 Return FilteredErrorCount = 0
@@ -248,6 +265,29 @@ Partial Public Class Form1
                 LabelErrorCount.Text = "File Skipped"
         End Select
         Return _resultOfConversion.ResultStatus <> ResultTriState.Failure
+    End Function
+
+    Private Function ConvertFramework(Framework As String) As String
+        Select Case Framework
+            Case "netcoreapp3.0"
+                Return "NETCOREAPP3_0"
+            Case "netcoreapp3.1"
+                Return "NETCOREAPP3_1"
+            Case "netstandard1.3"
+                Return "NETSTANDARD1_3"
+            Case "netstandard2.0"
+                Return "NETSTANDARD2_0"
+            Case "net20"
+                Return "NET20"
+            Case "net35"
+                Return "NET35"
+            Case "net45"
+                Return "NET45"
+            Case "net472"
+                Return "NET472"
+            Case Else
+                Return Framework.ToUpper(Globalization.CultureInfo.InvariantCulture).Replace(".", "_", StringComparison.OrdinalIgnoreCase)
+        End Select
     End Function
 
     ''' <summary>
@@ -268,18 +308,12 @@ Partial Public Class Form1
         End If
         Dim SearchForward As Boolean = SearchDirection.SelectedIndex = 0
         If StartLocation >= SearchBuffer.Text.Length Then
-            StartLocation = If(SearchForward, 0, SearchBuffer.Text.Length - 1)
+            StartLocation = If(SearchForward,
+                                0, SearchBuffer.Text.Length - 1)
         End If
-#Disable Warning CC0014 ' Use Ternary operator.
-        If SearchForward Then
-#Enable Warning CC0014 ' Use Ternary operator.
-            ' Forward Search
-            ' If string was found in the RichTextBox, highlight it
-            StartLocation = SearchBuffer.Find(SearchInput.Text, StartLocation, RichTextBoxFinds.None)
-        Else
-            ' Back Search
-            StartLocation = SearchBuffer.Find(SearchInput.Text, StartLocation, RichTextBoxFinds.Reverse)
-        End If
+        StartLocation = If(SearchForward,
+                SearchBuffer.Find(SearchInput.Text, StartLocation, RichTextBoxFinds.None),
+                SearchBuffer.Find(SearchInput.Text, StartLocation, RichTextBoxFinds.Reverse))
 
         If StartLocation >= 0 Then
             SearchBuffer.ScrollToCaret()
@@ -381,6 +415,14 @@ Partial Public Class Form1
                 _frameworkVersionList.Add(FrameworkVersion.Text, (FrameworkVersion, FrameworkType))
             Next
         Next
+        If My.Settings.LastProject.Length > 0 Then
+            mnuFileLastProject.Text = My.Settings.LastProject
+            mnuFileLastProject.Enabled = True
+        End If
+        If My.Settings.LastSolution.Length > 0 Then
+            mnuFileLastSolution.Text = My.Settings.LastSolution
+            mnuFileLastSolution.Enabled = True
+        End If
         ProgressBar1.Visible = False
         CenterToScreen()
         ProgressBar1.Location = New Point(ClientSize.Width \ 4, ClientSize.Height \ 2)
@@ -436,55 +478,68 @@ Partial Public Class Form1
     ''' <summary>
     ''' To work with Git we need to create a new folder tree from the parent of this project
     ''' </summary>
-    ''' <param name="DirectoryToBeTranslatedWithPath"></param>
-    ''' <param name="SourceLanguageExtension"></param>
-    ''' <returns>Path to new solution that mirrors the DirectoryToBeTranslated, new solution folder is rename with _SourceLanguageExtension</returns>
-    Private Function GetFoldertSavePath(DirectoryToBeTranslatedWithPath As String, SourceLanguageExtension As String, ConvertingProject As Boolean) As String
-        Dim TargetLanguageExtension As String = If(SourceLanguageExtension.ToUpperInvariant = "VB", "_cs", "_vb")
-        Debug.Assert(Directory.Exists(DirectoryToBeTranslatedWithPath), $"{DirectoryToBeTranslatedWithPath} does Not exist")
-        Debug.Assert(Directory.GetDirectoryRoot(DirectoryToBeTranslatedWithPath) <> DirectoryToBeTranslatedWithPath, $"{DirectoryToBeTranslatedWithPath} does Not exist")
+    ''' <param name="DirOrFileToBeTranslated"></param>
+    ''' <param name="PromptIfDirExsits"></param>
+    ''' <returns></returns>
+    Private Function GetSavePath(DirOrFileToBeTranslated As String, PromptIfDirExsits As Boolean) As (SolutionRoot As String, ProjectRelativePath As String)
+        Debug.Assert(Directory.GetDirectoryRoot(DirOrFileToBeTranslated) <> DirOrFileToBeTranslated, $"{DirOrFileToBeTranslated} does Not exist")
+        Dim sourceRoot As String = DirOrFileToBeTranslated
+        Dim currentDirectory As String = sourceRoot
+        Dim systemtRootDirectory As String = Directory.GetDirectoryRoot(currentDirectory)
+        If File.Exists(DirOrFileToBeTranslated) Then
+            sourceRoot = Directory.GetParent(DirOrFileToBeTranslated).FullName
+            currentDirectory = sourceRoot
+            DirOrFileToBeTranslated = sourceRoot
+        End If
+        Debug.Assert(Directory.Exists(sourceRoot), $"{DirOrFileToBeTranslated} does Not exist")
 
-        Dim SolutionRoot As String = DirectoryToBeTranslatedWithPath
-        Dim CurrentDirectory As String = SolutionRoot
-        Dim SystemtRootDirectory As String = Directory.GetDirectoryRoot(CurrentDirectory)
-
-        While SystemtRootDirectory <> CurrentDirectory
-            If Directory.GetFiles(CurrentDirectory, "*.sln").Any OrElse Directory.GetFiles(CurrentDirectory, "*.gitignore").Any Then
-                If ConvertingProject Then
-                    SolutionRoot = CurrentDirectory
-                    Exit While
-                Else
-                    SolutionRoot = Directory.GetParent(CurrentDirectory).FullName
-                End If
+        While systemtRootDirectory <> currentDirectory
+            If Directory.GetFiles(currentDirectory, "*.sln").Any Then
+                sourceRoot = Directory.GetParent(currentDirectory).FullName
+                Exit While
             End If
-            CurrentDirectory = Directory.GetParent(CurrentDirectory).FullName
+            currentDirectory = Directory.GetParent(currentDirectory).FullName
         End While
+        If systemtRootDirectory = currentDirectory Then
+            Dim defaultRoot As String = Directory.GetParent(DirOrFileToBeTranslated).FullName
+            sourceRoot = defaultRoot
+        End If
         ' At this point Solution Directory is the remainder of the path from SolutionRoot
-        Dim PathFromSolutionRoot As List(Of String) = DirectoryToBeTranslatedWithPath.Replace(SolutionRoot, "", StringComparison.OrdinalIgnoreCase) _
-                                                                                     .Trim(Path.DirectorySeparatorChar) _
-                                                                                     .Split(Path.DirectorySeparatorChar).ToList
-        SolutionRoot = $"{SolutionRoot}{Path.DirectorySeparatorChar}{PathFromSolutionRoot(0)}{TargetLanguageExtension}"
+        Dim PathFromSolutionRoot As List(Of String) = DirOrFileToBeTranslated.Replace(sourceRoot, "", StringComparison.OrdinalIgnoreCase) _
+                                                                    .Trim(Path.DirectorySeparatorChar) _
+                                                                    .Split(Path.DirectorySeparatorChar).ToList
+        PathFromSolutionRoot(0) = PathFromSolutionRoot(0) & "_vb"
+        Dim solutionRoot As String = $"{sourceRoot}{Path.DirectorySeparatorChar}{PathFromSolutionRoot(0)}"
+        ' Remove top director because it will be change to end in _vb
         PathFromSolutionRoot.RemoveAt(0)
-        If File.Exists(SolutionRoot) Then
-            MsgBox($"A file exists at {SolutionRoot} this Is a fatal error the program will exit", MsgBoxStyle.OkOnly And MsgBoxStyle.Critical, "Fatal Error")
+        If File.Exists(solutionRoot) Then
+            MsgBox($"A file exists at {solutionRoot} this Is a fatal error the program will exit",
+                   MsgBoxStyle.OkOnly And MsgBoxStyle.Critical Or MsgBoxStyle.MsgBoxSetForeground,
+                   "Fatal Error")
             Close()
             End
         End If
-        If Directory.Exists(SolutionRoot) Then
-            Select Case MsgBox($"The converted project will be save to {SolutionRoot} a directory which already exists. To use it And overwrite existing files select Yes. Selecting No will delete existing content, Selecting Cancel will stop conversion. , ", MsgBoxStyle.YesNoCancel, "Target Directory Save Options")
+        If PromptIfDirExsits AndAlso Directory.Exists(solutionRoot) Then
+            Select Case MsgBox($"The converted project will be save to {solutionRoot} a directory which already exists. To use it And overwrite existing files select Yes. Selecting No will delete existing content, Selecting Cancel will stop conversion. , ",
+                               MsgBoxStyle.YesNoCancel Or MsgBoxStyle.Question Or MsgBoxStyle.MsgBoxSetForeground,
+                               "Target Directory Save Options")
                 Case MsgBoxResult.Cancel
-                    Return String.Empty
+                    Return (String.Empty, String.Empty)
                 Case MsgBoxResult.No
-                    If MsgBoxResult.Yes = MsgBox($"Are you sure you want to delete {SolutionRoot}?", MsgBoxStyle.YesNo Or MsgBoxStyle.Critical, "Warning Deleting Directory") Then
-                        Directory.Delete(SolutionRoot, recursive:=True)
-                        Directory.CreateDirectory(SolutionRoot)
+                    If MsgBoxResult.Yes = MsgBox($"Are you sure you want to delete {solutionRoot}?",
+                                                 MsgBoxStyle.YesNo Or MsgBoxStyle.Critical Or MsgBoxStyle.MsgBoxSetForeground,
+                                                 "Warning Deleting Directory") Then
+                        Directory.Delete(solutionRoot, recursive:=True)
+                        Directory.CreateDirectory(solutionRoot)
                     End If
                 Case MsgBoxResult.Yes
                 Case Else
                     Stop
             End Select
         End If
-        Return CreateDirectoryIfNonexistent(Path.Combine(SolutionRoot, PathFromSolutionRoot.Join(Path.DirectorySeparatorChar)))
+        Dim relativePath As String = PathFromSolutionRoot.Join(Path.DirectorySeparatorChar)
+        CreateDirectoryIfNonexistent(Path.Combine(solutionRoot, relativePath))
+        Return (solutionRoot, relativePath)
     End Function
 
     Private Sub launchBrowser(url As String)
@@ -507,7 +562,8 @@ Partial Public Class Form1
                             'ElseIf progIdValue.Contains("opera", StringComparison.OrdinalIgnoreCase) Then
                             '    browserPath = "opera.exe"
                         Else
-                            msgResult = MsgBox($"Your default browser {progIdValue} is not supported, iExplorer will be used if you select OK!, please enter an issue with its 'Progid' and full path", MsgBoxStyle.OkCancel)
+                            msgResult = MsgBox($"Your default browser {progIdValue} is not supported, iExplorer will be used if you select OK!, please enter an issue with browser 'ProgId' and full path",
+                                               MsgBoxStyle.OkCancel Or MsgBoxStyle.Exclamation Or MsgBoxStyle.MsgBoxSetForeground)
                         End If
                     End If
                 End If
@@ -652,7 +708,10 @@ Partial Public Class Form1
             Exit Sub
         End If
         ListBoxErrorList.Text = ""
-        Compile_Colorize(RichTextBoxConversionOutput.Text)
+        Dim VBPreprocessorSymbols As New List(Of KeyValuePair(Of String, Object)) From {
+            New KeyValuePair(Of String, Object)(My.Settings.Framework, True)
+        }
+        Compile_Colorize(RichTextBoxConversionOutput.Text, VBPreprocessorSymbols)
     End Sub
 
     Private Sub mnuConvert_Click(sender As Object, e As EventArgs) Handles mnuConvert.Click
@@ -681,7 +740,9 @@ Partial Public Class Form1
         }
         Dim DontDisplayLineNumbers As Boolean = Await Convert_Compile_ColorizeAsync(_requestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences:=SharedReferences.CSharpReferences(Assembly.Load("System.Windows.Forms").Location, Nothing).ToArray, CancelToken:=_cancellationTokenSource.Token).ConfigureAwait(True)
         If _requestToConvert.CancelToken.IsCancellationRequested Then
-            MsgBox($"Conversion canceled.", MsgBoxStyle.Information, Title:="C# to VB")
+            MsgBox($"Conversion canceled.",
+                   MsgBoxStyle.OkOnly Or MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground,
+                   Title:="C# to VB")
             ConversionProgressBar.Value = 0
         End If
         mnuConvertConvertFolder.Enabled = True
@@ -693,7 +754,7 @@ Partial Public Class Form1
         LineNumbers_For_RichTextBoxInput.Visible = False
         LineNumbers_For_RichTextBoxOutput.Visible = False
         Dim SourceFolderName As String
-        Dim ProjectSavePath As String
+        Dim solutionSavePath As String
         Using OFD As New FolderBrowserDialog
             With OFD
                 .Description = "Select folder to convert..."
@@ -703,15 +764,20 @@ Partial Public Class Form1
                     Return
                 End If
                 SourceFolderName = .SelectedPath
-                ProjectSavePath = GetFoldertSavePath((.SelectedPath), "cs", ConvertingProject:=False)
+                Dim fullFolderPath As (SolutionRoot As String, ProjectRelativePath As String) = GetSavePath(.SelectedPath, PromptIfDirExsits:=True)
+                solutionSavePath = Path.Combine(fullFolderPath.SolutionRoot, fullFolderPath.ProjectRelativePath)
             End With
         End Using
         If Not Directory.Exists(SourceFolderName) Then
-            MsgBox($"{SourceFolderName} is not a directory.", Title:="C# to VB")
+            MsgBox($"{SourceFolderName} is not a directory.",
+                   MsgBoxStyle.OkOnly Or MsgBoxStyle.Exclamation Or MsgBoxStyle.MsgBoxSetForeground,
+                   Title:="C# to VB")
             Exit Sub
         End If
-        If String.IsNullOrWhiteSpace(ProjectSavePath) Then
-            MsgBox($"Conversion aborted.", Title:="C# to VB")
+        If String.IsNullOrWhiteSpace(solutionSavePath) Then
+            MsgBox($"Conversion aborted.",
+                   MsgBoxStyle.OkOnly Or MsgBoxStyle.Exclamation Or MsgBoxStyle.MsgBoxSetForeground,
+                   Title:="C# to VB")
             Exit Sub
         End If
         Dim LastFileNameWithPath As String = If(My.Settings.StartFolderConvertFromLastFile, My.Settings.MRU_Data.Last, "")
@@ -722,17 +788,18 @@ Partial Public Class Form1
         Dim stopwatch As New Stopwatch()
         ' Begin timing
         stopwatch.Start()
+        Dim prompt As String
         If Await ProcessAllFilesAsync(SourceFolderName,
-                            ProjectSavePath,
+                            solutionSavePath,
                             "cs",
                             Stats,
                             _cancellationTokenSource.Token
                             ).ConfigureAwait(True) Then
             stopwatch.Stop()
             If _cancellationTokenSource.Token.IsCancellationRequested Then
-                MsgBox($"Conversion canceled, {Stats.FilesProcessed} files completed successfully.", MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground Or MsgBoxStyle.OkOnly, Title:="C# to VB")
+                prompt = $"Conversion canceled, {Stats.FilesProcessed} files completed successfully."
             Else
-                MsgBox($"Conversion completed, {Stats.FilesProcessed} files completed successfully.", MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground Or MsgBoxStyle.OkOnly, Title:="C# to VB")
+                prompt = $"Conversion completed, {Stats.FilesProcessed} files completed successfully."
                 mnuOptionsStartFolderConvertFromLastFile.Checked = False
                 My.Settings.StartFolderConvertFromLastFile = False
                 My.Settings.Save()
@@ -740,10 +807,13 @@ Partial Public Class Form1
             End If
         Else
             stopwatch.Stop()
-            MsgBox($"Conversion stopped.", MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground Or MsgBoxStyle.OkOnly, Title:="C# to VB")
+            prompt = "Conversion stopped."
         End If
+        MsgBox(prompt,
+               MsgBoxStyle.OkOnly Or MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground,
+               Title:="C# to VB")
         Dim elapsed As TimeSpan = stopwatch.Elapsed
-        StatusStripElapasedTimeLabel.Text = $"Elapsed Time - {elapsed.Hours}:{elapsed.Minutes}:{elapsed.Seconds}.{elapsed.Milliseconds}"
+        StatusStripElapasedTimeLabel.Text = $"Elapsed Time - {elapsed.Hours}: {elapsed.Minutes}:{elapsed.Seconds}.{elapsed.Milliseconds}"
 
     End Sub
 
@@ -798,8 +868,9 @@ Partial Public Class Form1
         Dim FolderName As String = CType(sender, ToolStripMenuItem).Text
         If Directory.Exists(FolderName) Then
             Dim SourceLanguageExtension As String = "cs"
-            Dim ProjectSavePath As String = GetFoldertSavePath(FolderName, SourceLanguageExtension, ConvertingProject:=False)
-            If String.IsNullOrWhiteSpace(ProjectSavePath) Then
+            Dim fullFolderPath As (SolutionRoot As String, ProjectRelativePath As String) = GetSavePath(FolderName, PromptIfDirExsits:=True)
+            Dim targetSavePath As String = Path.Combine(fullFolderPath.SolutionRoot, fullFolderPath.ProjectRelativePath)
+            If String.IsNullOrWhiteSpace(targetSavePath) Then
                 Exit Sub
             End If
             ' This path is a directory.
@@ -810,12 +881,24 @@ Partial Public Class Form1
                 _cancellationTokenSource.Dispose()
             End If
             _cancellationTokenSource = New CancellationTokenSource
-            If Await ProcessAllFilesAsync(FolderName, ProjectSavePath, SourceLanguageExtension, Stats, _cancellationTokenSource.Token).ConfigureAwait(True) Then
-                MsgBox($"Conversion completed.")
+            If Await ProcessAllFilesAsync(FolderName, targetSavePath, SourceLanguageExtension, Stats, _cancellationTokenSource.Token).ConfigureAwait(True) Then
+                MsgBox($"Conversion completed.",
+                       MsgBoxStyle.OkOnly Or MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground)
             End If
         Else
-            MsgBox($"{FolderName} Is Not a directory.")
+            MsgBox($"{FolderName} Is Not a directory.",
+                   MsgBoxStyle.OkOnly Or MsgBoxStyle.Exclamation Or MsgBoxStyle.MsgBoxSetForeground)
         End If
+    End Sub
+
+    Private Sub mnuFileLastProject_Click(sender As Object, e As EventArgs) Handles mnuFileLastProject.Click
+        Dim projectFileName As String = CType(sender, ToolStripMenuItem).Text
+        ProcessProjectOrSolution(projectFileName)
+    End Sub
+
+    Private Sub mnuFileLastSolution_Click(sender As Object, e As EventArgs) Handles mnuFileLastSolution.Click
+        Dim solutionFileName As String = CType(sender, ToolStripMenuItem).Text
+        ProcessProjectOrSolution(solutionFileName)
     End Sub
 
     Private Sub mnuFileOpen_Click(sender As Object, e As EventArgs) Handles mnuFileOpen.Click
@@ -826,7 +909,7 @@ Partial Public Class Form1
             .InitialDirectory = My.Settings.DefaultProjectDirectory
             .FileName = ""
             .Filter = "C# Code Files (*.cs)|*.cs"
-            SaveFileDialog1.FilterIndex = 0
+            .FilterIndex = 0
             .Multiselect = False
             .ReadOnlyChecked = True
             .Title = $"Open C# Source file"
@@ -840,62 +923,22 @@ Partial Public Class Form1
         End With
     End Sub
 
-    Private Async Sub mnuFileOpenProject_Click(sender As Object, e As EventArgs) Handles mnuFileConvertProject.Click
+    Private Sub mnuFileOpenProject_Click(sender As Object, e As EventArgs) Handles mnuFileConvertProject.Click
         With OpenFileDialog1
             .AddExtension = True
             .CheckFileExists = True
             .CheckPathExists = True
-            .DefaultExt = "cs"
             .FileName = ""
-            '.Filter = "C# Project or Solution (*.csproj, *.sln)|*.csproj; *.sln"
-            .Filter = "C# Project (*.csproj)|*.csproj"
+            .Filter = "C# Project or Solution (*.csproj, *.sln)|*.csproj; *.sln"
             .FilterIndex = 0
             .Multiselect = False
             .ReadOnlyChecked = True
-            .Title = $"Open C# Project file"
+            .Title = $"Open Project/Solution"
             .ValidateNames = True
-            ' InputLines is used for future progress bar
-            If .ShowDialog = Global.System.Windows.Forms.DialogResult.OK Then
-                _cancellationTokenSource = New CancellationTokenSource
-                Dim projectSavePath As String = GetFoldertSavePath(Path.GetDirectoryName(.FileName), "cs", ConvertingProject:=True)
-                If Not String.IsNullOrWhiteSpace(projectSavePath) Then
-                    SetButtonStopAndCursor(MeForm:=Me, StopButton:=ButtonStopConversion, StopButtonVisible:=True)
-                    Try
-                        ListBoxErrorList.Items.Clear()
-                        ListBoxFileList.Items.Clear()
-                        RichTextBoxConversionInput.Clear()
-                        RichTextBoxConversionOutput.Clear()
-                        LabelProgress.Text = "Getting Analyzer Manger"
-                        LabelProgress.Visible = True
-                        ProgressBar1.Visible = True
-                        Dim TaskAnalyzerManager As Task(Of AnalyzerManager) = GetManager()
-                        While Not TaskAnalyzerManager.IsCompleted
-
-                            If _cancellationTokenSource.IsCancellationRequested Then
-                                LabelProgress.Visible = False
-                                ProgressBar1.Visible = False
-                                Exit Try
-                            End If
-                            Await Task.Delay(100).ConfigureAwait(True)
-                        End While
-
-                        If Await ProcessOneProjectUI(TaskAnalyzerManager.Result, sourceProjectNameWithPath:= .FileName, projectSavePath, _cancellationTokenSource).ConfigureAwait(True) Then
-                            MsgBox($"{If(_cancellationTokenSource.Token.IsCancellationRequested, "Conversion canceled", "Conversion completed")}, {FilesConversionProgress.Text.ToLower(Globalization.CultureInfo.CurrentCulture)} completed successfully.",
-                               MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground Or MsgBoxStyle.OkOnly,
-                               Title:="C# to VB"
-                               )
-                        Else
-                            MsgBox($"Conversion stopped.", MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground Or MsgBoxStyle.OkOnly, Title:="C# to VB")
-                        End If
-                        If File.Exists(projectSavePath) Then
-                            Process.Start("explorer.exe", $"/root,{projectSavePath}")
-                        End If
-                    Catch ex As ObjectDisposedException
-                    Finally
-                        SetButtonStopAndCursor(Me, ButtonStopConversion, StopButtonVisible:=False)
-                    End Try
-                End If
+            If .ShowDialog <> DialogResult.OK Then
+                Return
             End If
+            ProcessProjectOrSolution(.FileName)
         End With
     End Sub
 
@@ -1060,7 +1103,6 @@ Partial Public Class Form1
     End Sub
 
     Private Sub MRU_AddTo(Path As String)
-        StatusStripCurrentFileName.Text = Path
         ' remove the item from the collection if exists so that we can
         ' re-add it to the beginning...
         If My.Settings.MRU_Data.Contains(Path) Then
@@ -1107,7 +1149,7 @@ Partial Public Class Form1
             AddHandler clsItem.Click, AddressOf mnu_MRUList_Click
             AddHandler clsItem.MouseDown, AddressOf mnu_MRUList_MouseDown
             ' insert into DropDownItems list...
-            mnuFile.DropDownItems.Insert(mnuFile.DropDownItems.Count - 10, clsItem)
+            mnuFile.DropDownItems.Insert(mnuFile.DropDownItems.Count - 12, clsItem)
         Next
         ' show separator...
         My.Settings.Save()
@@ -1133,23 +1175,29 @@ Partial Public Class Form1
         If String.IsNullOrWhiteSpace(SearchInput.Text) Then
             Exit Sub
         End If
+        Dim prompt As String = ""
         Select Case SearchWhere.SelectedIndex
             Case 0
                 If Not FindTextInBuffer(RichTextBoxConversionInput, RichTextBoxConversionInput.SelectionStart, RichTextBoxConversionInput.SelectionLength) Then
-                    MsgBox($"'{SearchInput.Text}' not found in Source Buffer!", MsgBoxStyle.OkOnly, "Not Found!")
+                    prompt = $"'{SearchInput.Text}' not found in Source Buffer!"
                 End If
             Case 1
                 If Not FindTextInBuffer(RichTextBoxConversionOutput, RichTextBoxConversionOutput.SelectionStart, RichTextBoxConversionOutput.SelectionLength) Then
-                    MsgBox($"'{SearchInput.Text}' not found Conversion Buffer!", MsgBoxStyle.OkOnly, "Not Found!")
+                    prompt = $"'{SearchInput.Text}' not found Conversion Buffer!"
                 End If
             Case 2
                 If Not FindTextInBuffer(RichTextBoxConversionInput, RichTextBoxConversionInput.SelectionStart, RichTextBoxConversionInput.SelectionLength) Then
-                    MsgBox($"'{SearchInput.Text}' not found in Source Buffer!", MsgBoxStyle.OkOnly, "Not Found!")
+                    prompt = $"'{SearchInput.Text}' not found in Source Buffer!"
                 End If
                 If Not FindTextInBuffer(RichTextBoxConversionOutput, RichTextBoxConversionOutput.SelectionStart, RichTextBoxConversionOutput.SelectionLength) Then
-                    MsgBox($"'{SearchInput.Text}' not found Conversion Buffer!", MsgBoxStyle.OkOnly, "Not Found!")
+                    prompt = $"'{SearchInput.Text}' not found Conversion Buffer!"
                 End If
         End Select
+        If Not String.IsNullOrWhiteSpace(prompt) Then
+            MsgBox(prompt,
+                   MsgBoxStyle.OkOnly Or MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground,
+                   "Text Not Found!")
+        End If
     End Sub
 
     Private Sub PictureBox1_MouseDown(sender As Object, e As MouseEventArgs) Handles PictureBox1.MouseDown
@@ -1184,7 +1232,6 @@ Partial Public Class Form1
             ConversionProgressBar.Value = 0
         Catch ex As Exception
             ' don't crash on exit
-            Stop
             End
         Finally
             SetButtonStopAndCursor(Me, ButtonStopConversion, StopButtonVisible:=False)
@@ -1199,7 +1246,7 @@ Partial Public Class Form1
     ''' <param name="TargetDirectory">Complete path up to File to be converted</param>
     ''' <param name="SourceLanguageExtension">vb or cs</param>
     ''' <returns>False if error and user wants to stop, True if success or user wants to ignore error.</returns>
-    Private Async Function ProcessFileAsync(SourceFileNameWithPath As String, TargetDirectory As String, SourceLanguageExtension As String, CSPreprocessorSymbols As List(Of String), VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)), OptionalReferences() As MetadataReference, CancelToken As CancellationToken) As Task(Of Boolean)
+    Private Async Function ProcessFileAsync(SourceFileNameWithPath As String, TargetDirectory As String, SourceLanguageExtension As String, CSPreprocessorSymbols As List(Of String), VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)), OptionalReferences() As MetadataReference, SkipAutoGenerated As Boolean, CancelToken As CancellationToken) As Task(Of Boolean)
         If My.Settings.IgnoreFileList.Contains(SourceFileNameWithPath) Then
             Return True
         End If
@@ -1208,7 +1255,7 @@ Partial Public Class Form1
         MRU_AddTo(SourceFileNameWithPath)
         Dim lines As Integer = LoadInputBufferFromStream(SourceFileNameWithPath)
         If lines > 0 Then
-            _requestToConvert = New ConvertRequest(My.Settings.SkipAutoGenerated, New Progress(Of ProgressReport)(AddressOf New TextProgressBar(ConversionProgressBar).Update), _cancellationTokenSource.Token) With {
+            _requestToConvert = New ConvertRequest(SkipAutoGenerated, New Progress(Of ProgressReport)(AddressOf New TextProgressBar(ConversionProgressBar).Update), _cancellationTokenSource.Token) With {
                 .SourceCode = RichTextBoxConversionInput.Text
             }
             If Not Await Convert_Compile_ColorizeAsync(_requestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences, CancelToken).ConfigureAwait(True) Then
@@ -1216,7 +1263,8 @@ Partial Public Class Form1
                     ConversionProgressBar.Value = 0
                     Return False
                 End If
-                Select Case MsgBox($"Conversion failed, do you want to stop processing this file automatically in the future? Yes and No will continue processing files, Cancel will stop conversions!", MsgBoxStyle.YesNoCancel)
+                Select Case MsgBox($"Conversion failed, do you want to stop processing this file automatically in the future? Yes and No will continue processing files, Cancel will stop conversions!",
+                                   MsgBoxStyle.YesNoCancel Or MsgBoxStyle.Exclamation Or MsgBoxStyle.MsgBoxSetForeground)
                     Case MsgBoxResult.Cancel
                         Return False
                     Case MsgBoxResult.No
@@ -1243,7 +1291,8 @@ Partial Public Class Form1
                     WriteTextToStream(TargetDirectory, NewFileName, RichTextBoxConversionOutput.Text)
                 End If
                 If My.Settings.PauseConvertOnSuccess Then
-                    If MsgBox($"{SourceFileNameWithPath} successfully converted, Continue?", MsgBoxStyle.MsgBoxSetForeground Or MsgBoxStyle.YesNo) = MsgBoxResult.No Then
+                    If MsgBox($"{SourceFileNameWithPath} successfully converted, Continue?",
+                              MsgBoxStyle.YesNo Or MsgBoxStyle.Question Or MsgBoxStyle.MsgBoxSetForeground) = MsgBoxResult.No Then
                         Return False
                     End If
                 End If
@@ -1264,6 +1313,234 @@ Partial Public Class Form1
         End If
         Return True
     End Function
+
+    ''' <summary>
+    ''' 
+    ''' </summary>
+    ''' <param name="TaskProjectAnalyzer"></param>
+    ''' <param name="SolutionRoot"></param>
+    ''' <param name="_cancellationTokenSource"></param>
+    ''' <returns></returns>
+    Private Async Function ProcessOneProjectAsync(TaskProjectAnalyzer As IProjectAnalyzer, SolutionRoot As String, projectFile As String, processedProjects As Integer, totalProjects As Integer, _cancellationTokenSource As CancellationTokenSource) As Task(Of String)
+        Application.DoEvents()
+        UpdateProgressLabels("Getting Analyzer Results", True)
+        Dim TaskResults As Task(Of IAnalyzerResults) = GetResultsAsync(CType(TaskProjectAnalyzer, ProjectAnalyzer))
+        While Not TaskResults.IsCompleted
+            If _cancellationTokenSource.IsCancellationRequested Then
+                Return ""
+            End If
+            Await Task.Delay(100).ConfigureAwait(True)
+        End While
+        Dim results As IAnalyzerResults = TaskResults.Result
+        UpdateProgressLabels("Loading Workspace", True)
+        Dim TaskWorkspace As Task(Of AdhocWorkspace) = GetWorkspaceAsync(TaskProjectAnalyzer)
+        Dim frameworkList As List(Of String) = GetFrameworks(results.TargetFrameworks.ToList)
+        ' Under debugger each framework will be processed
+        ' Under production the user will select one framework
+        While Not TaskWorkspace.IsCompleted
+            If _cancellationTokenSource.IsCancellationRequested Then
+                Return ""
+            End If
+            Await Task.Delay(100).ConfigureAwait(True)
+        End While
+        If frameworkList.Count = 0 Then
+            Return $"no framework is specified, processing project will terminate!"
+        End If
+        Using workspace As AdhocWorkspace = TaskWorkspace.Result
+            UpdateProgressLabels("", False)
+
+            If workspace.CurrentSolution.Projects.Count <> 1 Then
+                Return $"of an unexpected number of projects {workspace.CurrentSolution.Projects.Count}, processing project will terminate!"
+            End If
+            For Each framework As IndexClass(Of String) In frameworkList.WithIndex
+                Dim frameworkMsg As String
+                If frameworkList.Count = 1 Then
+                    frameworkMsg = $"Framework: {framework.Value}"
+                Else
+                    frameworkMsg = $"Framework {framework.Index + 1} of {frameworkList.Count}: {framework.Value}"
+                End If
+                StatusStripCurrentFileName.Text = $"{processedProjects} of {totalProjects} Projects, {frameworkMsg}, {projectFile}"
+                Dim currentProject As Project = workspace.CurrentSolution.Projects(0)
+                Application.DoEvents()
+                Dim csReferences As MetadataReference() = CSharpReferences(results(framework.Value).References, results(framework.Value).ProjectReferences).ToArray
+                Dim taskConvertOneProject As Task(Of Boolean) =
+                        ProcessOneProjectCore(currentProject,
+                                               SolutionRoot,
+                                               framework.Value,
+                                               csReferences
+                                               )
+                ConvertProjectFile(SolutionRoot, currentProject.FilePath)
+
+                While Not taskConvertOneProject.IsCompleted
+                    If _cancellationTokenSource.IsCancellationRequested Then
+                        Exit For
+                    End If
+                    Await Task.Delay(100).ConfigureAwait(True)
+                End While
+                If Not taskConvertOneProject.Result Then
+                    Exit For
+                End If
+            Next
+        End Using
+        Return ""
+    End Function
+
+    ''' <summary>
+    ''' Converts all the files in a C# project
+    ''' </summary>
+    ''' <param name="currentProject"></param>
+    ''' <param name="solutionRoot"></param>
+    ''' <param name="Framework"></param>
+    ''' <param name="References"></param>
+    ''' <returns>False if failed</returns>
+    Private Async Function ProcessOneProjectCore(currentProject As Project, solutionRoot As String, Framework As String, References As MetadataReference()) As Task(Of Boolean)
+        If _cancellationTokenSource.IsCancellationRequested Then
+            Return False
+        End If
+        Dim FilesProcessed As Integer = 0
+        Dim TotalFilesToProcess As Integer = currentProject.Documents.Count
+        Dim convertedFramework As String = ConvertFramework(Framework)
+        Dim CSPreprocessorSymbols As New List(Of String) From {Framework, convertedFramework}
+        Dim VBPreprocessorSymbols As New List(Of KeyValuePair(Of String, Object)) From {
+                                    KeyValuePair.Create(Of String, Object)(convertedFramework, True)}
+        If Not convertedFramework.Equals(Framework, StringComparison.OrdinalIgnoreCase) Then
+            VBPreprocessorSymbols.Add(KeyValuePair.Create(Of String, Object)(Framework, True))
+        End If
+
+        For Each currentDocument As Document In currentProject.Documents
+            If _cancellationTokenSource.IsCancellationRequested Then
+                Return False
+            End If
+            Dim targetFileWithPath As String = DestinationFilePath(currentDocument.FilePath, solutionRoot)
+            FilesProcessed += 1
+            ListBoxFileList.Items.Add(New NumberedListItem($"{FilesProcessed.ToString(Globalization.CultureInfo.InvariantCulture),-5} {currentDocument.FilePath}", $"{targetFileWithPath}{Path.DirectorySeparatorChar}{Path.GetFileNameWithoutExtension(currentDocument.Name)}.vb"))
+            ListBoxFileList.SelectedIndex = ListBoxFileList.Items.Count - 1
+            FilesConversionProgress.Text = $"Processed {FilesProcessed:N0} of {TotalFilesToProcess:N0} Files"
+            Application.DoEvents()
+            If Not Await ProcessFileAsync(currentDocument.FilePath, targetFileWithPath, "cs", CSPreprocessorSymbols, VBPreprocessorSymbols, References, SkipAutoGenerated:=False, _cancellationTokenSource.Token).ConfigureAwait(True) _
+                            OrElse _requestToConvert.CancelToken.IsCancellationRequested Then
+                Return False
+            End If
+        Next
+        Return True
+    End Function
+    Private Async Sub ProcessProjectOrSolution(fileName As String)
+        _cancellationTokenSource = New CancellationTokenSource
+        Dim solutionRoot As String = GetSavePath(fileName, PromptIfDirExsits:=True).SolutionRoot
+        If String.IsNullOrWhiteSpace(solutionRoot) Then
+            LabelProgress.Visible = False
+            ProgressBar1.Visible = False
+            MsgBox($"Can't find {solutionRoot}, exiting solution conversion")
+            Exit Sub
+        End If
+        SetButtonStopAndCursor(MeForm:=Me, StopButton:=ButtonStopConversion, StopButtonVisible:=True)
+        ListBoxErrorList.Items.Clear()
+        ListBoxFileList.Items.Clear()
+        RichTextBoxConversionInput.Clear()
+        RichTextBoxConversionOutput.Clear()
+        UpdateProgressLabels($"Getting Analyzer Manger for {fileName}", True)
+        Try
+            Dim TaskAnalyzerManager As Task(Of AnalyzerManager) = GetManagerAsync(fileName)
+            While Not TaskAnalyzerManager.IsCompleted
+                If _cancellationTokenSource.IsCancellationRequested Then
+                    Exit Try
+                End If
+                Await Task.Delay(100).ConfigureAwait(True)
+            End While
+            Dim solutionAnalyzerManager As AnalyzerManager = TaskAnalyzerManager.Result
+            LabelProgress.Visible = False
+            ProgressBar1.Visible = False
+
+            Dim prompt As String = "Conversion stopped."
+            If fileName.EndsWith(".sln", StringComparison.OrdinalIgnoreCase) Then
+                mnuFileLastSolution.Text = fileName
+                mnuFileLastSolution.Enabled = True
+                My.Settings.LastSolution = fileName
+                My.Settings.Save()
+                Dim totalProjects As Integer = solutionAnalyzerManager.Projects.Count
+                Dim processedProjects As Integer = 0
+                Dim skipProjects As Boolean = My.Settings.StartFolderConvertFromLastFile
+                For Each proj As KeyValuePair(Of String, IProjectAnalyzer) In solutionAnalyzerManager.Projects
+                    Dim projectFile As String = proj.Key
+                    If Not projectFile.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase) Then
+                        totalProjects -= 1
+                        Continue For
+                    End If
+                    processedProjects += 1
+
+                    If skipProjects AndAlso My.Settings.LastProject.Length > 0 Then
+                        If projectFile <> My.Settings.LastProject Then
+                            Continue For
+                        Else
+                            skipProjects = False
+                        End If
+                    End If
+                    mnuFileLastProject.Text = projectFile
+                    mnuFileLastProject.Enabled = True
+                    My.Settings.LastProject = projectFile
+                    My.Settings.Save()
+                    Application.DoEvents()
+                    Dim resultString As String = Await ProcessOneProjectAsync(
+                                        TaskProjectAnalyzer:=proj.Value,
+                                        solutionRoot, projectFile,
+                                        processedProjects, totalProjects,
+                                        _cancellationTokenSource:=_cancellationTokenSource).ConfigureAwait(True)
+                    If resultString.Length = 0 Then
+                        If _cancellationTokenSource.Token.IsCancellationRequested Then
+                            prompt = $"Conversion canceled, {processedProjects} of {totalProjects} projects completed successfully."
+                            Exit For
+                        Else
+                            prompt = $"Conversion completed, {totalProjects} projects completed successfully."
+                        End If
+                    Else
+                        prompt = $"Conversion canceled because {resultString}, {processedProjects} of {totalProjects} projects completed successfully."
+                        Exit For
+                    End If
+                Next
+                If prompt.Length > 0 Then
+                    MsgBox(prompt,
+                           MsgBoxStyle.OkOnly Or If(prompt.Contains("terminated", StringComparison.OrdinalIgnoreCase), MsgBoxStyle.Critical, MsgBoxStyle.Information) Or MsgBoxStyle.MsgBoxSetForeground,
+                           Title:="C# to VB")
+                End If
+            Else
+                ' Single project
+                My.Settings.Save()
+                UpdateProgressLabels($"Getting Project Analyzer for {fileName}", True)
+                Dim TaskProjectAnalyzer As Task(Of IProjectAnalyzer) = GetProjectAnalyzerAsync(fileName, solutionAnalyzerManager)
+                While Not TaskProjectAnalyzer.IsCompleted
+                    If _cancellationTokenSource.IsCancellationRequested Then
+                        Exit Sub
+                    End If
+                    Await Task.Delay(100).ConfigureAwait(True)
+                End While
+                UpdateProgressLabels("", False)
+                mnuFileLastProject.Text = fileName
+                mnuFileLastProject.Enabled = True
+                My.Settings.LastProject = fileName
+                prompt = Await ProcessOneProjectAsync(TaskProjectAnalyzer.Result,
+                    solutionRoot, solutionRoot,
+                    processedProjects:=1, totalProjects:=1,
+                    _cancellationTokenSource).ConfigureAwait(True)
+
+                If prompt.Length = 0 Then
+                    prompt = $"{If(_cancellationTokenSource.Token.IsCancellationRequested, "Conversion canceled", "Conversion completed")}, {FilesConversionProgress.Text.ToLower(Globalization.CultureInfo.CurrentCulture)} completed successfully."
+                End If
+                MsgBox(prompt,
+                       MsgBoxStyle.OkOnly Or If(prompt.Contains("terminated", StringComparison.OrdinalIgnoreCase), MsgBoxStyle.Critical, MsgBoxStyle.Information) Or MsgBoxStyle.MsgBoxSetForeground,
+                       Title:="C# to VB")
+
+                Dim projectSavePath As String = DestinationFilePath(fileName, solutionRoot)
+                If Directory.Exists(projectSavePath) AndAlso Not _cancellationTokenSource.IsCancellationRequested Then
+                    Process.Start("explorer.exe", $"/root,{projectSavePath}")
+                End If
+            End If
+        Catch ex As ObjectDisposedException
+        Finally
+            LabelProgress.Visible = False
+            ProgressBar1.Visible = False
+            SetButtonStopAndCursor(Me, ButtonStopConversion, StopButtonVisible:=False)
+        End Try
+    End Sub
 
     Private Sub ResizeRichTextBuffers()
         Dim LineNumberInputWidth As Integer = If(LineNumbers_For_RichTextBoxInput.Visible, LineNumbers_For_RichTextBoxInput.Width, 0)
@@ -1300,11 +1577,6 @@ Partial Public Class Form1
         End If
     End Sub
 
-    Private Sub RichTextBoxConversionOutput_HorizScrollBarRightClicked(sender As Object, loc As Point) Handles RichTextBoxConversionOutput.HorizScrollBarRightClicked
-        Dim p As Integer = CType(sender, AdvancedRTB).HScrollPos
-        MsgBox($"Horizontal Right Clicked At: {loc}, HScrollPos = {p}")
-    End Sub
-
     Private Sub RichTextBoxConversionOutput_MouseEnter(sender As Object, e As EventArgs) Handles RichTextBoxConversionOutput.MouseEnter
         CurrentBuffer = CType(sender, RichTextBox)
     End Sub
@@ -1312,11 +1584,6 @@ Partial Public Class Form1
     Private Sub RichTextBoxConversionOutput_TextChanged(sender As Object, e As EventArgs) Handles RichTextBoxConversionOutput.TextChanged
         Dim OutputBufferInUse As Boolean = CType(sender, RichTextBox).TextLength > 0
         mnuCompile.Enabled = OutputBufferInUse
-    End Sub
-
-    Private Sub RichTextBoxConversionOutput_VertScrollBarRightClicked(sender As Object, loc As Point) Handles RichTextBoxConversionOutput.VertScrollBarRightClicked
-        Dim p As Integer = CType(sender, AdvancedRTB).VScrollPos
-        MsgBox($"Vertical Right Clicked At: {loc}, VScrollPos = {p} ")
     End Sub
 
     Private Sub SearchBoxVisibility(Visible As Boolean)
@@ -1379,6 +1646,37 @@ Partial Public Class Form1
         Next
     End Sub
 
+    Private Sub UpdateProgressLabels(progressStr As String, Value As Boolean)
+        If InvokeRequired Then
+            Invoke(Sub()
+                       LabelProgress.Text = progressStr
+                       If Value Then
+                           RichTextBoxConversionInput.Text = ""
+                           RichTextBoxConversionOutput.Text = ""
+                           LabelProgress.Visible = True
+                           ProgressBar1.Visible = True
+                       Else
+                           LabelProgress.Visible = False
+                           ProgressBar1.Visible = False
+                       End If
+                       Application.DoEvents()
+                   End Sub)
+        Else
+            Invoke(Sub()
+                       LabelProgress.Text = progressStr
+                       If Value Then
+                           RichTextBoxConversionInput.Text = ""
+                           RichTextBoxConversionOutput.Text = ""
+                           LabelProgress.Visible = True
+                           ProgressBar1.Visible = True
+                       Else
+                           LabelProgress.Visible = False
+                           ProgressBar1.Visible = False
+                       End If
+                       Application.DoEvents()
+                   End Sub)
+        End If
+    End Sub
     Protected Overrides Sub OnLoad(e As EventArgs)
         SetStyle(ControlStyles.AllPaintingInWmPaint Or ControlStyles.UserPaint Or ControlStyles.DoubleBuffer, True)
         ' enable events...

@@ -351,7 +351,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim ResultVariable As VBS.VariableDeclaratorSyntax = VBFactory.VariableDeclarator(VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(ResultNameToken)), AsClause, initializer:=Nothing)
 
                 Dim Blocks As New SyntaxList(Of VBS.CaseBlockSyntax)
-                For Each e As IndexStruct(Of CSS.SwitchExpressionArmSyntax) In node.Arms.WithIndex
+                For Each e As IndexClass(Of CSS.SwitchExpressionArmSyntax) In node.Arms.WithIndex
                     Dim arm As CSS.SwitchExpressionArmSyntax = e.Value
                     Dim equalsTokenWithTrivia As SyntaxToken = EqualsToken
                     If TypeOf arm.Pattern Is CSS.ConstantPatternSyntax Then
@@ -518,7 +518,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 If node.ArgumentList Is Nothing Then
                     Return VBFactory.ModifiedIdentifier(Identifier).WithTrailingTrivia(SpaceTrivia)
                 Else
-                    For Each e As IndexStruct(Of CSS.ArgumentSyntax) In node.ArgumentList.Arguments.WithIndex
+                    For Each e As IndexClass(Of CSS.ArgumentSyntax) In node.ArgumentList.Arguments.WithIndex
                         Dim vbExpression As VBS.ExpressionSyntax = CType(e.Value.Expression.Accept(Me), VBS.ExpressionSyntax)
                         If TypeOf vbExpression Is VBS.LiteralExpressionSyntax Then
                             Dim LiteralExpression As VBS.LiteralExpressionSyntax = CType(vbExpression, VBS.LiteralExpressionSyntax)

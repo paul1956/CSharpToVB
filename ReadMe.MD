@@ -27,7 +27,7 @@ description: "C# to VB Converter"
 - Code Converter
 
 ## Updated
-- 04/22/2020
+- 05/01/2020
 
 ## Description
 This application will convert C# to VB while trying to preserve comments, formatting and as many Directives
@@ -62,8 +62,14 @@ It will try to create a VB project File from the original C# project file.
 
 https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json is added to NuGet Package Source to find
 Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpecific attributes used for testing.
-  New in Release 4.3.2.1
+  New in Release 4.4.0.0
+  - Convert Solutions and better conversions of Projects
+  - There is a prompt to select which framework to use during conversion for project with more then one framework, under Visual Studio all frameworks will be converted but only the last will be saved for each project
+  - Under Visual Studio as Frameworks will be converted but just the last will be saved
+  - Improve Index Extension to allow MoveNext
   - Remove unused code
+  - Added ability to save last project and solution on File menu
+  - Current status of project/solution conversion and Framework shown on status bar
 
   New in Release 4.3.2.0
   - Implement For Each with Index Extension and using it where possible
@@ -71,6 +77,7 @@ Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpec
   - Start changing locals to begin with lowercase character(s)
   - Fix long outstanding issue where ignored files were being written to output directory as empty files and total files was calculated correctly.
   - Fix deconstruction tuple elements when elements are constructed on left of equals for example (EvalStackFrame frameOpt, IOperation operationOpt) = _evalStack.Pop();
+  - Correctly Autonomous Types when converting Projects
 
   New in Release 4.3.1.1
   - Spelling corrections

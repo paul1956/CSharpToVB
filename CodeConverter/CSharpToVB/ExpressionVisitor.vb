@@ -120,8 +120,8 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim csBraces As (LeftBrace As SyntaxToken, RightBrace As SyntaxToken) = node.Body.GetBraces
                 Dim asClause As AsClauseSyntax
                 If isFunction Then
-                    Dim addAsClause As Boolean = isErrorType OrElse symbol.ReturnType.ToString.Contains("?", StringComparison.Ordinal)
-                    asClause = If(addAsClause,
+                    Dim dontAddAsClause As Boolean = isErrorType OrElse symbol.ReturnType.ToString.Contains("?", StringComparison.Ordinal) OrElse symbol.ReturnType.ToString.StartsWith("<anonymous type: ", StringComparison.Ordinal)
+                    asClause = If(dontAddAsClause,
                                     Nothing,
                                     VBFactory.SimpleAsClause(ConvertToType(symbol.ReturnType))
                                     )
@@ -590,7 +590,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 initialTriviaList.Clear()
                 initialTriviaList.AddRange(ConvertTrivia(NodesOrTokens(Index).GetTrailingTrivia))
                 Dim FinalTrailingTriviaList As New List(Of SyntaxTrivia)
-                For Each e As IndexStruct(Of SyntaxTrivia) In initialTriviaList.WithIndex
+                For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
                     Dim Trivia As SyntaxTrivia = e.Value
                     Select Case Trivia.RawKind
                         Case VB.SyntaxKind.WhitespaceTrivia
@@ -691,7 +691,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
 
             Public Overrides Function VisitAnonymousObjectCreationExpression(node As CSS.AnonymousObjectCreationExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Dim FieldInitializers As New List(Of FieldInitializerSyntax)
-                For Each e As IndexStruct(Of CSS.AnonymousObjectMemberDeclaratorSyntax) In node.Initializers.WithIndex
+                For Each e As IndexClass(Of CSS.AnonymousObjectMemberDeclaratorSyntax) In node.Initializers.WithIndex
                     Dim Initializer As CSS.AnonymousObjectMemberDeclaratorSyntax = e.Value
                     Dim LeadingTrivia As SyntaxTriviaList = VBFactory.TriviaList(ConvertTrivia(Initializer.GetLeadingTrivia))
                     If LeadingTrivia.ContainsCommentOrDirectiveTrivia Then
@@ -708,7 +708,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     Dim FieldLeadingTrivia As SyntaxTriviaList = Field.GetLeadingTrivia
                     Dim Comment As String = ""
                     Dim NewFieldLeadingTrivia As New List(Of SyntaxTrivia)
-                    For Each trivia As IndexStruct(Of SyntaxTrivia) In FieldLeadingTrivia.WithIndex
+                    For Each trivia As IndexClass(Of SyntaxTrivia) In FieldLeadingTrivia.WithIndex
                         Dim t As SyntaxTrivia = trivia.Value
                         Select Case t.RawKind
                             Case VB.SyntaxKind.WhitespaceTrivia
@@ -814,7 +814,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         If node.Left.IsKind(CS.SyntaxKind.DeclarationExpression) Then
                             Dim nodeLeft As CSS.DeclarationExpressionSyntax = DirectCast(node.Left, CSS.DeclarationExpressionSyntax)
                             Dim designation As CSS.ParenthesizedVariableDesignationSyntax = DirectCast(nodeLeft.Designation, CSS.ParenthesizedVariableDesignationSyntax)
-                            For Each e As IndexStruct(Of CSS.VariableDesignationSyntax) In designation.Variables.WithIndex
+                            For Each e As IndexClass(Of CSS.VariableDesignationSyntax) In designation.Variables.WithIndex
                                 If e.Value.RawKind = CS.SyntaxKind.ParenthesizedVariableDesignation Then
                                     Dim sBuilder As New StringBuilder
                                     CreateDesignationName(ProcessVariableDesignation(CType(e.Value, CSS.ParenthesizedVariableDesignationSyntax)), sBuilder)
@@ -928,7 +928,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                             TupleList.Add(ConvertNamedTypeToTypeString(typeName.Trim))
                                         Next
                                     Else
-                                        TupleList.AddRange(ConvertTupleToVBTypeStrings(Type.ToString, IncludeName:=False))
+                                        TupleList.Add(ConvertToType(Type.ToString).ToString)
                                     End If
                                 ElseIf TypeOf RightTypeInfo.Type Is ITypeSymbol Then
                                     Try
@@ -954,7 +954,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                             End If
                             Dim builder As New StringBuilder()
                             builder.Append("(")
-                            For Each e As IndexStruct(Of String) In TupleList.WithIndex
+                            For Each e As IndexClass(Of String) In TupleList.WithIndex
                                 builder.Append(e.Value & ", ")
                             Next
                             builder.Append(TupleList.Last & ")")
@@ -966,7 +966,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                             Dim VariableDeclaration As SeparatedSyntaxList(Of VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(Names, SimpleAs, initializer))
                             Dim DimStatement As LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(dimModifiersTokens, VariableDeclaration)
                             StatementList = StatementList.Add(DimStatement)
-                            For Each e As IndexStruct(Of String) In VariableNames.WithIndex
+                            For Each e As IndexClass(Of String) In VariableNames.WithIndex
                                 If e.Value = "underscore" Then
                                     Continue For
                                 End If
@@ -1682,7 +1682,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim ExpressionItems As New List(Of ExpressionSyntax)
                 Dim NamedFieldItems As New List(Of FieldInitializerSyntax)
                 Dim Separators As New List(Of SyntaxToken)
-                For Each e As IndexStruct(Of CSS.ExpressionSyntax) In node.Initializer.Expressions.WithIndex
+                For Each e As IndexClass(Of CSS.ExpressionSyntax) In node.Initializer.Expressions.WithIndex
                     Dim ItemWithTrivia As VB.VisualBasicSyntaxNode
                     Try
                         ItemWithTrivia = e.Value.Accept(Me).WithConvertedTriviaFrom(e.Value).RemoveExtraLeadingEOL.NormalizeWhitespaceEx(useDefaultCasing:=True, indentation:="    ")
@@ -1787,7 +1787,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         Dim FoundEOF As Boolean = False
                         Dim FoundCommentOrDirective As Boolean = False
                         Dim NewCLoseBracketLeadingTriva As New List(Of SyntaxTrivia)
-                        For Each e As IndexStruct(Of SyntaxTrivia) In CloseBracketLeadingTriva.WithIndex
+                        For Each e As IndexClass(Of SyntaxTrivia) In CloseBracketLeadingTriva.WithIndex
                             Dim t As SyntaxTrivia = e.Value
                             If FoundCommentOrDirective OrElse t.IsDirective Or t.IsComment Then
                                 If Not (FoundEOF OrElse FoundCommentOrDirective) Then
@@ -1985,7 +1985,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     ElseIf TypeOf VarPattern.Designation Is CSS.ParenthesizedVariableDesignationSyntax Then
                         Dim Designation As CSS.ParenthesizedVariableDesignationSyntax = DirectCast(VarPattern.Designation, CSS.ParenthesizedVariableDesignationSyntax)
                         Dim VariableNames As New List(Of String)
-                        For Each e As IndexStruct(Of CSS.VariableDesignationSyntax) In Designation.Variables.WithIndex
+                        For Each e As IndexClass(Of CSS.VariableDesignationSyntax) In Designation.Variables.WithIndex
                             If e.Value.RawKind = CS.SyntaxKind.ParenthesizedVariableDesignation Then
                                 Dim sBuilder As New StringBuilder
                                 CreateDesignationName(ProcessVariableDesignation(CType(e.Value, CSS.ParenthesizedVariableDesignationSyntax)), sBuilder)
@@ -2228,7 +2228,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                 Stop
                         End Select
                     Next
-                    For Each e As IndexStruct(Of SyntaxTrivia) In OldNameLeadingTrivia.WithIndex
+                    For Each e As IndexClass(Of SyntaxTrivia) In OldNameLeadingTrivia.WithIndex
                         Dim t As SyntaxTrivia = e.Value
                         Select Case t.RawKind
                             Case VB.SyntaxKind.WhitespaceTrivia
@@ -2593,7 +2593,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             Public Overrides Function VisitTupleExpression(node As CSS.TupleExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Dim lArgumentSyntax As New List(Of SimpleArgumentSyntax)
                 If TypeOf node.Arguments(0).Expression IsNot CSS.DeclarationExpressionSyntax Then
-                    For Each e As IndexStruct(Of CSS.ArgumentSyntax) In node.Arguments.WithIndex
+                    For Each e As IndexClass(Of CSS.ArgumentSyntax) In node.Arguments.WithIndex
                         Dim argument As SimpleArgumentSyntax = DirectCast(e.Value.Accept(Me), SimpleArgumentSyntax)
                         Dim afterWhiteSpace As Boolean = False
                         Dim initialTriviaList As List(Of SyntaxTrivia) = argument.GetLeadingTrivia.ToList
@@ -2672,7 +2672,6 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 End If
                 Dim VBSyntaxNode As VB.VisualBasicSyntaxNode = node.Type.Accept(Me)
                 If VBSyntaxNode.IsKind(VB.SyntaxKind.AddressOfExpression) Then
-                    Stop
                     VBSyntaxNode = DirectCast(VBSyntaxNode, UnaryExpressionSyntax).Operand
                 End If
                 Return VBFactory.GetTypeExpression(DirectCast(VBSyntaxNode, TypeSyntax))

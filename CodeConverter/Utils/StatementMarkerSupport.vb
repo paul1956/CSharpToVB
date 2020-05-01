@@ -152,7 +152,7 @@ Public Module StatementMarker
             newLeadingTrivia.Add(VBFactory.CommentTrivia($"' Original Statement:"))
             newLeadingTrivia.Add(VBEOLTrivia)
             ' Match #
-            For Each e As IndexStruct(Of String) In node.ToString.SplitLines().WithIndex
+            For Each e As IndexClass(Of String) In node.ToString.SplitLines().WithIndex
                 If e.Value.TrimStart(" "c).StartsWith("#", StringComparison.Ordinal) Then
                     newLeadingTrivia.AddRange(ConvertDirectiveTrivia(e.Value))
                 Else
@@ -164,7 +164,7 @@ Public Module StatementMarker
         Return VBFactory.EmptyStatement.With(newLeadingTrivia, newTrailingTrivia)
     End Function
 
-    Friend Function GetStatementwithIssues(node As CS.CSharpSyntaxNode) As CS.CSharpSyntaxNode
+    Friend Function GetStatementwithIssues(node As CS.CSharpSyntaxNode, Optional ReportErrors As Boolean = True) As CS.CSharpSyntaxNode
         Dim StatementWithIssues As CS.CSharpSyntaxNode = node
         While StatementWithIssues IsNot Nothing
             If TypeOf StatementWithIssues Is CSS.FieldDeclarationSyntax Then
@@ -175,13 +175,16 @@ Public Module StatementMarker
                 Exit While
             End If
 
+            If TypeOf StatementWithIssues Is CSS.ExpressionStatementSyntax Then
+                Exit While
+            End If
+
             If TypeOf StatementWithIssues Is CSS.StatementSyntax Then
                 Dim StatementWithIssueParent As SyntaxNode = StatementWithIssues.Parent
                 While StatementWithIssueParent.IsKind(CS.SyntaxKind.ElseClause)
                     StatementWithIssues = StatementWithIssues.Parent.FirstAncestorOrSelf(Of CSS.StatementSyntax)
                     StatementWithIssueParent = StatementWithIssues.Parent
                 End While
-                StatementWithIssues = StatementWithIssues
                 Exit While
             End If
 
@@ -217,9 +220,10 @@ Public Module StatementMarker
                 Exit While
             End If
 
+
             StatementWithIssues = CType(StatementWithIssues.Parent, CS.CSharpSyntaxNode)
         End While
-        If StatementWithIssues Is Nothing Then
+        If ReportErrors AndAlso StatementWithIssues Is Nothing Then
             Throw UnexpectedValue($"Can't find parent 'statement' of {node}")
         End If
 

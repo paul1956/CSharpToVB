@@ -128,7 +128,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     Case TypeOf node Is CSS.BlockSyntax
                         Dim nodeBlock As CSS.BlockSyntax = DirectCast(node, CSS.BlockSyntax)
                         Dim vbBlock As New List(Of VBS.StatementSyntax)
-                        For Each e As IndexStruct(Of CSS.StatementSyntax) In nodeBlock.Statements.WithIndex
+                        For Each e As IndexClass(Of CSS.StatementSyntax) In nodeBlock.Statements.WithIndex
                             Dim Statements As List(Of VBS.StatementSyntax) = e.Value.Accept(Me).ToList
                             If e.IsFirst AndAlso Statements.Any Then
                                 Statements(0) = Statements(0).WithPrependedLeadingTrivia(openBraceLeadingTrivia)
@@ -602,7 +602,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     Return $"_Select{_switchCount}_CaseDefault"
                 End If
                 Dim ExpressionBuilder As New StringBuilder
-                For Each e As IndexStruct(Of Char) In Expression.ToString.
+                For Each e As IndexClass(Of Char) In Expression.ToString.
                                                     Replace(".", "Dot", StringComparison.Ordinal).
                                                     Replace("""", "Quote", StringComparison.Ordinal).
                                                     Replace("[", "OpenBracket", StringComparison.Ordinal).
@@ -1053,11 +1053,14 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     Dim variableITypeSymbol As (_Error As Boolean, _ITypeSymbol As ITypeSymbol) = node.Expression.DetermineType(_semanticModel)
                     If variableITypeSymbol._Error = False Then
                         Dim _ITypeSymbol As ITypeSymbol = variableITypeSymbol._ITypeSymbol
+                        Dim asClause As VBS.SimpleAsClauseSyntax
+                        Dim type As VBS.TypeSyntax = NodesVisitor.GetElementType(_ITypeSymbol)
+                        asClause = If(type IsNot Nothing, VBFactory.SimpleAsClause(type), Nothing)
                         variable = VBFactory.VariableDeclarator(VBFactory.SingletonSeparatedList(
                                   VBFactory.ModifiedIdentifier(GenerateSafeVBToken(node.Identifier,
                                                                                    IsQualifiedName:=False,
                                                                                    IsTypeName:=False)).WithTrailingTrivia(SpaceTrivia)),
-                                                                VBFactory.SimpleAsClause(NodesVisitor.GetElementType(_ITypeSymbol)),
+                                                                asClause,
                                                                 initializer:=Nothing)
 
                     End If
@@ -1517,7 +1520,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim collectedCommentTrivia As New List(Of SyntaxTrivia)
                 Dim declaratorsWithoutInitializers As New List(Of CSS.VariableDeclaratorSyntax)()
                 Dim vbDeclarators As New List(Of VBS.VariableDeclaratorSyntax)
-                For Each e As IndexStruct(Of CSS.VariableDeclaratorSyntax) In node.Variables.WithIndex
+                For Each e As IndexClass(Of CSS.VariableDeclaratorSyntax) In node.Variables.WithIndex
                     Dim v As CSS.VariableDeclaratorSyntax = e.Value
                     If v.Initializer Is Nothing Then
                         declaratorsWithoutInitializers.Add(v.WithTrailingTrivia(collectedCommentTrivia))

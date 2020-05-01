@@ -109,7 +109,7 @@ Public Module ExpressionSyntaxSupport
 
         Dim OldTriviaList As New List(Of SyntaxTrivia)
         OldTriviaList.AddRange(Expression.GetLeadingTrivia)
-        For Each e As IndexStruct(Of SyntaxTrivia) In OldTriviaList.WithIndex
+        For Each e As IndexClass(Of SyntaxTrivia) In OldTriviaList.WithIndex
             Dim Trivia As SyntaxTrivia = e.Value
             Dim nextTrivia As SyntaxTrivia = If(Not e.IsLast, OldTriviaList(e.Index + 1), New SyntaxTrivia)
             Select Case Trivia.RawKind

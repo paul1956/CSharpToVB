@@ -116,8 +116,8 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim originalAttributeListWithTrivia As New List(Of VBS.AttributeListSyntax)
                 originalAttributeListWithTrivia.AddRange(node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))
                 Dim OriginalAttributeListHasOut As Boolean = False
-                For Each e As IndexStruct(Of VBS.AttributeListSyntax) In originalAttributeListWithTrivia.WithIndex
-                    For Each a As IndexStruct(Of VBS.AttributeSyntax) In e.Value.Attributes.WithIndex
+                For Each e As IndexClass(Of VBS.AttributeListSyntax) In originalAttributeListWithTrivia.WithIndex
+                    For Each a As IndexClass(Of VBS.AttributeSyntax) In e.Value.Attributes.WithIndex
                         If a.Value.Name.ToString = "Out" Then
                             OriginalAttributeListHasOut = True
                             Exit For
@@ -134,7 +134,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         Dim attributeTrailingTrivia As New List(Of SyntaxTrivia)
                         Dim needEOL As Boolean = False
                         Dim foundEOL As Boolean = False
-                        For Each e As IndexStruct(Of SyntaxTrivia) In originalAttributeListWithTrivia(index).GetLeadingTrivia.WithIndex
+                        For Each e As IndexClass(Of SyntaxTrivia) In originalAttributeListWithTrivia(index).GetLeadingTrivia.WithIndex
                             Dim trivia As SyntaxTrivia = e.Value
                             If e.IsFirst AndAlso trivia.RawKind = VB.SyntaxKind.WhitespaceTrivia Then
                                 If index = 0 Then

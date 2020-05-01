@@ -94,7 +94,7 @@ Namespace CSharpToVBCodeConverter.Util
                 Case Else
             End Select
             Dim NewLeadingTrivia As New List(Of SyntaxTrivia)
-            For Each e As IndexStruct(Of SyntaxTrivia) In Token.LeadingTrivia.WithIndex
+            For Each e As IndexClass(Of SyntaxTrivia) In Token.LeadingTrivia.WithIndex
                 Dim trivia As SyntaxTrivia = e.Value
                 Dim nextTrivia As SyntaxTrivia = If(Not e.IsLast, Token.LeadingTrivia(e.Index + 1), Nothing)
                 If trivia.IsKind(VB.SyntaxKind.WhitespaceTrivia) AndAlso nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then

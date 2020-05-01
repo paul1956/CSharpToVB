@@ -147,6 +147,8 @@ Partial Class Form1
         Me.LabelProgress = New System.Windows.Forms.Label()
         Me.ToolTipFileList = New System.Windows.Forms.ToolTip(Me.components)
         Me.ToolTipErrorList = New System.Windows.Forms.ToolTip(Me.components)
+        Me.mnuFileLastSolution = New System.Windows.Forms.ToolStripMenuItem()
+        Me.mnuFileLastProject = New System.Windows.Forms.ToolStripMenuItem()
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SplitContainer1.Panel1.SuspendLayout()
@@ -167,7 +169,7 @@ Partial Class Form1
         '
         'mnuFile
         '
-        Me.mnuFile.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuFileOpen, Me.mnuFileSep1, Me.mnuFileSep2, Me.mnuFileLabelLastFolder, Me.mnuFileLastFolder, Me.mnuFileSep3, Me.mnuFileConvertProject, Me.mnuFileSaveAs, Me.mnuFileSep4, Me.mnuFileSnippet, Me.mnuFileSep6, Me.mnuFileExit})
+        Me.mnuFile.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuFileOpen, Me.mnuFileSep1, Me.mnuFileSep2, Me.mnuFileLabelLastFolder, Me.mnuFileLastFolder, Me.mnuFileSep3, Me.mnuFileLastSolution, Me.mnuFileLastProject, Me.mnuFileConvertProject, Me.mnuFileSaveAs, Me.mnuFileSep4, Me.mnuFileSnippet, Me.mnuFileSep6, Me.mnuFileExit})
         Me.mnuFile.Name = "mnuFile"
         Me.mnuFile.ShortcutKeys = CType((System.Windows.Forms.Keys.Alt Or System.Windows.Forms.Keys.F), System.Windows.Forms.Keys)
         Me.mnuFile.Size = New System.Drawing.Size(37, 20)
@@ -214,7 +216,7 @@ Partial Class Form1
         Me.mnuFileConvertProject.ShortcutKeys = CType(((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.Shift) _
             Or System.Windows.Forms.Keys.O), System.Windows.Forms.Keys)
         Me.mnuFileConvertProject.Size = New System.Drawing.Size(240, 22)
-        Me.mnuFileConvertProject.Text = "Convert Project..."
+        Me.mnuFileConvertProject.Text = "Convert Project/Solution..."
         '
         'mnuFileSaveAs
         '
@@ -441,7 +443,7 @@ Partial Class Form1
         Me.mnuOptionsStartFolderConvertFromLastFile.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
         Me.mnuOptionsStartFolderConvertFromLastFile.Name = "mnuOptionsStartFolderConvertFromLastFile"
         Me.mnuOptionsStartFolderConvertFromLastFile.Size = New System.Drawing.Size(360, 22)
-        Me.mnuOptionsStartFolderConvertFromLastFile.Text = "Start Conversion Folder From Last File"
+        Me.mnuOptionsStartFolderConvertFromLastFile.Text = "Start Conversion From Last File"
         '
         'FrameworkToolStripMenuItem
         '
@@ -1105,6 +1107,20 @@ Partial Class Form1
         '
         Me.ToolTipErrorList.ToolTipIcon = System.Windows.Forms.ToolTipIcon.Info
         '
+        'mnuFileLastSolution
+        '
+        Me.mnuFileLastSolution.Enabled = False
+        Me.mnuFileLastSolution.Name = "mnuFileLastSolution"
+        Me.mnuFileLastSolution.Size = New System.Drawing.Size(240, 22)
+        Me.mnuFileLastSolution.Text = "Open Last Solution"
+        '
+        'mnuFileLastProject
+        '
+        Me.mnuFileLastProject.Enabled = False
+        Me.mnuFileLastProject.Name = "mnuFileLastProject"
+        Me.mnuFileLastProject.Size = New System.Drawing.Size(240, 22)
+        Me.mnuFileLastProject.Text = "Open Last Project"
+        '
         'Form1
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(7.0!, 15.0!)
@@ -1258,4 +1274,6 @@ Partial Class Form1
     Friend WithEvents LabelProgress As Label
     Friend WithEvents ToolTipFileList As ToolTip
     Friend WithEvents ToolTipErrorList As ToolTip
+    Friend WithEvents mnuFileLastProject As ToolStripMenuItem
+    Friend WithEvents mnuFileLastSolution As ToolStripMenuItem
 End Class

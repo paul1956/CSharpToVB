@@ -26,7 +26,7 @@ Namespace CSharpToVBCodeConverter.Util
         ''' <param name="FoundEOL"></param>
         ''' <param name="FoundWhiteSpace"></param>
         Private Sub AdjustTrailingTrivia(TriviaList As IEnumerable(Of SyntaxTrivia), NewTrailingTrivia As List(Of SyntaxTrivia), ByRef FoundEOL As Boolean, ByRef FoundWhiteSpace As Boolean)
-            For Each e As IndexStruct(Of SyntaxTrivia) In TriviaList.WithIndex
+            For Each e As IndexClass(Of SyntaxTrivia) In TriviaList.WithIndex
                 Dim Trivia As SyntaxTrivia = e.Value
                 Dim NextTrivia As SyntaxTrivia = If(Not e.IsLast, TriviaList(e.Index + 1), Nothing)
                 Select Case Trivia.RawKind
@@ -259,7 +259,7 @@ Namespace CSharpToVBCodeConverter.Util
             End Select
             Dim NewLeadingTrivia As New List(Of SyntaxTrivia)
             Dim FirstTrivia As Boolean = True
-            For Each e As IndexStruct(Of SyntaxTrivia) In node.GetLeadingTrivia.WithIndex
+            For Each e As IndexClass(Of SyntaxTrivia) In node.GetLeadingTrivia.WithIndex
                 Dim Trivia As SyntaxTrivia = e.Value
                 Dim NextTrivia As SyntaxTrivia = If(Not e.IsLast, node.GetLeadingTrivia(e.Index + 1), Nothing)
                 If Trivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) AndAlso (FirstTrivia OrElse NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia)) Then
@@ -335,7 +335,7 @@ Namespace CSharpToVBCodeConverter.Util
             Dim AfterComment As Boolean = False
             Dim AfterLinefeed As Boolean = False
             Dim FinalTrailingTriviaList As New List(Of SyntaxTrivia)
-            For Each e As IndexStruct(Of SyntaxTrivia) In InitialTriviaList.WithIndex
+            For Each e As IndexClass(Of SyntaxTrivia) In InitialTriviaList.WithIndex
                 Dim Trivia As SyntaxTrivia = e.Value
                 Dim NextTrivia As SyntaxTrivia = If(Not e.IsLast, InitialTriviaList(e.Index + 1), VBFactory.ElasticMarker)
                 Select Case Trivia.RawKind
@@ -414,12 +414,7 @@ Namespace CSharpToVBCodeConverter.Util
             Dim AfterWhiteSpace As Boolean = False
             Dim FinalLeadingTriviaList As New List(Of SyntaxTrivia)
             Dim InitialTriviaList As List(Of SyntaxTrivia) = Node.GetLeadingTrivia.ToList
-            Dim SkipNext As Boolean = False
-            For Each e As IndexStruct(Of SyntaxTrivia) In InitialTriviaList.WithIndex
-                If SkipNext Then
-                    SkipNext = False
-                    Continue For
-                End If
+            For Each e As IndexClass(Of SyntaxTrivia) In InitialTriviaList.WithIndex
                 Dim Trivia As SyntaxTrivia = e.Value
                 Dim NextTrivia As SyntaxTrivia = If(Not e.IsLast, InitialTriviaList(e.Index + 1), Nothing)
                 Select Case Trivia.RawKind
@@ -432,7 +427,7 @@ Namespace CSharpToVBCodeConverter.Util
                                 Continue For
                             Else
                                 Trivia = NextTrivia
-                                SkipNext = True
+                                e.MoveNext()
                             End If
                         End If
                         AfterFirstTrivia = True
@@ -505,7 +500,7 @@ Namespace CSharpToVBCodeConverter.Util
             AfterLineContinuation = False
             Dim AfterLinefeed As Boolean = False
             Dim FinalTrailingTriviaList As New List(Of SyntaxTrivia)
-            For Each e As IndexStruct(Of SyntaxTrivia) In InitialTriviaList.WithIndex
+            For Each e As IndexClass(Of SyntaxTrivia) In InitialTriviaList.WithIndex
                 Dim Trivia As SyntaxTrivia = e.Value
                 Dim NextTrivia As SyntaxTrivia = If(Not e.IsLast, InitialTriviaList(e.Index + 1), VBFactory.ElasticMarker)
                 Select Case Trivia.RawKind
@@ -874,7 +869,7 @@ Namespace CSharpToVBCodeConverter.Util
                     walker.Visit(SingleLineDocumentationComment)
 
                     Dim xmlNodes As New List(Of VBS.XmlNodeSyntax)
-                    For Each e As IndexStruct(Of CSS.XmlNodeSyntax) In SingleLineDocumentationComment.Content.WithIndex
+                    For Each e As IndexClass(Of CSS.XmlNodeSyntax) In SingleLineDocumentationComment.Content.WithIndex
                         Dim node As CSS.XmlNodeSyntax = e.Value
                         If (Not node.IsKind(CS.SyntaxKind.XmlText)) AndAlso node.GetLeadingTrivia.Any AndAlso node.GetLeadingTrivia.First.IsKind(CS.SyntaxKind.DocumentationCommentExteriorTrivia) Then
                             If Not e.IsLast Then
@@ -951,7 +946,7 @@ Namespace CSharpToVBCodeConverter.Util
                 Return TriviaList
             End If
             Try
-                For Each e As IndexStruct(Of SyntaxTrivia) In TriviaToConvert.WithIndex
+                For Each e As IndexClass(Of SyntaxTrivia) In TriviaToConvert.WithIndex
                     Dim Trivia As SyntaxTrivia = e.Value
                     Dim NextTrivia As SyntaxTrivia = If(Not e.IsLast, TriviaToConvert(e.Index + 1), Nothing)
                     Select Case Trivia.RawKind

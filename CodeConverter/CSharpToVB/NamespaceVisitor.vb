@@ -173,13 +173,12 @@ End Function
                 ConvertBaseList(node, [inherits], [implements], s_implementedMembers)
 
                 Dim classType As ITypeSymbol = CType(_mSemanticModel.GetDeclaredSymbol(node), ITypeSymbol)
-                For Each e As IndexStruct(Of CSS.MemberDeclarationSyntax) In node.Members.WithIndex
+                For Each e As IndexClass(Of CSS.MemberDeclarationSyntax) In node.Members.WithIndex
                     If s_originalRequest.CancelToken.IsCancellationRequested Then
                         Throw New OperationCanceledException
                     End If
                     Dim m As CSS.MemberDeclarationSyntax = e.Value
                     Dim Statement As VBS.StatementSyntax = DirectCast(m.Accept(Me), VBS.StatementSyntax)
-
                     ' Cases below are handled by RestructureAttributesAndModifiers
                     If Statement.IsKind(VB.SyntaxKind.FieldDeclaration) Then
                         members.Add(Statement)
@@ -294,12 +293,7 @@ End Function
                         If ClassStatement.GetTrailingTrivia.ContainsCommentOrDirectiveTrivia Then
                             Dim OldTrailingTrivia As SyntaxTriviaList = ClassStatement.GetTrailingTrivia
                             Dim NewTrailingTrivia As New List(Of SyntaxTrivia)
-                            Dim SkipNext As Boolean = False
-                            For Each e As IndexStruct(Of SyntaxTrivia) In OldTrailingTrivia.WithIndex
-                                If SkipNext Then
-                                    SkipNext = False
-                                    Continue For
-                                End If
+                            For Each e As IndexClass(Of SyntaxTrivia) In OldTrailingTrivia.WithIndex
                                 Dim Trivia As SyntaxTrivia = e.Value
                                 Dim NextTrivia As SyntaxTrivia = If(Not e.IsLast, OldTrailingTrivia(e.Index + 1), Nothing)
                                 Dim FoundSpace As Boolean = False
@@ -317,7 +311,7 @@ End Function
                                         If NextTrivia.IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
                                             NewTrailingTrivia.Add(VBEOLTrivia)
                                             NewTrailingTrivia.Add(NextTrivia)
-                                            SkipNext = True
+                                            e.MoveNext()
                                         End If
                                     Case VB.SyntaxKind.CommentTrivia
                                         If Not FoundSpace Then
@@ -385,7 +379,7 @@ End Function
                     Dim movedTrailingSpace As String = ""
                     Dim vbEnumSatement As VBS.StatementSyntax
                     Dim leadingTrivia As List(Of SyntaxTrivia) = ConvertOpenBraceTrivia(node.OpenBraceToken)
-                    For Each e As IndexStruct(Of CSS.EnumMemberDeclarationSyntax) In csMembers.WithIndex
+                    For Each e As IndexClass(Of CSS.EnumMemberDeclarationSyntax) In csMembers.WithIndex
                         If e.IsLast Then
                             Exit For
                         End If
@@ -503,7 +497,7 @@ End Function
                     Return FlagUnsupportedStatements(node, "unsafe interfaces", CommentOutOriginalStatements:=True)
                 End If
                 Dim members As New List(Of VBS.StatementSyntax)
-                For Each e As IndexStruct(Of CSS.MemberDeclarationSyntax) In node.Members.WithIndex
+                For Each e As IndexClass(Of CSS.MemberDeclarationSyntax) In node.Members.WithIndex
                     If e.IsFirst AndAlso node.OpenBraceToken.LeadingTrivia.ContainsCommentOrDirectiveTrivia Then
                         members.Add(DirectCast(e.Value.Accept(Me), VBS.StatementSyntax).WithPrependedLeadingTrivia(ConvertTrivia(node.OpenBraceToken.LeadingTrivia)))
                     Else
@@ -560,7 +554,7 @@ End Function
                 Dim LeadingTrivia As List(Of SyntaxTrivia) = ConvertOpenBraceTrivia(node.OpenBraceToken)
                 Dim members As New List(Of VBS.StatementSyntax)
 
-                For Each e As IndexStruct(Of CSS.MemberDeclarationSyntax) In node.Members.WithIndex
+                For Each e As IndexClass(Of CSS.MemberDeclarationSyntax) In node.Members.WithIndex
                     If s_originalRequest.CancelToken.IsCancellationRequested Then
                         Throw New OperationCanceledException
                     End If

@@ -34,7 +34,7 @@ Namespace CSharpToVBCodeConverter.Util
         Private Sub HandleCollisions(isFixed As IList(Of Boolean), names As IList(Of String), name As String, collisionIndices As List(Of Integer), canUse As Func(Of String, Boolean), Optional isCaseSensitive As Boolean = True)
             Dim suffix As Integer = 1
             Dim comparer As StringComparer = If(isCaseSensitive, StringComparer.Ordinal, StringComparer.OrdinalIgnoreCase)
-            For Each e As IndexStruct(Of Integer) In collisionIndices.WithIndex
+            For Each e As IndexClass(Of Integer) In collisionIndices.WithIndex
                 If isFixed(e.Value) Then
                     ' can't do anything about this name.
                     Continue For

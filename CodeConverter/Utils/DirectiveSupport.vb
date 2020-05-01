@@ -30,7 +30,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             If ArgumentList.Arguments.Count = 0 Then
                 Return False
             End If
-            For Each e As IndexStruct(Of CSS.ArgumentSyntax) In ArgumentList.Arguments.WithIndex
+            For Each e As IndexClass(Of CSS.ArgumentSyntax) In ArgumentList.Arguments.WithIndex
                 For Each t As SyntaxTrivia In e.Value.GetLeadingTrivia
                     Select Case t.RawKind
                         Case CS.SyntaxKind.DisabledTextTrivia,
