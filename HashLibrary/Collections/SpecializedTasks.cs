@@ -1,4 +1,6 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -38,25 +40,9 @@ namespace Roslyn.Utilities
             return Empty<T>.EmptyList;
         }
 
-        public static Task<ImmutableArray<T>> EmptyImmutableArray<T>()
-        {
-            return Empty<T>.EmptyImmutableArray;
-        }
-
-        public static Task<IEnumerable<T>> EmptyEnumerable<T>()
-        {
-            return Empty<T>.EmptyEnumerable;
-        }
-
-        public static Task<T> FromResult<T>(T t) where T : class
-        {
-            return FromResultCache<T>.FromResult(t);
-        }
-
         private static class Empty<T>
         {
             public static readonly Task<T> Default = Task.FromResult<T>(default);
-            public static readonly Task<IEnumerable<T>> EmptyEnumerable = Task.FromResult<IEnumerable<T>>(SpecializedCollections.EmptyEnumerable<T>());
             public static readonly Task<ImmutableArray<T>> EmptyImmutableArray = Task.FromResult(ImmutableArray<T>.Empty);
             public static readonly Task<IList<T>> EmptyList = Task.FromResult(SpecializedCollections.EmptyList<T>());
             public static readonly Task<IReadOnlyList<T>> EmptyReadOnlyList = Task.FromResult(SpecializedCollections.EmptyReadOnlyList<T>());
