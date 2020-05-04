@@ -10,7 +10,9 @@ Namespace CSharpToVB.Tests
     <TestClass()> Public Class XMLDocumentCommentTest1
         Inherits ConverterTestBase
 
-        Private Const CsharpCode As String = "// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+        Private Const CsharpCode As String = "// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.CSharp.Extensions;
@@ -41,11 +43,13 @@ namespace Microsoft.CodeAnalysis.CSharp.Diagnostics.Analyzers
 }
 "
 
-        Private Const DesiredResult As String = "Option Explicit Off
+        Private Const DesiredResult As String = "' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+Option Explicit Off
 Option Infer On
 Option Strict Off
 
-' Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 Imports System.Collections.Immutable
 Imports Microsoft.CodeAnalysis.CSharp.Extensions
 Imports Microsoft.CodeAnalysis.CSharp.Syntax

@@ -13,8 +13,11 @@ Imports Microsoft.CodeAnalysis.Simplification
 Imports Microsoft.CodeAnalysis.VisualBasic
 
 Imports CS = Microsoft.CodeAnalysis.CSharp
+
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
+
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
+
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
@@ -39,6 +42,13 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             End Sub
 
             Public Property IsInterator As Boolean
+
+            Private Shared Function ContainsLocalFunctionReference(syntax As SyntaxNode, localFunctionSymbol As IMethodSymbol, _semanticModel As SemanticModel) As Boolean
+                Return syntax.DescendantNodes().
+                                OfType(Of CSS.SimpleNameSyntax)().
+                                Any(Function(name As CSS.SimpleNameSyntax) name.Identifier.ValueText = localFunctionSymbol.Name AndAlso
+                                SymbolEqualityComparer.[Default].Equals(_semanticModel.GetSymbolInfo(name).Symbol, localFunctionSymbol))
+            End Function
 
             Private Shared Function GetPossibleEventName(expression As CSS.ExpressionSyntax) As String
                 Dim ident As CSS.IdentifierNameSyntax = TryCast(expression, CSS.IdentifierNameSyntax)
@@ -449,7 +459,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                             OneStatement = VBFactory.ExpressionStatement(DirectCast(OneStatement, VBS.ExpressionSyntax))
                     End Select
                 End If
-                StatementList.Add(DirectCast(OneStatement, VBS.StatementSyntax).WithLeadingTrivia(NewLeadingTrivia).WithTrailingTrivia(NewTrailingTrivia).WithTrailingEOL)
+                StatementList.AddRange(ReplaceStatementWithMarkedStatements(node, DirectCast(OneStatement, VBS.StatementSyntax).WithLeadingTrivia(NewLeadingTrivia).WithTrailingTrivia(NewTrailingTrivia).WithTrailingEOL))
                 Return StatementList
             End Function
 
@@ -527,7 +537,6 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                     CaseLabelExpression = VBFactory.IdentifierName("Else")
                                 Else
                                     CaseLabelExpression = Nothing
-                                    Stop
                                 End If
                             ElseIf TypeOf PatternLabel.Pattern Is CSS.RecursivePatternSyntax Then
                                 CaseLabelExpression = NothingExpression
@@ -1310,8 +1319,105 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             End Function
 
             Public Overrides Function VisitLocalFunctionStatement(node As CSS.LocalFunctionStatementSyntax) As SyntaxList(Of VBS.StatementSyntax)
-                Dim syntaxList1 As SyntaxList(Of VBS.StatementSyntax) = VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.EmptyStatement.WithLeadingTrivia(node.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=False, "Local Functions are not support by VB")).WithPrependedLeadingTrivia(ConvertTrivia(node.GetLeadingTrivia)).WithConvertedTrailingTriviaFrom(node))
-                Return syntaxList1
+                Dim localFunctionSymbol As IMethodSymbol = CType(_semanticModel.GetDeclaredSymbol(node), IMethodSymbol)
+                Dim indexOfFirstReferencingStatement As Integer = -1
+                Dim StatementWithIssues As CSS.StatementSyntax = Nothing
+                If TypeOf node.Parent Is CSS.BlockSyntax Then
+                    Dim _parent As CSS.BlockSyntax = CType(node.Parent, CSS.BlockSyntax)
+                    If Not _parent.Parent.IsKind(CS.SyntaxKind.MethodDeclaration, CS.SyntaxKind.GetAccessorDeclaration) Then
+                        Return VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.EmptyStatement.WithLeadingTrivia(node.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=False, "Local Functions are not support by VB")).WithPrependedLeadingTrivia(ConvertTrivia(node.GetLeadingTrivia)).WithConvertedTrailingTriviaFrom(node))
+                    End If
+                    indexOfFirstReferencingStatement = _parent.Statements.TakeWhile(Function(s As CSS.StatementSyntax) Not ContainsLocalFunctionReference(s, localFunctionSymbol, _semanticModel)).Count()
+                    If indexOfFirstReferencingStatement = 0 Then
+                        StatementWithIssues = _parent
+                        If TypeOf StatementWithIssues Is CSS.BlockSyntax Then
+                            StatementWithIssues = CType(StatementWithIssues, CSS.BlockSyntax).Statements(0)
+                        End If
+                    Else
+                        StatementWithIssues = _parent.Statements(indexOfFirstReferencingStatement - 1)
+                    End If
+                ElseIf TypeOf node.Parent Is CSS.SwitchSectionSyntax Then
+                    Return VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.EmptyStatement.WithLeadingTrivia(node.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=False, "Local Functions are not support by VB")).WithPrependedLeadingTrivia(ConvertTrivia(node.GetLeadingTrivia)).WithConvertedTrailingTriviaFrom(node))
+                    'Dim _parent As CSS.SwitchSectionSyntax = CType(node.Parent, CSS.SwitchSectionSyntax)
+                    'indexOfFirstReferencingStatement = _parent.Statements.TakeWhile(Function(s As CSS.StatementSyntax) Not ContainsLocalFunctionReference(s, localFunctionSymbol, _semanticModel)).Count()
+                    'StatementWithIssues = _parent.Statements(indexOfFirstReferencingStatement)
+                Else
+                    Stop
+                End If
+                If StatementWithIssues.IsKind(CS.SyntaxKind.LocalFunctionStatement) Then
+                    Return VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.EmptyStatement.WithLeadingTrivia(node.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=False, "Local Functions are not support by VB")).WithPrependedLeadingTrivia(ConvertTrivia(node.GetLeadingTrivia)).WithConvertedTrailingTriviaFrom(node))
+                End If
+
+                Dim parameters As SeparatedSyntaxList(Of CSS.ParameterSyntax) = node.ParameterList.Parameters
+                Dim vbParameters As New SeparatedSyntaxList(Of VBS.ParameterSyntax)
+                If parameters.Any Then
+                    For index As Integer = 0 To parameters.Count - 1
+                        vbParameters = vbParameters.Add(DirectCast(parameters(index).Accept(_nodesVisitor), VBS.ParameterSyntax))
+                    Next
+                End If
+                Dim parameterList As VBS.ParameterListSyntax = VBFactory.ParameterList(OpenParenToken, vbParameters, CloseParenToken)
+                Dim returnsVoid As Boolean = node.ReturnType Is Nothing OrElse node.ReturnType.ToString = "void"
+                Dim lambdaHeader As VBS.LambdaHeaderSyntax
+                Dim Kind As VB.SyntaxKind
+                Dim endblock As VBS.EndBlockStatementSyntax
+                Dim csBraces As (LeftBrace As SyntaxToken, RightBrace As SyntaxToken) = node.Body.GetBraces
+
+                Dim TypeList As New List(Of VBS.TypeSyntax)
+                For Each parameter As VBS.ParameterSyntax In parameterList.Parameters
+                    TypeList.Add(parameter.AsClause.Type)
+                Next
+                Dim returnType As VBS.TypeSyntax
+                Dim modifiers As SyntaxTokenList = VBFactory.TokenList(ConvertModifiers(node.Modifiers, _nodesVisitor.IsModule, TokenContext.LocalFunction))
+                If node.DescendantNodes().OfType(Of CSS.YieldStatementSyntax).Any Then
+                    modifiers = modifiers.Add(IteratorKeyword)
+                End If
+
+                If returnsVoid Then
+                    Kind = VB.SyntaxKind.MultiLineSubLambdaExpression
+                    lambdaHeader = VBFactory.SubLambdaHeader(attributeLists:=Nothing, modifiers, parameterList, asClause:=Nothing)
+                    endblock = VBFactory.EndSubStatement().WithConvertedTriviaFrom(csBraces.RightBrace)
+                Else
+                    returnType = DirectCast(node.ReturnType.Accept(_nodesVisitor), VBS.TypeSyntax).WithLeadingTrivia(SpaceTrivia)
+                    TypeList.Add(returnType)
+                    Kind = VB.SyntaxKind.MultiLineSubLambdaExpression
+                    lambdaHeader = VBFactory.FunctionLambdaHeader(attributeLists:=Nothing, modifiers, parameterList, VBFactory.SimpleAsClause(returnType))
+                    endblock = VBFactory.EndFunctionStatement().WithConvertedTriviaFrom(csBraces.RightBrace)
+                End If
+                Dim body As New SyntaxList(Of VBS.StatementSyntax)
+                If node.Body IsNot Nothing Then
+                    body = node.Body.Accept(Me)
+                Else
+                    If node.ExpressionBody.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
+                        body = _nodesVisitor.GetExpressionBodyStatements(node.ExpressionBody.WithoutLeadingTrivia)
+                    Else
+                        body = _nodesVisitor.GetExpressionBodyStatements(node.ExpressionBody)
+                    End If
+                End If
+                Dim names As SeparatedSyntaxList(Of VBS.ModifiedIdentifierSyntax) =
+                    VBFactory.SingletonSeparatedList(
+                        VBFactory.ModifiedIdentifier(GenerateSafeVBToken(node.Identifier,
+                                                                         IsQualifiedName:=False,
+                                                                         IsTypeName:=False)
+                                                                         )
+                                                     )
+                Dim asClause As VBS.SimpleAsClauseSyntax = Nothing
+                If TypeList.Any Then
+                    Dim typeArguments As VBS.TypeArgumentListSyntax = VBFactory.TypeArgumentList(VBFactory.SeparatedList(TypeList))
+                    Dim genericName As VBS.TypeSyntax = VBFactory.GenericName(VBFactory.Identifier("Func"), typeArguments)
+                    asClause = VBFactory.SimpleAsClause(genericName)
+                Else
+                    asClause = VBFactory.SimpleAsClause(VBFactory.IdentifierName("Action"))
+                End If
+                Dim lambdaExpression As VBS.MultiLineLambdaExpressionSyntax = VBFactory.MultiLineLambdaExpression(
+                                                            Kind,
+                                                            lambdaHeader.WithoutLeadingTrivia.WithTrailingEOL,
+                                                            body,
+                                                            endblock)
+                Dim initializer As VBS.EqualsValueSyntax = VBFactory.EqualsValue(lambdaExpression)
+                Dim declarators As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(names, asClause, initializer))
+                Dim dimStatement As VBS.LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(DimModifier, declarators).WithConvertedTrailingTriviaFrom(node)
+                StatementWithIssues.AddMarker(dimStatement, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
+                Return VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.EmptyStatement)
             End Function
 
             Public Overrides Function VisitLockStatement(node As CSS.LockStatementSyntax) As SyntaxList(Of VBS.StatementSyntax)
@@ -1382,6 +1488,8 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         Dim PatternSwitch As CSS.CasePatternSwitchLabelSyntax = DirectCast(node.Sections(0).Labels(0), CSS.CasePatternSwitchLabelSyntax)
                         If TypeOf PatternSwitch.Pattern Is CSS.DeclarationPatternSyntax Then
                             Expression = VBFactory.TrueLiteralExpression(TrueKeyword)
+                        ElseIf TypeOf PatternSwitch.Pattern Is CSS.VarPatternSyntax Then
+                            ' TODO Handle
                         ElseIf TypeOf PatternSwitch.Pattern Is CSS.ConstantPatternSyntax Then
                             ' TODO Handle
                         ElseIf TypeOf PatternSwitch.Pattern Is CSS.RecursivePatternSyntax Then

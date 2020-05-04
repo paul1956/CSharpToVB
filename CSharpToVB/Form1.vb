@@ -64,6 +64,29 @@ Partial Public Class Form1
         End Set
     End Property
 
+    Private Shared Function ConvertFramework(Framework As String) As String
+        Select Case Framework
+            Case "netcoreapp3.0"
+                Return "NETCOREAPP3_0"
+            Case "netcoreapp3.1"
+                Return "NETCOREAPP3_1"
+            Case "netstandard1.3"
+                Return "NETSTANDARD1_3"
+            Case "netstandard2.0"
+                Return "NETSTANDARD2_0"
+            Case "net20"
+                Return "NET20"
+            Case "net35"
+                Return "NET35"
+            Case "net45"
+                Return "NET45"
+            Case "net472"
+                Return "NET472"
+            Case Else
+                Return Framework.ToUpper(Globalization.CultureInfo.InvariantCulture).Replace(".", "_", StringComparison.OrdinalIgnoreCase)
+        End Select
+    End Function
+
     <ExcludeFromCodeCoverage>
     Private Shared Function GetExceptionsAsString(Exceptions As IReadOnlyList(Of Exception)) As String
         If Exceptions Is Nothing OrElse Not Exceptions.Any Then
@@ -155,6 +178,7 @@ Partial Public Class Form1
     End Sub
 
     Private Sub Compile_Colorize(TextToCompile As String, VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)))
+        _inColorize = False
         Dim CompileResult As (Success As Boolean, EmitResult As EmitResult) = CompileVisualBasicString(TextToCompile, VBPreprocessorSymbols, DiagnosticSeverity.Error, _resultOfConversion)
 
         LabelErrorCount.Text = $"Number Of Errors:  {_resultOfConversion.GetFilteredListOfFailures().Count}"
@@ -265,29 +289,6 @@ Partial Public Class Form1
                 LabelErrorCount.Text = "File Skipped"
         End Select
         Return _resultOfConversion.ResultStatus <> ResultTriState.Failure
-    End Function
-
-    Private Function ConvertFramework(Framework As String) As String
-        Select Case Framework
-            Case "netcoreapp3.0"
-                Return "NETCOREAPP3_0"
-            Case "netcoreapp3.1"
-                Return "NETCOREAPP3_1"
-            Case "netstandard1.3"
-                Return "NETSTANDARD1_3"
-            Case "netstandard2.0"
-                Return "NETSTANDARD2_0"
-            Case "net20"
-                Return "NET20"
-            Case "net35"
-                Return "NET35"
-            Case "net45"
-                Return "NET45"
-            Case "net472"
-                Return "NET472"
-            Case Else
-                Return Framework.ToUpper(Globalization.CultureInfo.InvariantCulture).Replace(".", "_", StringComparison.OrdinalIgnoreCase)
-        End Select
     End Function
 
     ''' <summary>
@@ -703,6 +704,7 @@ Partial Public Class Form1
     Private Sub mnuCompile_Click(sender As Object, e As EventArgs) Handles mnuCompile.Click
         LineNumbers_For_RichTextBoxInput.Visible = False
         LineNumbers_For_RichTextBoxOutput.Visible = False
+        ListBoxErrorList.Items.Clear()
 
         If String.IsNullOrWhiteSpace(RichTextBoxConversionOutput.Text) Then
             Exit Sub
@@ -1424,6 +1426,7 @@ Partial Public Class Form1
         Next
         Return True
     End Function
+
     Private Async Sub ProcessProjectOrSolution(fileName As String)
         _cancellationTokenSource = New CancellationTokenSource
         Dim solutionRoot As String = GetSavePath(fileName, PromptIfDirExsits:=True).SolutionRoot
@@ -1677,6 +1680,7 @@ Partial Public Class Form1
                    End Sub)
         End If
     End Sub
+
     Protected Overrides Sub OnLoad(e As EventArgs)
         SetStyle(ControlStyles.AllPaintingInWmPaint Or ControlStyles.UserPaint Or ControlStyles.DoubleBuffer, True)
         ' enable events...

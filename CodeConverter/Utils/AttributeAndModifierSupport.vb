@@ -28,6 +28,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             XMLComment
             Struct
             [Property]
+            LocalFunction
         End Enum
 
         Private Function ConvertModifier(m As SyntaxToken, IsModule As Boolean, context As TokenContext, ByRef FoundVisibility As Boolean) As SyntaxToken
@@ -294,6 +295,9 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     End If
                     If context = TokenContext.InterfaceOrModule Then
                         Return NotInheritableKeyword
+                    End If
+                    If context = TokenContext.LocalFunction Then
+                        Return EmptyToken
                     End If
                     Return SharedKeyword
                 Case CS.SyntaxKind.ThisKeyword
