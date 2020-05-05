@@ -160,8 +160,10 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     Case TypeOf node Is CSS.EmptyStatementSyntax
                         Return VBFactory.List(Of VBS.StatementSyntax)()
                 End Select
-
-                Return node.Accept(Me)
+                If TypeOf node IsNot CSS.LocalFunctionStatementSyntax Then
+                    Return node.Accept(Me)
+                End If
+                Return VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.EmptyStatement)
             End Function
 
             Private Function ConvertCatchClause(index As Integer, catchClause As CSS.CatchClauseSyntax) As VBS.CatchBlockSyntax
@@ -1319,6 +1321,9 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             End Function
 
             Public Overrides Function VisitLocalFunctionStatement(node As CSS.LocalFunctionStatementSyntax) As SyntaxList(Of VBS.StatementSyntax)
+                If node.AncestorsAndSelf().OfType(Of CSS.LocalFunctionStatementSyntax).Count > 1 Then
+                    Return VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.EmptyStatement)
+                End If
                 Dim localFunctionSymbol As IMethodSymbol = CType(_semanticModel.GetDeclaredSymbol(node), IMethodSymbol)
                 Dim indexOfFirstReferencingStatement As Integer = -1
                 Dim StatementWithIssues As CSS.StatementSyntax = Nothing
@@ -1337,10 +1342,10 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         StatementWithIssues = _parent.Statements(indexOfFirstReferencingStatement - 1)
                     End If
                 ElseIf TypeOf node.Parent Is CSS.SwitchSectionSyntax Then
-                    Return VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.EmptyStatement.WithLeadingTrivia(node.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=False, "Local Functions are not support by VB")).WithPrependedLeadingTrivia(ConvertTrivia(node.GetLeadingTrivia)).WithConvertedTrailingTriviaFrom(node))
-                    'Dim _parent As CSS.SwitchSectionSyntax = CType(node.Parent, CSS.SwitchSectionSyntax)
-                    'indexOfFirstReferencingStatement = _parent.Statements.TakeWhile(Function(s As CSS.StatementSyntax) Not ContainsLocalFunctionReference(s, localFunctionSymbol, _semanticModel)).Count()
-                    'StatementWithIssues = _parent.Statements(indexOfFirstReferencingStatement)
+                    'Return VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.EmptyStatement.WithLeadingTrivia(node.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=False, "Local Functions are not support by VB")).WithPrependedLeadingTrivia(ConvertTrivia(node.GetLeadingTrivia)).WithConvertedTrailingTriviaFrom(node))
+                    Dim _parent As CSS.SwitchSectionSyntax = CType(node.Parent, CSS.SwitchSectionSyntax)
+                    indexOfFirstReferencingStatement = _parent.Statements.TakeWhile(Function(s As CSS.StatementSyntax) Not ContainsLocalFunctionReference(s, localFunctionSymbol, _semanticModel)).Count()
+                    StatementWithIssues = _parent.Statements(indexOfFirstReferencingStatement - 1)
                 Else
                     Stop
                 End If
@@ -1385,7 +1390,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 End If
                 Dim body As New SyntaxList(Of VBS.StatementSyntax)
                 If node.Body IsNot Nothing Then
-                    body = node.Body.Accept(Me)
+                    body = ReplaceStatementsWithMarkedStatements(node, node.Body.Accept(Me))
                 Else
                     If node.ExpressionBody.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
                         body = _nodesVisitor.GetExpressionBodyStatements(node.ExpressionBody.WithoutLeadingTrivia)

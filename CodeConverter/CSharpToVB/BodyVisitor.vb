@@ -18,9 +18,8 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
 
         Partial Friend Class NodesVisitor
             Private Shared Function GetBodyStatements(block As BlockSyntax, visitor As MethodBodyVisitor) As SyntaxList(Of VBS.StatementSyntax)
-                Dim localFunctionList As List(Of CSS.LocalFunctionStatementSyntax) = block.DescendantNodes().OfType(Of LocalFunctionStatementSyntax).ToList
                 Dim Statements As New List(Of VBS.StatementSyntax)
-                For Each localFunction As LocalFunctionStatementSyntax In localFunctionList
+                For Each localFunction As LocalFunctionStatementSyntax In block.DescendantNodes().OfType(Of LocalFunctionStatementSyntax).ToList()
                     Dim EmptyStatement As VBS.StatementSyntax = localFunction.Accept(visitor)(0)
                     If EmptyStatement.ContainsCommentOrDirectiveTrivia Then
                         Statements.Add(EmptyStatement)
