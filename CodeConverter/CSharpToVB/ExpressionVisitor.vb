@@ -1863,7 +1863,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
             End Function
 
             Public Overrides Function VisitInvocationExpression(node As CSS.InvocationExpressionSyntax) As VB.VisualBasicSyntaxNode
-                If node.Expression.ToString() = "NameOf" Then
+                If node.Expression.ToString.Equals("NameOf", StringComparison.OrdinalIgnoreCase) Then
                     Try
                         Dim IdentifierOrMember As String = node.ArgumentList.Arguments(0).Accept(Me).ToString
                         Return VBFactory.NameOfExpression(VBFactory.IdentifierName(IdentifierOrMember)).WithConvertedTriviaFrom(node)

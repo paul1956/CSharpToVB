@@ -24,9 +24,9 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 End If
                 Dim vbNodeList As New List(Of VBS.ArgumentSyntax)
                 Dim separators As New List(Of SyntaxToken)
-                For argumentIndex As Integer = 0 To csArguments.Count - 1
-                    Dim csOperation As Operations.IArgumentOperation = CType(_mSemanticModel.GetOperation(csArguments(argumentIndex)), Operations.IArgumentOperation)
-                    Dim argument As VBS.ArgumentSyntax = DirectCast(csArguments(argumentIndex).Accept(Me), VBS.ArgumentSyntax)
+                For Each e As IndexClass(Of CSS.ArgumentSyntax) In csArguments.WithIndex
+                    Dim csOperation As Operations.IArgumentOperation = CType(_mSemanticModel.GetOperation(e.Value), Operations.IArgumentOperation)
+                    Dim argument As VBS.ArgumentSyntax = DirectCast(e.Value.Accept(Me), VBS.ArgumentSyntax)
                     If csOperation?.Value.Kind = OperationKind.DelegateCreation Then
                         Dim getExpression As VBS.ExpressionSyntax = argument.GetExpression
                         Select Case getExpression.Kind
@@ -41,9 +41,9 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                 End If
                         End Select
                     End If
-                    vbNodeList.Add(argument.WithModifiedNodeTrivia(SeparatorFollows:=csArguments.Count - 1 > argumentIndex))
-                    If csArguments.Count - 1 > argumentIndex Then
-                        separators.Add(CommaToken.WithConvertedTrailingTriviaFrom(csArguments.GetSeparators()(argumentIndex)))
+                    vbNodeList.Add(argument.WithModifiedNodeTrivia(SeparatorFollows:=Not e.IsLast))
+                    If Not e.IsLast Then
+                        separators.Add(CommaToken.WithConvertedTrailingTriviaFrom(csArguments.GetSeparators()(e.Index)))
                     End If
                 Next
                 Dim openParenTokenWithTrivia As SyntaxToken = OpenParenToken.WithConvertedTriviaFrom(OpenToken)
@@ -146,6 +146,12 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     Stop
                 End Try
                 argumentWithTrivia = argumentWithTrivia.WithLeadingTrivia(newLeadingTrivia).WithTrailingTrivia(SpaceTrivia)
+                If name IsNot Nothing Then
+                    Dim tempTrivia As List(Of SyntaxTrivia) = ConvertTrivia(node.NameColon.GetLeadingTrivia).ToList
+                    tempTrivia.AddRange(argumentWithTrivia.GetLeadingTrivia)
+                    argumentWithTrivia = argumentWithTrivia.WithLeadingTrivia(SpaceTrivia)
+                    name = name.WithLeadingTrivia(tempTrivia)
+                End If
                 Return VBFactory.SimpleArgument(name, argumentWithTrivia).WithTrailingTrivia(newTrailingTrivia)
             End Function
 

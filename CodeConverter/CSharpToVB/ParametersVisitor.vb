@@ -68,10 +68,11 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         trailingTrivia.InsertRange(trailingTrivia.Count - 1, {SpaceTrivia, LineContinuation})
                         returnType = returnType.WithTrailingTrivia(trailingTrivia)
                     End If
+                    If returnType IsNot Nothing Then
+                        EqualsLeadingTrivia.AddRange(ConvertTrivia(node.Type.GetLeadingTrivia))
+                    End If
                     If node.Identifier.HasLeadingTrivia Then
-                        If returnType IsNot Nothing Then
-                            EqualsLeadingTrivia.AddRange(ConvertTrivia(node.Identifier.LeadingTrivia))
-                        End If
+                        EqualsLeadingTrivia.AddRange(ConvertTrivia(node.Identifier.LeadingTrivia))
                     End If
                     If node.Identifier.HasTrailingTrivia AndAlso node.Identifier.TrailingTrivia.ContainsCommentOrDirectiveTrivia Then
                         returnType = returnType.WithAppendedTrailingTrivia(ConvertTrivia(node.Identifier.TrailingTrivia))
@@ -300,7 +301,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                                                                 VBFactory.TokenList(modifiers),
                                                                                 Identifier,
                                                                                 AsClause,
-                                                                                defaultValue).WithLeadingTrivia(SpaceTrivia)
+                                                                                defaultValue) ' .WithLeadingTrivia(SpaceTrivia)
                 Return parameterSyntax1
             End Function
 

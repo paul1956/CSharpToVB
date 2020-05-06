@@ -422,12 +422,12 @@ Namespace CSharpToVBCodeConverter.Util
                         If NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) OrElse AfterLineContinuation Then
                             Continue For
                         ElseIf NextTrivia.IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
-                            If Trivia.FullSpan.Length < NextTrivia.FullSpan.Length Then
-                                AfterFirstTrivia = False
+                            If Trivia.FullSpan.Length = 0 OrElse Trivia.FullSpan.Length <= NextTrivia.FullSpan.Length Then
                                 Continue For
                             Else
-                                Trivia = NextTrivia
-                                e.MoveNext()
+                                If NextTrivia.FullSpan.Length = 0 Then
+                                    e.MoveNext()
+                                End If
                             End If
                         End If
                         AfterFirstTrivia = True
