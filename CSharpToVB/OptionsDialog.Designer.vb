@@ -272,7 +272,7 @@ Partial Class OptionsDialog
         Me.Name = "OptionsDialog"
         Me.ShowInTaskbar = False
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent
-        Me.Text = "Options"
+        Me.Text = "Adbavced Options"
         Me.TableLayoutPanel1.ResumeLayout(False)
         Me.ResumeLayout(False)
         Me.PerformLayout()

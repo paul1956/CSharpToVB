@@ -7,16 +7,13 @@ Option Explicit On
 
 Imports System.Collections.ObjectModel
 Imports System.ComponentModel
-Imports System.IO
 Imports System.IO.Pipes
 Imports System.Reflection
 Imports System.Runtime.InteropServices
-Imports System.Runtime.Serialization
 Imports System.Security
 Imports System.Security.Permissions
 Imports System.Security.Principal
 Imports System.Threading
-Imports System.Xml
 
 Namespace Microsoft.VisualBasic.ApplicationServices
 
@@ -168,6 +165,8 @@ Namespace Microsoft.VisualBasic.ApplicationServices
     Public Class WindowsFormsApplicationBase : Inherits ConsoleApplicationBase
         Implements IDisposable
 
+        ' How long a subsequent instance will wait for the original instance to get on its feet.
+        Private Const SECOND_INSTANCE_TIMEOUT As Integer = 2500 'milliseconds.
         Private ReadOnly _appContext As WinFormsAppContext
 
         Private ReadOnly _splashLock As New Object
@@ -176,17 +175,9 @@ Namespace Microsoft.VisualBasic.ApplicationServices
 
         Private _didSplashScreen As Boolean
 
-        <Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0052:Remove unread private members", Justification:="Compatibility")>
-        Private _finishedOnInitilaize As Boolean
-
         Private _isDisposed As Boolean
 
         Private _isSingleInstance As Boolean
-
-        Private _mutexSingleInstance As Mutex
-
-        Private _namedPipeServerStream As NamedPipeServerStream
-
         Private _ok2CloseSplashScreen As Boolean
 
         Private _processingUnhandledExceptionEvent As Boolean
@@ -302,6 +293,24 @@ Namespace Microsoft.VisualBasic.ApplicationServices
         End Property
 
         ''' <summary>
+        ''' Provides access to the main form for this application
+        ''' </summary>
+        Protected Property MainForm() As Form
+            Get
+                Return _appContext?.MainForm
+            End Get
+            Set(value As Form)
+                If value Is Nothing Then
+                    Throw New ArgumentNullException("MainForm")
+                End If
+                If value Is _splashScreen Then
+                    Throw New ArgumentException("Splash And Main Form The Same")
+                End If
+                _appContext.MainForm = value
+            End Set
+        End Property
+
+        ''' <summary>
         '''  Determines when this application will terminate (when the main form goes down, all forms)
         ''' </summary>
         Protected Friend Property ShutdownStyle() As ShutdownMode
@@ -349,24 +358,6 @@ Namespace Microsoft.VisualBasic.ApplicationServices
                 If value Then
                     _isSingleInstance = value
                 End If
-            End Set
-        End Property
-
-        ''' <summary>
-        ''' Provides access to the main form for this application
-        ''' </summary>
-        Protected Property MainForm() As Form
-            Get
-                Return _appContext?.MainForm
-            End Get
-            Set(value As Form)
-                If value Is Nothing Then
-                    Throw New ArgumentNullException("MainForm")
-                End If
-                If value Is _splashScreen Then
-                    Throw New ArgumentException("Splash And Main Form The Same")
-                End If
-                _appContext.MainForm = value
             End Set
         End Property
 
@@ -431,7 +422,6 @@ Namespace Microsoft.VisualBasic.ApplicationServices
             Application.Run(_splashScreen)
         End Sub
 
-        'used to marshal a call to Dispose on the Splash Screen
         ''' <summary>
         ''' Runs the user's program through the VB Startup/Shutdown application model
         ''' </summary>
@@ -507,107 +497,23 @@ Namespace Microsoft.VisualBasic.ApplicationServices
             _ok2CloseSplashScreen = True
         End Sub
 
-        ''' <summary>
-        ''' Uses a named pipe to send the currently parsed options to an already running instance.
-        ''' </summary>
-        ''' <param name="commandLineArgs"></param>
-        Private Sub NamedPipeClientSendOptions(namedPipeID As String, commandLineArgs() As String)
-            ' We are not the first instance, send the named pipe message with our payload and stop loading
-            Using _namedPipeClientStream As New NamedPipeClientStream(".", namedPipeID, PipeDirection.Out)
-                Try
-                    _mutexSingleInstance.WaitOne()
-                    ' Maximum wait 3 seconds
-                    _namedPipeClientStream.Connect(3000)
-                Catch ex As Exception When TypeOf ex Is IOException OrElse TypeOf ex Is TimeoutException
-                    ' Error connecting or sending
-                    Throw New CantStartSingleInstanceException
-                Catch ex As ObjectDisposedException
-                    ' EndWaitForConnection will throw exception when someone closes the pipe before connection made
-                    ' In that case we don't create any more pipes and just return
-                    ' This will happen when app is closing and our pipe is closed/disposed
-                Finally
-                    _mutexSingleInstance.ReleaseMutex()
-                End Try
-
-                Dim serializer As New DataContractSerializer(GetType(NamedPipeXmlData))
-                serializer.WriteObject(_namedPipeClientStream, New NamedPipeXmlData With
-                            {
-                            .CommandLineArguments = commandLineArgs
-                            })
-            End Using
-        End Sub
-
-        ''' <summary>
-        '''     The function called when a client connects to the named pipe. Note: This method is called on a non-UI thread.
-        ''' </summary>
-        ''' <param name="_iAsyncResult"></param>
-        Private Sub NamedPipeServerConnectionCallback(iAsyncResult As IAsyncResult)
+        Private Sub OnStartupNextInstanceMarshallingAdaptor(ByVal args As String())
             If MainForm Is Nothing Then
-                ' This can happen when app is closing
-                Exit Sub
+                Return
             End If
-            ' Mutex access needs to be on UI thread
-            MainForm.Invoke(
-                Sub()
-                    Dim remoteEventArgs As StartupNextInstanceEventArgs = Nothing
-                    Dim ReleaseMutex As Boolean = False
-                    Try
-                        If _mutexSingleInstance.WaitOne(10000) Then
-                            ReleaseMutex = True
-                            ' End waiting for the connection
-                            _namedPipeServerStream.EndWaitForConnection(iAsyncResult)
-                            Dim serializer As New DataContractSerializer(GetType(NamedPipeXmlData))
-                            Dim reader As XmlReader = XmlReader.Create(_namedPipeServerStream)
-                            Dim namedPipePayload As NamedPipeXmlData = CType(serializer.ReadObject(reader), NamedPipeXmlData)
-                            remoteEventArgs = New StartupNextInstanceEventArgs(New ReadOnlyCollection(Of String)(namedPipePayload.CommandLineArguments), bringToForegroundFlag:=True)
-                            _namedPipeServerStream.Disconnect()
-                            ' Create a new pipe for next connection
-                            _namedPipeServerStream.BeginWaitForConnection(AddressOf NamedPipeServerConnectionCallback, _namedPipeServerStream)
-                        Else
-                            Throw New CantStartSingleInstanceException()
-                        End If
-                    Catch ex As Exception When TypeOf ex Is IOException OrElse TypeOf ex Is TimeoutException
-                        ' Error connecting or sending
-                        Throw New CantStartSingleInstanceException
-                    Catch ex As ObjectDisposedException
-                        ' EndWaitForConnection will throw exception when someone closes the pipe before connection made
-                        ' In that case we don't create any more pipes and just return
-                        ' This will happen when app is closing and our pipe is closed/disposed
-                    Finally
-                        If ReleaseMutex Then
-                            _mutexSingleInstance.ReleaseMutex()
-                        End If
-                    End Try
-                    If remoteEventArgs IsNot Nothing Then
-                        OnStartupNextInstance(remoteEventArgs)
-                    End If
-                End Sub)
-        End Sub
-
-        ''' <summary>
-        ''' Starts a new pipe server if one isn't already active.
-        ''' </summary>
-        ''' <param name="namedPipeID"></param>
-        ''' <returns>The applications Unique NamedPipeServerStream</returns>
-        Private Function NamedPipeServerCreateServer(namedPipeID As String) As NamedPipeServerStream
-            Dim namedPipeServerStream As NamedPipeServerStream = Nothing
+            Dim invoked As Boolean = False
             Try
-                ' Create pipe and start the async connection wait
-                namedPipeServerStream = New NamedPipeServerStream(
-                        pipeName:=namedPipeID,
-                        direction:=PipeDirection.In,
-                        maxNumberOfServerInstances:=1,
-                        transmissionMode:=PipeTransmissionMode.Byte,
-                        options:=PipeOptions.Asynchronous,
-                        inBufferSize:=0,
-                        outBufferSize:=0)
-                ' We are the first instance with the named pipe server listening and allow the form to load
-                ' Begin async wait for connections
-                namedPipeServerStream.BeginWaitForConnection(AddressOf NamedPipeServerConnectionCallback, namedPipeServerStream)
-            Catch ex As Exception When TypeOf ex Is IOException OrElse TypeOf ex Is ObjectDisposedException
+                MainForm.Invoke(
+                    Sub()
+                        invoked = True
+                        OnStartupNextInstance(New StartupNextInstanceEventArgs(New ReadOnlyCollection(Of String)(args), True)) 'by default, we set BringToFront as True since that's the behavior most people will want
+                    End Sub)
+            Catch ex As Exception When Not invoked
+                ' Only catch exceptions thrown when the UI thread is not available, before
+                ' the UI thread has been created or after it has been terminated. Exceptions
+                ' thrown from OnStartupNextInstance() should be allowed to propagate.
             End Try
-            Return namedPipeServerStream
-        End Function
+        End Sub
 
         ''' <summary>
         ''' Handles the Windows.Forms.Application.ThreadException event and raises our Unhandled
@@ -638,17 +544,11 @@ Namespace Microsoft.VisualBasic.ApplicationServices
 
             If disposing Then
                 ' free managed resources
-                If _mutexSingleInstance IsNot Nothing Then
-                    _mutexSingleInstance.Dispose()
-                End If
                 If _splashTimer IsNot Nothing Then
                     _splashTimer.Dispose()
                 End If
                 If _appContext IsNot Nothing Then
                     _appContext.Dispose()
-                End If
-                If _namedPipeServerStream IsNot Nothing Then
-                    _namedPipeServerStream.Dispose()
                 End If
             End If
             _isDisposed = True
@@ -722,7 +622,6 @@ Namespace Microsoft.VisualBasic.ApplicationServices
                 ShowSplashScreen()
             End If
 
-            _finishedOnInitilaize = True 'we are now at a point where we can allow the network object to be created since the iPrincipal is on the thread by now.
             Return True 'true means to not bail out but keep on running after OnIntiailize() finishes
         End Function
 
@@ -923,47 +822,22 @@ Namespace Microsoft.VisualBasic.ApplicationServices
             InternalCommandLine = New ReadOnlyCollection(Of String)(commandLine)
 
             If Not IsSingleInstance Then
-                DoApplicationModel() 'This isn't a Single-Instance application
-                Exit Sub
-            End If
-            'This is a Single-Instance application
-            'Note: Must pass the calling assembly from here so we can get the running app.  Otherwise, can break Single-Instance.
-            ' Create a Mutex - If _FirstInstance
-            Dim firstInstance As Boolean = False
-            Try
-                Dim namedPipeID As String = GetApplicationInstanceID(Assembly.GetCallingAssembly) & "NamedPipe"
-                _mutexSingleInstance = New Mutex(initiallyOwned:=True, namedPipeID, createdNew:=firstInstance)
-
-                If firstInstance Then
-                    _namedPipeServerStream = NamedPipeServerCreateServer(namedPipeID)
-                    _mutexSingleInstance.ReleaseMutex()
-                    ' We are the first instance with the named pipe server listening and allow the form to load
-                    ' Begin async wait for connections
-                    DoApplicationModel()
-                    Exit Sub
-                End If
-                ' We are not the first instance send payload And stop loading
-                ' Notify first instance by sending args
-                NamedPipeClientSendOptions(namedPipeID, commandLine)
-            Catch ex As Exception When TypeOf ex Is IOException OrElse TypeOf ex Is TimeoutException
-                ' Error connecting or sending
-                Throw New CantStartSingleInstanceException
-            Catch ex As ObjectDisposedException
-                ' EndWaitForConnection will throw exception when someone closes the pipe before connection made
-                ' In that case we don't create any more pipes and just return
-                ' This will happen when app is closing and our pipe is closed/disposed
-            Finally
-                If _namedPipeServerStream IsNot Nothing Then
-                    If _namedPipeServerStream.IsConnected Then
-                        _namedPipeServerStream.Close()
+                DoApplicationModel()
+            Else 'This is a Single-Instance application
+                Dim ApplicationInstanceID As String = GetApplicationInstanceID(Assembly.GetCallingAssembly) 'Note: Must pass the calling assembly from here so we can get the running app.  Otherwise, can break single instance.
+                Dim pipeServer As NamedPipeServerStream = CreatePipeServer(ApplicationInstanceID)
+                If pipeServer IsNot Nothing Then
+                    '--- This is the first instance of a single-instance application to run.  This is the instance that subsequent instances will attach to.
+                    Using pipeServer
+                        WaitForClientConnectionAsync(pipeServer, AddressOf OnStartupNextInstanceMarshallingAdaptor)
+                        DoApplicationModel()
+                    End Using
+                Else '--- We are launching a subsequent instance.
+                    If Not SendSecondInstanceArgs(ApplicationInstanceID, SECOND_INSTANCE_TIMEOUT, commandLine) Then
+                        Throw New CantStartSingleInstanceException()
                     End If
-                    _namedPipeServerStream.Dispose()
                 End If
-                If firstInstance Then
-                    _mutexSingleInstance.Dispose()
-                End If
-            End Try
-            OnShutdown()
+            End If 'Single-Instance application
         End Sub
 
         ''' <summary>

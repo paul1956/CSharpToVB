@@ -109,7 +109,7 @@ Partial Class IgnoreFilesWithErrorsList
         Me.Name = "IgnoreFilesWithErrorsList"
         Me.ShowInTaskbar = False
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent
-        Me.Text = "Ignore Files With Errors List"
+        Me.Text = "List of files With errors to ignore during automated conversion"
         Me.TableLayoutPanel1.ResumeLayout(False)
         CType(Me.dgvIgnoredFilesList, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)

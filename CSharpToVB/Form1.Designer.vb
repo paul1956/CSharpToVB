@@ -169,7 +169,7 @@ Partial Class Form1
         '
         'mnuFile
         '
-        Me.mnuFile.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuFileOpen, Me.mnuFileSep1, Me.mnuFileSep2, Me.mnuFileLabelLastFolder, Me.mnuFileLastFolder, Me.mnuFileSep3, Me.mnuFileLastSolution, Me.mnuFileLastProject, Me.mnuFileConvertProject, Me.mnuFileSaveAs, Me.mnuFileSep4, Me.mnuFileSnippet, Me.mnuFileSep6, Me.mnuFileExit})
+        Me.mnuFile.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuFileOpen, Me.mnuFileSep1, Me.mnuFileSep2, Me.mnuFileLabelLastFolder, Me.mnuFileLastFolder, Me.mnuFileSep3, Me.mnuFileConvertProject, Me.mnuFileLastProject, Me.mnuFileLastSolution, Me.mnuFileSaveAs, Me.mnuFileSep4, Me.mnuFileSnippet, Me.mnuFileSep6, Me.mnuFileExit})
         Me.mnuFile.Name = "mnuFile"
         Me.mnuFile.ShortcutKeys = CType((System.Windows.Forms.Keys.Alt Or System.Windows.Forms.Keys.F), System.Windows.Forms.Keys)
         Me.mnuFile.Size = New System.Drawing.Size(37, 20)
@@ -224,7 +224,7 @@ Partial Class Form1
         Me.mnuFileSaveAs.Name = "mnuFileSaveAs"
         Me.mnuFileSaveAs.ShortcutKeys = CType((System.Windows.Forms.Keys.Alt Or System.Windows.Forms.Keys.A), System.Windows.Forms.Keys)
         Me.mnuFileSaveAs.Size = New System.Drawing.Size(240, 22)
-        Me.mnuFileSaveAs.Text = "Save &As..."
+        Me.mnuFileSaveAs.Text = "Save Visual Basic File &As..."
         '
         'mnuFileSep4
         '
@@ -433,7 +433,7 @@ Partial Class Form1
         Me.mnuOptionsPauseConvertOnSuccess.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
         Me.mnuOptionsPauseConvertOnSuccess.Name = "mnuOptionsPauseConvertOnSuccess"
         Me.mnuOptionsPauseConvertOnSuccess.Size = New System.Drawing.Size(360, 22)
-        Me.mnuOptionsPauseConvertOnSuccess.Text = "Pause Folder Conversion on Success"
+        Me.mnuOptionsPauseConvertOnSuccess.Text = "Pause Conversion on Success"
         '
         'mnuOptionsStartFolderConvertFromLastFile
         '
@@ -1143,7 +1143,7 @@ Partial Class Form1
         Me.MainMenuStrip = Me.MenuStrip1
         Me.Name = "Form1"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "Convert C# To VB"
+        Me.Text = "Convert C# to Visual Basic"
         Me.MenuStrip1.ResumeLayout(False)
         Me.MenuStrip1.PerformLayout()
         Me.ContextMenuStrip1.ResumeLayout(False)

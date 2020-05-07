@@ -144,11 +144,6 @@ Partial Class AboutBox1
         Me.TextBoxDescription.Size = New System.Drawing.Size(300, 143)
         Me.TextBoxDescription.TabIndex = 0
         Me.TextBoxDescription.TabStop = False
-        Me.TextBoxDescription.Text = "Description :" &
-            Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) &
-            "(At runtime, the labels' text will be replaced with the application's assembly information." &
-            Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) &
-            "Customize the application's assembly information in the Application pane of Project Designer.)"
         '
         'OKButton
         '

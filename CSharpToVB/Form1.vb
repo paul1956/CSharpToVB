@@ -417,11 +417,11 @@ Partial Public Class Form1
             Next
         Next
         If My.Settings.LastProject.Length > 0 Then
-            mnuFileLastProject.Text = My.Settings.LastProject
+            mnuFileLastProject.Text = $"Last Project - {My.Settings.LastProject}"
             mnuFileLastProject.Enabled = True
         End If
         If My.Settings.LastSolution.Length > 0 Then
-            mnuFileLastSolution.Text = My.Settings.LastSolution
+            mnuFileLastSolution.Text = $"Last Solution - {My.Settings.LastSolution}"
             mnuFileLastSolution.Enabled = True
         End If
         ProgressBar1.Visible = False
@@ -744,7 +744,7 @@ Partial Public Class Form1
         If _requestToConvert.CancelToken.IsCancellationRequested Then
             MsgBox($"Conversion canceled.",
                    MsgBoxStyle.OkOnly Or MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground,
-                   Title:="C# to VB")
+                   Title:="C# to Visual Basic")
             ConversionProgressBar.Value = 0
         End If
         mnuConvertConvertFolder.Enabled = True
@@ -773,13 +773,13 @@ Partial Public Class Form1
         If Not Directory.Exists(SourceFolderName) Then
             MsgBox($"{SourceFolderName} is not a directory.",
                    MsgBoxStyle.OkOnly Or MsgBoxStyle.Exclamation Or MsgBoxStyle.MsgBoxSetForeground,
-                   Title:="C# to VB")
+                   Title:="Convert C# to Visual Basic")
             Exit Sub
         End If
         If String.IsNullOrWhiteSpace(solutionSavePath) Then
             MsgBox($"Conversion aborted.",
                    MsgBoxStyle.OkOnly Or MsgBoxStyle.Exclamation Or MsgBoxStyle.MsgBoxSetForeground,
-                   Title:="C# to VB")
+                   Title:="Convert C# to Visual Basic")
             Exit Sub
         End If
         Dim LastFileNameWithPath As String = If(My.Settings.StartFolderConvertFromLastFile, My.Settings.MRU_Data.Last, "")
@@ -813,7 +813,7 @@ Partial Public Class Form1
         End If
         MsgBox(prompt,
                MsgBoxStyle.OkOnly Or MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground,
-               Title:="C# to VB")
+               Title:="Convert C# to Visual Basic")
         Dim elapsed As TimeSpan = stopwatch.Elapsed
         StatusStripElapasedTimeLabel.Text = $"Elapsed Time - {elapsed.Hours}: {elapsed.Minutes}:{elapsed.Seconds}.{elapsed.Milliseconds}"
 
@@ -894,12 +894,12 @@ Partial Public Class Form1
     End Sub
 
     Private Sub mnuFileLastProject_Click(sender As Object, e As EventArgs) Handles mnuFileLastProject.Click
-        Dim projectFileName As String = CType(sender, ToolStripMenuItem).Text
+        Dim projectFileName As String = My.Settings.LastProject
         ProcessProjectOrSolution(projectFileName)
     End Sub
 
     Private Sub mnuFileLastSolution_Click(sender As Object, e As EventArgs) Handles mnuFileLastSolution.Click
-        Dim solutionFileName As String = CType(sender, ToolStripMenuItem).Text
+        Dim solutionFileName As String = My.Settings.LastSolution
         ProcessProjectOrSolution(solutionFileName)
     End Sub
 
@@ -1323,7 +1323,7 @@ Partial Public Class Form1
     ''' <param name="SolutionRoot"></param>
     ''' <param name="_cancellationTokenSource"></param>
     ''' <returns></returns>
-    Private Async Function ProcessOneProjectAsync(TaskProjectAnalyzer As IProjectAnalyzer, SolutionRoot As String, projectFile As String, processedProjects As Integer, totalProjects As Integer, _cancellationTokenSource As CancellationTokenSource) As Task(Of String)
+    Private Async Function ProcessOneProjectAsync(TaskProjectAnalyzer As IProjectAnalyzer, SolutionRoot As String, processedProjects As Integer, totalProjects As Integer, _cancellationTokenSource As CancellationTokenSource) As Task(Of String)
         Application.DoEvents()
         UpdateProgressLabels("Getting Analyzer Results", True)
         Dim TaskResults As Task(Of IAnalyzerResults) = GetResultsAsync(CType(TaskProjectAnalyzer, ProjectAnalyzer))
@@ -1361,8 +1361,8 @@ Partial Public Class Form1
                 Else
                     frameworkMsg = $"Framework {framework.Index + 1} of {frameworkList.Count}: {framework.Value}"
                 End If
-                StatusStripCurrentFileName.Text = $"{processedProjects} of {totalProjects} Projects, {frameworkMsg}, {projectFile}"
                 Dim currentProject As Project = workspace.CurrentSolution.Projects(0)
+                StatusStripCurrentFileName.Text = $"{processedProjects} of {totalProjects} Projects, {frameworkMsg}, {currentProject.FilePath}"
                 Application.DoEvents()
                 Dim csReferences As MetadataReference() = CSharpReferences(results(framework.Value).References, results(framework.Value).ProjectReferences).ToArray
                 Dim taskConvertOneProject As Task(Of Boolean) =
@@ -1456,9 +1456,9 @@ Partial Public Class Form1
 
             Dim prompt As String = "Conversion stopped."
             If fileName.EndsWith(".sln", StringComparison.OrdinalIgnoreCase) Then
-                mnuFileLastSolution.Text = fileName
                 mnuFileLastSolution.Enabled = True
                 My.Settings.LastSolution = fileName
+                mnuFileLastSolution.Text = $"Last Solution - {fileName}"
                 My.Settings.Save()
                 Dim totalProjects As Integer = solutionAnalyzerManager.Projects.Count
                 Dim processedProjects As Integer = 0
@@ -1478,16 +1478,15 @@ Partial Public Class Form1
                             skipProjects = False
                         End If
                     End If
-                    mnuFileLastProject.Text = projectFile
+                    mnuFileLastProject.Text = $"Last Project - {projectFile}"
                     mnuFileLastProject.Enabled = True
                     My.Settings.LastProject = projectFile
                     My.Settings.Save()
                     Application.DoEvents()
                     Dim resultString As String = Await ProcessOneProjectAsync(
                                         TaskProjectAnalyzer:=proj.Value,
-                                        solutionRoot, projectFile,
-                                        processedProjects, totalProjects,
-                                        _cancellationTokenSource:=_cancellationTokenSource).ConfigureAwait(True)
+                        SolutionRoot:=solutionRoot, processedProjects:=processedProjects,
+                        totalProjects:=totalProjects, _cancellationTokenSource:=_cancellationTokenSource).ConfigureAwait(True)
                     If resultString.Length = 0 Then
                         If _cancellationTokenSource.Token.IsCancellationRequested Then
                             prompt = $"Conversion canceled, {processedProjects} of {totalProjects} projects completed successfully."
@@ -1503,11 +1502,10 @@ Partial Public Class Form1
                 If prompt.Length > 0 Then
                     MsgBox(prompt,
                            MsgBoxStyle.OkOnly Or If(prompt.Contains("terminated", StringComparison.OrdinalIgnoreCase), MsgBoxStyle.Critical, MsgBoxStyle.Information) Or MsgBoxStyle.MsgBoxSetForeground,
-                           Title:="C# to VB")
+                           Title:="Convert C# to Visual Basic")
                 End If
             Else
                 ' Single project
-                My.Settings.Save()
                 UpdateProgressLabels($"Getting Project Analyzer for {fileName}", True)
                 Dim TaskProjectAnalyzer As Task(Of IProjectAnalyzer) = GetProjectAnalyzerAsync(fileName, solutionAnalyzerManager)
                 While Not TaskProjectAnalyzer.IsCompleted
@@ -1517,20 +1515,20 @@ Partial Public Class Form1
                     Await Task.Delay(100).ConfigureAwait(True)
                 End While
                 UpdateProgressLabels("", False)
-                mnuFileLastProject.Text = fileName
+                mnuFileLastProject.Text = $"Last Project - {fileName}"
                 mnuFileLastProject.Enabled = True
                 My.Settings.LastProject = fileName
+                My.Settings.Save()
                 prompt = Await ProcessOneProjectAsync(TaskProjectAnalyzer.Result,
-                    solutionRoot, solutionRoot,
-                    processedProjects:=1, totalProjects:=1,
-                    _cancellationTokenSource).ConfigureAwait(True)
+                    solutionRoot, processedProjects:=1,
+                    totalProjects:=1, _cancellationTokenSource:=_cancellationTokenSource).ConfigureAwait(True)
 
                 If prompt.Length = 0 Then
                     prompt = $"{If(_cancellationTokenSource.Token.IsCancellationRequested, "Conversion canceled", "Conversion completed")}, {FilesConversionProgress.Text.ToLower(Globalization.CultureInfo.CurrentCulture)} completed successfully."
                 End If
                 MsgBox(prompt,
                        MsgBoxStyle.OkOnly Or If(prompt.Contains("terminated", StringComparison.OrdinalIgnoreCase), MsgBoxStyle.Critical, MsgBoxStyle.Information) Or MsgBoxStyle.MsgBoxSetForeground,
-                       Title:="C# to VB")
+                       Title:="Convert C# to Visual Basic")
 
                 Dim projectSavePath As String = DestinationFilePath(fileName, solutionRoot)
                 If Directory.Exists(projectSavePath) AndAlso Not _cancellationTokenSource.IsCancellationRequested Then
@@ -1710,7 +1708,6 @@ Partial Public Class Form1
         ) Handles MyApplication.StartupNextInstance
         ' Put code here that takes command line parameter from additional instances
         ' and allows processing here
-        Stop
     End Sub
 
 End Class
