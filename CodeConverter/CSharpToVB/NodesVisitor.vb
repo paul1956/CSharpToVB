@@ -100,7 +100,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     End If
                     Dim Statement As VBS.StatementSyntax = DirectCast(m.Accept(Me), VBS.StatementSyntax)
                     If Statement IsNot Nothing Then
-                        _membersList = _membersList.AddRange(ReplaceStatementWithMarkedStatements(m, Statement))
+                        _membersList = _membersList.AddRange(ReplaceOneStatementWithMarkedStatements(m, Statement))
                     Else
                         Options = New SyntaxList(Of VBS.OptionStatementSyntax)
                     End If

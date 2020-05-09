@@ -307,6 +307,13 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 If node.Initializer IsNot Nothing Then
                     Initializer = DirectCast(node.Initializer.Accept(Me), VBS.ExpressionStatementSyntax)
                 End If
+                Dim vbStatements As New Dictionary(Of CSS.LocalFunctionStatementSyntax, VBS.StatementSyntax)
+                For Each localFunction As CSS.LocalFunctionStatementSyntax In node.DescendantNodes().OfType(Of CSS.LocalFunctionStatementSyntax).ToList()
+                    Dim replacementStatement As VBS.StatementSyntax = localFunction.Accept(New MethodBodyVisitor(_mSemanticModel, Me))(0)
+                    If TypeOf replacementStatement IsNot VBS.EmptyStatementSyntax OrElse replacementStatement.ContainsCommentOrDirectiveTrivia Then
+                        vbStatements.Add(localFunction, replacementStatement)
+                    End If
+                Next
                 Dim Modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, IsModule, TokenContext.[New])
 
                 Dim parameterList As VBS.ParameterListSyntax = DirectCast(node.ParameterList?.Accept(Me), VBS.ParameterListSyntax)
@@ -324,7 +331,11 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 If node.Body IsNot Nothing Then
                     csCloseBraceToken = node.Body.CloseBraceToken
                     For Each e As IndexClass(Of CSS.StatementSyntax) In node.Body.Statements.WithIndex
-                        Body = Body.AddRange(e.Value.Accept(New MethodBodyVisitor(_mSemanticModel, Me)))
+                        If TypeOf e.Value Is CSS.LocalFunctionStatementSyntax Then
+                            Body = Body.AddRange(ReplaceOneStatementWithMarkedStatements(e.Value, VBFactory.EmptyStatement(), RemoveStatement:=True))
+                        Else
+                            Body = Body.AddRange(e.Value.Accept(New MethodBodyVisitor(_mSemanticModel, Me)))
+                        End If
                     Next
                     EndSubStatement = VBFactory.EndSubStatement().WithConvertedTriviaFrom(csCloseBraceToken)
                     If node.Body.OpenBraceToken.LeadingTrivia.ContainsCommentOrDirectiveTrivia Then
@@ -337,7 +348,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     Body = GetExpressionBodyStatements(node.ExpressionBody)
                 End If
                 If Initializer IsNot Nothing Then
-                    Body = Body.InsertRange(0, ReplaceStatementWithMarkedStatements(node, Initializer))
+                    Body = Body.InsertRange(0, ReplaceOneStatementWithMarkedStatements(node, Initializer))
                 Else
                     Body = ReplaceStatementsWithMarkedStatements(node, Body)
 
@@ -636,22 +647,23 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim body As SyntaxList(Of VBS.StatementSyntax)? = Nothing
 
                 Dim FunctionStatementLeadingTrivia As New List(Of SyntaxTrivia)
-                Dim visitor As New MethodBodyVisitor(_mSemanticModel, Me)
-                Dim localFunctionList As List(Of CSS.LocalFunctionStatementSyntax) = node.DescendantNodes().OfType(Of CSS.LocalFunctionStatementSyntax).ToList
                 Dim vbStatements As New List(Of VBS.StatementSyntax)
-                For Each localFunction As CSS.LocalFunctionStatementSyntax In localFunctionList
-                    Dim EmptyStatement As VBS.StatementSyntax = localFunction.Accept(visitor)(0)
-                    If EmptyStatement.ContainsCommentOrDirectiveTrivia Then
-                        vbStatements.Add(EmptyStatement)
+                Dim visitor As New MethodBodyVisitor(_mSemanticModel, Me)
+                For Each localFunction As CSS.LocalFunctionStatementSyntax In node.DescendantNodes().OfType(Of CSS.LocalFunctionStatementSyntax).ToList()
+                    Dim replacementStatement As VBS.StatementSyntax = localFunction.Accept(visitor)(0)
+                    If TypeOf replacementStatement IsNot VBS.EmptyStatementSyntax OrElse replacementStatement.ContainsCommentOrDirectiveTrivia Then
+                        vbStatements.Add(replacementStatement)
                     End If
                 Next
                 If node.Body IsNot Nothing Then
+                    Dim vbStatementCollection As List(Of VBS.StatementSyntax)
                     For Each e As IndexClass(Of CSS.StatementSyntax) In node.Body.Statements.WithIndex
                         If e.Value.IsKind(CS.SyntaxKind.LocalFunctionStatement) Then
-                            Continue For
+                            vbStatementCollection = ReplaceOneStatementWithMarkedStatements(e.Value, VBFactory.EmptyStatement, True).ToList
+                        Else
+                            vbStatementCollection = e.Value.Accept(visitor).ToList
+                            vbStatementCollection = ReplaceStatementsWithMarkedStatements(e.Value, VBFactory.List(vbStatementCollection)).ToList
                         End If
-                        Dim vbStatementCollection As List(Of VBS.StatementSyntax) = e.Value.Accept(visitor).ToList
-                        vbStatementCollection = ReplaceStatementsWithMarkedStatements(e.Value, VBFactory.List(vbStatementCollection)).ToList
                         If e.IsFirst Then
                             If node.Body.OpenBraceToken.LeadingTrivia.ContainsCommentOrDirectiveTrivia Then
                                 vbStatementCollection(0) = vbStatementCollection(0).WithPrependedLeadingTrivia(ConvertTrivia(node.Body.OpenBraceToken.LeadingTrivia))
@@ -1100,7 +1112,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         Dim ReturnStatement As VBS.ReturnStatementSyntax = VBFactory.ReturnStatement(ReturnedExpression.WithLeadingTrivia(SpaceTrivia)).
                                                 WithLeadingTrivia(ReturnedExpression.GetLeadingTrivia)
                         ReturnStatement = ReturnStatement.RelocateDirectivesInLeadingTrivia
-                        Statements = ReplaceStatementWithMarkedStatements(node.ExpressionBody, ReturnStatement)
+                        Statements = ReplaceOneStatementWithMarkedStatements(node.ExpressionBody, ReturnStatement)
                     Else
                         Stop
                         Throw UnreachableException
@@ -1215,7 +1227,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                                                                                 Initializer,
                                                                                                 ImplementsClause
                                                                                                 ).WithPrependedLeadingTrivia(PrependedTrivia).WithTrailingEOL
-                Dim StmtList As SyntaxList(Of VBS.StatementSyntax) = ReplaceStatementWithMarkedStatements(node, propertyStatement)
+                Dim StmtList As SyntaxList(Of VBS.StatementSyntax) = ReplaceOneStatementWithMarkedStatements(node, propertyStatement)
                 Dim AddedLeadingTrivia As New List(Of SyntaxTrivia)
                 Select Case StmtList.Count
                     Case 1

@@ -461,7 +461,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                             OneStatement = VBFactory.ExpressionStatement(DirectCast(OneStatement, VBS.ExpressionSyntax))
                     End Select
                 End If
-                StatementList.AddRange(ReplaceStatementWithMarkedStatements(node, DirectCast(OneStatement, VBS.StatementSyntax).WithLeadingTrivia(NewLeadingTrivia).WithTrailingTrivia(NewTrailingTrivia).WithTrailingEOL))
+                StatementList.AddRange(ReplaceOneStatementWithMarkedStatements(node, DirectCast(OneStatement, VBS.StatementSyntax).WithLeadingTrivia(NewLeadingTrivia).WithTrailingTrivia(NewTrailingTrivia).WithTrailingEOL))
                 Return StatementList
             End Function
 
@@ -853,7 +853,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim DoStatement As VBS.DoStatementSyntax = VBFactory.DoStatement(VB.SyntaxKind.SimpleDoStatement)
                 Dim LoopStatement As VBS.LoopStatementSyntax = VBFactory.LoopStatement(VB.SyntaxKind.LoopWhileStatement, VBFactory.WhileClause(condition).WithTrailingEOL)
                 Dim block As VBS.DoLoopBlockSyntax = VBFactory.DoLoopWhileBlock(DoStatement, stmt, LoopStatement)
-                Return ReplaceStatementWithMarkedStatements(node, block)
+                Return ReplaceOneStatementWithMarkedStatements(node, block)
             End Function
 
             Public Overrides Function VisitEmptyStatement(node As CSS.EmptyStatementSyntax) As SyntaxList(Of VBS.StatementSyntax)
@@ -1103,7 +1103,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim block As VBS.ForEachBlockSyntax = VBFactory.ForEachBlock(ForEachStatementSyntax.WithConvertedLeadingTriviaFrom(node.ForEachKeyword),
                                                                              stmt,
                                                                              NextStatement).WithAdditionalAnnotations(Simplifier.Annotation)
-                Return ReplaceStatementWithMarkedStatements(node, block)
+                Return ReplaceOneStatementWithMarkedStatements(node, block)
             End Function
 
             Public Overrides Function VisitForEachVariableStatement(node As CSS.ForEachVariableStatementSyntax) As SyntaxList(Of VBS.StatementSyntax)
@@ -1129,7 +1129,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 ' check if the form Is valid And collect TypeReference, name, start, end And step
                 Dim HasVariable As Boolean = False
                 If ConvertForToSimpleForNext(node, block, HasVariable) Then
-                    Return ReplaceStatementWithMarkedStatements(node, block)
+                    Return ReplaceOneStatementWithMarkedStatements(node, block)
                 Else
                     Dim OpenBraceTrailingTrivia As New List(Of SyntaxTrivia)
                     Dim ClosingBraceLeadingTrivia As New List(Of SyntaxTrivia)
@@ -1277,7 +1277,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     End If
                 End If
 
-                Return ReplaceStatementWithMarkedStatements(node, stmt)
+                Return ReplaceOneStatementWithMarkedStatements(node, stmt)
             End Function
 
             Public Overrides Function VisitLabeledStatement(node As CSS.LabeledStatementSyntax) As SyntaxList(Of VBS.StatementSyntax)
@@ -1329,28 +1329,33 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim StatementWithIssues As CSS.StatementSyntax = Nothing
                 If TypeOf node.Parent Is CSS.BlockSyntax Then
                     Dim _parent As CSS.BlockSyntax = CType(node.Parent, CSS.BlockSyntax)
-                    If Not _parent.Parent.IsKind(CS.SyntaxKind.MethodDeclaration, CS.SyntaxKind.GetAccessorDeclaration) Then
+                    If Not _parent.Parent.IsKind(CS.SyntaxKind.MethodDeclaration, CS.SyntaxKind.ConstructorDeclaration, CS.SyntaxKind.GetAccessorDeclaration) Then
                         Return VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.EmptyStatement.WithLeadingTrivia(node.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=False, "Local Functions are not support by VB")).WithPrependedLeadingTrivia(ConvertTrivia(node.GetLeadingTrivia)).WithConvertedTrailingTriviaFrom(node))
                     End If
                     indexOfFirstReferencingStatement = _parent.Statements.TakeWhile(Function(s As CSS.StatementSyntax) Not ContainsLocalFunctionReference(s, localFunctionSymbol, _semanticModel)).Count()
-                    If indexOfFirstReferencingStatement = 0 Then
-                        StatementWithIssues = _parent
-                        If TypeOf StatementWithIssues Is CSS.BlockSyntax Then
-                            StatementWithIssues = CType(StatementWithIssues, CSS.BlockSyntax).Statements(0)
-                        End If
+                    If indexOfFirstReferencingStatement = _parent.Statements.Count Then
+                        indexOfFirstReferencingStatement = 0
                     Else
-                        StatementWithIssues = _parent.Statements(indexOfFirstReferencingStatement - 1)
+                        For Each e As IndexClass(Of CSS.StatementSyntax) In _parent.Statements.WithIndex
+                            If TypeOf e.Value Is CSS.ReturnStatementSyntax Then
+                                If indexOfFirstReferencingStatement > e.Index Then
+                                    indexOfFirstReferencingStatement = e.Index
+                                End If
+                                Exit For
+                            End If
+                        Next
                     End If
+                    StatementWithIssues = _parent.Statements(indexOfFirstReferencingStatement)
                 ElseIf TypeOf node.Parent Is CSS.SwitchSectionSyntax Then
-                    'Return VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.EmptyStatement.WithLeadingTrivia(node.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=False, "Local Functions are not support by VB")).WithPrependedLeadingTrivia(ConvertTrivia(node.GetLeadingTrivia)).WithConvertedTrailingTriviaFrom(node))
                     Dim _parent As CSS.SwitchSectionSyntax = CType(node.Parent, CSS.SwitchSectionSyntax)
                     indexOfFirstReferencingStatement = _parent.Statements.TakeWhile(Function(s As CSS.StatementSyntax) Not ContainsLocalFunctionReference(s, localFunctionSymbol, _semanticModel)).Count()
-                    StatementWithIssues = _parent.Statements(indexOfFirstReferencingStatement - 1)
+                    If indexOfFirstReferencingStatement >= _parent.Statements.Count Then
+                        StatementWithIssues = CType(_parent.Parent, CSS.StatementSyntax)
+                    Else
+                        StatementWithIssues = _parent.Statements(indexOfFirstReferencingStatement)
+                    End If
                 Else
                     Stop
-                End If
-                If StatementWithIssues.IsKind(CS.SyntaxKind.LocalFunctionStatement) Then
-                    Return VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.EmptyStatement.WithLeadingTrivia(node.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=False, "Local Functions are not support by VB")).WithPrependedLeadingTrivia(ConvertTrivia(node.GetLeadingTrivia)).WithConvertedTrailingTriviaFrom(node))
                 End If
 
                 Dim parameters As SeparatedSyntaxList(Of CSS.ParameterSyntax) = node.ParameterList.Parameters
@@ -1421,6 +1426,9 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim initializer As VBS.EqualsValueSyntax = VBFactory.EqualsValue(lambdaExpression)
                 Dim declarators As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(names, asClause, initializer))
                 Dim dimStatement As VBS.LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(DimModifier, declarators).WithConvertedTrailingTriviaFrom(node)
+                If StatementWithIssues.Equals(node) Then
+                    Return VBFactory.SingletonList(Of VBS.StatementSyntax)(dimStatement.WithConvertedTriviaFrom(node))
+                End If
                 StatementWithIssues.AddMarker(dimStatement, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
                 Return VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.EmptyStatement)
             End Function
@@ -1440,7 +1448,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim Statements As SyntaxList(Of VBS.StatementSyntax) = ConvertBlock(node.Statement, OpenBraceTrivia, ClosingBraceTrivia)
                 Dim EndSyncLockStatement As VBS.EndBlockStatementSyntax = VBFactory.EndSyncLockStatement.WithLeadingTrivia(ClosingBraceTrivia).WithAppendedTrailingTrivia(ConvertTrivia(node.GetTrailingTrivia))
                 Dim LockBlock As VBS.SyncLockBlockSyntax = VBFactory.SyncLockBlock(LockStatement.WithTrailingEOL, Statements, EndSyncLockStatement)
-                Return ReplaceStatementWithMarkedStatements(node, LockBlock)
+                Return ReplaceOneStatementWithMarkedStatements(node, LockBlock)
             End Function
 
             Public Overrides Function VisitReturnStatement(node As CSS.ReturnStatementSyntax) As SyntaxList(Of VBS.StatementSyntax)
@@ -1468,7 +1476,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                             WithTrailingTrivia(ConvertTrivia(node.SemicolonToken.TrailingTrivia)).
                                             WithTrailingEOL
                 End If
-                Return ReplaceStatementWithMarkedStatements(node, stmt)
+                Return ReplaceOneStatementWithMarkedStatements(node, stmt)
             End Function
 
             Public Overrides Function VisitSwitchStatement(node As CSS.SwitchStatementSyntax) As SyntaxList(Of VBS.StatementSyntax)
@@ -1521,7 +1529,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Finally
                     _blockInfo.Pop()
                 End Try
-                Return ReplaceStatementWithMarkedStatements(node, stmt.WithConvertedLeadingTriviaFrom(node))
+                Return ReplaceOneStatementWithMarkedStatements(node, stmt.WithConvertedLeadingTriviaFrom(node))
             End Function
 
             Public Overrides Function VisitThrowStatement(node As CSS.ThrowStatementSyntax) As SyntaxList(Of VBS.StatementSyntax)
@@ -1608,7 +1616,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         UsingStatement = VBFactory.UsingStatement(VBFactory.ParseExpression($"{VB_ConditionalAccessExpression}{csConditionalAccessExpression.WhenNotNull.Accept(_nodesVisitor)}"), VBFactory.SeparatedList(Of VBS.VariableDeclaratorSyntax)())
                         UsingBlock = VBFactory.UsingBlock(UsingStatement.WithTrailingEOL, ConvertBlock(node.Statement, OpenBraceTrailingTrivia, ClosingBraceLeadingTrivia)).WithLeadingTrivia(LeadingTrivia)
                         Dim IfStatementBlock As VBS.MultiLineIfBlockSyntax = VBFactory.MultiLineIfBlock(IfStatement, VBFactory.SingletonList(Of VBS.StatementSyntax)(UsingBlock), elseIfBlocks:=Nothing, elseBlock:=Nothing).WithLeadingTrivia(LeadingTrivia)
-                        Return ReplaceStatementWithMarkedStatements(node, IfStatementBlock)
+                        Return ReplaceOneStatementWithMarkedStatements(node, IfStatementBlock)
                     Else
                         UsingStatement = VBFactory.UsingStatement(DirectCast(node.Expression?.Accept(_nodesVisitor), VBS.ExpressionSyntax), VBFactory.SeparatedList(Of VBS.VariableDeclaratorSyntax)())
                     End If
@@ -1617,7 +1625,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 End If
 
                 Dim EndUsing As VBS.EndBlockStatementSyntax = VBFactory.EndUsingStatement.WithConvertedTriviaFrom(node.Statement.GetBraces.Item2)
-                Return ReplaceStatementWithMarkedStatements(node, VBFactory.UsingBlock(UsingStatement.WithTrailingEOL,
+                Return ReplaceOneStatementWithMarkedStatements(node, VBFactory.UsingBlock(UsingStatement.WithTrailingEOL,
                                                                                        ConvertBlock(node.Statement, OpenBraceTrailingTrivia, ClosingBraceLeadingTrivia),
                                                                                        EndUsing
                                                                                        ).WithLeadingTrivia(LeadingTrivia))
@@ -1713,7 +1721,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 End If
                 Dim EndWhileStatement As VBS.EndBlockStatementSyntax = VBFactory.EndWhileStatement().WithLeadingTrivia(ClosingBraceLeadingTrivia)
                 Dim block As VBS.WhileBlockSyntax = VBFactory.WhileBlock(VBFactory.WhileStatement(condition).WithConvertedLeadingTriviaFrom(node.WhileKeyword).WithTrailingEOL, WhileStatements, EndWhileStatement)
-                Return ReplaceStatementWithMarkedStatements(node, block)
+                Return ReplaceOneStatementWithMarkedStatements(node, block)
             End Function
 
             Public Overrides Function VisitYieldStatement(node As CSS.YieldStatementSyntax) As SyntaxList(Of VBS.StatementSyntax)
@@ -1724,7 +1732,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Else
                     stmt = VBFactory.YieldStatement(DirectCast(node.Expression.Accept(_nodesVisitor), VBS.ExpressionSyntax)).WithTrailingEOL
                 End If
-                Return ReplaceStatementWithMarkedStatements(node, stmt.WithConvertedTriviaFrom(node))
+                Return ReplaceOneStatementWithMarkedStatements(node, stmt.WithConvertedTriviaFrom(node))
             End Function
 
             Private Class BlockInfo

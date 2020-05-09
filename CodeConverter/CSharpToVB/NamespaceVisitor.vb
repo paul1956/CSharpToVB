@@ -197,12 +197,12 @@ End Function
                     ElseIf Statement.IsKind(VB.SyntaxKind.PropertyBlock) Then
                         If TypeOf m Is CSS.PropertyDeclarationSyntax Then
                             If CType(m, CSS.PropertyDeclarationSyntax).ExpressionBody Is Nothing Then
-                                members.AddRange(ReplaceStatementWithMarkedStatements(m, Statement.WithTrailingEOL))
+                                members.AddRange(ReplaceOneStatementWithMarkedStatements(m, Statement.WithTrailingEOL))
                             Else
-                                members.AddRange(ReplaceStatementWithMarkedStatements(CType(m, CSS.PropertyDeclarationSyntax).ExpressionBody, Statement.WithTrailingEOL))
+                                members.AddRange(ReplaceOneStatementWithMarkedStatements(CType(m, CSS.PropertyDeclarationSyntax).ExpressionBody, Statement.WithTrailingEOL))
                             End If
                         Else
-                            members.AddRange(ReplaceStatementWithMarkedStatements(m, Statement.WithTrailingEOL))
+                            members.AddRange(ReplaceOneStatementWithMarkedStatements(m, Statement.WithTrailingEOL))
                         End If
 
                         ' Cases below are handled in-line
@@ -590,7 +590,7 @@ End Function
                     If Item Is Nothing Then
                         Members.Add(VBFactory.EmptyStatement.WithConvertedTriviaFrom(m))
                     Else
-                        Members.AddRange(ReplaceStatementWithMarkedStatements(m, Item))
+                        Members.AddRange(ReplaceOneStatementWithMarkedStatements(m, Item))
                     End If
                 Next
                 SyncLock s_usedStacks
@@ -630,7 +630,7 @@ End Function
                 Next
 
                 ' These errors are handled elsewhere just ignore
-                ReplaceStatementWithMarkedStatements(node, StructureBlock)
+                ReplaceOneStatementWithMarkedStatements(node, StructureBlock)
                 If ErrorModifiers.Any Then
                     StructureBlock = StructureBlock.WithPrependedLeadingTrivia(VBFactory.CommentTrivia($"' TODO TASK: VB has no direct equivalent to C# {String.Join(" or ", ErrorModifiers)} Structure"))
                 End If

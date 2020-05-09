@@ -1696,7 +1696,10 @@ Partial Public Class Form1
     End Sub
 
     Shared Sub main()
+        Application.SetHighDpiMode(HighDpiMode.SystemAware)
         Dim MyForm As New Form1
+        ' Note: Calling Application.EnableVisualStyles() is required for the task
+        ' dialog to work.
         Application.EnableVisualStyles()
         MyForm.MyApplication.Run({""})
         MyForm.Dispose()

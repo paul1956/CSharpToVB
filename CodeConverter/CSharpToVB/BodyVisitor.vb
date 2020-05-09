@@ -46,7 +46,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim ExpressionBody As VB.VisualBasicSyntaxNode = NodeExpressionBody.Accept(Me)
                 If TypeOf ExpressionBody Is VBS.TryBlockSyntax Then
                     Dim TryBlock As VBS.TryBlockSyntax = CType(ExpressionBody, VBS.TryBlockSyntax)
-                    Dim StatementList As SyntaxList(Of VBS.StatementSyntax) = ReplaceStatementWithMarkedStatements(NodeExpressionBody, TryBlock.Statements(0))
+                    Dim StatementList As SyntaxList(Of VBS.StatementSyntax) = ReplaceOneStatementWithMarkedStatements(NodeExpressionBody, TryBlock.Statements(0))
                     For Each e As IndexClass(Of VBS.StatementSyntax) In TryBlock.Statements.WithIndex
                         StatementList = StatementList.Add(e.Value)
                     Next
@@ -60,7 +60,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     LeadingTrivia.AddRange(ExpressionBody.GetLeadingTrivia)
                     Statement = VBFactory.ReturnStatement(DirectCast(ExpressionBody.WithLeadingTrivia(SpaceTrivia), VBS.ExpressionSyntax)).WithLeadingTrivia(LeadingTrivia)
                 End If
-                Return ReplaceStatementWithMarkedStatements(NodeExpressionBody, Statement.WithTrailingEOL)
+                Return ReplaceOneStatementWithMarkedStatements(NodeExpressionBody, Statement.WithTrailingEOL)
             End Function
 
         End Class
