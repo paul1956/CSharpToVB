@@ -101,13 +101,15 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim id As SyntaxToken = GenerateSafeVBToken(id:=node.Identifier).
                     WithTrailingTrivia(SpaceTrivia)
 
-                Dim typeLeadingTrivia As IEnumerable(Of SyntaxTrivia) = ConvertTrivia(node.Type?.GetLeadingTrivia)
+                Dim typeLeadingTrivia As New List(Of SyntaxTrivia)
+                typeLeadingTrivia.AddRange(ConvertTrivia(node.Type?.GetLeadingTrivia))
                 If defaultValue IsNot Nothing Then
                     modifiers.Add(OptionalKeyword.WithLeadingTrivia(typeLeadingTrivia))
                 End If
                 If modifiers.Any AndAlso Not modifiers(0).RawKind = VB.SyntaxKind.ByValKeyword Then
                     If modifiers(0).RawKind = VB.SyntaxKind.OptionalKeyword OrElse
                         modifiers(0).RawKind = VB.SyntaxKind.ParamArrayKeyword Then
+                        typeLeadingTrivia.InsertRange(0, modifiers(0).LeadingTrivia)
                         modifiers(0) = modifiers(0).WithLeadingTrivia(typeLeadingTrivia)
                     End If
                     id = id.WithLeadingTrivia(SpaceTrivia)
