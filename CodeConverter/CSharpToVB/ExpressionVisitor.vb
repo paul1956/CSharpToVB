@@ -1308,7 +1308,24 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                             movedTrailingTrivia.Add(VBEOLTrivia)
                         End If
                     End If
-                    rightExpression = rightNode.With({SpaceTrivia}, movedTrailingTrivia)
+                    Dim rightLeadingTrivia As New List(Of SyntaxTrivia)
+                    If operatorToken.TrailingTrivia.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                        For Each e As IndexClass(Of SyntaxTrivia) In rightNode.GetLeadingTrivia.WithIndex
+                            Dim t As SyntaxTrivia = e.Value
+                            Dim nextTrivia As SyntaxTrivia = If(Not e.IsLast, rightNode.GetLeadingTrivia(e.Index + 1), New SyntaxTrivia)
+                            Select Case t.RawKind
+                                Case VB.SyntaxKind.WhitespaceTrivia
+                                    If nextTrivia.IsKind(VB.SyntaxKind.CommentTrivia) Then
+                                        rightLeadingTrivia.Add(SpaceTrivia)
+                                        rightLeadingTrivia.Add(LineContinuation)
+                                    End If
+                            End Select
+                            rightLeadingTrivia.Add(t)
+                        Next
+                    Else
+                            rightLeadingTrivia.Add(SpaceTrivia)
+                    End If
+                    rightExpression = rightNode.With(rightLeadingTrivia, movedTrailingTrivia)
                     Dim binaryExpressionSyntax3 As BinaryExpressionSyntax = VBFactory.BinaryExpression(
                                                     kind,
                                                     leftExpression,
@@ -1935,42 +1952,50 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 If TypeOf Pattern Is CSS.DeclarationPatternSyntax Then
                     Dim DeclarationPattern As CSS.DeclarationPatternSyntax = DirectCast(Pattern, CSS.DeclarationPatternSyntax)
                     Dim Designation As CSS.SingleVariableDesignationSyntax = DirectCast(DeclarationPattern.Designation, CSS.SingleVariableDesignationSyntax)
-
+                    Dim SeparatedList As SeparatedSyntaxList(Of ModifiedIdentifierSyntax)
+                    Dim sepListVarDecl As SeparatedSyntaxList(Of VariableDeclaratorSyntax)
+                    Dim DeclarationToBeAdded As LocalDeclarationStatementSyntax
                     Dim VariableType As TypeSyntax = CType(DeclarationPattern.Type.Accept(Me), TypeSyntax)
-                    Dim value As ExpressionSyntax = VBFactory.TryCastExpression(VBExpression, VariableType)
-
-                    Dim Identifier As SyntaxToken = GenerateSafeVBToken(id:=Designation.Identifier)
-                    Dim VariableName As ModifiedIdentifierSyntax = VBFactory.ModifiedIdentifier(Identifier.WithTrailingTrivia(SpaceTrivia))
-                    Dim SeparatedSyntaxListOfModifiedIdentifier As SeparatedSyntaxList(Of ModifiedIdentifierSyntax) =
-                        VBFactory.SingletonSeparatedList(
-                            VariableName)
-
-                    Dim SeparatedListOfvariableDeclarations As SeparatedSyntaxList(Of VariableDeclaratorSyntax) =
-                        VBFactory.SingletonSeparatedList(
+                    Dim value As ExpressionSyntax = VBFactory.TypeOfIsExpression(VBExpression, VariableType)
+                    Dim uniqueIdToken As SyntaxToken = VBFactory.Identifier(MethodBodyVisitor.GetUniqueVariableNameInScope(node, "TempVar", _mSemanticModel))
+                    Dim VariableName As ModifiedIdentifierSyntax =
+                        VBFactory.ModifiedIdentifier(uniqueIdToken)
+                    SeparatedList = VBFactory.SingletonSeparatedList(VariableName)
+                    sepListVarDecl = VBFactory.SingletonSeparatedList(
                             node:=VBFactory.VariableDeclarator(
-                                names:=SeparatedSyntaxListOfModifiedIdentifier,
-                                asClause:=VBFactory.SimpleAsClause(VariableType),
+                                names:=SeparatedList,
+                                asClause:=VBFactory.SimpleAsClause(VBFactory.PredefinedType(BooleanKeyword)),
                                 initializer:=VBFactory.EqualsValue(value)
                                     )
                              )
 
-                    Dim DeclarationToBeAdded As LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(DimModifier,
-                                                                                                                          SeparatedListOfvariableDeclarations
-                                                                                                                          ).WithTrailingTrivia(VBEOLTrivia).
-                                                                                                                          WithAdditionalAnnotations(Simplifier.Annotation)
-                    If ReportCheckCorrectness Then
-                        DeclarationToBeAdded = DeclarationToBeAdded.WithPrependedLeadingTrivia(
-                                                                       StatementWithIssue.CheckCorrectnessLeadingTrivia(
-                                                                                AttemptToPortMade:=True,
-                                                                                "VB has no direct equivalent To C# pattern variables 'is' expressions")
-                                                                                )
-                        If StatementWithIssue.ContainsDirectives Then
-                            DeclarationToBeAdded = DeclarationToBeAdded.WithPrependedLeadingTrivia(ConvertTrivia(StatementWithIssue.GetLeadingTrivia))
-                        End If
+                    DeclarationToBeAdded =
+                        VBFactory.LocalDeclarationStatement(DimModifier,
+                                                            sepListVarDecl
+                                                            ).WithTrailingTrivia(VBEOLTrivia).WithAdditionalAnnotations(Simplifier.Annotation)
+                    If StatementWithIssue.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
+                        DeclarationToBeAdded = DeclarationToBeAdded.WithPrependedLeadingTrivia(ConvertTrivia(StatementWithIssue.GetLeadingTrivia))
                     End If
-
                     StatementWithIssue.AddMarker(Statement:=DeclarationToBeAdded, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
-                    Return VBFactory.IsNotExpression(VBFactory.IdentifierName(Identifier.ToString), NothingExpression)
+
+                    Dim Identifier As SyntaxToken = GenerateSafeVBToken(id:=Designation.Identifier)
+                    VariableName = VBFactory.ModifiedIdentifier(Identifier.WithTrailingTrivia(SpaceTrivia))
+                    SeparatedList = VBFactory.SingletonSeparatedList(VariableName)
+                    sepListVarDecl = VBFactory.SingletonSeparatedList(
+                            node:=VBFactory.VariableDeclarator(
+                                names:=SeparatedList,
+                                asClause:=VBFactory.SimpleAsClause(VariableType),
+                                initializer:=VBFactory.EqualsValue(VBExpression)
+                                    )
+                             )
+
+                    DeclarationToBeAdded =
+                        VBFactory.LocalDeclarationStatement(DimModifier,
+                                                            sepListVarDecl
+                                                            ).WithTrailingTrivia(VBEOLTrivia).
+                                                                                    WithAdditionalAnnotations(Simplifier.Annotation)
+                    StatementWithIssue.AddMarker(Statement:=DeclarationToBeAdded, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
+                    Return VBFactory.IdentifierName(uniqueIdToken)
                 ElseIf TypeOf Pattern Is CSS.ConstantPatternSyntax Then
                     Dim ConstantPattern As CSS.ConstantPatternSyntax = DirectCast(node.Pattern, CSS.ConstantPatternSyntax)
                     If ConstantPattern.Expression.IsKind(CS.SyntaxKind.NullLiteralExpression) Then

@@ -165,6 +165,9 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         End If
                     End If
                 End If
+                If TypeOf OriginalNameParent Is CSS.NameColonSyntax Then
+                    Return WrapTypedNameIfNecessary(VBFactory.IdentifierName(GenerateSafeVBToken(node.Identifier, IsQualifiedName:=True, IsTypeName:=True)), node)
+                End If
 
                 Return WrapTypedNameIfNecessary(VBFactory.IdentifierName(GenerateSafeVBToken(node.Identifier, OriginalNameParent.IsKind(CS.SyntaxKind.QualifiedName), IsTypeName:=TypeOf OriginalNameParent Is CSS.InvocationExpressionSyntax)), node)
             End Function

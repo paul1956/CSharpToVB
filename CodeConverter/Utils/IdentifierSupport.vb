@@ -30,12 +30,21 @@ Namespace CSharpToVBCodeConverter
             If ident.Value.Name.StartsWith("_", StringComparison.Ordinal) Then
                 NewUniqueName = ConvertedIdentifier
             Else
+                Dim validVBName As String
+                If Char.IsLower(ConvertedIdentifier.Chars(0)) Then
+                    validVBName = $"_{ConvertedIdentifier}"
+                Else
+                    If ident.Value.IsType Then
+                        validVBName = $"{ConvertedIdentifier}"
+                    Else
+                        validVBName = $"{ConvertedIdentifier}_Renamed"
+                    End If
+                End If
                 NewUniqueName = If(ConvertedIdentifier.StartsWith("[", StringComparison.Ordinal),
-                                        ConvertedIdentifier.Replace("[", "_", StringComparison.Ordinal).
-                                                            Replace("]", "", StringComparison.Ordinal),
-                                        If(Char.IsLower(CChar(ConvertedIdentifier.Substring(0, 1))),
-                                            $"_{ConvertedIdentifier}",
-                                            $"{ConvertedIdentifier}_Renamed"))
+                                   ConvertedIdentifier.Replace("[", "_", StringComparison.Ordinal).
+                                                       Replace("]", "", StringComparison.Ordinal),
+                                   validVBName
+                                   )
             End If
 
             Return NewUniqueName

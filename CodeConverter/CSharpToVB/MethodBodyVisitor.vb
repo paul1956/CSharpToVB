@@ -1211,8 +1211,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim Braces As (SyntaxToken, SyntaxToken) = node.Statement.GetBraces
                 Dim OpenBraces As SyntaxToken = Braces.Item1
                 Dim CloseBraces As SyntaxToken = Braces.Item2
-                Dim EndIfStatement As VBS.EndBlockStatementSyntax = VBFactory.EndIfStatement(
-                                                                                             EndKeyword,
+                Dim EndIfStatement As VBS.EndBlockStatementSyntax = VBFactory.EndIfStatement(EndKeyword,
                                                                                              IfKeyword
                                                                                             ).
                                                                                             WithConvertedTriviaFrom(CloseBraces)
@@ -1413,7 +1412,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim asClause As VBS.SimpleAsClauseSyntax = Nothing
                 If TypeList.Any Then
                     Dim typeArguments As VBS.TypeArgumentListSyntax = VBFactory.TypeArgumentList(VBFactory.SeparatedList(TypeList))
-                    Dim genericName As VBS.TypeSyntax = VBFactory.GenericName(VBFactory.Identifier("Func"), typeArguments)
+                    Dim genericName As VBS.TypeSyntax = VBFactory.GenericName(VBFactory.Identifier(If(returnsVoid, "Action", "Func")), typeArguments)
                     asClause = VBFactory.SimpleAsClause(genericName)
                 Else
                     asClause = VBFactory.SimpleAsClause(VBFactory.IdentifierName("Action"))

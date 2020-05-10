@@ -362,7 +362,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim ArgumentList As VBS.ArgumentListSyntax = DirectCast((node?.ArgumentList.Accept(Me)), VBS.ArgumentListSyntax)
                 Dim SimpleMemberAccessExpression As VBS.MemberAccessExpressionSyntax
                 Dim parent As SyntaxNode = node.Parent.Parent
-                Dim MeOrMyExpression As VBS.ExpressionSyntax = If(TypeOf parent Is CSS.StructDeclarationSyntax OrElse TypeOf parent Is CSS.ClassDeclarationSyntax,
+                Dim MeOrMyExpression As VBS.ExpressionSyntax = If(TypeOf parent Is CSS.StructDeclarationSyntax,
                                                             DirectCast(VBFactory.MeExpression(), VBS.ExpressionSyntax),
                                                             VBFactory.MyBaseExpression()).WithConvertedLeadingTriviaFrom(node.ColonToken)
 
@@ -635,7 +635,8 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim id As SyntaxToken = GenerateSafeVBToken(node.Identifier)
 
                 Dim methodInfo As ISymbol = ModelExtensions.GetDeclaredSymbol(_mSemanticModel, node)
-                Dim ReturnVoid As Boolean? = methodInfo?.GetReturnType()?.SpecialType = SpecialType.System_Void
+                Dim possibleReturnVoid As Boolean? = methodInfo?.GetReturnType()?.SpecialType = SpecialType.System_Void
+                Dim returnVoid As Boolean = If(possibleReturnVoid, False)
                 Dim containingType As INamedTypeSymbol = methodInfo?.ContainingType
                 Dim Attributes As New List(Of VBS.AttributeListSyntax)
                 Dim ReturnAttributes As SyntaxList(Of VBS.AttributeListSyntax) = Nothing
@@ -696,7 +697,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Else
                     Modifiers = ConvertModifiers(node.Modifiers, IsModule, If(containingType?.IsInterfaceType() = True, TokenContext.Local, TokenContext.Member))
                 End If
-                If visitor.IsInterator Then
+                If visitor.IsInterator And Not returnVoid Then
                     Modifiers.Add(IteratorKeyword)
                 End If
                 If node.ParameterList.Parameters.Any AndAlso node.ParameterList.Parameters(0).Modifiers.Any(CS.SyntaxKind.ThisKeyword) Then
