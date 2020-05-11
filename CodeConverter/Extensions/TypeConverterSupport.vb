@@ -141,20 +141,45 @@ Namespace CSharpToVBCodeConverter
             Return ConvertToType(PossibleName)
         End Function
 
-        Friend Function ConvertToType(_TypeString As String) As VBS.TypeSyntax
-            If _TypeString.Contains("<", StringComparison.Ordinal) Then
-                _TypeString = _TypeString.Replace("<", "(Of ", StringComparison.Ordinal).
-                                    Replace(">", ")", StringComparison.Ordinal)
+        Friend Function ConvertToType(TypeAsCSString As String, Optional AllowArray As Boolean = True) As VBS.TypeSyntax
+            Dim typeString As String = TypeAsCSString.Trim
+            Dim arrayRank As String = ""
+            If typeString.EndsWith("]", StringComparison.OrdinalIgnoreCase) Then
+                Dim IndexOfBracket As Integer
+                Dim foundclosedBracker As Boolean = True
+                For IndexOfBracket = typeString.Length - 2 To 0 Step -1
+                    Select Case typeString.Chars(IndexOfBracket)
+                        Case "]"c
+                            foundclosedBracker = True
+                        Case "["c
+                            foundclosedBracker = False
+                        Case Else
+                            If Not foundclosedBracker Then
+                                IndexOfBracket += 1
+                                Exit For
+                            End If
+                    End Select
+                Next
+                If AllowArray Then
+                    arrayRank = typeString.Substring(IndexOfBracket).
+                                        Replace("[", "(", StringComparison.Ordinal).
+                                        Replace("]", ")", StringComparison.Ordinal)
+                End If
+                typeString = typeString.Substring(0, IndexOfBracket)
             End If
-            Dim TypeString As String = _TypeString.Trim
-            Dim IndexOf As Integer = TypeString.IndexOf("(Of ", StringComparison.OrdinalIgnoreCase)
+
+            If typeString.Contains("<", StringComparison.Ordinal) Then
+                    typeString = typeString.Replace("<", "(Of ", StringComparison.Ordinal).
+                                        Replace(">", ")", StringComparison.Ordinal)
+                End If
+                Dim IndexOf As Integer = typeString.IndexOf("(Of ", StringComparison.OrdinalIgnoreCase)
             If IndexOf >= 0 Then
-                Dim Name As String = TypeString.Substring(0, IndexOf)
-                TypeString = TypeString.Substring(IndexOf + 3)
-                Dim IndexOfLastCloseParen As Integer = TypeString.LastIndexOf(")", StringComparison.OrdinalIgnoreCase)
-                TypeString = TypeString.Substring(0, IndexOfLastCloseParen)
+                Dim Name As String = typeString.Substring(0, IndexOf)
+                typeString = typeString.Substring(IndexOf + 3)
+                Dim IndexOfLastCloseParen As Integer = typeString.LastIndexOf(")", StringComparison.OrdinalIgnoreCase)
+                typeString = typeString.Substring(0, IndexOfLastCloseParen)
                 Dim TypeList As New List(Of VBS.TypeSyntax)
-                Dim PossibleTypes As String = TypeString.Trim
+                Dim PossibleTypes As String = typeString.Trim
                 While PossibleTypes.Length > 0
                     Dim EndIndex As Integer
                     ' Type
@@ -189,54 +214,55 @@ Namespace CSharpToVBCodeConverter
                 Dim TypeArguemntList As VBS.TypeArgumentListSyntax = VBFactory.TypeArgumentList(VBFactory.SeparatedList(TypeList))
                 Return VBFactory.GenericName(Name, TypeArguemntList)
             End If
-            If TypeString.EndsWith("*", StringComparison.OrdinalIgnoreCase) Then
+            If typeString.EndsWith("*", StringComparison.OrdinalIgnoreCase) Then
                 Return IntPtrType
             End If
-            Select Case TypeString.ToUpperInvariant
+            Select Case typeString.ToUpperInvariant
                 Case "BYTE"
-                    Return PredefinedTypeByte
+                    typeString = "Byte"
                 Case "SBYTE"
-                    Return PredefinedTypeSByte
+                    typeString = "SByte"
                 Case "INT", "INTEGER"
-                    Return PredefinedTypeInteger
+                    typeString = "Integer"
                 Case "UINT", "UINTEGER"
-                    Return PredefinedTypeUInteger
+                    typeString = "UInteger"
                 Case "SHORT"
-                    Return PredefinedTypeShort
+                    typeString = "Short"
                 Case "USHORT"
-                    Return PredefinedTypeUShort
+                    typeString = "UShort"
                 Case "LONG"
-                    Return PredefinedTypeLong
+                    typeString = "Long"
                 Case "ULONG"
-                    Return PredefinedTypeULong
+                    typeString = "ULong"
                 Case "FLOAT"
-                    Return PredefinedTypeSingle
+                    typeString = "Single"
                 Case "DOUBLE"
-                    Return PredefinedTypeDouble
+                    typeString = "Double"
                 Case "CHAR"
-                    Return PredefinedTypeChar
+                    typeString = "Char"
                 Case "BOOL", "BOOLEAN"
-                    Return PredefinedTypeBoolean
+                    typeString = "Boolean"
                 Case "OBJECT", "VAR"
-                    Return PredefinedTypeObject
+                    typeString = "Object"
                 Case "STRING"
-                    Return PredefinedTypeString
+                    typeString = "String"
                 Case "DECIMAL"
-                    Return PredefinedTypeDecimal
+                    typeString = "Decimal"
                 Case "DATETIME"
-                    Return PredefinedTypeDate
+                    typeString = "DateTime"
+                Case "DATE"
+                    typeString = "Date"
                 Case "?", "_"
-                    Return PredefinedTypeObject
+                    typeString = "Object"
                 Case Else
-                    If TypeString.Contains("[", StringComparison.OrdinalIgnoreCase) Then
-                        TypeString = TypeString.
-                                        Replace("[", "@", StringComparison.Ordinal).
-                                        Replace("]", "#", StringComparison.Ordinal)
+                    If typeString.Contains("[", StringComparison.OrdinalIgnoreCase) Then
+                        typeString = typeString.
+                                        Replace("[", "(", StringComparison.Ordinal).
+                                        Replace("]", ")", StringComparison.Ordinal)
                     End If
-                    Return VBFactory.ParseTypeName(MakeVBSafeName(TypeString).
-                                                            Replace("@", "(", StringComparison.Ordinal).
-                                                            Replace("#", ")", StringComparison.Ordinal))
+                    typeString = MakeVBSafeName(typeString)
             End Select
+            Return VBFactory.ParseTypeName($"{typeString}{arrayRank}")
         End Function
 
         ''' <summary>

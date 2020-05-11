@@ -725,6 +725,7 @@ Partial Public Class Form1
         ListBoxErrorList.Items.Clear()
         ListBoxFileList.Items.Clear()
         LineNumbers_For_RichTextBoxOutput.Visible = False
+        StatusStripCurrentFileName.Text = ""
         ResizeRichTextBuffers()
         If _cancellationTokenSource IsNot Nothing Then
             _cancellationTokenSource.Dispose()
@@ -755,6 +756,7 @@ Partial Public Class Form1
     Private Async Sub mnuConvertFolder_Click(sender As Object, e As EventArgs) Handles mnuConvertConvertFolder.Click
         LineNumbers_For_RichTextBoxInput.Visible = False
         LineNumbers_For_RichTextBoxOutput.Visible = False
+        StatusStripCurrentFileName.Text = ""
         Dim SourceFolderName As String
         Dim solutionSavePath As String
         Using OFD As New FolderBrowserDialog

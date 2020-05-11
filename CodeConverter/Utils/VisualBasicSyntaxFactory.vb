@@ -84,6 +84,7 @@ Public Module VisualBasicSyntaxFactory
     Public ReadOnly FalseKeyword As SyntaxToken = SyntaxFactory.Token(SyntaxKind.FalseKeyword)
     Public ReadOnly ForKeyword As SyntaxToken = SyntaxFactory.Token(SyntaxKind.ForKeyword)
     Public ReadOnly FriendKeyword As SyntaxToken = SyntaxFactory.Token(SyntaxKind.FriendKeyword)
+    Public ReadOnly FromKeyword As SyntaxToken = SyntaxFactory.Token(SyntaxKind.FromKeyword)
     Public ReadOnly FunctionKeyword As SyntaxToken = SyntaxFactory.Token(SyntaxKind.FunctionKeyword)
     Public ReadOnly GetKeyword As SyntaxToken = SyntaxFactory.Token(SyntaxKind.GetKeyword)
     Public ReadOnly GreaterThanEqualsToken As SyntaxToken = SyntaxFactory.Token(SyntaxKind.GreaterThanEqualsToken)
