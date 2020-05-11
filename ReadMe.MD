@@ -27,7 +27,7 @@ description: "C# to VB Converter"
 - Code Converter
 
 ## Updated
-- 05/05/2020
+- 05/10/2020
 
 ## Description
 This application will convert C# to VB while trying to preserve comments, formatting and as many Directives
@@ -62,6 +62,9 @@ It will try to create a VB project File from the original C# project file.
 
 https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json is added to NuGet Package Source to find
 Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpecific attributes used for testing.
+  New in 4.4.1.2/Converter 3.4.2.2
+  - Improve handling of "Is Type" to handle value types
+
   New in 4.4.1.0/Converter 3.4.2.1
   - Remove most _Renamed name changes, if you still find ant please open issue
   - Correct handling of MyBase
