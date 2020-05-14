@@ -99,6 +99,11 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Return False
         End Function
 
+        Private Shared Function IsLastTokenOnLine(token As SyntaxToken) As Boolean
+            Return (token.HasTrailingTrivia AndAlso token.TrailingTrivia.Last.IsKind(SyntaxKind.ColonTrivia)) OrElse
+                (token.Parent IsNot Nothing AndAlso token.Parent.GetLastToken() = token)
+        End Function
+
         Private Shared Function IsNewLineChar(ch As Char) As Boolean
             ' new-line-character:
             '   Carriage return character (U+000D)
@@ -172,137 +177,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             End Select
         End Function
 
-        Private Shared Function NeedsSeparatorBetween(trivia As SyntaxTrivia) As Boolean
-            Select Case trivia.Kind
-                Case SyntaxKind.None,
-                        SyntaxKind.WhitespaceTrivia,
-                        SyntaxKind.DocumentationCommentExteriorTrivia,
-                        SyntaxKind.EndOfLineTrivia
-                    Return False
-                Case SyntaxKind.LineContinuationTrivia
-                    Return True
-                Case Else
-                    Return Not SyntaxFacts.IsPreprocessorDirective(trivia.Kind)
-            End Select
-        End Function
-
-        Private Sub AddLinebreaksAfterElementsIfNeeded(Of TNode As SyntaxNode)(
-                                                    list As SyntaxList(Of TNode),
-            linebreaksBetweenElements As Integer,
-            linebreaksAfterLastElement As Integer
-        )
-            Dim lastElementIndex As Integer = list.Count - 1
-            For elementIndex As Integer = 0 To lastElementIndex
-                Dim listElement As TNode = list(elementIndex)
-                If listElement.IsKind(SyntaxKind.LabelStatement) Then
-                    ' always add line breaks after label
-                    _lineBreaksAfterToken(listElement.GetLastToken()) = 1
-                Else
-                    AddLinebreaksAfterTokenIfNeeded(listElement.GetLastToken(), If(elementIndex = lastElementIndex,
-                                                                                   linebreaksAfterLastElement,
-                                                                                   linebreaksBetweenElements))
-                End If
-            Next
-        End Sub
-
-        Private Sub AddLinebreaksAfterTokenIfNeeded(node As SyntaxToken, linebreaksAfterToken As Integer)
-            If Not EndsWithColonSeparator(node) Then
-                _lineBreaksAfterToken(node) = linebreaksAfterToken
-            End If
-        End Sub
-
-        Private Sub Free()
-            If _indentations IsNot Nothing Then
-                _indentations.Free()
-            End If
-        End Sub
-
-        Private Function GetEndOfLine() As SyntaxTrivia
-            Return _eolTrivia
-        End Function
-
-        Private Function GetIndentation(count As Integer, CurrentToken As SyntaxToken) As SyntaxTrivia
-            If ExtraIndentNeeded(_previousToken, CurrentToken) Then
-                count += 1
-            End If
-            Dim capacity As Integer = count + 1
-            If _indentations Is Nothing Then
-                _indentations = ArrayBuilder(Of SyntaxTrivia).GetInstance(capacity)
-            Else
-                _indentations.EnsureCapacity(capacity)
-            End If
-
-            For Index As Integer = _indentations.Count To count
-                Dim text As String = If(Index = 0, "", _indentations(Index - 1).ToString() & _indentWhitespace)
-                _indentations.Add(If(_useElasticTrivia, SyntaxFactory.ElasticWhitespace(text), SyntaxFactory.Whitespace(text)))
-            Next
-
-            Return _indentations(count)
-        End Function
-
-        ''' <summary>
-        ''' indentation depth is the declaration depth for statements within the block. for start/end statements
-        ''' of these blocks (e.g. the if statement), it is a level less
-        ''' </summary>
-        Private Function GetIndentationDepth() As Integer
-            Debug.Assert(_indentationDepth >= 0)
-            Return _indentationDepth
-        End Function
-
-        Private Function GetIndentationDepth(trivia As SyntaxTrivia) As Integer
-            If SyntaxFacts.IsPreprocessorDirective(trivia.Kind) Then
-                Return 0
-            End If
-
-            Return GetIndentationDepth()
-        End Function
-
-        Private Function GetNextRelevantToken(token As SyntaxToken) As SyntaxToken
-            Dim nextToken As SyntaxToken = token.GetNextToken(Function(t As SyntaxToken)
-                                                                  Return Not t.IsKind(SyntaxKind.None)
-                                                              End Function, Function(t As SyntaxTrivia) False)
-
-            If _consideredSpan.Contains(nextToken.FullSpan) Then
-                Return nextToken
-            Else
-                Return Nothing
-            End If
-
-        End Function
-
-        Private Function GetSpace() As SyntaxTrivia
-            Return If(_useElasticTrivia, SpaceTrivia, SpaceTrivia)
-        End Function
-
-        Private Function IsLastTokenOnLine(token As SyntaxToken) As Boolean
-            Return (token.HasTrailingTrivia AndAlso token.TrailingTrivia.Last.IsKind(SyntaxKind.ColonTrivia)) OrElse
-                (token.Parent IsNot Nothing AndAlso token.Parent.GetLastToken() = token)
-        End Function
-
-        Private Function LineBreaksBetween(currentToken As SyntaxToken, nextToken As SyntaxToken) As Integer
-            ' First and last token may be of kind none
-            If currentToken.IsKind(SyntaxKind.None) OrElse nextToken.IsKind(SyntaxKind.None) Then
-                Return 0
-            End If
-
-            Dim numLineBreaks As Integer = 0
-            If _lineBreaksAfterToken.TryGetValue(currentToken, numLineBreaks) Then
-                Return Math.Max(1, numLineBreaks)
-            End If
-            'Structured Trivia may end in  NewLine so don't need to add another
-            If currentToken.ToFullString.IsNewLine Then
-                Return 0
-            End If
-            Return If(currentToken.ContainsEOLTrivia, 1, 0)
-        End Function
-
-        Private Sub MarkLastStatementIfNeeded(Of TNode As SyntaxNode)(list As SyntaxList(Of TNode))
-            If list.Any Then
-                _lastStatementsInBlocks.Add(list.Last)
-            End If
-        End Sub
-
-        Private Function NeedsSeparator(token As SyntaxToken, nextToken As SyntaxToken) As Boolean
+        Private Shared Function NeedsSeparator(token As SyntaxToken, nextToken As SyntaxToken) As Boolean
             If token.IsKind(SyntaxKind.EndOfFileToken) Then
                 Return False
             End If
@@ -514,6 +389,131 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             End If
             Return True
         End Function
+
+        Private Shared Function NeedsSeparatorBetween(trivia As SyntaxTrivia) As Boolean
+            Select Case trivia.Kind
+                Case SyntaxKind.None,
+                        SyntaxKind.WhitespaceTrivia,
+                        SyntaxKind.DocumentationCommentExteriorTrivia,
+                        SyntaxKind.EndOfLineTrivia
+                    Return False
+                Case SyntaxKind.LineContinuationTrivia
+                    Return True
+                Case Else
+                    Return Not SyntaxFacts.IsPreprocessorDirective(trivia.Kind)
+            End Select
+        End Function
+
+        Private Sub AddLinebreaksAfterElementsIfNeeded(Of TNode As SyntaxNode)(
+                                                    list As SyntaxList(Of TNode),
+            linebreaksBetweenElements As Integer,
+            linebreaksAfterLastElement As Integer
+        )
+            Dim lastElementIndex As Integer = list.Count - 1
+            For elementIndex As Integer = 0 To lastElementIndex
+                Dim listElement As TNode = list(elementIndex)
+                If listElement.IsKind(SyntaxKind.LabelStatement) Then
+                    ' always add line breaks after label
+                    _lineBreaksAfterToken(listElement.GetLastToken()) = 1
+                Else
+                    AddLinebreaksAfterTokenIfNeeded(listElement.GetLastToken(), If(elementIndex = lastElementIndex,
+                                                                                   linebreaksAfterLastElement,
+                                                                                   linebreaksBetweenElements))
+                End If
+            Next
+        End Sub
+
+        Private Sub AddLinebreaksAfterTokenIfNeeded(node As SyntaxToken, linebreaksAfterToken As Integer)
+            If Not EndsWithColonSeparator(node) Then
+                _lineBreaksAfterToken(node) = linebreaksAfterToken
+            End If
+        End Sub
+
+        Private Sub Free()
+            If _indentations IsNot Nothing Then
+                _indentations.Free()
+            End If
+        End Sub
+
+        Private Function GetEndOfLine() As SyntaxTrivia
+            Return _eolTrivia
+        End Function
+
+        Private Function GetIndentation(count As Integer, CurrentToken As SyntaxToken) As SyntaxTrivia
+            If ExtraIndentNeeded(_previousToken, CurrentToken) Then
+                count += 1
+            End If
+            Dim capacity As Integer = count + 1
+            If _indentations Is Nothing Then
+                _indentations = ArrayBuilder(Of SyntaxTrivia).GetInstance(capacity)
+            Else
+                _indentations.EnsureCapacity(capacity)
+            End If
+
+            For Index As Integer = _indentations.Count To count
+                Dim text As String = If(Index = 0, "", _indentations(Index - 1).ToString() & _indentWhitespace)
+                _indentations.Add(If(_useElasticTrivia, SyntaxFactory.ElasticWhitespace(text), SyntaxFactory.Whitespace(text)))
+            Next
+
+            Return _indentations(count)
+        End Function
+
+        ''' <summary>
+        ''' indentation depth is the declaration depth for statements within the block. for start/end statements
+        ''' of these blocks (e.g. the if statement), it is a level less
+        ''' </summary>
+        Private Function GetIndentationDepth() As Integer
+            Debug.Assert(_indentationDepth >= 0)
+            Return _indentationDepth
+        End Function
+
+        Private Function GetIndentationDepth(trivia As SyntaxTrivia) As Integer
+            If SyntaxFacts.IsPreprocessorDirective(trivia.Kind) Then
+                Return 0
+            End If
+
+            Return GetIndentationDepth()
+        End Function
+
+        Private Function GetNextRelevantToken(token As SyntaxToken) As SyntaxToken
+            Dim nextToken As SyntaxToken = token.GetNextToken(Function(t As SyntaxToken)
+                                                                  Return Not t.IsKind(SyntaxKind.None)
+                                                              End Function, Function(t As SyntaxTrivia) False)
+
+            If _consideredSpan.Contains(nextToken.FullSpan) Then
+                Return nextToken
+            Else
+                Return Nothing
+            End If
+
+        End Function
+
+        Private Function GetSpace() As SyntaxTrivia
+            Return If(_useElasticTrivia, SpaceTrivia, SpaceTrivia)
+        End Function
+
+        Private Function LineBreaksBetween(currentToken As SyntaxToken, nextToken As SyntaxToken) As Integer
+            ' First and last token may be of kind none
+            If currentToken.IsKind(SyntaxKind.None) OrElse nextToken.IsKind(SyntaxKind.None) Then
+                Return 0
+            End If
+
+            Dim numLineBreaks As Integer = 0
+            If _lineBreaksAfterToken.TryGetValue(currentToken, numLineBreaks) Then
+                Return Math.Max(1, numLineBreaks)
+            End If
+            'Structured Trivia may end in  NewLine so don't need to add another
+            If currentToken.ToFullString.IsNewLine Then
+                Return 0
+            End If
+            Return If(currentToken.ContainsEOLTrivia, 1, 0)
+        End Function
+
+        Private Sub MarkLastStatementIfNeeded(Of TNode As SyntaxNode)(list As SyntaxList(Of TNode))
+            If list.Any Then
+                _lastStatementsInBlocks.Add(list.Last)
+            End If
+        End Sub
 
         ''' <summary>
         '''

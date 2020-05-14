@@ -72,6 +72,24 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Throw New NotSupportedException($"Assignment Operator {lSyntaxKind} is not supported")
             End Function
 
+            Private Shared Function DedupLeadingTrivia(Of T As CS.CSharpSyntaxNode)(node As T, Keyword As SyntaxToken, Attributes As List(Of VBS.AttributeListSyntax), Modifiers As List(Of SyntaxToken)) As List(Of SyntaxTrivia)
+                Dim NodeLeadingTrivia As New List(Of SyntaxTrivia)
+                NodeLeadingTrivia.AddRange(ConvertTrivia(node.GetLeadingTrivia))
+                If Attributes.Any Then
+                    If TriviaIsIdentical(Attributes(0).GetLeadingTrivia, NodeLeadingTrivia) Then
+                        NodeLeadingTrivia.Clear()
+                    End If
+                ElseIf Modifiers.Any Then
+                    If TriviaIsIdentical(Modifiers(0).LeadingTrivia, NodeLeadingTrivia) Then
+                        NodeLeadingTrivia.Clear()
+                    End If
+                ElseIf TriviaIsIdentical(Keyword.LeadingTrivia, NodeLeadingTrivia) Then
+                    NodeLeadingTrivia.Clear()
+                End If
+
+                Return NodeLeadingTrivia
+            End Function
+
             Private Shared Function GetTriviaFromUnneededToken(_SemicolonToken As SyntaxToken) As List(Of SyntaxTrivia)
                 Dim NewTrailingTrivia As New List(Of SyntaxTrivia)
                 If _SemicolonToken.HasLeadingTrivia Then
@@ -264,24 +282,6 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
 
                 ReturnAttributes = VBFactory.List(retAttr)
             End Sub
-
-            Private Function DedupLeadingTrivia(Of T As CS.CSharpSyntaxNode)(node As T, Keyword As SyntaxToken, Attributes As List(Of VBS.AttributeListSyntax), Modifiers As List(Of SyntaxToken)) As List(Of SyntaxTrivia)
-                Dim NodeLeadingTrivia As New List(Of SyntaxTrivia)
-                NodeLeadingTrivia.AddRange(ConvertTrivia(node.GetLeadingTrivia))
-                If Attributes.Any Then
-                    If TriviaIsIdentical(Attributes(0).GetLeadingTrivia, NodeLeadingTrivia) Then
-                        NodeLeadingTrivia.Clear()
-                    End If
-                ElseIf Modifiers.Any Then
-                    If TriviaIsIdentical(Modifiers(0).LeadingTrivia, NodeLeadingTrivia) Then
-                        NodeLeadingTrivia.Clear()
-                    End If
-                ElseIf TriviaIsIdentical(Keyword.LeadingTrivia, NodeLeadingTrivia) Then
-                    NodeLeadingTrivia.Clear()
-                End If
-
-                Return NodeLeadingTrivia
-            End Function
 
             Public Overrides Function VisitAnonymousObjectMemberDeclarator(node As CSS.AnonymousObjectMemberDeclaratorSyntax) As VB.VisualBasicSyntaxNode
                 If node?.NameEquals Is Nothing Then
@@ -802,7 +802,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         Next
                     End If
                 End If
-                If ReturnVoid Then
+                If returnVoid Then
                     EndSubOrFunctionStatement = VBFactory.EndSubStatement
                     If node.Body IsNot Nothing Then
                         EndSubOrFunctionStatement = EndSubOrFunctionStatement.WithConvertedTriviaFrom(node.Body.CloseBraceToken)

@@ -42,6 +42,8 @@ Partial Public Class Form1
 
     Private _currentBuffer As Control
 
+    Private _findDiablog As FindDialog
+
     Private _inColorize As Boolean
 
     Private _requestToConvert As ConvertRequest
@@ -186,23 +188,23 @@ Partial Public Class Form1
 
         If CompileResult.Success AndAlso CompileResult.EmitResult.Success Then
             If My.Settings.ColorizeOutput Then
-                Colorize(FragmentRange, RichTextBoxConversionOutput, TextToCompile.SplitLines.Length)
+                Colorize(FragmentRange, ConversionOutput, TextToCompile.SplitLines.Length)
             Else
-                RichTextBoxConversionOutput.Text = TextToCompile
+                ConversionOutput.Text = TextToCompile
             End If
         Else
             If Not _resultOfConversion.GetFilteredListOfFailures().Any Then
                 _resultOfConversion.ResultStatus = ResultTriState.Success
                 If My.Settings.ColorizeOutput Then
-                    Colorize(FragmentRange, RichTextBoxConversionOutput, TextToCompile.SplitLines.Length, _resultOfConversion.GetFilteredListOfFailures())
+                    Colorize(FragmentRange, ConversionOutput, TextToCompile.SplitLines.Length, _resultOfConversion.GetFilteredListOfFailures())
                 Else
-                    RichTextBoxConversionOutput.Text = TextToCompile
+                    ConversionOutput.Text = TextToCompile
                 End If
             Else
-                Colorize(FragmentRange, RichTextBoxConversionOutput, TextToCompile.SplitLines.Length, _resultOfConversion.GetFilteredListOfFailures())
+                Colorize(FragmentRange, ConversionOutput, TextToCompile.SplitLines.Length, _resultOfConversion.GetFilteredListOfFailures())
             End If
         End If
-        RichTextBoxConversionOutput.Visible = True
+        ConversionOutput.Visible = True
         Application.DoEvents()
     End Sub
 
@@ -281,78 +283,17 @@ Partial Public Class Form1
                 Return FilteredErrorCount = 0
             Case ResultTriState.Failure
                 If TypeOf _resultOfConversion.Exceptions(0) IsNot OperationCanceledException Then
-                    RichTextBoxConversionOutput.SelectionColor = Color.Red
-                    RichTextBoxConversionOutput.Text = GetExceptionsAsString(_resultOfConversion.Exceptions)
+                    ConversionOutput.SelectionColor = Color.Red
+                    ConversionOutput.Text = GetExceptionsAsString(_resultOfConversion.Exceptions)
                 End If
             Case ResultTriState.Ignore
-                RichTextBoxConversionOutput.Text = ""
+                ConversionOutput.Text = ""
                 LabelErrorCount.Text = "File Skipped"
         End Select
         Return _resultOfConversion.ResultStatus <> ResultTriState.Failure
     End Function
 
-    ''' <summary>
-    ''' Look in SearchBuffer for text and highlight it
-    ''' No error is displayed if not found
-    ''' </summary>
-    ''' <param name="SearchBuffer"></param>
-    ''' <param name="StartLocation"></param>
-    ''' <param name="SelectionTextLength"></param>
-    ''' <returns>True if found, False is not found</returns>
-    Private Function FindTextInBuffer(SearchBuffer As RichTextBox, ByRef StartLocation As Integer, ByRef SelectionTextLength As Integer) As Boolean
-        If SelectionTextLength > 0 Then
-            SearchBuffer.SelectionBackColor = Color.White
-            ' Find the end index. End Index = number of characters in textbox
-            ' remove highlight from the search string
-            SearchBuffer.Select(StartLocation, SelectionTextLength)
-            Application.DoEvents()
-        End If
-        Dim SearchForward As Boolean = SearchDirection.SelectedIndex = 0
-        If StartLocation >= SearchBuffer.Text.Length Then
-            StartLocation = If(SearchForward,
-                                0, SearchBuffer.Text.Length - 1)
-        End If
-        StartLocation = If(SearchForward,
-                SearchBuffer.Find(SearchInput.Text, StartLocation, RichTextBoxFinds.None),
-                SearchBuffer.Find(SearchInput.Text, StartLocation, RichTextBoxFinds.Reverse))
-
-        If StartLocation >= 0 Then
-            SearchBuffer.ScrollToCaret()
-            ' Set the highlight background color as Orange
-            SearchBuffer.SelectionBackColor = Color.Orange
-            ' Find the end index. End Index = number of characters in textbox
-            SelectionTextLength = SearchInput.Text.Length
-            ' Highlight the search string
-            SearchBuffer.Select(StartLocation, SelectionTextLength)
-            ' mark the start position after the position of
-            ' last search string
-            StartLocation = If(SearchForward, StartLocation + SelectionTextLength, StartLocation - 1)
-            Return True
-        End If
-        StartLocation = If(SearchForward, 0, SearchInput.Text.Length - 1)
-        SelectionTextLength = 0
-        Return False
-    End Function
-
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles Me.Load
-        Dim items(ImageList1.Images.Count - 1) As String
-        For index As Integer = 0 To ImageList1.Images.Count - 1
-            items(index) = "Item " & index.ToString(Globalization.CultureInfo.InvariantCulture)
-        Next
-        SearchDirection.Items.AddRange(items)
-        SearchDirection.DropDownStyle = ComboBoxStyle.DropDownList
-        SearchDirection.DrawMode = DrawMode.OwnerDrawVariable
-        SearchDirection.ItemHeight = ImageList1.ImageSize.Height
-        SearchDirection.Width = ImageList1.ImageSize.Width + 30
-        SearchDirection.MaxDropDownItems = ImageList1.Images.Count
-        SearchDirection.SelectedIndex = 0
-
-        PictureBox1.Height = ImageList1.ImageSize.Height + 4
-        PictureBox1.Width = ImageList1.ImageSize.Width + 4
-        PictureBox1.Top = SearchDirection.Top + 2
-        PictureBox1.Left = SearchDirection.Left + 2
-        SearchWhere.SelectedIndex = 0
-
         SplitContainer1.SplitterDistance = SplitContainer1.Height - (ListBoxErrorList.Height + 20)
 
         ' Load all settings
@@ -534,47 +475,12 @@ Partial Public Class Form1
                         Directory.CreateDirectory(solutionRoot)
                     End If
                 Case MsgBoxResult.Yes
-                Case Else
-                    Stop
             End Select
         End If
         Dim relativePath As String = PathFromSolutionRoot.Join(Path.DirectorySeparatorChar)
         CreateDirectoryIfNonexistent(Path.Combine(solutionRoot, relativePath))
         Return (solutionRoot, relativePath)
     End Function
-
-    Private Sub launchBrowser(url As String)
-        Dim browserPath As String = "%ProgramFiles(x86)%\Internet Explorer\iexplore.exe"
-        Dim msgResult As MsgBoxResult = MsgBoxResult.Ok
-        Using userChoiceKey As RegistryKey = Registry.CurrentUser.OpenSubKey("Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice")
-            If userChoiceKey IsNot Nothing Then
-                Dim progIdObject As Object = userChoiceKey.GetValue("Progid")
-                If progIdObject IsNot Nothing Then
-                    Dim progIdValue As String = CStr(progIdObject)
-                    If progIdValue IsNot Nothing Then
-                        If progIdValue.Contains("chrome", StringComparison.OrdinalIgnoreCase) Then
-                            browserPath = "%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe"
-                            'ElseIf progIdValue.Contains("firefox", StringComparison.OrdinalIgnoreCase) Then
-                            '    browserPath = "firefox.exe"
-                        ElseIf progIdValue.Contains("msedgehtm", StringComparison.OrdinalIgnoreCase) Then
-                            browserPath = "%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe"
-                            'ElseIf progIdValue.Contains("safari", StringComparison.OrdinalIgnoreCase) Then
-                            '    browserPath = "safari.exe"
-                            'ElseIf progIdValue.Contains("opera", StringComparison.OrdinalIgnoreCase) Then
-                            '    browserPath = "opera.exe"
-                        Else
-                            msgResult = MsgBox($"Your default browser {progIdValue} is not supported, iExplorer will be used if you select OK!, please enter an issue with browser 'ProgId' and full path",
-                                               MsgBoxStyle.OkCancel Or MsgBoxStyle.Exclamation Or MsgBoxStyle.MsgBoxSetForeground)
-                        End If
-                    End If
-                End If
-            End If
-        End Using
-        If msgResult = MsgBoxResult.Ok Then
-            Dim info As New ProcessStartInfo(System.Environment.ExpandEnvironmentVariables(browserPath), url)
-            Process.Start(info)
-        End If
-    End Sub
 
     Private Sub LineNumbers_For_RichTextBoxInput_Resize(sender As Object, e As EventArgs) Handles LineNumbers_For_RichTextBoxInput.Resize
         ResizeRichTextBuffers()
@@ -610,11 +516,11 @@ Partial Public Class Form1
             Exit Sub
         End If
         Dim count As Integer = LineText.Substring(startIndex).IndexOf(" ", StringComparison.OrdinalIgnoreCase)
-        Dim lineStartPosition As Integer = RichTextBoxConversionOutput.GetFirstCharIndexFromLine(CInt(LineText.Substring(startIndex, count)) - 1)
+        Dim lineStartPosition As Integer = ConversionOutput.GetFirstCharIndexFromLine(CInt(LineText.Substring(startIndex, count)) - 1)
 
-        If lineStartPosition > 0 AndAlso RichTextBoxConversionOutput.SelectionStart <> lineStartPosition Then
-            RichTextBoxConversionOutput.Select(lineStartPosition, 0)
-            RichTextBoxConversionOutput.ScrollToCaret()
+        If lineStartPosition > 0 AndAlso ConversionOutput.SelectionStart <> lineStartPosition Then
+            ConversionOutput.Select(lineStartPosition, 0)
+            ConversionOutput.ScrollToCaret()
         End If
     End Sub
 
@@ -665,9 +571,9 @@ Partial Public Class Form1
         Dim ConversionInputLinesArray() As String = SourceText.SplitLines
         InputLines = ConversionInputLinesArray.Length
         If mnuOptionsColorizeSource.Checked Then
-            Colorize(GetClassifiedRanges(ConversionInputLinesArray.Join(vbCrLf), LanguageNames.CSharp), RichTextBoxConversionInput, InputLines)
+            Colorize(GetClassifiedRanges(ConversionInputLinesArray.Join(vbCrLf), LanguageNames.CSharp), ConversionInput, InputLines)
         Else
-            RichTextBoxConversionInput.Text = ConversionInputLinesArray.Join(vbCrLf)
+            ConversionInput.Text = ConversionInputLinesArray.Join(vbCrLf)
         End If
         LocalUseWaitCursor(MeForm:=Me, WaitCursorEnable:=False)
         Return InputLines
@@ -683,9 +589,9 @@ Partial Public Class Form1
         Dim ConversionInputLinesArray() As String = SourceText.SplitLines
         InputLines = ConversionInputLinesArray.Length
         If mnuOptionsColorizeSource.Checked Then
-            Colorize(GetClassifiedRanges(ConversionInputLinesArray.Join(vbCrLf), LanguageNames.VisualBasic), RichTextBoxConversionOutput, InputLines)
+            Colorize(GetClassifiedRanges(ConversionInputLinesArray.Join(vbCrLf), LanguageNames.VisualBasic), ConversionOutput, InputLines)
         Else
-            RichTextBoxConversionOutput.Text = ConversionInputLinesArray.Join(vbCrLf)
+            ConversionOutput.Text = ConversionInputLinesArray.Join(vbCrLf)
         End If
         LocalUseWaitCursor(MeForm:=Me, WaitCursorEnable:=False)
     End Sub
@@ -706,18 +612,18 @@ Partial Public Class Form1
         LineNumbers_For_RichTextBoxOutput.Visible = False
         ListBoxErrorList.Items.Clear()
 
-        If String.IsNullOrWhiteSpace(RichTextBoxConversionOutput.Text) Then
+        If String.IsNullOrWhiteSpace(ConversionOutput.Text) Then
             Exit Sub
         End If
         ListBoxErrorList.Text = ""
         Dim VBPreprocessorSymbols As New List(Of KeyValuePair(Of String, Object)) From {
             New KeyValuePair(Of String, Object)(My.Settings.Framework, True)
         }
-        Compile_Colorize(RichTextBoxConversionOutput.Text, VBPreprocessorSymbols)
+        Compile_Colorize(ConversionOutput.Text, VBPreprocessorSymbols)
     End Sub
 
     Private Sub mnuConvert_Click(sender As Object, e As EventArgs) Handles mnuConvert.Click
-        mnuConvertConvertSnippet.Enabled = RichTextBoxConversionInput.TextLength > 0
+        mnuConvertConvertSnippet.Enabled = ConversionInput.TextLength > 0
     End Sub
 
     Private Async Sub mnuConvertConvertSnippet_Click(sender As Object, e As EventArgs) Handles mnuConvertConvertSnippet.Click
@@ -733,7 +639,7 @@ Partial Public Class Form1
         _cancellationTokenSource = New CancellationTokenSource
         _requestToConvert = New ConvertRequest(My.Settings.SkipAutoGenerated, New Progress(Of ProgressReport)(AddressOf New TextProgressBar(ConversionProgressBar).Update), _cancellationTokenSource.Token) With
             {
-            .SourceCode = RichTextBoxConversionInput.Text
+            .SourceCode = ConversionInput.Text
             }
         Dim CSPreprocessorSymbols As New List(Of String) From {
             My.Settings.Framework
@@ -848,7 +754,11 @@ Partial Public Class Form1
     End Sub
 
     Private Sub mnuEditFind_Click(sender As Object, e As EventArgs) Handles mnuEditFind.Click
-        SearchBoxVisibility(Visible:=True)
+        If _findDiablog Is Nothing Then
+            _findDiablog = New FindDialog(ConversionInput, ConversionOutput, Me)
+        End If
+        mnuEditFind.Enabled = False
+        _findDiablog.Show()
     End Sub
 
     Private Sub mnuEditPaste_Click(sender As Object, e As EventArgs) Handles mnuEditPaste.Click
@@ -960,7 +870,7 @@ Partial Public Class Form1
         SaveFileDialog1.ValidateNames = True
         Dim FileSaveResult As DialogResult = SaveFileDialog1.ShowDialog
         If FileSaveResult = DialogResult.OK Then
-            RichTextBoxConversionOutput.SaveFile(SaveFileDialog1.FileName, RichTextBoxStreamType.PlainText)
+            ConversionOutput.SaveFile(SaveFileDialog1.FileName, RichTextBoxStreamType.PlainText)
         End If
     End Sub
 
@@ -968,16 +878,16 @@ Partial Public Class Form1
         If My.Settings.ColorizeInput Then
             mnuConvertConvertSnippet.Enabled = 0 <> LoadInputBufferFromStream(s_snippetFileWithPath)
         Else
-            RichTextBoxConversionInput.LoadFile(s_snippetFileWithPath, RichTextBoxStreamType.PlainText)
+            ConversionInput.LoadFile(s_snippetFileWithPath, RichTextBoxStreamType.PlainText)
         End If
         mnuCompile.Enabled = True
     End Sub
 
     Private Sub mnuFileSnippetSave_Click(sender As Object, e As EventArgs) Handles mnuFileSnippetSave.Click
-        If RichTextBoxConversionInput.TextLength = 0 Then
+        If ConversionInput.TextLength = 0 Then
             Exit Sub
         End If
-        RichTextBoxConversionInput.SaveFile(s_snippetFileWithPath, RichTextBoxStreamType.PlainText)
+        ConversionInput.SaveFile(s_snippetFileWithPath, RichTextBoxStreamType.PlainText)
     End Sub
 
     Private Sub mnuFileSnippett_Click(sender As Object, e As EventArgs) Handles mnuFileSnippet.Click
@@ -1106,28 +1016,12 @@ Partial Public Class Form1
         ResizeRichTextBuffers()
     End Sub
 
-    Private Sub MRU_AddTo(Path As String)
-        ' remove the item from the collection if exists so that we can
-        ' re-add it to the beginning...
-        If My.Settings.MRU_Data.Contains(Path) Then
-            My.Settings.MRU_Data.Remove(Path)
-        End If
-        ' add to MRU list..
-        My.Settings.MRU_Data.Add(Path)
-        ' make sure there are only ever 5 items...
-        While My.Settings.MRU_Data.Count > 5
-            My.Settings.MRU_Data.RemoveAt(0)
-        End While
-        ' update UI..
-        MRU_Update()
-    End Sub
-
-    Private Sub MRU_Update()
+    Private Sub MRU_UpdateUI(dropDownItems As ToolStripItemCollection)
         ' clear MRU menu items...
         Dim MRUToolStripItems As New List(Of ToolStripItem)
         ' create a temporary collection containing every MRU menu item
         ' (identified by the tag text when added to the list)...
-        For Each FileMenuItem As ToolStripItem In mnuFile.DropDownItems
+        For Each FileMenuItem As ToolStripItem In dropDownItems
             If Not FileMenuItem.Tag Is Nothing Then
                 If (FileMenuItem.Tag.ToString().StartsWith("MRU:", StringComparison.Ordinal)) Then
                     MRUToolStripItems.Add(FileMenuItem)
@@ -1138,7 +1032,7 @@ Partial Public Class Form1
         For Each MRUToolStripItem As ToolStripItem In MRUToolStripItems
             RemoveHandler MRUToolStripItem.Click, AddressOf mnu_MRUList_Click
             RemoveHandler MRUToolStripItem.MouseDown, AddressOf mnu_MRUList_MouseDown
-            mnuFile.DropDownItems.Remove(MRUToolStripItem)
+            dropDownItems.Remove(MRUToolStripItem)
         Next
         ' display items (in reverse order so the most recent is on top)...
         For iCounter As Integer = My.Settings.MRU_Data.Count - 1 To 0 Step -1
@@ -1153,7 +1047,7 @@ Partial Public Class Form1
             AddHandler clsItem.Click, AddressOf mnu_MRUList_Click
             AddHandler clsItem.MouseDown, AddressOf mnu_MRUList_MouseDown
             ' insert into DropDownItems list...
-            mnuFile.DropDownItems.Insert(mnuFile.DropDownItems.Count - 12, clsItem)
+            dropDownItems.Insert(dropDownItems.Count - 12, clsItem)
         Next
         ' show separator...
         My.Settings.Save()
@@ -1172,44 +1066,8 @@ Partial Public Class Form1
 
     Private Sub OpenSourceFile(FileNameWithPath As String)
         mnuConvertConvertSnippet.Enabled = LoadInputBufferFromStream(FileNameWithPath) <> 0
-        MRU_AddTo(FileNameWithPath)
-    End Sub
-
-    Private Sub PictureBox1_Click(sender As Object, e As EventArgs) Handles PictureBox1.Click
-        If String.IsNullOrWhiteSpace(SearchInput.Text) Then
-            Exit Sub
-        End If
-        Dim prompt As String = ""
-        Select Case SearchWhere.SelectedIndex
-            Case 0
-                If Not FindTextInBuffer(RichTextBoxConversionInput, RichTextBoxConversionInput.SelectionStart, RichTextBoxConversionInput.SelectionLength) Then
-                    prompt = $"'{SearchInput.Text}' not found in Source Buffer!"
-                End If
-            Case 1
-                If Not FindTextInBuffer(RichTextBoxConversionOutput, RichTextBoxConversionOutput.SelectionStart, RichTextBoxConversionOutput.SelectionLength) Then
-                    prompt = $"'{SearchInput.Text}' not found Conversion Buffer!"
-                End If
-            Case 2
-                If Not FindTextInBuffer(RichTextBoxConversionInput, RichTextBoxConversionInput.SelectionStart, RichTextBoxConversionInput.SelectionLength) Then
-                    prompt = $"'{SearchInput.Text}' not found in Source Buffer!"
-                End If
-                If Not FindTextInBuffer(RichTextBoxConversionOutput, RichTextBoxConversionOutput.SelectionStart, RichTextBoxConversionOutput.SelectionLength) Then
-                    prompt = $"'{SearchInput.Text}' not found Conversion Buffer!"
-                End If
-        End Select
-        If Not String.IsNullOrWhiteSpace(prompt) Then
-            MsgBox(prompt,
-                   MsgBoxStyle.OkOnly Or MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground,
-                   "Text Not Found!")
-        End If
-    End Sub
-
-    Private Sub PictureBox1_MouseDown(sender As Object, e As MouseEventArgs) Handles PictureBox1.MouseDown
-        PictureBox1.BorderStyle = BorderStyle.Fixed3D
-    End Sub
-
-    Private Sub PictureBox1_MouseUp(sender As Object, e As MouseEventArgs) Handles PictureBox1.MouseUp
-        PictureBox1.BorderStyle = BorderStyle.FixedSingle
+        MRU_AddTo(My.Settings.MRU_Data, FileNameWithPath)
+        MRU_UpdateUI(mnuFile.DropDownItems)
     End Sub
 
     ''' <summary>
@@ -1255,12 +1113,13 @@ Partial Public Class Form1
             Return True
         End If
         ButtonStopConversion.Visible = True
-        RichTextBoxConversionOutput.Text = ""
-        MRU_AddTo(SourceFileNameWithPath)
+        ConversionOutput.Text = ""
+        MRU_AddTo(My.Settings.MRU_Data, SourceFileNameWithPath)
+        MRU_UpdateUI(mnuFile.DropDownItems)
         Dim lines As Integer = LoadInputBufferFromStream(SourceFileNameWithPath)
         If lines > 0 Then
             _requestToConvert = New ConvertRequest(SkipAutoGenerated, New Progress(Of ProgressReport)(AddressOf New TextProgressBar(ConversionProgressBar).Update), _cancellationTokenSource.Token) With {
-                .SourceCode = RichTextBoxConversionInput.Text
+                .SourceCode = ConversionInput.Text
             }
             If Not Await Convert_Compile_ColorizeAsync(_requestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences, CancelToken).ConfigureAwait(True) Then
                 If _requestToConvert.CancelToken.IsCancellationRequested Then
@@ -1292,7 +1151,7 @@ Partial Public Class Form1
                         Return True
                     End If
                     Dim NewFileName As String = Path.ChangeExtension(New FileInfo(SourceFileNameWithPath).Name, If(SourceLanguageExtension = "vb", "cs", "vb"))
-                    WriteTextToStream(TargetDirectory, NewFileName, RichTextBoxConversionOutput.Text)
+                    WriteTextToStream(TargetDirectory, NewFileName, ConversionOutput.Text)
                 End If
                 If My.Settings.PauseConvertOnSuccess Then
                     If MsgBox($"{SourceFileNameWithPath} successfully converted, Continue?",
@@ -1313,13 +1172,13 @@ Partial Public Class Form1
             Next
             Application.DoEvents()
         Else
-            RichTextBoxConversionOutput.Clear()
+            ConversionOutput.Clear()
         End If
         Return True
     End Function
 
     ''' <summary>
-    ''' 
+    '''
     ''' </summary>
     ''' <param name="TaskProjectAnalyzer"></param>
     ''' <param name="SolutionRoot"></param>
@@ -1441,8 +1300,8 @@ Partial Public Class Form1
         SetButtonStopAndCursor(MeForm:=Me, StopButton:=ButtonStopConversion, StopButtonVisible:=True)
         ListBoxErrorList.Items.Clear()
         ListBoxFileList.Items.Clear()
-        RichTextBoxConversionInput.Clear()
-        RichTextBoxConversionOutput.Clear()
+        ConversionInput.Clear()
+        ConversionOutput.Clear()
         UpdateProgressLabels($"Getting Analyzer Manger for {fileName}", True)
         Try
             Dim TaskAnalyzerManager As Task(Of AnalyzerManager) = GetManagerAsync(fileName)
@@ -1549,11 +1408,11 @@ Partial Public Class Form1
         Dim LineNumberInputWidth As Integer = If(LineNumbers_For_RichTextBoxInput.Visible, LineNumbers_For_RichTextBoxInput.Width, 0)
         Dim LineNumberOutputWidth As Integer = If(LineNumbers_For_RichTextBoxOutput.Visible, LineNumbers_For_RichTextBoxOutput.Width, 0)
 
-        RichTextBoxConversionInput.Width = CInt((ClientSize.Width / 2 + 0.5)) - LineNumberInputWidth
+        ConversionInput.Width = CInt((ClientSize.Width / 2 + 0.5)) - LineNumberInputWidth
         ListBoxFileList.Width = CInt(ClientSize.Width / 2 + 0.5)
 
-        RichTextBoxConversionOutput.Width = ClientSize.Width - (RichTextBoxConversionInput.Width + LineNumberInputWidth + LineNumberOutputWidth)
-        RichTextBoxConversionOutput.Left = RichTextBoxConversionInput.Width + LineNumberInputWidth + LineNumberOutputWidth
+        ConversionOutput.Width = ClientSize.Width - (ConversionInput.Width + LineNumberInputWidth + LineNumberOutputWidth)
+        ConversionOutput.Left = ConversionInput.Width + LineNumberInputWidth + LineNumberOutputWidth
 
         Dim HalfClientWidth As Integer = ClientSize.Width \ 2
         ListBoxErrorList.Left = HalfClientWidth
@@ -1562,59 +1421,31 @@ Partial Public Class Form1
 
     End Sub
 
-    Private Sub RichTextBoxConversionInput_Enter(sender As Object, e As EventArgs) Handles RichTextBoxConversionInput.Enter
+    Private Sub RichTextBoxConversionInput_Enter(sender As Object, e As EventArgs) Handles ConversionInput.Enter
         CurrentBuffer = CType(sender, RichTextBox)
     End Sub
 
-    Private Sub RichTextBoxConversionInput_MouseEnter(sender As Object, e As EventArgs) Handles RichTextBoxConversionInput.MouseEnter
+    Private Sub RichTextBoxConversionInput_MouseEnter(sender As Object, e As EventArgs) Handles ConversionInput.MouseEnter
         CurrentBuffer = CType(sender, RichTextBox)
     End Sub
 
-    Private Sub RichTextBoxConversionInput_TextChanged(sender As Object, e As EventArgs) Handles RichTextBoxConversionInput.TextChanged
+    Private Sub RichTextBoxConversionInput_TextChanged(sender As Object, e As EventArgs) Handles ConversionInput.TextChanged
         Dim InputBufferInUse As Boolean = CType(sender, RichTextBox).TextLength > 0
         mnuFileSnippetSave.Enabled = InputBufferInUse
         mnuConvertConvertSnippet.Enabled = InputBufferInUse
         mnuConvertConvertFolder.Enabled = InputBufferInUse
         If mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
-            Colorize(GetClassifiedRanges(SourceCode:=RichTextBoxConversionInput.Text, LanguageNames.CSharp), ConversionBuffer:=RichTextBoxConversionInput, Lines:=RichTextBoxConversionInput.Lines.Length)
+            Colorize(GetClassifiedRanges(SourceCode:=ConversionInput.Text, LanguageNames.CSharp), ConversionBuffer:=ConversionInput, Lines:=ConversionInput.Lines.Length)
         End If
     End Sub
 
-    Private Sub RichTextBoxConversionOutput_MouseEnter(sender As Object, e As EventArgs) Handles RichTextBoxConversionOutput.MouseEnter
+    Private Sub RichTextBoxConversionOutput_MouseEnter(sender As Object, e As EventArgs) Handles ConversionOutput.MouseEnter
         CurrentBuffer = CType(sender, RichTextBox)
     End Sub
 
-    Private Sub RichTextBoxConversionOutput_TextChanged(sender As Object, e As EventArgs) Handles RichTextBoxConversionOutput.TextChanged
+    Private Sub RichTextBoxConversionOutput_TextChanged(sender As Object, e As EventArgs) Handles ConversionOutput.TextChanged
         Dim OutputBufferInUse As Boolean = CType(sender, RichTextBox).TextLength > 0
         mnuCompile.Enabled = OutputBufferInUse
-    End Sub
-
-    Private Sub SearchBoxVisibility(Visible As Boolean)
-        SearchDirection.Visible = Visible
-        PictureBox1.Visible = Visible
-        SearchInput.Visible = Visible
-    End Sub
-
-    Private Sub SearchDirection_DrawItem(sender As Object, e As DrawItemEventArgs) Handles SearchDirection.DrawItem
-        If e.Index <> -1 Then
-            e.Graphics.DrawImage(ImageList1.Images(e.Index), e.Bounds.Left, e.Bounds.Top)
-        End If
-    End Sub
-
-    Private Sub SearchDirection_MeasureItem(sender As Object, e As MeasureItemEventArgs) Handles SearchDirection.MeasureItem
-        e.ItemHeight = ImageList1.ImageSize.Height
-        e.ItemWidth = ImageList1.ImageSize.Width
-    End Sub
-
-    Private Sub SearchDirection_SelectedIndexChanged(sender As Object, e As EventArgs) Handles SearchDirection.SelectedIndexChanged
-        PictureBox1.Image = ImageList1.Images(SearchDirection.SelectedIndex)
-    End Sub
-
-    Private Sub SearchInput_TextChanged(sender As Object, e As EventArgs) Handles SearchInput.TextChanged
-        RichTextBoxConversionInput.SelectionStart = 0
-        RichTextBoxConversionInput.SelectionLength = 0
-        RichTextBoxConversionOutput.SelectionStart = 0
-        RichTextBoxConversionOutput.SelectionLength = 0
     End Sub
 
     Private Sub SplitContainer1_SplitterMoved(sender As Object, e As SplitterEventArgs) Handles SplitContainer1.SplitterMoved
@@ -1654,8 +1485,8 @@ Partial Public Class Form1
             Invoke(Sub()
                        LabelProgress.Text = progressStr
                        If Value Then
-                           RichTextBoxConversionInput.Text = ""
-                           RichTextBoxConversionOutput.Text = ""
+                           ConversionInput.Text = ""
+                           ConversionOutput.Text = ""
                            LabelProgress.Visible = True
                            ProgressBar1.Visible = True
                        Else
@@ -1668,8 +1499,8 @@ Partial Public Class Form1
             Invoke(Sub()
                        LabelProgress.Text = progressStr
                        If Value Then
-                           RichTextBoxConversionInput.Text = ""
-                           RichTextBoxConversionOutput.Text = ""
+                           ConversionInput.Text = ""
+                           ConversionOutput.Text = ""
                            LabelProgress.Visible = True
                            ProgressBar1.Visible = True
                        Else
@@ -1694,7 +1525,7 @@ Partial Public Class Form1
             My.Settings.MRU_Data = New Specialized.StringCollection
         End If
         ' display MRU if there are any items to display...
-        MRU_Update()
+        MRU_UpdateUI(mnuFile.DropDownItems)
     End Sub
 
     Shared Sub main()

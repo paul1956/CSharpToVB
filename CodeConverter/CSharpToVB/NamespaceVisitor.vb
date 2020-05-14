@@ -117,7 +117,7 @@ End Function
                         If TypeSyntaxArray?.Length > 0 Then [implements].Add(VBFactory.ImplementsStatement(TypeSyntaxArray))
                     Case CS.SyntaxKind.InterfaceDeclaration
                         TypeSyntaxArray = _Type.BaseList?.Types.Select(Function(t As CSS.BaseTypeSyntax) DirectCast(t.Type.Accept(Me), VBS.TypeSyntax)).ToArray()
-                        If TypeSyntaxArray?.Length > 0 Then [inherits].Add(VBFactory.InheritsStatement(TypeSyntaxArray).withConvertedLeadingTriviaFrom(_Type.BaseList.ColonToken))
+                        If TypeSyntaxArray?.Length > 0 Then [inherits].Add(VBFactory.InheritsStatement(TypeSyntaxArray).WithConvertedLeadingTriviaFrom(_Type.BaseList.ColonToken))
                 End Select
                 If [implements].Any Then
                     [implements]([implements].Count - 1) = [implements].Last.WithTrailingEOL
@@ -134,7 +134,7 @@ End Function
                 End If
             End Function
 
-            Friend Function IsNotInStructure(node As CS.CSharpSyntaxNode) As Boolean
+            Friend Shared Function IsNotInStructure(node As CS.CSharpSyntaxNode) As Boolean
                 Dim StatementWithIssues As CS.CSharpSyntaxNode = node
                 While StatementWithIssues IsNot Nothing
                     'If TypeOf StatementWithIssues Is CSS.ClassDeclarationSyntax Then

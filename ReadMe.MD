@@ -27,7 +27,7 @@ description: "C# to VB Converter"
 - Code Converter
 
 ## Updated
-- 05/10/2020
+- 05/13/2020
 
 ## Description
 This application will convert C# to VB while trying to preserve comments, formatting and as many Directives
@@ -62,6 +62,12 @@ It will try to create a VB project File from the original C# project file.
 
 https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json is added to NuGet Package Source to find
 Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpecific attributes used for testing.
+  New in 4.4.2.0/Converter 3.4.2.4
+  - Complete rewrite of Find, made it a floating tool window, added support for match whole word and match case
+  - Added a 5 memory temporary buffer for text search terms
+  - TODO save settings and history for Find tool window
+  - General code cleanup, added support for Firebox browser
+
   New in 4.4.1.3/Converter 3.4.2.3
   - Clear status line at start of conversions
   - Improve handling of Array Types and Collection Initializers

@@ -118,16 +118,11 @@ Partial Class Form1
         Me.ContextMenuCopy = New System.Windows.Forms.ToolStripMenuItem()
         Me.ContextMenuCut = New System.Windows.Forms.ToolStripMenuItem()
         Me.ContextMenuPaste = New System.Windows.Forms.ToolStripMenuItem()
-        Me.SearchInput = New System.Windows.Forms.TextBox()
-        Me.ImageList1 = New System.Windows.Forms.ImageList(Me.components)
-        Me.SearchDirection = New System.Windows.Forms.ComboBox()
-        Me.SearchWhere = New System.Windows.Forms.ComboBox()
         Me.InputFolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
-        Me.PictureBox1 = New System.Windows.Forms.PictureBox()
         Me.ButtonStopConversion = New System.Windows.Forms.Button()
         Me.LabelErrorCount = New System.Windows.Forms.Label()
         Me.SplitContainer1 = New System.Windows.Forms.SplitContainer()
-        Me.RichTextBoxConversionInput = New System.Windows.Forms.RichTextBox()
+        Me.ConversionInput = New System.Windows.Forms.RichTextBox()
         Me.ListBoxFileList = New System.Windows.Forms.ListBox()
         Me.ListBoxErrorList = New System.Windows.Forms.ListBox()
         Me.StatusStrip1 = New System.Windows.Forms.StatusStrip()
@@ -140,7 +135,7 @@ Partial Class Form1
         Me.ListBoxErrorList = New System.Windows.Forms.ListBox()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
         Me.LineNumbers_For_RichTextBoxInput = New LineNumbersForRichTextBox()
-        Me.RichTextBoxConversionOutput = New AdvancedRTB()
+        Me.ConversionOutput = New AdvancedRTB()
         Me.LineNumbers_For_RichTextBoxOutput = New LineNumbersForRichTextBox()
         Me.MenuStrip1.SuspendLayout()
         Me.ProgressBar1 = New System.Windows.Forms.ProgressBar()
@@ -149,7 +144,6 @@ Partial Class Form1
         Me.ToolTipErrorList = New System.Windows.Forms.ToolTip(Me.components)
         Me.mnuFileLastSolution = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuFileLastProject = New System.Windows.Forms.ToolStripMenuItem()
-        CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SplitContainer1.Panel1.SuspendLayout()
         Me.SplitContainer1.Panel2.SuspendLayout()
@@ -277,7 +271,7 @@ Partial Class Form1
         Me.mnuEditFind.Name = "mnuEditFind"
         Me.mnuEditFind.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.F), System.Windows.Forms.Keys)
         Me.mnuEditFind.Size = New System.Drawing.Size(146, 22)
-        Me.mnuEditFind.Text = "FInd..."
+        Me.mnuEditFind.Text = "&Find..."
         '
         'mnuEditSep1
         '
@@ -812,53 +806,10 @@ Partial Class Form1
         Me.ContextMenuPaste.Size = New System.Drawing.Size(102, 22)
         Me.ContextMenuPaste.Text = "Paste"
         '
-        'SearchInput
-        '
-        Me.SearchInput.Location = New System.Drawing.Point(933, 1)
-        Me.SearchInput.Name = "SearchInput"
-        Me.SearchInput.Size = New System.Drawing.Size(195, 23)
-        Me.SearchInput.TabIndex = 2
-        '
-        'ImageList1
-        '
-        Me.ImageList1.ColorDepth = System.Windows.Forms.ColorDepth.Depth8Bit
-        Me.ImageList1.ImageStream = CType(resources.GetObject("ImageList1.ImageStream"), System.Windows.Forms.ImageListStreamer)
-        Me.ImageList1.TransparentColor = System.Drawing.Color.Transparent
-        Me.ImageList1.Images.SetKeyName(0, "arrow_Forward_16xLG.png")
-        Me.ImageList1.Images.SetKeyName(1, "arrow_back_16xLG.png")
-        '
-        'SearchDirection
-        '
-        Me.SearchDirection.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawVariable
-        Me.SearchDirection.FormattingEnabled = True
-        Me.SearchDirection.Location = New System.Drawing.Point(1142, 1)
-        Me.SearchDirection.Name = "SearchDirection"
-        Me.SearchDirection.Size = New System.Drawing.Size(61, 24)
-        Me.SearchDirection.TabIndex = 3
-        '
-        'SearchWhere
-        '
-        Me.SearchWhere.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.SearchWhere.FormattingEnabled = True
-        Me.SearchWhere.Items.AddRange(New Object() {"Search Input Buffer", "Search OutPut Buffer", "Search Both"})
-        Me.SearchWhere.Location = New System.Drawing.Point(737, 1)
-        Me.SearchWhere.Name = "SearchWhere"
-        Me.SearchWhere.Size = New System.Drawing.Size(185, 23)
-        Me.SearchWhere.TabIndex = 4
-        '
         'InputFolderBrowserDialog1
         '
         Me.InputFolderBrowserDialog1.RootFolder = System.Environment.SpecialFolder.CommonDocuments
         Me.InputFolderBrowserDialog1.ShowNewFolderButton = False
-        '
-        'PictureBox1
-        '
-        Me.PictureBox1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.PictureBox1.Location = New System.Drawing.Point(1136, 1)
-        Me.PictureBox1.Name = "PictureBox1"
-        Me.PictureBox1.Size = New System.Drawing.Size(31, 23)
-        Me.PictureBox1.TabIndex = 13
-        Me.PictureBox1.TabStop = False
         '
         'ButtonStopConversion
         '
@@ -890,32 +841,32 @@ Partial Class Form1
         '
         'SplitContainer1.Panel1
         '
-        Me.SplitContainer1.Panel1.Controls.Add(Me.RichTextBoxConversionInput)
+        Me.SplitContainer1.Panel1.Controls.Add(Me.ConversionInput)
         Me.SplitContainer1.Panel1.Controls.Add(Me.LineNumbers_For_RichTextBoxInput)
-        Me.SplitContainer1.Panel1.Controls.Add(Me.RichTextBoxConversionOutput)
+        Me.SplitContainer1.Panel1.Controls.Add(Me.ConversionOutput)
         Me.SplitContainer1.Panel1.Controls.Add(Me.LineNumbers_For_RichTextBoxOutput)
         '
         'SplitContainer1.Panel2
         '
         Me.SplitContainer1.Panel2.Controls.Add(Me.ListBoxFileList)
         Me.SplitContainer1.Panel2.Controls.Add(Me.ListBoxErrorList)
-        Me.SplitContainer1.Size = New System.Drawing.Size(1923, 591)
+        Me.SplitContainer1.Size = New System.Drawing.Size(950, 591)
         Me.SplitContainer1.SplitterDistance = 470
         Me.SplitContainer1.SplitterWidth = 4
         Me.SplitContainer1.TabIndex = 22
         '
-        'RichTextBoxConversionInput
+        'ConversionInput
         '
-        Me.RichTextBoxConversionInput.ContextMenuStrip = Me.ContextMenuStrip1
-        Me.RichTextBoxConversionInput.DetectUrls = False
-        Me.RichTextBoxConversionInput.Dock = System.Windows.Forms.DockStyle.Left
-        Me.RichTextBoxConversionInput.Font = New System.Drawing.Font("Segoe UI", 11.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.RichTextBoxConversionInput.Location = New System.Drawing.Point(23, 0)
-        Me.RichTextBoxConversionInput.Name = "RichTextBoxConversionInput"
-        Me.RichTextBoxConversionInput.Size = New System.Drawing.Size(1221, 163)
-        Me.RichTextBoxConversionInput.TabIndex = 0
-        Me.RichTextBoxConversionInput.Text = ""
-        Me.RichTextBoxConversionInput.WordWrap = False
+        Me.ConversionInput.ContextMenuStrip = Me.ContextMenuStrip1
+        Me.ConversionInput.DetectUrls = False
+        Me.ConversionInput.Dock = System.Windows.Forms.DockStyle.Left
+        Me.ConversionInput.Font = New System.Drawing.Font("Segoe UI", 11.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.ConversionInput.Location = New System.Drawing.Point(23, 0)
+        Me.ConversionInput.Name = "ConversionInput"
+        Me.ConversionInput.Size = New System.Drawing.Size(1221, 163)
+        Me.ConversionInput.TabIndex = 0
+        Me.ConversionInput.Text = ""
+        Me.ConversionInput.WordWrap = False
         '
         'ListBoxFileList
         '
@@ -1017,7 +968,7 @@ Partial Class Form1
         Me.LineNumbers_For_RichTextBoxInput.MarginLinesThickness = 1.0!
         Me.LineNumbers_For_RichTextBoxInput.Name = "LineNumbers_For_RichTextBoxInput"
         Me.LineNumbers_For_RichTextBoxInput.Padding = New System.Windows.Forms.Padding(0, 0, 2, 0)
-        Me.LineNumbers_For_RichTextBoxInput.ParentRichTextBox = Me.RichTextBoxConversionInput
+        Me.LineNumbers_For_RichTextBoxInput.ParentRichTextBox = Me.ConversionInput
         Me.LineNumbers_For_RichTextBoxInput.SeeThroughMode = False
         Me.LineNumbers_For_RichTextBoxInput.ShowBackgroundGradient = True
         Me.LineNumbers_For_RichTextBoxInput.ShowBorderLines = True
@@ -1028,20 +979,20 @@ Partial Class Form1
         Me.LineNumbers_For_RichTextBoxInput.TabIndex = 23
         Me.LineNumbers_For_RichTextBoxInput.Visible = False
         '
-        'RichTextBoxConversionOutput
+        'ConversionOutput
         '
-        Me.RichTextBoxConversionOutput.ContextMenuStrip = Me.ContextMenuStrip1
-        Me.RichTextBoxConversionOutput.DetectUrls = False
-        Me.RichTextBoxConversionOutput.Dock = System.Windows.Forms.DockStyle.Right
-        Me.RichTextBoxConversionOutput.Font = New System.Drawing.Font("Segoe UI", 11.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.RichTextBoxConversionOutput.HScrollPos = 0
-        Me.RichTextBoxConversionOutput.Location = New System.Drawing.Point(999, 0)
-        Me.RichTextBoxConversionOutput.Name = "RichTextBoxConversionOutput"
-        Me.RichTextBoxConversionOutput.Size = New System.Drawing.Size(924, 163)
-        Me.RichTextBoxConversionOutput.TabIndex = 1
-        Me.RichTextBoxConversionOutput.Text = ""
-        Me.RichTextBoxConversionOutput.VScrollPos = 0
-        Me.RichTextBoxConversionOutput.WordWrap = False
+        Me.ConversionOutput.ContextMenuStrip = Me.ContextMenuStrip1
+        Me.ConversionOutput.DetectUrls = False
+        Me.ConversionOutput.Dock = System.Windows.Forms.DockStyle.Right
+        Me.ConversionOutput.Font = New System.Drawing.Font("Segoe UI", 11.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.ConversionOutput.HScrollPos = 0
+        Me.ConversionOutput.Location = New System.Drawing.Point(999, 0)
+        Me.ConversionOutput.Name = "ConversionOutput"
+        Me.ConversionOutput.Size = New System.Drawing.Size(924, 163)
+        Me.ConversionOutput.TabIndex = 1
+        Me.ConversionOutput.Text = ""
+        Me.ConversionOutput.VScrollPos = 0
+        Me.ConversionOutput.WordWrap = False
         '
         'LineNumbers_For_RichTextBoxOutput
         '
@@ -1070,7 +1021,7 @@ Partial Class Form1
         Me.LineNumbers_For_RichTextBoxOutput.MarginLinesThickness = 1.0!
         Me.LineNumbers_For_RichTextBoxOutput.Name = "LineNumbers_For_RichTextBoxOutput"
         Me.LineNumbers_For_RichTextBoxOutput.Padding = New System.Windows.Forms.Padding(0, 0, 2, 0)
-        Me.LineNumbers_For_RichTextBoxOutput.ParentRichTextBox = Me.RichTextBoxConversionOutput
+        Me.LineNumbers_For_RichTextBoxOutput.ParentRichTextBox = Me.ConversionOutput
         Me.LineNumbers_For_RichTextBoxOutput.SeeThroughMode = False
         Me.LineNumbers_For_RichTextBoxOutput.ShowBackgroundGradient = True
         Me.LineNumbers_For_RichTextBoxOutput.ShowBorderLines = True
@@ -1130,10 +1081,6 @@ Partial Class Form1
         Me.Controls.Add(Me.LabelProgress)
         Me.Controls.Add(Me.LabelErrorCount)
         Me.Controls.Add(Me.ButtonStopConversion)
-        Me.Controls.Add(Me.SearchWhere)
-        Me.Controls.Add(Me.PictureBox1)
-        Me.Controls.Add(Me.SearchDirection)
-        Me.Controls.Add(Me.SearchInput)
         Me.Controls.Add(Me.SplitContainer1)
         Me.Controls.Add(Me.MenuStrip1)
         Me.Controls.Add(Me.StatusStrip1)
@@ -1147,7 +1094,6 @@ Partial Class Form1
         Me.MenuStrip1.ResumeLayout(False)
         Me.MenuStrip1.PerformLayout()
         Me.ContextMenuStrip1.ResumeLayout(False)
-        CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).EndInit()
         Me.SplitContainer1.Panel1.ResumeLayout(False)
         Me.SplitContainer1.Panel2.ResumeLayout(False)
         Me.SplitContainer1.Panel2.PerformLayout()
@@ -1179,11 +1125,6 @@ Partial Class Form1
     Friend WithEvents mnuOptionsColorizeSource As ToolStripMenuItem
     Friend WithEvents mnuEditFind As ToolStripMenuItem
     Friend WithEvents mnuEditSep1 As ToolStripSeparator
-    Friend WithEvents SearchInput As TextBox
-    Friend WithEvents ImageList1 As ImageList
-    Friend WithEvents SearchDirection As ComboBox
-    Friend WithEvents PictureBox1 As PictureBox
-    Friend WithEvents SearchWhere As ComboBox
     Friend WithEvents InputFolderBrowserDialog1 As FolderBrowserDialog
     Friend WithEvents ContextMenuStrip1 As ContextMenuStrip
     Friend WithEvents ContextMenuCopy As ToolStripMenuItem
@@ -1197,8 +1138,8 @@ Partial Class Form1
     Friend WithEvents mnuCompile As ToolStripMenuItem
     Friend WithEvents mnuOptionsSep2 As ToolStripSeparator
     Friend WithEvents SplitContainer1 As SplitContainer
-    Friend WithEvents RichTextBoxConversionOutput As AdvancedRTB
-    Friend WithEvents RichTextBoxConversionInput As RichTextBox
+    Friend WithEvents ConversionOutput As AdvancedRTB
+    Friend WithEvents ConversionInput As RichTextBox
     Friend WithEvents ListBoxErrorList As ListBox
     Friend WithEvents LineNumbers_For_RichTextBoxInput As LineNumbersForRichTextBox
     Friend WithEvents LineNumbers_For_RichTextBoxOutput As LineNumbersForRichTextBox

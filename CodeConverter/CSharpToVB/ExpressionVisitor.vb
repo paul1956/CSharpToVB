@@ -38,6 +38,11 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Return LeadTriviaList
             End Function
 
+            Private Shared Function ConvertToInterpolatedStringTextToken(CSharpToken As SyntaxToken) As SyntaxToken
+                Dim TokenString As String = ConvertCSharpEscapes(CSharpToken.ValueText)
+                Return VBFactory.InterpolatedStringTextToken(TokenString, TokenString)
+            End Function
+
             Private Shared Function GetTypeSyntaxFromInterface(expressionConvertedType As ITypeSymbol) As TypeSyntax
 
                 If Not expressionConvertedType.AllInterfaces.Any Then
@@ -69,6 +74,30 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     Return VBFactory.ParseName(NewType)
                 End If
                 Return Nothing
+            End Function
+
+            Private Shared Function RestructureTrivia(node As CSS.MemberAccessExpressionSyntax, TriviaList As SyntaxTriviaList, FoundEOL As Boolean, ByRef OperatorTrailingTrivia As List(Of SyntaxTrivia)) As Boolean
+                For Each Trivia As SyntaxTrivia In TriviaList
+                    Select Case Trivia.RawKind
+                        Case VB.SyntaxKind.CommentTrivia
+                            OperatorTrailingTrivia.Add(Trivia)
+                            FoundEOL = True
+                        Case VB.SyntaxKind.EndOfLineTrivia
+                            FoundEOL = True
+                        Case VB.SyntaxKind.WhitespaceTrivia
+                            OperatorTrailingTrivia.Add(SpaceTrivia)
+                        Case VB.SyntaxKind.DisableWarningDirectiveTrivia,
+                             VB.SyntaxKind.EnableWarningDirectiveTrivia
+                            ' Ignore
+                        Case VB.SyntaxKind.IfDirectiveTrivia
+                            Dim StatementWithIssues As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
+                            StatementWithIssues.AddMarker(VBFactory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
+                        Case Else
+                            Stop
+                    End Select
+                Next
+
+                Return FoundEOL
             End Function
 
             Private Shared Function UnpackExpressionFromStatement(statementSyntax As StatementSyntax, <Out> ByRef expression As ExpressionSyntax) As Boolean
@@ -228,11 +257,6 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                                                endBlock)
             End Function
 
-            Private Function ConvertToInterpolatedStringTextToken(CSharpToken As SyntaxToken) As SyntaxToken
-                Dim TokenString As String = ConvertCSharpEscapes(CSharpToken.ValueText)
-                Return VBFactory.InterpolatedStringTextToken(TokenString, TokenString)
-            End Function
-
             Private Function IsConcatenateStringsExpression(node As CSS.BinaryExpressionSyntax) As Boolean
                 If Not node.IsKind(CS.SyntaxKind.AddExpression) Then
                     Return False
@@ -367,30 +391,6 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     Return VBFactory.NumericLiteralExpression(VBFactory.Literal(CInt(constant.Value) - 1))
                 End If
                 Return VBFactory.BinaryExpression(kind:=VB.SyntaxKind.SubtractExpression, left:=DirectCast(expr.Accept(Me), ExpressionSyntax), operatorToken:=MinusToken, right:=VBFactory.NumericLiteralExpression(VBFactory.Literal(1)))
-            End Function
-
-            Private Function RestructureTrivia(node As CSS.MemberAccessExpressionSyntax, TriviaList As SyntaxTriviaList, FoundEOL As Boolean, ByRef OperatorTrailingTrivia As List(Of SyntaxTrivia)) As Boolean
-                For Each Trivia As SyntaxTrivia In TriviaList
-                    Select Case Trivia.RawKind
-                        Case VB.SyntaxKind.CommentTrivia
-                            OperatorTrailingTrivia.Add(Trivia)
-                            FoundEOL = True
-                        Case VB.SyntaxKind.EndOfLineTrivia
-                            FoundEOL = True
-                        Case VB.SyntaxKind.WhitespaceTrivia
-                            OperatorTrailingTrivia.Add(SpaceTrivia)
-                        Case VB.SyntaxKind.DisableWarningDirectiveTrivia,
-                             VB.SyntaxKind.EnableWarningDirectiveTrivia
-                            ' Ignore
-                        Case VB.SyntaxKind.IfDirectiveTrivia
-                            Dim StatementWithIssues As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
-                            StatementWithIssues.AddMarker(VBFactory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
-                        Case Else
-                            Stop
-                    End Select
-                Next
-
-                Return FoundEOL
             End Function
 
             Public Shared Function ConvertAndModifyNodeTrivia(Node As VB.VisualBasicSyntaxNode, NodesOrTokens As List(Of SyntaxNodeOrToken), Index As Integer) As VB.VisualBasicSyntaxNode

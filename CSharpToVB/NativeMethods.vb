@@ -26,11 +26,10 @@ Friend Module NativeMethods
     End Enum
 
     <DllImport("user32.dll", EntryPoint:=NameOf(GetScrollBarInfo))>
-    Friend Function GetScrollBarInfo(
-                                    hwnd As IntPtr,
-                                    idObject As Integer,
-                                    ByRef psbi As SCROLLBARINFO
-                                    ) As <MarshalAs(UnmanagedType.Bool)> Boolean
+    Friend Function GetScrollBarInfo(hwnd As IntPtr,
+                                     idObject As Integer,
+                                     ByRef psbi As SCROLLBARINFO
+                                     ) As <MarshalAs(UnmanagedType.Bool)> Boolean
     End Function
 
     <DllImport("user32.dll", SetLastError:=True)>
@@ -52,11 +51,10 @@ Friend Module NativeMethods
 
     'This function queries or sets system-wide parameters, and updates the user profile during the process.
     <DllImport("user32", EntryPoint:=NameOf(SystemParametersInfo), CharSet:=CharSet.Unicode, SetLastError:=True)>
-    Public Function SystemParametersInfo(
-                                        intAction As Integer,
-                                        intParam As Integer,
-                                        strParam As String,
-                                        intWinIniFlag As Integer
+    Public Function SystemParametersInfo(intAction As Integer,
+                                         intParam As Integer,
+                                         strParam As String,
+                                         intWinIniFlag As Integer
                                         ) As Integer
         ' returns non-zero value if function succeeds
     End Function
@@ -98,4 +96,10 @@ Friend Module NativeMethods
 
 #End Region
 
+#Region "Message Filter Support"
+#Disable Warning IDE0049 ' Simplify Names
+    Public Const WM_MOUSELEAVE As Int32 = &H2A3
+    Public Const WM_MOUSEMOVE As Int32 = &H200
+#Enable Warning IDE0049 ' Simplify Names
+#End Region
 End Module
