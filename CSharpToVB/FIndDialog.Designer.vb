@@ -71,7 +71,7 @@ Partial Class FindDialog
         Me.ClearHighlightsButton.Name = "ClearHighlightsButton"
         Me.ClearHighlightsButton.Size = New System.Drawing.Size(99, 27)
         Me.ClearHighlightsButton.TabIndex = 0
-        Me.ClearHighlightsButton.Text = "Clear Hightlights"
+        Me.ClearHighlightsButton.Text = "Clear Highlights"
         '
         'FindNextButton
         '
