@@ -19,7 +19,6 @@ Imports CSharpToVBCodeConverter.ConversionResult
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Emit
 Imports Microsoft.VisualBasic.FileIO
-Imports Microsoft.Win32
 
 Imports VBMsgBox
 

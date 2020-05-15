@@ -167,6 +167,7 @@ Namespace Microsoft.VisualBasic.ApplicationServices
 
         ' How long a subsequent instance will wait for the original instance to get on its feet.
         Private Const SECOND_INSTANCE_TIMEOUT As Integer = 2500 'milliseconds.
+
         Private ReadOnly _appContext As WinFormsAppContext
 
         Private ReadOnly _splashLock As New Object
@@ -400,6 +401,16 @@ Namespace Microsoft.VisualBasic.ApplicationServices
         End Function
 
         ''' <summary>
+        ''' Validates that the value being passed as an AuthenticationMode enum is a legal value
+        ''' </summary>
+        ''' <param name="value"></param>
+        Private Shared Sub ValidateAuthenticationModeEnumValue(value As AuthenticationMode, paramName As String)
+            If value < AuthenticationMode.Windows OrElse value > AuthenticationMode.ApplicationDefined Then
+                Throw New InvalidEnumArgumentException(paramName, value, GetType(AuthenticationMode))
+            End If
+        End Sub
+
+        ''' <summary>
         ''' Validates that the value being passed as an ShutdownMode enum is a legal value
         ''' </summary>
         ''' <param name="value"></param>
@@ -525,16 +536,6 @@ Namespace Microsoft.VisualBasic.ApplicationServices
         ''' </remarks>
         Private Sub OnUnhandledExceptionEventAdaptor(sender As Object, e As ThreadExceptionEventArgs)
             OnUnhandledException(New UnhandledExceptionEventArgs(True, e.Exception))
-        End Sub
-
-        ''' <summary>
-        ''' Validates that the value being passed as an AuthenticationMode enum is a legal value
-        ''' </summary>
-        ''' <param name="value"></param>
-        Private Sub ValidateAuthenticationModeEnumValue(value As AuthenticationMode, paramName As String)
-            If value < AuthenticationMode.Windows OrElse value > AuthenticationMode.ApplicationDefined Then
-                Throw New InvalidEnumArgumentException(paramName, value, GetType(AuthenticationMode))
-            End If
         End Sub
 
         Protected Overridable Sub Dispose(disposing As Boolean)

@@ -30,6 +30,18 @@ Public Class FindDialog
         Both = CS Or VB
     End Enum
 
+    Private Shared Sub MRU_UpdateUI(FindWhat As ComboBox)
+        Dim FindItem As String = FindWhat.Text
+        Dim index As Integer = FindWhat.Items.IndexOf(FindItem)
+        If index >= 0 Then
+            FindWhat.Items.RemoveAt(index)
+        End If
+        FindWhat.Items.Insert(0, FindItem)
+        If FindWhat.Items.Count > 5 Then
+            FindWhat.Items.RemoveAt(FindWhat.Items.Count - 1)
+        End If
+    End Sub
+
     Private Sub ClearHighlightsButton_Click(sender As Object, e As EventArgs) Handles ClearHighlightsButton.Click
         Dim selectionstart As Integer
         Dim selectionLength As Integer
@@ -83,10 +95,10 @@ Public Class FindDialog
 
     End Sub
 
-    Private Sub EnableFindButtons()
+    Private Sub SetEnableFindButtons()
         Dim enableFind As Boolean = FindWhatComboBox.Text.Any AndAlso
-            _csBuffer.Text.Any AndAlso _searchBuffer.IsFlagSet(SearchBuffers.CS) OrElse
-            (_vbBuffer.Text.Any AndAlso _searchBuffer.IsFlagSet(SearchBuffers.VB))
+            (_csBuffer.Text.Any AndAlso _searchBuffer.IsFlagSet(SearchBuffers.CS) OrElse
+            (_vbBuffer.Text.Any AndAlso _searchBuffer.IsFlagSet(SearchBuffers.VB)))
         ClearHighlightsButton.Enabled = enableFind
         FindNextButton.Enabled = enableFind
         FindPreviousButton.Enabled = enableFind
@@ -103,7 +115,7 @@ Public Class FindDialog
     End Sub
 
     Private Sub FindDialog_GotFocus(sender As Object, e As EventArgs) Handles Me.GotFocus
-        EnableFindButtons()
+        SetEnableFindButtons()
     End Sub
 
     Private Sub FindDialog_Load(sender As Object, e As EventArgs) Handles Me.Load
@@ -125,7 +137,7 @@ Public Class FindDialog
             LookInComboBox.DropDownStyle = ComboBoxStyle.Simple
         End If
 
-        EnableFindButtons()
+        SetEnableFindButtons()
     End Sub
 
     Private Sub FindDialog_MouseLeave(sender As Object, e As EventArgs) Handles Me.MouseLeave
@@ -136,7 +148,7 @@ Public Class FindDialog
 
     Private Sub FindDialog_VisibleChanged(sender As Object, e As EventArgs) Handles Me.VisibleChanged
         If Visible Then
-            Location = New Point(_rootForm.Left + _rootForm.ListBoxErrorList.Left, _rootForm.SplitContainer1.Top + _rootForm.SplitContainer1.Height - _rootForm.ListBoxFileList.Height)
+            Location = New Point(_rootForm.Location.X + _rootForm.ListBoxErrorList.Left, _rootForm.Location.Y + _rootForm.SplitContainer1.Top + _rootForm.SplitContainer1.Height - _rootForm.ListBoxFileList.Height)
         End If
     End Sub
 
@@ -192,11 +204,11 @@ Public Class FindDialog
     End Function
 
     Private Sub FindWhatComboBox_SelectedIndexChanged(sender As Object, e As EventArgs) Handles FindWhatComboBox.SelectedIndexChanged
-        UpdateButtons()
+        SetEnableFindButtons()
     End Sub
 
     Private Sub FindWhatComboBox_TextChanged(sender As Object, e As EventArgs) Handles FindWhatComboBox.TextChanged
-        UpdateButtons()
+        SetEnableFindButtons()
     End Sub
 
     Private Sub LookInComboBox_SelectedIndexChanged(sender As Object, e As EventArgs) Handles LookInComboBox.SelectedIndexChanged
@@ -208,47 +220,11 @@ Public Class FindDialog
             Case 2
                 _searchBuffer = SearchBuffers.Both
         End Select
-        UpdateButtons()
+        SetEnableFindButtons()
     End Sub
 
     Private Sub MatchWholeWordCheckBox_CheckedChanged(sender As Object, e As EventArgs)
 
-    End Sub
-
-    Private Sub MRU_UpdateUI(FindWhat As ComboBox)
-        Dim FindItem As String = FindWhat.Text
-        Dim index As Integer = FindWhat.Items.IndexOf(FindItem)
-        If index >= 0 Then
-            FindWhat.Items.RemoveAt(index)
-        End If
-        FindWhat.Items.Insert(0, FindItem)
-        If FindWhat.Items.Count > 5 Then
-            FindWhat.Items.RemoveAt(FindWhat.Items.Count - 1)
-        End If
-    End Sub
-
-    Private Sub UpdateButtons()
-        If _csBuffer.SelectionLength > 0 AndAlso _searchBuffer.IsFlagSet(SearchBuffers.CS) Then
-            _csBuffer.SelectionBackColor = Color.White
-            ' Find the end index. End Index = number of characters in textbox
-            ' remove highlight from the search string
-            _csBuffer.Select(_csBuffer.SelectionStart - _csBuffer.SelectionLength, _csBuffer.SelectionLength)
-            Application.DoEvents()
-
-        End If
-        If _vbBuffer.SelectionLength > 0 AndAlso _searchBuffer.IsFlagSet(SearchBuffers.VB) Then
-            _vbBuffer.SelectionBackColor = Color.White
-            ' Find the end index. End Index = number of characters in textbox
-            ' remove highlight from the search string
-            _vbBuffer.Select(_vbBuffer.SelectionStart - _vbBuffer.SelectionLength, _vbBuffer.SelectionLength)
-            Application.DoEvents()
-        End If
-        _csBuffer.SelectionStart = 0
-        _csBuffer.SelectionLength = 0
-        _vbBuffer.SelectionStart = 0
-        _vbBuffer.SelectionLength = 0
-
-        EnableFindButtons()
     End Sub
 
     Public Function PreFilterMessage(ByRef m As Message) As Boolean Implements IMessageFilter.PreFilterMessage

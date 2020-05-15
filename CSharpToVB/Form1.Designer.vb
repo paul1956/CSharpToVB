@@ -13,6 +13,9 @@ Partial Class Form1
                 If _cancellationTokenSource IsNot Nothing Then
                     _cancellationTokenSource.Dispose()
                 End If
+                If _findDiablog IsNot Nothing Then
+                    _findDiablog.Dispose()
+                End If
             End If
         Finally
             MyBase.Dispose(disposing)

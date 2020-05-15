@@ -62,6 +62,10 @@ It will try to create a VB project File from the original C# project file.
 
 https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json is added to NuGet Package Source to find
 Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpecific attributes used for testing.
+  New in 4.4.2.1/Converter 3.4.2.5
+  - Update NuGet packages
+  - Dispose more stuff and add 'Shared' to keep analyzers happy
+
   New in 4.4.2.0/Converter 3.4.2.4
   - Complete rewrite of Find, made it a floating tool window, added support for match whole word and match case
   - Added a 5 memory temporary buffer for text search terms

@@ -176,6 +176,7 @@ Public Class AdvancedRTB
     ' IDisposable
     Protected Overrides Sub Dispose(disposing As Boolean)
         If Not _disposedValue Then
+            MyBase.Dispose(disposing)
             If disposing Then
                 _components.Dispose()
                 ' TODO: dispose managed state (managed objects).
