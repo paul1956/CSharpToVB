@@ -635,7 +635,9 @@ Namespace Microsoft.VisualBasic.ApplicationServices
         Protected Overridable Sub OnRun()
             If MainForm Is Nothing Then
                 OnCreateMainForm() 'A designer overrides OnCreateMainForm() to set the main form we are supposed to use
-                If MainForm Is Nothing Then Throw New NoStartupFormException
+                If MainForm Is Nothing Then
+                    Throw New NoStartupFormException
+                End If
 
                 'When we have a splash screen that hasn't timed out before the main form is ready to paint, we want to
                 'block the main form from painting.  To do that I let the form get past the Load() event and hold it until
@@ -787,7 +789,6 @@ Namespace Microsoft.VisualBasic.ApplicationServices
             If Entry Is Nothing Then
                 Throw New ArgumentNullException(NameOf(Entry))
             End If
-            'CONSIDER: We may want to make this public so users can set up what Single-Instance means to them, e.g. for us, separate paths mean different instances, etc.
 
             Dim permissions As New PermissionSet(PermissionState.None)
             permissions.AddPermission(New FileIOPermission(PermissionState.Unrestricted)) 'Chicken and egg problem.  All I need is PathDiscovery for the location of this assembly but to get the location of the assembly (see GetName below) I need to know the path which I can't get without asserting...
