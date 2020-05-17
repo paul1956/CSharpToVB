@@ -44,24 +44,18 @@ Public Class FindDialog
 
     Private Sub ClearHighlightsButton_Click(sender As Object, e As EventArgs) Handles ClearHighlightsButton.Click
         Dim selectionstart As Integer
-        Dim selectionLength As Integer
         If _searchBuffer.IsFlagSet(SearchBuffers.CS) Then
             selectionstart = _csBuffer.SelectionStart
-            selectionLength = _csBuffer.SelectionLength
-            _csBuffer.SelectionStart = 0
             _csBuffer.SelectAll()
             _csBuffer.SelectionBackColor = Color.White
-            _csBuffer.Select(selectionstart, selectionLength)
+            _csBuffer.Select(selectionstart, 0)
             _csBuffer.ScrollToCaret()
         End If
         If _searchBuffer.IsFlagSet(SearchBuffers.VB) Then
             selectionstart = _vbBuffer.SelectionStart
-            selectionLength = _vbBuffer.SelectionLength
-            _vbBuffer.SelectionStart = 0
-            _vbBuffer.ScrollToCaret()
             _vbBuffer.SelectAll()
             _vbBuffer.SelectionBackColor = Color.White
-            _vbBuffer.Select(selectionstart, selectionLength)
+            _vbBuffer.Select(selectionstart, 0)
             _vbBuffer.ScrollToCaret()
         End If
         Application.DoEvents()

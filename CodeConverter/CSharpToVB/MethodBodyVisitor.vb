@@ -1424,7 +1424,8 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                                             endblock)
                 Dim initializer As VBS.EqualsValueSyntax = VBFactory.EqualsValue(lambdaExpression)
                 Dim declarators As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(names, asClause, initializer))
-                Dim dimStatement As VBS.LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(DimModifier, declarators).WithConvertedTrailingTriviaFrom(node)
+                Dim dimStatement As VBS.LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(DimModifier, declarators).WithConvertedTrailingTriviaFrom(node).
+                                        WithPrependedLeadingTrivia(VBFactory.CommentTrivia($"' TODO Check: Local function was replaced with Lambda"))
                 If StatementWithIssues.Equals(node) Then
                     Return VBFactory.SingletonList(Of VBS.StatementSyntax)(dimStatement.WithConvertedTriviaFrom(node))
                 End If
