@@ -5,7 +5,7 @@ Imports System.Diagnostics.CodeAnalysis
 
 Imports CSharpToVBCodeConverter.Util
 
-Imports Microsoft.CodeAnalysis.PooledObjects1
+Imports CSharpToVB.PooledObjects
 Imports Microsoft.CodeAnalysis.Text
 
 Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
@@ -26,7 +26,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         Private _eolLeadingTriviaCount As Integer = 0
         Private _eolTraiingTriviaCount As Integer = 0
         Private _indentationDepth As Integer
-        Private _indentations As ArrayBuilder(Of SyntaxTrivia)
+        Private _indentations As List(Of SyntaxTrivia)
         Private _isInStructuredTrivia As Boolean
 
         Private _previousToken As SyntaxToken
@@ -431,7 +431,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
 
         Private Sub Free()
             If _indentations IsNot Nothing Then
-                _indentations.Free()
+                _indentations.Clear()
             End If
         End Sub
 
@@ -445,9 +445,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             End If
             Dim capacity As Integer = count + 1
             If _indentations Is Nothing Then
-                _indentations = ArrayBuilder(Of SyntaxTrivia).GetInstance(capacity)
-            Else
-                _indentations.EnsureCapacity(capacity)
+                _indentations = New List(Of SyntaxTrivia)(capacity)
             End If
 
             For Index As Integer = _indentations.Count To count
@@ -541,7 +539,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             '    Stop
             'End If
 
-            Dim currentTriviaList As ArrayBuilder(Of SyntaxTrivia) = ArrayBuilder(Of SyntaxTrivia).GetInstance()
+            Dim currentTriviaList As New List(Of SyntaxTrivia)
             Try
                 For index As Integer = 1 To lineBreaksBefore
                     If _eolLeadingTriviaCount < 2 Then
@@ -710,7 +708,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
                     Return SyntaxFactory.TriviaList(currentTriviaList)
                 End If
             Finally
-                currentTriviaList.Free()
+                currentTriviaList.Clear()
             End Try
         End Function
 

@@ -52,8 +52,7 @@ Namespace CSharpToVBCodeConverter.Util
                 End Select
                 CloseIndex += 1
             End While
-            Result = $"{Result})"
-            Return VBFactory.ParseName(Result)
+            Return VBFactory.ParseName($"{Result})")
         End Function
 
         Private Function GetAbstractClassesToImplement(abstractClasses As IEnumerable(Of INamedTypeSymbol)) As ImmutableArray(Of INamedTypeSymbol)
@@ -310,13 +309,11 @@ Namespace CSharpToVBCodeConverter.Util
             End If
             Dim SeparatedList As New List(Of VBS.QualifiedNameSyntax)
             For Each entry As (InterfaceName As INamedTypeSymbol, MethodList As ImmutableArray(Of ISymbol)) In ListOfRequiredInterfaces
-                Dim InterfaceName As VBS.NameSyntax = VBFactory.IdentifierName(entry.InterfaceName.ToString)
                 For Each InterfaceMethod As ISymbol In entry.MethodList
                     Dim _Right As VBS.SimpleNameSyntax = Nothing
                     If TypeOf InterfaceMethod Is IMethodSymbol Then
                         If ImplementsMethodOrProperty(csMethod, CType(InterfaceMethod, IMethodSymbol), _Right) Then
-                            Dim QualifiedName As VBS.QualifiedNameSyntax = CType(ConvertISymbolToNameSyntaxInterfaceName(InterfaceMethod), VBS.QualifiedNameSyntax)
-                            SeparatedList.Add(VBFactory.QualifiedName(QualifiedName, _Right))
+                            SeparatedList.Add(VBFactory.QualifiedName(ConvertISymbolToNameSyntaxInterfaceName(entry.InterfaceName), _Right))
                             Exit For
                         End If
                     End If

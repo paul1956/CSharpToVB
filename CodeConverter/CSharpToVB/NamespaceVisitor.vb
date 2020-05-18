@@ -114,10 +114,42 @@ End Function
 
                     Case CS.SyntaxKind.StructDeclaration
                         TypeSyntaxArray = _Type.BaseList?.Types.Select(Function(t As CSS.BaseTypeSyntax) DirectCast(t.Type.Accept(Me), VBS.TypeSyntax)).ToArray()
-                        If TypeSyntaxArray?.Length > 0 Then [implements].Add(VBFactory.ImplementsStatement(TypeSyntaxArray))
+                        If TypeSyntaxArray?.Length > 0 Then
+                            [implements].Add(VBFactory.ImplementsStatement(TypeSyntaxArray))
+                        End If
                     Case CS.SyntaxKind.InterfaceDeclaration
-                        TypeSyntaxArray = _Type.BaseList?.Types.Select(Function(t As CSS.BaseTypeSyntax) DirectCast(t.Type.Accept(Me), VBS.TypeSyntax)).ToArray()
-                        If TypeSyntaxArray?.Length > 0 Then [inherits].Add(VBFactory.InheritsStatement(TypeSyntaxArray).WithConvertedLeadingTriviaFrom(_Type.BaseList.ColonToken))
+                        Dim baseList As New List(Of VBS.TypeSyntax)
+                        Dim newLeadingTrivia As New List(Of SyntaxTrivia)
+                        If _Type.BaseList IsNot Nothing Then
+                            newLeadingTrivia.AddRange(ConvertTrivia(_Type.BaseList.ColonToken.LeadingTrivia))
+                            Dim csSeparators As List(Of SyntaxToken) = _Type.BaseList.Types.GetSeparators.ToList
+                            For Each e As IndexClass(Of CSS.BaseTypeSyntax) In _Type.BaseList.Types.WithIndex
+                                Dim item As VBS.TypeSyntax = DirectCast(e.Value.Type.Accept(Me), VBS.TypeSyntax)
+                                If item.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
+                                    newLeadingTrivia.AddRange(item.GetLeadingTrivia)
+                                    item = item.WithLeadingTrivia(SpaceTrivia)
+                                End If
+                                If Not e.IsLast Then
+                                    If csSeparators(e.Index).LeadingTrivia.ContainsDirectiveTrivia Then
+                                        newLeadingTrivia.Add(VBFactory.CommentTrivia($"' TODO: Visual Basic does not support directives in inherits lists. Directive moved!"))
+                                        newLeadingTrivia.Add(VBEOLTrivia)
+                                        newLeadingTrivia.AddRange(ConvertTrivia(csSeparators(e.Index).LeadingTrivia))
+                                    ElseIf csSeparators(e.Index).LeadingTrivia.ContainscommentTrivia Then
+                                        newLeadingTrivia.AddRange(ConvertTrivia(csSeparators(e.Index).LeadingTrivia))
+                                    End If
+                                    If item.GetTrailingTrivia.ContainsCommentTrivia Then
+                                        baseList.Add(item)
+                                    Else
+                                        baseList.Add(item.WithTrailingTrivia(SpaceTrivia))
+                                    End If
+                                Else
+                                    baseList.Add(item)
+                                End If
+                            Next
+                        End If
+                        If baseList.Any Then
+                            [inherits].Add(VBFactory.InheritsStatement(baseList.ToArray).WithLeadingTrivia(newLeadingTrivia))
+                        End If
                 End Select
                 If [implements].Any Then
                     [implements]([implements].Count - 1) = [implements].Last.WithTrailingEOL

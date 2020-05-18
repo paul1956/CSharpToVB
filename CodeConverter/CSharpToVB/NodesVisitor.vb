@@ -105,63 +105,58 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         Options = New SyntaxList(Of VBS.OptionStatementSyntax)
                     End If
                 Next
-                Dim compilationUnitSyntax1 As VBS.CompilationUnitSyntax
-                Dim EndOfFIleTokenWithTrivia As SyntaxToken = EndOfFileToken.WithConvertedTriviaFrom(node.EndOfFileToken)
 
-                If externList.Any Then
-                    compilationUnitSyntax1 = VBFactory.CompilationUnit(
-                        VBFactory.List(Of VBS.OptionStatementSyntax)(),
-                        VBFactory.List(_allImports),
-                        ListOfAttributes,
-                        _membersList).WithTriviaFrom(externList(0))
-                Else
-                    If _allImports.Any Then
-                        If _membersList.Any AndAlso _membersList(0).HasLeadingTrivia Then
-                            If (TypeOf _membersList(0) IsNot VBS.NamespaceBlockSyntax AndAlso
+                If _allImports.Any Then
+                    If _membersList.Any AndAlso _membersList(0).HasLeadingTrivia Then
+                        If (TypeOf _membersList(0) IsNot VBS.NamespaceBlockSyntax AndAlso
                                 TypeOf _membersList(0) IsNot VBS.ModuleBlockSyntax) OrElse
                                 _membersList(0).GetLeadingTrivia.ToFullString.Contains("auto-generated", StringComparison.OrdinalIgnoreCase) Then
-                                Dim HeadingTriviaList As New List(Of SyntaxTrivia)
-                                HeadingTriviaList.AddRange(_membersList(0).GetLeadingTrivia)
-                                If HeadingTriviaList(0).IsKind(SyntaxKind.EndOfLineTrivia) Then
-                                    HeadingTriviaList.RemoveAt(0)
-                                    If HeadingTriviaList.Any Then
-                                        HeadingTriviaList.Add(VBEOLTrivia)
-                                    End If
+                            Dim HeadingTriviaList As New List(Of SyntaxTrivia)
+                            HeadingTriviaList.AddRange(_membersList(0).GetLeadingTrivia)
+                            If HeadingTriviaList(0).IsKind(SyntaxKind.EndOfLineTrivia) Then
+                                HeadingTriviaList.RemoveAt(0)
+                                If HeadingTriviaList.Any Then
+                                    HeadingTriviaList.Add(VBEOLTrivia)
                                 End If
-                                Dim NewMemberList As New SyntaxList(Of VBS.StatementSyntax)
-                                NewMemberList = NewMemberList.Add(_membersList(0).WithLeadingTrivia(SpaceTrivia))
-                                _membersList = NewMemberList.AddRange(_membersList.RemoveAt(0))
-                                Dim NewLeadingTrivia As New List(Of SyntaxTrivia)
-                                ' Remove Leading whitespace
-                                For Each t As SyntaxTrivia In HeadingTriviaList
-                                    If Not t.IsWhitespaceOrEndOfLine Then
-                                        NewLeadingTrivia.Add(t)
-                                    End If
-                                Next
-                                _allImports(0) = _allImports(0).WithPrependedLeadingTrivia(NewLeadingTrivia)
                             End If
+                            Dim NewMemberList As New SyntaxList(Of VBS.StatementSyntax)
+                            NewMemberList = NewMemberList.Add(_membersList(0).WithLeadingTrivia(SpaceTrivia))
+                            _membersList = NewMemberList.AddRange(_membersList.RemoveAt(0))
+                            Dim NewLeadingTrivia As New List(Of SyntaxTrivia)
+                            ' Remove Leading whitespace
+                            For Each t As SyntaxTrivia In HeadingTriviaList
+                                If Not t.IsWhitespaceOrEndOfLine Then
+                                    NewLeadingTrivia.Add(t)
+                                End If
+                            Next
+                            _allImports(0) = _allImports(0).WithPrependedLeadingTrivia(NewLeadingTrivia)
                         End If
-                        If Options.Any AndAlso _allImports(0).GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
-                            Options = Options.Replace(Options(0), Options(0).WithLeadingTrivia(_allImports(0).GetLeadingTrivia))
-                            _allImports(0) = _allImports(0).WithLeadingTrivia(VBEOLTrivia)
-                        End If
-                    ElseIf Options.Any AndAlso ListOfAttributes.Any AndAlso ListOfAttributes(0).GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
-                        Options = Options.Replace(Options(0), Options(0).WithLeadingTrivia(ListOfAttributes(0).GetLeadingTrivia))
-                        ListOfAttributes = ListOfAttributes.Replace(ListOfAttributes(0), ListOfAttributes(0).WithLeadingTrivia(VBEOLTrivia))
-                    ElseIf Options.Any AndAlso _membersList.Any AndAlso _membersList(0).GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
-                        Options = Options.Replace(Options(0), Options(0).WithLeadingTrivia(_membersList(0).GetLeadingTrivia))
-                        _membersList = _membersList.Replace(_membersList(0), _membersList(0).WithLeadingTrivia(VBEOLTrivia))
                     End If
-                    compilationUnitSyntax1 = VBFactory.CompilationUnit(
-                                                        Options,
-                                                        VBFactory.List(_allImports),
-                                                        ListOfAttributes,
-                                                        _membersList,
-                                                        EndOfFIleTokenWithTrivia)
+                    If Options.Any AndAlso _allImports(0).GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
+                        Options = Options.Replace(Options(0), Options(0).WithLeadingTrivia(_allImports(0).GetLeadingTrivia))
+                        _allImports(0) = _allImports(0).WithLeadingTrivia(VBEOLTrivia)
+                    End If
+                ElseIf Options.Any AndAlso ListOfAttributes.Any AndAlso ListOfAttributes(0).GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
+                    Options = Options.Replace(Options(0), Options(0).WithLeadingTrivia(ListOfAttributes(0).GetLeadingTrivia))
+                    ListOfAttributes = ListOfAttributes.Replace(ListOfAttributes(0), ListOfAttributes(0).WithLeadingTrivia(VBEOLTrivia))
+                ElseIf Options.Any AndAlso _membersList.Any AndAlso _membersList(0).GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
+                    Options = Options.Replace(Options(0), Options(0).WithLeadingTrivia(_membersList(0).GetLeadingTrivia))
+                    _membersList = _membersList.Replace(_membersList(0), _membersList(0).WithLeadingTrivia(VBEOLTrivia))
                 End If
                 If HasMarkerError() Then
                     ' There are statements that were left out of translation
                     Throw New ApplicationException(GetMarkerErrorMessage)
+                End If
+                Dim compilationUnitSyntax1 As VBS.CompilationUnitSyntax =
+                    VBFactory.CompilationUnit(Options,
+                                              VBFactory.List(_allImports),
+                                              ListOfAttributes,
+                                              _membersList,
+                                              EndOfFileToken.WithConvertedTriviaFrom(node.EndOfFileToken)
+                                              )
+                If externList.Any Then
+                    Return compilationUnitSyntax1.
+                                    WithTriviaFrom(externList(0))
                 End If
                 Return compilationUnitSyntax1
             End Function
@@ -341,7 +336,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                 Dim SwitchVariableDeclared As Boolean = False
                 Dim StatementWithIssue As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
                 Dim governingExpression As VBS.ExpressionSyntax = CType(node.GoverningExpression.Accept(Me), VBS.ExpressionSyntax)
-                Dim SelectCaseStatement As VBS.SelectStatementSyntax = VBFactory.SelectStatement(governingExpression)
+                Dim SelectCaseStatement As VBS.SelectStatementSyntax = VBFactory.SelectStatement(governingExpression.WithLeadingTrivia(SpaceTrivia)).WithLeadingTrivia(governingExpression.GetLeadingTrivia)
                 Dim ResultNameToken As SyntaxToken = VBFactory.Identifier(MethodBodyVisitor.GetUniqueVariableNameInScope(node, "tempVar", _mSemanticModel))
                 Dim ResultIdentifier As VBS.IdentifierNameSyntax = VBFactory.IdentifierName(ResultNameToken)
                 Dim _Typeinfo As TypeInfo = ModelExtensions.GetTypeInfo(_mSemanticModel, node.Arms(0).Expression)

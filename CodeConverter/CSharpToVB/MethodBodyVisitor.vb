@@ -471,9 +471,9 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     Return VBFactory.CaseElseBlock(VBFactory.CaseElseStatement(VBFactory.ElseCaseClause()), ConvertSwitchSectionBlock(section, NewLeadingStatements))
                 End If
                 Dim LabelList As New List(Of VBS.CaseClauseSyntax)
-                Dim csLabelTrivia As New List(Of SyntaxTrivia)
-                Dim NewLeadingTrivia As New List(Of SyntaxTrivia)
-                NewLeadingTrivia.AddRange(ConvertTrivia(section.GetLeadingTrivia))
+                Dim vbLabelLeadingTrivia As New List(Of SyntaxTrivia)
+                vbLabelLeadingTrivia.AddRange(ConvertTrivia(section.GetLeadingTrivia))
+                Dim csLabelTrailingTrivia As New List(Of SyntaxTrivia)
                 ' Find Case leading space
                 For Each CaseLabel As CSS.SwitchLabelSyntax In section.Labels
                     Dim CaseLabelExpression As VBS.ExpressionSyntax
@@ -482,15 +482,16 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         Case TypeOf CaseLabel Is CSS.CaseSwitchLabelSyntax
                             CaseLabelExpression = DirectCast(CType(CaseLabel, CSS.CaseSwitchLabelSyntax).Value.Accept(_nodesVisitor), VBS.ExpressionSyntax)
                             CaseLabelWhenExpression = Nothing
-                            csLabelTrivia.AddRange(CaseLabel.GetTrailingTrivia)
+                            vbLabelLeadingTrivia.AddRange(ConvertTrivia(CaseLabel.GetLeadingTrivia))
+                            csLabelTrailingTrivia.AddRange(CaseLabel.GetTrailingTrivia)
                         Case TypeOf CaseLabel Is CSS.CasePatternSwitchLabelSyntax
                             Dim PatternLabel As CSS.CasePatternSwitchLabelSyntax = DirectCast(CaseLabel, CSS.CasePatternSwitchLabelSyntax)
                             Dim Identifier As SyntaxToken
                             CaseLabelWhenExpression = CType(PatternLabel.WhenClause?.Accept(_nodesVisitor), VBS.ExpressionSyntax)
                             If TypeOf PatternLabel.Pattern Is CSS.ConstantPatternSyntax Then
-                                Dim ConstantPattern As CSS.ConstantPatternSyntax = DirectCast(PatternLabel.Pattern, CSS.ConstantPatternSyntax).WithLeadingTrivia()
-                                CaseLabelExpression = DirectCast(ConstantPattern.Expression.Accept(_nodesVisitor), VBS.ExpressionSyntax)
-                                csLabelTrivia.AddRange(CaseLabel.GetTrailingTrivia)
+                                Dim ConstantPattern As CSS.ConstantPatternSyntax = DirectCast(PatternLabel.Pattern, CSS.ConstantPatternSyntax)
+                                CaseLabelExpression = DirectCast(ConstantPattern.Expression.Accept(_nodesVisitor), VBS.ExpressionSyntax).WithConvertedLeadingTriviaFrom(PatternLabel)
+                                csLabelTrailingTrivia.AddRange(CaseLabel.GetTrailingTrivia)
                             ElseIf TypeOf PatternLabel.Pattern Is CSS.DeclarationPatternSyntax Then
                                 Dim Pattern As CSS.DeclarationPatternSyntax = DirectCast(PatternLabel.Pattern, CSS.DeclarationPatternSyntax)
                                 Dim Type As VBS.TypeSyntax = DirectCast(Pattern.Type.Accept(_nodesVisitor), VBS.TypeSyntax)
@@ -542,7 +543,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                 End If
                             ElseIf TypeOf PatternLabel.Pattern Is CSS.RecursivePatternSyntax Then
                                 CaseLabelExpression = NothingExpression
-                                NewLeadingTrivia.AddRange(section.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=False, $"VB has no equivalent to the C# 'Recursive Pattern({PatternLabel.Pattern}) in 'case' statements"))
+                                vbLabelLeadingTrivia.AddRange(section.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=False, $"VB has no equivalent to the C# 'Recursive Pattern({PatternLabel.Pattern}) in 'case' statements"))
                             Else
                                 CaseLabelExpression = Nothing
                                 Stop
@@ -556,16 +557,21 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         LabelList.Add(VBFactory.SimpleCaseClause(CaseLabelWhenExpression))
                     Else
                         If CaseLabelWhenExpression Is Nothing Then
-                            LabelList.Add(VBFactory.SimpleCaseClause(CaseLabelExpression))
+                            LabelList.Add(VBFactory.SimpleCaseClause(CaseLabelExpression.WithoutLeadingTrivia))
                         Else
                             ' TODO use line continuation instead of space
-                            LabelList.Add(VBFactory.SimpleCaseClause(CaseLabelExpression.WithTrailingTrivia(SpaceTrivia)))
-                            NewLeadingStatements.Add(VBFactory.SingleLineIfStatement(VBFactory.UnaryExpression(VB.SyntaxKind.NotExpression, NotKeyword, CaseLabelExpression.WithTrailingTrivia(SpaceTrivia)), VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.ExitSelectStatement), elseClause:=Nothing).WithTrailingEOL)
+                            LabelList.Add(VBFactory.SimpleCaseClause(CaseLabelExpression.With({SpaceTrivia}, {SpaceTrivia})))
+                            NewLeadingStatements.Add(VBFactory.SingleLineIfStatement(VBFactory.UnaryExpression(VB.SyntaxKind.NotExpression, NotKeyword, CaseLabelExpression.With({SpaceTrivia}, {SpaceTrivia})),
+                                                                                     VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.ExitSelectStatement),
+                                                                                     elseClause:=Nothing
+                                                                                     ).WithLeadingTrivia(CaseLabelExpression.GetLeadingTrivia).
+                                                                                       WithTrailingEOL
+                                                    )
                         End If
                     End If
                 Next
                 Dim CommentString As New StringBuilder
-                For Each t As SyntaxTrivia In ConvertTrivia(csLabelTrivia)
+                For Each t As SyntaxTrivia In ConvertTrivia(csLabelTrailingTrivia)
                     Select Case t.RawKind
                         Case VB.SyntaxKind.WhitespaceTrivia
                             CommentString.Append(t.ToString)
@@ -582,7 +588,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     TrailingTrivia.Add(VBFactory.CommentTrivia($" ' {CommentString}"))
                     TrailingTrivia.Add(VBEOLTrivia)
                 End If
-                Dim CaseStatement As VBS.CaseStatementSyntax = VBFactory.CaseStatement(VBFactory.SeparatedList(LabelList)).With(NewLeadingTrivia, TrailingTrivia).WithTrailingEOL
+                Dim CaseStatement As VBS.CaseStatementSyntax = VBFactory.CaseStatement(VBFactory.SeparatedList(LabelList)).With(vbLabelLeadingTrivia, TrailingTrivia).WithTrailingEOL
                 Return VBFactory.CaseBlock(CaseStatement, ConvertSwitchSectionBlock(section, NewLeadingStatements))
             End Function
 

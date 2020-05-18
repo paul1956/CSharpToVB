@@ -40,6 +40,7 @@ Public Class FindDialog
         If FindWhat.Items.Count > 5 Then
             FindWhat.Items.RemoveAt(FindWhat.Items.Count - 1)
         End If
+        FindWhat.SelectedItem = FindWhat.Items(0)
     End Sub
 
     Private Sub ClearHighlightsButton_Click(sender As Object, e As EventArgs) Handles ClearHighlightsButton.Click

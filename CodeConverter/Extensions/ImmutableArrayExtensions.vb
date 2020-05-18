@@ -4,8 +4,6 @@
 Imports System.Collections.Immutable
 Imports System.Runtime.CompilerServices
 
-Imports Microsoft.CodeAnalysis.PooledObjects1
-
 Public Module ImmutableArrayExtensions
 
     ''' <summary>
@@ -32,7 +30,7 @@ Public Module ImmutableArrayExtensions
     Public Function WhereAsArray(Of T)(array As ImmutableArray(Of T), predicate As Func(Of T, Boolean)) As ImmutableArray(Of T)
         Debug.Assert(Not array.IsDefault)
 
-        Dim builder As ArrayBuilder(Of T) = Nothing
+        Dim builder As List(Of T) = Nothing
         Dim none As Boolean = True
         Dim all As Boolean = True
 
@@ -47,7 +45,7 @@ Public Module ImmutableArrayExtensions
 
                 Debug.Assert(index > 0)
                 If builder Is Nothing Then
-                    builder = ArrayBuilder(Of T).GetInstance()
+                    builder = New List(Of T)
                 End If
 
                 builder.Add(a)
@@ -61,7 +59,7 @@ Public Module ImmutableArrayExtensions
                 If all Then
                     Debug.Assert(builder Is Nothing)
                     all = False
-                    builder = ArrayBuilder(Of T).GetInstance()
+                    builder = New List(Of T)
                     For j As Integer = 0 To index - 1
                         builder.Add(array(j))
                     Next j
@@ -72,7 +70,7 @@ Public Module ImmutableArrayExtensions
         If builder IsNot Nothing Then
             Debug.Assert(Not all)
             Debug.Assert(Not none)
-            Return builder.ToImmutableAndFree()
+            Return ImmutableArray.Create(builder.ToArray)
         ElseIf all Then
             Return array
         Else

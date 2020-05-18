@@ -15,6 +15,7 @@ Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
+Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace CSharpToVBCodeConverter.DestVisualBasic
 
@@ -921,10 +922,10 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                     Dim Type As INamedTypeSymbol = DirectCast(RightTypeInfo.ConvertedType, INamedTypeSymbol)
                                     If Type.IsTupleType Then
                                         Dim namedTypes As String = Type.TupleElements(0).ContainingType.ToString
-                                        Dim TypeNames() As String = namedTypes.Substring(1, namedTypes.Length - 2).Split(","c)
-                                        For Each typeName As String In TypeNames
+                                        Dim TupleTypeName As TupleTypeSyntax = CType(VBFactory.ParseTypeName(ConvertTupleToVBTypeStrings(namedTypes, True)(0)), TupleTypeSyntax)
+                                        For Each typeName As TupleElementSyntax In TupleTypeName.Elements
                                             ' Need to convert Types !!!!!!!
-                                            TupleList.Add(ConvertNamedTypeToTypeString(typeName.Trim))
+                                            TupleList.Add(typeName.ToString)
                                         Next
                                     Else
                                         TupleList.Add(ConvertToType(Type.ToString).ToString)
@@ -1478,7 +1479,8 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                         Return VBFactory.ParseExpression($"{CastExpression.Keyword}({CastExpression.Expression})")
                     End If
                 End If
-                If TypeOf Expression Is BinaryExpressionSyntax OrElse
+                If TypeOf Expression Is BinaryConditionalExpressionSyntax OrElse
+                    TypeOf Expression Is BinaryExpressionSyntax OrElse
                     TypeOf Expression Is InvocationExpressionSyntax OrElse
                     TypeOf Expression Is LiteralExpressionSyntax OrElse
                     TypeOf Expression Is ObjectCreationExpressionSyntax Then

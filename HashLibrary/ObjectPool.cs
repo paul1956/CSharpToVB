@@ -2,16 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-// define TRACE_LEAKS to get additional diagnostics that can lead to the leak sources. note: it will
-// make everything about 2-3x slower
-//
-// #define TRACE_LEAKS
-
-using System;
 using System.Diagnostics;
 using System.Threading;
 
-namespace Microsoft.CodeAnalysis.PooledObjects1
+namespace CSharpToVB.PooledObjects
 {
     /// <summary>
     /// Generic implementation of object pooling pattern with predefined pool size limit. The main
@@ -42,10 +36,6 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
         // Storage for the pool objects. The first item is stored in a dedicated field because we
         // expect to be able to satisfy most requests from it.
         private T _firstItem;
-
-        public ObjectPool(Factory factory)
-            : this(factory, Environment.ProcessorCount * 2)
-        { }
 
         public ObjectPool(Factory factory, int size)
         {
@@ -104,26 +94,6 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
             }
         }
 
-        [Conditional("DEBUG")]
-        private void Validate(object obj)
-        {
-            Debug.Assert(obj != null, "freeing null?");
-
-            Debug.Assert(_firstItem != obj, "freeing twice?");
-
-            Element[] items = _items;
-            for (int i = 0; i < items.Length; i++)
-            {
-                T value = items[i]._value;
-                if (value == null)
-                {
-                    return;
-                }
-
-                Debug.Assert(value != obj, "freeing twice?");
-            }
-        }
-
         /// <summary>
         /// Produces an instance.
         /// </summary>
@@ -147,19 +117,6 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
         }
 
         /// <summary>
-        /// Removes an object from leak tracking.
-        ///
-        /// This is called when an object is returned to the pool.  It may also be explicitly
-        /// called if an object allocated from the pool is intentionally not being returned
-        /// to the pool.  This can be of use with pooled arrays if the consumer wants to
-        /// return a larger array to the pool than was originally allocated.
-        /// </summary>
-        [Conditional("DEBUG")]
-        internal void ForgetTrackedObject(T old, T replacement = null)
-        {
-        }
-
-        /// <summary>
         /// Returns objects to the pool.
         /// </summary>
         /// <remarks>
@@ -169,9 +126,6 @@ namespace Microsoft.CodeAnalysis.PooledObjects1
         /// </remarks>
         public void Free(T obj)
         {
-            Validate(obj);
-            ForgetTrackedObject(obj);
-
             if (_firstItem == null)
             {
                 // Intentionally not using interlocked here.

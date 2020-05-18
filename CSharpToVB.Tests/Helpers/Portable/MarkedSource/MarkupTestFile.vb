@@ -6,7 +6,8 @@ Imports System.Runtime.InteropServices
 Imports System.Text
 Imports System.Text.RegularExpressions
 
-Imports Microsoft.CodeAnalysis.PooledObjects1
+Imports CSharpToVB.PooledObjects
+
 Imports Microsoft.CodeAnalysis.Text
 
 Namespace Roslyn.Test.Utilities
@@ -44,9 +45,9 @@ Namespace Roslyn.Test.Utilities
             RegexOptions.Multiline Or RegexOptions.IgnorePatternWhitespace)
 
         Private Sub Parse(
-            input As String, <Out> ByRef output As String, <Out> ByRef position As Integer?, <Out> ByRef spans As IDictionary(Of String, ArrayBuilder(Of TextSpan)))
+            input As String, <Out> ByRef output As String, <Out> ByRef position As Integer?, <Out> ByRef spans As IDictionary(Of String, List(Of TextSpan)))
             position = Nothing
-            Dim tempSpans As New Dictionary(Of String, ArrayBuilder(Of TextSpan))()
+            Dim tempSpans As New Dictionary(Of String, List(Of TextSpan))()
 
             Dim outputBuilder As New StringBuilder()
 
@@ -151,12 +152,12 @@ Namespace Roslyn.Test.Utilities
             outputBuilder.Append(input.Substring(currentIndexInInput))
             output = outputBuilder.ToString()
 
-            Dim KeySelector As Func(Of KeyValuePair(Of String, ArrayBuilder(Of TextSpan)), String) = Function(kvp As KeyValuePair(Of String, ArrayBuilder(Of TextSpan)))
-                                                                                                         Return kvp.Key
-                                                                                                     End Function
-            Dim ValueSelector As Func(Of KeyValuePair(Of String, ArrayBuilder(Of TextSpan)), ArrayBuilder(Of TextSpan)) = Function(kvp As KeyValuePair(Of String, ArrayBuilder(Of TextSpan)))
-                                                                                                                              Return kvp.Value
-                                                                                                                          End Function
+            Dim KeySelector As Func(Of KeyValuePair(Of String, List(Of TextSpan)), String) = Function(kvp As KeyValuePair(Of String, List(Of TextSpan)))
+                                                                                                 Return kvp.Key
+                                                                                             End Function
+            Dim ValueSelector As Func(Of KeyValuePair(Of String, List(Of TextSpan)), List(Of TextSpan)) = Function(kvp As KeyValuePair(Of String, List(Of TextSpan)))
+                                                                                                              Return kvp.Value
+                                                                                                          End Function
             spans = tempSpans.ToDictionary(KeySelector, ValueSelector)
         End Sub
 
@@ -197,12 +198,12 @@ Namespace Roslyn.Test.Utilities
 
         Private Sub PopSpan(
             spanStartStack As Stack(Of Tuple(Of Integer, String)),
-            spans As IDictionary(Of String, ArrayBuilder(Of TextSpan)),
+            spans As IDictionary(Of String, List(Of TextSpan)),
             finalIndex As Integer)
             Dim spanStartTuple As Tuple(Of Integer, String) = spanStartStack.Pop()
 
             Dim span As TextSpan = TextSpan.FromBounds(spanStartTuple.Item1, finalIndex)
-            GetOrAdd(spans, spanStartTuple.Item2, Function(underscore As String) ArrayBuilder(Of TextSpan).GetInstance()).Add(span)
+            GetOrAdd(spans, spanStartTuple.Item2, Function(underscore As String) New List(Of TextSpan)).Add(span)
         End Sub
 
         Private Sub AddMatch(input As String, value As String, currentIndex As Integer, matches As List(Of Tuple(Of Integer, String)))
@@ -214,23 +215,23 @@ Namespace Roslyn.Test.Utilities
 
         Private Sub GetPositionAndSpans(
             input As String, <Out> ByRef output As String, <Out> ByRef cursorPositionOpt As Integer?, <Out> ByRef spans As ImmutableArray(Of TextSpan))
-            Dim mDictionary As IDictionary(Of String, ArrayBuilder(Of TextSpan)) = Nothing
+            Dim mDictionary As IDictionary(Of String, List(Of TextSpan)) = Nothing
             Parse(input, output, cursorPositionOpt, mDictionary)
 
-            Dim builder As ArrayBuilder(Of TextSpan) = GetOrAdd(mDictionary, String.Empty, Function(underscore As String) ArrayBuilder(Of TextSpan).GetInstance())
-            spans = builder.ToImmutableAndFree()
+            Dim builder As List(Of TextSpan) = GetOrAdd(mDictionary, String.Empty, Function(underscore As String) New List(Of TextSpan))
+            spans = ImmutableArray.Create(builder.ToArray)
         End Sub
 
         Public Sub GetPositionAndSpans(
             input As String, <Out> ByRef output As String, <Out> ByRef cursorPositionOpt As Integer?, <Out> ByRef spans As IDictionary(Of String, ImmutableArray(Of TextSpan)))
-            Dim mDictionary As IDictionary(Of String, ArrayBuilder(Of TextSpan)) = Nothing
+            Dim mDictionary As IDictionary(Of String, List(Of TextSpan)) = Nothing
             Parse(input, output, cursorPositionOpt, mDictionary)
-            Dim KeySelector As Func(Of KeyValuePair(Of String, ArrayBuilder(Of TextSpan)), String) = Function(kvp As KeyValuePair(Of String, ArrayBuilder(Of TextSpan)))
-                                                                                                         Return kvp.Key
-                                                                                                     End Function
-            Dim ValueSelector As Func(Of KeyValuePair(Of String, ArrayBuilder(Of TextSpan)), ImmutableArray(Of TextSpan)) = Function(kvp As KeyValuePair(Of String, ArrayBuilder(Of TextSpan)))
-                                                                                                                                Return kvp.Value.ToImmutableAndFree()
-                                                                                                                            End Function
+            Dim KeySelector As Func(Of KeyValuePair(Of String, List(Of TextSpan)), String) = Function(kvp As KeyValuePair(Of String, List(Of TextSpan)))
+                                                                                                 Return kvp.Key
+                                                                                             End Function
+            Dim ValueSelector As Func(Of KeyValuePair(Of String, List(Of TextSpan)), ImmutableArray(Of TextSpan)) = Function(kvp As KeyValuePair(Of String, List(Of TextSpan)))
+                                                                                                                        Return ImmutableArray.Create(kvp.Value.ToArray)
+                                                                                                                    End Function
 
             spans = mDictionary.ToDictionary(KeySelector, ValueSelector)
         End Sub
