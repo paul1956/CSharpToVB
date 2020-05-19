@@ -7,7 +7,8 @@ Imports CSharpToVBCodeConverter.Util
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.CSharp.Syntax
 
-Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
+Imports CS = Microsoft.CodeAnalysis.CSharp
+
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
@@ -26,7 +27,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                     End If
                 Next
                 For Each s As StatementSyntax In block.Statements
-                    If s.IsKind(CSharp.SyntaxKind.LocalFunctionStatement) Then
+                    If s.IsKind(CS.SyntaxKind.LocalFunctionStatement) Then
                         Continue For
                     End If
                     Statements.AddRange(s.Accept(visitor))

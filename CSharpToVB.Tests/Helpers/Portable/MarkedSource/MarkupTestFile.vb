@@ -6,8 +6,6 @@ Imports System.Runtime.InteropServices
 Imports System.Text
 Imports System.Text.RegularExpressions
 
-Imports CSharpToVB.PooledObjects
-
 Imports Microsoft.CodeAnalysis.Text
 
 Namespace Roslyn.Test.Utilities

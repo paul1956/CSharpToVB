@@ -5,7 +5,6 @@ Imports System.Diagnostics.CodeAnalysis
 
 Imports CSharpToVBCodeConverter.Util
 
-Imports CSharpToVB.PooledObjects
 Imports Microsoft.CodeAnalysis.Text
 
 Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax

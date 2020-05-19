@@ -14,8 +14,6 @@ Imports Microsoft.CodeAnalysis.VisualBasic
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 
-Imports VB = Microsoft.CodeAnalysis.VisualBasic
-
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 

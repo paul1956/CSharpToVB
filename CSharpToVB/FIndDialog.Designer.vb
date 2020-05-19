@@ -51,13 +51,13 @@ Partial Class FindDialog
         Me.TableLayoutPanel1.Name = "TableLayoutPanel1"
         Me.TableLayoutPanel1.RowCount = 1
         Me.TableLayoutPanel1.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
-        Me.TableLayoutPanel1.Size = New System.Drawing.Size(318, 33)
+        Me.TableLayoutPanel1.Size = New System.Drawing.Size(359, 33)
         Me.TableLayoutPanel1.TabIndex = 6
         '
         'FindPreviousButton
         '
         Me.FindPreviousButton.Anchor = System.Windows.Forms.AnchorStyles.None
-        Me.FindPreviousButton.Location = New System.Drawing.Point(3, 3)
+        Me.FindPreviousButton.Location = New System.Drawing.Point(10, 3)
         Me.FindPreviousButton.Name = "FindPreviousButton"
         Me.FindPreviousButton.Size = New System.Drawing.Size(98, 27)
         Me.FindPreviousButton.TabIndex = 1
@@ -67,9 +67,9 @@ Partial Class FindDialog
         '
         Me.ClearHighlightsButton.Anchor = System.Windows.Forms.AnchorStyles.None
         Me.ClearHighlightsButton.DialogResult = System.Windows.Forms.DialogResult.Cancel
-        Me.ClearHighlightsButton.Location = New System.Drawing.Point(108, 3)
+        Me.ClearHighlightsButton.Location = New System.Drawing.Point(121, 3)
         Me.ClearHighlightsButton.Name = "ClearHighlightsButton"
-        Me.ClearHighlightsButton.Size = New System.Drawing.Size(99, 27)
+        Me.ClearHighlightsButton.Size = New System.Drawing.Size(116, 27)
         Me.ClearHighlightsButton.TabIndex = 0
         Me.ClearHighlightsButton.Text = "Clear Highlights"
         '
@@ -77,7 +77,7 @@ Partial Class FindDialog
         '
         Me.FindNextButton.Anchor = System.Windows.Forms.AnchorStyles.None
         Me.FindNextButton.DialogResult = System.Windows.Forms.DialogResult.Cancel
-        Me.FindNextButton.Location = New System.Drawing.Point(215, 3)
+        Me.FindNextButton.Location = New System.Drawing.Point(250, 3)
         Me.FindNextButton.Name = "FindNextButton"
         Me.FindNextButton.Size = New System.Drawing.Size(99, 27)
         Me.FindNextButton.TabIndex = 0
