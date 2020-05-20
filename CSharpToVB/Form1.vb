@@ -531,6 +531,10 @@ Partial Public Class Form1
         CurrentBuffer = CType(sender, Control)
     End Sub
 
+    Private Sub ListBoxErrorList_SelectedValueChanged(sender As Object, e As EventArgs) Handles ListBoxErrorList.SelectedValueChanged
+        ListBoxErrorList.Enabled = ListBoxErrorList.Items.Count > 0
+    End Sub
+
     Private Sub ListBoxFileList_DoubleClick(sender As Object, e As EventArgs) Handles ListBoxFileList.DoubleClick
         Dim FileList As ListBox = CType(sender, ListBox)
         If FileList.Items.Count = 0 Then
@@ -557,6 +561,10 @@ Partial Public Class Form1
 
     Private Sub ListBoxFileList_MouseEnter(sender As Object, e As EventArgs) Handles ListBoxFileList.MouseEnter
         CurrentBuffer = CType(sender, Control)
+    End Sub
+
+    Private Sub ListBoxFileList_SelectedValueChanged(sender As Object, e As EventArgs) Handles ListBoxFileList.SelectedValueChanged
+        ListBoxFileList.Enabled = ListBoxFileList.Items.Count > 0
     End Sub
 
     Private Function LoadInputBufferFromStream(SourceFileNameWithPath As String) As Integer

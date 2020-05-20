@@ -874,10 +874,11 @@ Partial Class Form1
         'ListBoxFileList
         '
         Me.ListBoxFileList.ContextMenuStrip = Me.ContextMenuStrip1
+        Me.ListBoxFileList.Enabled = False
         Me.ListBoxFileList.ItemHeight = 15
         Me.ListBoxFileList.Location = New System.Drawing.Point(0, 0)
         Me.ListBoxFileList.Name = "ListBoxFileList"
-        Me.ListBoxFileList.ScrollAlwaysVisible = True
+        Me.ListBoxFileList.ScrollAlwaysVisible = False
         Me.ListBoxFileList.Size = New System.Drawing.Size(1245, 109)
         Me.ListBoxFileList.TabIndex = 0
         '
@@ -885,10 +886,11 @@ Partial Class Form1
         '
         Me.ListBoxErrorList.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.ListBoxErrorList.ContextMenuStrip = Me.ContextMenuStrip1
+        Me.ListBoxErrorList.Enabled = False
         Me.ListBoxErrorList.ItemHeight = 15
         Me.ListBoxErrorList.Location = New System.Drawing.Point(1273, 0)
         Me.ListBoxErrorList.Name = "ListBoxErrorList"
-        Me.ListBoxErrorList.ScrollAlwaysVisible = True
+        Me.ListBoxErrorList.ScrollAlwaysVisible = False
         Me.ListBoxErrorList.Size = New System.Drawing.Size(924, 109)
         Me.ListBoxErrorList.TabIndex = 1
         '
