@@ -67,6 +67,8 @@ Partial Public Class Form1
 
     Private Shared Function ConvertFramework(Framework As String) As String
         Select Case Framework
+            Case "netcoreapp5.0"
+                Return "NET5_0"
             Case "netcoreapp3.0"
                 Return "NETCOREAPP3_0"
             Case "netcoreapp3.1"
@@ -84,7 +86,7 @@ Partial Public Class Form1
             Case "net472"
                 Return "NET472"
             Case Else
-                Return Framework.ToUpper(Globalization.CultureInfo.InvariantCulture).Replace(".", "_", StringComparison.OrdinalIgnoreCase)
+                Return Framework.ToUpperInvariant.Replace(".", "_", StringComparison.OrdinalIgnoreCase)
         End Select
     End Function
 
@@ -1392,7 +1394,7 @@ Partial Public Class Form1
                     totalProjects:=1, _cancellationTokenSource:=_cancellationTokenSource).ConfigureAwait(True)
 
                 If prompt.Length = 0 Then
-                    prompt = $"{If(_cancellationTokenSource.Token.IsCancellationRequested, "Conversion canceled", "Conversion completed")}, {FilesConversionProgress.Text.ToLower(Globalization.CultureInfo.CurrentCulture)} completed successfully."
+                    prompt = $"{If(_cancellationTokenSource.Token.IsCancellationRequested, "Conversion canceled", "Conversion completed")}, {FilesConversionProgress.Text.ToLowerInvariant} completed successfully."
                 End If
                 MsgBox(prompt,
                        MsgBoxStyle.OkOnly Or If(prompt.Contains("terminated", StringComparison.OrdinalIgnoreCase), MsgBoxStyle.Critical, MsgBoxStyle.Information) Or MsgBoxStyle.MsgBoxSetForeground,

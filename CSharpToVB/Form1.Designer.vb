@@ -41,6 +41,8 @@ Partial Class Form1
         Me.mnuFileLastFolder = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuFileSep3 = New System.Windows.Forms.ToolStripSeparator()
         Me.mnuFileConvertProject = New System.Windows.Forms.ToolStripMenuItem()
+        Me.mnuFileLastProject = New System.Windows.Forms.ToolStripMenuItem()
+        Me.mnuFileLastSolution = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuFileSaveAs = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuFileSep4 = New System.Windows.Forms.ToolStripSeparator()
         Me.mnuFileSnippet = New System.Windows.Forms.ToolStripMenuItem()
@@ -126,6 +128,9 @@ Partial Class Form1
         Me.LabelErrorCount = New System.Windows.Forms.Label()
         Me.SplitContainer1 = New System.Windows.Forms.SplitContainer()
         Me.ConversionInput = New System.Windows.Forms.RichTextBox()
+        Me.LineNumbers_For_RichTextBoxInput = New LineNumbersForRichTextBox()
+        Me.ConversionOutput = New AdvancedRTB()
+        Me.LineNumbers_For_RichTextBoxOutput = New LineNumbersForRichTextBox()
         Me.ListBoxFileList = New System.Windows.Forms.ListBox()
         Me.ListBoxErrorList = New System.Windows.Forms.ListBox()
         Me.StatusStrip1 = New System.Windows.Forms.StatusStrip()
@@ -134,19 +139,13 @@ Partial Class Form1
         Me.StatusStripSpacer = New System.Windows.Forms.ToolStripStatusLabel()
         Me.ConversionProgressBar = New System.Windows.Forms.ToolStripProgressBar()
         Me.FilesConversionProgress = New System.Windows.Forms.ToolStripStatusLabel()
-        Me.ListBoxFileList = New System.Windows.Forms.ListBox()
-        Me.ListBoxErrorList = New System.Windows.Forms.ListBox()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
-        Me.LineNumbers_For_RichTextBoxInput = New LineNumbersForRichTextBox()
-        Me.ConversionOutput = New AdvancedRTB()
-        Me.LineNumbers_For_RichTextBoxOutput = New LineNumbersForRichTextBox()
-        Me.MenuStrip1.SuspendLayout()
         Me.ProgressBar1 = New System.Windows.Forms.ProgressBar()
         Me.LabelProgress = New System.Windows.Forms.Label()
         Me.ToolTipFileList = New System.Windows.Forms.ToolTip(Me.components)
         Me.ToolTipErrorList = New System.Windows.Forms.ToolTip(Me.components)
-        Me.mnuFileLastSolution = New System.Windows.Forms.ToolStripMenuItem()
-        Me.mnuFileLastProject = New System.Windows.Forms.ToolStripMenuItem()
+        Me.MenuStrip1.SuspendLayout()
+        Me.ContextMenuStrip1.SuspendLayout()
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SplitContainer1.Panel1.SuspendLayout()
         Me.SplitContainer1.Panel2.SuspendLayout()
@@ -176,63 +175,77 @@ Partial Class Form1
         '
         Me.mnuFileOpen.Name = "mnuFileOpen"
         Me.mnuFileOpen.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.O), System.Windows.Forms.Keys)
-        Me.mnuFileOpen.Size = New System.Drawing.Size(240, 22)
+        Me.mnuFileOpen.Size = New System.Drawing.Size(289, 22)
         Me.mnuFileOpen.Text = "Open File..."
         '
         'mnuFileSep1
         '
         Me.mnuFileSep1.Name = "mnuFileSep1"
-        Me.mnuFileSep1.Size = New System.Drawing.Size(237, 6)
+        Me.mnuFileSep1.Size = New System.Drawing.Size(286, 6)
         '
         'mnuFileSep2
         '
         Me.mnuFileSep2.Name = "mnuFileSep2"
-        Me.mnuFileSep2.Size = New System.Drawing.Size(237, 6)
+        Me.mnuFileSep2.Size = New System.Drawing.Size(286, 6)
         '
         'mnuFileLabelLastFolder
         '
         Me.mnuFileLabelLastFolder.Enabled = False
         Me.mnuFileLabelLastFolder.Name = "mnuFileLabelLastFolder"
-        Me.mnuFileLabelLastFolder.Size = New System.Drawing.Size(240, 22)
+        Me.mnuFileLabelLastFolder.Size = New System.Drawing.Size(289, 22)
         Me.mnuFileLabelLastFolder.Text = "Last Folder"
         '
         'mnuFileLastFolder
         '
         Me.mnuFileLastFolder.Name = "mnuFileLastFolder"
-        Me.mnuFileLastFolder.Size = New System.Drawing.Size(240, 22)
+        Me.mnuFileLastFolder.Size = New System.Drawing.Size(289, 22)
         Me.mnuFileLastFolder.Visible = False
         '
         'mnuFileSep3
         '
         Me.mnuFileSep3.Name = "mnuFileSep3"
-        Me.mnuFileSep3.Size = New System.Drawing.Size(237, 6)
+        Me.mnuFileSep3.Size = New System.Drawing.Size(286, 6)
         '
         'mnuFileConvertProject
         '
         Me.mnuFileConvertProject.Name = "mnuFileConvertProject"
         Me.mnuFileConvertProject.ShortcutKeys = CType(((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.Shift) _
             Or System.Windows.Forms.Keys.O), System.Windows.Forms.Keys)
-        Me.mnuFileConvertProject.Size = New System.Drawing.Size(240, 22)
+        Me.mnuFileConvertProject.Size = New System.Drawing.Size(289, 22)
         Me.mnuFileConvertProject.Text = "Convert Project/Solution..."
+        '
+        'mnuFileLastProject
+        '
+        Me.mnuFileLastProject.Enabled = False
+        Me.mnuFileLastProject.Name = "mnuFileLastProject"
+        Me.mnuFileLastProject.Size = New System.Drawing.Size(289, 22)
+        Me.mnuFileLastProject.Text = "Open Last Project"
+        '
+        'mnuFileLastSolution
+        '
+        Me.mnuFileLastSolution.Enabled = False
+        Me.mnuFileLastSolution.Name = "mnuFileLastSolution"
+        Me.mnuFileLastSolution.Size = New System.Drawing.Size(289, 22)
+        Me.mnuFileLastSolution.Text = "Open Last Solution"
         '
         'mnuFileSaveAs
         '
         Me.mnuFileSaveAs.Enabled = False
         Me.mnuFileSaveAs.Name = "mnuFileSaveAs"
         Me.mnuFileSaveAs.ShortcutKeys = CType((System.Windows.Forms.Keys.Alt Or System.Windows.Forms.Keys.A), System.Windows.Forms.Keys)
-        Me.mnuFileSaveAs.Size = New System.Drawing.Size(240, 22)
+        Me.mnuFileSaveAs.Size = New System.Drawing.Size(289, 22)
         Me.mnuFileSaveAs.Text = "Save Visual Basic File &As..."
         '
         'mnuFileSep4
         '
         Me.mnuFileSep4.Name = "mnuFileSep4"
-        Me.mnuFileSep4.Size = New System.Drawing.Size(237, 6)
+        Me.mnuFileSep4.Size = New System.Drawing.Size(286, 6)
         '
         'mnuFileSnippet
         '
         Me.mnuFileSnippet.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuFileSnippetLoadLast, Me.mnuFileSnippetSave})
         Me.mnuFileSnippet.Name = "mnuFileSnippet"
-        Me.mnuFileSnippet.Size = New System.Drawing.Size(240, 22)
+        Me.mnuFileSnippet.Size = New System.Drawing.Size(289, 22)
         Me.mnuFileSnippet.Text = "Snippet"
         '
         'mnuFileSnippetLoadLast
@@ -252,13 +265,13 @@ Partial Class Form1
         'mnuFileSep6
         '
         Me.mnuFileSep6.Name = "mnuFileSep6"
-        Me.mnuFileSep6.Size = New System.Drawing.Size(237, 6)
+        Me.mnuFileSep6.Size = New System.Drawing.Size(286, 6)
         '
         'mnuFileExit
         '
         Me.mnuFileExit.Name = "mnuFileExit"
         Me.mnuFileExit.ShortcutKeys = CType((System.Windows.Forms.Keys.Alt Or System.Windows.Forms.Keys.X), System.Windows.Forms.Keys)
-        Me.mnuFileExit.Size = New System.Drawing.Size(240, 22)
+        Me.mnuFileExit.Size = New System.Drawing.Size(289, 22)
         Me.mnuFileExit.Text = "E&xit"
         '
         'mnuEdit
@@ -441,6 +454,11 @@ Partial Class Form1
         Me.mnuOptionsStartFolderConvertFromLastFile.Name = "mnuOptionsStartFolderConvertFromLastFile"
         Me.mnuOptionsStartFolderConvertFromLastFile.Size = New System.Drawing.Size(360, 22)
         Me.mnuOptionsStartFolderConvertFromLastFile.Text = "Start Conversion From Last File"
+        '
+        'mnuOptionsSep2
+        '
+        Me.mnuOptionsSep2.Name = "mnuOptionsSep2"
+        Me.mnuOptionsSep2.Size = New System.Drawing.Size(357, 6)
         '
         'FrameworkToolStripMenuItem
         '
@@ -853,9 +871,8 @@ Partial Class Form1
         '
         Me.SplitContainer1.Panel2.Controls.Add(Me.ListBoxFileList)
         Me.SplitContainer1.Panel2.Controls.Add(Me.ListBoxErrorList)
-        Me.SplitContainer1.Size = New System.Drawing.Size(950, 591)
+        Me.SplitContainer1.Size = New System.Drawing.Size(1923, 591)
         Me.SplitContainer1.SplitterDistance = 470
-        Me.SplitContainer1.SplitterWidth = 4
         Me.SplitContainer1.TabIndex = 22
         '
         'ConversionInput
@@ -863,13 +880,105 @@ Partial Class Form1
         Me.ConversionInput.ContextMenuStrip = Me.ContextMenuStrip1
         Me.ConversionInput.DetectUrls = False
         Me.ConversionInput.Dock = System.Windows.Forms.DockStyle.Left
-        Me.ConversionInput.Font = New System.Drawing.Font("Segoe UI", 11.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.ConversionInput.Font = New System.Drawing.Font("Segoe UI", 11.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point)
         Me.ConversionInput.Location = New System.Drawing.Point(23, 0)
         Me.ConversionInput.Name = "ConversionInput"
-        Me.ConversionInput.Size = New System.Drawing.Size(1221, 163)
+        Me.ConversionInput.Size = New System.Drawing.Size(1221, 470)
         Me.ConversionInput.TabIndex = 0
         Me.ConversionInput.Text = ""
         Me.ConversionInput.WordWrap = False
+        '
+        'LineNumbers_For_RichTextBoxInput
+        '
+        Me.LineNumbers_For_RichTextBoxInput.AutoSizing = True
+        Me.LineNumbers_For_RichTextBoxInput.BackgroundGradientAlphaColor = System.Drawing.Color.FromArgb(CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer))
+        Me.LineNumbers_For_RichTextBoxInput.BackgroundGradientBetaColor = System.Drawing.Color.LightSteelBlue
+        Me.LineNumbers_For_RichTextBoxInput.BackgroundGradientDirection = System.Drawing.Drawing2D.LinearGradientMode.Horizontal
+        Me.LineNumbers_For_RichTextBoxInput.BorderLinesColor = System.Drawing.Color.SlateGray
+        Me.LineNumbers_For_RichTextBoxInput.BorderLinesStyle = System.Drawing.Drawing2D.DashStyle.Dot
+        Me.LineNumbers_For_RichTextBoxInput.BorderLinesThickness = 1.0!
+        Me.LineNumbers_For_RichTextBoxInput.Dock = System.Windows.Forms.DockStyle.Left
+        Me.LineNumbers_For_RichTextBoxInput.DockSide = LineNumbersForRichTextBox.LineNumberDockSides.Left
+        Me.LineNumbers_For_RichTextBoxInput.GridLinesColor = System.Drawing.Color.SlateGray
+        Me.LineNumbers_For_RichTextBoxInput.GridLinesStyle = System.Drawing.Drawing2D.DashStyle.Dot
+        Me.LineNumbers_For_RichTextBoxInput.GridLinesThickness = 1.0!
+        Me.LineNumbers_For_RichTextBoxInput.LineNrsAlignment = System.Drawing.ContentAlignment.TopRight
+        Me.LineNumbers_For_RichTextBoxInput.LineNrsAntiAlias = True
+        Me.LineNumbers_For_RichTextBoxInput.LineNrsAsHexadecimal = False
+        Me.LineNumbers_For_RichTextBoxInput.LineNrsClippedByItemRectangle = True
+        Me.LineNumbers_For_RichTextBoxInput.LineNrsLeadingZeroes = True
+        Me.LineNumbers_For_RichTextBoxInput.LineNrsOffset = New System.Drawing.Size(0, 0)
+        Me.LineNumbers_For_RichTextBoxInput.Location = New System.Drawing.Point(0, 0)
+        Me.LineNumbers_For_RichTextBoxInput.Margin = New System.Windows.Forms.Padding(0)
+        Me.LineNumbers_For_RichTextBoxInput.MarginLinesColor = System.Drawing.Color.SlateGray
+        Me.LineNumbers_For_RichTextBoxInput.MarginLinesSide = LineNumbersForRichTextBox.LineNumberDockSides.Right
+        Me.LineNumbers_For_RichTextBoxInput.MarginLinesStyle = System.Drawing.Drawing2D.DashStyle.Solid
+        Me.LineNumbers_For_RichTextBoxInput.MarginLinesThickness = 1.0!
+        Me.LineNumbers_For_RichTextBoxInput.Name = "LineNumbers_For_RichTextBoxInput"
+        Me.LineNumbers_For_RichTextBoxInput.Padding = New System.Windows.Forms.Padding(0, 0, 2, 0)
+        Me.LineNumbers_For_RichTextBoxInput.ParentRichTextBox = Me.ConversionInput
+        Me.LineNumbers_For_RichTextBoxInput.SeeThroughMode = False
+        Me.LineNumbers_For_RichTextBoxInput.ShowBackgroundGradient = True
+        Me.LineNumbers_For_RichTextBoxInput.ShowBorderLines = True
+        Me.LineNumbers_For_RichTextBoxInput.ShowGridLines = True
+        Me.LineNumbers_For_RichTextBoxInput.ShowLineNrs = True
+        Me.LineNumbers_For_RichTextBoxInput.ShowMarginLines = True
+        Me.LineNumbers_For_RichTextBoxInput.Size = New System.Drawing.Size(23, 470)
+        Me.LineNumbers_For_RichTextBoxInput.TabIndex = 23
+        Me.LineNumbers_For_RichTextBoxInput.Visible = False
+        '
+        'ConversionOutput
+        '
+        Me.ConversionOutput.ContextMenuStrip = Me.ContextMenuStrip1
+        Me.ConversionOutput.DetectUrls = False
+        Me.ConversionOutput.Dock = System.Windows.Forms.DockStyle.Right
+        Me.ConversionOutput.Font = New System.Drawing.Font("Segoe UI", 11.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point)
+        Me.ConversionOutput.HScrollPos = 0
+        Me.ConversionOutput.Location = New System.Drawing.Point(999, 0)
+        Me.ConversionOutput.Name = "ConversionOutput"
+        Me.ConversionOutput.Size = New System.Drawing.Size(924, 470)
+        Me.ConversionOutput.TabIndex = 1
+        Me.ConversionOutput.Text = ""
+        Me.ConversionOutput.VScrollPos = 0
+        Me.ConversionOutput.WordWrap = False
+        '
+        'LineNumbers_For_RichTextBoxOutput
+        '
+        Me.LineNumbers_For_RichTextBoxOutput.AutoSizing = True
+        Me.LineNumbers_For_RichTextBoxOutput.BackgroundGradientAlphaColor = System.Drawing.Color.FromArgb(CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer))
+        Me.LineNumbers_For_RichTextBoxOutput.BackgroundGradientBetaColor = System.Drawing.Color.LightSteelBlue
+        Me.LineNumbers_For_RichTextBoxOutput.BackgroundGradientDirection = System.Drawing.Drawing2D.LinearGradientMode.Horizontal
+        Me.LineNumbers_For_RichTextBoxOutput.BorderLinesColor = System.Drawing.Color.SlateGray
+        Me.LineNumbers_For_RichTextBoxOutput.BorderLinesStyle = System.Drawing.Drawing2D.DashStyle.Dot
+        Me.LineNumbers_For_RichTextBoxOutput.BorderLinesThickness = 1.0!
+        Me.LineNumbers_For_RichTextBoxOutput.DockSide = LineNumbersForRichTextBox.LineNumberDockSides.Left
+        Me.LineNumbers_For_RichTextBoxOutput.GridLinesColor = System.Drawing.Color.SlateGray
+        Me.LineNumbers_For_RichTextBoxOutput.GridLinesStyle = System.Drawing.Drawing2D.DashStyle.Dot
+        Me.LineNumbers_For_RichTextBoxOutput.GridLinesThickness = 1.0!
+        Me.LineNumbers_For_RichTextBoxOutput.LineNrsAlignment = System.Drawing.ContentAlignment.TopRight
+        Me.LineNumbers_For_RichTextBoxOutput.LineNrsAntiAlias = True
+        Me.LineNumbers_For_RichTextBoxOutput.LineNrsAsHexadecimal = False
+        Me.LineNumbers_For_RichTextBoxOutput.LineNrsClippedByItemRectangle = True
+        Me.LineNumbers_For_RichTextBoxOutput.LineNrsLeadingZeroes = True
+        Me.LineNumbers_For_RichTextBoxOutput.LineNrsOffset = New System.Drawing.Size(0, 0)
+        Me.LineNumbers_For_RichTextBoxOutput.Location = New System.Drawing.Point(977, 0)
+        Me.LineNumbers_For_RichTextBoxOutput.Margin = New System.Windows.Forms.Padding(0)
+        Me.LineNumbers_For_RichTextBoxOutput.MarginLinesColor = System.Drawing.Color.SlateGray
+        Me.LineNumbers_For_RichTextBoxOutput.MarginLinesSide = LineNumbersForRichTextBox.LineNumberDockSides.Right
+        Me.LineNumbers_For_RichTextBoxOutput.MarginLinesStyle = System.Drawing.Drawing2D.DashStyle.Solid
+        Me.LineNumbers_For_RichTextBoxOutput.MarginLinesThickness = 1.0!
+        Me.LineNumbers_For_RichTextBoxOutput.Name = "LineNumbers_For_RichTextBoxOutput"
+        Me.LineNumbers_For_RichTextBoxOutput.Padding = New System.Windows.Forms.Padding(0, 0, 2, 0)
+        Me.LineNumbers_For_RichTextBoxOutput.ParentRichTextBox = Me.ConversionOutput
+        Me.LineNumbers_For_RichTextBoxOutput.SeeThroughMode = False
+        Me.LineNumbers_For_RichTextBoxOutput.ShowBackgroundGradient = True
+        Me.LineNumbers_For_RichTextBoxOutput.ShowBorderLines = True
+        Me.LineNumbers_For_RichTextBoxOutput.ShowGridLines = True
+        Me.LineNumbers_For_RichTextBoxOutput.ShowLineNrs = True
+        Me.LineNumbers_For_RichTextBoxOutput.ShowMarginLines = True
+        Me.LineNumbers_For_RichTextBoxOutput.Size = New System.Drawing.Size(21, 470)
+        Me.LineNumbers_For_RichTextBoxOutput.TabIndex = 22
+        Me.LineNumbers_For_RichTextBoxOutput.Visible = False
         '
         'ListBoxFileList
         '
@@ -878,7 +987,6 @@ Partial Class Form1
         Me.ListBoxFileList.ItemHeight = 15
         Me.ListBoxFileList.Location = New System.Drawing.Point(0, 0)
         Me.ListBoxFileList.Name = "ListBoxFileList"
-        Me.ListBoxFileList.ScrollAlwaysVisible = False
         Me.ListBoxFileList.Size = New System.Drawing.Size(1245, 109)
         Me.ListBoxFileList.TabIndex = 0
         '
@@ -888,16 +996,15 @@ Partial Class Form1
         Me.ListBoxErrorList.ContextMenuStrip = Me.ContextMenuStrip1
         Me.ListBoxErrorList.Enabled = False
         Me.ListBoxErrorList.ItemHeight = 15
-        Me.ListBoxErrorList.Location = New System.Drawing.Point(1273, 0)
+        Me.ListBoxErrorList.Location = New System.Drawing.Point(2246, 0)
         Me.ListBoxErrorList.Name = "ListBoxErrorList"
-        Me.ListBoxErrorList.ScrollAlwaysVisible = False
         Me.ListBoxErrorList.Size = New System.Drawing.Size(924, 109)
         Me.ListBoxErrorList.TabIndex = 1
         '
         'StatusStrip1
         '
         Me.StatusStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.StatusStripElapasedTimeLabel, Me.StatusStripCurrentFileName, Me.StatusStripSpacer, Me.ConversionProgressBar, Me.FilesConversionProgress})
-        Me.StatusStrip1.Location = New System.Drawing.Point(0, 428)
+        Me.StatusStrip1.Location = New System.Drawing.Point(0, 615)
         Me.StatusStrip1.Name = "StatusStrip1"
         Me.StatusStrip1.Size = New System.Drawing.Size(1923, 22)
         Me.StatusStrip1.TabIndex = 6
@@ -945,98 +1052,6 @@ Partial Class Form1
         '
         Me.OpenFileDialog1.FileName = "OpenFileDialog1"
         '
-        'LineNumbers_For_RichTextBoxInput
-        '
-        Me.LineNumbers_For_RichTextBoxInput.AutoSizing = True
-        Me.LineNumbers_For_RichTextBoxInput.BackgroundGradientAlphaColor = System.Drawing.Color.FromArgb(CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer))
-        Me.LineNumbers_For_RichTextBoxInput.BackgroundGradientBetaColor = System.Drawing.Color.LightSteelBlue
-        Me.LineNumbers_For_RichTextBoxInput.BackgroundGradientDirection = System.Drawing.Drawing2D.LinearGradientMode.Horizontal
-        Me.LineNumbers_For_RichTextBoxInput.BorderLinesColor = System.Drawing.Color.SlateGray
-        Me.LineNumbers_For_RichTextBoxInput.BorderLinesStyle = System.Drawing.Drawing2D.DashStyle.Dot
-        Me.LineNumbers_For_RichTextBoxInput.BorderLinesThickness = 1.0!
-        Me.LineNumbers_For_RichTextBoxInput.Dock = System.Windows.Forms.DockStyle.Left
-        Me.LineNumbers_For_RichTextBoxInput.DockSide = LineNumbersForRichTextBox.LineNumberDockSides.Left
-        Me.LineNumbers_For_RichTextBoxInput.GridLinesColor = System.Drawing.Color.SlateGray
-        Me.LineNumbers_For_RichTextBoxInput.GridLinesStyle = System.Drawing.Drawing2D.DashStyle.Dot
-        Me.LineNumbers_For_RichTextBoxInput.GridLinesThickness = 1.0!
-        Me.LineNumbers_For_RichTextBoxInput.LineNrsAlignment = System.Drawing.ContentAlignment.TopRight
-        Me.LineNumbers_For_RichTextBoxInput.LineNrsAntiAlias = True
-        Me.LineNumbers_For_RichTextBoxInput.LineNrsAsHexadecimal = False
-        Me.LineNumbers_For_RichTextBoxInput.LineNrsClippedByItemRectangle = True
-        Me.LineNumbers_For_RichTextBoxInput.LineNrsLeadingZeroes = True
-        Me.LineNumbers_For_RichTextBoxInput.LineNrsOffset = New System.Drawing.Size(0, 0)
-        Me.LineNumbers_For_RichTextBoxInput.Location = New System.Drawing.Point(0, 0)
-        Me.LineNumbers_For_RichTextBoxInput.Margin = New System.Windows.Forms.Padding(0)
-        Me.LineNumbers_For_RichTextBoxInput.MarginLinesColor = System.Drawing.Color.SlateGray
-        Me.LineNumbers_For_RichTextBoxInput.MarginLinesSide = LineNumbersForRichTextBox.LineNumberDockSides.Right
-        Me.LineNumbers_For_RichTextBoxInput.MarginLinesStyle = System.Drawing.Drawing2D.DashStyle.Solid
-        Me.LineNumbers_For_RichTextBoxInput.MarginLinesThickness = 1.0!
-        Me.LineNumbers_For_RichTextBoxInput.Name = "LineNumbers_For_RichTextBoxInput"
-        Me.LineNumbers_For_RichTextBoxInput.Padding = New System.Windows.Forms.Padding(0, 0, 2, 0)
-        Me.LineNumbers_For_RichTextBoxInput.ParentRichTextBox = Me.ConversionInput
-        Me.LineNumbers_For_RichTextBoxInput.SeeThroughMode = False
-        Me.LineNumbers_For_RichTextBoxInput.ShowBackgroundGradient = True
-        Me.LineNumbers_For_RichTextBoxInput.ShowBorderLines = True
-        Me.LineNumbers_For_RichTextBoxInput.ShowGridLines = True
-        Me.LineNumbers_For_RichTextBoxInput.ShowLineNrs = True
-        Me.LineNumbers_For_RichTextBoxInput.ShowMarginLines = True
-        Me.LineNumbers_For_RichTextBoxInput.Size = New System.Drawing.Size(23, 163)
-        Me.LineNumbers_For_RichTextBoxInput.TabIndex = 23
-        Me.LineNumbers_For_RichTextBoxInput.Visible = False
-        '
-        'ConversionOutput
-        '
-        Me.ConversionOutput.ContextMenuStrip = Me.ContextMenuStrip1
-        Me.ConversionOutput.DetectUrls = False
-        Me.ConversionOutput.Dock = System.Windows.Forms.DockStyle.Right
-        Me.ConversionOutput.Font = New System.Drawing.Font("Segoe UI", 11.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.ConversionOutput.HScrollPos = 0
-        Me.ConversionOutput.Location = New System.Drawing.Point(999, 0)
-        Me.ConversionOutput.Name = "ConversionOutput"
-        Me.ConversionOutput.Size = New System.Drawing.Size(924, 163)
-        Me.ConversionOutput.TabIndex = 1
-        Me.ConversionOutput.Text = ""
-        Me.ConversionOutput.VScrollPos = 0
-        Me.ConversionOutput.WordWrap = False
-        '
-        'LineNumbers_For_RichTextBoxOutput
-        '
-        Me.LineNumbers_For_RichTextBoxOutput.AutoSizing = True
-        Me.LineNumbers_For_RichTextBoxOutput.BackgroundGradientAlphaColor = System.Drawing.Color.FromArgb(CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer))
-        Me.LineNumbers_For_RichTextBoxOutput.BackgroundGradientBetaColor = System.Drawing.Color.LightSteelBlue
-        Me.LineNumbers_For_RichTextBoxOutput.BackgroundGradientDirection = System.Drawing.Drawing2D.LinearGradientMode.Horizontal
-        Me.LineNumbers_For_RichTextBoxOutput.BorderLinesColor = System.Drawing.Color.SlateGray
-        Me.LineNumbers_For_RichTextBoxOutput.BorderLinesStyle = System.Drawing.Drawing2D.DashStyle.Dot
-        Me.LineNumbers_For_RichTextBoxOutput.BorderLinesThickness = 1.0!
-        Me.LineNumbers_For_RichTextBoxOutput.DockSide = LineNumbersForRichTextBox.LineNumberDockSides.Left
-        Me.LineNumbers_For_RichTextBoxOutput.GridLinesColor = System.Drawing.Color.SlateGray
-        Me.LineNumbers_For_RichTextBoxOutput.GridLinesStyle = System.Drawing.Drawing2D.DashStyle.Dot
-        Me.LineNumbers_For_RichTextBoxOutput.GridLinesThickness = 1.0!
-        Me.LineNumbers_For_RichTextBoxOutput.LineNrsAlignment = System.Drawing.ContentAlignment.TopRight
-        Me.LineNumbers_For_RichTextBoxOutput.LineNrsAntiAlias = True
-        Me.LineNumbers_For_RichTextBoxOutput.LineNrsAsHexadecimal = False
-        Me.LineNumbers_For_RichTextBoxOutput.LineNrsClippedByItemRectangle = True
-        Me.LineNumbers_For_RichTextBoxOutput.LineNrsLeadingZeroes = True
-        Me.LineNumbers_For_RichTextBoxOutput.LineNrsOffset = New System.Drawing.Size(0, 0)
-        Me.LineNumbers_For_RichTextBoxOutput.Location = New System.Drawing.Point(977, 0)
-        Me.LineNumbers_For_RichTextBoxOutput.Margin = New System.Windows.Forms.Padding(0)
-        Me.LineNumbers_For_RichTextBoxOutput.MarginLinesColor = System.Drawing.Color.SlateGray
-        Me.LineNumbers_For_RichTextBoxOutput.MarginLinesSide = LineNumbersForRichTextBox.LineNumberDockSides.Right
-        Me.LineNumbers_For_RichTextBoxOutput.MarginLinesStyle = System.Drawing.Drawing2D.DashStyle.Solid
-        Me.LineNumbers_For_RichTextBoxOutput.MarginLinesThickness = 1.0!
-        Me.LineNumbers_For_RichTextBoxOutput.Name = "LineNumbers_For_RichTextBoxOutput"
-        Me.LineNumbers_For_RichTextBoxOutput.Padding = New System.Windows.Forms.Padding(0, 0, 2, 0)
-        Me.LineNumbers_For_RichTextBoxOutput.ParentRichTextBox = Me.ConversionOutput
-        Me.LineNumbers_For_RichTextBoxOutput.SeeThroughMode = False
-        Me.LineNumbers_For_RichTextBoxOutput.ShowBackgroundGradient = True
-        Me.LineNumbers_For_RichTextBoxOutput.ShowBorderLines = True
-        Me.LineNumbers_For_RichTextBoxOutput.ShowGridLines = True
-        Me.LineNumbers_For_RichTextBoxOutput.ShowLineNrs = True
-        Me.LineNumbers_For_RichTextBoxOutput.ShowMarginLines = True
-        Me.LineNumbers_For_RichTextBoxOutput.Size = New System.Drawing.Size(21, 163)
-        Me.LineNumbers_For_RichTextBoxOutput.TabIndex = 22
-        Me.LineNumbers_For_RichTextBoxOutput.Visible = False
-        '
         'ProgressBar1
         '
         Me.ProgressBar1.Location = New System.Drawing.Point(385, 206)
@@ -1063,20 +1078,6 @@ Partial Class Form1
         '
         Me.ToolTipErrorList.ToolTipIcon = System.Windows.Forms.ToolTipIcon.Info
         '
-        'mnuFileLastSolution
-        '
-        Me.mnuFileLastSolution.Enabled = False
-        Me.mnuFileLastSolution.Name = "mnuFileLastSolution"
-        Me.mnuFileLastSolution.Size = New System.Drawing.Size(240, 22)
-        Me.mnuFileLastSolution.Text = "Open Last Solution"
-        '
-        'mnuFileLastProject
-        '
-        Me.mnuFileLastProject.Enabled = False
-        Me.mnuFileLastProject.Name = "mnuFileLastProject"
-        Me.mnuFileLastProject.Size = New System.Drawing.Size(240, 22)
-        Me.mnuFileLastProject.Text = "Open Last Project"
-        '
         'Form1
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(7.0!, 15.0!)
@@ -1101,7 +1102,6 @@ Partial Class Form1
         Me.ContextMenuStrip1.ResumeLayout(False)
         Me.SplitContainer1.Panel1.ResumeLayout(False)
         Me.SplitContainer1.Panel2.ResumeLayout(False)
-        Me.SplitContainer1.Panel2.PerformLayout()
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).EndInit()
         Me.SplitContainer1.ResumeLayout(False)
         Me.StatusStrip1.ResumeLayout(False)

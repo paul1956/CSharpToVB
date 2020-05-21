@@ -62,6 +62,8 @@ It will try to create a VB project File from the original C# project file.
 
 https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json is added to NuGet Package Source to find
 Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpecific attributes used for testing.
+  New in 4.4.2.5
+  - Update Form1.Designer.VB with changes from new WinForms designer
 
   New in 4.4.2.4
   - Improved File Processed and File Error ListBoxes to only enable when there is something in them

@@ -1141,7 +1141,7 @@ Namespace CSharpToVBCodeConverter.DestVisualBasic
                                     propertyStatementLeadingTrivia.AddRange(SetModifiers(0).LeadingTrivia)
                                     SetModifiers(0) = SetModifiers(0).WithoutTrivia
                                 End If
-                                Dim newVariableToken As SyntaxToken = VBFactory.Identifier($"_{identifierValueText.Substring(0, 1).ToLower(Globalization.CultureInfo.CurrentCulture)}{identifierValueText.Substring(1)}")
+                                Dim newVariableToken As SyntaxToken = VBFactory.Identifier($"_{identifierValueText.Substring(0, 1).ToLowerInvariant}{identifierValueText.Substring(1)}")
                                 Dim NewModifiedIdentifier As VBS.ModifiedIdentifierSyntax = VBFactory.ModifiedIdentifier(newVariableToken)
                                 Dim declarators As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) =
                                                         VBFactory.SingletonSeparatedList(

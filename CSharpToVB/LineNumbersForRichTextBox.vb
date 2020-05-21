@@ -856,7 +856,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
             ' --- MarginLines
             If _zMarginLines_Show = True AndAlso _zMarginLines_Side > LineNumberDockSides.None Then
                 zP_Left = New Point(CInt(-_zMarginLines_Thickness), CInt(-_zMarginLines_Thickness))
-                zP_Right = New Point(CInt(Width + _zMarginLines_Thickness), CInt(Height + _zMarginLines_Thickness))
+                zP_Right = New Point(Width + CInt(_zMarginLines_Thickness), Height + CInt(_zMarginLines_Thickness))
                 zPen = New Pen(_zMarginLines_Color, _zMarginLines_Thickness) With {
                 .DashStyle = _zMarginLines_Style
             }
@@ -866,7 +866,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
                 End If
                 If Me._zMarginLines_Side = LineNumberDockSides.Right Or Me._zMarginLines_Side = LineNumberDockSides.Height Then
                     e.Graphics.DrawLine(zPen, New Point(CInt(Width - Math.Ceiling(_zMarginLines_Thickness / 2)), 0), New Point(CInt(Width - Math.Ceiling(_zMarginLines_Thickness / 2)), Height - 1))
-                    zP_Right = New Point(CInt(Width - Math.Ceiling(_zMarginLines_Thickness / 2)), CInt(Height + _zMarginLines_Thickness))
+                    zP_Right = New Point(Width - CInt(Math.Ceiling(_zMarginLines_Thickness / 2)), Height + CInt(_zMarginLines_Thickness))
                 End If
                 '   GraphicsPath for the MarginLines(s):
                 '   MarginLines(s) are drawn as a rectangle connecting the zP_Left and zP_Right points, which are either inside or
