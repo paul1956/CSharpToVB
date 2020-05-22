@@ -453,7 +453,7 @@ Partial Class Form1
         Me.NETCOREAPPToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked
         Me.NETCOREAPPToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
         Me.NETCOREAPPToolStripMenuItem.Name = "NETCOREAPPToolStripMenuItem"
-        Me.NETCOREAPPToolStripMenuItem.Size = New System.Drawing.Size(163, 22)
+        Me.NETCOREAPPToolStripMenuItem.Size = New System.Drawing.Size(146, 22)
         Me.NETCOREAPPToolStripMenuItem.Text = "NETCOREAPP"
         '
         'NetToolStripMenuItem
@@ -593,7 +593,7 @@ Partial Class Form1
         Me.SplitContainer1.Panel2.Controls.Add(Me.ListBoxFileList)
         Me.SplitContainer1.Panel2.Controls.Add(Me.ListBoxErrorList)
         Me.SplitContainer1.Size = New System.Drawing.Size(1923, 591)
-        Me.SplitContainer1.SplitterDistance = 472
+        Me.SplitContainer1.SplitterDistance = 474
         Me.SplitContainer1.SplitterWidth = 2
         Me.SplitContainer1.TabIndex = 22
         '
@@ -605,7 +605,7 @@ Partial Class Form1
         Me.ConversionInput.Font = New System.Drawing.Font("Segoe UI", 11.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point)
         Me.ConversionInput.Location = New System.Drawing.Point(23, 0)
         Me.ConversionInput.Name = "ConversionInput"
-        Me.ConversionInput.Size = New System.Drawing.Size(950, 472)
+        Me.ConversionInput.Size = New System.Drawing.Size(950, 474)
         Me.ConversionInput.TabIndex = 0
         Me.ConversionInput.Text = ""
         Me.ConversionInput.WordWrap = False
@@ -645,7 +645,7 @@ Partial Class Form1
         Me.LineNumbers_For_RichTextBoxInput.ShowGridLines = True
         Me.LineNumbers_For_RichTextBoxInput.ShowLineNrs = True
         Me.LineNumbers_For_RichTextBoxInput.ShowMarginLines = True
-        Me.LineNumbers_For_RichTextBoxInput.Size = New System.Drawing.Size(23, 472)
+        Me.LineNumbers_For_RichTextBoxInput.Size = New System.Drawing.Size(23, 474)
         Me.LineNumbers_For_RichTextBoxInput.TabIndex = 23
         Me.LineNumbers_For_RichTextBoxInput.Visible = False
         '
@@ -658,7 +658,7 @@ Partial Class Form1
         Me.ConversionOutput.HScrollPos = 0
         Me.ConversionOutput.Location = New System.Drawing.Point(999, 0)
         Me.ConversionOutput.Name = "ConversionOutput"
-        Me.ConversionOutput.Size = New System.Drawing.Size(924, 472)
+        Me.ConversionOutput.Size = New System.Drawing.Size(924, 474)
         Me.ConversionOutput.TabIndex = 1
         Me.ConversionOutput.Text = ""
         Me.ConversionOutput.VScrollPos = 0
@@ -698,7 +698,7 @@ Partial Class Form1
         Me.LineNumbers_For_RichTextBoxOutput.ShowGridLines = True
         Me.LineNumbers_For_RichTextBoxOutput.ShowLineNrs = True
         Me.LineNumbers_For_RichTextBoxOutput.ShowMarginLines = True
-        Me.LineNumbers_For_RichTextBoxOutput.Size = New System.Drawing.Size(21, 472)
+        Me.LineNumbers_For_RichTextBoxOutput.Size = New System.Drawing.Size(21, 474)
         Me.LineNumbers_For_RichTextBoxOutput.TabIndex = 22
         Me.LineNumbers_For_RichTextBoxOutput.Visible = False
         '

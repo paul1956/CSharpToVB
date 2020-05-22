@@ -110,11 +110,12 @@ Module TargetFrameworkSupport
         Return versions
     End Function
 
-    Public Function RunCommand(Command As String, Args As String) As String()
+    Public Function RunCommand(Command As String, Args As String, Optional ShowWindow As Boolean = False) As String()
         Dim oProcess As New Process()
         Dim oStartInfo As New ProcessStartInfo(Command, Args) With {
-            .UseShellExecute = False,
-            .RedirectStandardOutput = True
+            .CreateNoWindow = Not ShowWindow,
+            .RedirectStandardOutput = True,
+            .UseShellExecute = False
         }
         oProcess.StartInfo = oStartInfo
         oProcess.Start()

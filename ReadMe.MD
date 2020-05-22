@@ -62,6 +62,9 @@ It will try to create a VB project File from the original C# project file.
 
 https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json is added to NuGet Package Source to find
 Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpecific attributes used for testing.
+  New in 4.4.3.1
+  - Do not show console window used to get DotNet Version info
+
   New in 4.4.3.0
   - Redesign Framework menus to only list installed framework SDK's reducing a lot of clutter
   - Add support for Core 5.0 target framework
