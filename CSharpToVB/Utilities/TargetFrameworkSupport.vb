@@ -1,0 +1,129 @@
+﻿Imports Microsoft.Win32
+
+Module TargetFrameworkSupport
+
+    ' Checking the version using >= will enable forward compatibility.
+    Private Function CheckFor45PlusVersion(releaseKey As Integer) As String
+        If releaseKey >= 528040 Then
+            Return "NET48"
+        ElseIf releaseKey >= 461808 Then
+            Return "NET472"
+        ElseIf releaseKey >= 461308 Then
+            Return "NET471"
+        ElseIf releaseKey >= 460798 Then
+            Return "NET47"
+        ElseIf releaseKey >= 394802 Then
+            Return "NET462"
+        ElseIf releaseKey >= 394254 Then
+            Return "461"
+        ElseIf releaseKey >= 393295 Then
+            Return "NET46"
+        ElseIf releaseKey >= 379893 Then
+            Return "NET452"
+        ElseIf releaseKey >= 378675 Then
+            Return "NET451"
+        ElseIf releaseKey >= 378389 Then
+            Return "NET45"
+        End If
+        ' This code should never execute. A non-null release key should mean
+        ' that 4.5 or later is installed.
+        Return "No 4.5 or later version detected"
+    End Function
+
+    Private Function Get45PlusFromRegistry() As String
+        Const subkey As String = "SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full\"
+
+        Using ndpKey As RegistryKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32).OpenSubKey(subkey)
+            If ndpKey IsNot Nothing AndAlso ndpKey.GetValue("Release") IsNot Nothing Then
+                Return CheckFor45PlusVersion(CInt(ndpKey.GetValue("Release")))
+            End If
+        End Using
+        Return String.Empty
+    End Function
+
+    Private Function GetVersionFromRegistry() As List(Of String)
+        Dim Versions As New List(Of String)
+        ' Opens the registry key for the .NET Framework entry.
+        Using ndpKey As RegistryKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32).
+            OpenSubKey("SOFTWARE\Microsoft\NET Framework Setup\NDP\")
+
+            For Each versionKeyName As String In ndpKey.GetSubKeyNames()
+                ' Skip .NET Framework 4.5 and later.
+                If versionKeyName = "v4" Then Continue For
+
+                If versionKeyName.StartsWith("v") Then
+                    Dim versionKey As RegistryKey = ndpKey.OpenSubKey(versionKeyName)
+                    ' Get the .NET Framework version value.
+                    Dim name As String = DirectCast(versionKey.GetValue("Version", ""), String)
+                    ' Get the service pack (SP) number.
+                    Dim sp As String = versionKey.GetValue("SP", "").ToString()
+
+                    If Not String.IsNullOrEmpty(name) Then
+                        Versions.Add(MapNameToFramework("NET", Separator:="", name))
+                        Continue For
+                    End If
+                    For Each subKeyName As String In versionKey.GetSubKeyNames()
+                        Dim subKey As RegistryKey = versionKey.OpenSubKey(subKeyName)
+                        name = DirectCast(subKey.GetValue("Version", ""), String)
+                        If Not String.IsNullOrEmpty(name) Then
+                            sp = subKey.GetValue("SP", "").ToString()
+                        End If
+                        Dim install As String = subKey.GetValue("Install", "").ToString()
+                        If String.IsNullOrEmpty(install) Then  ' No install info; it must be later.
+                            Versions.Add(MapNameToFramework("NET", Separator:="", name))
+                        Else
+                            If Not String.IsNullOrEmpty(sp) AndAlso install = "1" Then
+                                Versions.Add(MapNameToFramework("NET", Separator:="", name))
+                            ElseIf install = "1" Then
+                                Versions.Add(MapNameToFramework("NET", Separator:="", name))
+                            End If
+                        End If
+                    Next
+                End If
+            Next
+        End Using
+        Return Versions
+    End Function
+
+    Private Function MapNameToFramework(Base As String, Separator As String, Name As String) As String
+        Dim NameSplit() As String = Name.Split(".")
+        If CInt(NameSplit(0)) >= 5 Then
+            Base = "NET"
+        End If
+        Dim Minor As String = NameSplit(1)
+        Return $"{Base}{NameSplit(0)}{Separator}{Minor}"
+    End Function
+
+    Public Function GetAllFrameworkVersions() As List(Of String)
+        Dim versions As New List(Of String)
+        versions.AddRange(GetVersionFromRegistry())
+        versions.Add(Get45PlusFromRegistry())
+        Return versions
+    End Function
+
+    Public Function GetAllCoreVersions() As List(Of String)
+        Dim versions As New List(Of String)
+        Dim dotnetVersions As String() = RunCommand("Dotnet", "--list-sdks")
+        For Each e As String In dotnetVersions
+            versions.Add(MapNameToFramework("NETCOREAPP", Separator:="_", e.Split(" ")(0)))
+        Next
+        Return versions
+    End Function
+
+    Public Function RunCommand(Command As String, Args As String) As String()
+        Dim oProcess As New Process()
+        Dim oStartInfo As New ProcessStartInfo(Command, Args) With {
+            .UseShellExecute = False,
+            .RedirectStandardOutput = True
+        }
+        oProcess.StartInfo = oStartInfo
+        oProcess.Start()
+
+        Dim sOutput As String
+        Using oStreamReader As IO.StreamReader = oProcess.StandardOutput
+            sOutput = oStreamReader.ReadToEnd()
+        End Using
+        Return sOutput.SplitLines
+    End Function
+
+End Module

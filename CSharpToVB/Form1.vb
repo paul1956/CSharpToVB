@@ -33,7 +33,7 @@ Partial Public Class Form1
 
     Private Shared ReadOnly s_snippetFileWithPath As String = Path.Combine(SpecialDirectories.MyDocuments, "CSharpToVBLastSnippet.RTF")
 
-    Private ReadOnly _frameworkTypeList As New Dictionary(Of String, ToolStripMenuItem)
+    Private ReadOnly _frameworkTypeList As New List(Of ToolStripMenuItem)
 
     Private ReadOnly _frameworkVersionList As New Dictionary(Of String, (Item As ToolStripMenuItem, Parent As ToolStripMenuItem))
 
@@ -65,29 +65,21 @@ Partial Public Class Form1
         End Set
     End Property
 
+    Private Shared Sub AddMenuItem(DropDownItems As ToolStripItemCollection, ItemName As String)
+        DropDownItems.Add(New ToolStripMenuItem With {
+            .AutoSize = True,
+            .CheckOnClick = True,
+            .ImageScaling = ToolStripItemImageScaling.None,
+            .Name = $"{ItemName}ToolStripMenuItem",
+            .Text = ItemName
+        })
+    End Sub
+
     Private Shared Function ConvertFramework(Framework As String) As String
-        Select Case Framework
-            Case "netcoreapp5.0"
-                Return "NET5_0"
-            Case "netcoreapp3.0"
-                Return "NETCOREAPP3_0"
-            Case "netcoreapp3.1"
-                Return "NETCOREAPP3_1"
-            Case "netstandard1.3"
-                Return "NETSTANDARD1_3"
-            Case "netstandard2.0"
-                Return "NETSTANDARD2_0"
-            Case "net20"
-                Return "NET20"
-            Case "net35"
-                Return "NET35"
-            Case "net45"
-                Return "NET45"
-            Case "net472"
-                Return "NET472"
-            Case Else
-                Return Framework.ToUpperInvariant.Replace(".", "_", StringComparison.OrdinalIgnoreCase)
-        End Select
+        If Framework = "netcoreapp5.0" Then
+            Return "NET5_0"
+        End If
+        Return Framework.ToUpperInvariant.Replace(".", "_", StringComparison.OrdinalIgnoreCase)
     End Function
 
     <ExcludeFromCodeCoverage>
@@ -343,14 +335,25 @@ Partial Public Class Form1
         ListBoxErrorList.Height = SplitContainer1.Panel2.ClientSize.Height
 
         For Each FrameworkType As ToolStripMenuItem In FrameworkToolStripMenuItem.DropDownItems
-            _frameworkTypeList.Add(FrameworkType.Text, FrameworkType)
-            FrameworkType.Checked = False
+            If FrameworkType.Text = ".Net Full Framework" Then
+                For Each f As String In GetAllFrameworkVersions()
+                    AddMenuItem(FrameworkType.DropDownItems, f)
+                Next
+            Else
+                For Each f As String In GetAllCoreVersions()
+                    AddMenuItem(FrameworkType.DropDownItems, f)
+                Next
+            End If
+        Next
+        For Each FrameworkType As ToolStripMenuItem In FrameworkToolStripMenuItem.DropDownItems
+            _frameworkTypeList.Add(FrameworkType)
             For Each FrameworkVersion As ToolStripMenuItem In FrameworkType.DropDownItems
                 If FrameworkVersion.Text = My.Settings.Framework Then
                     FrameworkType.Checked = True
                     FrameworkVersion.Checked = True
                     FrameworkVersion.Enabled = False
                 Else
+                    FrameworkType.Checked = False
                     FrameworkVersion.Checked = False
                     FrameworkVersion.Enabled = True
                 End If
@@ -1417,13 +1420,13 @@ Partial Public Class Form1
         Dim LineNumberInputWidth As Integer = If(LineNumbers_For_RichTextBoxInput.Visible, LineNumbers_For_RichTextBoxInput.Width, 0)
         Dim LineNumberOutputWidth As Integer = If(LineNumbers_For_RichTextBoxOutput.Visible, LineNumbers_For_RichTextBoxOutput.Width, 0)
 
-        ConversionInput.Width = CInt((ClientSize.Width / 2 + 0.5)) - LineNumberInputWidth
-        ListBoxFileList.Width = CInt(ClientSize.Width / 2 + 0.5)
+        Dim HalfClientWidth As Integer = ClientSize.Width \ 2
+        ConversionInput.Width = HalfClientWidth - LineNumberInputWidth
+        ListBoxFileList.Width = HalfClientWidth
 
         ConversionOutput.Width = ClientSize.Width - (ConversionInput.Width + LineNumberInputWidth + LineNumberOutputWidth)
         ConversionOutput.Left = ConversionInput.Width + LineNumberInputWidth + LineNumberOutputWidth
 
-        Dim HalfClientWidth As Integer = ClientSize.Width \ 2
         ListBoxErrorList.Left = HalfClientWidth
         ListBoxErrorList.Width = HalfClientWidth
         StatusStripCurrentFileName.Width = HalfClientWidth
@@ -1477,8 +1480,8 @@ Partial Public Class Form1
                 My.Settings.Framework = MenuItem.Text
                 My.Settings.Save()
                 kvp.Value.Parent.Checked = True
-                For Each ParentItem As KeyValuePair(Of String, ToolStripMenuItem) In _frameworkTypeList
-                    ParentItem.Value.Checked = kvp.Value.Parent.Text = ParentItem.Key
+                For Each ParentItem As ToolStripMenuItem In _frameworkTypeList
+                    ParentItem.Checked = kvp.Value.Parent.Text = ParentItem.Text
                 Next
             Else
                 kvp.Value.Item.Enabled = True

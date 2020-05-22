@@ -62,11 +62,16 @@ It will try to create a VB project File from the original C# project file.
 
 https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json is added to NuGet Package Source to find
 Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpecific attributes used for testing.
+  New in 4.4.3.0
+  - Redesign Framework menus to only list installed framework SDK's reducing a lot of clutter
+  - Add support for Core 5.0 target framework
+  - A compile time variable representing the selected framework will be set for folder and snip-it conversions
+
   New in 4.4.2.5
   - Update Form1.Designer.VB with changes from new WinForms designer
 
   New in 4.4.2.4
-  - Improved File Processed and File Error ListBoxes to only enable when there is something in them
+  - Improved File Processed and File Error ListBoxes to only be enabled when there is something in them
 
   New in 4.4.2.3/Converter 3.4.2.8
   - Add TODO Check to converted local functions as comment
