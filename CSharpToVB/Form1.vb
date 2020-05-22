@@ -3,6 +3,7 @@
 ' See the LICENSE file in the project root for more information.
 Imports System.ComponentModel
 Imports System.Diagnostics.CodeAnalysis
+Imports System.Globalization
 Imports System.IO
 Imports System.Reflection
 Imports System.Text
@@ -1397,7 +1398,7 @@ Partial Public Class Form1
                     totalProjects:=1, _cancellationTokenSource:=_cancellationTokenSource).ConfigureAwait(True)
 
                 If prompt.Length = 0 Then
-                    prompt = $"{If(_cancellationTokenSource.Token.IsCancellationRequested, "Conversion canceled", "Conversion completed")}, {FilesConversionProgress.Text.ToLowerInvariant} completed successfully."
+                    prompt = $"{If(_cancellationTokenSource.Token.IsCancellationRequested, "Conversion canceled", "Conversion completed")}, {FilesConversionProgress.Text.ToLower(CultureInfo.InvariantCulture)} completed successfully."
                 End If
                 MsgBox(prompt,
                        MsgBoxStyle.OkOnly Or If(prompt.Contains("terminated", StringComparison.OrdinalIgnoreCase), MsgBoxStyle.Critical, MsgBoxStyle.Information) Or MsgBoxStyle.MsgBoxSetForeground,
