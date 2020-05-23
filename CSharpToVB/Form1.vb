@@ -1398,7 +1398,9 @@ Partial Public Class Form1
                     totalProjects:=1, _cancellationTokenSource:=_cancellationTokenSource).ConfigureAwait(True)
 
                 If prompt.Length = 0 Then
+#Disable Warning CA1308 ' Normalize strings to uppercase
                     prompt = $"{If(_cancellationTokenSource.Token.IsCancellationRequested, "Conversion canceled", "Conversion completed")}, {FilesConversionProgress.Text.ToLower(CultureInfo.InvariantCulture)} completed successfully."
+#Enable Warning CA1308 ' Normalize strings to uppercase
                 End If
                 MsgBox(prompt,
                        MsgBoxStyle.OkOnly Or If(prompt.Contains("terminated", StringComparison.OrdinalIgnoreCase), MsgBoxStyle.Critical, MsgBoxStyle.Information) Or MsgBoxStyle.MsgBoxSetForeground,
