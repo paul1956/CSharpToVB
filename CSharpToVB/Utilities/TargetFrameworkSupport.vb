@@ -43,7 +43,16 @@ Module TargetFrameworkSupport
         Return $"{Base}{NameSplit(0)}{Separator}{Minor}"
     End Function
 
-    Friend Function GetAllFrameworkVersions() As List(Of String)
+    Public Function GetAllCoreVersions() As List(Of String)
+        Dim versions As New List(Of String)
+        Dim dotnetVersions As String() = RunCommand("Dotnet", "--list-sdks", ShowWindow:=False)
+        For Each e As String In dotnetVersions
+            versions.Add(MapNameToFramework("NETCOREAPP", Separator:="_", e.Split(" ")(0)))
+        Next
+        Return versions
+    End Function
+
+    Public Function GetAllFrameworkVersions() As List(Of String)
         Dim Versions As New List(Of String)
         ' Opens the registry key for the .NET Framework entry.
         Using baseKey As RegistryKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32)
@@ -92,16 +101,14 @@ Module TargetFrameworkSupport
         Return Versions
     End Function
 
-    Public Function GetAllCoreVersions() As List(Of String)
-        Dim versions As New List(Of String)
-        Dim dotnetVersions As String() = RunCommand("Dotnet", "--list-sdks")
-        For Each e As String In dotnetVersions
-            versions.Add(MapNameToFramework("NETCOREAPP", Separator:="_", e.Split(" ")(0)))
-        Next
-        Return versions
-    End Function
-
-    Public Function RunCommand(Command As String, Args As String, Optional ShowWindow As Boolean = False) As String()
+    ''' <summary>
+    ''' Run a Windows command and return pipes text result to caller 
+    ''' </summary>
+    ''' <param name="Command"></param>
+    ''' <param name="Args"></param>
+    ''' <param name="ShowWindow"></param>
+    ''' <returns>Array of text lines returned by Command</returns>
+    Public Function RunCommand(Command As String, Args As String, Optional ShowWindow As Boolean = True) As String()
         Dim oProcess As New Process()
         Dim oStartInfo As New ProcessStartInfo(Command, Args) With {
             .CreateNoWindow = Not ShowWindow,

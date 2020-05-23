@@ -53,8 +53,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Buildalyzer" Version="2.6.0" />
-    <PackageReference Include="Buildalyzer.Workspaces" Version="2.6.0" />
+    <PackageReference Include="Buildalyzer" Version="3.0.0" />
+    <PackageReference Include="Buildalyzer.Workspaces" Version="3.0.0" />
     <PackageReference Include="Microsoft.Build.Locator" Version="1.2.6" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.0.0">
       <PrivateAssets>all</PrivateAssets>
@@ -68,7 +68,7 @@
     <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="3.6.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="3.6.0" />
     <PackageReference Include="Microsoft.Win32.Registry" Version="4.7.0" />
-    <PackageReference Include="NuGet.Frameworks" Version="5.5.1" />
+    <PackageReference Include="NuGet.Frameworks" Version="5.6.0" />
     <PackageReference Include="PInvoke.Windows.Core" Version="0.6.6" />
     <PackageReference Include="VBMsgBox" Version="1.0.2" />
   </ItemGroup>
