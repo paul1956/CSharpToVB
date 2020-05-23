@@ -5,7 +5,7 @@ Imports System.Collections.Immutable
 Imports System.Runtime.InteropServices
 Imports System.Threading
 
-Imports CSharpToVBCodeConverter.Util
+Imports CSharpToVBCodeConverter.Utilities
 
 Imports Microsoft.CodeAnalysis
 
@@ -15,7 +15,7 @@ Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace CSharpToVBCodeConverter.DestVisualBasic
+Namespace CSharpToVBCodeConverter.ToVisualBasic
 
     Partial Public Class CSharpConverter
 
@@ -134,7 +134,7 @@ End Function
                                         newLeadingTrivia.Add(VBFactory.CommentTrivia($"' TODO: Visual Basic does not support directives in inherits lists. Directive moved!"))
                                         newLeadingTrivia.Add(VBEOLTrivia)
                                         newLeadingTrivia.AddRange(ConvertTrivia(csSeparators(e.Index).LeadingTrivia))
-                                    ElseIf csSeparators(e.Index).LeadingTrivia.ContainscommentTrivia Then
+                                    ElseIf csSeparators(e.Index).LeadingTrivia.ContainsCommentTrivia Then
                                         newLeadingTrivia.AddRange(ConvertTrivia(csSeparators(e.Index).LeadingTrivia))
                                     End If
                                     If item.GetTrailingTrivia.ContainsCommentTrivia Then

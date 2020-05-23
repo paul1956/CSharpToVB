@@ -5,7 +5,7 @@
 Imports System.Collections.Immutable
 Imports System.Diagnostics.CodeAnalysis
 
-Imports CSharpToVBCodeConverter.Util
+Imports CSharpToVBCodeConverter.Utilities
 
 Imports HashLibrary
 

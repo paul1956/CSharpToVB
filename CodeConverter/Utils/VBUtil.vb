@@ -4,14 +4,14 @@
 
 Imports System.Runtime.CompilerServices
 
-Imports CSharpToVBCodeConverter.DestVisualBasic
+Imports CSharpToVBCodeConverter.ToVisualBasic
 
 Imports Microsoft.CodeAnalysis
 
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
-Namespace CSharpToVBCodeConverter.Util
+Namespace CSharpToVBCodeConverter.Utilities
     Public Module VBUtil
 
         Public Function ConvertCSExpressionsKindToVBKind(t As CS.SyntaxKind) As VB.SyntaxKind

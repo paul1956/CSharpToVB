@@ -8,7 +8,7 @@ Imports System.Runtime.CompilerServices
 
 Imports Microsoft.CodeAnalysis
 
-Namespace CSharpToVBCodeConverter.Util
+Namespace CSharpToVBCodeConverter.Utilities
 
     <EditorBrowsable(EditorBrowsableState.Never)>
     Partial Public Module ITypeSymbolExtensions

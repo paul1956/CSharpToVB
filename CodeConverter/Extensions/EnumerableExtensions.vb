@@ -4,7 +4,7 @@
 
 Imports System.Runtime.CompilerServices
 
-Namespace CSharpToVBCodeConverter.Util
+Namespace CSharpToVBCodeConverter.Utilities
 
     Partial Public Module EnumerableExtensions
 

@@ -10,7 +10,7 @@ Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace CSharpToVBCodeConverter.Util
+Namespace CSharpToVBCodeConverter.Utilities
     Public Module SyntaxTriviaExtensions
 
         ''' <summary>

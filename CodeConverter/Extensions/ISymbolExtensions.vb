@@ -6,7 +6,7 @@ Imports System.Runtime.CompilerServices
 
 Imports Microsoft.CodeAnalysis
 
-Namespace CSharpToVBCodeConverter.Util
+Namespace CSharpToVBCodeConverter.Utilities
 
     ' All type argument must be accessible.
 

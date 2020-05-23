@@ -8,7 +8,7 @@ Imports Microsoft.CodeAnalysis
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace CSharpToVBCodeConverter.DestVisualBasic
+Namespace CSharpToVBCodeConverter.ToVisualBasic
 
     Partial Public Class CSharpConverter
 

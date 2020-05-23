@@ -2,7 +2,7 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
-Namespace CSharpToVBCodeConverter.Util
+Namespace CSharpToVBCodeConverter.Utilities
     Friend Module NameGenerator
 
         Private Sub EnsureUniquenessInPlace(names As IList(Of String), isFixed As IList(Of Boolean), canUse As Func(Of String, Boolean), Optional isCaseSensitive As Boolean = True)

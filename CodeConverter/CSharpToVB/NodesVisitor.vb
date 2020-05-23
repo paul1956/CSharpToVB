@@ -5,7 +5,7 @@
 Imports System.Diagnostics.CodeAnalysis
 Imports System.Text
 
-Imports CSharpToVBCodeConverter.Util
+Imports CSharpToVBCodeConverter.Utilities
 
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Simplification
@@ -17,7 +17,7 @@ Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace CSharpToVBCodeConverter.DestVisualBasic
+Namespace CSharpToVBCodeConverter.ToVisualBasic
 
     Partial Public Class CSharpConverter
 

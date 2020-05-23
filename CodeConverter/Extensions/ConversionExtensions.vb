@@ -8,7 +8,7 @@ Imports Microsoft.CodeAnalysis
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 
-Namespace CSharpToVBCodeConverter.DestVisualBasic
+Namespace CSharpToVBCodeConverter.ToVisualBasic
     Friend Module ConversionExtensions
 
         Private Function MatchesNamespaceOrRoot(arg As SyntaxNode) As Boolean

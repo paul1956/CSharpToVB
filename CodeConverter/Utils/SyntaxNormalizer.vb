@@ -3,7 +3,7 @@
 ' See the LICENSE file in the project root for more information.
 Imports System.Diagnostics.CodeAnalysis
 
-Imports CSharpToVBCodeConverter.Util
+Imports CSharpToVBCodeConverter.Utilities
 
 Imports Microsoft.CodeAnalysis.Text
 

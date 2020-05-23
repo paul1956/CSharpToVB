@@ -4,7 +4,7 @@
 
 Imports System.Collections.Immutable
 
-Imports CSharpToVBCodeConverter.Util
+Imports CSharpToVBCodeConverter.Utilities
 
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Shared.Extensions
