@@ -1588,12 +1588,4 @@ Partial Public Class Form1
         MyForm.Dispose()
     End Sub
 
-    Public Sub MeStartupNextInstance(
-           ByVal sender As Object,
-           ByVal e As StartupNextInstanceEventArgs
-        ) Handles MyApplication.StartupNextInstance
-        ' Put code here that takes command line parameter from additional instances
-        ' and allows processing here
-    End Sub
-
 End Class

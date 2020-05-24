@@ -4660,4 +4660,10 @@
         AFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFAH/2Q==
 </value>
   </data>
+  <data name="TextBoxDescription.Text" xml:space="preserve">
+    <value>Description :
+
+(At runtime, the labels' text will be replaced with the application's assembly information.
+Customize the application's assembly information in the Application pane of Project Designer.)</value>
+  </data>
 </root>

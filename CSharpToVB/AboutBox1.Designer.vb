@@ -144,6 +144,7 @@ Partial Class AboutBox1
         Me.TextBoxDescription.Size = New System.Drawing.Size(300, 143)
         Me.TextBoxDescription.TabIndex = 0
         Me.TextBoxDescription.TabStop = False
+        Me.TextBoxDescription.Text = resources.GetString("TextBoxDescription.Text")
         '
         'OKButton
         '
