@@ -51,13 +51,14 @@ Partial Class FindDialog
         Me.TableLayoutPanel1.Name = "TableLayoutPanel1"
         Me.TableLayoutPanel1.RowCount = 1
         Me.TableLayoutPanel1.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
-        Me.TableLayoutPanel1.Size = New System.Drawing.Size(359, 33)
+        Me.TableLayoutPanel1.Size = New System.Drawing.Size(324, 33)
         Me.TableLayoutPanel1.TabIndex = 6
         '
         'FindPreviousButton
         '
         Me.FindPreviousButton.Anchor = System.Windows.Forms.AnchorStyles.None
-        Me.FindPreviousButton.Location = New System.Drawing.Point(10, 3)
+        Me.FindPreviousButton.AutoSize = True
+        Me.FindPreviousButton.Location = New System.Drawing.Point(4, 3)
         Me.FindPreviousButton.Name = "FindPreviousButton"
         Me.FindPreviousButton.Size = New System.Drawing.Size(98, 27)
         Me.FindPreviousButton.TabIndex = 1
@@ -66,18 +67,20 @@ Partial Class FindDialog
         'ClearHighlightsButton
         '
         Me.ClearHighlightsButton.Anchor = System.Windows.Forms.AnchorStyles.None
+        Me.ClearHighlightsButton.AutoSize = True
         Me.ClearHighlightsButton.DialogResult = System.Windows.Forms.DialogResult.Cancel
-        Me.ClearHighlightsButton.Location = New System.Drawing.Point(121, 3)
+        Me.ClearHighlightsButton.Location = New System.Drawing.Point(109, 3)
         Me.ClearHighlightsButton.Name = "ClearHighlightsButton"
-        Me.ClearHighlightsButton.Size = New System.Drawing.Size(116, 27)
+        Me.ClearHighlightsButton.Size = New System.Drawing.Size(104, 27)
         Me.ClearHighlightsButton.TabIndex = 0
         Me.ClearHighlightsButton.Text = "Clear Highlights"
         '
         'FindNextButton
         '
         Me.FindNextButton.Anchor = System.Windows.Forms.AnchorStyles.None
+        Me.FindNextButton.AutoSize = True
         Me.FindNextButton.DialogResult = System.Windows.Forms.DialogResult.Cancel
-        Me.FindNextButton.Location = New System.Drawing.Point(250, 3)
+        Me.FindNextButton.Location = New System.Drawing.Point(220, 3)
         Me.FindNextButton.Name = "FindNextButton"
         Me.FindNextButton.Size = New System.Drawing.Size(99, 27)
         Me.FindNextButton.TabIndex = 0
@@ -86,7 +89,7 @@ Partial Class FindDialog
         'CloseButton
         '
         Me.CloseButton.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.CloseButton.Location = New System.Drawing.Point(410, 65)
+        Me.CloseButton.Location = New System.Drawing.Point(346, 65)
         Me.CloseButton.Name = "CloseButton"
         Me.CloseButton.Size = New System.Drawing.Size(99, 27)
         Me.CloseButton.TabIndex = 5
@@ -97,13 +100,13 @@ Partial Class FindDialog
         Me.FindWhatComboBox.FormattingEnabled = True
         Me.FindWhatComboBox.Location = New System.Drawing.Point(12, 6)
         Me.FindWhatComboBox.Name = "FindWhatComboBox"
-        Me.FindWhatComboBox.Size = New System.Drawing.Size(497, 23)
+        Me.FindWhatComboBox.Size = New System.Drawing.Size(433, 23)
         Me.FindWhatComboBox.TabIndex = 0
         '
         'LookInLabel
         '
         Me.LookInLabel.AutoSize = True
-        Me.LookInLabel.Location = New System.Drawing.Point(237, 37)
+        Me.LookInLabel.Location = New System.Drawing.Point(293, 36)
         Me.LookInLabel.Name = "LookInLabel"
         Me.LookInLabel.Size = New System.Drawing.Size(46, 15)
         Me.LookInLabel.TabIndex = 3
@@ -115,9 +118,9 @@ Partial Class FindDialog
         Me.LookInComboBox.FormattingEnabled = True
         Me.LookInComboBox.ItemHeight = 15
         Me.LookInComboBox.Items.AddRange(New Object() {"C# Source", "Visual Basic Result", "Both"})
-        Me.LookInComboBox.Location = New System.Drawing.Point(299, 33)
+        Me.LookInComboBox.Location = New System.Drawing.Point(347, 35)
         Me.LookInComboBox.Name = "LookInComboBox"
-        Me.LookInComboBox.Size = New System.Drawing.Size(213, 23)
+        Me.LookInComboBox.Size = New System.Drawing.Size(98, 23)
         Me.LookInComboBox.TabIndex = 4
         '
         'MatchCaseCheckBox
@@ -144,7 +147,7 @@ Partial Class FindDialog
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(7.0!, 15.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(525, 101)
+        Me.ClientSize = New System.Drawing.Size(456, 101)
         Me.Controls.Add(Me.MatchCaseCheckBox)
         Me.Controls.Add(Me.MatchWholeWordCheckBox)
         Me.Controls.Add(Me.LookInComboBox)
@@ -163,6 +166,7 @@ Partial Class FindDialog
         Me.Text = "Find"
         Me.TopMost = True
         Me.TableLayoutPanel1.ResumeLayout(False)
+        Me.TableLayoutPanel1.PerformLayout()
         Me.ResumeLayout(False)
         Me.PerformLayout()
 

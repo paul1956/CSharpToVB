@@ -53,10 +53,12 @@ Partial Class Form1
         Me.mnuEdit = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuEditFind = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuEditSep1 = New System.Windows.Forms.ToolStripSeparator()
+        Me.mnuEditSep2 = New System.Windows.Forms.ToolStripSeparator()
         Me.mnuEditCut = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuEditCopy = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuEditPaste = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuEditUndo = New System.Windows.Forms.ToolStripMenuItem()
+        Me.mnuEditRedo = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuCompile = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuConvert = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuConvertConvertFolder = New System.Windows.Forms.ToolStripMenuItem()
@@ -89,9 +91,11 @@ Partial Class Form1
         Me.mnuHelpAboutMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.SaveFileDialog1 = New System.Windows.Forms.SaveFileDialog()
         Me.ContextMenuStrip1 = New System.Windows.Forms.ContextMenuStrip(Me.components)
-        Me.ContextMenuCopy = New System.Windows.Forms.ToolStripMenuItem()
         Me.ContextMenuCut = New System.Windows.Forms.ToolStripMenuItem()
+        Me.ContextMenuCopy = New System.Windows.Forms.ToolStripMenuItem()
         Me.ContextMenuPaste = New System.Windows.Forms.ToolStripMenuItem()
+        Me.ContextMenuUndo = New System.Windows.Forms.ToolStripMenuItem()
+        Me.ContextMenuRedo = New System.Windows.Forms.ToolStripMenuItem()
         Me.InputFolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
         Me.ButtonStopConversion = New System.Windows.Forms.Button()
         Me.LabelErrorCount = New System.Windows.Forms.Label()
@@ -113,6 +117,7 @@ Partial Class Form1
         Me.LabelProgress = New System.Windows.Forms.Label()
         Me.ToolTipFileList = New System.Windows.Forms.ToolTip(Me.components)
         Me.ToolTipErrorList = New System.Windows.Forms.ToolTip(Me.components)
+        Me.ContextMenuSeparator1 = New System.Windows.Forms.ToolStripSeparator()
         Me.MenuStrip1.SuspendLayout()
         Me.ContextMenuStrip1.SuspendLayout()
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -245,7 +250,7 @@ Partial Class Form1
         '
         'mnuEdit
         '
-        Me.mnuEdit.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuEditFind, Me.mnuEditSep1, Me.mnuEditCut, Me.mnuEditCopy, Me.mnuEditPaste, Me.mnuEditUndo})
+        Me.mnuEdit.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuEditFind, Me.mnuEditSep1, Me.mnuEditUndo, Me.mnuEditRedo, Me.mnuEditSep2, Me.mnuEditCut, Me.mnuEditCopy, Me.mnuEditPaste})
         Me.mnuEdit.Name = "mnuEdit"
         Me.mnuEdit.ShortcutKeys = CType((System.Windows.Forms.Keys.Alt Or System.Windows.Forms.Keys.E), System.Windows.Forms.Keys)
         Me.mnuEdit.Size = New System.Drawing.Size(39, 20)
@@ -263,8 +268,33 @@ Partial Class Form1
         Me.mnuEditSep1.Name = "mnuEditSep1"
         Me.mnuEditSep1.Size = New System.Drawing.Size(143, 6)
         '
+        'mnuEditUndo
+        '
+        Me.mnuEditUndo.Image = CType(resources.GetObject("mnuEditUndo.Image"), System.Drawing.Image)
+        Me.mnuEditUndo.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.mnuEditUndo.Name = "mnuEditUndo"
+        Me.mnuEditUndo.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.Z), System.Windows.Forms.Keys)
+        Me.mnuEditUndo.Size = New System.Drawing.Size(146, 22)
+        Me.mnuEditUndo.Text = "Undo"
+        '
+        'mnuEditRedo
+        '
+        Me.mnuEditRedo.Image = CType(resources.GetObject("mnuEditRedo.Image"), System.Drawing.Image)
+        Me.mnuEditRedo.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.mnuEditRedo.Name = "mnuEditRedo"
+        Me.mnuEditRedo.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.Y), System.Windows.Forms.Keys)
+        Me.mnuEditRedo.Size = New System.Drawing.Size(146, 22)
+        Me.mnuEditRedo.Text = "Redo"
+        '
+        'mnuEditSep2
+        '
+        Me.mnuEditSep2.Name = "mnuEditSep2"
+        Me.mnuEditSep2.Size = New System.Drawing.Size(143, 6)
+        '
         'mnuEditCut
         '
+        Me.mnuEditCut.Image = CType(resources.GetObject("mnuEditCut.Image"), System.Drawing.Image)
+        Me.mnuEditCut.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
         Me.mnuEditCut.Name = "mnuEditCut"
         Me.mnuEditCut.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.X), System.Windows.Forms.Keys)
         Me.mnuEditCut.Size = New System.Drawing.Size(146, 22)
@@ -272,6 +302,8 @@ Partial Class Form1
         '
         'mnuEditCopy
         '
+        Me.mnuEditCopy.Image = CType(resources.GetObject("mnuEditCopy.Image"), System.Drawing.Image)
+        Me.mnuEditCopy.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
         Me.mnuEditCopy.Name = "mnuEditCopy"
         Me.mnuEditCopy.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.C), System.Windows.Forms.Keys)
         Me.mnuEditCopy.Size = New System.Drawing.Size(146, 22)
@@ -279,17 +311,12 @@ Partial Class Form1
         '
         'mnuEditPaste
         '
+        Me.mnuEditPaste.Image = CType(resources.GetObject("mnuEditPaste.Image"), System.Drawing.Image)
+        Me.mnuEditPaste.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
         Me.mnuEditPaste.Name = "mnuEditPaste"
         Me.mnuEditPaste.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.V), System.Windows.Forms.Keys)
         Me.mnuEditPaste.Size = New System.Drawing.Size(146, 22)
         Me.mnuEditPaste.Text = "Paste"
-        '
-        'mnuEditUndo
-        '
-        Me.mnuEditUndo.Name = "mnuEditUndo"
-        Me.mnuEditUndo.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.Z), System.Windows.Forms.Keys)
-        Me.mnuEditUndo.Size = New System.Drawing.Size(146, 22)
-        Me.mnuEditUndo.Text = "Undo"
         '
         'mnuCompile
         '
@@ -526,27 +553,57 @@ Partial Class Form1
         'ContextMenuStrip1
         '
         Me.ContextMenuStrip1.ImageScalingSize = New System.Drawing.Size(36, 36)
-        Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ContextMenuCopy, Me.ContextMenuCut, Me.ContextMenuPaste})
+        Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ContextMenuUndo, Me.ContextMenuRedo, Me.ContextMenuSeparator1, Me.ContextMenuCut, Me.ContextMenuCopy, Me.ContextMenuPaste})
         Me.ContextMenuStrip1.Name = "ContextMenuStrip1"
-        Me.ContextMenuStrip1.Size = New System.Drawing.Size(103, 70)
-        '
-        'ContextMenuCopy
-        '
-        Me.ContextMenuCopy.Name = "ContextMenuCopy"
-        Me.ContextMenuCopy.Size = New System.Drawing.Size(102, 22)
-        Me.ContextMenuCopy.Text = "Copy"
+        Me.ContextMenuStrip1.Size = New System.Drawing.Size(145, 120)
         '
         'ContextMenuCut
         '
+        Me.ContextMenuCut.Image = CType(resources.GetObject("ContextMenuCut.Image"), System.Drawing.Image)
+        Me.ContextMenuCut.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
         Me.ContextMenuCut.Name = "ContextMenuCut"
-        Me.ContextMenuCut.Size = New System.Drawing.Size(102, 22)
+        Me.ContextMenuCut.ShortcutKeyDisplayString = "Ctrl+X"
+        Me.ContextMenuCut.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.X), System.Windows.Forms.Keys)
+        Me.ContextMenuCut.Size = New System.Drawing.Size(144, 22)
         Me.ContextMenuCut.Text = "Cut"
+        '
+        'ContextMenuCopy
+        '
+        Me.ContextMenuCopy.Image = CType(resources.GetObject("ContextMenuCopy.Image"), System.Drawing.Image)
+        Me.ContextMenuCopy.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.ContextMenuCopy.Name = "ContextMenuCopy"
+        Me.ContextMenuCopy.ShortcutKeyDisplayString = "Ctrl+C"
+        Me.ContextMenuCopy.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.C), System.Windows.Forms.Keys)
+        Me.ContextMenuCopy.Size = New System.Drawing.Size(144, 22)
+        Me.ContextMenuCopy.Text = "Copy"
         '
         'ContextMenuPaste
         '
+        Me.ContextMenuPaste.Image = CType(resources.GetObject("ContextMenuPaste.Image"), System.Drawing.Image)
+        Me.ContextMenuPaste.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
         Me.ContextMenuPaste.Name = "ContextMenuPaste"
-        Me.ContextMenuPaste.Size = New System.Drawing.Size(102, 22)
+        Me.ContextMenuPaste.ShortcutKeyDisplayString = "Ctrl+V"
+        Me.ContextMenuPaste.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.V), System.Windows.Forms.Keys)
+        Me.ContextMenuPaste.Size = New System.Drawing.Size(144, 22)
         Me.ContextMenuPaste.Text = "Paste"
+        '
+        'ContextMenuUndo
+        '
+        Me.ContextMenuUndo.Image = CType(resources.GetObject("ContextMenuUndo.Image"), System.Drawing.Image)
+        Me.ContextMenuUndo.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.ContextMenuUndo.Name = "ContextMenuUndo"
+        Me.ContextMenuUndo.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.Z), System.Windows.Forms.Keys)
+        Me.ContextMenuUndo.Size = New System.Drawing.Size(144, 22)
+        Me.ContextMenuUndo.Text = "Undo"
+        '
+        'ContextMenuRedo
+        '
+        Me.ContextMenuRedo.Image = CType(resources.GetObject("ContextMenuRedo.Image"), System.Drawing.Image)
+        Me.ContextMenuRedo.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.ContextMenuRedo.Name = "ContextMenuRedo"
+        Me.ContextMenuRedo.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.Y), System.Windows.Forms.Keys)
+        Me.ContextMenuRedo.Size = New System.Drawing.Size(144, 22)
+        Me.ContextMenuRedo.Text = "Redo"
         '
         'InputFolderBrowserDialog1
         '
@@ -593,7 +650,7 @@ Partial Class Form1
         Me.SplitContainer1.Panel2.Controls.Add(Me.ListBoxFileList)
         Me.SplitContainer1.Panel2.Controls.Add(Me.ListBoxErrorList)
         Me.SplitContainer1.Size = New System.Drawing.Size(1923, 591)
-        Me.SplitContainer1.SplitterDistance = 474
+        Me.SplitContainer1.SplitterDistance = 498
         Me.SplitContainer1.SplitterWidth = 2
         Me.SplitContainer1.TabIndex = 22
         '
@@ -605,7 +662,7 @@ Partial Class Form1
         Me.ConversionInput.Font = New System.Drawing.Font("Segoe UI", 11.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point)
         Me.ConversionInput.Location = New System.Drawing.Point(23, 0)
         Me.ConversionInput.Name = "ConversionInput"
-        Me.ConversionInput.Size = New System.Drawing.Size(950, 474)
+        Me.ConversionInput.Size = New System.Drawing.Size(950, 498)
         Me.ConversionInput.TabIndex = 0
         Me.ConversionInput.Text = ""
         Me.ConversionInput.WordWrap = False
@@ -645,7 +702,7 @@ Partial Class Form1
         Me.LineNumbers_For_RichTextBoxInput.ShowGridLines = True
         Me.LineNumbers_For_RichTextBoxInput.ShowLineNrs = True
         Me.LineNumbers_For_RichTextBoxInput.ShowMarginLines = True
-        Me.LineNumbers_For_RichTextBoxInput.Size = New System.Drawing.Size(23, 474)
+        Me.LineNumbers_For_RichTextBoxInput.Size = New System.Drawing.Size(23, 498)
         Me.LineNumbers_For_RichTextBoxInput.TabIndex = 23
         Me.LineNumbers_For_RichTextBoxInput.Visible = False
         '
@@ -658,7 +715,7 @@ Partial Class Form1
         Me.ConversionOutput.HScrollPos = 0
         Me.ConversionOutput.Location = New System.Drawing.Point(999, 0)
         Me.ConversionOutput.Name = "ConversionOutput"
-        Me.ConversionOutput.Size = New System.Drawing.Size(924, 474)
+        Me.ConversionOutput.Size = New System.Drawing.Size(924, 498)
         Me.ConversionOutput.TabIndex = 1
         Me.ConversionOutput.Text = ""
         Me.ConversionOutput.VScrollPos = 0
@@ -698,7 +755,7 @@ Partial Class Form1
         Me.LineNumbers_For_RichTextBoxOutput.ShowGridLines = True
         Me.LineNumbers_For_RichTextBoxOutput.ShowLineNrs = True
         Me.LineNumbers_For_RichTextBoxOutput.ShowMarginLines = True
-        Me.LineNumbers_For_RichTextBoxOutput.Size = New System.Drawing.Size(21, 474)
+        Me.LineNumbers_For_RichTextBoxOutput.Size = New System.Drawing.Size(21, 498)
         Me.LineNumbers_For_RichTextBoxOutput.TabIndex = 22
         Me.LineNumbers_For_RichTextBoxOutput.Visible = False
         '
@@ -800,6 +857,11 @@ Partial Class Form1
         '
         Me.ToolTipErrorList.ToolTipIcon = System.Windows.Forms.ToolTipIcon.Info
         '
+        'ContextMenuSeparator1
+        '
+        Me.ContextMenuSeparator1.Name = "ContextMenuSeparator1"
+        Me.ContextMenuSeparator1.Size = New System.Drawing.Size(141, 6)
+        '
         'Form1
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(7.0!, 15.0!)
@@ -833,13 +895,14 @@ Partial Class Form1
 
     End Sub
     Friend WithEvents MenuStrip1 As MenuStrip
+    Friend WithEvents mnuEdit As ToolStripMenuItem
+    Friend WithEvents mnuEditCopy As ToolStripMenuItem
+    Friend WithEvents mnuEditCut As ToolStripMenuItem
+    Friend WithEvents mnuEditPaste As ToolStripMenuItem
+    Friend WithEvents mnuEditRedo As ToolStripMenuItem
+    Friend WithEvents mnuEditUndo As ToolStripMenuItem
     Friend WithEvents mnuFile As ToolStripMenuItem
     Friend WithEvents mnuFileSaveAs As ToolStripMenuItem
-    Friend WithEvents mnuEdit As ToolStripMenuItem
-    Friend WithEvents mnuEditCut As ToolStripMenuItem
-    Friend WithEvents mnuEditCopy As ToolStripMenuItem
-    Friend WithEvents mnuEditPaste As ToolStripMenuItem
-    Friend WithEvents mnuEditUndo As ToolStripMenuItem
     Friend WithEvents mnuOptions As ToolStripMenuItem
     Friend WithEvents mnuOptionsAdvanced As ToolStripMenuItem
     Friend WithEvents mnuConvert As ToolStripMenuItem
@@ -852,6 +915,7 @@ Partial Class Form1
     Friend WithEvents mnuOptionsColorizeSource As ToolStripMenuItem
     Friend WithEvents mnuEditFind As ToolStripMenuItem
     Friend WithEvents mnuEditSep1 As ToolStripSeparator
+    Friend WithEvents mnuEditSep2 As ToolStripSeparator
     Friend WithEvents InputFolderBrowserDialog1 As FolderBrowserDialog
     Friend WithEvents ContextMenuStrip1 As ContextMenuStrip
     Friend WithEvents ContextMenuCopy As ToolStripMenuItem
@@ -913,4 +977,7 @@ Partial Class Form1
     Friend WithEvents ToolTipErrorList As ToolTip
     Friend WithEvents mnuFileLastProject As ToolStripMenuItem
     Friend WithEvents mnuFileLastSolution As ToolStripMenuItem
+    Friend WithEvents ContextMenuUndo As ToolStripMenuItem
+    Friend WithEvents ContextMenuRedo As ToolStripMenuItem
+    Friend WithEvents ContextMenuSeparator1 As ToolStripSeparator
 End Class

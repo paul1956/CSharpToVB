@@ -215,17 +215,38 @@ Partial Public Class Form1
     End Sub
 
     Private Sub ContextMenuPaste_Click(sender As Object, e As EventArgs) Handles ContextMenuPaste.Click
-        CType(ContextMenuStrip1.SourceControl, RichTextBox).Paste()
+        Dim sourceControl As RichTextBox = CType(ContextMenuStrip1.SourceControl, RichTextBox)
+        sourceControl.Paste()
+    End Sub
+
+    Private Sub ContextMenuRedo_Click(sender As Object, e As EventArgs) Handles ContextMenuRedo.Click
+        Dim sourceControl As RichTextBox = CType(ContextMenuStrip1.SourceControl, RichTextBox)
+        If sourceControl.CanRedo Then
+            sourceControl.Redo()
+        End If
     End Sub
 
     Private Sub ContextMenuStrip1_Opening(sender As Object, e As CancelEventArgs) Handles ContextMenuStrip1.Opening
         Dim ContextMenu As ContextMenuStrip = CType(sender, ContextMenuStrip)
         If TypeOf CurrentBuffer Is RichTextBox Then
-            ContextMenu.Items(1).Visible = True
-            ContextMenu.Items(2).Visible = True
+            Dim sourceBuffer As RichTextBox = CType(CurrentBuffer, RichTextBox)
+            ContextMenu.Items(IndexOf(ContextMenu, NameOf(ContextMenuCopy))).Enabled = sourceBuffer.TextLength > 0
+            ContextMenu.Items(IndexOf(ContextMenu, NameOf(ContextMenuCut))).Enabled = sourceBuffer.TextLength > 0
+            ContextMenu.Items(IndexOf(ContextMenu, NameOf(ContextMenuPaste))).Enabled = sourceBuffer.CanPaste(DataFormats.GetFormat(DataFormats.Rtf))
+            ContextMenu.Items(IndexOf(ContextMenu, NameOf(ContextMenuRedo))).Enabled = sourceBuffer.CanRedo
+            ContextMenu.Items(IndexOf(ContextMenu, NameOf(ContextMenuUndo))).Enabled = sourceBuffer.CanUndo
         Else
-            ContextMenu.Items(1).Visible = False
-            ContextMenu.Items(2).Visible = False
+            ContextMenu.Items(IndexOf(ContextMenu, NameOf(ContextMenuCut))).Enabled = False
+            ContextMenu.Items(IndexOf(ContextMenu, NameOf(ContextMenuPaste))).Enabled = False
+            ContextMenu.Items(IndexOf(ContextMenu, NameOf(ContextMenuRedo))).Enabled = False
+            ContextMenu.Items(IndexOf(ContextMenu, NameOf(ContextMenuUndo))).Enabled = False
+        End If
+    End Sub
+
+    Private Sub ContextMenuUndo_Click(sender As Object, e As EventArgs) Handles ContextMenuUndo.Click
+        Dim sourceControl As RichTextBox = CType(ContextMenuStrip1.SourceControl, RichTextBox)
+        If sourceControl.CanUndo Then
+            sourceControl.Undo()
         End If
     End Sub
 
@@ -740,15 +761,19 @@ Partial Public Class Form1
 
     End Sub
 
-    Private Sub mnuEdit_Click(sender As Object, e As EventArgs) Handles mnuEdit.Click
+    Private Sub mnuEdit_DropDownOpening(sender As Object, e As EventArgs) Handles mnuEdit.DropDownOpening
         If TypeOf CurrentBuffer Is RichTextBox Then
-            mnuEditCut.Enabled = True
-            mnuEditPaste.Enabled = True
-            mnuEditUndo.Enabled = True
+            Dim sourceBuffer As RichTextBox = CType(CurrentBuffer, RichTextBox)
+            mnuEditCopy.Enabled = sourceBuffer.TextLength > 0
+            mnuEditCut.Enabled = sourceBuffer.TextLength > 0
+            mnuEditPaste.Enabled = sourceBuffer.CanPaste(DataFormats.GetFormat(DataFormats.Rtf))
+            mnuEditUndo.Enabled = sourceBuffer.CanUndo
+            mnuEditRedo.Enabled = sourceBuffer.CanRedo
         Else
             mnuEditCut.Enabled = False
             mnuEditPaste.Enabled = False
             mnuEditUndo.Enabled = False
+            mnuEditRedo.Enabled = False
         End If
     End Sub
 
@@ -780,9 +805,18 @@ Partial Public Class Form1
         End If
     End Sub
 
+    Private Sub mnuEditRedo_Click(sender As Object, e As EventArgs) Handles mnuEditRedo.Click
+        Dim sourceControl As RichTextBox = TryCast(CurrentBuffer, RichTextBox)
+        If sourceControl IsNot Nothing AndAlso sourceControl.CanRedo Then
+            sourceControl.Redo()
+        End If
+
+    End Sub
+
     Private Sub mnuEditUndo_Click(sender As Object, e As EventArgs) Handles mnuEditUndo.Click
-        If TypeOf CurrentBuffer Is RichTextBox Then
-            CType(CurrentBuffer, RichTextBox).Undo()
+        Dim sourceControl As RichTextBox = TryCast(CurrentBuffer, RichTextBox)
+        If sourceControl IsNot Nothing AndAlso sourceControl.CanUndo Then
+            sourceControl.Undo()
         End If
     End Sub
 
@@ -1543,6 +1577,7 @@ Partial Public Class Form1
         MRU_UpdateUI(mnuFile.DropDownItems)
     End Sub
 
+    <STAThread()>
     Shared Sub main()
         Application.SetHighDpiMode(HighDpiMode.SystemAware)
         Dim MyForm As New Form1
