@@ -21,16 +21,13 @@ Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Emit
 Imports Microsoft.VisualBasic.FileIO
 
+#If Not NET5 Then
+
 Imports VBMsgBox
 
-Partial Public Class Form1
+#End If
 
-    Private WithEvents MyApplication As New WindowsFormsApplicationBase With {
-            .IsSingleInstance = True,
-            .EnableVisualStyles = True,
-            .SaveMySettingsOnExit = True,
-            .ShutdownStyle = ShutdownMode.AfterMainFormCloses
-        }
+Partial Public Class Form1
 
     Private Shared ReadOnly s_snippetFileWithPath As String = Path.Combine(SpecialDirectories.MyDocuments, "CSharpToVBLastSnippet.RTF")
 
@@ -91,7 +88,7 @@ Partial Public Class Form1
 
         Dim builder As New StringBuilder()
         For index As Integer = 0 To Exceptions.Count - 1
-            builder.AppendFormat(Globalization.CultureInfo.InvariantCulture, "----- Exception {0} Of {1} -----" & System.Environment.NewLine, index + 1, Exceptions.Count)
+            builder.AppendFormat(CultureInfo.InvariantCulture, "----- Exception {0} Of {1} -----" & System.Environment.NewLine, index + 1, Exceptions.Count)
             builder.AppendLine(Exceptions(index).ToString())
         Next index
         Return builder.ToString()
@@ -1323,7 +1320,7 @@ Partial Public Class Form1
             End If
             Dim targetFileWithPath As String = DestinationFilePath(currentDocument.FilePath, solutionRoot)
             FilesProcessed += 1
-            ListBoxFileList.Items.Add(New NumberedListItem($"{FilesProcessed.ToString(Globalization.CultureInfo.InvariantCulture),-5} {currentDocument.FilePath}", $"{targetFileWithPath}{Path.DirectorySeparatorChar}{Path.GetFileNameWithoutExtension(currentDocument.Name)}.vb"))
+            ListBoxFileList.Items.Add(New NumberedListItem($"{FilesProcessed.ToString(CultureInfo.InvariantCulture),-5} {currentDocument.FilePath}", $"{targetFileWithPath}{Path.DirectorySeparatorChar}{Path.GetFileNameWithoutExtension(currentDocument.Name)}.vb"))
             ListBoxFileList.SelectedIndex = ListBoxFileList.Items.Count - 1
             FilesConversionProgress.Text = $"Processed {FilesProcessed:N0} of {TotalFilesToProcess:N0} Files"
             Application.DoEvents()
@@ -1580,12 +1577,10 @@ Partial Public Class Form1
     <STAThread()>
     Shared Sub main()
         Application.SetHighDpiMode(HighDpiMode.SystemAware)
-        Dim MyForm As New Form1
         ' Note: Calling Application.EnableVisualStyles() is required for the task
         ' dialog to work.
-        Application.EnableVisualStyles()
-        MyForm.MyApplication.Run({""})
-        MyForm.Dispose()
+        Dim app As New My.MyApplication
+        app.Run({""})
     End Sub
 
 End Class

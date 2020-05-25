@@ -47,7 +47,11 @@ Module TargetFrameworkSupport
         Dim versions As New List(Of String)
         Dim dotnetVersions As String() = RunCommand("Dotnet", "--list-sdks", ShowWindow:=False)
         For Each e As String In dotnetVersions
-            versions.Add(MapNameToFramework("NETCOREAPP", Separator:="_", e.Split(" ")(0)))
+            Dim item As String = MapNameToFramework("NETCOREAPP", Separator:="_", e.Split(" ")(0))
+            If versions.Contains(item) Then
+                Continue For
+            End If
+            versions.Add(item)
         Next
         Return versions
     End Function

@@ -27,7 +27,7 @@ Namespace My
             MyBase.New()
             Me.IsSingleInstance = True
             Me.EnableVisualStyles = True
-            Me.SaveMySettingsOnExit = True
+            'Me.SaveMySettingsOnExit = True
             Me.ShutdownStyle = Microsoft.VisualBasic.ApplicationServices.ShutdownMode.AfterMainFormCloses
         End Sub
 

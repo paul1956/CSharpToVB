@@ -4,7 +4,11 @@
 
 Imports Microsoft.Win32
 
+#If Not NET5 Then
+
 Imports VBMsgBox
+
+#End If
 
 Module BrowserUtilities
 
@@ -36,7 +40,7 @@ Module BrowserUtilities
                                    MsgBoxStyle.OkCancel Or MsgBoxStyle.Exclamation Or MsgBoxStyle.MsgBoxSetForeground)
             End If
             If msgResult = MsgBoxResult.Ok Then
-                Dim info As New ProcessStartInfo(System.Environment.ExpandEnvironmentVariables(browserPath), url)
+                Dim info As New ProcessStartInfo(Environment.ExpandEnvironmentVariables(browserPath), url)
                 Process.Start(info)
             End If
         End Using

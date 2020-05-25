@@ -1,6 +1,7 @@
 ﻿' Licensed to the .NET Foundation under one or more agreements.
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
+#If Not Not5_0
 
 Option Strict On
 Option Explicit On
@@ -12,7 +13,6 @@ Imports System.Reflection
 Imports System.Runtime.InteropServices
 Imports System.Security
 Imports System.Security.Permissions
-Imports System.Security.Principal
 Imports System.Threading
 
 Namespace Microsoft.VisualBasic.ApplicationServices
@@ -166,9 +166,12 @@ Namespace Microsoft.VisualBasic.ApplicationServices
         Implements IDisposable
 
         ' How long a subsequent instance will wait for the original instance to get on its feet.
-        Private Const SECOND_INSTANCE_TIMEOUT As Integer = 2500 'milliseconds.
+        Private Const SECOND_INSTANCE_TIMEOUT As Integer = 2500
 
         Private ReadOnly _appContext As WinFormsAppContext
+
+        'milliseconds.
+        Private ReadOnly _minimumSplashExposure As Integer = 2000
 
         Private ReadOnly _splashLock As New Object
 
@@ -176,14 +179,16 @@ Namespace Microsoft.VisualBasic.ApplicationServices
 
         Private _didSplashScreen As Boolean
 
-        Private _isDisposed As Boolean
+#Disable Warning IDE0032 ' Use auto property
+        Private _disposedValue As Boolean
+        Private _enableVisualStyles As Boolean
+#Enable Warning IDE0032 ' Use auto property
 
         Private _isSingleInstance As Boolean
         Private _ok2CloseSplashScreen As Boolean
 
         Private _processingUnhandledExceptionEvent As Boolean
 
-        'Whether we have made it through the processing of OnInitialize
         Private _shutdownStyle As ShutdownMode
 
         'For splash screens with a minimum display time, this let's us know when that time has expired and it is OK to close the splash screen.
@@ -221,7 +226,7 @@ Namespace Microsoft.VisualBasic.ApplicationServices
                     'Consider:  - sadly, a call to: System.Security.SecurityManager.IsGranted(New SecurityPermission(SecurityPermissionFlag.ControlPrincipal))
                     'will only check THIS caller so you'll always get TRUE.  What is needed is a way to get to the value of this on a demand basis.  So I try/catch instead for now
                     'but would rather be able to IF my way around this block.
-                    Thread.CurrentPrincipal = New WindowsPrincipal(WindowsIdentity.GetCurrent)
+                    Thread.CurrentPrincipal = New Principal.WindowsPrincipal(Principal.WindowsIdentity.GetCurrent)
                 Catch ex As SecurityException
                 End Try
             End If
@@ -294,6 +299,16 @@ Namespace Microsoft.VisualBasic.ApplicationServices
         End Property
 
         ''' <summary>
+        ''' </summary>
+        Protected Property EnableVisualStyles() As Boolean
+            Get
+                Return _enableVisualStyles
+            End Get
+            Set(value As Boolean)
+                _enableVisualStyles = value
+            End Set
+        End Property
+
         ''' Provides access to the main form for this application
         ''' </summary>
         Protected Property MainForm() As Form
@@ -325,10 +340,11 @@ Namespace Microsoft.VisualBasic.ApplicationServices
         End Property
 
         ''' <summary>
-        ''' Returns the collection of forms that are open.  We no longer have thread
-        ''' affinity meaning that this is the WinForms collection that contains Forms that may
-        ''' have been opened on another thread then the one we are calling in on right now.
+        ''' The splash screen timeout specifies whether there is a minimum time that the splash
+        ''' screen should be displayed for.  When not set then the splash screen is hidden
+        ''' as soon as the main form becomes active.
         ''' </summary>
+        ''' <value>The minimum amount of time, in milliseconds, to display the splash screen.</value>
         Public Shared ReadOnly Property OpenForms() As FormCollection
             Get
                 Return Application.OpenForms
@@ -345,11 +361,6 @@ Namespace Microsoft.VisualBasic.ApplicationServices
             End Get
         End Property
 
-        ''' <summary>
-        ''' Determines whether this application will use the XP Windows styles for windows, controls, etc.
-        ''' </summary>
-        Public Property EnableVisualStyles() As Boolean
-
         <EditorBrowsable(EditorBrowsableState.Advanced)>
         Public Property IsSingleInstance() As Boolean
             Get
@@ -363,18 +374,9 @@ Namespace Microsoft.VisualBasic.ApplicationServices
         End Property
 
         ''' <summary>
-        ''' The splash screen timeout specifies whether there is a minimum time that the splash
-        ''' screen should be displayed for.  When not set then the splash screen is hidden
-        ''' as soon as the main form becomes active.
+        ''' Determines whether this application will use the XP Windows styles for windows, controls, etc.
         ''' </summary>
-        ''' <value>The minimum amount of time, in milliseconds, to display the splash screen.</value>
-        Public Property MinimumSplashScreenDisplayTime() As Integer = 2000
-
-        'Minimum amount of time to show the splash screen.  0 means hide as soon as the app comes up.
-        ''' <summary>
-        ''' Informs My.Settings whether to save the settings on exit or not
-        ''' </summary>
-        Public Property SaveMySettingsOnExit() As Boolean
+        Public Property MinimumSplashScreenDisplayTime() As Integer
 
         ''' <summary>
         ''' Provides access to the splash screen for this application
@@ -539,20 +541,27 @@ Namespace Microsoft.VisualBasic.ApplicationServices
         End Sub
 
         Protected Overridable Sub Dispose(disposing As Boolean)
-            If _isDisposed Then
-                Return
-            End If
+            If Not _disposedValue Then
+                If disposing Then
+                    ' TODO: dispose managed state (managed objects)
+                    If _appContext IsNot Nothing Then
+                        _appContext.Dispose()
+                    End If
+                    If _splashScreen IsNot Nothing Then
+                        _splashScreen.Dispose()
+                    End If
+                    If _splashScreen IsNot Nothing Then
+                        _splashScreen.Dispose()
+                    End If
+                    If _splashTimer IsNot Nothing Then
+                        _splashTimer.Dispose()
+                    End If
+                End If
 
-            If disposing Then
-                ' free managed resources
-                If _splashTimer IsNot Nothing Then
-                    _splashTimer.Dispose()
-                End If
-                If _appContext IsNot Nothing Then
-                    _appContext.Dispose()
-                End If
+                ' TODO: free unmanaged resources (unmanaged objects) and override finalizer
+                ' TODO: set large fields to null
+                _disposedValue = True
             End If
-            _isDisposed = True
         End Sub
 
         ''' <summary>
@@ -586,7 +595,6 @@ Namespace Microsoft.VisualBasic.ApplicationServices
         ''' </summary>
         <EditorBrowsable(EditorBrowsableState.Advanced)>
         Protected Overridable Sub OnCreateMainForm()
-            MainForm = New Form1
         End Sub
 
         ''' <summary>
@@ -596,7 +604,6 @@ Namespace Microsoft.VisualBasic.ApplicationServices
         ''' where Splash was designated in the application designer as being the splash screen for this app</remarks>
         <EditorBrowsable(EditorBrowsableState.Advanced)>
         Protected Overridable Sub OnCreateSplashScreen()
-            SplashScreen = New SplashScreen1
         End Sub
 
         ''' <summary>
@@ -614,7 +621,7 @@ Namespace Microsoft.VisualBasic.ApplicationServices
                 Throw New ArgumentNullException(NameOf(commandLineArgs))
             End If
             ' EnableVisualStyles
-            If EnableVisualStyles Then
+            If _enableVisualStyles Then
                 Application.EnableVisualStyles()
             End If
 
@@ -635,9 +642,7 @@ Namespace Microsoft.VisualBasic.ApplicationServices
         Protected Overridable Sub OnRun()
             If MainForm Is Nothing Then
                 OnCreateMainForm() 'A designer overrides OnCreateMainForm() to set the main form we are supposed to use
-                If MainForm Is Nothing Then
-                    Throw New NoStartupFormException
-                End If
+                If MainForm Is Nothing Then Throw New NoStartupFormException
 
                 'When we have a splash screen that hasn't timed out before the main form is ready to paint, we want to
                 'block the main form from painting.  To do that I let the form get past the Load() event and hold it until
@@ -707,7 +712,7 @@ Namespace Microsoft.VisualBasic.ApplicationServices
 
             Call New UIPermission(UIPermissionWindow.SafeSubWindows Or UIPermissionWindow.SafeTopLevelWindows).Assert()
             If eventArgs.BringToForeground = True AndAlso MainForm IsNot Nothing Then
-                If MainForm.WindowState = System.Windows.Forms.FormWindowState.Minimized Then
+                If MainForm.WindowState = Windows.Forms.FormWindowState.Minimized Then
                     MainForm.WindowState = FormWindowState.Normal
                 End If
                 MainForm.Activate()
@@ -748,9 +753,9 @@ Namespace Microsoft.VisualBasic.ApplicationServices
                 End If
                 If _splashScreen IsNot Nothing Then
                     'Some splash screens have minimum face time they are supposed to get.  We'll set up a time to let us know when we can take it down.
-                    If MinimumSplashScreenDisplayTime > 0 Then
+                    If _minimumSplashExposure > 0 Then
                         _ok2CloseSplashScreen = False 'Don't close until the timer expires.
-                        _splashTimer = New Timers.Timer(MinimumSplashScreenDisplayTime)
+                        _splashTimer = New Timers.Timer(_minimumSplashExposure)
                         AddHandler _splashTimer.Elapsed, AddressOf MinimumSplashExposureTimeIsUp
                         _splashTimer.AutoReset = False
                         'We'll enable it in DisplaySplash() once the splash screen thread gets running
@@ -768,11 +773,13 @@ Namespace Microsoft.VisualBasic.ApplicationServices
         '''  Processes all windows messages currently in the message queue
         ''' </summary>
         Public Shared Sub DoEvents()
+#Enable Warning CA1822 ' Mark members as static
             Application.DoEvents()
         End Sub
 
         Public Sub Dispose() Implements IDisposable.Dispose
-            Dispose(True)
+            ' Do not change this code. Put cleanup code in 'Dispose(disposing As Boolean)' method
+            Dispose(disposing:=True)
             GC.SuppressFinalize(Me)
         End Sub
 
@@ -885,6 +892,14 @@ Namespace Microsoft.VisualBasic.ApplicationServices
 
         End Class 'WinFormsAppContext
 
+        ' ' TODO: override finalizer only if 'Dispose(disposing As Boolean)' has code to free unmanaged resources
+        ' Protected Overrides Sub Finalize()
+        '     ' Do not change this code. Put cleanup code in 'Dispose(disposing As Boolean)' method
+        '     Dispose(disposing:=False)
+        '     MyBase.Finalize()
+        ' End Sub
     End Class 'WindowsFormsApplicationBase
 
 End Namespace
+
+#End If

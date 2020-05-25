@@ -6,8 +6,6 @@
 Imports System.Collections.ObjectModel
 Imports System.Reflection
 
-Imports CSharpToVBApp.Microsoft.VisualBasic.CompilerServices
-
 Namespace Microsoft.VisualBasic.ApplicationServices
 
     ''' <summary>
@@ -25,7 +23,7 @@ Namespace Microsoft.VisualBasic.ApplicationServices
         ''' <param name="CurrentAssembly">The assembly for which we want to obtain the information.</param>
         Public Sub New(ByVal currentAssembly As Assembly)
             If currentAssembly Is Nothing Then
-                Throw ExceptionUtils.GetArgumentNullException("CurrentAssembly")
+                Throw New ArgumentNullException(NameOf(currentAssembly))
             End If
             _assembly = currentAssembly
         End Sub
