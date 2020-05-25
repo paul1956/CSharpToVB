@@ -102,9 +102,9 @@ Partial Class Form1
         Me.LabelErrorCount = New System.Windows.Forms.Label()
         Me.SplitContainer1 = New System.Windows.Forms.SplitContainer()
         Me.ConversionInput = New System.Windows.Forms.RichTextBox()
-        Me.LineNumbers_For_RichTextBoxInput = New CSharpToVBApp.LineNumbersForRichTextBox()
-        Me.ConversionOutput = New CSharpToVBApp.AdvancedRTB()
-        Me.LineNumbers_For_RichTextBoxOutput = New CSharpToVBApp.LineNumbersForRichTextBox()
+        Me.LineNumbers_For_RichTextBoxInput = New LineNumbersForRichTextBox()
+        Me.ConversionOutput = New AdvancedRTB()
+        Me.LineNumbers_For_RichTextBoxOutput = New LineNumbersForRichTextBox()
         Me.ListBoxFileList = New System.Windows.Forms.ListBox()
         Me.ListBoxErrorList = New System.Windows.Forms.ListBox()
         Me.StatusStrip1 = New System.Windows.Forms.StatusStrip()
@@ -700,7 +700,7 @@ Partial Class Form1
         Me.LineNumbers_For_RichTextBoxInput.BorderLinesStyle = System.Drawing.Drawing2D.DashStyle.Dot
         Me.LineNumbers_For_RichTextBoxInput.BorderLinesThickness = 1.0!
         Me.LineNumbers_For_RichTextBoxInput.Dock = System.Windows.Forms.DockStyle.Left
-        Me.LineNumbers_For_RichTextBoxInput.DockSide = CSharpToVBApp.LineNumbersForRichTextBox.LineNumberDockSides.Left
+        Me.LineNumbers_For_RichTextBoxInput.DockSide = LineNumbersForRichTextBox.LineNumberDockSides.Left
         Me.LineNumbers_For_RichTextBoxInput.GridLinesColor = System.Drawing.Color.SlateGray
         Me.LineNumbers_For_RichTextBoxInput.GridLinesStyle = System.Drawing.Drawing2D.DashStyle.Dot
         Me.LineNumbers_For_RichTextBoxInput.GridLinesThickness = 1.0!
@@ -713,7 +713,7 @@ Partial Class Form1
         Me.LineNumbers_For_RichTextBoxInput.Location = New System.Drawing.Point(0, 0)
         Me.LineNumbers_For_RichTextBoxInput.Margin = New System.Windows.Forms.Padding(0)
         Me.LineNumbers_For_RichTextBoxInput.MarginLinesColor = System.Drawing.Color.SlateGray
-        Me.LineNumbers_For_RichTextBoxInput.MarginLinesSide = CSharpToVBApp.LineNumbersForRichTextBox.LineNumberDockSides.Right
+        Me.LineNumbers_For_RichTextBoxInput.MarginLinesSide = LineNumbersForRichTextBox.LineNumberDockSides.Right
         Me.LineNumbers_For_RichTextBoxInput.MarginLinesStyle = System.Drawing.Drawing2D.DashStyle.Solid
         Me.LineNumbers_For_RichTextBoxInput.MarginLinesThickness = 1.0!
         Me.LineNumbers_For_RichTextBoxInput.Name = "LineNumbers_For_RichTextBoxInput"
@@ -753,7 +753,7 @@ Partial Class Form1
         Me.LineNumbers_For_RichTextBoxOutput.BorderLinesColor = System.Drawing.Color.SlateGray
         Me.LineNumbers_For_RichTextBoxOutput.BorderLinesStyle = System.Drawing.Drawing2D.DashStyle.Dot
         Me.LineNumbers_For_RichTextBoxOutput.BorderLinesThickness = 1.0!
-        Me.LineNumbers_For_RichTextBoxOutput.DockSide = CSharpToVBApp.LineNumbersForRichTextBox.LineNumberDockSides.Left
+        Me.LineNumbers_For_RichTextBoxOutput.DockSide = LineNumbersForRichTextBox.LineNumberDockSides.Left
         Me.LineNumbers_For_RichTextBoxOutput.GridLinesColor = System.Drawing.Color.SlateGray
         Me.LineNumbers_For_RichTextBoxOutput.GridLinesStyle = System.Drawing.Drawing2D.DashStyle.Dot
         Me.LineNumbers_For_RichTextBoxOutput.GridLinesThickness = 1.0!
@@ -766,7 +766,7 @@ Partial Class Form1
         Me.LineNumbers_For_RichTextBoxOutput.Location = New System.Drawing.Point(977, 0)
         Me.LineNumbers_For_RichTextBoxOutput.Margin = New System.Windows.Forms.Padding(0)
         Me.LineNumbers_For_RichTextBoxOutput.MarginLinesColor = System.Drawing.Color.SlateGray
-        Me.LineNumbers_For_RichTextBoxOutput.MarginLinesSide = CSharpToVBApp.LineNumbersForRichTextBox.LineNumberDockSides.Right
+        Me.LineNumbers_For_RichTextBoxOutput.MarginLinesSide = LineNumbersForRichTextBox.LineNumberDockSides.Right
         Me.LineNumbers_For_RichTextBoxOutput.MarginLinesStyle = System.Drawing.Drawing2D.DashStyle.Solid
         Me.LineNumbers_For_RichTextBoxOutput.MarginLinesThickness = 1.0!
         Me.LineNumbers_For_RichTextBoxOutput.Name = "LineNumbers_For_RichTextBoxOutput"

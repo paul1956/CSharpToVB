@@ -1,8 +1,7 @@
 ﻿' Licensed to the .NET Foundation under one or more agreements.
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
-#If Not Not5_0
-
+#If Not NET5_0 Then
 Option Strict On
 Option Explicit On
 
@@ -182,6 +181,7 @@ Namespace Microsoft.VisualBasic.ApplicationServices
 #Disable Warning IDE0032 ' Use auto property
         Private _disposedValue As Boolean
         Private _enableVisualStyles As Boolean
+        Private _saveMySettingsOnExit As Boolean
 #Enable Warning IDE0032 ' Use auto property
 
         Private _isSingleInstance As Boolean
@@ -197,6 +197,7 @@ Namespace Microsoft.VisualBasic.ApplicationServices
         Private _splashTimer As Timers.Timer
 
         Private _unhandledExceptionHandlers As ArrayList
+        'Informs My.Settings whether to save the settings on exit or not
 
         ''' <summary>
         ''' Constructs the application Shutdown/Startup model object
@@ -377,6 +378,18 @@ Namespace Microsoft.VisualBasic.ApplicationServices
         ''' Determines whether this application will use the XP Windows styles for windows, controls, etc.
         ''' </summary>
         Public Property MinimumSplashScreenDisplayTime() As Integer
+
+        ''' <summary>
+        ''' Informs My.Settings whether to save the settings on exit or not
+        ''' </summary>
+        Public Property SaveMySettingsOnExit() As Boolean
+            Get
+                Return _saveMySettingsOnExit
+            End Get
+            Set(value As Boolean)
+                _saveMySettingsOnExit = value
+            End Set
+        End Property
 
         ''' <summary>
         ''' Provides access to the splash screen for this application
