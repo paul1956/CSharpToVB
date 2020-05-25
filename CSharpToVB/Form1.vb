@@ -1575,12 +1575,9 @@ Partial Public Class Form1
     End Sub
 
     <STAThread()>
-    Shared Sub main()
+    Shared Sub main(args As String())
         Application.SetHighDpiMode(HighDpiMode.SystemAware)
-        ' Note: Calling Application.EnableVisualStyles() is required for the task
-        ' dialog to work.
-        Dim app As New My.MyApplication
-        app.Run({""})
+        Call New My.MyApplication().Run(args)
     End Sub
 
 End Class

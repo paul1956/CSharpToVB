@@ -53,12 +53,12 @@ Partial Class Form1
         Me.mnuEdit = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuEditFind = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuEditSep1 = New System.Windows.Forms.ToolStripSeparator()
+        Me.mnuEditUndo = New System.Windows.Forms.ToolStripMenuItem()
+        Me.mnuEditRedo = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuEditSep2 = New System.Windows.Forms.ToolStripSeparator()
         Me.mnuEditCut = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuEditCopy = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuEditPaste = New System.Windows.Forms.ToolStripMenuItem()
-        Me.mnuEditUndo = New System.Windows.Forms.ToolStripMenuItem()
-        Me.mnuEditRedo = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuCompile = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuConvert = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuConvertConvertFolder = New System.Windows.Forms.ToolStripMenuItem()
@@ -91,19 +91,20 @@ Partial Class Form1
         Me.mnuHelpAboutMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.SaveFileDialog1 = New System.Windows.Forms.SaveFileDialog()
         Me.ContextMenuStrip1 = New System.Windows.Forms.ContextMenuStrip(Me.components)
+        Me.ContextMenuUndo = New System.Windows.Forms.ToolStripMenuItem()
+        Me.ContextMenuRedo = New System.Windows.Forms.ToolStripMenuItem()
+        Me.ContextMenuSeparator1 = New System.Windows.Forms.ToolStripSeparator()
         Me.ContextMenuCut = New System.Windows.Forms.ToolStripMenuItem()
         Me.ContextMenuCopy = New System.Windows.Forms.ToolStripMenuItem()
         Me.ContextMenuPaste = New System.Windows.Forms.ToolStripMenuItem()
-        Me.ContextMenuUndo = New System.Windows.Forms.ToolStripMenuItem()
-        Me.ContextMenuRedo = New System.Windows.Forms.ToolStripMenuItem()
         Me.InputFolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
         Me.ButtonStopConversion = New System.Windows.Forms.Button()
         Me.LabelErrorCount = New System.Windows.Forms.Label()
         Me.SplitContainer1 = New System.Windows.Forms.SplitContainer()
         Me.ConversionInput = New System.Windows.Forms.RichTextBox()
-        Me.LineNumbers_For_RichTextBoxInput = New LineNumbersForRichTextBox()
-        Me.ConversionOutput = New AdvancedRTB()
-        Me.LineNumbers_For_RichTextBoxOutput = New LineNumbersForRichTextBox()
+        Me.LineNumbers_For_RichTextBoxInput = New CSharpToVBApp.LineNumbersForRichTextBox()
+        Me.ConversionOutput = New CSharpToVBApp.AdvancedRTB()
+        Me.LineNumbers_For_RichTextBoxOutput = New CSharpToVBApp.LineNumbersForRichTextBox()
         Me.ListBoxFileList = New System.Windows.Forms.ListBox()
         Me.ListBoxErrorList = New System.Windows.Forms.ListBox()
         Me.StatusStrip1 = New System.Windows.Forms.StatusStrip()
@@ -117,7 +118,6 @@ Partial Class Form1
         Me.LabelProgress = New System.Windows.Forms.Label()
         Me.ToolTipFileList = New System.Windows.Forms.ToolTip(Me.components)
         Me.ToolTipErrorList = New System.Windows.Forms.ToolTip(Me.components)
-        Me.ContextMenuSeparator1 = New System.Windows.Forms.ToolStripSeparator()
         Me.MenuStrip1.SuspendLayout()
         Me.ContextMenuStrip1.SuspendLayout()
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -147,6 +147,8 @@ Partial Class Form1
         '
         'mnuFileOpen
         '
+        Me.mnuFileOpen.Image = CType(resources.GetObject("mnuFileOpen.Image"), System.Drawing.Image)
+        Me.mnuFileOpen.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
         Me.mnuFileOpen.Name = "mnuFileOpen"
         Me.mnuFileOpen.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.O), System.Windows.Forms.Keys)
         Me.mnuFileOpen.Size = New System.Drawing.Size(289, 22)
@@ -182,6 +184,8 @@ Partial Class Form1
         '
         'mnuFileConvertProject
         '
+        Me.mnuFileConvertProject.Image = CType(resources.GetObject("mnuFileConvertProject.Image"), System.Drawing.Image)
+        Me.mnuFileConvertProject.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
         Me.mnuFileConvertProject.Name = "mnuFileConvertProject"
         Me.mnuFileConvertProject.ShortcutKeys = CType(((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.Shift) _
             Or System.Windows.Forms.Keys.O), System.Windows.Forms.Keys)
@@ -205,6 +209,8 @@ Partial Class Form1
         'mnuFileSaveAs
         '
         Me.mnuFileSaveAs.Enabled = False
+        Me.mnuFileSaveAs.Image = CType(resources.GetObject("mnuFileSaveAs.Image"), System.Drawing.Image)
+        Me.mnuFileSaveAs.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
         Me.mnuFileSaveAs.Name = "mnuFileSaveAs"
         Me.mnuFileSaveAs.ShortcutKeys = CType((System.Windows.Forms.Keys.Alt Or System.Windows.Forms.Keys.A), System.Windows.Forms.Keys)
         Me.mnuFileSaveAs.Size = New System.Drawing.Size(289, 22)
@@ -258,6 +264,8 @@ Partial Class Form1
         '
         'mnuEditFind
         '
+        Me.mnuEditFind.Image = CType(resources.GetObject("mnuEditFind.Image"), System.Drawing.Image)
+        Me.mnuEditFind.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
         Me.mnuEditFind.Name = "mnuEditFind"
         Me.mnuEditFind.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.F), System.Windows.Forms.Keys)
         Me.mnuEditFind.Size = New System.Drawing.Size(146, 22)
@@ -334,6 +342,8 @@ Partial Class Form1
         '
         'mnuConvertConvertFolder
         '
+        Me.mnuConvertConvertFolder.Image = CType(resources.GetObject("mnuConvertConvertFolder.Image"), System.Drawing.Image)
+        Me.mnuConvertConvertFolder.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
         Me.mnuConvertConvertFolder.Name = "mnuConvertConvertFolder"
         Me.mnuConvertConvertFolder.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.F), System.Windows.Forms.Keys)
         Me.mnuConvertConvertFolder.Size = New System.Drawing.Size(199, 22)
@@ -342,6 +352,8 @@ Partial Class Form1
         'mnuConvertConvertSnippet
         '
         Me.mnuConvertConvertSnippet.Enabled = False
+        Me.mnuConvertConvertSnippet.Image = CType(resources.GetObject("mnuConvertConvertSnippet.Image"), System.Drawing.Image)
+        Me.mnuConvertConvertSnippet.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
         Me.mnuConvertConvertSnippet.Name = "mnuConvertConvertSnippet"
         Me.mnuConvertConvertSnippet.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.S), System.Windows.Forms.Keys)
         Me.mnuConvertConvertSnippet.Size = New System.Drawing.Size(199, 22)
@@ -381,6 +393,8 @@ Partial Class Form1
         '
         'mnuOptionsAddFilesToIgnoreFilesEithErrorsList
         '
+        Me.mnuOptionsAddFilesToIgnoreFilesEithErrorsList.Image = CType(resources.GetObject("mnuOptionsAddFilesToIgnoreFilesEithErrorsList.Image"), System.Drawing.Image)
+        Me.mnuOptionsAddFilesToIgnoreFilesEithErrorsList.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
         Me.mnuOptionsAddFilesToIgnoreFilesEithErrorsList.Name = "mnuOptionsAddFilesToIgnoreFilesEithErrorsList"
         Me.mnuOptionsAddFilesToIgnoreFilesEithErrorsList.Size = New System.Drawing.Size(360, 22)
         Me.mnuOptionsAddFilesToIgnoreFilesEithErrorsList.Text = "Add File to the ""Ignore files with errors list"""
@@ -436,6 +450,7 @@ Partial Class Form1
         'mnuOptionsPauseConvertOnSuccess
         '
         Me.mnuOptionsPauseConvertOnSuccess.CheckOnClick = True
+        Me.mnuOptionsPauseConvertOnSuccess.Image = CType(resources.GetObject("mnuOptionsPauseConvertOnSuccess.Image"), System.Drawing.Image)
         Me.mnuOptionsPauseConvertOnSuccess.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
         Me.mnuOptionsPauseConvertOnSuccess.Name = "mnuOptionsPauseConvertOnSuccess"
         Me.mnuOptionsPauseConvertOnSuccess.Size = New System.Drawing.Size(360, 22)
@@ -501,6 +516,7 @@ Partial Class Form1
         '
         'mnuOptionsAdvanced
         '
+        Me.mnuOptionsAdvanced.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
         Me.mnuOptionsAdvanced.Name = "mnuOptionsAdvanced"
         Me.mnuOptionsAdvanced.Size = New System.Drawing.Size(360, 22)
         Me.mnuOptionsAdvanced.Text = "Advanced Options..."
@@ -540,6 +556,8 @@ Partial Class Form1
         '
         'mnuHelpReportIssueMenuItem
         '
+        Me.mnuHelpReportIssueMenuItem.Image = CType(resources.GetObject("mnuHelpReportIssueMenuItem.Image"), System.Drawing.Image)
+        Me.mnuHelpReportIssueMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
         Me.mnuHelpReportIssueMenuItem.Name = "mnuHelpReportIssueMenuItem"
         Me.mnuHelpReportIssueMenuItem.Size = New System.Drawing.Size(177, 22)
         Me.mnuHelpReportIssueMenuItem.Text = "Report A Problem..."
@@ -556,6 +574,29 @@ Partial Class Form1
         Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ContextMenuUndo, Me.ContextMenuRedo, Me.ContextMenuSeparator1, Me.ContextMenuCut, Me.ContextMenuCopy, Me.ContextMenuPaste})
         Me.ContextMenuStrip1.Name = "ContextMenuStrip1"
         Me.ContextMenuStrip1.Size = New System.Drawing.Size(145, 120)
+        '
+        'ContextMenuUndo
+        '
+        Me.ContextMenuUndo.Image = CType(resources.GetObject("ContextMenuUndo.Image"), System.Drawing.Image)
+        Me.ContextMenuUndo.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.ContextMenuUndo.Name = "ContextMenuUndo"
+        Me.ContextMenuUndo.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.Z), System.Windows.Forms.Keys)
+        Me.ContextMenuUndo.Size = New System.Drawing.Size(144, 22)
+        Me.ContextMenuUndo.Text = "Undo"
+        '
+        'ContextMenuRedo
+        '
+        Me.ContextMenuRedo.Image = CType(resources.GetObject("ContextMenuRedo.Image"), System.Drawing.Image)
+        Me.ContextMenuRedo.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.ContextMenuRedo.Name = "ContextMenuRedo"
+        Me.ContextMenuRedo.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.Y), System.Windows.Forms.Keys)
+        Me.ContextMenuRedo.Size = New System.Drawing.Size(144, 22)
+        Me.ContextMenuRedo.Text = "Redo"
+        '
+        'ContextMenuSeparator1
+        '
+        Me.ContextMenuSeparator1.Name = "ContextMenuSeparator1"
+        Me.ContextMenuSeparator1.Size = New System.Drawing.Size(141, 6)
         '
         'ContextMenuCut
         '
@@ -586,24 +627,6 @@ Partial Class Form1
         Me.ContextMenuPaste.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.V), System.Windows.Forms.Keys)
         Me.ContextMenuPaste.Size = New System.Drawing.Size(144, 22)
         Me.ContextMenuPaste.Text = "Paste"
-        '
-        'ContextMenuUndo
-        '
-        Me.ContextMenuUndo.Image = CType(resources.GetObject("ContextMenuUndo.Image"), System.Drawing.Image)
-        Me.ContextMenuUndo.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
-        Me.ContextMenuUndo.Name = "ContextMenuUndo"
-        Me.ContextMenuUndo.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.Z), System.Windows.Forms.Keys)
-        Me.ContextMenuUndo.Size = New System.Drawing.Size(144, 22)
-        Me.ContextMenuUndo.Text = "Undo"
-        '
-        'ContextMenuRedo
-        '
-        Me.ContextMenuRedo.Image = CType(resources.GetObject("ContextMenuRedo.Image"), System.Drawing.Image)
-        Me.ContextMenuRedo.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
-        Me.ContextMenuRedo.Name = "ContextMenuRedo"
-        Me.ContextMenuRedo.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.Y), System.Windows.Forms.Keys)
-        Me.ContextMenuRedo.Size = New System.Drawing.Size(144, 22)
-        Me.ContextMenuRedo.Text = "Redo"
         '
         'InputFolderBrowserDialog1
         '
@@ -650,7 +673,7 @@ Partial Class Form1
         Me.SplitContainer1.Panel2.Controls.Add(Me.ListBoxFileList)
         Me.SplitContainer1.Panel2.Controls.Add(Me.ListBoxErrorList)
         Me.SplitContainer1.Size = New System.Drawing.Size(1923, 591)
-        Me.SplitContainer1.SplitterDistance = 498
+        Me.SplitContainer1.SplitterDistance = 510
         Me.SplitContainer1.SplitterWidth = 2
         Me.SplitContainer1.TabIndex = 22
         '
@@ -662,7 +685,7 @@ Partial Class Form1
         Me.ConversionInput.Font = New System.Drawing.Font("Segoe UI", 11.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point)
         Me.ConversionInput.Location = New System.Drawing.Point(23, 0)
         Me.ConversionInput.Name = "ConversionInput"
-        Me.ConversionInput.Size = New System.Drawing.Size(950, 498)
+        Me.ConversionInput.Size = New System.Drawing.Size(950, 510)
         Me.ConversionInput.TabIndex = 0
         Me.ConversionInput.Text = ""
         Me.ConversionInput.WordWrap = False
@@ -677,7 +700,7 @@ Partial Class Form1
         Me.LineNumbers_For_RichTextBoxInput.BorderLinesStyle = System.Drawing.Drawing2D.DashStyle.Dot
         Me.LineNumbers_For_RichTextBoxInput.BorderLinesThickness = 1.0!
         Me.LineNumbers_For_RichTextBoxInput.Dock = System.Windows.Forms.DockStyle.Left
-        Me.LineNumbers_For_RichTextBoxInput.DockSide = LineNumbersForRichTextBox.LineNumberDockSides.Left
+        Me.LineNumbers_For_RichTextBoxInput.DockSide = CSharpToVBApp.LineNumbersForRichTextBox.LineNumberDockSides.Left
         Me.LineNumbers_For_RichTextBoxInput.GridLinesColor = System.Drawing.Color.SlateGray
         Me.LineNumbers_For_RichTextBoxInput.GridLinesStyle = System.Drawing.Drawing2D.DashStyle.Dot
         Me.LineNumbers_For_RichTextBoxInput.GridLinesThickness = 1.0!
@@ -690,7 +713,7 @@ Partial Class Form1
         Me.LineNumbers_For_RichTextBoxInput.Location = New System.Drawing.Point(0, 0)
         Me.LineNumbers_For_RichTextBoxInput.Margin = New System.Windows.Forms.Padding(0)
         Me.LineNumbers_For_RichTextBoxInput.MarginLinesColor = System.Drawing.Color.SlateGray
-        Me.LineNumbers_For_RichTextBoxInput.MarginLinesSide = LineNumbersForRichTextBox.LineNumberDockSides.Right
+        Me.LineNumbers_For_RichTextBoxInput.MarginLinesSide = CSharpToVBApp.LineNumbersForRichTextBox.LineNumberDockSides.Right
         Me.LineNumbers_For_RichTextBoxInput.MarginLinesStyle = System.Drawing.Drawing2D.DashStyle.Solid
         Me.LineNumbers_For_RichTextBoxInput.MarginLinesThickness = 1.0!
         Me.LineNumbers_For_RichTextBoxInput.Name = "LineNumbers_For_RichTextBoxInput"
@@ -702,7 +725,7 @@ Partial Class Form1
         Me.LineNumbers_For_RichTextBoxInput.ShowGridLines = True
         Me.LineNumbers_For_RichTextBoxInput.ShowLineNrs = True
         Me.LineNumbers_For_RichTextBoxInput.ShowMarginLines = True
-        Me.LineNumbers_For_RichTextBoxInput.Size = New System.Drawing.Size(23, 498)
+        Me.LineNumbers_For_RichTextBoxInput.Size = New System.Drawing.Size(23, 510)
         Me.LineNumbers_For_RichTextBoxInput.TabIndex = 23
         Me.LineNumbers_For_RichTextBoxInput.Visible = False
         '
@@ -715,7 +738,7 @@ Partial Class Form1
         Me.ConversionOutput.HScrollPos = 0
         Me.ConversionOutput.Location = New System.Drawing.Point(999, 0)
         Me.ConversionOutput.Name = "ConversionOutput"
-        Me.ConversionOutput.Size = New System.Drawing.Size(924, 498)
+        Me.ConversionOutput.Size = New System.Drawing.Size(924, 510)
         Me.ConversionOutput.TabIndex = 1
         Me.ConversionOutput.Text = ""
         Me.ConversionOutput.VScrollPos = 0
@@ -730,7 +753,7 @@ Partial Class Form1
         Me.LineNumbers_For_RichTextBoxOutput.BorderLinesColor = System.Drawing.Color.SlateGray
         Me.LineNumbers_For_RichTextBoxOutput.BorderLinesStyle = System.Drawing.Drawing2D.DashStyle.Dot
         Me.LineNumbers_For_RichTextBoxOutput.BorderLinesThickness = 1.0!
-        Me.LineNumbers_For_RichTextBoxOutput.DockSide = LineNumbersForRichTextBox.LineNumberDockSides.Left
+        Me.LineNumbers_For_RichTextBoxOutput.DockSide = CSharpToVBApp.LineNumbersForRichTextBox.LineNumberDockSides.Left
         Me.LineNumbers_For_RichTextBoxOutput.GridLinesColor = System.Drawing.Color.SlateGray
         Me.LineNumbers_For_RichTextBoxOutput.GridLinesStyle = System.Drawing.Drawing2D.DashStyle.Dot
         Me.LineNumbers_For_RichTextBoxOutput.GridLinesThickness = 1.0!
@@ -743,7 +766,7 @@ Partial Class Form1
         Me.LineNumbers_For_RichTextBoxOutput.Location = New System.Drawing.Point(977, 0)
         Me.LineNumbers_For_RichTextBoxOutput.Margin = New System.Windows.Forms.Padding(0)
         Me.LineNumbers_For_RichTextBoxOutput.MarginLinesColor = System.Drawing.Color.SlateGray
-        Me.LineNumbers_For_RichTextBoxOutput.MarginLinesSide = LineNumbersForRichTextBox.LineNumberDockSides.Right
+        Me.LineNumbers_For_RichTextBoxOutput.MarginLinesSide = CSharpToVBApp.LineNumbersForRichTextBox.LineNumberDockSides.Right
         Me.LineNumbers_For_RichTextBoxOutput.MarginLinesStyle = System.Drawing.Drawing2D.DashStyle.Solid
         Me.LineNumbers_For_RichTextBoxOutput.MarginLinesThickness = 1.0!
         Me.LineNumbers_For_RichTextBoxOutput.Name = "LineNumbers_For_RichTextBoxOutput"
@@ -755,7 +778,7 @@ Partial Class Form1
         Me.LineNumbers_For_RichTextBoxOutput.ShowGridLines = True
         Me.LineNumbers_For_RichTextBoxOutput.ShowLineNrs = True
         Me.LineNumbers_For_RichTextBoxOutput.ShowMarginLines = True
-        Me.LineNumbers_For_RichTextBoxOutput.Size = New System.Drawing.Size(21, 498)
+        Me.LineNumbers_For_RichTextBoxOutput.Size = New System.Drawing.Size(21, 510)
         Me.LineNumbers_For_RichTextBoxOutput.TabIndex = 22
         Me.LineNumbers_For_RichTextBoxOutput.Visible = False
         '
@@ -856,11 +879,6 @@ Partial Class Form1
         'ToolTipErrorList
         '
         Me.ToolTipErrorList.ToolTipIcon = System.Windows.Forms.ToolTipIcon.Info
-        '
-        'ContextMenuSeparator1
-        '
-        Me.ContextMenuSeparator1.Name = "ContextMenuSeparator1"
-        Me.ContextMenuSeparator1.Size = New System.Drawing.Size(141, 6)
         '
         'Form1
         '
