@@ -29,36 +29,36 @@ Partial Class AdvancedRTB
     Private Sub InitializeComponent()
         components = New System.ComponentModel.Container()
         ContextMenuStrip1 = New ContextMenuStrip(components)
-        ToolStripMenuItem1 = New ToolStripMenuItem()
-        ToolStripMenuItem2 = New ToolStripMenuItem()
-        ToolStripMenuItem3 = New ToolStripMenuItem()
+        mnuScrollHere = New ToolStripMenuItem()
+        mnuScrollTop = New ToolStripMenuItem()
+        mnuScrollBottom = New ToolStripMenuItem()
         ToolStripSeparator1 = New ToolStripSeparator()
         ContextMenuStrip1.SuspendLayout()
         SuspendLayout()
         '
         'ContextMenuStrip1
         '
-        ContextMenuStrip1.Items.AddRange(New ToolStripItem() {ToolStripMenuItem1, ToolStripSeparator1, ToolStripMenuItem2, ToolStripMenuItem3})
+        ContextMenuStrip1.Items.AddRange(New ToolStripItem() {mnuScrollHere, ToolStripSeparator1, mnuScrollTop, mnuScrollBottom})
         ContextMenuStrip1.Name = "ContextMenuStrip1"
         ContextMenuStrip1.Size = New Size(147, 76)
         '
-        'ToolStripMenuItem1
+        'mnuScrollHere
         '
-        ToolStripMenuItem1.Name = "ToolStripMenuItem1"
-        ToolStripMenuItem1.Size = New Size(146, 22)
-        ToolStripMenuItem1.Text = "Scroll Here"
+        mnuScrollHere.Name = "mnuScrollHere"
+        mnuScrollHere.Size = New Size(146, 22)
+        mnuScrollHere.Text = "Scroll Here"
         '
-        'ToolStripMenuItem2
+        'mnuScrollTop
         '
-        ToolStripMenuItem2.Name = "ToolStripMenuItem2"
-        ToolStripMenuItem2.Size = New Size(146, 22)
-        ToolStripMenuItem2.Text = "Scroll Top"
+        mnuScrollTop.Name = "mnuScrollTop"
+        mnuScrollTop.Size = New Size(146, 22)
+        mnuScrollTop.Text = "Scroll Top"
         '
         'ToolStripMenuItem3
         '
-        ToolStripMenuItem3.Name = "ToolStripMenuItem3"
-        ToolStripMenuItem3.Size = New Size(146, 22)
-        ToolStripMenuItem3.Text = "Scroll Bottom"
+        mnuScrollBottom.Name = "ToolStripMenuItem3"
+        mnuScrollBottom.Size = New Size(146, 22)
+        mnuScrollBottom.Text = "Scroll Bottom"
         '
         'ToolStripSeparator1
         '
@@ -69,8 +69,8 @@ Partial Class AdvancedRTB
     End Sub
 
     Friend WithEvents ContextMenuStrip1 As ContextMenuStrip
-    Friend WithEvents ToolStripMenuItem1 As ToolStripMenuItem
-    Friend WithEvents ToolStripMenuItem2 As ToolStripMenuItem
-    Friend WithEvents ToolStripMenuItem3 As ToolStripMenuItem
+    Friend WithEvents mnuScrollHere As ToolStripMenuItem
+    Friend WithEvents mnuScrollTop As ToolStripMenuItem
+    Friend WithEvents mnuScrollBottom As ToolStripMenuItem
     Friend WithEvents ToolStripSeparator1 As ToolStripSeparator
 End Class

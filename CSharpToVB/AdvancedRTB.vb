@@ -72,7 +72,7 @@ Public Class AdvancedRTB
         Dim unused As Integer = SetScrollInfo(hWnd:=handle, nBar:=SB_Orientation, lpsi:=scrollinfo, bRepaint:=v)
     End Sub
 
-    Private Sub ToolStripMenuItem1_Click(sender As Object, e As EventArgs) Handles ToolStripMenuItem1.Click
+    Private Sub ToolStripMenuItem1_Click(sender As Object, e As EventArgs) Handles mnuScrollHere.Click
         With _sbi
             Dim SB_Size As Integer = .RC_ScrollBar.Bottom - .RC_ScrollBar.Top
             Dim Percent As Double = 1 - (SB_Size - PointToClient(MousePosition).Y) / SB_Size
@@ -82,11 +82,11 @@ Public Class AdvancedRTB
         End With
     End Sub
 
-    Private Sub ToolStripMenuItem2_Click(sender As Object, e As EventArgs) Handles ToolStripMenuItem2.Click
+    Private Sub ToolStripMenuItem2_Click(sender As Object, e As EventArgs) Handles mnuScrollTop.Click
         SelectionStart = 0
     End Sub
 
-    Private Sub ToolStripMenuItem3_Click(sender As Object, e As EventArgs) Handles ToolStripMenuItem3.Click
+    Private Sub ToolStripMenuItem3_Click(sender As Object, e As EventArgs) Handles mnuScrollBottom.Click
         SelectionStart = Text.Length
     End Sub
 
