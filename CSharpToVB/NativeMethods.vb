@@ -8,6 +8,10 @@ Friend Module NativeMethods
 
 #Region "Scroll Bar Support"
 
+    Public Const OBJID_VSCROLL As Long = &HFFFFFFFB
+
+    Public Const WM_NCRBUTTONDOWN As Integer = &HA4
+
     Public Enum SBOrientation As Integer
         HORZ = &H0
         VERT = &H1
@@ -97,9 +101,12 @@ Friend Module NativeMethods
 #End Region
 
 #Region "Message Filter Support"
+
 #Disable Warning IDE0049 ' Simplify Names
     Public Const WM_MOUSELEAVE As Int32 = &H2A3
     Public Const WM_MOUSEMOVE As Int32 = &H200
 #Enable Warning IDE0049 ' Simplify Names
+
 #End Region
+
 End Module

@@ -2,7 +2,9 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
-<ComponentModel.DefaultProperty("ParentRichTextBox")>
+Imports System.ComponentModel
+
+<DefaultProperty("ParentRichTextBox")>
 Public Class LineNumbersForRichTextBox : Inherits Control
 
     '   Code provided "as is", with no rights attached, nor liabilities.
@@ -110,8 +112,10 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         Height = 4
     End Enum
 
-    <ComponentModel.Description("Use this property to enable the control to act as an overlay on top of the RichTextBox.")>
-    <ComponentModel.Category("Additional Behavior")> Public Property SeeThroughMode() As Boolean
+    <Description("Use this property to enable the control to act as an overlay on top of the RichTextBox.")>
+    <Category("Additional Behavior")>
+    <DefaultValue(False)>
+    Public Property SeeThroughMode() As Boolean
         Get
             Return _zSeeThroughMode
         End Get
@@ -121,7 +125,8 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Set
     End Property
 
-    <ComponentModel.Browsable(False)> Public Overrides Property AutoSize() As Boolean
+    <Browsable(False)>
+    Public Overrides Property AutoSize() As Boolean
         Get
             Return MyBase.AutoSize
         End Get
@@ -131,8 +136,10 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Set
     End Property
 
-    <ComponentModel.Description("Use this property to automatically resize the control (and reposition it if needed).")>
-    <ComponentModel.Category("Additional Behavior")> Public Property AutoSizing() As Boolean
+    <Description("Use this property to automatically resize the control (and reposition it if needed).")>
+    <Category("Additional Behavior")>
+    <DefaultValue(True)>
+    Public Property AutoSizing() As Boolean
         Get
             Return _zAutoSizing
         End Get
@@ -143,7 +150,8 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Set
     End Property
 
-    <ComponentModel.Category("Additional Appearance")> Public Property BackgroundGradientAlphaColor() As Color
+    <Category("Additional Appearance")>
+    Public Property BackgroundGradientAlphaColor() As Color
         Get
             Return _zGradient_StartColor
         End Get
@@ -153,7 +161,9 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Set
     End Property
 
-    <ComponentModel.Category("Additional Appearance")> Public Property BackgroundGradientBetaColor() As Color
+    <Category("Additional Appearance")>
+    <DefaultValue(GetType(Color), "LightSteelBlue")>
+    Public Property BackgroundGradientBetaColor() As Color
         Get
             Return _zGradient_EndColor
         End Get
@@ -163,7 +173,9 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Set
     End Property
 
-    <ComponentModel.Category("Additional Appearance")> Public Property BackgroundGradientDirection() As Drawing2D.LinearGradientMode
+    <Category("Additional Appearance")>
+    <DefaultValue(0)>
+    Public Property BackgroundGradientDirection() As Drawing2D.LinearGradientMode
         Get
             Return _zGradient_Direction
         End Get
@@ -173,7 +185,9 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Set
     End Property
 
-    <ComponentModel.Category("Additional Appearance")> Public Property BorderLinesColor() As Color
+    <Category("Additional Appearance")>
+    <DefaultValue(GetType(Color), "SlateGray")>
+    Public Property BorderLinesColor() As Color
         Get
             Return _zBorderLines_Color
         End Get
@@ -183,7 +197,9 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Set
     End Property
 
-    <ComponentModel.Category("Additional Appearance")> Public Property BorderLinesStyle() As Drawing2D.DashStyle
+    <Category("Additional Appearance")>
+    <DefaultValue(2)>
+    Public Property BorderLinesStyle() As Drawing2D.DashStyle
         Get
             Return _zBorderLines_Style
         End Get
@@ -194,7 +210,9 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Set
     End Property
 
-    <ComponentModel.Category("Additional Appearance")> Public Property BorderLinesThickness() As Single
+    <Category("Additional Appearance")>
+    <DefaultValue(1)>
+    Public Property BorderLinesThickness() As Single
         Get
             Return _zBorderLines_Thickness
         End Get
@@ -204,8 +222,10 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Set
     End Property
 
-    <ComponentModel.Description("Use this property to dock the LineNumbers to a chosen side of the chosen RichTextBox.")>
-    <ComponentModel.Category("Additional Behavior")> Public Property DockSide() As LineNumberDockSides
+    <Description("Use this property to dock the LineNumbers to a chosen side of the chosen RichTextBox.")>
+    <Category("Additional Behavior")>
+    <DefaultValue(1)>
+    Public Property DockSide() As LineNumberDockSides
         Get
             Return _zDockSide
         End Get
@@ -216,7 +236,8 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Set
     End Property
 
-    <ComponentModel.Browsable(True)> Public Overrides Property Font() As Font
+    <Browsable(True)>
+    Public Overrides Property Font() As Font
         Get
             Return MyBase.Font
         End Get
@@ -227,7 +248,9 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Set
     End Property
 
-    <ComponentModel.Category("Additional Appearance")> Public Property GridLinesColor() As Color
+    <Category("Additional Appearance")>
+    <DefaultValue(GetType(Color), "SlateGray")>
+    Public Property GridLinesColor() As Color
         Get
             Return _zGridLines_Color
         End Get
@@ -237,7 +260,9 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Set
     End Property
 
-    <ComponentModel.Category("Additional Appearance")> Public Property GridLinesStyle() As Drawing2D.DashStyle
+    <Category("Additional Appearance")>
+    <DefaultValue(2)>
+    Public Property GridLinesStyle() As Drawing2D.DashStyle
         Get
             Return _zGridLines_Style
         End Get
@@ -248,7 +273,9 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Set
     End Property
 
-    <ComponentModel.Category("Additional Appearance")> Public Property GridLinesThickness() As Single
+    <Category("Additional Appearance")>
+    <DefaultValue(1)>
+    Public Property GridLinesThickness() As Single
         Get
             Return _zGridLines_Thickness
         End Get
@@ -258,8 +285,10 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Set
     End Property
 
-    <ComponentModel.Description("Use this to align the LineNumbers to a chosen corner (or center) within their item-area.")>
-    <ComponentModel.Category("Additional Behavior")> Public Property LineNrsAlignment() As ContentAlignment
+    <Description("Use this to align the LineNumbers to a chosen corner (or center) within their item-area.")>
+    <Category("Additional Behavior")>
+    <DefaultValue(4)>
+    Public Property LineNrsAlignment() As ContentAlignment
         Get
             Return _zLineNumbers_Alignment
         End Get
@@ -269,8 +298,10 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Set
     End Property
 
-    <ComponentModel.Description("Use this to apply Anti-Aliasing to the LineNumbers (high quality). Some fonts will look better without it, though.")>
-    <ComponentModel.Category("Additional Behavior")> Public Property LineNrsAntiAlias() As Boolean
+    <Description("Use this to apply Anti-Aliasing to the LineNumbers (high quality). Some fonts will look better without it, though.")>
+    <Category("Additional Behavior")>
+    <DefaultValue(True)>
+    Public Property LineNrsAntiAlias() As Boolean
         Get
             Return _zLineNumbers_AntiAlias
         End Get
@@ -281,8 +312,10 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Set
     End Property
 
-    <ComponentModel.Description("Use this to set whether the LineNumbers should be shown as hexadecimal values.")>
-    <ComponentModel.Category("Additional Behavior")> Public Property LineNrsAsHexadecimal() As Boolean
+    <Description("Use this to set whether the LineNumbers should be shown as hexadecimal values.")>
+    <Category("Additional Behavior")>
+    <DefaultValue(False)>
+    Public Property LineNrsAsHexadecimal() As Boolean
         Get
             Return _zLineNumbers_ShowAsHexadecimal
         End Get
@@ -293,8 +326,10 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Set
     End Property
 
-    <ComponentModel.Description("Use this to set whether the LineNumbers are allowed to spill out of their item-area, or should be clipped by it.")>
-    <ComponentModel.Category("Additional Behavior")> Public Property LineNrsClippedByItemRectangle() As Boolean
+    <Description("Use this to set whether the LineNumbers are allowed to spill out of their item-area, or should be clipped by it.")>
+    <Category("Additional Behavior")>
+    <DefaultValue(True)>
+    Public Property LineNrsClippedByItemRectangle() As Boolean
         Get
             Return _zLineNumbers_ClipByItemRectangle
         End Get
@@ -304,8 +339,10 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Set
     End Property
 
-    <ComponentModel.Description("Use this to set whether the LineNumbers should have leading zeros (based on the total amount of text lines).")>
-    <ComponentModel.Category("Additional Behavior")> Public Property LineNrsLeadingZeroes() As Boolean
+    <Description("Use this to set whether the LineNumbers should have leading zeros (based on the total amount of text lines).")>
+    <Category("Additional Behavior")>
+    <DefaultValue(True)>
+    Public Property LineNrsLeadingZeroes() As Boolean
         Get
             Return _zLineNumbers_ShowLeadingZeroes
         End Get
@@ -316,8 +353,9 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Set
     End Property
 
-    <ComponentModel.Description("Use this property to manually reposition the LineNumbers, relative to their current location.")>
-    <ComponentModel.Category("Additional Behavior")> Public Property LineNrsOffset() As Size
+    <Description("Use this property to manually reposition the LineNumbers, relative to their current location.")>
+    <Category("Additional Behavior")>
+    Public Property LineNrsOffset() As Size
         Get
             Return _zLineNumbers_Offset
         End Get
@@ -327,7 +365,9 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Set
     End Property
 
-    <ComponentModel.Category("Additional Appearance")> Public Property MarginLinesColor() As Color
+    <Category("Additional Appearance")>
+    <DefaultValue(GetType(Color), "SlateGray")>
+    Public Property MarginLinesColor() As Color
         Get
             Return _zMarginLines_Color
         End Get
@@ -337,7 +377,9 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Set
     End Property
 
-    <ComponentModel.Category("Additional Appearance")> Public Property MarginLinesSide() As LineNumberDockSides
+    <Category("Additional Appearance")>
+    <DefaultValue(2)>
+    Public Property MarginLinesSide() As LineNumberDockSides
         Get
             Return _zMarginLines_Side
         End Get
@@ -347,7 +389,9 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Set
     End Property
 
-    <ComponentModel.Category("Additional Appearance")> Public Property MarginLinesStyle() As Drawing2D.DashStyle
+    <Category("Additional Appearance")>
+    <DefaultValue(0)>
+    Public Property MarginLinesStyle() As Drawing2D.DashStyle
         Get
             Return _zMarginLines_Style
         End Get
@@ -358,7 +402,9 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Set
     End Property
 
-    <ComponentModel.Category("Additional Appearance")> Public Property MarginLinesThickness() As Single
+    <Category("Additional Appearance")>
+    <DefaultValue(1)>
+    Public Property MarginLinesThickness() As Single
         Get
             Return _zMarginLines_Thickness
         End Get
@@ -368,8 +414,9 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Set
     End Property
 
-    <ComponentModel.Description("Use this property to enable LineNumbers for the chosen RichTextBox.")>
-    <ComponentModel.Category("Add LineNumbers to")> Public Property ParentRichTextBox() As RichTextBox
+    <Description("Use this property to enable LineNumbers for the chosen RichTextBox.")>
+    <Category("Add LineNumbers to")>
+    Public Property ParentRichTextBox() As RichTextBox
         Get
             Return ZParent
         End Get
@@ -385,8 +432,10 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Set
     End Property
 
-    <ComponentModel.Description("The BackgroundGradient is a gradual blend of two colors, shown in the back of each LineNumber's item-area.")>
-    <ComponentModel.Category("Additional Behavior")> Public Property ShowBackgroundGradient() As Boolean
+    <Description("The BackgroundGradient is a gradual blend of two colors, shown in the back of each LineNumber's item-area.")>
+    <Category("Additional Behavior")>
+    <DefaultValue(True)>
+    Public Property ShowBackgroundGradient() As Boolean
         Get
             Return _zGradient_Show
         End Get
@@ -396,8 +445,10 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Set
     End Property
 
-    <ComponentModel.Description("BorderLines are shown on all sides of the LineNumber control.")>
-    <ComponentModel.Category("Additional Behavior")> Public Property ShowBorderLines() As Boolean
+    <Description("BorderLines are shown on all sides of the LineNumber control.")>
+    <Category("Additional Behavior")>
+    <DefaultValue(True)>
+    Public Property ShowBorderLines() As Boolean
         Get
             Return _zBorderLines_Show
         End Get
@@ -407,8 +458,10 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Set
     End Property
 
-    <ComponentModel.Description("GridLines are the horizontal divider-lines shown above each LineNumber.")>
-    <ComponentModel.Category("Additional Behavior")> Public Property ShowGridLines() As Boolean
+    <Description("GridLines are the horizontal divider-lines shown above each LineNumber.")>
+    <Category("Additional Behavior")>
+    <DefaultValue(True)>
+    Public Property ShowGridLines() As Boolean
         Get
             Return _zGridLines_Show
         End Get
@@ -418,7 +471,9 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Set
     End Property
 
-    <ComponentModel.Category("Additional Behavior")> Public Property ShowLineNrs() As Boolean
+    <Category("Additional Behavior")>
+    <DefaultValue(True)>
+    Public Property ShowLineNrs() As Boolean
         Get
             Return _zLineNumbers_Show
         End Get
@@ -428,8 +483,10 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Set
     End Property
 
-    <ComponentModel.Description("MarginLines are shown on the Left or Right (or both in Height-mode) of the LineNumber control.")>
-    <ComponentModel.Category("Additional Behavior")> Public Property ShowMarginLines() As Boolean
+    <Description("MarginLines are shown on the Left or Right (or both in Height-mode) of the LineNumber control.")>
+    <Category("Additional Behavior")>
+    <DefaultValue(True)>
+    Public Property ShowMarginLines() As Boolean
         Get
             Return _zMarginLines_Show
         End Get
@@ -439,9 +496,9 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Set
     End Property
 
-    <ComponentModel.DefaultValue("")>
-    <ComponentModel.AmbientValue("")>
-    <ComponentModel.Browsable(False)>
+    <DefaultValue("")>
+    <AmbientValue("")>
+    <Browsable(False)>
     Public Overrides Property Text() As String
         Get
             Return MyBase.Text

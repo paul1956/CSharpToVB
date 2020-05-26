@@ -5,10 +5,6 @@ Imports System.Runtime.InteropServices
 
 Public Class AdvancedRTB
 
-    Private Const OBJID_VSCROLL As Long = &HFFFFFFFB
-
-    Private Const WM_NCRBUTTONDOWN As Integer = &HA4
-
     'the vertical scroll bar of the hwnd window
 
     Private _sbi As SCROLLBARINFO
