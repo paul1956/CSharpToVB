@@ -22,14 +22,6 @@ Public Module ProcessDirectoriesUtilities
         Return Path.Combine(TargetDirectory, New DirectoryInfo(SubdirectoryName).Name)
     End Function
 
-    Public Function GetFileTextFromStream(fileStream As Stream) As String
-        Using sw As New StreamReader(fileStream)
-            Dim SourceText As String = sw.ReadToEnd()
-            sw.Close()
-            Return SourceText
-        End Using
-    End Function
-
     Public Sub LocalUseWaitCursor(MeForm As Form1, WaitCursorEnable As Boolean)
         If MeForm Is Nothing Then
             Exit Sub

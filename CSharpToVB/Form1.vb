@@ -2,17 +2,14 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 Imports System.ComponentModel
-Imports System.Diagnostics.CodeAnalysis
 Imports System.Globalization
 Imports System.IO
 Imports System.Reflection
-Imports System.Text
 Imports System.Threading
 
 Imports Buildalyzer
 
 Imports CSharpToVBApp
-Imports CSharpToVBApp.Microsoft.VisualBasic.ApplicationServices
 
 Imports CSharpToVBCodeConverter
 Imports CSharpToVBCodeConverter.ConversionResult
@@ -62,37 +59,6 @@ Partial Public Class Form1
             End If
         End Set
     End Property
-
-    Private Shared Sub AddMenuItem(DropDownItems As ToolStripItemCollection, ItemName As String)
-        DropDownItems.Add(New ToolStripMenuItem With {
-            .AutoSize = True,
-            .CheckOnClick = True,
-            .ImageScaling = ToolStripItemImageScaling.None,
-            .Name = $"{ItemName}ToolStripMenuItem",
-            .Text = ItemName
-        })
-    End Sub
-
-    Private Shared Function ConvertFramework(Framework As String) As String
-        If Framework = "netcoreapp5.0" Then
-            Return "NET5_0"
-        End If
-        Return Framework.ToUpperInvariant.Replace(".", "_", StringComparison.OrdinalIgnoreCase)
-    End Function
-
-    <ExcludeFromCodeCoverage>
-    Private Shared Function GetExceptionsAsString(Exceptions As IReadOnlyList(Of Exception)) As String
-        If Exceptions Is Nothing OrElse Not Exceptions.Any Then
-            Return String.Empty
-        End If
-
-        Dim builder As New StringBuilder()
-        For index As Integer = 0 To Exceptions.Count - 1
-            builder.AppendFormat(CultureInfo.InvariantCulture, "----- Exception {0} Of {1} -----" & System.Environment.NewLine, index + 1, Exceptions.Count)
-            builder.AppendLine(Exceptions(index).ToString())
-        Next index
-        Return builder.ToString()
-    End Function
 
     Private Sub ButtonStop_Click(sender As Object, e As EventArgs) Handles ButtonStopConversion.Click
         ButtonStopConversion.Visible = False
@@ -247,7 +213,11 @@ Partial Public Class Form1
         End If
     End Sub
 
-    Private Async Function Convert_Compile_ColorizeAsync(RequestToConvert As ConvertRequest, CSPreprocessorSymbols As List(Of String), VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)), OptionalReferences() As MetadataReference, CancelToken As CancellationToken) As Task(Of Boolean)
+    Private Async Function Convert_Compile_ColorizeAsync(RequestToConvert As ConvertRequest,
+                                    CSPreprocessorSymbols As List(Of String),
+                                    VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)),
+                                    OptionalReferences() As MetadataReference,
+                                    CancelToken As CancellationToken) As Task(Of Boolean)
         Dim UIContext As SynchronizationContext = SynchronizationContext.Current
 
         Dim ReportException As Action(Of Exception) =
@@ -356,11 +326,11 @@ Partial Public Class Form1
         For Each FrameworkType As ToolStripMenuItem In FrameworkToolStripMenuItem.DropDownItems
             If FrameworkType.Text = ".Net Full Framework" Then
                 For Each f As String In GetAllFrameworkVersions()
-                    AddMenuItem(FrameworkType.DropDownItems, f)
+                    AddDropDownMenuItem(FrameworkType.DropDownItems, f)
                 Next
             Else
                 For Each f As String In GetAllCoreVersions()
-                    AddMenuItem(FrameworkType.DropDownItems, f)
+                    AddDropDownMenuItem(FrameworkType.DropDownItems, f)
                 Next
             End If
         Next
@@ -401,109 +371,6 @@ Partial Public Class Form1
     Private Sub Form1_Resize(sender As Object, e As EventArgs) Handles Me.Resize
         ResizeRichTextBuffers()
     End Sub
-
-    Private Function GetFileCount(DirPath As String, SourceLanguageExtension As String, SkipBinAndObjFolders As Boolean, SkipTestResourceFiles As Boolean, Optional Depth As Integer = 0) As Long
-        Dim TotalFilesToProcess As Long = 0L
-
-        Try
-            For Each Subdirectory As String In Directory.GetDirectories(DirPath)
-                If SkipTestResourceFiles AndAlso
-                        (Subdirectory.EndsWith("Test\Resources", StringComparison.OrdinalIgnoreCase) OrElse
-                         Subdirectory.EndsWith("Setup\Templates", StringComparison.OrdinalIgnoreCase)) Then
-                    Continue For
-                End If
-                Dim SubdirectoryName As String = Path.GetFileName(Subdirectory)
-                If SkipBinAndObjFolders AndAlso (SubdirectoryName = "bin" OrElse
-                    SubdirectoryName = "obj" OrElse
-                    SubdirectoryName = "g") Then
-                    Continue For
-                End If
-                TotalFilesToProcess += GetFileCount(Subdirectory, SourceLanguageExtension, SkipBinAndObjFolders, SkipTestResourceFiles, Depth + 1)
-            Next
-            For Each File As String In Directory.GetFiles(path:=DirPath, searchPattern:=$"*.{SourceLanguageExtension}")
-                If Not ParseCSharpSource(File, New List(Of String)).
-                    GetRoot.SyntaxTree.IsGeneratedCode(Function(t As SyntaxTrivia) As Boolean
-                                                           Return t.IsComment OrElse t.IsRegularOrDocComment
-                                                       End Function, CancellationToken.None) Then
-                    TotalFilesToProcess += 1
-                End If
-            Next
-        Catch ex As OperationCanceledException
-            Throw
-        Catch ua As UnauthorizedAccessException
-            ' Ignore
-        Catch ex As Exception
-            Stop
-            Throw
-        End Try
-
-        Return TotalFilesToProcess
-    End Function
-
-    ''' <summary>
-    ''' To work with Git we need to create a new folder tree from the parent of this project
-    ''' </summary>
-    ''' <param name="DirOrFileToBeTranslated"></param>
-    ''' <param name="PromptIfDirExsits"></param>
-    ''' <returns></returns>
-    Private Function GetSavePath(DirOrFileToBeTranslated As String, PromptIfDirExsits As Boolean) As (SolutionRoot As String, ProjectRelativePath As String)
-        Debug.Assert(Directory.GetDirectoryRoot(DirOrFileToBeTranslated) <> DirOrFileToBeTranslated, $"{DirOrFileToBeTranslated} does Not exist")
-        Dim sourceRoot As String = DirOrFileToBeTranslated
-        Dim currentDirectory As String = sourceRoot
-        Dim systemtRootDirectory As String = Directory.GetDirectoryRoot(currentDirectory)
-        If File.Exists(DirOrFileToBeTranslated) Then
-            sourceRoot = Directory.GetParent(DirOrFileToBeTranslated).FullName
-            currentDirectory = sourceRoot
-            DirOrFileToBeTranslated = sourceRoot
-        End If
-        Debug.Assert(Directory.Exists(sourceRoot), $"{DirOrFileToBeTranslated} does Not exist")
-
-        While systemtRootDirectory <> currentDirectory
-            If Directory.GetFiles(currentDirectory, "*.sln").Any Then
-                sourceRoot = Directory.GetParent(currentDirectory).FullName
-                Exit While
-            End If
-            currentDirectory = Directory.GetParent(currentDirectory).FullName
-        End While
-        If systemtRootDirectory = currentDirectory Then
-            Dim defaultRoot As String = Directory.GetParent(DirOrFileToBeTranslated).FullName
-            sourceRoot = defaultRoot
-        End If
-        ' At this point Solution Directory is the remainder of the path from SolutionRoot
-        Dim PathFromSolutionRoot As List(Of String) = DirOrFileToBeTranslated.Replace(sourceRoot, "", StringComparison.OrdinalIgnoreCase) _
-                                                                    .Trim(Path.DirectorySeparatorChar) _
-                                                                    .Split(Path.DirectorySeparatorChar).ToList
-        PathFromSolutionRoot(0) = PathFromSolutionRoot(0) & "_vb"
-        Dim solutionRoot As String = $"{sourceRoot}{Path.DirectorySeparatorChar}{PathFromSolutionRoot(0)}"
-        ' Remove top director because it will be change to end in _vb
-        PathFromSolutionRoot.RemoveAt(0)
-        If File.Exists(solutionRoot) Then
-            MsgBox($"A file exists at {solutionRoot} this Is a fatal error the program will exit",
-                   MsgBoxStyle.OkOnly And MsgBoxStyle.Critical Or MsgBoxStyle.MsgBoxSetForeground,
-                   "Fatal Error")
-            Close()
-            End
-        End If
-        If PromptIfDirExsits AndAlso Directory.Exists(solutionRoot) Then
-            Select Case MsgBox($"The converted project will be save to {solutionRoot} a directory which already exists. To use it And overwrite existing files select Yes. Selecting No will delete existing content, Selecting Cancel will stop conversion. , ",
-                               MsgBoxStyle.YesNoCancel Or MsgBoxStyle.Question Or MsgBoxStyle.MsgBoxSetForeground,
-                               "Target Directory Save Options")
-                Case MsgBoxResult.Cancel
-                    Return (String.Empty, String.Empty)
-                Case MsgBoxResult.No
-                    If MsgBoxResult.Yes = MsgBox($"Are you sure you want to delete {solutionRoot}?",
-                                                 MsgBoxStyle.YesNo Or MsgBoxStyle.Critical Or MsgBoxStyle.MsgBoxSetForeground,
-                                                 "Warning Deleting Directory") Then
-                        Directory.Delete(solutionRoot, recursive:=True)
-                        Directory.CreateDirectory(solutionRoot)
-                    End If
-                Case MsgBoxResult.Yes
-            End Select
-        End If
-        Dim relativePath As String = PathFromSolutionRoot.Join(Path.DirectorySeparatorChar)
-        CreateDirectoryIfNonexistent(Path.Combine(solutionRoot, relativePath))
-        Return (solutionRoot, relativePath)
-    End Function
 
     Private Sub LineNumbers_For_RichTextBoxInput_Resize(sender As Object, e As EventArgs) Handles LineNumbers_For_RichTextBoxInput.Resize
         ResizeRichTextBuffers()
@@ -627,17 +494,6 @@ Partial Public Class Form1
         LocalUseWaitCursor(MeForm:=Me, WaitCursorEnable:=False)
     End Sub
 
-    Private Sub mnu_MRUList_Click(sender As Object, e As EventArgs)
-        ' open the file...
-        OpenSourceFile(DirectCast(sender, ToolStripItem).Tag.ToString().Substring(4))
-    End Sub
-
-    Private Sub mnu_MRUList_MouseDown(sender As Object, e As MouseEventArgs)
-        If e.Button = Windows.Forms.MouseButtons.Right Then
-            Clipboard.SetText(text:=CType(sender, ToolStripMenuItem).Text)
-        End If
-    End Sub
-
     Private Sub mnuCompile_Click(sender As Object, e As EventArgs) Handles mnuCompile.Click
         LineNumbers_For_RichTextBoxInput.Visible = False
         LineNumbers_For_RichTextBoxOutput.Visible = False
@@ -705,7 +561,7 @@ Partial Public Class Form1
                     Return
                 End If
                 SourceFolderName = .SelectedPath
-                Dim fullFolderPath As (SolutionRoot As String, ProjectRelativePath As String) = GetSavePath(.SelectedPath, PromptIfDirExsits:=True)
+                Dim fullFolderPath As (SolutionRoot As String, ProjectRelativePath As String) = GetSavePath(Me, .SelectedPath, PromptIfDirExsits:=True)
                 solutionSavePath = Path.Combine(fullFolderPath.SolutionRoot, fullFolderPath.ProjectRelativePath)
             End With
         End Using
@@ -826,7 +682,7 @@ Partial Public Class Form1
         Dim FolderName As String = CType(sender, ToolStripMenuItem).Text
         If Directory.Exists(FolderName) Then
             Dim SourceLanguageExtension As String = "cs"
-            Dim fullFolderPath As (SolutionRoot As String, ProjectRelativePath As String) = GetSavePath(FolderName, PromptIfDirExsits:=True)
+            Dim fullFolderPath As (SolutionRoot As String, ProjectRelativePath As String) = GetSavePath(Me, FolderName, PromptIfDirExsits:=True)
             Dim targetSavePath As String = Path.Combine(fullFolderPath.SolutionRoot, fullFolderPath.ProjectRelativePath)
             If String.IsNullOrWhiteSpace(targetSavePath) Then
                 Exit Sub
@@ -1075,7 +931,7 @@ Partial Public Class Form1
         ' iterate through list and remove each from menu...
         For Each MRUToolStripItem As ToolStripItem In MRUToolStripItems
             RemoveHandler MRUToolStripItem.Click, AddressOf mnu_MRUList_Click
-            RemoveHandler MRUToolStripItem.MouseDown, AddressOf mnu_MRUList_MouseDown
+            RemoveHandler MRUToolStripItem.MouseDown, AddressOf mnuMRUList_MouseDown
             dropDownItems.Remove(MRUToolStripItem)
         Next
         ' display items (in reverse order so the most recent is on top)...
@@ -1089,7 +945,7 @@ Partial Public Class Form1
             }
             ' hook into the click event handler so we can open the file later...
             AddHandler clsItem.Click, AddressOf mnu_MRUList_Click
-            AddHandler clsItem.MouseDown, AddressOf mnu_MRUList_MouseDown
+            AddHandler clsItem.MouseDown, AddressOf mnuMRUList_MouseDown
             ' insert into DropDownItems list...
             dropDownItems.Insert(dropDownItems.Count - 12, clsItem)
         Next
@@ -1110,7 +966,7 @@ Partial Public Class Form1
 
     Private Sub OpenSourceFile(FileNameWithPath As String)
         mnuConvertConvertSnippet.Enabled = LoadInputBufferFromStream(FileNameWithPath) <> 0
-        MRU_AddTo(My.Settings.MRU_Data, FileNameWithPath)
+        mnuAddToMRU(My.Settings.MRU_Data, FileNameWithPath)
         MRU_UpdateUI(mnuFile.DropDownItems)
     End Sub
 
@@ -1158,7 +1014,7 @@ Partial Public Class Form1
         End If
         ButtonStopConversion.Visible = True
         ConversionOutput.Text = ""
-        MRU_AddTo(My.Settings.MRU_Data, SourceFileNameWithPath)
+        mnuAddToMRU(My.Settings.MRU_Data, SourceFileNameWithPath)
         MRU_UpdateUI(mnuFile.DropDownItems)
         Dim lines As Integer = LoadInputBufferFromStream(SourceFileNameWithPath)
         If lines > 0 Then
@@ -1306,7 +1162,7 @@ Partial Public Class Form1
         End If
         Dim FilesProcessed As Integer = 0
         Dim TotalFilesToProcess As Integer = currentProject.Documents.Count
-        Dim convertedFramework As String = ConvertFramework(Framework)
+        Dim convertedFramework As String = FrameworkNameToConstant(Framework)
         Dim CSPreprocessorSymbols As New List(Of String) From {Framework, convertedFramework}
         Dim VBPreprocessorSymbols As New List(Of KeyValuePair(Of String, Object)) From {
                                     KeyValuePair.Create(Of String, Object)(convertedFramework, True)}
@@ -1334,7 +1190,7 @@ Partial Public Class Form1
 
     Private Async Sub ProcessProjectOrSolution(fileName As String)
         _cancellationTokenSource = New CancellationTokenSource
-        Dim solutionRoot As String = GetSavePath(fileName, PromptIfDirExsits:=True).SolutionRoot
+        Dim solutionRoot As String = GetSavePath(Me, fileName, PromptIfDirExsits:=True).SolutionRoot
         If String.IsNullOrWhiteSpace(solutionRoot) Then
             LabelProgress.Visible = False
             ProgressBar1.Visible = False
@@ -1572,6 +1428,11 @@ Partial Public Class Form1
         End If
         ' display MRU if there are any items to display...
         MRU_UpdateUI(mnuFile.DropDownItems)
+    End Sub
+
+    Friend Sub mnu_MRUList_Click(sender As Object, e As EventArgs)
+        ' open the file...
+        OpenSourceFile(DirectCast(sender, ToolStripItem).Tag.ToString().Substring(4))
     End Sub
 
     <STAThread()>

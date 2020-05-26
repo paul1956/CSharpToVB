@@ -4,7 +4,7 @@
 
 Imports System.IO
 
-Public Module VisualStudioFileSupport
+Public Module VisualStudioFileUtilities
     Private Const VisualStudioBaseName As String = "Visual Studio "
 
     Private Function GetUserDirectoryFromTemp() As String

@@ -4,7 +4,7 @@
 
 Imports Microsoft.Win32
 
-Module TargetFrameworkSupport
+Module TargetFrameworkUtilities
 
     ' Checking the version using >= will enable forward compatibility.
     Private Function CheckFor45PlusVersion(releaseKey As Integer) As String
@@ -41,6 +41,18 @@ Module TargetFrameworkSupport
         End If
         Dim Minor As String = NameSplit(1)
         Return $"{Base}{NameSplit(0)}{Separator}{Minor}"
+    End Function
+
+    ''' <summary>
+    ''' Converts a framework name from Project File format to Compile time variable
+    ''' </summary>
+    ''' <param name="Framework"></param>
+    ''' <returns></returns>
+    Friend Function FrameworkNameToConstant(Framework As String) As String
+        If Framework = "netcoreapp5.0" Then
+            Return "NET5_0"
+        End If
+        Return Framework.ToUpperInvariant.Replace(".", "_", StringComparison.OrdinalIgnoreCase)
     End Function
 
     Public Function GetAllCoreVersions() As List(Of String)
