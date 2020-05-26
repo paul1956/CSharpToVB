@@ -558,7 +558,7 @@ Partial Public Class Form1
                 .SelectedPath = My.Settings.DefaultProjectDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) & Path.DirectorySeparatorChar
                 .ShowNewFolderButton = False
                 If .ShowDialog(Me) <> DialogResult.OK Then
-                    Return
+                    Exit Sub
                 End If
                 SourceFolderName = .SelectedPath
                 Dim fullFolderPath As (SolutionRoot As String, ProjectRelativePath As String) = GetSavePath(Me, .SelectedPath, PromptIfDirExsits:=True)
@@ -750,7 +750,7 @@ Partial Public Class Form1
             .Title = $"Open Project/Solution"
             .ValidateNames = True
             If .ShowDialog <> DialogResult.OK Then
-                Return
+                Exit Sub
             End If
             ProcessProjectOrSolution(.FileName)
         End With
@@ -1363,7 +1363,9 @@ Partial Public Class Form1
 
     Private Sub ToolStripMenuItem_CheckedChanged(sender As Object, e As EventArgs)
         Dim MenuItem As ToolStripMenuItem = CType(sender, ToolStripMenuItem)
-        If Not MenuItem.Checked Then Return
+        If Not MenuItem.Checked Then
+            Exit Sub
+        End If
         For Each kvp As KeyValuePair(Of String, (Item As ToolStripMenuItem, Parent As ToolStripMenuItem)) In _frameworkVersionList
             If kvp.Key = MenuItem.Text Then
                 MenuItem.Enabled = False

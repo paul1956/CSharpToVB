@@ -76,7 +76,7 @@ End Function
                     Case CS.SyntaxKind.ClassDeclaration
                         Dim classOrInterface As CSS.TypeSyntax = _Type.BaseList?.Types.FirstOrDefault()?.Type
                         If classOrInterface Is Nothing Then
-                            Return
+                            Exit Sub
                         End If
                         Dim classOrInterfaceSymbol As ISymbol = ModelExtensions.GetSymbolInfo(_mSemanticModel, classOrInterface).Symbol
                         If classOrInterfaceSymbol?.IsInterfaceType() Then

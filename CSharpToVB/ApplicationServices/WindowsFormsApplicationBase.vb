@@ -260,17 +260,23 @@ Namespace Microsoft.VisualBasic.ApplicationServices
             'Application.ThreadException causes WinForms to snuff exceptions and we only want WinForms to do that if we are assured that the user wrote their own handler
             'to deal with the error instead
             AddHandler(value As UnhandledExceptionEventHandler)
-                If _unhandledExceptionHandlers Is Nothing Then _unhandledExceptionHandlers = New ArrayList
+                If _unhandledExceptionHandlers Is Nothing Then
+                    _unhandledExceptionHandlers = New ArrayList
+                End If
                 _unhandledExceptionHandlers.Add(value)
                 'Only add the listener once so we don't fire the UnHandledException event over and over for the same exception
-                If _unhandledExceptionHandlers.Count = 1 Then AddHandler Application.ThreadException, AddressOf OnUnhandledExceptionEventAdaptor
+                If _unhandledExceptionHandlers.Count = 1 Then
+                    AddHandler Application.ThreadException, AddressOf OnUnhandledExceptionEventAdaptor
+                End If
             End AddHandler
 
             RemoveHandler(value As UnhandledExceptionEventHandler)
                 If _unhandledExceptionHandlers IsNot Nothing AndAlso _unhandledExceptionHandlers.Count > 0 Then
                     _unhandledExceptionHandlers.Remove(value)
                     'Last one to leave, turn out the lights...
-                    If _unhandledExceptionHandlers.Count = 0 Then RemoveHandler Application.ThreadException, AddressOf OnUnhandledExceptionEventAdaptor
+                    If _unhandledExceptionHandlers.Count = 0 Then
+                        RemoveHandler Application.ThreadException, AddressOf OnUnhandledExceptionEventAdaptor
+                    End If
                 End If
             End RemoveHandler
 
@@ -278,7 +284,9 @@ Namespace Microsoft.VisualBasic.ApplicationServices
                 If _unhandledExceptionHandlers IsNot Nothing Then
                     _processingUnhandledExceptionEvent = True 'In the case that we throw from the unhandled exception handler, we don't want to run the unhandled exception handler again
                     For Each handler As UnhandledExceptionEventHandler In _unhandledExceptionHandlers
-                        If handler IsNot Nothing Then handler.Invoke(sender, e)
+                        If handler IsNot Nothing Then
+                            handler.Invoke(sender, e)
+                        End If
                     Next
                     _processingUnhandledExceptionEvent = False 'Now that we are out of the unhandled exception handler, treat exceptions normally again.
                 End If
@@ -525,7 +533,7 @@ Namespace Microsoft.VisualBasic.ApplicationServices
 
         Private Sub OnStartupNextInstanceMarshallingAdaptor(ByVal args As String())
             If MainForm Is Nothing Then
-                Return
+                Exit Sub
             End If
             Dim invoked As Boolean = False
             Try
@@ -655,11 +663,13 @@ Namespace Microsoft.VisualBasic.ApplicationServices
         Protected Overridable Sub OnRun()
             If MainForm Is Nothing Then
                 OnCreateMainForm() 'A designer overrides OnCreateMainForm() to set the main form we are supposed to use
-                If MainForm Is Nothing Then Throw New NoStartupFormException
+                If MainForm Is Nothing Then
+                    Throw New NoStartupFormException
+                End If
 
                 'When we have a splash screen that hasn't timed out before the main form is ready to paint, we want to
                 'block the main form from painting.  To do that I let the form get past the Load() event and hold it until
-                'the splash screen goes down.  Then I let the main form continue it's startup sequence.  The ordering of
+                'the splash screen goes down. Then I let the main form continue it's startup sequence.  The ordering of
                 'Form startup events for reference is: Ctor(), Load Event, Layout event, Shown event, Activated event, Paint event
                 AddHandler MainForm.Load, AddressOf MainFormLoadingDone
             End If
@@ -747,7 +757,9 @@ Namespace Microsoft.VisualBasic.ApplicationServices
             If _unhandledExceptionHandlers IsNot Nothing AndAlso _unhandledExceptionHandlers.Count > 0 Then 'Does the user have a handler for this event?
                 'We don't put a try/catch around the handler event so that exceptions in there will bubble out - else we will have a recursive exception handler
                 RaiseEvent UnhandledException(Me, e)
-                If e.ExitApplication = True Then Application.Exit()
+                If e.ExitApplication = True Then
+                    Application.Exit()
+                End If
                 Return True 'User handled the event
             End If
             Return False 'Nobody was listening to the UnhandledException event

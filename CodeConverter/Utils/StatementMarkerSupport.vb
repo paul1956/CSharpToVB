@@ -105,7 +105,7 @@ Public Module StatementMarker
     Friend Sub AddMarker(Node As CS.CSharpSyntaxNode, Statement As VisualBasic.VisualBasicSyntaxNode, StatementHandling As StatementHandlingOption, AllowDuplicates As Boolean)
         If s_statementDictionary.ContainsKey(Node) Then
             If Not AllowDuplicates Then
-                Return
+                Exit Sub
             End If
         Else
             ' Need to ignore duplicate declarations
@@ -116,7 +116,7 @@ Public Module StatementMarker
         Dim IdenticalTrivia As Boolean = False
         For Each t As (Index As Integer, Statement As VisualBasic.VisualBasicSyntaxNode, StatementHandlingOption As StatementHandlingOption) In s_statementSupportTupleList
             If t.Index = Index AndAlso TypeOf Statement IsNot EmptyStatementSyntax AndAlso CompareWithoutTrivia(Statement, t.Statement) AndAlso t.StatementHandlingOption = StatementHandling Then
-                Return
+                Exit Sub
             End If
             If t.Index = Index AndAlso TriviaIsIdentical(t.Statement.GetLeadingTrivia, Statement.GetLeadingTrivia.ToList) Then
                 IdenticalTrivia = True

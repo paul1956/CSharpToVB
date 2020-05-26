@@ -89,7 +89,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
 
             Private Sub CollectElseBlocks(node As CSS.IfStatementSyntax, elseIfBlocks As List(Of VBS.ElseIfBlockSyntax), ByRef elseBlock As VBS.ElseBlockSyntax, ByRef OpenBraceTrailingTrivia As List(Of SyntaxTrivia), ByRef CloseBraceLeadingTrivia As List(Of SyntaxTrivia))
                 If node.[Else] Is Nothing Then
-                    Return
+                    Exit Sub
                 End If
 
                 If TypeOf node.[Else].Statement Is CSS.IfStatementSyntax Then

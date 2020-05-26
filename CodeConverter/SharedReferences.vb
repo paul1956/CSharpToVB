@@ -17,12 +17,12 @@ Public Module SharedReferences
 
     Private Sub AddReferences(L As List(Of String), FileNameWithPath As String)
         If L.Contains(FileNameWithPath) Then
-            Return
+            Exit Sub
         End If
         Dim hasMetadataOrIsAssembly As (HasMetadata As Boolean, IsAssembly As Boolean) = HasMetadataIsAssembly(FileNameWithPath)
 
         If Not hasMetadataOrIsAssembly.HasMetadata Then
-            Return
+            Exit Sub
         End If
         L.Add(FileNameWithPath)
         If hasMetadataOrIsAssembly.IsAssembly Then
@@ -33,7 +33,7 @@ Public Module SharedReferences
 
     Private Sub BuildReferenceList(WindowsFormsLocation As String)
         If s_referencePath.Any Then
-            Return
+            Exit Sub
         End If
         ' CodeAnalysisReference
         Dim Location As String = GetType(Compilation).Assembly.Location

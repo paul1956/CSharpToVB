@@ -131,7 +131,7 @@ Public Module ConvertProjectFileUtilities
         If String.IsNullOrWhiteSpace(ProjectSavePath) OrElse
                 String.IsNullOrWhiteSpace(currentProject) OrElse
                 String.IsNullOrWhiteSpace(PartialPathWithFileName) Then
-            Return
+            Exit Sub
         End If
         Try
             Dim destFileNameWithPath As String = Path.Combine(ProjectSavePath, PartialPathWithFileName)

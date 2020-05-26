@@ -204,7 +204,9 @@ Public Class LineNumbersForRichTextBox : Inherits Control
             Return _zBorderLines_Style
         End Get
         Set(value As Drawing2D.DashStyle)
-            If value = Drawing2D.DashStyle.Custom Then value = Drawing2D.DashStyle.Solid
+            If value = Drawing2D.DashStyle.Custom Then
+                value = Drawing2D.DashStyle.Solid
+            End If
             _zBorderLines_Style = value
             Invalidate()
         End Set
@@ -267,7 +269,9 @@ Public Class LineNumbersForRichTextBox : Inherits Control
             Return _zGridLines_Style
         End Get
         Set(value As Drawing2D.DashStyle)
-            If value = Drawing2D.DashStyle.Custom Then value = Drawing2D.DashStyle.Solid
+            If value = Drawing2D.DashStyle.Custom Then
+                value = Drawing2D.DashStyle.Solid
+            End If
             _zGridLines_Style = value
             Invalidate()
         End Set
@@ -396,7 +400,9 @@ Public Class LineNumbersForRichTextBox : Inherits Control
             Return _zMarginLines_Style
         End Get
         Set(value As Drawing2D.DashStyle)
-            If value = Drawing2D.DashStyle.Custom Then value = Drawing2D.DashStyle.Solid
+            If value = Drawing2D.DashStyle.Custom Then
+                value = Drawing2D.DashStyle.Solid
+            End If
             _zMarginLines_Style = value
             Invalidate()
         End Set
@@ -518,7 +524,9 @@ Public Class LineNumbersForRichTextBox : Inherits Control
     ''' <remarks></remarks>
     Private Sub FindStartIndex(ByRef zMin As Integer, ByRef zMax As Integer, ByRef zTarget As Integer)
         '   Recursive Sub to compute best starting index - only run when zParent is known to exist
-        If zMax = zMin + 1 Or zMin = (zMax + zMin) \ 2 Then Exit Sub
+        If zMax = zMin + 1 Or zMin = (zMax + zMin) \ 2 Then
+            Exit Sub
+        End If
         Select Case ZParent.GetPositionFromCharIndex((zMax + zMin) \ 2).Y
             Case Is = zTarget
                 '   BestStartIndex found
@@ -539,36 +547,55 @@ Public Class LineNumbersForRichTextBox : Inherits Control
     ''' </summary>
     ''' <remarks></remarks>
     Private Sub Update_SizeAndPosition()
-        If AutoSize = True Then Exit Sub
-        If Me.Dock = DockStyle.Bottom Or Me.Dock = DockStyle.Fill Or Me.Dock = DockStyle.Top Then Exit Sub
-        Dim zNewLocation As Point = Location, zNewSize As Size = Size
+        If AutoSize = True Then
+            Exit Sub
+        End If
+        If Me.Dock = DockStyle.Bottom Or Me.Dock = DockStyle.Fill Or Me.Dock = DockStyle.Top Then
+            Exit Sub
+        End If
+        Dim zNewLocation As Point = Location
+        Dim zNewSize As Size = Size
 
         If _zAutoSizing = True Then
             Select Case True
                 Case ZParent Is Nothing
                     ' --- ReminderMessage sizing
-                    If _zAutoSizing_Size.Width > 0 Then zNewSize.Width = _zAutoSizing_Size.Width
-                    If _zAutoSizing_Size.Height > 0 Then zNewSize.Height = _zAutoSizing_Size.Height
+                    If _zAutoSizing_Size.Width > 0 Then
+                        zNewSize.Width = _zAutoSizing_Size.Width
+                    End If
+                    If _zAutoSizing_Size.Height > 0 Then
+                        zNewSize.Height = _zAutoSizing_Size.Height
+                    End If
                     Size = zNewSize
 
                     '--- zParent isNot Nothing for the following cases
                 Case Me.Dock = DockStyle.Left Or Me.Dock = DockStyle.Right
-                    If _zAutoSizing_Size.Width > 0 Then zNewSize.Width = _zAutoSizing_Size.Width
+                    If _zAutoSizing_Size.Width > 0 Then
+                        zNewSize.Width = _zAutoSizing_Size.Width
+                    End If
                     Width = zNewSize.Width
 
                     ' --- DockSide is active L/R/H
                 Case _zDockSide <> LineNumberDockSides.None
-                    If _zAutoSizing_Size.Width > 0 Then zNewSize.Width = _zAutoSizing_Size.Width
+                    If _zAutoSizing_Size.Width > 0 Then
+                        zNewSize.Width = _zAutoSizing_Size.Width
+                    End If
                     zNewSize.Height = ZParent.Height
-                    If Me._zDockSide = LineNumberDockSides.Left Then zNewLocation.X = ZParent.Left - zNewSize.Width - 1
-                    If Me._zDockSide = LineNumberDockSides.Right Then zNewLocation.X = ZParent.Right + 1
+                    If Me._zDockSide = LineNumberDockSides.Left Then
+                        zNewLocation.X = ZParent.Left - zNewSize.Width - 1
+                    End If
+                    If Me._zDockSide = LineNumberDockSides.Right Then
+                        zNewLocation.X = ZParent.Right + 1
+                    End If
                     zNewLocation.Y = ZParent.Top
                     Location = zNewLocation
                     Size = zNewSize
 
                     ' --- DockSide = None, but AutoSizing is still setting the Width
                 Case Me._zDockSide = LineNumberDockSides.None
-                    If _zAutoSizing_Size.Width > 0 Then zNewSize.Width = _zAutoSizing_Size.Width
+                    If _zAutoSizing_Size.Width > 0 Then
+                        zNewSize.Width = _zAutoSizing_Size.Width
+                    End If
                     Size = zNewSize
 
             End Select
@@ -577,15 +604,23 @@ Public Class LineNumbersForRichTextBox : Inherits Control
             Select Case True
                 Case ZParent Is Nothing
                     ' --- ReminderMessage sizing
-                    If _zAutoSizing_Size.Width > 0 Then zNewSize.Width = _zAutoSizing_Size.Width
-                    If _zAutoSizing_Size.Height > 0 Then zNewSize.Height = _zAutoSizing_Size.Height
+                    If _zAutoSizing_Size.Width > 0 Then
+                        zNewSize.Width = _zAutoSizing_Size.Width
+                    End If
+                    If _zAutoSizing_Size.Height > 0 Then
+                        zNewSize.Height = _zAutoSizing_Size.Height
+                    End If
                     Size = zNewSize
 
                     ' --- No AutoSizing, but DockSide L/R/H is active so height and position need updates.
                 Case _zDockSide <> LineNumberDockSides.None
                     zNewSize.Height = ZParent.Height
-                    If Me._zDockSide = LineNumberDockSides.Left Then zNewLocation.X = ZParent.Left - zNewSize.Width - 1
-                    If Me._zDockSide = LineNumberDockSides.Right Then zNewLocation.X = ZParent.Right + 1
+                    If Me._zDockSide = LineNumberDockSides.Left Then
+                        zNewLocation.X = ZParent.Left - zNewSize.Width - 1
+                    End If
+                    If Me._zDockSide = LineNumberDockSides.Right Then
+                        zNewLocation.X = ZParent.Right + 1
+                    End If
                     zNewLocation.Y = ZParent.Top
                     Location = zNewLocation
                     Size = zNewSize
@@ -605,7 +640,9 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         _zAutoSizing_Size = New Size(0, 0)
         _zLineNumbersFormat = "0"  'initial setting
         '   To measure the LineNumber's width, its Format 0 is replaced by w as that is likely to be one of the widest characters in non-mono-space fonts.
-        If _zAutoSizing = True Then _zAutoSizing_Size = New Size(TextRenderer.MeasureText(_zLineNumbersFormat.Replace("0".ToCharArray, "W".ToCharArray, StringComparison.Ordinal), Font).Width, 0)
+        If _zAutoSizing = True Then
+            _zAutoSizing_Size = New Size(TextRenderer.MeasureText(_zLineNumbersFormat.Replace("0".ToCharArray, "W".ToCharArray, StringComparison.Ordinal), Font).Width, 0)
+        End If
 
         If String.IsNullOrWhiteSpace(ZParent.Text) Then
             Exit Sub
@@ -653,7 +690,9 @@ Public Class LineNumbersForRichTextBox : Inherits Control
             For zA = zSplitStartLine To zSplit.Length - 1
                 zPoint = ZParent.GetPositionFromCharIndex(zStartIndex)
                 zStartIndex += Math.Max(1, zSplit(zA).Length + 1)
-                If zPoint.Y + _zParentInMe > Height Then Exit For
+                If zPoint.Y + _zParentInMe > Height Then
+                    Exit For
+                End If
                 '   For performance reasons, the list of LineNumberItems (zLNIs) is first built with only the location of its
                 '   itemrectangle being used. The height of those rectangles will be computed afterwards by comparing the items' Y coordinates.
                 _zLNIs.Add(New LineNumberItem(zA + 1, New Rectangle(0, zPoint.Y - 1 + _zParentInMe, Width, 1)))
@@ -661,14 +700,18 @@ Public Class LineNumbersForRichTextBox : Inherits Control
                     '   The more lines there are in the RTB, the slower the RTB's .GetPositionFromCharIndex() method becomes
                     '   To avoid those delays from interfering with the scrollingspeed, this speedbased exit for is applied (0.05 sec)
                     '   zLNIs will have at least 1 item, and if that's the only one, then change its location to 0,0 to make it readable
-                    If _zLNIs.Count = 1 Then _zLNIs(0)._rectangle.Y = 0
+                    If _zLNIs.Count = 1 Then
+                        _zLNIs(0)._rectangle.Y = 0
+                    End If
                     _zParentIsScrolling = False
                     ZTimer.Start()
                     Exit For
                 End If
             Next
 
-            If _zLNIs.Count = 0 Then Exit Sub
+            If _zLNIs.Count = 0 Then
+                Exit Sub
+            End If
 
             '   Add an extra placeholder item to the end, to make the heightcomputation easier
             If zA < zSplit.Length Then
@@ -694,7 +737,9 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End If
 
         '   To measure the LineNumber's width, its Format 0 is replaced by w as that is likely to be one of the widest characters in non-mono-space fonts.
-        If _zAutoSizing = True Then _zAutoSizing_Size = New Size(TextRenderer.MeasureText(_zLineNumbersFormat.Replace("0".ToCharArray, "W".ToCharArray, StringComparison.Ordinal), Font).Width, 0)
+        If _zAutoSizing = True Then
+            _zAutoSizing_Size = New Size(TextRenderer.MeasureText(_zLineNumbersFormat.Replace("0".ToCharArray, "W".ToCharArray, StringComparison.Ordinal), Font).Width, 0)
+        End If
     End Sub
 
     Private Sub ZParent_Changed(sender As Object, e As EventArgs) Handles ZParent.LocationChanged, ZParent.Move, ZParent.Resize, ZParent.DockChanged, ZParent.TextChanged, ZParent.MultilineChanged
@@ -731,7 +776,9 @@ Public Class LineNumbersForRichTextBox : Inherits Control
     End Sub
 
     Protected Overrides Sub OnLocationChanged(e As EventArgs)
-        If DesignMode = True Then Refresh()
+        If DesignMode = True Then
+            Refresh()
+        End If
         MyBase.OnLocationChanged(e)
         Invalidate()
     End Sub
@@ -765,7 +812,9 @@ Public Class LineNumbersForRichTextBox : Inherits Control
                 If ZParent Is Nothing Then
                     zReminderToShow = "-!- Set ParentRichTextBox -!-"
                 Else
-                    If _zLNIs.Count = 0 Then zReminderToShow = "LineNrs (  " & ZParent.Name & "  )"
+                    If _zLNIs.Count = 0 Then
+                        zReminderToShow = "LineNrs (  " & ZParent.Name & "  )"
+                    End If
                 End If
                 If zReminderToShow.Length > 0 Then
                     ' --- Centering and Rotation for the reminder message
@@ -885,7 +934,9 @@ Public Class LineNumbersForRichTextBox : Inherits Control
                 End If
 
                 ' --- Memory CleanUp
-                If zLGB IsNot Nothing Then zLGB.Dispose()
+                If zLGB IsNot Nothing Then
+                    zLGB.Dispose()
+                End If
             End If
 
             ' ----------------------------------------------
@@ -961,18 +1012,34 @@ Public Class LineNumbersForRichTextBox : Inherits Control
             Region = zRegion
             ' ----------------------------------------------
             ' --- Memory CleanUp
-            If zBrush IsNot Nothing Then zBrush.Dispose()
-            If zPen IsNot Nothing Then zPen.Dispose()
-            If zRegion IsNot Nothing Then zRegion.Dispose()
-            If zGP_GridLines IsNot Nothing Then zGP_GridLines.Dispose()
-            If zGP_BorderLines IsNot Nothing Then zGP_BorderLines.Dispose()
-            If zGP_MarginLines IsNot Nothing Then zGP_MarginLines.Dispose()
+            If zBrush IsNot Nothing Then
+                zBrush.Dispose()
+            End If
+            If zPen IsNot Nothing Then
+                zPen.Dispose()
+            End If
+            If zRegion IsNot Nothing Then
+                zRegion.Dispose()
+            End If
+            If zGP_GridLines IsNot Nothing Then
+                zGP_GridLines.Dispose()
+            End If
+            If zGP_BorderLines IsNot Nothing Then
+                zGP_BorderLines.Dispose()
+            End If
+            If zGP_MarginLines IsNot Nothing Then
+                zGP_MarginLines.Dispose()
+            End If
         End Using
-        If zGP_LineNumbers IsNot Nothing Then zGP_LineNumbers.Dispose()
+        If zGP_LineNumbers IsNot Nothing Then
+            zGP_LineNumbers.Dispose()
+        End If
     End Sub
 
     Protected Overrides Sub OnSizeChanged(e As EventArgs)
-        If DesignMode = True Then Refresh()
+        If DesignMode = True Then
+            Refresh()
+        End If
         MyBase.OnSizeChanged(e)
         Invalidate()
     End Sub

@@ -23,7 +23,9 @@ Public Class IgnoreFilesWithErrorsList
 
     Private Sub dgvIgnoredFilesList_CellClick(sender As Object, e As DataGridViewCellEventArgs) Handles dgvIgnoredFilesList.CellClick
         ' Ignore clicks that are not on button cells.
-        If e.RowIndex < 0 Then Return
+        If e.RowIndex < 0 Then
+            Exit Sub
+        End If
         Select Case e.ColumnIndex
             Case dgvIgnoredFilesList.Columns("Delete").Index
                 My.Settings.IgnoreFileList.RemoveAt(e.RowIndex)
@@ -31,7 +33,7 @@ Public Class IgnoreFilesWithErrorsList
             Case dgvIgnoredFilesList.Columns("Load").Index
                 _fileToLoad = My.Settings.IgnoreFileList(e.RowIndex)
             Case Else
-                Return
+                Exit Sub
         End Select
     End Sub
 

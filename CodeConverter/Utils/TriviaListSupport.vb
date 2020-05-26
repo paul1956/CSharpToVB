@@ -16,7 +16,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
 
         Friend Sub RelocateAttributeDirectiveDisabledTrivia(TriviaList As SyntaxTriviaList, FoundDirective As Boolean, IsTheory As Boolean, ByRef StatementLeadingTrivia As List(Of SyntaxTrivia), ByRef StatementTrailingTrivia As List(Of SyntaxTrivia))
             If IsTheory Then
-                Return
+                Exit Sub
             End If
             For Each t As SyntaxTrivia In TriviaList
                 If Not (t.IsDirective OrElse t.MatchesKind(VB.SyntaxKind.DisabledTextTrivia,

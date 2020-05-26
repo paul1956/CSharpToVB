@@ -75,7 +75,9 @@ Module TargetFrameworkUtilities
             Using ndpKey As RegistryKey = baseKey.OpenSubKey("SOFTWARE\Microsoft\NET Framework Setup\NDP\")
                 For Each versionKeyName As String In ndpKey.GetSubKeyNames()
                     ' Skip .NET Framework 4.5 and later.
-                    If versionKeyName = "v4" Then Continue For
+                    If versionKeyName = "v4" Then
+                        Continue For
+                    End If
 
                     If versionKeyName.StartsWith("v", StringComparison.OrdinalIgnoreCase) Then
                         Dim versionKey As RegistryKey = ndpKey.OpenSubKey(versionKeyName)
