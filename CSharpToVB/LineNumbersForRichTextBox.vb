@@ -11,9 +11,6 @@ Public Class LineNumbersForRichTextBox : Inherits Control
     Private WithEvents ZTimer As New Timer
     Private ReadOnly _zLNIs As New List(Of LineNumberItem)
 
-    'Required by the Control Designer
-    Private _components As IContainer
-
     Private _zAutoSizing As Boolean = True
     Private _zAutoSizing_Size As New Size(0, 0)
     Private _zBorderLines_Color As Color = Color.SlateGray
@@ -50,7 +47,6 @@ Public Class LineNumbersForRichTextBox : Inherits Control
     Private _zSeeThroughMode As Boolean = False
 
     Public Sub New()
-        InitializeComponent()
         With Me
             .SetStyle(ControlStyles.OptimizedDoubleBuffer, True)
             .SetStyle(ControlStyles.ResizeRedraw, True)

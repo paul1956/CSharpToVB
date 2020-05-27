@@ -22,7 +22,7 @@ Partial Class LineNumbersForRichTextBox
     ' using the code editor.
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
-        Me.components = New System.ComponentModel.Container()
+        components = New System.ComponentModel.Container()
     End Sub
 
 End Class
