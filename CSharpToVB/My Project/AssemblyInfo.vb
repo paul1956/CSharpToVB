@@ -1,4 +1,5 @@
 ﻿Imports System.Reflection
+Imports System.Resources
 Imports System.Runtime.InteropServices
 
 ' General Information about an assembly is controlled through the following
@@ -32,3 +33,4 @@ Imports System.Runtime.InteropServices
 
 <Assembly: AssemblyVersion("4.5.0.5")>
 <Assembly: AssemblyFileVersion("4.5.0.5")>
+<Assembly: NeutralResourcesLanguage("en-US")>
