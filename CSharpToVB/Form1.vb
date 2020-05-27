@@ -124,7 +124,7 @@ Partial Public Class Form1
                 End If
             End With
             If failures?.Count > 0 Then
-                LineNumbersForConverstioInput.Visible = True
+                LineNumbersForConversionInput.Visible = True
                 LineNumbersForConversionOutput.Visible = True
             End If
             Progress.Clear()
@@ -309,7 +309,7 @@ Partial Public Class Form1
         mnuViewShowDestinationLineNumbers.Checked = My.Settings.ShowDestinationLineNumbers
         LineNumbersForConversionOutput.Visible = My.Settings.ShowDestinationLineNumbers
         mnuViewShowSourceLineNumbers.Checked = My.Settings.ShowSourceLineNumbers
-        LineNumbersForConverstioInput.Visible = My.Settings.ShowSourceLineNumbers
+        LineNumbersForConversionInput.Visible = My.Settings.ShowSourceLineNumbers
 
         If String.IsNullOrWhiteSpace(My.Settings.DefaultProjectDirectory) Then
             My.Settings.DefaultProjectDirectory = GetLatestVisualStudioProjectPath()
@@ -372,13 +372,12 @@ Partial Public Class Form1
         ResizeRichTextBuffers()
     End Sub
 
-    Private Sub LineNumbers_For_RichTextBoxInput_Resize(sender As Object, e As EventArgs) Handles LineNumbersForConverstioInput.Resize
+    Private Sub LineNumbers_For_RichTextBoxInput_Resize(sender As Object, e As EventArgs) Handles LineNumbersForConversionInput.Resize
         ResizeRichTextBuffers()
     End Sub
 
     ' Don't save state here only if user changes
-    Private Sub LineNumbers_For_RichTextBoxInput_VisibleChanged(sender As Object, e As EventArgs) Handles LineNumbersForConverstioInput.VisibleChanged
-        mnuViewShowSourceLineNumbers.Checked = LineNumbersForConverstioInput.Visible
+    Private Sub LineNumbers_For_RichTextBoxInput_VisibleChanged(sender As Object, e As EventArgs) Handles LineNumbersForConversionInput.VisibleChanged
         ResizeRichTextBuffers()
     End Sub
 
@@ -388,7 +387,6 @@ Partial Public Class Form1
 
     ' Don't save state here only if user changes
     Private Sub LineNumbers_For_RichTextBoxOutput_VisibleChanged(sender As Object, e As EventArgs) Handles LineNumbersForConversionOutput.VisibleChanged
-        mnuViewShowDestinationLineNumbers.Checked = LineNumbersForConversionOutput.Visible
         ResizeRichTextBuffers()
     End Sub
 
@@ -495,7 +493,7 @@ Partial Public Class Form1
     End Sub
 
     Private Sub mnuCompile_Click(sender As Object, e As EventArgs) Handles mnuCompile.Click
-        LineNumbersForConverstioInput.Visible = False
+        LineNumbersForConversionInput.Visible = False
         LineNumbersForConversionOutput.Visible = False
         ListBoxErrorList.Items.Clear()
 
@@ -547,7 +545,7 @@ Partial Public Class Form1
     End Sub
 
     Private Async Sub mnuConvertFolder_Click(sender As Object, e As EventArgs) Handles mnuConvertConvertFolder.Click
-        LineNumbersForConverstioInput.Visible = False
+        LineNumbersForConversionInput.Visible = False
         LineNumbersForConversionOutput.Visible = False
         StatusStripCurrentFileName.Text = ""
         Dim SourceFolderName As String
@@ -903,15 +901,32 @@ Partial Public Class Form1
         Application.DoEvents()
     End Sub
 
+    Private Sub mnuView_DropDownOpening(sender As Object, e As EventArgs) Handles mnuView.DropDownOpening
+        mnuViewShowDestinationLineNumbers.Enabled = ConversionOutput.TextLength > 0
+        mnuViewShowSourceLineNumbers.Enabled = ConversionInput.TextLength > 0
+    End Sub
+
     Private Sub mnuViewShowDestinationLineNumbers_Click(sender As Object, e As EventArgs) Handles mnuViewShowDestinationLineNumbers.Click
-        LineNumbersForConversionOutput.Visible = CType(sender, ToolStripMenuItem).Checked
-        My.Settings.ShowDestinationLineNumbers = mnuViewShowDestinationLineNumbers.Checked
+        Dim checked As Boolean = CType(sender, ToolStripMenuItem).Checked
+        If checked Then
+            LineNumbersForConversionOutput.Visible = False
+            Application.DoEvents()
+        End If
+        LineNumbersForConversionOutput.Visible = checked
+        Application.DoEvents()
+        My.Settings.ShowDestinationLineNumbers = checked
         My.Settings.Save()
     End Sub
 
     Private Sub mnuViewShowSourceLineNumbers_Click(sender As Object, e As EventArgs) Handles mnuViewShowSourceLineNumbers.Click
-        LineNumbersForConverstioInput.Visible = mnuViewShowSourceLineNumbers.Checked
-        My.Settings.ShowSourceLineNumbers = mnuViewShowSourceLineNumbers.Checked
+        Dim checked As Boolean = CType(sender, ToolStripMenuItem).Checked
+        If checked Then
+            LineNumbersForConversionInput.Visible = False
+            Application.DoEvents()
+        End If
+        LineNumbersForConversionInput.Visible = checked
+        Application.DoEvents()
+        My.Settings.ShowSourceLineNumbers = checked
         My.Settings.Save()
         ResizeRichTextBuffers()
     End Sub
@@ -1037,7 +1052,7 @@ Partial Public Class Form1
                             My.Settings.IgnoreFileList.Add(SourceFileNameWithPath)
                             My.Settings.Save()
                             ListBoxErrorList.Text = ""
-                            LineNumbersForConverstioInput.Visible = My.Settings.ShowSourceLineNumbers
+                            LineNumbersForConversionInput.Visible = My.Settings.ShowSourceLineNumbers
                             LineNumbersForConversionOutput.Visible = My.Settings.ShowDestinationLineNumbers
                         End If
                         Return True
@@ -1306,10 +1321,16 @@ Partial Public Class Form1
         End Try
     End Sub
 
-    Private Sub ResizeRichTextBuffers()
-        Dim LineNumberInputWidth As Integer = If(LineNumbersForConverstioInput.Visible, LineNumbersForConverstioInput.Width, 0)
-        Dim LineNumberOutputWidth As Integer = If(LineNumbersForConversionOutput.Visible, LineNumbersForConversionOutput.Width, 0)
 
+    Private Sub ResizeRichTextBuffers()
+        If ConversionInput.TextLength = 0 AndAlso LineNumbersForConversionInput.Visible = True Then
+            LineNumbersForConversionInput.Visible = False
+        End If
+        If ConversionOutput.TextLength = 0 AndAlso LineNumbersForConversionOutput.Visible = True Then
+            LineNumbersForConversionOutput.Visible = False
+        End If
+        Dim LineNumberInputWidth As Integer = If(LineNumbersForConversionInput.Visible AndAlso ConversionInput.TextLength > 0, LineNumbersForConversionInput.Width, 0)
+        Dim LineNumberOutputWidth As Integer = If(LineNumbersForConversionOutput.Visible AndAlso ConversionOutput.TextLength > 0, LineNumbersForConversionOutput.Width, 0)
         Dim HalfClientWidth As Integer = ClientSize.Width \ 2
         ConversionInput.Width = HalfClientWidth - LineNumberInputWidth
         ListBoxFileList.Width = HalfClientWidth
@@ -1320,7 +1341,6 @@ Partial Public Class Form1
         ListBoxErrorList.Left = HalfClientWidth
         ListBoxErrorList.Width = HalfClientWidth
         StatusStripCurrentFileName.Width = HalfClientWidth
-
     End Sub
 
     Private Sub RichTextBoxConversionInput_Enter(sender As Object, e As EventArgs) Handles ConversionInput.Enter

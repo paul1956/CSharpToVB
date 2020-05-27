@@ -102,7 +102,7 @@ Partial Class Form1
         Me.LabelErrorCount = New System.Windows.Forms.Label()
         Me.SplitContainer1 = New System.Windows.Forms.SplitContainer()
         Me.ConversionInput = New System.Windows.Forms.RichTextBox()
-        Me.LineNumbersForConverstioInput = New LineNumbersForRichTextBox()
+        Me.LineNumbersForConversionInput = New LineNumbersForRichTextBox()
         Me.ConversionOutput = New AdvancedRTB()
         Me.LineNumbersForConversionOutput = New LineNumbersForRichTextBox()
         Me.ListBoxFileList = New System.Windows.Forms.ListBox()
@@ -664,7 +664,7 @@ Partial Class Form1
         'SplitContainer1.Panel1
         '
         Me.SplitContainer1.Panel1.Controls.Add(Me.ConversionInput)
-        Me.SplitContainer1.Panel1.Controls.Add(Me.LineNumbersForConverstioInput)
+        Me.SplitContainer1.Panel1.Controls.Add(Me.LineNumbersForConversionInput)
         Me.SplitContainer1.Panel1.Controls.Add(Me.ConversionOutput)
         Me.SplitContainer1.Panel1.Controls.Add(Me.LineNumbersForConversionOutput)
         '
@@ -690,44 +690,44 @@ Partial Class Form1
         Me.ConversionInput.Text = ""
         Me.ConversionInput.WordWrap = False
         '
-        'LineNumbersForConverstioInput
+        'LineNumbersForConversionInput
         '
-        Me.LineNumbersForConverstioInput.AutoSizing = True
-        Me.LineNumbersForConverstioInput.BackgroundGradientAlphaColor = System.Drawing.Color.FromArgb(CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer))
-        Me.LineNumbersForConverstioInput.BackgroundGradientBetaColor = System.Drawing.Color.LightSteelBlue
-        Me.LineNumbersForConverstioInput.BackgroundGradientDirection = System.Drawing.Drawing2D.LinearGradientMode.Horizontal
-        Me.LineNumbersForConverstioInput.BorderLinesColor = System.Drawing.Color.SlateGray
-        Me.LineNumbersForConverstioInput.BorderLinesStyle = System.Drawing.Drawing2D.DashStyle.Dot
-        Me.LineNumbersForConverstioInput.BorderLinesThickness = 1.0!
-        Me.LineNumbersForConverstioInput.Dock = System.Windows.Forms.DockStyle.Left
-        Me.LineNumbersForConverstioInput.DockSide = LineNumbersForRichTextBox.LineNumberDockSides.Left
-        Me.LineNumbersForConverstioInput.GridLinesColor = System.Drawing.Color.SlateGray
-        Me.LineNumbersForConverstioInput.GridLinesStyle = System.Drawing.Drawing2D.DashStyle.Dot
-        Me.LineNumbersForConverstioInput.GridLinesThickness = 1.0!
-        Me.LineNumbersForConverstioInput.LineNrsAlignment = System.Drawing.ContentAlignment.TopRight
-        Me.LineNumbersForConverstioInput.LineNrsAntiAlias = True
-        Me.LineNumbersForConverstioInput.LineNrsAsHexadecimal = False
-        Me.LineNumbersForConverstioInput.LineNrsClippedByItemRectangle = True
-        Me.LineNumbersForConverstioInput.LineNrsLeadingZeroes = True
-        Me.LineNumbersForConverstioInput.LineNrsOffset = New System.Drawing.Size(0, 0)
-        Me.LineNumbersForConverstioInput.Location = New System.Drawing.Point(0, 0)
-        Me.LineNumbersForConverstioInput.Margin = New System.Windows.Forms.Padding(0)
-        Me.LineNumbersForConverstioInput.MarginLinesColor = System.Drawing.Color.SlateGray
-        Me.LineNumbersForConverstioInput.MarginLinesSide = LineNumbersForRichTextBox.LineNumberDockSides.Right
-        Me.LineNumbersForConverstioInput.MarginLinesStyle = System.Drawing.Drawing2D.DashStyle.Solid
-        Me.LineNumbersForConverstioInput.MarginLinesThickness = 1.0!
-        Me.LineNumbersForConverstioInput.Name = "LineNumbersForConverstioInput"
-        Me.LineNumbersForConverstioInput.Padding = New System.Windows.Forms.Padding(0, 0, 2, 0)
-        Me.LineNumbersForConverstioInput.ParentRichTextBox = Me.ConversionInput
-        Me.LineNumbersForConverstioInput.SeeThroughMode = False
-        Me.LineNumbersForConverstioInput.ShowBackgroundGradient = True
-        Me.LineNumbersForConverstioInput.ShowBorderLines = True
-        Me.LineNumbersForConverstioInput.ShowGridLines = True
-        Me.LineNumbersForConverstioInput.ShowLineNrs = True
-        Me.LineNumbersForConverstioInput.ShowMarginLines = True
-        Me.LineNumbersForConverstioInput.Size = New System.Drawing.Size(23, 510)
-        Me.LineNumbersForConverstioInput.TabIndex = 23
-        Me.LineNumbersForConverstioInput.Visible = False
+        Me.LineNumbersForConversionInput.AutoSizing = True
+        Me.LineNumbersForConversionInput.BackgroundGradientAlphaColor = System.Drawing.Color.FromArgb(CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer))
+        Me.LineNumbersForConversionInput.BackgroundGradientBetaColor = System.Drawing.Color.LightSteelBlue
+        Me.LineNumbersForConversionInput.BackgroundGradientDirection = System.Drawing.Drawing2D.LinearGradientMode.Horizontal
+        Me.LineNumbersForConversionInput.BorderLinesColor = System.Drawing.Color.SlateGray
+        Me.LineNumbersForConversionInput.BorderLinesStyle = System.Drawing.Drawing2D.DashStyle.Dot
+        Me.LineNumbersForConversionInput.BorderLinesThickness = 1.0!
+        Me.LineNumbersForConversionInput.Dock = System.Windows.Forms.DockStyle.Left
+        Me.LineNumbersForConversionInput.DockSide = LineNumbersForRichTextBox.LineNumberDockSides.Left
+        Me.LineNumbersForConversionInput.GridLinesColor = System.Drawing.Color.SlateGray
+        Me.LineNumbersForConversionInput.GridLinesStyle = System.Drawing.Drawing2D.DashStyle.Dot
+        Me.LineNumbersForConversionInput.GridLinesThickness = 1.0!
+        Me.LineNumbersForConversionInput.LineNrsAlignment = System.Drawing.ContentAlignment.TopRight
+        Me.LineNumbersForConversionInput.LineNrsAntiAlias = True
+        Me.LineNumbersForConversionInput.LineNrsAsHexadecimal = False
+        Me.LineNumbersForConversionInput.LineNrsClippedByItemRectangle = True
+        Me.LineNumbersForConversionInput.LineNrsLeadingZeroes = True
+        Me.LineNumbersForConversionInput.LineNrsOffset = New System.Drawing.Size(0, 0)
+        Me.LineNumbersForConversionInput.Location = New System.Drawing.Point(0, 0)
+        Me.LineNumbersForConversionInput.Margin = New System.Windows.Forms.Padding(0)
+        Me.LineNumbersForConversionInput.MarginLinesColor = System.Drawing.Color.SlateGray
+        Me.LineNumbersForConversionInput.MarginLinesSide = LineNumbersForRichTextBox.LineNumberDockSides.Right
+        Me.LineNumbersForConversionInput.MarginLinesStyle = System.Drawing.Drawing2D.DashStyle.Solid
+        Me.LineNumbersForConversionInput.MarginLinesThickness = 1.0!
+        Me.LineNumbersForConversionInput.Name = "LineNumbersForConversionInput"
+        Me.LineNumbersForConversionInput.Padding = New System.Windows.Forms.Padding(0, 0, 2, 0)
+        Me.LineNumbersForConversionInput.ParentRichTextBox = Me.ConversionInput
+        Me.LineNumbersForConversionInput.SeeThroughMode = False
+        Me.LineNumbersForConversionInput.ShowBackgroundGradient = True
+        Me.LineNumbersForConversionInput.ShowBorderLines = True
+        Me.LineNumbersForConversionInput.ShowGridLines = True
+        Me.LineNumbersForConversionInput.ShowLineNrs = True
+        Me.LineNumbersForConversionInput.ShowMarginLines = True
+        Me.LineNumbersForConversionInput.Size = New System.Drawing.Size(23, 510)
+        Me.LineNumbersForConversionInput.TabIndex = 23
+        Me.LineNumbersForConversionInput.Visible = False
         '
         'ConversionOutput
         '
@@ -950,7 +950,7 @@ Partial Class Form1
     Friend WithEvents ConversionOutput As AdvancedRTB
     Friend WithEvents ConversionInput As RichTextBox
     Friend WithEvents ListBoxErrorList As ListBox
-    Friend WithEvents LineNumbersForConverstioInput As LineNumbersForRichTextBox
+    Friend WithEvents LineNumbersForConversionInput As LineNumbersForRichTextBox
     Friend WithEvents LineNumbersForConversionOutput As LineNumbersForRichTextBox
     Friend WithEvents ListBoxFileList As ListBox
     Friend WithEvents mnuOptionsStartFolderConvertFromLastFile As ToolStripMenuItem
