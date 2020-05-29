@@ -12,7 +12,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
     Private ReadOnly _zLNIs As New List(Of LineNumberItem)
 
     Private _zAutoSizing As Boolean = True
-    Private _zAutoSizing_Size As New Size(0, 0)
+    Private _zAutoSizing_Size As New Size(40, 0)
     Private _zBorderLines_Color As Color = Color.SlateGray
     Private _zBorderLines_Show As Boolean = True
     Private _zBorderLines_Style As Drawing2D.DashStyle = Drawing2D.DashStyle.Dot
@@ -888,7 +888,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
                     End If
                 Next
 
-                ' --- GridLinesThickness and Linestyle in SeeThroughMode. All GraphicsPath lines are drawn as solid to keep the paintingspeed high.
+                ' --- GridLinesThickness and LineStyle in SeeThroughMode. All GraphicsPath lines are drawn as solid to keep the paintingspeed high.
                 If _zGridLines_Show = True Then
                     zPen.DashStyle = Drawing2D.DashStyle.Solid
                     zGP_GridLines.Widen(zPen)

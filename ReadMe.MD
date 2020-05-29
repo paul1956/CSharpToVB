@@ -62,6 +62,11 @@ It will try to create a VB project File from the original C# project file.
 
 https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json is added to NuGet Package Source to find
 Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpecific attributes used for testing.
+  New in 4.5.0.6
+  - Workaround long standing issue with LineNumbers not being shown correctly the first time they are displayed
+  - Add AssemblyInfo.vb from Core 5.0 to My Project, this file should be autogenerate but isn't so any changes to any property must be made manually.
+  - Fill out Application Events will all possible events with example use
+
   New in 4.5.0.4
   - Convert the User Controls to proper designer controls (even if they don't currently work in Preview 1 designer)
   - Move shared code from Form1 to appropriate Utilities Files
