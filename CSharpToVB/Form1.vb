@@ -84,7 +84,9 @@ Partial Public Class Form1
             Exit Sub
         End If
         _inColorize = True
-        ConversionBuffer.Visible = False
+        If ConversionBuffer.Visible Then
+            ConversionBuffer.Visible = False
+        End If
         Try ' Prevent crash when exiting
             If failures IsNot Nothing Then
                 For Each dia As Diagnostic In failures
@@ -213,8 +215,37 @@ Partial Public Class Form1
         End If
     End Sub
 
+    Private Sub ConversionInput_Enter(sender As Object, e As EventArgs) Handles ConversionInput.Enter
+        CurrentBuffer = CType(sender, RichTextBox)
+    End Sub
+
+    Private Sub ConversionInput_MouseEnter(sender As Object, e As EventArgs) Handles ConversionInput.MouseEnter
+        CurrentBuffer = CType(sender, RichTextBox)
+    End Sub
+
+    Private Sub ConversionInput_TextChanged(sender As Object, e As EventArgs) Handles ConversionInput.TextChanged
+        Dim InputBufferInUse As Boolean = CType(sender, RichTextBox).TextLength > 0
+        mnuViewShowSourceLineNumbers.Checked = InputBufferInUse And My.Settings.ShowSourceLineNumbers
+        mnuFileSnippetSave.Enabled = InputBufferInUse
+        mnuConvertConvertSnippet.Enabled = InputBufferInUse
+        mnuConvertConvertFolder.Enabled = InputBufferInUse
+        If mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
+            Colorize(GetClassifiedRanges(SourceCode:=ConversionInput.Text, LanguageNames.CSharp), ConversionBuffer:=ConversionInput, Lines:=ConversionInput.Lines.Length)
+        End If
+    End Sub
+
+    Private Sub ConversionOutput_MouseEnter(sender As Object, e As EventArgs) Handles ConversionOutput.MouseEnter
+        CurrentBuffer = CType(sender, RichTextBox)
+    End Sub
+
+    Private Sub ConversionOutput_TextChanged(sender As Object, e As EventArgs) Handles ConversionOutput.TextChanged
+        Dim OutputBufferInUse As Boolean = CType(sender, RichTextBox).TextLength > 0
+        mnuViewShowDestinationLineNumbers.Checked = OutputBufferInUse And My.Settings.ShowDestinationLineNumbers
+        mnuCompile.Enabled = OutputBufferInUse
+    End Sub
+
     Private Async Function Convert_Compile_ColorizeAsync(RequestToConvert As ConvertRequest,
-                                    CSPreprocessorSymbols As List(Of String),
+                                                        CSPreprocessorSymbols As List(Of String),
                                     VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)),
                                     OptionalReferences() As MetadataReference,
                                     CancelToken As CancellationToken) As Task(Of Boolean)
@@ -306,10 +337,6 @@ Partial Public Class Form1
         mnuOptionsSkipSkipTestResourceFiles.Checked = My.Settings.SkipTestResourceFiles
 
         mnuOptionsStartFolderConvertFromLastFile.Checked = My.Settings.StartFolderConvertFromLastFile
-        mnuViewShowDestinationLineNumbers.Checked = My.Settings.ShowDestinationLineNumbers
-        LineNumbersForConversionOutput.Visible = My.Settings.ShowDestinationLineNumbers
-        mnuViewShowSourceLineNumbers.Checked = My.Settings.ShowSourceLineNumbers
-        LineNumbersForConversionInput.Visible = My.Settings.ShowSourceLineNumbers
 
         If String.IsNullOrWhiteSpace(My.Settings.DefaultProjectDirectory) Then
             My.Settings.DefaultProjectDirectory = GetLatestVisualStudioProjectPath()
@@ -457,6 +484,7 @@ Partial Public Class Form1
     End Sub
 
     Private Function LoadInputBufferFromStream(SourceFileNameWithPath As String) As Integer
+        ConversionInput.Visible = False
         LocalUseWaitCursor(MeForm:=Me, WaitCursorEnable:=True)
         Dim SourceText As String
         Using myFileStream As FileStream = File.OpenRead(path:=SourceFileNameWithPath)
@@ -470,6 +498,13 @@ Partial Public Class Form1
             Colorize(GetClassifiedRanges(ConversionInputLinesArray.Join(vbCrLf), LanguageNames.CSharp), ConversionInput, InputLines)
         Else
             ConversionInput.Text = ConversionInputLinesArray.Join(vbCrLf)
+        End If
+        ConversionInput.Visible = True
+        If mnuViewShowSourceLineNumbers.Checked Then
+            LineNumbersForConversionInput.Visible = False
+            Application.DoEvents()
+            LineNumbersForConversionInput.Visible = True
+            Application.DoEvents()
         End If
         LocalUseWaitCursor(MeForm:=Me, WaitCursorEnable:=False)
         Return InputLines
@@ -908,27 +943,20 @@ Partial Public Class Form1
 
     Private Sub mnuViewShowDestinationLineNumbers_Click(sender As Object, e As EventArgs) Handles mnuViewShowDestinationLineNumbers.Click
         Dim checked As Boolean = CType(sender, ToolStripMenuItem).Checked
-        If checked Then
-            LineNumbersForConversionOutput.Visible = False
-            Application.DoEvents()
-        End If
         LineNumbersForConversionOutput.Visible = checked
-        Application.DoEvents()
         My.Settings.ShowDestinationLineNumbers = checked
         My.Settings.Save()
     End Sub
 
+    Private Sub mnuViewShowSourceLineNumbers_CheckStateChanged(sender As Object, e As EventArgs) Handles mnuViewShowSourceLineNumbers.CheckStateChanged
+        Dim checked As Boolean = CType(sender, ToolStripMenuItem).Checked
+        LineNumbersForConversionInput.Visible = checked
+    End Sub
+
     Private Sub mnuViewShowSourceLineNumbers_Click(sender As Object, e As EventArgs) Handles mnuViewShowSourceLineNumbers.Click
         Dim checked As Boolean = CType(sender, ToolStripMenuItem).Checked
-        If checked Then
-            LineNumbersForConversionInput.Visible = False
-            Application.DoEvents()
-        End If
-        LineNumbersForConversionInput.Visible = checked
-        Application.DoEvents()
         My.Settings.ShowSourceLineNumbers = checked
         My.Settings.Save()
-        ResizeRichTextBuffers()
     End Sub
 
     Private Sub MRU_UpdateUI(dropDownItems As ToolStripItemCollection)
@@ -1321,14 +1349,7 @@ Partial Public Class Form1
         End Try
     End Sub
 
-
     Private Sub ResizeRichTextBuffers()
-        If ConversionInput.TextLength = 0 AndAlso LineNumbersForConversionInput.Visible = True Then
-            LineNumbersForConversionInput.Visible = False
-        End If
-        If ConversionOutput.TextLength = 0 AndAlso LineNumbersForConversionOutput.Visible = True Then
-            LineNumbersForConversionOutput.Visible = False
-        End If
         Dim LineNumberInputWidth As Integer = If(LineNumbersForConversionInput.Visible AndAlso ConversionInput.TextLength > 0, LineNumbersForConversionInput.Width, 0)
         Dim LineNumberOutputWidth As Integer = If(LineNumbersForConversionOutput.Visible AndAlso ConversionOutput.TextLength > 0, LineNumbersForConversionOutput.Width, 0)
         Dim HalfClientWidth As Integer = ClientSize.Width \ 2
@@ -1342,34 +1363,6 @@ Partial Public Class Form1
         ListBoxErrorList.Width = HalfClientWidth
         StatusStripCurrentFileName.Width = HalfClientWidth
     End Sub
-
-    Private Sub RichTextBoxConversionInput_Enter(sender As Object, e As EventArgs) Handles ConversionInput.Enter
-        CurrentBuffer = CType(sender, RichTextBox)
-    End Sub
-
-    Private Sub RichTextBoxConversionInput_MouseEnter(sender As Object, e As EventArgs) Handles ConversionInput.MouseEnter
-        CurrentBuffer = CType(sender, RichTextBox)
-    End Sub
-
-    Private Sub RichTextBoxConversionInput_TextChanged(sender As Object, e As EventArgs) Handles ConversionInput.TextChanged
-        Dim InputBufferInUse As Boolean = CType(sender, RichTextBox).TextLength > 0
-        mnuFileSnippetSave.Enabled = InputBufferInUse
-        mnuConvertConvertSnippet.Enabled = InputBufferInUse
-        mnuConvertConvertFolder.Enabled = InputBufferInUse
-        If mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
-            Colorize(GetClassifiedRanges(SourceCode:=ConversionInput.Text, LanguageNames.CSharp), ConversionBuffer:=ConversionInput, Lines:=ConversionInput.Lines.Length)
-        End If
-    End Sub
-
-    Private Sub RichTextBoxConversionOutput_MouseEnter(sender As Object, e As EventArgs) Handles ConversionOutput.MouseEnter
-        CurrentBuffer = CType(sender, RichTextBox)
-    End Sub
-
-    Private Sub RichTextBoxConversionOutput_TextChanged(sender As Object, e As EventArgs) Handles ConversionOutput.TextChanged
-        Dim OutputBufferInUse As Boolean = CType(sender, RichTextBox).TextLength > 0
-        mnuCompile.Enabled = OutputBufferInUse
-    End Sub
-
     Private Sub SplitContainer1_SplitterMoved(sender As Object, e As SplitterEventArgs) Handles SplitContainer1.SplitterMoved
         ListBoxFileList.Height = SplitContainer1.Panel2.ClientSize.Height
         ListBoxErrorList.Height = SplitContainer1.Panel2.ClientSize.Height
@@ -1462,5 +1455,4 @@ Partial Public Class Form1
         Application.SetHighDpiMode(HighDpiMode.SystemAware)
         Call New My.MyApplication().Run(args)
     End Sub
-
 End Class
