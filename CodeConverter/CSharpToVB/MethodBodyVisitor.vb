@@ -177,7 +177,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 If openBraceTrailingTrivia.Any OrElse closingBraceLeadingTrivia.Any Then
                     vbStatements = vbStatements.Replace(vbStatements(0), vbStatements(0).WithPrependedLeadingTrivia(openBraceTrailingTrivia))
                     Dim laststatement As Integer = vbStatements.Count - 1
-                    vbStatements = vbStatements.Replace(vbStatements(laststatement), vbStatements(laststatement).WithAppendedTrailingTrivia(closingBraceLeadingTrivia))
+                    vbStatements = vbStatements.Replace(vbStatements(laststatement), vbStatements(laststatement).WithAppendedTrailingTrivia(closingBraceLeadingTrivia).WithTrailingEOL)
                 End If
                 Dim type As VBS.TypeSyntax = DirectCast(catchClause.Declaration.Type.Accept(_nodesVisitor), VBS.TypeSyntax)
                 Dim simpleTypeName As String
@@ -1235,7 +1235,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                                                       Statements,
                                                       ElseIfBlocks,
                                                       ElseBlock,
-                                                      EndIfStatement
+                                                      EndIfStatement.WithTrailingEOL
                                                      )
                 Else
                     Dim IsInvocationExpression As Boolean = False
@@ -1250,7 +1250,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                                                           Statements,
                                                           ElseIfBlocks,
                                                           ElseBlock,
-                                                          EndIfStatement
+                                                          EndIfStatement.WithTrailingEOL
                                                           )
                     Else
                         If IfStatement.GetTrailingTrivia.ContainsEOLTrivia Then
@@ -1260,7 +1260,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                                                               IFBlockStatements,
                                                               ElseIfBlocks,
                                                               ElseBlock,
-                                                              EndIfStatement
+                                                              EndIfStatement.WithTrailingEOL
                                                              )
                         Else
                             If ElseBlock IsNot Nothing OrElse (Statements.Count = 1 AndAlso TypeOf Statements(0) Is VBS.EmptyStatementSyntax) Then
@@ -1268,7 +1268,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                                                                   Statements,
                                                                   elseIfBlocks:=Nothing,
                                                                   ElseBlock,
-                                                                  EndIfStatement
+                                                                  EndIfStatement.WithTrailingEOL
                                                                  )
                             Else
                                 stmt = VBFactory.SingleLineIfStatement(IfKeywordWithTrivia,
@@ -1565,7 +1565,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                     End If
                 Next
                 If CatchBlocks.Count - 1 >= 0 Then
-                    CatchBlocks = CatchBlocks.Replace(CatchBlocks(0), CatchBlocks(0).WithConvertedTriviaFrom(node.Block.CloseBraceToken))
+                    CatchBlocks = CatchBlocks.Replace(CatchBlocks(0), CatchBlocks(0).WithConvertedTriviaFrom(node.Block.CloseBraceToken).WithTrailingEOL)
                 End If
                 Dim FinallyBlock As VBS.FinallyBlockSyntax = Nothing
                 If node.Finally IsNot Nothing Then

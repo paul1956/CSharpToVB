@@ -62,6 +62,10 @@ It will try to create a VB project File from the original C# project file.
 
 https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json is added to NuGet Package Source to find
 Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpecific attributes used for testing.
+  New in 4.5.0.7/Converter 3.4.2.10
+  - Fix long standing issue with LineNumbers not being shown correctly the first time they are displayed
+  - Fix code that uses additional formats for line feeds around : and }
+
   New in 4.5.0.6
   - Workaround long standing issue with LineNumbers not being shown correctly the first time they are displayed
   - Add AssemblyInfo.vb from Core 5.0 to My Project, this file should be autogenerate but isn't so any changes to any property must be made manually.

@@ -369,7 +369,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 SimpleMemberAccessExpression = VBFactory.SimpleMemberAccessExpression(MeOrMyExpression, VBFactory.IdentifierName("New"))
                 Dim InvocationExpression As VBS.InvocationExpressionSyntax = VBFactory.InvocationExpression(SimpleMemberAccessExpression, ArgumentList)
                 Return VBFactory.ExpressionStatement(InvocationExpression).
-                                             RestructureArguments(node.ArgumentList).WithConvertedTrailingTriviaFrom(node)
+                                             RestructureArguments(node.ArgumentList).WithConvertedTrailingTriviaFrom(node).WithTrailingEOL
             End Function
 
             ''' <summary>
