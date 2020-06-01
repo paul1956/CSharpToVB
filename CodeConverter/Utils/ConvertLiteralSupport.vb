@@ -106,7 +106,9 @@ Namespace CSharpToVBCodeConverter.Utilities
                         If TypeOf value Is UInteger Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(HEXValueString & "UI", CUInt(value)))
                         If TypeOf value Is Long Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(HEXValueString, CLng(value)))
                         If TypeOf value Is ULong Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(HEXValueString & "UL", CULng(value)))
-                    ElseIf TokenToString.StartsWith("0b", StringComparison.OrdinalIgnoreCase) Then
+                        Throw UnreachableException
+                    End If
+                    If TokenToString.StartsWith("0b", StringComparison.OrdinalIgnoreCase) Then
                         If TypeOf value Is Integer Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(($"{Binary(CInt(value))}"), CInt(value)))
                         If TypeOf value Is Byte Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(($"{Binary(CByte(value))}"), CByte(value)))
                         If TypeOf value Is SByte Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal($"{Binary(CSByte(value))}", CSByte(value)))
@@ -115,6 +117,7 @@ Namespace CSharpToVBCodeConverter.Utilities
                         If TypeOf value Is UInteger Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal($"{Binary(CUInt(value))}", CUInt(value)))
                         If TypeOf value Is Long Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal($"{Binary(CLng(value))}", CLng(value)))
                         If TypeOf value Is ULong Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal($"{Binary(CType(CULng(value), Long))}UL", CULng(value)))
+                        Throw UnreachableException
                     End If
 
                     If TypeOf value Is Integer Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(CInt(value)))
@@ -128,6 +131,7 @@ Namespace CSharpToVBCodeConverter.Utilities
                     If TypeOf value Is Single Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(CSng(value)))
                     If TypeOf value Is Double Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(CDbl(value)))
                     If TypeOf value Is Decimal Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(CDec(value)))
+                    Throw UnreachableException
                 Case CS.SyntaxKind.StringLiteralToken
                     If TypeOf value Is String Then
                         Dim StrValue As String = DirectCast(value, String)
@@ -181,6 +185,7 @@ Namespace CSharpToVBCodeConverter.Utilities
                             ReturnType = DirectCast(OperatorStatement.Type.Accept(_NodesVisitor), VBS.TypeSyntax)
                             Return VBFactory.CTypeExpression(NothingExpression, ReturnType)
                         End If
+                        Throw UnreachableException
                     End If
                     Dim EqualsValue As CSS.EqualsValueClauseSyntax = Token.Parent.GetAncestor(Of CSS.EqualsValueClauseSyntax)
                     If EqualsValue IsNot Nothing Then
@@ -189,6 +194,7 @@ Namespace CSharpToVBCodeConverter.Utilities
                             ReturnType = DirectCast(Parameter.Type.Accept(_NodesVisitor), VBS.TypeSyntax)
                             Return VBFactory.CTypeExpression(NothingExpression, ReturnType)
                         End If
+                        Throw UnreachableException
                     End If
                     Dim AssignmentExpression As CSS.AssignmentExpressionSyntax = Token.Parent.GetAncestor(Of CSS.AssignmentExpressionSyntax)
                     If AssignmentExpression IsNot Nothing Then
@@ -240,10 +246,10 @@ Namespace CSharpToVBCodeConverter.Utilities
                     If Token.Parent.GetAncestor(Of CSS.ConstructorDeclarationSyntax) IsNot Nothing Then
                         Return NothingExpression
                     End If
-                    Return NothingExpression
                     If Token.Parent.GetAncestor(Of CSS.ArgumentSyntax) IsNot Nothing Then
                         Return NothingExpression
                     End If
+                    Return NothingExpression
                 Case CS.SyntaxKind.ArgListKeyword
                     Return VBFactory.IdentifierName("__Arglist")
             End Select

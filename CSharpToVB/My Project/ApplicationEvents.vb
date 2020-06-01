@@ -21,9 +21,7 @@ Namespace My
 
         ' Startup: Raised when the application starts, before the startup form is created.
         Private Sub MyApplication_Startup(sender As Object, e As StartupEventArgs) Handles Me.Startup
-#If NET5_0 Then
-            AppFramework.SetHighDpiMode(HighDpiMode.SystemAware)
-#End If
+            Windows.Forms.Application.SetHighDpiMode(HighDpiMode.SystemAware)
             ' Get the splash screen.
             'Dim splash As SplashScreen1 = CType(My.Application.SplashScreen, SplashScreen1)
             ' Display current status information.

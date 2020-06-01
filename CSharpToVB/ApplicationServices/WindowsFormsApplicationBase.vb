@@ -318,8 +318,10 @@ Namespace Microsoft.VisualBasic.ApplicationServices
             End Set
         End Property
 
+        ''' <summary>
         ''' Provides access to the main form for this application
         ''' </summary>
+        ''' <returns></returns>
         Protected Property MainForm() As Form
             Get
                 Return _appContext?.MainForm

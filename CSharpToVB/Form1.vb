@@ -171,7 +171,9 @@ Partial Public Class Form1
         If TypeOf ContextMenuStrip1.SourceControl Is RichTextBox Then
             CType(ContextMenuStrip1.SourceControl, RichTextBox).Copy()
         Else
-            Clipboard.SetText(CType(ContextMenuStrip1.SourceControl, ListBox).SelectedItem.ToString)
+            If ContextMenuStrip1.SourceControl IsNot Nothing Then
+                Clipboard.SetText(CType(ContextMenuStrip1.SourceControl, ListBox).SelectedItem.ToString)
+            End If
         End If
     End Sub
 
@@ -181,7 +183,9 @@ Partial Public Class Form1
 
     Private Sub ContextMenuPaste_Click(sender As Object, e As EventArgs) Handles ContextMenuPaste.Click
         Dim sourceControl As RichTextBox = CType(ContextMenuStrip1.SourceControl, RichTextBox)
-        sourceControl.Paste()
+        If sourceControl IsNot Nothing AndAlso sourceControl.CanPaste(DataFormats.GetFormat(DataFormats.Rtf)) Then
+            sourceControl.Paste()
+        End If
     End Sub
 
     Private Sub ContextMenuRedo_Click(sender As Object, e As EventArgs) Handles ContextMenuRedo.Click
@@ -1453,6 +1457,8 @@ Partial Public Class Form1
     <STAThread()>
     Shared Sub main(args As String())
         Application.SetHighDpiMode(HighDpiMode.SystemAware)
-        Call New My.MyApplication().Run(args)
+        Dim MyApp As New My.MyApplication
+        MyApp.Run(args)
+        MyApp.Dispose()
     End Sub
 End Class
