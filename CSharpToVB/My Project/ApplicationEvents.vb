@@ -4,28 +4,25 @@
 
 Imports CSharpToVBApp.Microsoft.VisualBasic.ApplicationServices
 
+Imports AppFramework = System.Windows.Forms.Application
+
 Namespace My
 
     ' The following events are available for MyApplication:
     Partial Friend Class MyApplication
 
-        ' NetworkAvailabilityChanged: Raised when the network connection is connected or disconnected.
-        'Private Sub MyApplication_NetworkAvailabilityChanged(sender As Object, e As Devices.NetworkAvailableEventArgs) Handles Me.NetworkAvailabilityChanged
-        '    'My.Forms.Form1.SetConnectionStatus(e.IsNetworkAvailable)
-        'End Sub
-
-        ' Shutdown: Raised after all application forms are closed.  This event is not raised if the application terminates abnormally.
-        Private Sub MyApplication_Shutdown(sender As Object, e As EventArgs) Handles Me.Shutdown
-            'My.Application.Log.WriteEntry("Application Shut Down.")
-        End Sub
-
         ' Startup: Raised when the application starts, before the startup form is created.
         Private Sub MyApplication_Startup(sender As Object, e As StartupEventArgs) Handles Me.Startup
-            Windows.Forms.Application.SetHighDpiMode(HighDpiMode.SystemAware)
+            AppFramework.SetHighDpiMode(HighDpiMode.SystemAware)
             ' Get the splash screen.
             'Dim splash As SplashScreen1 = CType(My.Application.SplashScreen, SplashScreen1)
             ' Display current status information.
             'splash.Status = "Current user: " & My.User.Name
+        End Sub
+
+        ' Shutdown: Raised after all application forms are closed.  This event is not raised if the application terminates abnormally.
+        Private Sub MyApplication_Shutdown(sender As Object, e As EventArgs) Handles Me.Shutdown
+            'My.Application.Log.WriteEntry("Application Shut Down.")
         End Sub
 
         ' UnhandledException: Raised if the application encounters an unhandled exception.
@@ -38,7 +35,11 @@ Namespace My
             Stop
         End Sub
 
+        ' NetworkAvailabilityChanged: Raised when the network connection is connected or disconnected.
+        'Private Sub MyApplication_NetworkAvailabilityChanged(sender As Object, e As Devices.NetworkAvailableEventArgs) Handles Me.NetworkAvailabilityChanged
+        '    'My.Forms.Form1.SetConnectionStatus(e.IsNetworkAvailable)
+        'End Sub
+
     End Class
 
 End Namespace
-

@@ -416,15 +416,6 @@ Namespace Microsoft.VisualBasic.ApplicationServices
             End Set
         End Property
 
-        Private Shared Function GetTypeLibGuidForAssembly(_assembly As Assembly) As Guid
-            Dim customAttributes As Object() = _assembly.GetCustomAttributes(GetType(GuidAttribute), True)
-            If customAttributes.Any Then
-                Dim attribute As GuidAttribute = CType(customAttributes(0), GuidAttribute)
-                Return New Guid(attribute.Value)
-            End If
-            Return Nothing
-        End Function
-
         ''' <summary>
         ''' Validates that the value being passed as an AuthenticationMode enum is a legal value
         ''' </summary>
@@ -817,35 +808,15 @@ Namespace Microsoft.VisualBasic.ApplicationServices
         ''' <returns>GUID String that should be the same for versions of the application
         ''' that have the same Major and Minor Version Number
         ''' </returns>
-        ''' <remarks></remarks>
-        <SecurityCritical()>
-        Public Overridable Function GetApplicationInstanceID(Entry As Assembly) As String
-            If Entry Is Nothing Then
-                Throw New ArgumentNullException(NameOf(Entry))
+        ''' <remarks>If GUID Attribute does not exist fall back to unique ModuleVersionId</remarks>
+        Private Shared Function GetApplicationInstanceID(ByVal Entry As Assembly) As String
+            Dim customAttributes As Object() = Entry.GetCustomAttributes(GetType(GuidAttribute), True)
+            If customAttributes.Any Then
+                Dim attribute As GuidAttribute = CType(customAttributes.First, GuidAttribute)
+                Dim versionParts As String() = Entry.GetName.Version.ToString.Split(CType(".", Char()))
+                Return $"{attribute.Value}{versionParts(0)}.{versionParts(1)}"
             End If
-
-            Dim permissions As New PermissionSet(PermissionState.None)
-            permissions.AddPermission(New FileIOPermission(PermissionState.Unrestricted)) 'Chicken and egg problem.  All I need is PathDiscovery for the location of this assembly but to get the location of the assembly (see GetName below) I need to know the path which I can't get without asserting...
-            permissions.AddPermission(New SecurityPermission(SecurityPermissionFlag.UnmanagedCode))
-            permissions.Assert()
-
-            Dim typeLibGuid As Guid = GetTypeLibGuidForAssembly(Entry)
-            If typeLibGuid = Nothing Then
-                Return Entry.ManifestModule.ModuleVersionId.ToString
-            End If
-            Dim Version As String = Entry.GetName.Version.ToString
-            Dim VersionParts As String() = Version.Split(CType(".", Char()))
-            Dim SemiUniqueApplicationID As String = typeLibGuid.ToString + VersionParts(0) + "." + VersionParts(1)
-            PermissionSet.RevertAssert()
-
-            'Note: We used to make the terminal server session ID part of the key.  It turns out to be unnecessary and the call to
-            'NativeMethods.ProcessIdToSessionId(System.Diagnostics.Process.GetCurrentProcess.Id, TerminalSessionID) was not supported on Win98, anyway.
-            'It turns out that terminal server sessions, even when you are logged in as the same user to multiple terminal server sessions on the same
-            'machine, are separate.  So you can have session 1 running as  and have a global system object named "FOO" that won't conflict with
-            'any other global system object named "FOO" whether it be in session 2 running as  or session n running as whoever.
-            'So it isn't necessary to make the session id part of the unique name that identifies a
-
-            Return SemiUniqueApplicationID  'Re: version parts, we have the major, minor, build, revision.  We key off major+minor.
+            Return Entry.ManifestModule.ModuleVersionId.ToString()
         End Function
 
         ''' <summary>
