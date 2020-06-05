@@ -178,7 +178,9 @@ Partial Public Class Form1
     End Sub
 
     Private Sub ContextMenuCut_Click(sender As Object, e As EventArgs) Handles ContextMenuCut.Click
-        CType(ContextMenuStrip1.SourceControl, RichTextBox).Cut()
+        If TypeOf ContextMenuStrip1.SourceControl Is RichTextBox Then
+            CType(ContextMenuStrip1.SourceControl, RichTextBox).Cut()
+        End If
     End Sub
 
     Private Sub ContextMenuPaste_Click(sender As Object, e As EventArgs) Handles ContextMenuPaste.Click
@@ -199,8 +201,8 @@ Partial Public Class Form1
         Dim ContextMenu As ContextMenuStrip = CType(sender, ContextMenuStrip)
         If TypeOf CurrentBuffer Is RichTextBox Then
             Dim sourceBuffer As RichTextBox = CType(CurrentBuffer, RichTextBox)
-            ContextMenu.Items(IndexOf(ContextMenu, NameOf(ContextMenuCopy))).Enabled = sourceBuffer.TextLength > 0
-            ContextMenu.Items(IndexOf(ContextMenu, NameOf(ContextMenuCut))).Enabled = sourceBuffer.TextLength > 0
+            ContextMenu.Items(IndexOf(ContextMenu, NameOf(ContextMenuCopy))).Enabled = sourceBuffer.TextLength > 0 And sourceBuffer.SelectedText.Length > 0
+            ContextMenu.Items(IndexOf(ContextMenu, NameOf(ContextMenuCut))).Enabled = sourceBuffer.TextLength > 0 And sourceBuffer.SelectedText.Length > 0
             ContextMenu.Items(IndexOf(ContextMenu, NameOf(ContextMenuPaste))).Enabled = sourceBuffer.CanPaste(DataFormats.GetFormat(DataFormats.Rtf))
             ContextMenu.Items(IndexOf(ContextMenu, NameOf(ContextMenuRedo))).Enabled = sourceBuffer.CanRedo
             ContextMenu.Items(IndexOf(ContextMenu, NameOf(ContextMenuUndo))).Enabled = sourceBuffer.CanUndo
@@ -444,11 +446,17 @@ Partial Public Class Form1
     End Sub
 
     Private Sub ListBoxErrorList_Enter(sender As Object, e As EventArgs) Handles ListBoxErrorList.Enter
-        CurrentBuffer = CType(sender, Control)
+        If ListBoxErrorList.Items.Count = 0 Then
+            Exit Sub
+        End If
+        CurrentBuffer = ListBoxErrorList
     End Sub
 
     Private Sub ListBoxErrorList_MouseEnter(sender As Object, e As EventArgs) Handles ListBoxErrorList.MouseEnter
-        CurrentBuffer = CType(sender, Control)
+        If ListBoxErrorList.Items.Count = 0 Then
+            Exit Sub
+        End If
+        CurrentBuffer = ListBoxErrorList
     End Sub
 
     Private Sub ListBoxErrorList_SelectedValueChanged(sender As Object, e As EventArgs) Handles ListBoxErrorList.SelectedValueChanged
@@ -476,11 +484,17 @@ Partial Public Class Form1
     End Sub
 
     Private Sub ListBoxFileList_Enter(sender As Object, e As EventArgs) Handles ListBoxFileList.Enter
-        CurrentBuffer = CType(sender, Control)
+        If ListBoxFileList.Items.Count = 0 Then
+            Exit Sub
+        End If
+        CurrentBuffer = ListBoxFileList
     End Sub
 
     Private Sub ListBoxFileList_MouseEnter(sender As Object, e As EventArgs) Handles ListBoxFileList.MouseEnter
-        CurrentBuffer = CType(sender, Control)
+        If ListBoxFileList.Items.Count = 0 Then
+            Exit Sub
+        End If
+        CurrentBuffer = ListBoxFileList
     End Sub
 
     Private Sub ListBoxFileList_SelectedValueChanged(sender As Object, e As EventArgs) Handles ListBoxFileList.SelectedValueChanged
@@ -654,8 +668,8 @@ Partial Public Class Form1
     Private Sub mnuEdit_DropDownOpening(sender As Object, e As EventArgs) Handles mnuEdit.DropDownOpening
         If TypeOf CurrentBuffer Is RichTextBox Then
             Dim sourceBuffer As RichTextBox = CType(CurrentBuffer, RichTextBox)
-            mnuEditCopy.Enabled = sourceBuffer.TextLength > 0
-            mnuEditCut.Enabled = sourceBuffer.TextLength > 0
+            mnuEditCopy.Enabled = sourceBuffer.TextLength > 0 And sourceBuffer.SelectedText.Length > 0
+            mnuEditCut.Enabled = sourceBuffer.TextLength > 0 And sourceBuffer.SelectedText.Length > 0
             mnuEditPaste.Enabled = sourceBuffer.CanPaste(DataFormats.GetFormat(DataFormats.Rtf))
             mnuEditUndo.Enabled = sourceBuffer.CanUndo
             mnuEditRedo.Enabled = sourceBuffer.CanRedo

@@ -62,6 +62,14 @@ It will try to create a VB project File from the original C# project file.
 
 https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json is added to NuGet Package Source to find
 Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpecific attributes used for testing.
+  New in 4.5.0.9/Converter 3.4.3.0
+  - Add support for translation of await foreach
+  - Add support for translation of gRPC projects, it is not perfect.
+    A new C# Project is created that compiles the Proto files.
+    You will still have to put a ProjectLink from your VB projects to the new C# project and
+    for now delete gRPC/Google PackageReference that give you errors.
+  - Fix editing edit menu's being enabled/disabled at the wrong times 
+
   New in 4.5.0.8/Converter 3.4.2.11
   - Fix crash is in File Edit
   - Improve error handling in GetLiteralExpression

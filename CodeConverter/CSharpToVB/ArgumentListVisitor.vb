@@ -30,7 +30,10 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                     If csOperation?.Value.Kind = OperationKind.DelegateCreation Then
                         Dim getExpression As VBS.ExpressionSyntax = argument.GetExpression
                         Select Case getExpression.Kind
-                            Case VB.SyntaxKind.MultiLineFunctionLambdaExpression, VB.SyntaxKind.SingleLineFunctionLambdaExpression
+                            Case VB.SyntaxKind.MultiLineFunctionLambdaExpression,
+                                 VB.SyntaxKind.MultiLineSubLambdaExpression,
+                                 VB.SyntaxKind.SingleLineFunctionLambdaExpression,
+                                 VB.SyntaxKind.SingleLineSubLambdaExpression
                             Case Else
                                 Dim leadingTrivia As New List(Of SyntaxTrivia)
                                 leadingTrivia.AddRange(getExpression.GetLeadingTrivia)

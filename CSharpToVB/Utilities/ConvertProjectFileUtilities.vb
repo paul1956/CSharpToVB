@@ -17,100 +17,114 @@ Public Module ConvertProjectFileUtilities
             {"AutoGen", "DesignTime", "DesignTimeSharedInput",
              "#whitespace"})
 
+    Private ReadOnly s_cSProjectFile As XElement = <Project Sdk="Microsoft.NET.Sdk">
+                                                       <PropertyGroup>
+                                                           <TargetFramework>__TargetFramework__</TargetFramework>
+                                                       </PropertyGroup>
+                                                       <ItemGroup>
+                                                           <Protobuf Include="..\Proto\count.proto" GrpcServices="Both" Link="count.proto"/>
+                                                       </ItemGroup>
+                                                       <ItemGroup>
+                                                           <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.4"/>
+                                                           <PackageReference Include="Google.Protobuf" Version="3.12.2"/>
+                                                           <PackageReference Include="Grpc.Net.ClientFactory" Version="2.29.0"/>
+                                                           <PackageReference Include="Grpc.Tools" Version="2.29.0" PrivateAssets="All"/>
+                                                       </ItemGroup>
+                                                   </Project>
+
     Private ReadOnly s_documentTopLevelIgnoreList As New List(Of String)(
             {"_DependentAssemblyVersionsFile",
-         "_DependsOn",
-         "_DotNetSdkVersionFile",
-         "_NuGetRepackAssembly",
-         "_OptimizedDependenciesDir",
-         "ApplyNgenOptimization",
-         "AssemblyName",
-         "AssemblyVersion",
-         "Authors",
-         "AutoGenerateAssemblyVersion",
-         "AutoGenerateBindingRedirects",
-         "AutomaticBindingRedirects",
-         "CLSCompliant",
-         "CodeAnalysisRuleSet",
-         "Company",
-         "CopyLocalLockFileAssemblies",
-         "CreateVsixContainer",
-         "DebugType",
-         "DefaultLanguage",
-         "DefineConstants",
-         "DeployExtension",
-         "Description",
-         "Deterministic",
-         "DevelopmentDependency",
-         "DisableImplicitFrameworkReferences",
-         "EnableDefaultItems",
-         "ExcludeFromSourceBuild",
-         "ExpectedDependency",
-         "ExtensionInstallationFolder",
-         "ExtensionInstallationRoot",
-         "GenerateAssemblyInfo",
-         "GenerateDependencyFile",
-         "GenerateDocumentationFile",
-         "GenerateDocumentionFile",
-         "GenerateMicrosoftCodeAnalysisCommitHashAttribute",
-         "GeneratePerformanceSensitiveAttribute",
-         "GeneratePkgDefFile",
-         "ImplicitlyExpandNETStandardFacades",
-         "Import",
-         "IncludeAssemblyInVSIXContainer",
-         "IncludeBuildOutput",
-         "IncludeCopyLocalReferencesInVSIXContainer",
-         "IncludeDebugSymbolsInLocalVSIXDeployment",
-         "IncludeDebugSymbolsInVSIXContainer",
-         "IsAnalyzer",
-         "IsPackable",
-         "IsShipping",
-         "IsSourcePackage",
-         "IsVisualStudioBuildPackage",
-         "LargeAddressAware",
-         "MinimumVisualStudioVersion",
-         "NoStdLib",
-         "Nullable",
-         "NuspecPackageId",
-         "OutputType",
-         "PackageDescription",
-         "PackageId",
-         "PackageReleaseNotes",
-         "Platform",
-         "Platforms",
-         "PlatformTarget",
-         "Prefer32Bit",
-         "Product",
-         "ProduceReferenceAssembly",
-         "ProjectExtensions",
-         "ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch",
-         "RootNamespace",
-         "RoslynProjectType",
-         "RuntimeIdentifiers",
-         "ServerGarbageCollection",
-         "ServiceHubAssemblyBasePath",
-         "SignAssembly",
-         "SkipTests",
-         "StartupObject",
-         "Target",
-         "TargetFramework",
-         "TargetFrameworks",
-         "TargetsForTfmSpecificContentInPackage",
-         "TargetVsixContainerName",
-         "TieredCompilation",
-         "UseAppHost",
-         "UseCodebase",
-         "UsePublicApiAnalyzers",
-         "UserSecretsId",
-         "UseVSHostingProcess",
-         "UseWindowsForms",
-         "UseWpf",
-         "Using",
-         "UsingTask",
-         "Version",
-         "VisualStudioInsertionComponent",
-         "Win32Manifest",
-         "#whitespace"})
+             "_DependsOn",
+             "_DotNetSdkVersionFile",
+             "_NuGetRepackAssembly",
+             "_OptimizedDependenciesDir",
+             "ApplyNgenOptimization",
+             "AssemblyName",
+             "AssemblyVersion",
+             "Authors",
+             "AutoGenerateAssemblyVersion",
+             "AutoGenerateBindingRedirects",
+             "AutomaticBindingRedirects",
+             "CLSCompliant",
+             "CodeAnalysisRuleSet",
+             "Company",
+             "CopyLocalLockFileAssemblies",
+             "CreateVsixContainer",
+             "DebugType",
+             "DefaultLanguage",
+             "DefineConstants",
+             "DeployExtension",
+             "Description",
+             "Deterministic",
+             "DevelopmentDependency",
+             "DisableImplicitFrameworkReferences",
+             "EnableDefaultItems",
+             "ExcludeFromSourceBuild",
+             "ExpectedDependency",
+             "ExtensionInstallationFolder",
+             "ExtensionInstallationRoot",
+             "GenerateAssemblyInfo",
+             "GenerateDependencyFile",
+             "GenerateDocumentationFile",
+             "GenerateDocumentionFile",
+             "GenerateMicrosoftCodeAnalysisCommitHashAttribute",
+             "GeneratePerformanceSensitiveAttribute",
+             "GeneratePkgDefFile",
+             "ImplicitlyExpandNETStandardFacades",
+             "Import",
+             "IncludeAssemblyInVSIXContainer",
+             "IncludeBuildOutput",
+             "IncludeCopyLocalReferencesInVSIXContainer",
+             "IncludeDebugSymbolsInLocalVSIXDeployment",
+             "IncludeDebugSymbolsInVSIXContainer",
+             "IsAnalyzer",
+             "IsPackable",
+             "IsShipping",
+             "IsSourcePackage",
+             "IsVisualStudioBuildPackage",
+             "LargeAddressAware",
+             "MinimumVisualStudioVersion",
+             "NoStdLib",
+             "Nullable",
+             "NuspecPackageId",
+             "OutputType",
+             "PackageDescription",
+             "PackageId",
+             "PackageReleaseNotes",
+             "Platform",
+             "Platforms",
+             "PlatformTarget",
+             "Prefer32Bit",
+             "Product",
+             "ProduceReferenceAssembly",
+             "ProjectExtensions",
+             "ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch",
+             "RootNamespace",
+             "RoslynProjectType",
+             "RuntimeIdentifiers",
+             "ServerGarbageCollection",
+             "ServiceHubAssemblyBasePath",
+             "SignAssembly",
+             "SkipTests",
+             "StartupObject",
+             "Target",
+             "TargetFrameworks",
+             "TargetsForTfmSpecificContentInPackage",
+             "TargetVsixContainerName",
+             "TieredCompilation",
+             "UseAppHost",
+             "UseCodebase",
+             "UsePublicApiAnalyzers",
+             "UserSecretsId",
+             "UseVSHostingProcess",
+             "UseWindowsForms",
+             "UseWpf",
+             "Using",
+             "UsingTask",
+             "Version",
+             "VisualStudioInsertionComponent",
+             "Win32Manifest",
+             "#whitespace"})
 
     Private ReadOnly s_embeddedResourceIgnoreList As New List(Of String)(
         {"Generator", "GenerateSource", "LastGenOutput", "LogicalName",
@@ -133,9 +147,32 @@ Public Module ConvertProjectFileUtilities
                AttributeValue)
     End Function
 
-    Private Sub CopyFile(ProjectSavePath As String, currentProject As String, PartialPathWithFileName As String)
+    Private Sub ConvertProtoNode(ProjectSavePath As String, SourceFilePath As String, xmlNode As XmlNode, TargetFramework As String)
+        Dim basePath As String = New Uri(xmlNode.BaseURI).LocalPath
+        If basePath <> SourceFilePath Then
+            Stop
+        End If
+
+        Dim protoSourcePath As String = Path.Combine(Directory.GetParent(SourceFilePath).Parent.FullName, "Proto")
+
+        If Not Directory.Exists(protoSourcePath) Then
+            Exit Sub
+        End If
+        Dim protoDestinationPath As String = Path.Combine(Directory.GetParent(ProjectSavePath).FullName, "Proto")
+        If Not Directory.Exists(protoDestinationPath) Then
+            Directory.CreateDirectory(protoDestinationPath)
+            Dim csProtoPath As String = Path.Combine(Directory.GetParent(ProjectSavePath).FullName, "CSProto")
+            Directory.CreateDirectory(csProtoPath)
+            File.WriteAllText(Path.Combine(csProtoPath, "CSProto.csproj"), s_cSProjectFile.ToString.Replace("__TargetFramework__", TargetFramework, StringComparison.Ordinal))
+        End If
+        For Each fileName As String In Directory.GetFiles(protoSourcePath)
+            File.Copy(fileName, Path.Combine(protoDestinationPath, Path.GetFileName(fileName)), overwrite:=True)
+        Next
+    End Sub
+
+    Private Sub CopyFile(ProjectSavePath As String, SourceFilePath As String, PartialPathWithFileName As String)
         If String.IsNullOrWhiteSpace(ProjectSavePath) OrElse
-                String.IsNullOrWhiteSpace(currentProject) OrElse
+                String.IsNullOrWhiteSpace(SourceFilePath) OrElse
                 String.IsNullOrWhiteSpace(PartialPathWithFileName) Then
             Exit Sub
         End If
@@ -145,7 +182,7 @@ Public Module ConvertProjectFileUtilities
                 Exit Sub
             End If
             Directory.CreateDirectory(Path.GetDirectoryName(destFileNameWithPath))
-            File.Copy(Path.Combine(New FileInfo(currentProject).Directory.FullName, PartialPathWithFileName), destFileNameWithPath, overwrite:=True)
+            File.Copy(Path.Combine(New FileInfo(SourceFilePath).Directory.FullName, PartialPathWithFileName), destFileNameWithPath, overwrite:=True)
         Catch ex As Exception
             Stop
         End Try
@@ -221,7 +258,7 @@ Public Module ConvertProjectFileUtilities
             Dim isDesktopProject As Boolean = xmlDoc.DocumentElement.Attributes(0).Value = "Microsoft.NET.Sdk.WindowsDesktop"
             Dim leadingXMLSpace As XmlNode = xmlDoc.CreateDocumentFragment()
             leadingXMLSpace.InnerXml = "    "
-
+            Dim TargetFramework As String = String.Empty
             If xmlDoc.DocumentElement.HasChildNodes Then
                 For index As Integer = 0 To xmlDoc.DocumentElement.ChildNodes.Count - 1
                     If s_documentTopLevelIgnoreList.Contains(xmlDoc.DocumentElement.ChildNodes(index).Name, StringComparer.OrdinalIgnoreCase) Then
@@ -250,6 +287,8 @@ Public Module ConvertProjectFileUtilities
                                         End If
                                     Case "#comment"
                                         xmlDoc.DocumentElement.ChildNodes(index).ChildNodes(childIndex).InnerText = propertyGroupChildNode.InnerText.Replace(".cs", ".vb", StringComparison.OrdinalIgnoreCase)
+                                    Case "TargetFramework"
+                                        TargetFramework = xmlDoc.DocumentElement.ChildNodes(index).ChildNodes(childIndex).InnerText
                                     Case Else
                                         ' propertyGroupChildNode.Name
                                         Stop
@@ -327,6 +366,9 @@ Public Module ConvertProjectFileUtilities
                                         CopyFile(ProjectSavePath, sourceFilePath, xmlNode.Attributes(0).Value)
                                     Case "ProjectReference"
                                         xmlDoc.DocumentElement.ChildNodes(index).ChildNodes(childIndex).Attributes(0).Value = xmlNode.Attributes(0).Value.Replace(".csproj", ".vbproj", StringComparison.OrdinalIgnoreCase)
+                                    Case "Protobuf"
+                                        nodesToBeRemoved.Add((index, childIndex - 1))
+                                        ConvertProtoNode(ProjectSavePath, sourceFilePath, xmlNode, TargetFramework)
                                     Case Else
                                         ' xmlNode.Name
                                         Stop

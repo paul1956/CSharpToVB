@@ -458,21 +458,13 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                         Dim ExpressionOrThrow As VisualBasicSyntaxNode = arm.Expression.Accept(Me)
 
                         If TypeOf ExpressionOrThrow Is VBS.ExpressionSyntax Then
-                            Dim Declarators As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(
-                        node:=VBFactory.VariableDeclarator(VBFactory.SingletonSeparatedList(
-                        VariableName),
-                        asClause:=Nothing, initializer:=VBFactory.EqualsValue(CType(ExpressionOrThrow, VBS.ExpressionSyntax).AdjustExpressionLeadingTrivia)).WithTrailingEOL
-                         )
                             Statements = VBFactory.SingletonList(Of VBS.StatementSyntax)(VBFactory.SimpleAssignmentStatement(ResultIdentifier, CType(ExpressionOrThrow, VBS.ExpressionSyntax).AdjustExpressionLeadingTrivia.WithTrailingEOL))
                         Else
-                            Dim Declarators As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(
-                                node:=VBFactory.VariableDeclarator(
-                                                    VBFactory.SingletonSeparatedList(VariableName),
-                                                    asClause:=Nothing,
-                                                    initializer:=Nothing).WithTrailingEOL
-                                            )
                             Statements = New SyntaxList(Of VBS.StatementSyntax)
-                            Statements = Statements.Add(VBFactory.LocalDeclarationStatement(DimModifier, Declarators).WithTrailingEOL)
+                            Statements = Statements.Add(FactoryDimStatement(Identifier,
+                                                                           asClause:=Nothing,
+                                                                           initializer:=Nothing
+                                                                           ).WithTrailingEOL)
                             Statements = Statements.Add(CType(ExpressionOrThrow.WithTrailingEOL, VBS.StatementSyntax))
                         End If
 

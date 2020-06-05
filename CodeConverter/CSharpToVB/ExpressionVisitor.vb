@@ -182,8 +182,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                         End If
                         Dim names As SeparatedSyntaxList(Of ModifiedIdentifierSyntax) = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier("DoNotCare"))
                         asClause = VBFactory.AsNewClause(DirectCast(body, NewExpressionSyntax))
-                        Dim declarators As SeparatedSyntaxList(Of VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(names, asClause, initializer:=Nothing))
-                        statements = VBFactory.SingletonList(Of StatementSyntax)(VBFactory.LocalDeclarationStatement(DimModifier, declarators))
+                        statements = VBFactory.SingletonList(Of StatementSyntax)(FactoryDimStatement("DoNotCare", asClause, initializer:=Nothing))
                         Return VBFactory.MultiLineLambdaExpression(VB.SyntaxKind.MultiLineSubLambdaExpression, lambdaHeader.WithTrailingEOL, statements, endSubOrFunctionStatement).WithConvertedTriviaFrom(node)
                     End If
                     If body.IsKind(VB.SyntaxKind.SimpleAssignmentStatement) Then
@@ -194,22 +193,20 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                                 Case VB.SyntaxKind.ObjectCreationExpression, VB.SyntaxKind.SimpleMemberAccessExpression
                                     endBlock = VBFactory.EndBlockStatement(VB.SyntaxKind.EndSubStatement, SubKeyword)
                                     Dim uniqueName As String = MethodBodyVisitor.GetUniqueVariableNameInScope(node, "tempVar", _mSemanticModel)
-                                    Dim uniqueIdentifier As IdentifierNameSyntax = VBFactory.IdentifierName(VBFactory.Identifier(uniqueName))
-                                    Dim names As SeparatedSyntaxList(Of ModifiedIdentifierSyntax) = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(uniqueName))
+                                    Dim nameToken As SyntaxToken = VBFactory.Identifier(uniqueName)
+                                    Dim uniqueIdentifier As IdentifierNameSyntax = VBFactory.IdentifierName(nameToken)
                                     Dim dimStatement As LocalDeclarationStatementSyntax
 
                                     If TypeOf memberAccessExpression.Expression Is NewExpressionSyntax Then
                                         asClause = VBFactory.AsNewClause(DirectCast(memberAccessExpression.Expression, NewExpressionSyntax))
-                                        Dim variableDeclaration As SeparatedSyntaxList(Of VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(names, asClause, initializer:=Nothing))
-                                        dimStatement = VBFactory.LocalDeclarationStatement(DimModifier, variableDeclaration)
+                                        dimStatement = FactoryDimStatement(nameToken, asClause, initializer:=Nothing)
                                     ElseIf TypeOf memberAccessExpression.Expression Is MemberAccessExpressionSyntax Then
                                         Dim memberAccess As MemberAccessExpressionSyntax = DirectCast(memberAccessExpression.Expression, MemberAccessExpressionSyntax)
                                         If TypeOf memberAccess.Expression IsNot NewExpressionSyntax Then
                                             Exit Select
                                         End If
                                         asClause = VBFactory.AsNewClause(DirectCast(memberAccess.Expression, NewExpressionSyntax))
-                                        Dim VariableDeclaration As SeparatedSyntaxList(Of VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(names, asClause, initializer:=Nothing))
-                                        dimStatement = VBFactory.LocalDeclarationStatement(DimModifier, VariableDeclaration)
+                                        dimStatement = FactoryDimStatement(nameToken, asClause, initializer:=Nothing)
                                     Else
                                         Exit Select
                                     End If
@@ -858,9 +855,8 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                             If tempIdentifier.Count = 0 Then
                                 tempIdentifier = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(identifierName))
                             End If
-                            Dim variableDeclaration As SeparatedSyntaxList(Of VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(tempIdentifier, asClause:=simpleAs, initializer))
-                            Dim dimStatement As LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(dimModifiersTokens, variableDeclaration).WithPrependedLeadingTrivia(VBFactory.CommentTrivia($" ' TODO: Visual Basic has no equivalent to C# deconstruction declarations, an attempt was made to convert."), VBEOLTrivia)
-                            StatementList = StatementList.Add(dimStatement)
+                            StatementList = StatementList.Add(FactoryDimStatement(tempIdentifier(0).Identifier, simpleAs, initializer).
+                                                                WithPrependedLeadingTrivia(VBFactory.CommentTrivia($" ' TODO: Visual Basic has no equivalent to C# deconstruction declarations, an attempt was made to convert."), VBEOLTrivia))
 
                             For variableIndex As Integer = 0 To VariableNames.Count - 1
                                 If VariableNames(variableIndex) = "__DiscardDesignation__" Then
@@ -883,14 +879,8 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                                     End If
                                 End If
                                 initializer = VBFactory.EqualsValue(VBFactory.InvocationExpression(VBFactory.ParseExpression($"{identifierName}.Item{variableIndex + 1}")))
-                                Dim Declarators As SeparatedSyntaxList(Of VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(
-                                                                            VBFactory.VariableDeclarator(
-                                                                            VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(VariableNames(variableIndex))),
-                                                                            AsClause,
-                                                                            initializer)
-                                                                        )
-                                Dim AssignmentStatement As LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(DimModifier, Declarators)
-                                StatementList = StatementList.Add(AssignmentStatement)
+
+                                StatementList = StatementList.Add(FactoryDimStatement(VariableNames(variableIndex), AsClause, initializer))
                             Next
                         End If
 
@@ -961,10 +951,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
 
                             Dim TupleType2 As TypeSyntax = VBFactory.ParseTypeName(TupleType).WithLeadingTrivia(SpaceTrivia)
                             Dim SimpleAs As SimpleAsClauseSyntax = VBFactory.SimpleAsClause(AsKeyword.WithTrailingTrivia(SpaceTrivia), attributeLists:=Nothing, TupleType2).WithLeadingTrivia(SpaceTrivia)
-                            Dim Names As SeparatedSyntaxList(Of ModifiedIdentifierSyntax) = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(IdentifierName))
-                            Dim VariableDeclaration As SeparatedSyntaxList(Of VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(Names, SimpleAs, initializer))
-                            Dim DimStatement As LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(dimModifiersTokens, VariableDeclaration)
-                            StatementList = StatementList.Add(DimStatement)
+                            StatementList = StatementList.Add(FactoryDimStatement(IdentifierName, SimpleAs, initializer))
                             For Each e As IndexClass(Of String) In VariableNames.WithIndex
                                 If e.Value = "underscore" Then
                                     Continue For
@@ -1619,10 +1606,6 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 Dim Identifier As SyntaxToken = GenerateSafeVBToken(node.UnderscoreToken)
                 Dim IdentifierExpression As IdentifierNameSyntax = VBFactory.IdentifierName(Identifier)
                 Dim ModifiedIdentifier As ModifiedIdentifierSyntax = VBFactory.ModifiedIdentifier(Identifier)
-                Dim SeparatedSyntaxListOfModifiedIdentifier As SeparatedSyntaxList(Of ModifiedIdentifierSyntax) =
-                    VBFactory.SingletonSeparatedList(
-                        ModifiedIdentifier
-                        )
                 Dim Parent As CSS.DeclarationExpressionSyntax
                 Dim TypeName As VB.VisualBasicSyntaxNode
                 If TypeOf node.Parent Is CSS.DeclarationExpressionSyntax Then
@@ -1638,19 +1621,10 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                     TypeName = PredefinedTypeObject
                 End If
 
-                Dim SeparatedListOfvariableDeclarations As SeparatedSyntaxList(Of VariableDeclaratorSyntax) =
-                    VBFactory.SingletonSeparatedList(
-                        VBFactory.VariableDeclarator(
-                            SeparatedSyntaxListOfModifiedIdentifier,
-                            VBFactory.SimpleAsClause(ConvertToType(TypeName.NormalizeWhitespace.ToString)),
-                            VBFactory.EqualsValue(NothingExpression)
-                                )
-                         )
+                Dim asClause As SimpleAsClauseSyntax = VBFactory.SimpleAsClause(ConvertToType(TypeName.NormalizeWhitespace.ToString))
 
                 Dim DeclarationStatement As LocalDeclarationStatementSyntax =
-                    VBFactory.LocalDeclarationStatement(DimModifier,
-                                                            SeparatedListOfvariableDeclarations).
-                                                    WithAdditionalAnnotations(Simplifier.Annotation)
+                    FactoryDimStatement(Identifier, asClause, VBFactory.EqualsValue(NothingExpression)).WithAdditionalAnnotations(Simplifier.Annotation)
 
                 GetStatementwithIssues(node).AddMarker(DeclarationStatement, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
                 Return IdentifierExpression
@@ -1692,15 +1666,11 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 ElseIf node.Expression.IsKind(CS.SyntaxKind.ObjectCreationExpression) Then
                     expression = DirectCast(node.Expression.Accept(Me), ExpressionSyntax)
                     Dim UniqueName As String = MethodBodyVisitor.GetUniqueVariableNameInScope(node, "tempVar", _mSemanticModel)
-                    Dim UniqueIdentifier As IdentifierNameSyntax = VBFactory.IdentifierName(VBFactory.Identifier(UniqueName))
-                    Dim Names As SeparatedSyntaxList(Of ModifiedIdentifierSyntax) = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(UniqueName))
 
                     Dim AsClause As AsClauseSyntax = VBFactory.AsNewClause(DirectCast(expression, NewExpressionSyntax))
-                    Dim VariableDeclaration As SeparatedSyntaxList(Of VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(Names, AsClause, initializer:=Nothing))
-                    Dim DimStatement As LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(DimModifier, VariableDeclaration)
-                    Dim StatementWithIssues As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
-                    StatementWithIssues.AddMarker(DimStatement, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
-                    expression = UniqueIdentifier.WithTriviaFrom(expression)
+                    Dim DimStatement As LocalDeclarationStatementSyntax = FactoryDimStatement(UniqueName, AsClause, initializer:=Nothing)
+                    GetStatementwithIssues(node).AddMarker(DimStatement, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
+                    expression = VBFactory.IdentifierName(VBFactory.Identifier(UniqueName)).WithTriviaFrom(expression)
                 Else
                     expression = DirectCast(node.Expression.Accept(Me), ExpressionSyntax)
                 End If
@@ -1973,48 +1943,26 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                     Dim DeclarationPattern As CSS.DeclarationPatternSyntax = DirectCast(Pattern, CSS.DeclarationPatternSyntax)
                     Dim Designation As CSS.SingleVariableDesignationSyntax = DirectCast(DeclarationPattern.Designation, CSS.SingleVariableDesignationSyntax)
                     Dim SeparatedList As SeparatedSyntaxList(Of ModifiedIdentifierSyntax)
-                    Dim sepListVarDecl As SeparatedSyntaxList(Of VariableDeclaratorSyntax)
-                    Dim DeclarationToBeAdded As LocalDeclarationStatementSyntax
                     Dim VariableType As TypeSyntax = CType(DeclarationPattern.Type.Accept(Me), TypeSyntax)
                     Dim value As ExpressionSyntax = VBFactory.TypeOfIsExpression(VBExpression, VariableType)
                     Dim uniqueIdToken As SyntaxToken = VBFactory.Identifier(MethodBodyVisitor.GetUniqueVariableNameInScope(node, "TempVar", _mSemanticModel))
-                    Dim VariableName As ModifiedIdentifierSyntax =
-                        VBFactory.ModifiedIdentifier(uniqueIdToken)
-                    SeparatedList = VBFactory.SingletonSeparatedList(VariableName)
-                    sepListVarDecl = VBFactory.SingletonSeparatedList(
-                            node:=VBFactory.VariableDeclarator(
-                                names:=SeparatedList,
-                                asClause:=VBFactory.SimpleAsClause(VBFactory.PredefinedType(BooleanKeyword)),
-                                initializer:=VBFactory.EqualsValue(value)
-                                    )
-                             )
 
-                    DeclarationToBeAdded =
-                        VBFactory.LocalDeclarationStatement(DimModifier,
-                                                            sepListVarDecl
-                                                            ).WithTrailingTrivia(VBEOLTrivia).WithAdditionalAnnotations(Simplifier.Annotation)
+                    Dim DimToBeAdded As LocalDeclarationStatementSyntax =
+                        FactoryDimStatement(uniqueIdToken,
+                                           VBFactory.SimpleAsClause(VBFactory.PredefinedType(BooleanKeyword)),
+                                           VBFactory.EqualsValue(value)).WithTrailingTrivia(VBEOLTrivia) _
+                                                                        .WithAdditionalAnnotations(Simplifier.Annotation)
                     If StatementWithIssue.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
-                        DeclarationToBeAdded = DeclarationToBeAdded.WithPrependedLeadingTrivia(ConvertTrivia(StatementWithIssue.GetLeadingTrivia))
+                        DimToBeAdded = DimToBeAdded.WithPrependedLeadingTrivia(ConvertTrivia(StatementWithIssue.GetLeadingTrivia))
                     End If
-                    StatementWithIssue.AddMarker(Statement:=DeclarationToBeAdded, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
+                    StatementWithIssue.AddMarker(Statement:=DimToBeAdded, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
 
                     Dim Identifier As SyntaxToken = GenerateSafeVBToken(id:=Designation.Identifier)
-                    VariableName = VBFactory.ModifiedIdentifier(Identifier.WithTrailingTrivia(SpaceTrivia))
-                    SeparatedList = VBFactory.SingletonSeparatedList(VariableName)
+                    SeparatedList = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(Identifier.WithTrailingTrivia(SpaceTrivia)))
                     If VariableType.IsKind(VB.SyntaxKind.PredefinedType) Then
-                        sepListVarDecl = VBFactory.SingletonSeparatedList(
-                                node:=VBFactory.VariableDeclarator(
-                                    names:=SeparatedList,
-                                    asClause:=VBFactory.SimpleAsClause(VariableType),
-                                    initializer:=Nothing)
-                                 )
-
-                        DeclarationToBeAdded =
-                            VBFactory.LocalDeclarationStatement(DimModifier,
-                                                                sepListVarDecl
-                                                                ).WithTrailingTrivia(VBEOLTrivia).
+                        DimToBeAdded = FactoryDimStatement(Identifier, VBFactory.SimpleAsClause(VariableType), initializer:=Nothing).WithTrailingTrivia(VBEOLTrivia).
                                                                   WithAdditionalAnnotations(Simplifier.Annotation)
-                        StatementWithIssue.AddMarker(Statement:=DeclarationToBeAdded, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
+                        StatementWithIssue.AddMarker(DimToBeAdded, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
                         Dim simpleMemberAccess As MemberAccessExpressionSyntax = VBFactory.SimpleMemberAccessExpression(VariableType, VBFactory.IdentifierName("TryParse"))
                         Dim nodes As New List(Of ArgumentSyntax) From {
                             VBFactory.SimpleArgument(VBFactory.SimpleMemberAccessExpression(VBExpression.WithoutTrivia, VBFactory.IdentifierName("ToString"))),
@@ -2027,21 +1975,12 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                         Dim Statement As ExpressionStatementSyntax = VBFactory.ExpressionStatement(expression)
                         StatementWithIssue.AddMarker(Statement, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
                     Else
-                        sepListVarDecl = VBFactory.SingletonSeparatedList(
-                                node:=VBFactory.VariableDeclarator(
-                                    names:=SeparatedList,
-                                    asClause:=VBFactory.SimpleAsClause(VariableType),
-                                    initializer:=VBFactory.EqualsValue(VBExpression)
-                                        )
-                                 )
-
-                        DeclarationToBeAdded =
-                            VBFactory.LocalDeclarationStatement(
-                                                                DimModifier,
-                                                                sepListVarDecl
-                                                                ).WithTrailingTrivia(VBEOLTrivia).
-                                                                  WithAdditionalAnnotations(Simplifier.Annotation)
-                        StatementWithIssue.AddMarker(Statement:=DeclarationToBeAdded, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
+                        DimToBeAdded =
+                            FactoryDimStatement(Identifier,
+                                               VBFactory.SimpleAsClause(VariableType),
+                                               VBFactory.EqualsValue(VBExpression)).WithTrailingTrivia(VBEOLTrivia) _
+                                                                                   .WithAdditionalAnnotations(Simplifier.Annotation)
+                        StatementWithIssue.AddMarker(DimToBeAdded, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
                     End If
 
                     Return VBFactory.IdentifierName(uniqueIdToken)
@@ -2080,22 +2019,19 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                     Dim SafeIdToken As SyntaxToken = GenerateSafeVBToken(CS.SyntaxFactory.Identifier(IdentifierName))
                     Dim Name As IdentifierNameSyntax = VBFactory.IdentifierName(SafeIdToken)
 
-                    Dim VariableName As ModifiedIdentifierSyntax = VBFactory.ModifiedIdentifier(SafeIdToken.WithTrailingTrivia(SpaceTrivia))
 
-                    Dim Declarators As SeparatedSyntaxList(Of VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(
-                            node:=VBFactory.VariableDeclarator(VBFactory.SingletonSeparatedList(
-                            VariableName),
-                            asClause:=Nothing, initializer:=VBFactory.EqualsValue(VBExpression)).WithTrailingEOL
-                             )
-
+                    Dim initializer As EqualsValueSyntax = VBFactory.EqualsValue(VBExpression)
                     Dim LeadingTrivia As SyntaxTriviaList = StatementWithIssue.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=True, "VB has no direct equivalent To C# var pattern expressions")
-                    Dim DeclarationToBeAdded As LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(DimModifier,
-                        Declarators).WithAdditionalAnnotations(Simplifier.Annotation)
+                    Dim DeclarationToBeAdded As LocalDeclarationStatementSyntax =
+                                FactoryDimStatement(SafeIdToken,
+                                                   asClause:=Nothing,
+                                                   VBFactory.EqualsValue(VBExpression)).WithTrailingEOL _
+                                                                                       .WithAdditionalAnnotations(Simplifier.Annotation)
                     If ReportCheckCorrectness Then
                         DeclarationToBeAdded = DeclarationToBeAdded.WithPrependedLeadingTrivia(StatementWithIssue.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=True, "VB has no direct equivalent To C# var pattern expressions")).WithTrailingEOL
                     End If
 
-                    StatementWithIssue.AddMarker(Statement:=DeclarationToBeAdded,
+                    StatementWithIssue.AddMarker(DeclarationToBeAdded,
                                                  StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
 
                     Return Name
@@ -2268,20 +2204,18 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 If TypeOf Expression Is NewExpressionSyntax AndAlso Not TypeOf Expression Is ArrayCreationExpressionSyntax Then
                     Dim UniqueName As String = MethodBodyVisitor.GetUniqueVariableNameInScope(node, "tempVar", _mSemanticModel)
                     Dim UniqueIdentifier As IdentifierNameSyntax = VBFactory.IdentifierName(VBFactory.Identifier(UniqueName))
-                    Dim Names As SeparatedSyntaxList(Of ModifiedIdentifierSyntax) = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(UniqueName))
                     Dim AsClause As AsClauseSyntax = VBFactory.AsNewClause(DirectCast(Expression.With({SpaceTrivia}, {SpaceTrivia}), NewExpressionSyntax))
-                    Dim VariableDeclaration As SeparatedSyntaxList(Of VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(Names, AsClause, initializer:=Nothing))
-                    Dim DimStatement As LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(DimModifier, VariableDeclaration).WithLeadingTrivia(Expression.GetLeadingTrivia).WithTrailingEOL
+                    Dim DimStatement As LocalDeclarationStatementSyntax =
+                            FactoryDimStatement(UniqueName, AsClause, initializer:=Nothing).WithLeadingTrivia(Expression.GetLeadingTrivia).WithTrailingEOL
                     Dim StatementWithIssues As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
                     StatementWithIssues.AddMarker(DimStatement.WithTrailingEOL, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
                     Expression = UniqueIdentifier.WithLeadingTrivia(Expression.GetLeadingTrivia.Last).WithTrailingTrivia(Expression.GetTrailingTrivia)
                 ElseIf TypeOf Expression Is CollectionInitializerSyntax Then
                     Dim UniqueName As String = MethodBodyVisitor.GetUniqueVariableNameInScope(node, "tempVar", _mSemanticModel)
                     Dim UniqueIdentifier As IdentifierNameSyntax = VBFactory.IdentifierName(VBFactory.Identifier(UniqueName))
-                    Dim Names As SeparatedSyntaxList(Of ModifiedIdentifierSyntax) = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(UniqueName))
                     Dim Initializer As EqualsValueSyntax = VBFactory.EqualsValue(Expression)
-                    Dim VariableDeclaration As SeparatedSyntaxList(Of VariableDeclaratorSyntax) = VBFactory.SingletonSeparatedList(VBFactory.VariableDeclarator(Names, asClause:=Nothing, Initializer))
-                    Dim DimStatement As LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(DimModifier, VariableDeclaration).WithTrailingEOL
+                    Dim DimStatement As LocalDeclarationStatementSyntax =
+                            FactoryDimStatement(UniqueName, asClause:=Nothing, Initializer).WithLeadingTrivia(Expression.GetLeadingTrivia).WithTrailingEOL
                     Dim StatementWithIssues As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
                     StatementWithIssues.AddMarker(DimStatement, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
                     Expression = UniqueIdentifier.WithTriviaFrom(Expression)

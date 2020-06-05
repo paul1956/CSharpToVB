@@ -47,6 +47,8 @@ Public Class LineNumbersForRichTextBox : Inherits Control
     Private _zSeeThroughMode As Boolean = False
 
     Public Sub New()
+        InitializeComponent()
+
         With Me
             .SetStyle(ControlStyles.OptimizedDoubleBuffer, True)
             .SetStyle(ControlStyles.ResizeRedraw, True)
