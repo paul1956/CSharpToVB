@@ -192,7 +192,7 @@ Partial Public Class Form1
 
     Private Sub ContextMenuRedo_Click(sender As Object, e As EventArgs) Handles ContextMenuRedo.Click
         Dim sourceControl As RichTextBox = CType(ContextMenuStrip1.SourceControl, RichTextBox)
-        If sourceControl.CanRedo Then
+        If sourceControl IsNot Nothing AndAlso sourceControl.CanRedo Then
             sourceControl.Redo()
         End If
     End Sub
@@ -216,7 +216,7 @@ Partial Public Class Form1
 
     Private Sub ContextMenuUndo_Click(sender As Object, e As EventArgs) Handles ContextMenuUndo.Click
         Dim sourceControl As RichTextBox = CType(ContextMenuStrip1.SourceControl, RichTextBox)
-        If sourceControl.CanUndo Then
+        If sourceControl IsNot Nothing AndAlso sourceControl.CanUndo Then
             sourceControl.Undo()
         End If
     End Sub

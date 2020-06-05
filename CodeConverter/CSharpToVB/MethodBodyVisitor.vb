@@ -1111,33 +1111,35 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 Dim messageEnumerator As SyntaxToken = VBFactory.Identifier(GetUniqueVariableNameInScope(node, "messageEnumerator", _semanticModel))
                 Dim cancelExpression As ExpressionSyntax = VBFactory.ParseExpression("Threading.CancellationToken.None")
                 Dim methodStatement As CSS.MethodDeclarationSyntax = node.Parent.GetAncestor(Of CSS.MethodDeclarationSyntax)
-                Dim methodAttributes As SyntaxList(Of CSS.AttributeListSyntax) = methodStatement.AttributeLists
-                If methodAttributes.Count > 0 Then
-                    Dim needCancelToken As Boolean = False
-                    For Each methodAttribute As CSS.AttributeListSyntax In methodAttributes
-                        If methodAttribute.Attributes.Count > 0 Then
-                            If TypeOf methodAttribute.Attributes(0).Name Is CSS.QualifiedNameSyntax Then
-                                Dim qualifiedName As CSS.QualifiedNameSyntax = CType(methodAttribute.Attributes(0).Name, CSS.QualifiedNameSyntax)
-                                If qualifiedName.Right.Identifier.ValueText.EndsWith("EnumeratorCancellationAttribute") Then
-                                    needCancelToken = True
-                                    Exit For
+                If methodStatement IsNot Nothing Then
+                    Dim methodAttributes As SyntaxList(Of CSS.AttributeListSyntax) = methodStatement.AttributeLists
+                    If methodAttributes.Any Then
+                        Dim needCancelToken As Boolean = False
+                        For Each methodAttribute As CSS.AttributeListSyntax In methodAttributes
+                            If methodAttribute.Attributes.Count > 0 Then
+                                If TypeOf methodAttribute.Attributes(0).Name Is CSS.QualifiedNameSyntax Then
+                                    Dim qualifiedName As CSS.QualifiedNameSyntax = CType(methodAttribute.Attributes(0).Name, CSS.QualifiedNameSyntax)
+                                    If qualifiedName.Right.Identifier.ValueText.EndsWith("EnumeratorCancellationAttribute") Then
+                                        needCancelToken = True
+                                        Exit For
+                                    End If
+                                ElseIf TypeOf methodAttribute.Attributes(0).Name Is CSS.IdentifierNameSyntax Then
+                                    Dim identifierName As CSS.IdentifierNameSyntax = CType(methodAttribute.Attributes(0).Name, CSS.IdentifierNameSyntax)
+                                    If identifierName.Identifier.ValueText.EndsWith("EnumeratorCancellationAttribute") Then
+                                        needCancelToken = True
+                                        Exit For
+                                    End If
                                 End If
-                            ElseIf TypeOf methodAttribute.Attributes(0).Name Is CSS.IdentifierNameSyntax Then
-                                Dim identifierName As CSS.IdentifierNameSyntax = CType(methodAttribute.Attributes(0).Name, CSS.IdentifierNameSyntax)
-                                If identifierName.Identifier.ValueText.EndsWith("EnumeratorCancellationAttribute") Then
-                                    needCancelToken = True
-                                    Exit For
-                                End If
-                            End If
-                        End If
-                    Next
-                    If needCancelToken Then
-                        For Each parm As CSS.ParameterSyntax In methodStatement.ParameterList.Parameters
-                            If parm.Type.ToString.EndsWith("CancellationToken", StringComparison.Ordinal) Then
-                                cancelExpression = VBFactory.ParseExpression(parm.Identifier.ValueText)
-                                Exit For
                             End If
                         Next
+                        If needCancelToken Then
+                            For Each parm As CSS.ParameterSyntax In methodStatement.ParameterList.Parameters
+                                If parm.Type.ToString.EndsWith("CancellationToken", StringComparison.Ordinal) Then
+                                    cancelExpression = VBFactory.ParseExpression(parm.Identifier.ValueText)
+                                    Exit For
+                                End If
+                            Next
+                        End If
                     End If
                 End If
                 Dim memberAccessExpression As ExpressionSyntax = VBFactory.MemberAccessExpression(VB.SyntaxKind.SimpleMemberAccessExpression,

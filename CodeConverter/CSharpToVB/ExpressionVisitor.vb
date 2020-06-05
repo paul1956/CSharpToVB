@@ -1315,7 +1315,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                         End If
                     End If
                     Dim rightLeadingTrivia As New List(Of SyntaxTrivia)
-                    If operatorToken.TrailingTrivia.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                    If operatorToken.TrailingTrivia.Any AndAlso operatorToken.TrailingTrivia.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
                         For Each e As IndexClass(Of SyntaxTrivia) In rightNode.GetLeadingTrivia.WithIndex
                             Dim t As SyntaxTrivia = e.Value
                             Dim nextTrivia As SyntaxTrivia = If(Not e.IsLast, rightNode.GetLeadingTrivia(e.Index + 1), New SyntaxTrivia)
@@ -1749,6 +1749,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                     End If
                     ' Figuring out this without using Accept is complicated below is safe but not fast
                     Dim ItemIsField As Boolean = node.Expressions.Any AndAlso TypeOf node.Expressions(0).Accept(Me) Is FieldInitializerSyntax
+                    Dim FoundEOF As Boolean = False
                     For expressionIndex As Integer = 0 To ExpressionLastIndex
                         If ReportProgress Then
                             s_originalRequest.Progress?.Report(New ProgressReport(expressionIndex + 1, node.Expressions.Count))
@@ -1775,11 +1776,15 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                             Separators.Add(CommaToken.WithConvertedTrailingTriviaFrom(csSeparators(expressionIndex)))
                         Else
                             If FinalSeparator Then
+                                Dim trailingTrivia As List(Of SyntaxTrivia)
                                 If ItemIsField Then
                                     Fields(expressionIndex) = Fields(expressionIndex).WithAppendedTrailingTrivia(ConvertTrivia(csSeparators.Last.TrailingTrivia))
+                                    trailingTrivia = Fields(expressionIndex).GetTrailingTrivia.ToList
                                 Else
                                     Expressions(expressionIndex) = Expressions(expressionIndex).WithAppendedTrailingTrivia(ConvertTrivia(csSeparators.Last.TrailingTrivia))
+                                    trailingTrivia = Expressions(expressionIndex).GetTrailingTrivia.ToList
                                 End If
+                                FoundEOF = trailingTrivia.Any AndAlso trailingTrivia.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia)
                             End If
                         End If
                     Next
@@ -1791,7 +1796,6 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                     End If
                     Dim CLoseBracketTrailingTriva As List(Of SyntaxTrivia) = ConvertTrivia(node.CloseBraceToken.TrailingTrivia).ToList
                     If CloseBracketLeadingTriva.ContainsCommentOrDirectiveTrivia Then
-                        Dim FoundEOF As Boolean = False
                         Dim FoundCommentOrDirective As Boolean = False
                         Dim NewCLoseBracketLeadingTriva As New List(Of SyntaxTrivia)
                         For Each e As IndexClass(Of SyntaxTrivia) In CloseBracketLeadingTriva.WithIndex
