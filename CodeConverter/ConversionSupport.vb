@@ -27,7 +27,7 @@ Namespace CSharpToVBCodeConverter
                 Throw New ArgumentNullException(NameOf(language))
             End If
             If language.StartsWith("cs", StringComparison.OrdinalIgnoreCase) Then
-                Return CS.LanguageVersion.Latest
+                Return CS.LanguageVersion.CSharp8
             End If
             If language.StartsWith("vb", StringComparison.OrdinalIgnoreCase) Then
                 Return VB.LanguageVersion.Latest

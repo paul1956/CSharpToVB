@@ -1945,8 +1945,14 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
 
                 If TypeOf Pattern Is CSS.DeclarationPatternSyntax Then
                     Dim DeclarationPattern As CSS.DeclarationPatternSyntax = DirectCast(Pattern, CSS.DeclarationPatternSyntax)
-                    Dim Designation As CSS.SingleVariableDesignationSyntax = DirectCast(DeclarationPattern.Designation, CSS.SingleVariableDesignationSyntax)
-                    Dim SeparatedList As SeparatedSyntaxList(Of ModifiedIdentifierSyntax)
+                    Dim Identifier As SyntaxToken
+                    If TypeOf DeclarationPattern.Designation Is CSS.SingleVariableDesignationSyntax Then
+                        Dim Designation As CSS.SingleVariableDesignationSyntax = DirectCast(DeclarationPattern.Designation, CSS.SingleVariableDesignationSyntax)
+                        Identifier = GenerateSafeVBToken(id:=Designation.Identifier)
+                    ElseIf TypeOf DeclarationPattern.Designation Is CSS.DiscardDesignationSyntax Then
+                        Identifier = VBFactory.Identifier(MethodBodyVisitor.GetUniqueVariableNameInScope(node, "_", _mSemanticModel))
+                    End If
+
                     Dim VariableType As TypeSyntax = CType(DeclarationPattern.Type.Accept(Me), TypeSyntax)
                     Dim value As ExpressionSyntax = VBFactory.TypeOfIsExpression(VBExpression, VariableType)
                     Dim uniqueIdToken As SyntaxToken = VBFactory.Identifier(MethodBodyVisitor.GetUniqueVariableNameInScope(node, "TempVar", _mSemanticModel))
@@ -1961,8 +1967,6 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                     End If
                     StatementWithIssue.AddMarker(Statement:=DimToBeAdded, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
 
-                    Dim Identifier As SyntaxToken = GenerateSafeVBToken(id:=Designation.Identifier)
-                    SeparatedList = VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(Identifier.WithTrailingTrivia(SpaceTrivia)))
                     If VariableType.IsKind(VB.SyntaxKind.PredefinedType) Then
                         DimToBeAdded = FactoryDimStatement(Identifier, VBFactory.SimpleAsClause(VariableType), initializer:=Nothing).WithTrailingTrivia(VBEOLTrivia).
                                                                   WithAdditionalAnnotations(Simplifier.Annotation)

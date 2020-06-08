@@ -15,19 +15,18 @@ Namespace CSharpToVBCodeConverter.Utilities
     Public Module SyntaxTokenExtensions
 
         <Extension>
-        Friend Function Contains(tokens As SyntaxTokenList, Kind As CSharp.SyntaxKind, ByRef Result As Boolean) As Boolean
-            Result = tokens.Contains(Kind)
-            Return Result
+        Friend Function Contains(Tokens As SyntaxTokenList, Kind As CSharp.SyntaxKind) As Boolean
+            Return Tokens.Contains(Function(m As SyntaxToken) m.IsKind(Kind))
         End Function
 
         <Extension>
-        Friend Function Contains(tokens As SyntaxTokenList, Kind As CSharp.SyntaxKind) As Boolean
-            Return tokens.Contains(Function(m As SyntaxToken) m.IsKind(Kind))
+        Friend Function Contains(Tokens As IEnumerable(Of SyntaxToken), ParamArray Kind() As VB.SyntaxKind) As Boolean
+            Return Tokens.Contains(Function(m As SyntaxToken) m.IsKind(Kind))
         End Function
 
         <Extension>
-        Friend Function WithPrependedLeadingTrivia(token As SyntaxToken, trivia As IEnumerable(Of SyntaxTrivia)) As SyntaxToken
-            Return token.WithPrependedLeadingTrivia(trivia.ToSyntaxTriviaList())
+        Friend Function WithPrependedLeadingTrivia(Token As SyntaxToken, Trivia As IEnumerable(Of SyntaxTrivia)) As SyntaxToken
+            Return Token.WithPrependedLeadingTrivia(Trivia.ToSyntaxTriviaList())
         End Function
 
         <Extension>

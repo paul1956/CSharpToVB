@@ -222,12 +222,8 @@ Public Class FindDialog
         SetEnableFindButtons()
     End Sub
 
-    Private Sub MatchWholeWordCheckBox_CheckedChanged(sender As Object, e As EventArgs)
-
-    End Sub
-
     Public Function PreFilterMessage(ByRef m As Message) As Boolean Implements IMessageFilter.PreFilterMessage
-        If m.Msg = WM_MOUSELEAVE OrElse m.Msg = WM_MOUSEMOVE Then
+        If m.Msg = NativeTypes.WM_MOUSELEAVE OrElse m.Msg = NativeTypes.WM_MOUSEMOVE Then
             'hit test the client rectangle
             'since WM_MOUSELEAVE does not provide the mouse location, use MousePosition
             Dim hit As Boolean = ClientRectangle.Contains(PointToClient(MousePosition))

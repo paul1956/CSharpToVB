@@ -4,109 +4,101 @@
 
 Imports System.Runtime.InteropServices
 
-Friend Module NativeMethods
+Namespace Microsoft.VisualBasic.CompilerServices
+
+    <ComVisible(False)>
+    Friend NotInheritable Class NativeMethods
 
 #Region "Scroll Bar Support"
 
-    Public Const OBJID_VSCROLL As Long = &HFFFFFFFB
+        Public Enum SBOrientation As Integer
+            HORZ = &H0
+            VERT = &H1
+            CTL = &H2
+            BOTH = &H3
+        End Enum
 
-    Public Const WM_NCRBUTTONDOWN As Integer = &HA4
+        <Flags>
+        Public Enum ScrollInfoMasks As Integer
+            RANGE = &H1
+            PAGE = &H2
+            POS = &H4
+            DISABLENOSCROLL = &H8
+            TRACKPOS = &H10
+            ALL = RANGE Or PAGE Or POS Or TRACKPOS
+        End Enum
 
-    Public Enum SBOrientation As Integer
-        HORZ = &H0
-        VERT = &H1
-        CTL = &H2
-        BOTH = &H3
-    End Enum
-
-    <Flags>
-    Public Enum ScrollInfoMasks As Integer
-        RANGE = &H1
-        PAGE = &H2
-        POS = &H4
-        DISABLENOSCROLL = &H8
-        TRACKPOS = &H10
-        ALL = (RANGE Or PAGE Or POS Or TRACKPOS)
-    End Enum
-
-    <DllImport("user32.dll", EntryPoint:=NameOf(GetScrollBarInfo))>
-    Friend Function GetScrollBarInfo(hwnd As IntPtr,
-                                     idObject As Integer,
-                                     ByRef psbi As SCROLLBARINFO
-                                     ) As <MarshalAs(UnmanagedType.Bool)> Boolean
-    End Function
-
-    <DllImport("user32.dll", SetLastError:=True)>
-    Friend Function GetScrollInfo(
-                                 hWnd As IntPtr,
-                                 <MarshalAs(UnmanagedType.I4)> fnBar As SBOrientation,
-                                 ByRef lpsi As SCROLLINFO
-                                 ) As Integer
-    End Function
-
-    <DllImport("user32.dll", SetLastError:=True, ThrowOnUnmappableChar:=True, CharSet:=CharSet.Auto)>
-    Friend Function SetScrollInfo(
-                                 hWnd As IntPtr,
-                                 <MarshalAs(UnmanagedType.I4)> nBar As SBOrientation,
-                                 <MarshalAs(UnmanagedType.Struct)> ByRef lpsi As SCROLLINFO,
-                                 <MarshalAs(UnmanagedType.Bool)> bRepaint As Boolean
-                                 ) As Integer
-    End Function
-
-    'This function queries or sets system-wide parameters, and updates the user profile during the process.
-    <DllImport("user32", EntryPoint:=NameOf(SystemParametersInfo), CharSet:=CharSet.Unicode, SetLastError:=True)>
-    Public Function SystemParametersInfo(intAction As Integer,
-                                         intParam As Integer,
-                                         strParam As String,
-                                         intWinIniFlag As Integer
-                                        ) As Integer
-        ' returns non-zero value if function succeeds
-    End Function
-
-    <StructLayout(LayoutKind.Sequential)>
-    Friend Structure RECT
-        Public Left, Top, Right, Bottom As Integer
-
-        Public Function ToRectangle() As Rectangle
-            Return New Rectangle(Left, Top, Right - Left, Bottom - Top)
+        <DllImport("user32.dll", EntryPoint:=NameOf(GetScrollBarInfo))>
+        Friend Shared Function GetScrollBarInfo(hwnd As IntPtr,
+                                         idObject As Integer,
+                                         ByRef psbi As SCROLLBARINFO
+                                         ) As <MarshalAs(UnmanagedType.Bool)> Boolean
         End Function
 
-    End Structure
+        <DllImport("user32.dll", SetLastError:=True)>
+        Friend Shared Function GetScrollInfo(
+                                     hWnd As IntPtr,
+                                     <MarshalAs(UnmanagedType.I4)> fnBar As SBOrientation,
+                                     ByRef lpsi As SCROLLINFO
+                                     ) As Integer
+        End Function
 
-    <Serializable, StructLayout(LayoutKind.Sequential)>
-    Friend Structure SCROLLINFO
-        Public CB_Size As UInteger
-        <MarshalAs(UnmanagedType.U4)> Public F_Mask As ScrollInfoMasks
-        Public N_Min As Integer
-        Public N_Max As Integer
-        Public N_Page As UInteger
-        Public N_Pos As Integer
-        Public N_TrackPos As Integer
-    End Structure
+        <DllImport("user32.dll", SetLastError:=True, ThrowOnUnmappableChar:=True, CharSet:=CharSet.Auto)>
+        Friend Shared Function SetScrollInfo(
+                                     hWnd As IntPtr,
+                                     <MarshalAs(UnmanagedType.I4)> nBar As SBOrientation,
+                                     <MarshalAs(UnmanagedType.Struct)> ByRef lpsi As SCROLLINFO,
+                                     <MarshalAs(UnmanagedType.Bool)> bRepaint As Boolean
+                                     ) As Integer
+        End Function
 
-    <StructLayout(LayoutKind.Sequential)>
-    Public Structure SCROLLBARINFO
-        Public CB_Size As Integer
-        Public RC_ScrollBar As RECT
-        Public DXY_LineButton As Integer
-        Public XY_ThumbTop As Integer
-        Public XY_ThumbBottom As Integer
-        Public Reserved As Integer
+        'This function queries or sets system-wide parameters, and updates the user profile during the process.
+        <DllImport("user32", EntryPoint:=NameOf(SystemParametersInfo), CharSet:=CharSet.Unicode, SetLastError:=True)>
+        Public Shared Function SystemParametersInfo(intAction As Integer,
+                                             intParam As Integer,
+                                             strParam As String,
+                                             intWinIniFlag As Integer
+                                            ) As Integer
+            ' returns non-zero value if function succeeds
+        End Function
 
-        <MarshalAs(UnmanagedType.ByValArray, SizeConst:=6, ArraySubType:=UnmanagedType.U4)>
-        Public RgState() As Integer
+        <StructLayout(LayoutKind.Sequential)>
+        Friend Structure RECT
+            Public Left, Top, Right, Bottom As Integer
 
-    End Structure
+            Public Function ToRectangle() As Rectangle
+                Return New Rectangle(Left, Top, Right - Left, Bottom - Top)
+            End Function
+
+        End Structure
+
+        <Serializable, StructLayout(LayoutKind.Sequential)>
+        Friend Structure SCROLLINFO
+            Public CB_Size As UInteger
+            <MarshalAs(UnmanagedType.U4)> Public F_Mask As ScrollInfoMasks
+            Public N_Min As Integer
+            Public N_Max As Integer
+            Public N_Page As UInteger
+            Public N_Pos As Integer
+            Public N_TrackPos As Integer
+        End Structure
+
+        <StructLayout(LayoutKind.Sequential)>
+        Public Structure SCROLLBARINFO
+            Public CB_Size As Integer
+            Public RC_ScrollBar As RECT
+            Public DXY_LineButton As Integer
+            Public XY_ThumbTop As Integer
+            Public XY_ThumbBottom As Integer
+            Public Reserved As Integer
+
+            <MarshalAs(UnmanagedType.ByValArray, SizeConst:=6, ArraySubType:=UnmanagedType.U4)>
+            Public RgState() As Integer
+
+        End Structure
 
 #End Region
 
-#Region "Message Filter Support"
+    End Class
 
-#Disable Warning IDE0049 ' Simplify Names
-    Public Const WM_MOUSELEAVE As Int32 = &H2A3
-    Public Const WM_MOUSEMOVE As Int32 = &H200
-#Enable Warning IDE0049 ' Simplify Names
-
-#End Region
-
-End Module
+End Namespace

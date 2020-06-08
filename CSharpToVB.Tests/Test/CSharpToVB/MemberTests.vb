@@ -377,7 +377,7 @@ End Class")
 Option Infer On
 Option Strict Off
 
-Class TestClass
+NotInheritable Class TestClass
 
     Public Shared Sub TestMethod(Of T As {Class, New}, T2 As Structure, T3)(<Runtime.InteropServices.Out> ByRef argument As T, ByRef argument2 As T2, argument3 As T3)
         argument = Nothing

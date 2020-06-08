@@ -88,7 +88,10 @@ Partial Public Class Form1
             ConversionBuffer.Visible = False
         End If
         Try ' Prevent crash when exiting
-            If failures IsNot Nothing Then
+            If failures Is Nothing Then
+                ListBoxErrorList.Enabled = False
+            Else
+                ListBoxErrorList.Enabled = True
                 For Each dia As Diagnostic In failures
                     ListBoxErrorList.Items.Add($"{dia.Id} Line = {dia.Location.GetLineSpan.StartLinePosition.Line + 1} {dia.GetMessage}")
                 Next
@@ -447,15 +450,19 @@ Partial Public Class Form1
 
     Private Sub ListBoxErrorList_Enter(sender As Object, e As EventArgs) Handles ListBoxErrorList.Enter
         If ListBoxErrorList.Items.Count = 0 Then
+            ListBoxErrorList.Enabled = False
             Exit Sub
         End If
+        ListBoxErrorList.Enabled = True
         CurrentBuffer = ListBoxErrorList
     End Sub
 
     Private Sub ListBoxErrorList_MouseEnter(sender As Object, e As EventArgs) Handles ListBoxErrorList.MouseEnter
         If ListBoxErrorList.Items.Count = 0 Then
+            ListBoxErrorList.Enabled = False
             Exit Sub
         End If
+        ListBoxErrorList.Enabled = True
         CurrentBuffer = ListBoxErrorList
     End Sub
 
@@ -1278,6 +1285,7 @@ Partial Public Class Form1
 
             Dim prompt As String = "Conversion stopped."
             If fileName.EndsWith(".sln", StringComparison.OrdinalIgnoreCase) Then
+                ConvertSolutionFile(fileName, solutionRoot)
                 mnuFileLastSolution.Enabled = True
                 My.Settings.LastSolution = fileName
                 mnuFileLastSolution.Text = $"Last Solution - {fileName}"

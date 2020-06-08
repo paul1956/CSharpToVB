@@ -203,7 +203,8 @@ End Function
                 Dim [implements] As New List(Of VBS.ImplementsStatementSyntax)()
 
                 ConvertBaseList(node, [inherits], [implements], s_implementedMembers)
-
+                Dim staticMethodCount As Integer = 0
+                Dim methodCount As Integer = 0
                 Dim classType As ITypeSymbol = CType(_mSemanticModel.GetDeclaredSymbol(node), ITypeSymbol)
                 For Each e As IndexClass(Of CSS.MemberDeclarationSyntax) In node.Members.WithIndex
                     If s_originalRequest.CancelToken.IsCancellationRequested Then
@@ -219,12 +220,28 @@ End Function
                         Statement.IsKind(VB.SyntaxKind.EmptyStatement) OrElse
                         Statement.IsKind(VB.SyntaxKind.EnumBlock) OrElse
                         Statement.IsKind(VB.SyntaxKind.FunctionBlock) OrElse
-                        Statement.IsKind(VB.SyntaxKind.FunctionStatement) OrElse
                         Statement.IsKind(VB.SyntaxKind.InterfaceBlock) OrElse
                         Statement.IsKind(VB.SyntaxKind.ModuleBlock) OrElse
                         Statement.IsKind(VB.SyntaxKind.StructureBlock) OrElse
-                        Statement.IsKind(VB.SyntaxKind.SubBlock) OrElse
                         Statement.IsKind(VB.SyntaxKind.SubStatement) Then
+                        members.Add(Statement.WithTrailingEOL)
+                    ElseIf Statement.IsKind(VB.SyntaxKind.FunctionStatement) OrElse
+                        Statement.IsKind(VB.SyntaxKind.SubBlock) Then
+                        Dim modifiers As List(Of SyntaxToken)
+                        If TypeOf Statement Is VBS.MethodBlockSyntax Then
+                            Dim block As VBS.MethodBlockSyntax = CType(Statement, VBS.MethodBlockSyntax)
+                            modifiers = block.BlockStatement.Modifiers.ToList
+                        ElseIf TypeOf Statement Is VBS.MethodStatementSyntax Then
+                            Dim block As VBS.MethodStatementSyntax = CType(Statement, VBS.MethodStatementSyntax)
+                            modifiers = block.Modifiers.ToList
+                        Else
+                            modifiers = New List(Of SyntaxToken)
+                            Stop
+                        End If
+                        methodCount += 1
+                        If modifiers.Contains(VB.SyntaxKind.SharedKeyword) Then
+                            staticMethodCount += 1
+                        End If
                         members.Add(Statement.WithTrailingEOL)
                     ElseIf Statement.IsKind(VB.SyntaxKind.PropertyBlock) Then
                         If TypeOf m Is CSS.PropertyDeclarationSyntax Then
@@ -309,6 +326,16 @@ End Function
                 Else
                     Dim ClassModifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, IsModule:=False, If(IsModule, TokenContext.InterfaceOrModule, TokenContext.Class))
                     Dim ClassKeywordWithTrivia As SyntaxToken = ClassKeyWord.WithConvertedTriviaFrom(node.Keyword)
+                    If methodCount > 0 AndAlso
+                        staticMethodCount = methodCount AndAlso
+                        Not ClassModifiers.Contains(VB.SyntaxKind.StaticKeyword, VB.SyntaxKind.NotInheritableKeyword) Then
+                        If ClassModifiers.Count = 0 Then
+                            ClassModifiers.Add(NotInheritableKeyword.WithLeadingTrivia(ClassKeywordWithTrivia.LeadingTrivia))
+                            ClassKeywordWithTrivia = ClassKeywordWithTrivia.WithLeadingTrivia(SpaceTrivia)
+                        Else
+                            ClassModifiers.Add(NotInheritableKeyword)
+                        End If
+                    End If
                     Dim PrependedTrivia As List(Of SyntaxTrivia) = DedupLeadingTrivia(node, ClassKeywordWithTrivia, ListOfAttributes.ToList, ClassModifiers)
                     Dim ClassStatement As VBS.ClassStatementSyntax = DirectCast(VBFactory.ClassStatement(
                                                                             ListOfAttributes,

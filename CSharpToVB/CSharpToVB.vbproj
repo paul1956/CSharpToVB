@@ -27,8 +27,8 @@
     <Product>CSharp To VB Converter</Product>
     <Copyright>Copyright (c) .NET Foundation and Contributors</Copyright>
     <PackageId>CSharp To VB Converter</PackageId>
-    <AssemblyVersion>4.5.0.9</AssemblyVersion>
-    <FileVersion>4.5.0.9</FileVersion>
+    <AssemblyVersion>4.5.1.0</AssemblyVersion>
+    <FileVersion>4.5.1.0</FileVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <NoWarn />
@@ -38,6 +38,11 @@
     <NoWarn />
     <WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="ComGuids.vb" />
+    <Compile Remove="Errors.vb" />
+    <Compile Remove="ExceptionUtils.vb" />
+  </ItemGroup>
 
   <ItemGroup>
     <Import Include="System.Data" />

@@ -483,7 +483,9 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                         Case TypeOf CaseLabel Is CSS.CaseSwitchLabelSyntax
                             CaseLabelExpression = DirectCast(CType(CaseLabel, CSS.CaseSwitchLabelSyntax).Value.Accept(_nodesVisitor), ExpressionSyntax)
                             CaseLabelWhenExpression = Nothing
-                            vbLabelLeadingTrivia.AddRange(ConvertTrivia(CaseLabel.GetLeadingTrivia))
+                            'If Not TriviaIsIdentical(VBFactory.TriviaList(vbLabelLeadingTrivia), ConvertTrivia(CaseLabel.GetLeadingTrivia).ToList) Then
+                            '    vbLabelLeadingTrivia.AddRange(ConvertTrivia(CaseLabel.GetLeadingTrivia))
+                            'End If
                             csLabelTrailingTrivia.AddRange(CaseLabel.GetTrailingTrivia)
                         Case TypeOf CaseLabel Is CSS.CasePatternSwitchLabelSyntax
                             Dim PatternLabel As CSS.CasePatternSwitchLabelSyntax = DirectCast(CaseLabel, CSS.CasePatternSwitchLabelSyntax)
@@ -732,7 +734,9 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
             End Function
 
             Public Shared Function GetUniqueVariableNameInScope(node As CSharpSyntaxNode, variableNameBase As String, lSemanticModel As SemanticModel) As String
-                Dim reservedNames As New List(Of String)
+                Dim reservedNames As New List(Of String) From {
+                    "_"
+                }
                 reservedNames.AddRange(node.DescendantNodesAndSelf().SelectMany(Function(lSyntaxNode As SyntaxNode) lSemanticModel.LookupSymbols(lSyntaxNode.SpanStart).Select(Function(s As ISymbol) s.Name)).Distinct)
                 Dim UniqueVariableName As String = EnsureUniqueness(variableNameBase, reservedNames)
                 s_usedIdentifiers.Add(UniqueVariableName,
@@ -1119,13 +1123,13 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                             If methodAttribute.Attributes.Count > 0 Then
                                 If TypeOf methodAttribute.Attributes(0).Name Is CSS.QualifiedNameSyntax Then
                                     Dim qualifiedName As CSS.QualifiedNameSyntax = CType(methodAttribute.Attributes(0).Name, CSS.QualifiedNameSyntax)
-                                    If qualifiedName.Right.Identifier.ValueText.EndsWith("EnumeratorCancellationAttribute") Then
+                                    If qualifiedName.Right.Identifier.ValueText.EndsWith("EnumeratorCancellationAttribute", StringComparison.OrdinalIgnoreCase) Then
                                         needCancelToken = True
                                         Exit For
                                     End If
                                 ElseIf TypeOf methodAttribute.Attributes(0).Name Is CSS.IdentifierNameSyntax Then
                                     Dim identifierName As CSS.IdentifierNameSyntax = CType(methodAttribute.Attributes(0).Name, CSS.IdentifierNameSyntax)
-                                    If identifierName.Identifier.ValueText.EndsWith("EnumeratorCancellationAttribute") Then
+                                    If identifierName.Identifier.ValueText.EndsWith("EnumeratorCancellationAttribute", StringComparison.OrdinalIgnoreCase) Then
                                         needCancelToken = True
                                         Exit For
                                     End If
@@ -1527,8 +1531,8 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 If StatementWithIssues.Equals(node) Then
                     Return VBFactory.SingletonList(Of StatementSyntax)(dimStatement.WithConvertedTriviaFrom(node))
                 End If
-                StatementWithIssues.AddMarker(dimStatement, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
-                Return VBFactory.SingletonList(Of StatementSyntax)(VBFactory.EmptyStatement)
+                'StatementWithIssues.AddMarker(dimStatement, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
+                Return VBFactory.SingletonList(Of StatementSyntax)(dimStatement)
             End Function
 
             Public Overrides Function VisitLockStatement(node As CSS.LockStatementSyntax) As SyntaxList(Of StatementSyntax)

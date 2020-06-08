@@ -817,7 +817,7 @@ End Class")
 Option Infer On
 Option Strict Off
 
-Class GotoTest1
+NotInheritable Class GotoTest1
 
     Private Shared Sub Main()
         Dim x As Integer = 200, y As Integer = 4

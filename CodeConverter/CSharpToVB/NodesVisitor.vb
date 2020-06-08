@@ -331,7 +331,6 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
             End Function
 
             Public Overrides Function VisitSwitchExpression(node As CSS.SwitchExpressionSyntax) As VisualBasicSyntaxNode
-                Dim SwitchVariableDeclared As Boolean = False
                 Dim StatementWithIssue As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
                 Dim governingExpression As VBS.ExpressionSyntax = CType(node.GoverningExpression.Accept(Me), VBS.ExpressionSyntax)
                 Dim SelectCaseStatement As VBS.SelectStatementSyntax = VBFactory.SelectStatement(governingExpression.WithLeadingTrivia(SpaceTrivia)).WithLeadingTrivia(governingExpression.GetLeadingTrivia)
@@ -346,7 +345,6 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                         AsClause = VBFactory.SimpleAsClause(ConvertToType(_Typeinfo.Type.ToString).WithLeadingTrivia(SpaceTrivia))
                     End If
                 End If
-                Dim ResultVariable As VBS.VariableDeclaratorSyntax = VBFactory.VariableDeclarator(VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(ResultNameToken)), AsClause, initializer:=Nothing)
 
                 Dim Blocks As New SyntaxList(Of VBS.CaseBlockSyntax)
                 For Each e As IndexClass(Of CSS.SwitchExpressionArmSyntax) In node.Arms.WithIndex
@@ -382,7 +380,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                             Dim CaseClause As SeparatedSyntaxList(Of VBS.CaseClauseSyntax) = VBFactory.SingletonSeparatedList(Of VBS.CaseClauseSyntax)(VBFactory.SimpleCaseClause(WhenClause))
                             Blocks = Blocks.Add(VBFactory.CaseBlock(VBFactory.CaseStatement(CaseClause).WithTrailingEOL, Statements))
                         Else
-                            Blocks = Blocks.Add(VBFactory.CaseElseBlock(VBFactory.CaseElseStatement(VBFactory.ElseCaseClause).WithTrailingEOL, Statements))
+                            Blocks = Blocks.Add(VBFactory.CaseElseBlock(VBFactory.CaseElseStatement(VBFactory.ElseCaseClause).WithConvertedLeadingTriviaFrom(arm).WithTrailingEOL, Statements))
                         End If
                     ElseIf TypeOf arm.Pattern Is CSS.RecursivePatternSyntax Then
                         StatementWithIssue.AddMarker(FlagUnsupportedStatements(node, "Switch Expression with Recursive Pattern Syntax", CommentOutOriginalStatements:=True), StatementHandlingOption.ReplaceStatement, AllowDuplicates:=True)
@@ -394,36 +392,19 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                         If Pattern.Designation.IsKind(CS.SyntaxKind.SingleVariableDesignation) Then
                             Dim designation As CSS.SingleVariableDesignationSyntax = CType(Pattern.Designation, CSS.SingleVariableDesignationSyntax)
                             Dim identifierToken As SyntaxToken = GenerateSafeVBToken(designation.Identifier)
-                            If Not SwitchVariableDeclared Then
-                                Dim SeparatedSyntaxListOfModifiedIdentifier As SeparatedSyntaxList(Of VBS.ModifiedIdentifierSyntax) =
-                                        VBFactory.SingletonSeparatedList(VBFactory.ModifiedIdentifier(identifierToken))
-
-                                Dim SeparatedListOfvariableDeclarations As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) =
-                                    VBFactory.SingletonSeparatedList(
-                                        VBFactory.VariableDeclarator(
-                                                        SeparatedSyntaxListOfModifiedIdentifier,
-                                                        asClause:=Nothing,
-                                                        initializer:=Nothing
-                                                                    )
-                                         )
-                                Dim DeclarationToBeAdded As VBS.LocalDeclarationStatementSyntax =
-                                        VBFactory.LocalDeclarationStatement(
-                                                DimModifier,
-                                                SeparatedListOfvariableDeclarations
-                                                ).WithAdditionalAnnotations(Simplifier.Annotation).WithPrependedLeadingTrivia(VariableType.GetLeadingTrivia).WithTrailingEOL
-
-                                StatementWithIssue.AddMarker(DeclarationToBeAdded, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
-                                SwitchVariableDeclared = True
-                            End If
+                            Dim statements As New SyntaxList(Of VBS.StatementSyntax)
+                            Dim initializer As VBS.EqualsValueSyntax = VBFactory.EqualsValue(VBFactory.DirectCastExpression(governingExpression, VariableType))
+                            statements = statements.Add(FactoryDimStatement(identifierToken,
+                                                                                VBFactory.SimpleAsClause(VariableType),
+                                                                                initializer).WithConvertedLeadingTriviaFrom(arm).WithTrailingEOL
+                                                           )
                             Dim CaseClause As SeparatedSyntaxList(Of VBS.CaseClauseSyntax) =
                                     VBFactory.SingletonSeparatedList(Of VBS.CaseClauseSyntax)(VBFactory.SimpleCaseClause(VBFactory.EqualsExpression(_tryCast, VBFactory.TrueLiteralExpression(TrueKeyword))))
-                            Dim statements As New SyntaxList(Of VBS.StatementSyntax)
                             Dim right As VBS.ExpressionSyntax = CType(arm.Expression.Accept(Me), VBS.ExpressionSyntax).AdjustExpressionLeadingTrivia
                             If right.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
                                 equalsTokenWithTrivia = equalsTokenWithTrivia.WithTrailingTrivia(SpaceTrivia, LineContinuation, VBEOLTrivia)
                             End If
-                            statements = statements.Add(VBFactory.AssignmentStatement(SyntaxKind.SimpleAssignmentStatement, ResultIdentifier, equalsTokenWithTrivia, right))
-                            statements = statements.Add(VBFactory.AssignmentStatement(SyntaxKind.SimpleAssignmentStatement, VBFactory.IdentifierName(identifierToken), equalsTokenWithTrivia, ResultIdentifier))
+                            statements = statements.Add(VBFactory.AssignmentStatement(SyntaxKind.SimpleAssignmentStatement, ResultIdentifier, equalsTokenWithTrivia, right).WithTrailingEOL)
                             Blocks = Blocks.Add(VBFactory.CaseBlock(VBFactory.CaseStatement(CaseClause).WithTrailingEOL, statements))
                         ElseIf Pattern.Designation.IsKind(CS.SyntaxKind.DiscardDesignation) Then
                             Dim statements As New SyntaxList(Of VBS.StatementSyntax)
@@ -433,7 +414,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                             End If
                             Dim CaseClause As SeparatedSyntaxList(Of VBS.CaseClauseSyntax) =
                                     VBFactory.SingletonSeparatedList(Of VBS.CaseClauseSyntax)(VBFactory.SimpleCaseClause(VBFactory.EqualsExpression(_tryCast, VBFactory.TrueLiteralExpression(TrueKeyword))))
-                            statements = statements.Add(VBFactory.AssignmentStatement(SyntaxKind.SimpleAssignmentStatement, ResultIdentifier, equalsTokenWithTrivia, right))
+                            statements = statements.Add(VBFactory.AssignmentStatement(SyntaxKind.SimpleAssignmentStatement, ResultIdentifier, equalsTokenWithTrivia, right).WithTrailingEOL)
                             Blocks = Blocks.Add(VBFactory.CaseBlock(VBFactory.CaseStatement(CaseClause).WithTrailingEOL, statements))
                         Else
                             Stop
@@ -473,7 +454,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                             Dim CaseClause As SeparatedSyntaxList(Of VBS.CaseClauseSyntax) = VBFactory.SingletonSeparatedList(Of VBS.CaseClauseSyntax)(VBFactory.SimpleCaseClause(WhenClause))
                             Blocks = Blocks.Add(VBFactory.CaseBlock(VBFactory.CaseStatement(CaseClause).WithTrailingEOL, Statements))
                         Else
-                            Blocks = Blocks.Add(VBFactory.CaseElseBlock(VBFactory.CaseElseStatement(VBFactory.ElseCaseClause).WithTrailingEOL, Statements))
+                            Blocks = Blocks.Add(VBFactory.CaseElseBlock(VBFactory.CaseElseStatement(VBFactory.ElseCaseClause).WithConvertedLeadingTriviaFrom(arm).WithTrailingEOL, Statements))
                         End If
                     Else
                         Stop
@@ -488,9 +469,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                                                                         Blocks,
                                                                         EndSelectStatement
                                                                         )
-                Dim localDeclarationStatement As VBS.LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(
-                                                                                DimModifier,
-                                                                                VBFactory.SingletonSeparatedList(ResultVariable))
+                Dim localDeclarationStatement As VBS.LocalDeclarationStatementSyntax = FactoryDimStatement(ResultNameToken, AsClause, initializer:=Nothing)
                 StatementWithIssue.AddMarker(localDeclarationStatement.WithTrailingEOL, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
                 StatementWithIssue.AddMarker(stmt, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
                 Return ResultIdentifier

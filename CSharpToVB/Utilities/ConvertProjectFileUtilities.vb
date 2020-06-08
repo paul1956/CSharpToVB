@@ -367,8 +367,11 @@ Public Module ConvertProjectFileUtilities
                                     Case "ProjectReference"
                                         xmlDoc.DocumentElement.ChildNodes(index).ChildNodes(childIndex).Attributes(0).Value = xmlNode.Attributes(0).Value.Replace(".csproj", ".vbproj", StringComparison.OrdinalIgnoreCase)
                                     Case "Protobuf"
-                                        nodesToBeRemoved.Add((index, childIndex - 1))
                                         ConvertProtoNode(ProjectSavePath, sourceFilePath, xmlNode, TargetFramework)
+                                        Dim elem As XmlElement = xmlDoc.CreateElement("ProjectReference")
+                                        elem.SetAttribute("Include", "..\CSProto\CSProto.csproj")
+                                        Dim y As XmlNode = xmlDoc.GetElementsByTagName("Protobuf")(0)
+                                        y.ParentNode.ReplaceChild(elem, y)
                                     Case Else
                                         ' xmlNode.Name
                                         Stop
@@ -381,7 +384,6 @@ Public Module ConvertProjectFileUtilities
                             Stop
                     End Select
                 Next index
-
                 If nodesToBeRemoved.Count > 0 Then
                     For index As Integer = nodesToBeRemoved.Count - 1 To 0 Step -1
                         xmlDoc.DocumentElement.ChildNodes(nodesToBeRemoved(index).PropertyIndex).RemoveChild(xmlDoc.DocumentElement.ChildNodes(nodesToBeRemoved(index).PropertyIndex).ChildNodes(nodesToBeRemoved(index).ChildIndex))

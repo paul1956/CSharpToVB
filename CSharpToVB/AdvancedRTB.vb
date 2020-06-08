@@ -3,6 +3,8 @@
 ' See the LICENSE file in the project root for more information.
 Imports System.Runtime.InteropServices
 
+Imports CSharpToVBApp.Microsoft.VisualBasic.CompilerServices.NativeMethods
+
 Public Class AdvancedRTB
 
     'the vertical scroll bar of the hwnd window
@@ -88,10 +90,10 @@ Public Class AdvancedRTB
 
     <DebuggerStepThrough>
     Protected Overrides Sub WndProc(ByRef m As Message)
-        If m.Msg = WM_NCRBUTTONDOWN Then
+        If m.Msg = NativeTypes.WM_NCRBUTTONDOWN Then
             _sbi = New SCROLLBARINFO
             _sbi.CB_Size = Marshal.SizeOf(_sbi)
-            GetScrollBarInfo(Handle, OBJID_VSCROLL, _sbi)
+            GetScrollBarInfo(Handle, NativeTypes.OBJID_VSCROLL, _sbi)
             If _sbi.RC_ScrollBar.ToRectangle.Contains(MousePosition) Then
                 _vertRightClicked = True
             Else

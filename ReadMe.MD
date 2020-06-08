@@ -62,6 +62,15 @@ It will try to create a VB project File from the original C# project file.
 
 https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json is added to NuGet Package Source to find
 Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpecific attributes used for testing.
+  New in 4.5.1.0/Converter 3.4.4.0
+  - Update gRPC projects to reference Proto Project, you still need to add the CSProto project to solution
+  - Delete more dead code
+  - Update tests to support NotInheritable change
+  - Move NativeTypes to dedicated file
+  - Add support to convert classes with only static members to be declared NotInheritable
+  - Add support for Discards in more places
+  - Fix conversion of Switch Expressions
+  
   New in 4.5.0.9/Converter 3.4.3.0
   - Add support for translation of await foreach
   - Add support for translation of gRPC projects, it is not perfect.
@@ -264,17 +273,18 @@ New in Release 4.2.4.0
 
 ## Code Coverage
 ```
+
 +------------------+--------+--------+--------+
 | Module           | Line   | Branch | Method |
 +------------------+--------+--------+--------+
-| VB.CodeConverter | 79.16% | 72.86% | 87.45% |
+| VB.CodeConverter | 78.97% | 72.67% | 87.66% |
 +------------------+--------+--------+--------+
 
 +---------+--------+--------+--------+
 |         | Line   | Branch | Method |
 +---------+--------+--------+--------+
-| Total   | 79.16% | 72.86% | 87.45% |
+| Total   | 78.97% | 72.67% | 87.66% |
 +---------+--------+--------+--------+
-| Average | 79.16% | 72.86% | 87.45% |
+| Average | 78.97% | 72.67% | 87.66% |
 +---------+--------+--------+--------+
 ```
