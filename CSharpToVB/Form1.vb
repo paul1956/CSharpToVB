@@ -1152,13 +1152,13 @@ Partial Public Class Form1
     ''' <param name="SolutionRoot"></param>
     ''' <param name="_cancellationTokenSource"></param>
     ''' <returns></returns>
-    Private Async Function ProcessOneProjectAsync(TaskProjectAnalyzer As IProjectAnalyzer, SolutionRoot As String, processedProjects As Integer, totalProjects As Integer, _cancellationTokenSource As CancellationTokenSource) As Task(Of String)
+    Private Async Function ProcessOneProjectAsync(TaskProjectAnalyzer As IProjectAnalyzer, SolutionRoot As String, processedProjects As Integer, totalProjects As Integer, _cancellationTokenSource As CancellationTokenSource) As Task(Of (ErrorPrompt As String, ProjectsToBeAdded As List(Of String)))
         Application.DoEvents()
         UpdateProgressLabels("Getting Analyzer Results", True)
         Dim TaskResults As Task(Of IAnalyzerResults) = GetResultsAsync(CType(TaskProjectAnalyzer, ProjectAnalyzer))
         While Not TaskResults.IsCompleted
             If _cancellationTokenSource.IsCancellationRequested Then
-                Return ""
+                Return ("", New List(Of String))
             End If
             Await Task.Delay(100).ConfigureAwait(True)
         End While
@@ -1170,18 +1170,19 @@ Partial Public Class Form1
         ' Under production the user will select one framework
         While Not TaskWorkspace.IsCompleted
             If _cancellationTokenSource.IsCancellationRequested Then
-                Return ""
+                Return ("", New List(Of String))
             End If
             Await Task.Delay(100).ConfigureAwait(True)
         End While
         If frameworkList.Count = 0 Then
-            Return $"no framework is specified, processing project will terminate!"
+            Return ($"no framework is specified, processing project will terminate!", New List(Of String))
         End If
+        Dim projectsToBeAdd As New List(Of String)
         Using workspace As AdhocWorkspace = TaskWorkspace.Result
             UpdateProgressLabels("", False)
 
             If workspace.CurrentSolution.Projects.Count <> 1 Then
-                Return $"of an unexpected number of projects {workspace.CurrentSolution.Projects.Count}, processing project will terminate!"
+                Return ($"of an unexpected number of projects {workspace.CurrentSolution.Projects.Count}, processing project will terminate!", New List(Of String))
             End If
             For Each framework As IndexClass(Of String) In frameworkList.WithIndex
                 Dim frameworkMsg As String
@@ -1200,8 +1201,10 @@ Partial Public Class Form1
                                                framework.Value,
                                                csReferences
                                                )
-                ConvertProjectFile(SolutionRoot, currentProject.FilePath)
-
+                Dim projectToBeAdd As String = ConvertProjectFile(currentProject.FilePath, SolutionRoot)
+                If projectToBeAdd.Length > 0 AndAlso Not projectsToBeAdd.Contains(projectToBeAdd) Then
+                    projectsToBeAdd.Add(projectToBeAdd)
+                End If
                 While Not taskConvertOneProject.IsCompleted
                     If _cancellationTokenSource.IsCancellationRequested Then
                         Exit For
@@ -1213,7 +1216,7 @@ Partial Public Class Form1
                 End If
             Next
         End Using
-        Return ""
+        Return ("", projectsToBeAdd)
     End Function
 
     ''' <summary>
@@ -1258,11 +1261,11 @@ Partial Public Class Form1
 
     Private Async Sub ProcessProjectOrSolution(fileName As String)
         _cancellationTokenSource = New CancellationTokenSource
-        Dim solutionRoot As String = GetSavePath(Me, fileName, PromptIfDirExsits:=True).SolutionRoot
-        If String.IsNullOrWhiteSpace(solutionRoot) Then
+        Dim saveSolutionRoot As String = GetSavePath(Me, fileName, PromptIfDirExsits:=True).SolutionRoot
+        If String.IsNullOrWhiteSpace(saveSolutionRoot) Then
             LabelProgress.Visible = False
             ProgressBar1.Visible = False
-            MsgBox($"Can't find {solutionRoot}, exiting solution conversion")
+            MsgBox($"Can't find {saveSolutionRoot}, exiting solution conversion")
             Exit Sub
         End If
         SetButtonStopAndCursor(MeForm:=Me, StopButton:=ButtonStopConversion, StopButtonVisible:=True)
@@ -1285,7 +1288,6 @@ Partial Public Class Form1
 
             Dim prompt As String = "Conversion stopped."
             If fileName.EndsWith(".sln", StringComparison.OrdinalIgnoreCase) Then
-                ConvertSolutionFile(fileName, solutionRoot)
                 mnuFileLastSolution.Enabled = True
                 My.Settings.LastSolution = fileName
                 mnuFileLastSolution.Text = $"Last Solution - {fileName}"
@@ -1293,6 +1295,7 @@ Partial Public Class Form1
                 Dim totalProjects As Integer = solutionAnalyzerManager.Projects.Count
                 Dim processedProjects As Integer = 0
                 Dim skipProjects As Boolean = My.Settings.StartFolderConvertFromLastFile
+                Dim results As (resultsString As String, projectsToBeAdded As List(Of String)) = ("", New List(Of String))
                 For Each proj As KeyValuePair(Of String, IProjectAnalyzer) In solutionAnalyzerManager.Projects
                     Dim projectFile As String = proj.Key
                     If Not projectFile.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase) Then
@@ -1313,11 +1316,11 @@ Partial Public Class Form1
                     My.Settings.LastProject = projectFile
                     My.Settings.Save()
                     Application.DoEvents()
-                    Dim resultString As String = Await ProcessOneProjectAsync(
+                    results = Await ProcessOneProjectAsync(
                                         TaskProjectAnalyzer:=proj.Value,
-                        SolutionRoot:=solutionRoot, processedProjects:=processedProjects,
+                        SolutionRoot:=saveSolutionRoot, processedProjects:=processedProjects,
                         totalProjects:=totalProjects, _cancellationTokenSource:=_cancellationTokenSource).ConfigureAwait(True)
-                    If resultString.Length = 0 Then
+                    If results.resultsString.Length = 0 Then
                         If _cancellationTokenSource.Token.IsCancellationRequested Then
                             prompt = $"Conversion canceled, {processedProjects} of {totalProjects} projects completed successfully."
                             Exit For
@@ -1325,10 +1328,11 @@ Partial Public Class Form1
                             prompt = $"Conversion completed, {totalProjects} projects completed successfully."
                         End If
                     Else
-                        prompt = $"Conversion canceled because {resultString}, {processedProjects} of {totalProjects} projects completed successfully."
+                        prompt = $"Conversion canceled because {results}, {processedProjects} of {totalProjects} projects completed successfully."
                         Exit For
                     End If
                 Next
+                ConvertSolutionFile(fileName, saveSolutionRoot, results.projectsToBeAdded)
                 If prompt.Length > 0 Then
                     MsgBox(prompt,
                            MsgBoxStyle.OkOnly Or If(prompt.Contains("terminated", StringComparison.OrdinalIgnoreCase), MsgBoxStyle.Critical, MsgBoxStyle.Information) Or MsgBoxStyle.MsgBoxSetForeground,
@@ -1349,9 +1353,9 @@ Partial Public Class Form1
                 mnuFileLastProject.Enabled = True
                 My.Settings.LastProject = fileName
                 My.Settings.Save()
-                prompt = Await ProcessOneProjectAsync(TaskProjectAnalyzer.Result,
-                    solutionRoot, processedProjects:=1,
-                    totalProjects:=1, _cancellationTokenSource:=_cancellationTokenSource).ConfigureAwait(True)
+                prompt = (Await ProcessOneProjectAsync(TaskProjectAnalyzer.Result,
+                    saveSolutionRoot, processedProjects:=1,
+                    totalProjects:=1, _cancellationTokenSource:=_cancellationTokenSource).ConfigureAwait(True)).ErrorPrompt
 
                 If prompt.Length = 0 Then
 #Disable Warning CA1308 ' Normalize strings to uppercase
@@ -1362,7 +1366,7 @@ Partial Public Class Form1
                        MsgBoxStyle.OkOnly Or If(prompt.Contains("terminated", StringComparison.OrdinalIgnoreCase), MsgBoxStyle.Critical, MsgBoxStyle.Information) Or MsgBoxStyle.MsgBoxSetForeground,
                        Title:="Convert C# to Visual Basic")
 
-                Dim projectSavePath As String = DestinationFilePath(fileName, solutionRoot)
+                Dim projectSavePath As String = DestinationFilePath(fileName, saveSolutionRoot)
                 If Directory.Exists(projectSavePath) AndAlso Not _cancellationTokenSource.IsCancellationRequested Then
                     Process.Start("explorer.exe", $"/root,{projectSavePath}")
                 End If

@@ -13,8 +13,10 @@ Imports VBMsgBox
 
 Public Module ConvertProjectFileUtilities
 
+    Private ProjectsToBeAdded As String = ""
+
     Private ReadOnly s_compileChildNodeIgnoreList As New List(Of String)(
-            {"AutoGen", "DesignTime", "DesignTimeSharedInput",
+                {"AutoGen", "DesignTime", "DesignTimeSharedInput",
              "#whitespace"})
 
     Private ReadOnly s_cSProjectFile As XElement = <Project Sdk="Microsoft.NET.Sdk">
@@ -140,7 +142,6 @@ Public Module ConvertProjectFileUtilities
          "Service", "SuggestedBindingRedirects", "UsingTask",
          "VSCTCompile", "VsdConfigXmlFiles",
          "VSIXSourceItem", "#whitespace"})
-
     Private Function ChangeExtension(AttributeValue As String, OldExtension As String, NewExtension As String) As String
         Return If(AttributeValue.EndsWith($".{OldExtension}", StringComparison.OrdinalIgnoreCase),
                Path.ChangeExtension(AttributeValue, NewExtension),
@@ -188,24 +189,6 @@ Public Module ConvertProjectFileUtilities
         End Try
     End Sub
 
-    Friend Function ConvertProjectFile(SolutionRoot As String, currentProject As String) As XmlDocument
-        Dim xmlDoc As New XmlDocument With {
-            .PreserveWhitespace = True
-        }
-        xmlDoc.Load(currentProject)
-        Dim root As XmlNode
-        If xmlDoc.DocumentElement IsNot Nothing AndAlso xmlDoc.DocumentElement.Name.Equals("Project", StringComparison.OrdinalIgnoreCase) Then
-            root = xmlDoc.DocumentElement
-        Else
-            root = xmlDoc.FirstChild
-        End If
-        If root.Attributes.Count = 0 OrElse Not root.Attributes(0).Value.StartsWith("Microsoft.NET.Sdk", StringComparison.OrdinalIgnoreCase) Then
-            Return New XmlDocument
-        End If
-        Dim basePath As String = DestinationFilePath(currentProject, SolutionRoot)
-        Return ConvertProjectFile(xmlDoc, currentProject, basePath)
-    End Function
-
     Friend Function CreateDirectoryIfNonexistent(SolutionRoot As String) As String
         If Not Directory.Exists(SolutionRoot) Then
             Directory.CreateDirectory(SolutionRoot)
@@ -229,16 +212,30 @@ Public Module ConvertProjectFileUtilities
         Return pathToSaveDirectory
     End Function
 
-    Public Function ConvertProjectFile(xmlDoc As XmlDocument, sourceFilePath As String, ProjectSavePath As String) As XmlDocument
-        If ProjectSavePath Is Nothing Then
-            Throw New ArgumentNullException(NameOf(ProjectSavePath))
+    Public Function ConvertProjectFile(sourceFilePath As String, ProjectSavePath As String) As String
+        If String.IsNullOrWhiteSpace(sourceFilePath) Then
+            Throw New ArgumentException($"'{NameOf(sourceFilePath)}' cannot be null or whitespace", NameOf(sourceFilePath))
         End If
 
-        If xmlDoc Is Nothing Then
-            Throw New ArgumentNullException(NameOf(xmlDoc))
+        If String.IsNullOrWhiteSpace(ProjectSavePath) Then
+            Throw New ArgumentException($"'{NameOf(ProjectSavePath)}' cannot be null or whitespace", NameOf(sourceFilePath))
         End If
 
+        Dim xmlDoc As New XmlDocument With {
+            .PreserveWhitespace = True
+        }
+        xmlDoc.Load(sourceFilePath)
         Dim root As XmlNode
+        If xmlDoc.DocumentElement IsNot Nothing AndAlso xmlDoc.DocumentElement.Name.Equals("Project", StringComparison.OrdinalIgnoreCase) Then
+            root = xmlDoc.DocumentElement
+        Else
+            root = xmlDoc.FirstChild
+        End If
+        If root.Attributes.Count = 0 OrElse Not root.Attributes(0).Value.StartsWith("Microsoft.NET.Sdk", StringComparison.OrdinalIgnoreCase) Then
+            Return ""
+        End If
+        Dim basePath As String = DestinationFilePath(sourceFilePath, ProjectSavePath)
+
         Dim isDocument As Boolean
         If xmlDoc.DocumentElement IsNot Nothing AndAlso xmlDoc.DocumentElement.Name.Equals("Project", StringComparison.OrdinalIgnoreCase) Then
             root = xmlDoc.DocumentElement
@@ -368,6 +365,7 @@ Public Module ConvertProjectFileUtilities
                                         xmlDoc.DocumentElement.ChildNodes(index).ChildNodes(childIndex).Attributes(0).Value = xmlNode.Attributes(0).Value.Replace(".csproj", ".vbproj", StringComparison.OrdinalIgnoreCase)
                                     Case "Protobuf"
                                         ConvertProtoNode(ProjectSavePath, sourceFilePath, xmlNode, TargetFramework)
+                                        ProjectsToBeAdded = (($"Project(""{{9A19103F-16F7-4668-BE54-9A1E7A4F7556}}"") = ""CSProto"", ""CSProto\CSProto.csproj"", ""{{{Guid.NewGuid.ToString.ToUpperInvariant}}}""{vbCrLf}EndProject{vbCrLf}"))
                                         Dim elem As XmlElement = xmlDoc.CreateElement("ProjectReference")
                                         elem.SetAttribute("Include", "..\CSProto\CSProto.csproj")
                                         Dim y As XmlNode = xmlDoc.GetElementsByTagName("Protobuf")(0)
@@ -393,7 +391,7 @@ Public Module ConvertProjectFileUtilities
             If Not String.IsNullOrWhiteSpace(ProjectSavePath) Then
                 xmlDoc.Save(Path.Combine(ProjectSavePath, New FileInfo(sourceFilePath).Name.Replace(".csproj", ".vbproj", StringComparison.OrdinalIgnoreCase)))
             End If
-            Return xmlDoc
+            Return ProjectsToBeAdded
         Else
             Dim isDesktopProject As Boolean = xmlDoc.FirstChild.Attributes(0).Value = "Microsoft.NET.Sdk.WindowsDesktop"
             Dim leadingXMLSpace As XmlNode = xmlDoc.CreateDocumentFragment()
@@ -421,7 +419,7 @@ Public Module ConvertProjectFileUtilities
                                         nodesToBeRemoved.Add((index, childIndex))
                                     Case "LangVersion"
                                         If Not (propertyGroupChildNode.InnerText.Equals("latest", StringComparison.OrdinalIgnoreCase) OrElse
-                                       propertyGroupChildNode.InnerText.Equals("default", StringComparison.OrdinalIgnoreCase) OrElse
+                                       propertyGroupChildNode.InnerText.Equals("Default", StringComparison.OrdinalIgnoreCase) OrElse
                                        propertyGroupChildNode.InnerText.StartsWith("$", StringComparison.OrdinalIgnoreCase)) Then
                                             propertyGroupChildNode.InnerText = propertyGroupChildNode.InnerText.Replace(propertyGroupChildNode.InnerText, "latest", StringComparison.OrdinalIgnoreCase)
                                         End If
@@ -520,7 +518,7 @@ Public Module ConvertProjectFileUtilities
             If Not String.IsNullOrWhiteSpace(ProjectSavePath) Then
                 xmlDoc.Save(Path.Combine(ProjectSavePath, New FileInfo(sourceFilePath).Name.Replace(".csproj", ".vbproj", StringComparison.OrdinalIgnoreCase)))
             End If
-            Return xmlDoc
+            Return ProjectsToBeAdded
         End If
     End Function
 
