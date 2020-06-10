@@ -341,6 +341,21 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                         Dim SecondExpression As ThrowStatementSyntax = DirectCast(csRight.Right.Accept(Me).WithConvertedTriviaFrom(csRight.Right), ThrowStatementSyntax).WithTrailingEOL
                         Dim Statements As SyntaxList(Of StatementSyntax) = VBFactory.SingletonList(Of StatementSyntax)(SecondExpression)
 
+                        Dim testTrailingTrivia As SyntaxTriviaList = TestNode.GetTrailingTrivia
+                        Select Case testTrailingTrivia.Count
+                            Case 0
+                                testTrailingTrivia = testTrailingTrivia.Add(SpaceTrivia)
+                            Case 1
+                                Select Case testTrailingTrivia(0).RawKind
+                                    Case VB.SyntaxKind.WhitespaceTrivia
+                                    Case VB.SyntaxKind.EndOfLineTrivia
+                                        testTrailingTrivia = testTrailingTrivia.InsertRange(0, {SpaceTrivia, LineContinuation, SpaceTrivia})
+                                    Case Else
+                                        Stop
+                                End Select
+                            Case Else
+                        End Select
+                        TestNode = TestNode.WithTrailingTrivia(testTrailingTrivia)
                         Dim Condition As ExpressionSyntax = VBFactory.IsExpression(TestNode, NothingExpression)
                         Dim IfBlock As SingleLineIfStatementSyntax = VBFactory.SingleLineIfStatement(Condition,
                                                                                                           Statements,

@@ -62,6 +62,8 @@ It will try to create a VB project File from the original C# project file.
 
 https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json is added to NuGet Package Source to find
 Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpecific attributes used for testing.
+  New in 4.5.2.0/Converter 3.4.4.1
+  Fix coalescing operation split over 2 lines
 
   New in 4.5.2.0/Converter 3.4.4.0
   - Update gRPC projects to reference Proto Project,new CSProto project will be added to solution
