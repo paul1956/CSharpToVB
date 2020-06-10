@@ -19,7 +19,7 @@ charset = utf-8-bom
 insert_final_newline = true
 trim_trailing_whitespace = true
 
-file_header_template= Licensed to the .NET Foundation under one or more agreements.\nThe .NET Foundation licenses this file to you under the MIT license.\nSee the LICENSE file in the project root for more information.
+file_header_template = Licensed to the .NET Foundation under one or more agreements.\nThe .NET Foundation licenses this file to you under the MIT license.\nSee the LICENSE file in the project root for more information.
 
 # avoid this. unless absolutely necessary
 dotnet_style_qualification_for_field = false:suggestion
