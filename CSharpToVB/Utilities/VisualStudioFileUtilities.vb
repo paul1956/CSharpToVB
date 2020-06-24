@@ -28,7 +28,7 @@ Public Module VisualStudioFileUtilities
     End Function
 
     Public Function GetLatestVisualStudioProjectPath() As String
-        Dim DirectoryEntries As String() = Directory.GetDirectories((FileIO.SpecialDirectories.MyDocuments), VisualStudioBaseName.Trim & "*")
+        Dim DirectoryEntries As String() = Directory.GetDirectories(FileIO.SpecialDirectories.MyDocuments, VisualStudioBaseName.Trim & "*")
         Dim LatestVersion As Integer = 0
         For Each dir As String In DirectoryEntries
             Dim DirectoryFileName As String = Path.GetFileName(dir)

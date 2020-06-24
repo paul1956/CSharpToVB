@@ -13,7 +13,7 @@ namespace HashLibrary
         /// </summary>
         public static int Combine(int newKey, int currentKey)
         {
-            return unchecked(currentKey * (int)0xA5555529 + newKey);
+            return unchecked(currentKey * ((int)0xA5555529 + newKey));
         }
 
         public static int Combine(bool newKeyPart, int currentKey)

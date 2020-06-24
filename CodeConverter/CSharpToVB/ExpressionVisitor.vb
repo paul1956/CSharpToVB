@@ -491,7 +491,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                                         End If
                                     Next
                                 End If
-                                If j = 0 OrElse j < initialTriviaListUBound AndAlso initialTriviaList(j).RawKind = VB.SyntaxKind.CommentTrivia Then
+                                If j = 0 OrElse (j < initialTriviaListUBound AndAlso initialTriviaList(j).RawKind = VB.SyntaxKind.CommentTrivia) Then
                                     If String.IsNullOrWhiteSpace(NewWhiteSpaceString) Then
                                         finalTrailingTriviaList.Add(SpaceTrivia)
                                     Else

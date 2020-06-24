@@ -96,7 +96,7 @@ Public Class FindDialog
 
     Private Sub SetEnableFindButtons()
         Dim enableFind As Boolean = FindWhatComboBox.Text.Any AndAlso
-            (_csBuffer.Text.Any AndAlso _searchBuffer.IsFlagSet(SearchBuffers.CS) OrElse
+            ((_csBuffer.Text.Any AndAlso _searchBuffer.IsFlagSet(SearchBuffers.CS)) OrElse
             (_vbBuffer.Text.Any AndAlso _searchBuffer.IsFlagSet(SearchBuffers.VB)))
         ClearHighlightsButton.Enabled = enableFind
         FindNextButton.Enabled = enableFind

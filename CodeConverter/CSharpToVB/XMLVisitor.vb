@@ -103,7 +103,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 Dim TypeIdentifier As VBS.TypeSyntax = DirectCast(a.Accept(Me), VBS.TypeSyntax)
                 TypeList.Add(TypeIdentifier)
             Next
-            Return VBFactory.GenericName(Identifier, VBFactory.TypeArgumentList(TypeList.ToArray))
+            Return VBFactory.GenericName(Identifier, VBFactory.TypeArgumentList(OpenParenToken, OfKeyword.WithTrailingTrivia(SpaceTrivia), VBFactory.SeparatedList(TypeList), CloseParenToken).NormalizeWhitespace)
         End Function
 
         Public Overrides Function VisitIdentifierName(node As CSS.IdentifierNameSyntax) As VB.VisualBasicSyntaxNode

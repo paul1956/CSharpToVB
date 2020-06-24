@@ -195,15 +195,15 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
 
             ' +1 instead of + 1
             ' but not a instead of nota ...
-            If TypeOf (token.Parent) Is UnaryExpressionSyntax AndAlso
+            If TypeOf token.Parent Is UnaryExpressionSyntax AndAlso
                 token.Kind <> SyntaxKind.NotKeyword AndAlso
                 token.Kind <> SyntaxKind.AddressOfKeyword Then
                 Return False
             End If
 
             ' generally a + b, needs to go here to make it b + (a + b) instead of b +(a + b
-            If TypeOf (token.Parent) Is BinaryExpressionSyntax OrElse
-                TypeOf (nextToken.Parent) Is BinaryExpressionSyntax Then
+            If TypeOf token.Parent Is BinaryExpressionSyntax OrElse
+                TypeOf nextToken.Parent Is BinaryExpressionSyntax Then
                 Return True
             End If
 
@@ -223,7 +223,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             End If
 
             ' m( instead of m (
-            If Not (token.IsKind(SyntaxKind.CommaToken, SyntaxKind.AsKeyword)) AndAlso nextToken.IsKind(SyntaxKind.OpenParenToken) Then
+            If Not token.IsKind(SyntaxKind.CommaToken, SyntaxKind.AsKeyword) AndAlso nextToken.IsKind(SyntaxKind.OpenParenToken) Then
                 Return False
             End If
 
@@ -285,8 +285,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             End If
 
             ' <xmlns:goo instead of <xmlns : goo
-            If token.IsKind(SyntaxKind.ColonToken) AndAlso token.Parent.IsKind(SyntaxKind.XmlPrefix) OrElse
-                nextToken.IsKind(SyntaxKind.ColonToken) AndAlso nextToken.Parent.IsKind(SyntaxKind.XmlPrefix) Then
+            If (token.IsKind(SyntaxKind.ColonToken) AndAlso token.Parent.IsKind(SyntaxKind.XmlPrefix)) OrElse
+                (nextToken.IsKind(SyntaxKind.ColonToken) AndAlso nextToken.Parent.IsKind(SyntaxKind.XmlPrefix)) Then
                 Return False
             End If
 
@@ -1435,7 +1435,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
                 ' check if this token is first on this line
                 Dim numLineBreaksBefore As Integer = LineBreaksBetween(_previousToken, token)
 
-                Dim needsIndentation As Boolean = (numLineBreaksBefore > 0)
+                Dim needsIndentation As Boolean = numLineBreaksBefore > 0
 
                 ' all line breaks except the first will be leading trivia of this token. The first line break
                 ' is trailing trivia of the previous token.

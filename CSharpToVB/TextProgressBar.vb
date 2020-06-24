@@ -28,7 +28,7 @@ Public Class TextProgressBar
             'Switch to Anti-aliased drawing for better (smoother) graphic results
             g.SmoothingMode = SmoothingMode.AntiAlias
             Dim sizeF As SizeF = g.MeasureString(Text, _defaultFont)
-            g.DrawString(Text, _defaultFont, Brushes.Black, New PointF(pb.Width \ 2 - (sizeF.Width / 2.0F), pb.Height \ 2 - (sizeF.Height / 2.0F)))
+            g.DrawString(Text, _defaultFont, Brushes.Black, New PointF((pb.Width \ 2) - (sizeF.Width / 2.0F), (pb.Height \ 2) - (sizeF.Height / 2.0F)))
         End Using
     End Sub
 

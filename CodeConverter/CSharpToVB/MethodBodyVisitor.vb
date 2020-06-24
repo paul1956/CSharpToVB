@@ -78,7 +78,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 For Each _block As CaseBlockSyntax In blocks
                     Dim block As CaseBlockSyntax = _block
                     For Each caseClause As CaseClauseSyntax In block.CaseStatement.Cases
-                        Dim expression As VisualBasicSyntaxNode = If(TypeOf caseClause Is ElseCaseClauseSyntax, DirectCast(caseClause, VisualBasicSyntaxNode), (DirectCast(caseClause, SimpleCaseClauseSyntax)).Value)
+                        Dim expression As VisualBasicSyntaxNode = If(TypeOf caseClause Is ElseCaseClauseSyntax, DirectCast(caseClause, VisualBasicSyntaxNode), DirectCast(caseClause, SimpleCaseClauseSyntax).Value)
                         If gotoLabels.Any(Function(label As VisualBasicSyntaxNode) label.IsEquivalentTo(expression.WithoutTrivia)) Then
                             block = block.WithStatements(block.Statements.Insert(0, VBFactory.LabelStatement(MakeGotoSwitchLabel(expression))))
                         End If
@@ -228,7 +228,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 If condition Is Nothing OrElse Not (TypeOf condition.Left Is CSS.IdentifierNameSyntax) Then
                     Return False
                 End If
-                If (DirectCast(condition.Left, CSS.IdentifierNameSyntax)).Identifier.IsEquivalentTo(iteratorIdentifier.Identifier) Then
+                If DirectCast(condition.Left, CSS.IdentifierNameSyntax).Identifier.IsEquivalentTo(iteratorIdentifier.Identifier) Then
                     Return False
                 End If
                 Dim ToValue As ExpressionSyntax
@@ -282,7 +282,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                     If Not (TypeOf initializer.Left Is CSS.IdentifierNameSyntax) Then
                         Return False
                     End If
-                    If (DirectCast(initializer.Left, CSS.IdentifierNameSyntax)).Identifier.IsEquivalentTo(iteratorIdentifier.Identifier) Then
+                    If DirectCast(initializer.Left, CSS.IdentifierNameSyntax).Identifier.IsEquivalentTo(iteratorIdentifier.Identifier) Then
                         Return False
                     End If
                     ControlVariable = initializer.Left.Accept(_nodesVisitor)
@@ -639,7 +639,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 name = Nothing
                 Dim condition As CSS.ExpressionSyntax = node.Condition
                 While TypeOf condition Is CSS.ParenthesizedExpressionSyntax
-                    condition = (DirectCast(condition, CSS.ParenthesizedExpressionSyntax)).Expression
+                    condition = DirectCast(condition, CSS.ParenthesizedExpressionSyntax).Expression
                 End While
 
                 If Not (TypeOf condition Is CSS.BinaryExpressionSyntax) Then Return False
@@ -651,7 +651,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 End If
                 Dim singleStatement As CSS.ExpressionStatementSyntax
                 If TypeOf node.Statement Is CSS.BlockSyntax Then
-                    Dim block As CSS.BlockSyntax = (DirectCast(node.Statement, CSS.BlockSyntax))
+                    Dim block As CSS.BlockSyntax = DirectCast(node.Statement, CSS.BlockSyntax)
                     If block.Statements.Count <> 1 Then Return False
                     singleStatement = TryCast(block.Statements(0), CSS.ExpressionStatementSyntax)
                 Else
@@ -694,7 +694,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 If condition Is Nothing OrElse Not (TypeOf condition.Left Is CSS.IdentifierNameSyntax) Then
                     Return False
                 End If
-                If (DirectCast(condition.Left, CSS.IdentifierNameSyntax)).Identifier.IsEquivalentTo(iteratorIdentifier.Identifier) Then
+                If DirectCast(condition.Left, CSS.IdentifierNameSyntax).Identifier.IsEquivalentTo(iteratorIdentifier.Identifier) Then
                     Return False
                 End If
                 If iterator.IsKind(VB.SyntaxKind.SubtractAssignmentStatement) Then
@@ -726,7 +726,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                     If Not (TypeOf initializer.Left Is CSS.IdentifierNameSyntax) Then
                         Return False
                     End If
-                    If (DirectCast(initializer.Left, CSS.IdentifierNameSyntax)).Identifier.IsEquivalentTo(iteratorIdentifier.Identifier) Then
+                    If DirectCast(initializer.Left, CSS.IdentifierNameSyntax).Identifier.IsEquivalentTo(iteratorIdentifier.Identifier) Then
                         Return False
                     End If
                 End If
@@ -1514,7 +1514,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                                                                     IsTypeName:=False)
                 Dim asClause As SimpleAsClauseSyntax = Nothing
                 If TypeList.Any Then
-                    Dim typeArguments As TypeArgumentListSyntax = VBFactory.TypeArgumentList(VBFactory.SeparatedList(TypeList))
+                    Dim typeArguments As TypeArgumentListSyntax = VBFactory.TypeArgumentList(VBFactory.SeparatedList(TypeList)).NormalizeWhitespace
                     Dim genericName As TypeSyntax = VBFactory.GenericName(VBFactory.Identifier(If(returnsVoid, "Action", "Func")), typeArguments)
                     asClause = VBFactory.SimpleAsClause(genericName)
                 Else

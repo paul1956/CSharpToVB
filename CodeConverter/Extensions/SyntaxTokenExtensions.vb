@@ -25,6 +25,16 @@ Namespace CSharpToVBCodeConverter.Utilities
         End Function
 
         <Extension>
+        Friend Function IndexOf(Tokens As IEnumerable(Of SyntaxToken), Kind As VB.SyntaxKind) As Integer
+            For i As Integer = 0 To Tokens.Count - 1
+                If Tokens(i).IsKind(Kind) Then
+                    Return i
+                End If
+            Next
+            Return -1
+        End Function
+
+        <Extension>
         Friend Function WithPrependedLeadingTrivia(Token As SyntaxToken, Trivia As IEnumerable(Of SyntaxTrivia)) As SyntaxToken
             Return Token.WithPrependedLeadingTrivia(Trivia.ToSyntaxTriviaList())
         End Function
@@ -259,7 +269,7 @@ Namespace CSharpToVBCodeConverter.Utilities
                                     End If
                                 Next
                             End If
-                            If j = 0 OrElse j < triviaListUBound AndAlso initialTriviaList(j).IsKind(VB.SyntaxKind.CommentTrivia) Then
+                            If j = 0 OrElse (j < triviaListUBound AndAlso initialTriviaList(j).IsKind(VB.SyntaxKind.CommentTrivia)) Then
                                 If Not afterLineContinuation Then
                                     If String.IsNullOrWhiteSpace(NewWhiteSpaceString) Then
                                         finalTrailingTriviaList.Add(SpaceTrivia)

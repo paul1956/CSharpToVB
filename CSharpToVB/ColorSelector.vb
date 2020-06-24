@@ -120,7 +120,7 @@ Public Class ColorSelector
         Dim FileStream As FileStream = File.OpenRead(FPath)
         Dim sr As New StreamReader(FileStream)
         sr.ReadLine()
-        While (sr.Peek() <> -1)
+        While sr.Peek() <> -1
             Dim line As String = sr.ReadLine()
             Dim Split() As String = line.Split(","c)
             Dim key As String = Split(0)

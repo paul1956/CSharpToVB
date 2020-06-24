@@ -365,7 +365,7 @@ Public Module ConvertProjectFileUtilities
                                         xmlDoc.DocumentElement.ChildNodes(index).ChildNodes(childIndex).Attributes(0).Value = xmlNode.Attributes(0).Value.Replace(".csproj", ".vbproj", StringComparison.OrdinalIgnoreCase)
                                     Case "Protobuf"
                                         ConvertProtoNode(ProjectSavePath, sourceFilePath, xmlNode, TargetFramework)
-                                        ProjectsToBeAdded = (($"Project(""{{9A19103F-16F7-4668-BE54-9A1E7A4F7556}}"") = ""CSProto"", ""CSProto\CSProto.csproj"", ""{{{Guid.NewGuid.ToString.ToUpperInvariant}}}""{vbCrLf}EndProject{vbCrLf}"))
+                                        ProjectsToBeAdded = $"Project(""{{9A19103F-16F7-4668-BE54-9A1E7A4F7556}}"") = ""CSProto"", ""CSProto\CSProto.csproj"", ""{{{Guid.NewGuid.ToString.ToUpperInvariant}}}""{vbCrLf}EndProject{vbCrLf}"
                                         Dim elem As XmlElement = xmlDoc.CreateElement("ProjectReference")
                                         elem.SetAttribute("Include", "..\CSProto\CSProto.csproj")
                                         Dim y As XmlNode = xmlDoc.GetElementsByTagName("Protobuf")(0)

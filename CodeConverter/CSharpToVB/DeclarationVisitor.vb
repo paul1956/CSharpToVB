@@ -1233,7 +1233,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 Select Case StmtList.Count
                     Case 1
                         If TypeOf StmtList(0) Is VBS.EmptyStatementSyntax Then
-                            AddedLeadingTrivia.AddRange((StmtList(0).GetLeadingTrivia))
+                            AddedLeadingTrivia.AddRange(StmtList(0).GetLeadingTrivia)
                         End If
                     Case 2
                         AddedLeadingTrivia.AddRange(StmtList(0).GetLeadingTrivia)

@@ -991,7 +991,7 @@ Partial Public Class Form1
         ' (identified by the tag text when added to the list)...
         For Each FileMenuItem As ToolStripItem In dropDownItems
             If Not FileMenuItem.Tag Is Nothing Then
-                If (FileMenuItem.Tag.ToString().StartsWith("MRU:", StringComparison.Ordinal)) Then
+                If FileMenuItem.Tag.ToString().StartsWith("MRU:", StringComparison.Ordinal) Then
                     MRUToolStripItems.Add(FileMenuItem)
                 End If
             End If
@@ -1482,7 +1482,7 @@ Partial Public Class Form1
 
     <STAThread()>
     Shared Sub main(args As String())
-        Application.SetHighDpiMode(HighDpiMode.SystemAware)
+        Application.SetHighDpiMode(HighDpiMode.PerMonitorV2)
         Dim MyApp As New My.MyApplication
         MyApp.Run(args)
         MyApp.Dispose()

@@ -93,7 +93,7 @@ Public Module FileUtilities
         PathFromSolutionRoot.RemoveAt(0)
         If File.Exists(solutionRoot) Then
             MsgBox($"A file exists at {solutionRoot} this Is a fatal error the program will exit",
-                   MsgBoxStyle.OkOnly And MsgBoxStyle.Critical Or MsgBoxStyle.MsgBoxSetForeground,
+                   MsgBoxStyle.OkOnly Or MsgBoxStyle.Critical Or MsgBoxStyle.MsgBoxSetForeground,
                    "Fatal Error")
             MyForm.Close()
             End
