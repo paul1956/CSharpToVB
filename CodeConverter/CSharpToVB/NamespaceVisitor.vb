@@ -203,7 +203,7 @@ End Function
                 Dim [inherits] As New List(Of VBS.InheritsStatementSyntax)()
                 Dim [implements] As New List(Of VBS.ImplementsStatementSyntax)()
 
-                ConvertBaseList(node, [inherits], [implements], s_implementedMembers)
+                Me.ConvertBaseList(node, [inherits], [implements], s_implementedMembers)
                 Dim staticMethodCount As Integer = 0
                 Dim methodCount As Integer = 0
                 Dim classType As ITypeSymbol = CType(_mSemanticModel.GetDeclaredSymbol(node), ITypeSymbol)
@@ -280,7 +280,7 @@ End Function
 
                 Dim id As SyntaxToken = GenerateSafeVBToken(node.Identifier).WithConvertedTrailingTriviaFrom(node.Identifier)
 
-                members.AddRange(PatchInlineHelpers(node, IsModule))
+                members.AddRange(Me.PatchInlineHelpers(node, IsModule))
 
                 Dim ListOfAttributes As SyntaxList(Of VBS.AttributeListSyntax) = VBFactory.List(node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))
                 Dim typeParameterList As VBS.TypeParameterListSyntax = DirectCast(node.TypeParameterList?.Accept(Me), VBS.TypeParameterListSyntax)
@@ -589,7 +589,7 @@ End Function
                                                                             ).WithTrailingEOL
                 Dim [inherits] As List(Of VBS.InheritsStatementSyntax) = New List(Of VBS.InheritsStatementSyntax)()
                 Dim [implements] As List(Of VBS.ImplementsStatementSyntax) = New List(Of VBS.ImplementsStatementSyntax)()
-                ConvertBaseList(node, [inherits], [implements])
+                Me.ConvertBaseList(node, [inherits], [implements])
                 Dim InheritsStatementList As SyntaxList(Of VBS.InheritsStatementSyntax) = VBFactory.List([inherits])
                 Dim ImplementsStatementList As SyntaxList(Of VBS.ImplementsStatementSyntax) = VBFactory.List([implements])
                 Dim StatementList As SyntaxList(Of VBS.StatementSyntax) = VBFactory.List(members)
@@ -649,7 +649,7 @@ End Function
                     s_implementedMembersStack.Push(s_implementedMembers)
                     s_implementedMembers = (New List(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))).ToImmutableArray
                 End If
-                ConvertBaseList(node, [inherits], [implements], s_implementedMembers)
+                Me.ConvertBaseList(node, [inherits], [implements], s_implementedMembers)
                 Dim Members As New List(Of VBS.StatementSyntax)
                 For Each m As CSS.MemberDeclarationSyntax In node.Members
                     Dim Item As VBS.StatementSyntax = DirectCast(m.Accept(Me), VBS.StatementSyntax)

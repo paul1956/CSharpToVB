@@ -228,14 +228,14 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
         End Function
 
         Public Overrides Function VisitXmlElementStartTag(node As CSS.XmlElementStartTagSyntax) As VB.VisualBasicSyntaxNode
-            Dim ListOfAttributes As SyntaxList(Of VBS.XmlNodeSyntax) = GatherAttributes(node.Attributes)
+            Dim ListOfAttributes As SyntaxList(Of VBS.XmlNodeSyntax) = Me.GatherAttributes(node.Attributes)
             Return VBFactory.XmlElementStartTag(DirectCast(node.Name.Accept(Me), VBS.XmlNodeSyntax), ListOfAttributes)
         End Function
 
         Public Overrides Function VisitXmlEmptyElement(node As CSS.XmlEmptyElementSyntax) As VB.VisualBasicSyntaxNode
             Try
                 Dim Name As VBS.XmlNodeSyntax = DirectCast(node.Name.Accept(Me), VBS.XmlNodeSyntax)
-                Dim ListOfAttributes As SyntaxList(Of VBS.XmlNodeSyntax) = GatherAttributes(node.Attributes)
+                Dim ListOfAttributes As SyntaxList(Of VBS.XmlNodeSyntax) = Me.GatherAttributes(node.Attributes)
                 Return VBFactory.XmlEmptyElement(Name, ListOfAttributes).WithConvertedTriviaFrom(node)
             Catch ex As OperationCanceledException
                 Throw

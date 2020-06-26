@@ -266,7 +266,7 @@ Namespace Microsoft.VisualBasic.ApplicationServices
                 _unhandledExceptionHandlers.Add(value)
                 'Only add the listener once so we don't fire the UnHandledException event over and over for the same exception
                 If _unhandledExceptionHandlers.Count = 1 Then
-                    AddHandler Application.ThreadException, AddressOf OnUnhandledExceptionEventAdaptor
+                    AddHandler Application.ThreadException, AddressOf Me.OnUnhandledExceptionEventAdaptor
                 End If
             End AddHandler
 
@@ -275,7 +275,7 @@ Namespace Microsoft.VisualBasic.ApplicationServices
                     _unhandledExceptionHandlers.Remove(value)
                     'Last one to leave, turn out the lights...
                     If _unhandledExceptionHandlers.Count = 0 Then
-                        RemoveHandler Application.ThreadException, AddressOf OnUnhandledExceptionEventAdaptor
+                        RemoveHandler Application.ThreadException, AddressOf Me.OnUnhandledExceptionEventAdaptor
                     End If
                 End If
             End RemoveHandler
@@ -461,10 +461,10 @@ Namespace Microsoft.VisualBasic.ApplicationServices
                 'NO DEBUGGER ATTACHED - we use a catch so that we can run our UnhandledException code
                 'Note - Sadly, code changes within this IF (that don't pertain to exception handling) need to be mirrored in the ELSE debugger attached clause below
                 Try
-                    If OnInitialize(CommandLineArgs) Then
-                        If OnStartup(EventArgs) = True Then
-                            OnRun()
-                            OnShutdown()
+                    If Me.OnInitialize(CommandLineArgs) Then
+                        If Me.OnStartup(EventArgs) = True Then
+                            Me.OnRun()
+                            Me.OnShutdown()
                         End If
                     End If
                 Catch ex As Exception
@@ -473,17 +473,17 @@ Namespace Microsoft.VisualBasic.ApplicationServices
                     If _processingUnhandledExceptionEvent Then
                         Throw 'If the UnhandledException handler threw for some reason, throw that error out to the system.
                     Else 'We had an exception, but not during the OnUnhandledException handler so give the user a chance to look at what happened in the UnhandledException event handler
-                        If Not OnUnhandledException(New UnhandledExceptionEventArgs(True, ex)) = True Then
+                        If Not Me.OnUnhandledException(New UnhandledExceptionEventArgs(True, ex)) = True Then
                             Throw 'the user didn't write a handler so throw the error out to the system
                         End If
                     End If
                 End Try
             Else 'DEBUGGER ATTACHED - we don't have an uber catch when debugging so the exception will bubble out to the exception helper
                 'We also don't hook up the Application.ThreadException event because WinForms ignores it when we are running under the debugger
-                If OnInitialize(CommandLineArgs) Then
-                    If OnStartup(EventArgs) = True Then
-                        OnRun()
-                        OnShutdown()
+                If Me.OnInitialize(CommandLineArgs) Then
+                    If Me.OnStartup(EventArgs) = True Then
+                        Me.OnRun()
+                        Me.OnShutdown()
                     End If
                 End If
             End If
@@ -500,14 +500,14 @@ Namespace Microsoft.VisualBasic.ApplicationServices
         ''' <param name="sender"></param>
         ''' <param name="e"></param>
         Private Sub MainFormLoadingDone(sender As Object, e As EventArgs)
-            RemoveHandler MainForm.Load, AddressOf MainFormLoadingDone 'We don't want this event to call us again.
+            RemoveHandler MainForm.Load, AddressOf Me.MainFormLoadingDone 'We don't want this event to call us again.
 
             'block until the splash screen time is up.  See MinimumSplashExposureTimeIsUp() which releases us
             While Not _ok2CloseSplashScreen
                 DoEvents() 'In case Load() event, which we are waiting for, is doing stuff that requires windows messages.  our timer message doesn't count because it is on another thread.
             End While
 
-            HideSplashScreen()
+            Me.HideSplashScreen()
         End Sub
 
         ''' <summary>
@@ -533,7 +533,7 @@ Namespace Microsoft.VisualBasic.ApplicationServices
                 MainForm.Invoke(
                     Sub()
                         invoked = True
-                        OnStartupNextInstance(New StartupNextInstanceEventArgs(New ReadOnlyCollection(Of String)(args), True)) 'by default, we set BringToFront as True since that's the behavior most people will want
+                        Me.OnStartupNextInstance(New StartupNextInstanceEventArgs(New ReadOnlyCollection(Of String)(args), True)) 'by default, we set BringToFront as True since that's the behavior most people will want
                     End Sub)
             Catch ex As Exception When Not invoked
                 ' Only catch exceptions thrown when the UI thread is not available, before
@@ -551,7 +551,7 @@ Namespace Microsoft.VisualBasic.ApplicationServices
         ''' unhandled exception event so we do the translation here before raising our event.
         ''' </remarks>
         Private Sub OnUnhandledExceptionEventAdaptor(sender As Object, e As ThreadExceptionEventArgs)
-            OnUnhandledException(New UnhandledExceptionEventArgs(True, e.Exception))
+            Me.OnUnhandledException(New UnhandledExceptionEventArgs(True, e.Exception))
         End Sub
 
         Protected Overridable Sub Dispose(disposing As Boolean)
@@ -641,7 +641,7 @@ Namespace Microsoft.VisualBasic.ApplicationServices
 
             'We'll handle /nosplash for you
             If Not (commandLineArgs.Contains("/nosplash") OrElse Me.CommandLineArgs.Contains("-nosplash")) Then
-                ShowSplashScreen()
+                Me.ShowSplashScreen()
             End If
 
             Return True 'true means to not bail out but keep on running after OnIntiailize() finishes
@@ -655,7 +655,7 @@ Namespace Microsoft.VisualBasic.ApplicationServices
         <EditorBrowsable(EditorBrowsableState.Advanced)>
         Protected Overridable Sub OnRun()
             If MainForm Is Nothing Then
-                OnCreateMainForm() 'A designer overrides OnCreateMainForm() to set the main form we are supposed to use
+                Me.OnCreateMainForm() 'A designer overrides OnCreateMainForm() to set the main form we are supposed to use
                 If MainForm Is Nothing Then
                     Throw New NoStartupFormException
                 End If
@@ -664,7 +664,7 @@ Namespace Microsoft.VisualBasic.ApplicationServices
                 'block the main form from painting.  To do that I let the form get past the Load() event and hold it until
                 'the splash screen goes down. Then I let the main form continue it's startup sequence.  The ordering of
                 'Form startup events for reference is: Ctor(), Load Event, Layout event, Shown event, Activated event, Paint event
-                AddHandler MainForm.Load, AddressOf MainFormLoadingDone
+                AddHandler MainForm.Load, AddressOf Me.MainFormLoadingDone
             End If
 
             'Run() eats all exceptions (unless running under the debugger) If the user wrote an UnhandledException handler we will hook
@@ -767,21 +767,21 @@ Namespace Microsoft.VisualBasic.ApplicationServices
             If Not _didSplashScreen Then
                 _didSplashScreen = True
                 If _splashScreen Is Nothing Then
-                    OnCreateSplashScreen() 'If the user specified a splash screen, the designer will have overridden this method to set it
+                    Me.OnCreateSplashScreen() 'If the user specified a splash screen, the designer will have overridden this method to set it
                 End If
                 If _splashScreen IsNot Nothing Then
                     'Some splash screens have minimum face time they are supposed to get.  We'll set up a time to let us know when we can take it down.
                     If _minimumSplashExposure > 0 Then
                         _ok2CloseSplashScreen = False 'Don't close until the timer expires.
                         _splashTimer = New Timers.Timer(_minimumSplashExposure)
-                        AddHandler _splashTimer.Elapsed, AddressOf MinimumSplashExposureTimeIsUp
+                        AddHandler _splashTimer.Elapsed, AddressOf Me.MinimumSplashExposureTimeIsUp
                         _splashTimer.AutoReset = False
                         'We'll enable it in DisplaySplash() once the splash screen thread gets running
                     Else
                         _ok2CloseSplashScreen = True 'No timeout so just close it when then main form comes up
                     End If
                     'Run the splash screen on another thread so we don't starve it for events and painting while the main form gets its act together
-                    Dim SplashThread As New Thread(AddressOf DisplaySplash)
+                    Dim SplashThread As New Thread(AddressOf Me.DisplaySplash)
                     SplashThread.Start()
                 End If
             End If
@@ -797,7 +797,7 @@ Namespace Microsoft.VisualBasic.ApplicationServices
 
         Public Sub Dispose() Implements IDisposable.Dispose
             ' Do not change this code. Put cleanup code in 'Dispose(disposing As Boolean)' method
-            Dispose(disposing:=True)
+            Me.Dispose(disposing:=True)
             GC.SuppressFinalize(Me)
         End Sub
 
@@ -829,15 +829,15 @@ Namespace Microsoft.VisualBasic.ApplicationServices
             InternalCommandLine = New ReadOnlyCollection(Of String)(commandLine)
 
             If Not IsSingleInstance Then
-                DoApplicationModel()
+                Me.DoApplicationModel()
             Else 'This is a Single-Instance application
                 Dim ApplicationInstanceID As String = GetApplicationInstanceID(Assembly.GetCallingAssembly) 'Note: Must pass the calling assembly from here so we can get the running app.  Otherwise, can break single instance.
                 Dim pipeServer As NamedPipeServerStream = CreatePipeServer(ApplicationInstanceID)
                 If pipeServer IsNot Nothing Then
                     '--- This is the first instance of a single-instance application to run.  This is the instance that subsequent instances will attach to.
                     Using pipeServer
-                        WaitForClientConnectionAsync(pipeServer, AddressOf OnStartupNextInstanceMarshallingAdaptor)
-                        DoApplicationModel()
+                        WaitForClientConnectionAsync(pipeServer, AddressOf Me.OnStartupNextInstanceMarshallingAdaptor)
+                        Me.DoApplicationModel()
                     End Using
                 Else '--- We are launching a subsequent instance.
                     If Not SendSecondInstanceArgs(ApplicationInstanceID, SECOND_INSTANCE_TIMEOUT, commandLine) Then

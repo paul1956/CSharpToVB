@@ -39,22 +39,6 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
 
             End Function
 
-            Friend Shared Function ConvertNamedTypeToTypeString(TypeString As String) As String
-                Dim SplitTypeString() As String = TypeString.Trim.Split(" "c, StringComparison.Ordinal)
-                If SplitTypeString.Length > 2 Then
-                    Stop
-                End If
-                Dim IndexOfLessThan As Integer = TypeString.IndexOf("<", StringComparison.Ordinal)
-                Dim TypeName As String = SplitTypeString(0)
-                Dim Name As String = If(SplitTypeString.Length = 1, "", MakeVBSafeName(SplitTypeString(1)) & " As ")
-                If IndexOfLessThan > 0 Then
-                    Return $"{Name}{TypeName.Left(IndexOfLessThan)}{TypeName.Substring(IndexOfLessThan).
-                                    Replace("<", "(Of ", StringComparison.Ordinal).
-                                    Replace(">", ")", StringComparison.Ordinal)}"
-                End If
-                Return Name & ConvertToType(TypeName).ToString
-            End Function
-
             Public Overrides Function VisitArrayRankSpecifier(node As CSS.ArrayRankSpecifierSyntax) As VB.VisualBasicSyntaxNode
                 Return VBFactory.ArrayRankSpecifier(OpenParenToken, VBFactory.TokenList(Enumerable.Repeat(CommaToken, node.Rank - 1)), CloseParenToken)
             End Function
@@ -192,10 +176,11 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 Next
                 Nodes.Add(DirectCast(node.Parameters.Last.Accept(Me).WithConvertedTrailingTriviaFrom(node.Parameters.Last), VBS.TypeParameterSyntax))
                 Dim SeparatedList As SeparatedSyntaxList(Of VBS.TypeParameterSyntax) = VBFactory.SeparatedList(Nodes, Separators)
-                Dim TypeParameterListSyntax As VBS.TypeParameterListSyntax = VBFactory.TypeParameterList(OpenParenToken,
-                                                                                                         OfKeyword.WithTrailingTrivia(SpaceTrivia),
-                                                                                                         parameters:=SeparatedList,
-                                                                                                         CloseParenToken.WithConvertedTriviaFrom(node.GreaterThanToken).WithAppendedTrailingTrivia(FinalTrailingTrivia))
+                Dim TypeParameterListSyntax As VBS.TypeParameterListSyntax =
+                    VBFactory.TypeParameterList(OpenParenToken,
+                                                OfKeyword.WithTrailingTrivia(SpaceTrivia),
+                                                parameters:=SeparatedList,
+                                                CloseParenToken.WithConvertedTriviaFrom(node.GreaterThanToken).WithAppendedTrailingTrivia(FinalTrailingTrivia))
                 Return TypeParameterListSyntax
             End Function
 

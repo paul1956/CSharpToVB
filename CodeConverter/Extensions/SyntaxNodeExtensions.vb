@@ -180,7 +180,7 @@ Namespace CSharpToVBCodeConverter.Utilities
                     Yield DirectCast(current, TNode)
                 End If
 
-                current = If(TypeOf current Is IStructuredTriviaSyntax, (DirectCast(current, IStructuredTriviaSyntax)).ParentTrivia.Token.Parent, current.Parent)
+                current = If(TypeOf current Is IStructuredTriviaSyntax, DirectCast(current, IStructuredTriviaSyntax).ParentTrivia.Token.Parent, current.Parent)
             End While
         End Function
 

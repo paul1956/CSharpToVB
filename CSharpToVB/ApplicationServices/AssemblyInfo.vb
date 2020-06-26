@@ -37,7 +37,7 @@ Namespace Microsoft.VisualBasic.ApplicationServices
             Get
                 If _description Is Nothing Then
                     Dim Attribute As AssemblyDescriptionAttribute =
-                        CType(GetAttribute(GetType(AssemblyDescriptionAttribute)), AssemblyDescriptionAttribute)
+                        CType(Me.GetAttribute(GetType(AssemblyDescriptionAttribute)), AssemblyDescriptionAttribute)
                     _description = If(Attribute Is Nothing, "", Attribute.Description)
                 End If
                 Return _description
@@ -53,7 +53,7 @@ Namespace Microsoft.VisualBasic.ApplicationServices
             Get
                 If _companyName Is Nothing Then
                     Dim Attribute As AssemblyCompanyAttribute =
-                        CType(GetAttribute(GetType(AssemblyCompanyAttribute)), AssemblyCompanyAttribute)
+                        CType(Me.GetAttribute(GetType(AssemblyCompanyAttribute)), AssemblyCompanyAttribute)
                     _companyName = If(Attribute Is Nothing, "", Attribute.Company)
                 End If
                 Return _companyName
@@ -69,7 +69,7 @@ Namespace Microsoft.VisualBasic.ApplicationServices
             Get
                 If _title Is Nothing Then
                     Dim Attribute As AssemblyTitleAttribute =
-                        CType(GetAttribute(GetType(AssemblyTitleAttribute)), AssemblyTitleAttribute)
+                        CType(Me.GetAttribute(GetType(AssemblyTitleAttribute)), AssemblyTitleAttribute)
                     _title = If(Attribute Is Nothing, "", Attribute.Title)
                 End If
                 Return _title
@@ -84,7 +84,7 @@ Namespace Microsoft.VisualBasic.ApplicationServices
         Public ReadOnly Property Copyright() As String
             Get
                 If _copyright Is Nothing Then
-                    Dim Attribute As AssemblyCopyrightAttribute = CType(GetAttribute(GetType(AssemblyCopyrightAttribute)), AssemblyCopyrightAttribute)
+                    Dim Attribute As AssemblyCopyrightAttribute = CType(Me.GetAttribute(GetType(AssemblyCopyrightAttribute)), AssemblyCopyrightAttribute)
                     _copyright = If(Attribute IsNot Nothing, Attribute.Copyright, "")
                 End If
                 Return _copyright
@@ -99,7 +99,7 @@ Namespace Microsoft.VisualBasic.ApplicationServices
         Public ReadOnly Property Trademark() As String
             Get
                 If _trademark Is Nothing Then
-                    Dim Attribute As AssemblyTrademarkAttribute = CType(GetAttribute(GetType(AssemblyTrademarkAttribute)), AssemblyTrademarkAttribute)
+                    Dim Attribute As AssemblyTrademarkAttribute = CType(Me.GetAttribute(GetType(AssemblyTrademarkAttribute)), AssemblyTrademarkAttribute)
                     _trademark = If(Attribute Is Nothing, "", Attribute.Trademark)
                 End If
                 Return _trademark
@@ -114,7 +114,7 @@ Namespace Microsoft.VisualBasic.ApplicationServices
         Public ReadOnly Property ProductName() As String
             Get
                 If _productName Is Nothing Then
-                    Dim Attribute As AssemblyProductAttribute = CType(GetAttribute(GetType(AssemblyProductAttribute)), AssemblyProductAttribute)
+                    Dim Attribute As AssemblyProductAttribute = CType(Me.GetAttribute(GetType(AssemblyProductAttribute)), AssemblyProductAttribute)
                     _productName = If(Attribute Is Nothing, "", Attribute.Product)
                 End If
                 Return _productName

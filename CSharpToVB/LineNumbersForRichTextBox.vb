@@ -47,7 +47,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
     Private _zSeeThroughMode As Boolean = False
 
     Public Sub New()
-        InitializeComponent()
+        Me.InitializeComponent()
 
         With Me
             .SetStyle(ControlStyles.OptimizedDoubleBuffer, True)
@@ -63,8 +63,8 @@ Public Class LineNumbersForRichTextBox : Inherits Control
             .Interval = 200
             .Stop()
         End With
-        Update_SizeAndPosition()
-        Invalidate()
+        Me.Update_SizeAndPosition()
+        Me.Invalidate()
     End Sub
 
     <Flags>
@@ -82,7 +82,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Get
         Set(value As Boolean)
             MyBase.AutoSize = value
-            Invalidate()
+            Me.Invalidate()
         End Set
     End Property
 
@@ -95,8 +95,8 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Get
         Set(value As Boolean)
             _zAutoSizing = value
-            Refresh()
-            Invalidate()
+            Me.Refresh()
+            Me.Invalidate()
         End Set
     End Property
 
@@ -107,7 +107,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Get
         Set(value As Color)
             _zGradient_StartColor = value
-            Invalidate()
+            Me.Invalidate()
         End Set
     End Property
 
@@ -119,7 +119,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Get
         Set(value As Color)
             _zGradient_EndColor = value
-            Invalidate()
+            Me.Invalidate()
         End Set
     End Property
 
@@ -131,7 +131,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Get
         Set(value As Drawing2D.LinearGradientMode)
             _zGradient_Direction = value
-            Invalidate()
+            Me.Invalidate()
         End Set
     End Property
 
@@ -143,7 +143,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Get
         Set(value As Color)
             _zBorderLines_Color = value
-            Invalidate()
+            Me.Invalidate()
         End Set
     End Property
 
@@ -158,7 +158,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
                 value = Drawing2D.DashStyle.Solid
             End If
             _zBorderLines_Style = value
-            Invalidate()
+            Me.Invalidate()
         End Set
     End Property
 
@@ -170,7 +170,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Get
         Set(value As Single)
             _zBorderLines_Thickness = Math.Max(1, Math.Min(255, value))
-            Invalidate()
+            Me.Invalidate()
         End Set
     End Property
 
@@ -183,8 +183,8 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Get
         Set(value As LineNumberDockSides)
             _zDockSide = value
-            Refresh()
-            Invalidate()
+            Me.Refresh()
+            Me.Invalidate()
         End Set
     End Property
 
@@ -195,8 +195,8 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Get
         Set(value As Font)
             MyBase.Font = value
-            Refresh()
-            Invalidate()
+            Me.Refresh()
+            Me.Invalidate()
         End Set
     End Property
 
@@ -208,7 +208,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Get
         Set(value As Color)
             _zGridLines_Color = value
-            Invalidate()
+            Me.Invalidate()
         End Set
     End Property
 
@@ -223,7 +223,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
                 value = Drawing2D.DashStyle.Solid
             End If
             _zGridLines_Style = value
-            Invalidate()
+            Me.Invalidate()
         End Set
     End Property
 
@@ -235,7 +235,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Get
         Set(value As Single)
             _zGridLines_Thickness = Math.Max(1, Math.Min(255, value))
-            Invalidate()
+            Me.Invalidate()
         End Set
     End Property
 
@@ -248,7 +248,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Get
         Set(value As ContentAlignment)
             _zLineNumbers_Alignment = value
-            Invalidate()
+            Me.Invalidate()
         End Set
     End Property
 
@@ -261,8 +261,8 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Get
         Set(value As Boolean)
             _zLineNumbers_AntiAlias = value
-            Refresh()
-            Invalidate()
+            Me.Refresh()
+            Me.Invalidate()
         End Set
     End Property
 
@@ -275,8 +275,8 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Get
         Set(value As Boolean)
             _zLineNumbers_ShowAsHexadecimal = value
-            Refresh()
-            Invalidate()
+            Me.Refresh()
+            Me.Invalidate()
         End Set
     End Property
 
@@ -289,7 +289,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Get
         Set(value As Boolean)
             _zLineNumbers_ClipByItemRectangle = value
-            Invalidate()
+            Me.Invalidate()
         End Set
     End Property
 
@@ -302,8 +302,8 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Get
         Set(value As Boolean)
             _zLineNumbers_ShowLeadingZeroes = value
-            Refresh()
-            Invalidate()
+            Me.Refresh()
+            Me.Invalidate()
         End Set
     End Property
 
@@ -315,7 +315,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Get
         Set(value As Size)
             _zLineNumbers_Offset = value
-            Invalidate()
+            Me.Invalidate()
         End Set
     End Property
 
@@ -327,7 +327,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Get
         Set(value As Color)
             _zMarginLines_Color = value
-            Invalidate()
+            Me.Invalidate()
         End Set
     End Property
 
@@ -339,7 +339,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Get
         Set(value As LineNumberDockSides)
             _zMarginLines_Side = value
-            Invalidate()
+            Me.Invalidate()
         End Set
     End Property
 
@@ -354,7 +354,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
                 value = Drawing2D.DashStyle.Solid
             End If
             _zMarginLines_Style = value
-            Invalidate()
+            Me.Invalidate()
         End Set
     End Property
 
@@ -366,7 +366,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Get
         Set(value As Single)
             _zMarginLines_Thickness = Math.Max(1, Math.Min(255, value))
-            Invalidate()
+            Me.Invalidate()
         End Set
     End Property
 
@@ -383,8 +383,8 @@ Public Class LineNumbersForRichTextBox : Inherits Control
                 ZParent.Refresh()
             End If
             Text = ""
-            Refresh()
-            Invalidate()
+            Me.Refresh()
+            Me.Invalidate()
         End Set
     End Property
 
@@ -397,7 +397,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Get
         Set(value As Boolean)
             _zSeeThroughMode = value
-            Invalidate()
+            Me.Invalidate()
         End Set
     End Property
 
@@ -410,7 +410,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Get
         Set(value As Boolean)
             _zGradient_Show = value
-            Invalidate()
+            Me.Invalidate()
         End Set
     End Property
 
@@ -423,7 +423,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Get
         Set(value As Boolean)
             _zBorderLines_Show = value
-            Invalidate()
+            Me.Invalidate()
         End Set
     End Property
 
@@ -436,7 +436,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Get
         Set(value As Boolean)
             _zGridLines_Show = value
-            Invalidate()
+            Me.Invalidate()
         End Set
     End Property
 
@@ -448,7 +448,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Get
         Set(value As Boolean)
             _zLineNumbers_Show = value
-            Invalidate()
+            Me.Invalidate()
         End Set
     End Property
 
@@ -461,7 +461,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Get
         Set(value As Boolean)
             _zMarginLines_Show = value
-            Invalidate()
+            Me.Invalidate()
         End Set
     End Property
 
@@ -474,7 +474,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         End Get
         Set(value As String)
             MyBase.Text = ""
-            Invalidate()
+            Me.Invalidate()
         End Set
     End Property
 
@@ -497,11 +497,11 @@ Public Class LineNumbersForRichTextBox : Inherits Control
             Case Is > zTarget
                 '   Look again, in lower half
                 zMax = (zMax + zMin) \ 2
-                FindStartIndex(zMin, zMax, zTarget)
+                Me.FindStartIndex(zMin, zMax, zTarget)
             Case Is < 0
                 '   Look again, in top half
                 zMin = (zMax + zMin) \ 2
-                FindStartIndex(zMin, zMax, zTarget)
+                Me.FindStartIndex(zMin, zMax, zTarget)
         End Select
     End Sub
 
@@ -614,7 +614,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         ' --- Make sure the LineNumbers are aligning to the same height as the zParent textlines by converting to screencoordinates
         '   and using that as an offset that gets added to the points for the LineNumberItems
         _zPointInParent = ZParent.PointToScreen(ZParent.ClientRectangle.Location)
-        _zPointInMe = PointToScreen(New Point(0, 0))
+        _zPointInMe = Me.PointToScreen(New Point(0, 0))
         '   zParentInMe is the vertical offset to make the LineNumberItems line up with the textlines in zParent.
         _zParentInMe = _zPointInParent.Y - _zPointInMe.Y + 1
         '   The first visible LineNumber may not be the first visible line of text in the RTB if the LineNumbercontrol's .Top is lower on the form than
@@ -623,7 +623,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         _zPointInParent = ZParent.PointToClient(_zPointInMe)
 
         ' --- NOTES:
-        '   Additional complication is the fact that when wordwrap is enabled on the RTB, the wordwrapped text spills into the RTB.Lines collection,
+        '   Additional complication is the fact that when word-wrap is enabled on the RTB, the wordwrapped text spills into the RTB.Lines collection,
         '   so we need to split the text into lines ourselves, and use the Index of each zSplit-line's first character instead of the RTB's.
         Dim zSplit() As String = ZParent.Text.Split(vbCrLf.ToCharArray)
 
@@ -639,7 +639,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
             Dim zPoint As Point
             Dim zStartIndex As Integer = 0
             Dim zA As Integer = ZParent.Text.Length - 1
-            FindStartIndex(zStartIndex, zA, _zPointInParent.Y)
+            Me.FindStartIndex(zStartIndex, zA, _zPointInParent.Y)
 
             '   zStartIndex now holds the index of a character in the first visible line from zParent.Text
             '   Now it will be pointed at the first character of that line (chr(10) = Linefeed part of the vbCrLf constant)
@@ -706,31 +706,31 @@ Public Class LineNumbersForRichTextBox : Inherits Control
     End Sub
 
     Private Sub ZParent_Changed(sender As Object, e As EventArgs) Handles ZParent.LocationChanged, ZParent.Move, ZParent.Resize, ZParent.DockChanged, ZParent.TextChanged, ZParent.MultilineChanged
-        Refresh()
-        Invalidate()
+        Me.Refresh()
+        Me.Invalidate()
     End Sub
 
     Private Sub ZParent_ContentsResized(sender As Object, e As ContentsResizedEventArgs) Handles ZParent.ContentsResized
         _zContentRectangle = e.NewRectangle
-        Refresh()
-        Invalidate()
+        Me.Refresh()
+        Me.Invalidate()
     End Sub
 
     Private Sub ZParent_Disposed(sender As Object, e As EventArgs) Handles ZParent.Disposed
         ParentRichTextBox = Nothing
-        Refresh()
-        Invalidate()
+        Me.Refresh()
+        Me.Invalidate()
     End Sub
 
     Private Sub ZParent_Scroll(sender As Object, e As EventArgs) Handles ZParent.HScroll, ZParent.VScroll
         _zParentIsScrolling = True
-        Invalidate()
+        Me.Invalidate()
     End Sub
 
     Private Sub ZTimer_Tick(sender As Object, e As EventArgs) Handles ZTimer.Tick
         _zParentIsScrolling = False
         ZTimer.Stop()
-        Invalidate()
+        Me.Invalidate()
     End Sub
 
     Protected Overrides Sub OnHandleCreated(e As EventArgs)
@@ -740,10 +740,10 @@ Public Class LineNumbersForRichTextBox : Inherits Control
 
     Protected Overrides Sub OnLocationChanged(e As EventArgs)
         If DesignMode = True Then
-            Refresh()
+            Me.Refresh()
         End If
         MyBase.OnLocationChanged(e)
-        Invalidate()
+        Me.Invalidate()
     End Sub
 
     ''' <summary>
@@ -757,7 +757,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
     Protected Overrides Sub OnPaint(e As PaintEventArgs)
         Contracts.Contract.Requires(e IsNot Nothing)
         '   Build the list of visible LineNumberItems (= zLNIs) first. (doesn't take long, so it can stay in OnPaint)
-        Update_VisibleLineNumberItems()
+        Me.Update_VisibleLineNumberItems()
         MyBase.OnPaint(e)
 
         ' --- QualitySettings
@@ -1001,16 +1001,16 @@ Public Class LineNumbersForRichTextBox : Inherits Control
 
     Protected Overrides Sub OnSizeChanged(e As EventArgs)
         If DesignMode = True Then
-            Refresh()
+            Me.Refresh()
         End If
         MyBase.OnSizeChanged(e)
-        Invalidate()
+        Me.Invalidate()
     End Sub
 
     Public Overrides Sub Refresh()
         '   Note: don't change the order here, first the Mybase.Refresh, then the Update_SizeAndPosition.
         MyBase.Refresh()
-        Update_SizeAndPosition()
+        Me.Update_SizeAndPosition()
     End Sub
 
     Private Class LineNumberItem

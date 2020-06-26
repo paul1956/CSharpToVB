@@ -45,7 +45,7 @@ Partial Public Class Form1
     Private _resultOfConversion As ConversionResult
 
     Public Sub New()
-        InitializeComponent()
+        Me.InitializeComponent()
     End Sub
 
     Private Property CurrentBuffer As Control
@@ -150,7 +150,7 @@ Partial Public Class Form1
 
         If CompileResult.Success AndAlso CompileResult.EmitResult.Success Then
             If My.Settings.ColorizeOutput Then
-                Colorize(FragmentRange, ConversionOutput, TextToCompile.SplitLines.Length)
+                Me.Colorize(FragmentRange, ConversionOutput, TextToCompile.SplitLines.Length)
             Else
                 ConversionOutput.Text = TextToCompile
             End If
@@ -158,12 +158,12 @@ Partial Public Class Form1
             If Not _resultOfConversion.GetFilteredListOfFailures().Any Then
                 _resultOfConversion.ResultStatus = ResultTriState.Success
                 If My.Settings.ColorizeOutput Then
-                    Colorize(FragmentRange, ConversionOutput, TextToCompile.SplitLines.Length, _resultOfConversion.GetFilteredListOfFailures())
+                    Me.Colorize(FragmentRange, ConversionOutput, TextToCompile.SplitLines.Length, _resultOfConversion.GetFilteredListOfFailures())
                 Else
                     ConversionOutput.Text = TextToCompile
                 End If
             Else
-                Colorize(FragmentRange, ConversionOutput, TextToCompile.SplitLines.Length, _resultOfConversion.GetFilteredListOfFailures())
+                Me.Colorize(FragmentRange, ConversionOutput, TextToCompile.SplitLines.Length, _resultOfConversion.GetFilteredListOfFailures())
             End If
         End If
         ConversionOutput.Visible = True
@@ -239,7 +239,7 @@ Partial Public Class Form1
         mnuConvertConvertSnippet.Enabled = InputBufferInUse
         mnuConvertConvertFolder.Enabled = InputBufferInUse
         If mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
-            Colorize(GetClassifiedRanges(SourceCode:=ConversionInput.Text, LanguageNames.CSharp), ConversionBuffer:=ConversionInput, Lines:=ConversionInput.Lines.Length)
+            Me.Colorize(GetClassifiedRanges(SourceCode:=ConversionInput.Text, LanguageNames.CSharp), ConversionBuffer:=ConversionInput, Lines:=ConversionInput.Lines.Length)
         End If
     End Sub
 
@@ -299,7 +299,7 @@ Partial Public Class Form1
         End If
         Select Case _resultOfConversion.ResultStatus
             Case ResultTriState.Success
-                Compile_Colorize(_resultOfConversion.ConvertedCode, VBPreprocessorSymbols)
+                Me.Compile_Colorize(_resultOfConversion.ConvertedCode, VBPreprocessorSymbols)
                 Dim FilteredErrorCount As Integer = _resultOfConversion.GetFilteredListOfFailures().Count
                 LabelErrorCount.Text = $"Number of Errors: {FilteredErrorCount}"
                 Return FilteredErrorCount = 0
@@ -382,7 +382,7 @@ Partial Public Class Form1
                     FrameworkVersion.Checked = False
                     FrameworkVersion.Enabled = True
                 End If
-                AddHandler FrameworkVersion.CheckedChanged, AddressOf ToolStripMenuItem_CheckedChanged
+                AddHandler FrameworkVersion.CheckedChanged, AddressOf Me.ToolStripMenuItem_CheckedChanged
                 _frameworkVersionList.Add(FrameworkVersion.Text, (FrameworkVersion, FrameworkType))
             Next
         Next
@@ -395,7 +395,7 @@ Partial Public Class Form1
             mnuFileLastSolution.Enabled = True
         End If
         ProgressBar1.Visible = False
-        CenterToScreen()
+        Me.CenterToScreen()
         ProgressBar1.Location = New Point(ClientSize.Width \ 4, ClientSize.Height \ 2)
         LabelProgress.Left = ProgressBar1.Left
         LabelProgress.Top = ProgressBar1.Top - (LabelProgress.Height * 2)
@@ -405,25 +405,25 @@ Partial Public Class Form1
     End Sub
 
     Private Sub Form1_Resize(sender As Object, e As EventArgs) Handles Me.Resize
-        ResizeRichTextBuffers()
+        Me.ResizeRichTextBuffers()
     End Sub
 
     Private Sub LineNumbers_For_RichTextBoxInput_Resize(sender As Object, e As EventArgs) Handles LineNumbersForConversionInput.Resize
-        ResizeRichTextBuffers()
+        Me.ResizeRichTextBuffers()
     End Sub
 
     ' Don't save state here only if user changes
     Private Sub LineNumbers_For_RichTextBoxInput_VisibleChanged(sender As Object, e As EventArgs) Handles LineNumbersForConversionInput.VisibleChanged
-        ResizeRichTextBuffers()
+        Me.ResizeRichTextBuffers()
     End Sub
 
     Private Sub LineNumbers_For_RichTextBoxOutput_Resize(sender As Object, e As EventArgs) Handles LineNumbersForConversionOutput.Resize
-        ResizeRichTextBuffers()
+        Me.ResizeRichTextBuffers()
     End Sub
 
     ' Don't save state here only if user changes
     Private Sub LineNumbers_For_RichTextBoxOutput_VisibleChanged(sender As Object, e As EventArgs) Handles LineNumbersForConversionOutput.VisibleChanged
-        ResizeRichTextBuffers()
+        Me.ResizeRichTextBuffers()
     End Sub
 
     Private Sub ListboxErrorList_DoubleClick(sender As Object, e As EventArgs) Handles ListBoxErrorList.DoubleClick
@@ -481,13 +481,13 @@ Partial Public Class Form1
         If String.IsNullOrWhiteSpace(SourceFileNameWithPath) OrElse Not File.Exists(SourceFileNameWithPath) Then
             Exit Sub
         End If
-        LoadInputBufferFromStream(SourceFileNameWithPath)
+        Me.LoadInputBufferFromStream(SourceFileNameWithPath)
         Dim ConvertedFileNameWithPath As String = item.ValueItem
         If Not File.Exists(ConvertedFileNameWithPath) Then
             Exit Sub
         End If
 
-        LoadOutputBufferFromStream(ConvertedFileNameWithPath)
+        Me.LoadOutputBufferFromStream(ConvertedFileNameWithPath)
     End Sub
 
     Private Sub ListBoxFileList_Enter(sender As Object, e As EventArgs) Handles ListBoxFileList.Enter
@@ -520,7 +520,7 @@ Partial Public Class Form1
         Dim ConversionInputLinesArray() As String = SourceText.SplitLines
         InputLines = ConversionInputLinesArray.Length
         If mnuOptionsColorizeSource.Checked Then
-            Colorize(GetClassifiedRanges(ConversionInputLinesArray.Join(vbCrLf), LanguageNames.CSharp), ConversionInput, InputLines)
+            Me.Colorize(GetClassifiedRanges(ConversionInputLinesArray.Join(vbCrLf), LanguageNames.CSharp), ConversionInput, InputLines)
         Else
             ConversionInput.Text = ConversionInputLinesArray.Join(vbCrLf)
         End If
@@ -545,7 +545,7 @@ Partial Public Class Form1
         Dim ConversionInputLinesArray() As String = SourceText.SplitLines
         InputLines = ConversionInputLinesArray.Length
         If mnuOptionsColorizeSource.Checked Then
-            Colorize(GetClassifiedRanges(ConversionInputLinesArray.Join(vbCrLf), LanguageNames.VisualBasic), ConversionOutput, InputLines)
+            Me.Colorize(GetClassifiedRanges(ConversionInputLinesArray.Join(vbCrLf), LanguageNames.VisualBasic), ConversionOutput, InputLines)
         Else
             ConversionOutput.Text = ConversionInputLinesArray.Join(vbCrLf)
         End If
@@ -564,7 +564,7 @@ Partial Public Class Form1
         Dim VBPreprocessorSymbols As New List(Of KeyValuePair(Of String, Object)) From {
             New KeyValuePair(Of String, Object)(My.Settings.Framework, True)
         }
-        Compile_Colorize(ConversionOutput.Text, VBPreprocessorSymbols)
+        Me.Compile_Colorize(ConversionOutput.Text, VBPreprocessorSymbols)
     End Sub
 
     Private Sub mnuConvert_Click(sender As Object, e As EventArgs) Handles mnuConvert.Click
@@ -577,7 +577,7 @@ Partial Public Class Form1
         ListBoxFileList.Items.Clear()
         LineNumbersForConversionOutput.Visible = False
         StatusStripCurrentFileName.Text = ""
-        ResizeRichTextBuffers()
+        Me.ResizeRichTextBuffers()
         If _cancellationTokenSource IsNot Nothing Then
             _cancellationTokenSource.Dispose()
         End If
@@ -592,7 +592,7 @@ Partial Public Class Form1
         Dim VBPreprocessorSymbols As New List(Of KeyValuePair(Of String, Object)) From {
             KeyValuePair.Create(Of String, Object)(My.Settings.Framework, True)
         }
-        Dim DontDisplayLineNumbers As Boolean = Await Convert_Compile_ColorizeAsync(_requestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences:=SharedReferences.CSharpReferences(Assembly.Load("System.Windows.Forms").Location, Nothing).ToArray, CancelToken:=_cancellationTokenSource.Token).ConfigureAwait(True)
+        Dim DontDisplayLineNumbers As Boolean = Await Me.Convert_Compile_ColorizeAsync(_requestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences:=SharedReferences.CSharpReferences(Assembly.Load("System.Windows.Forms").Location, Nothing).ToArray, CancelToken:=_cancellationTokenSource.Token).ConfigureAwait(True)
         If _requestToConvert.CancelToken.IsCancellationRequested Then
             MsgBox($"Conversion canceled.",
                    MsgBoxStyle.OkOnly Or MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground,
@@ -644,12 +644,12 @@ Partial Public Class Form1
         ' Begin timing
         stopwatch.Start()
         Dim prompt As String
-        If Await ProcessAllFilesAsync(SourceFolderName,
-                            solutionSavePath,
-                            "cs",
-                            Stats,
-                            _cancellationTokenSource.Token
-                            ).ConfigureAwait(True) Then
+        If Await Me.ProcessAllFilesAsync(SourceFolderName,
+                                         solutionSavePath,
+                                         "cs",
+                                         Stats,
+                                         _cancellationTokenSource.Token
+                                         ).ConfigureAwait(True) Then
             stopwatch.Stop()
             If _cancellationTokenSource.Token.IsCancellationRequested Then
                 prompt = $"Conversion canceled, {Stats.FilesProcessed} files completed successfully."
@@ -732,7 +732,7 @@ Partial Public Class Form1
     End Sub
 
     Private Sub mnuFileExit_Click(sender As Object, e As EventArgs) Handles mnuFileExit.Click
-        Close()
+        Me.Close()
         End
     End Sub
 
@@ -753,7 +753,7 @@ Partial Public Class Form1
                 _cancellationTokenSource.Dispose()
             End If
             _cancellationTokenSource = New CancellationTokenSource
-            If Await ProcessAllFilesAsync(FolderName, targetSavePath, SourceLanguageExtension, Stats, _cancellationTokenSource.Token).ConfigureAwait(True) Then
+            If Await Me.ProcessAllFilesAsync(FolderName, targetSavePath, SourceLanguageExtension, Stats, _cancellationTokenSource.Token).ConfigureAwait(True) Then
                 MsgBox($"Conversion completed.",
                        MsgBoxStyle.OkOnly Or MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground)
             End If
@@ -765,12 +765,12 @@ Partial Public Class Form1
 
     Private Sub mnuFileLastProject_Click(sender As Object, e As EventArgs) Handles mnuFileLastProject.Click
         Dim projectFileName As String = My.Settings.LastProject
-        ProcessProjectOrSolution(projectFileName)
+        Me.ProcessProjectOrSolution(projectFileName)
     End Sub
 
     Private Sub mnuFileLastSolution_Click(sender As Object, e As EventArgs) Handles mnuFileLastSolution.Click
         Dim solutionFileName As String = My.Settings.LastSolution
-        ProcessProjectOrSolution(solutionFileName)
+        Me.ProcessProjectOrSolution(solutionFileName)
     End Sub
 
     Private Sub mnuFileOpen_Click(sender As Object, e As EventArgs) Handles mnuFileOpen.Click
@@ -788,7 +788,7 @@ Partial Public Class Form1
             .ValidateNames = True
             If .ShowDialog = DialogResult.OK Then
                 mnuConvertConvertFolder.Enabled = False
-                OpenSourceFile(OpenFileDialog1.FileName)
+                Me.OpenSourceFile(OpenFileDialog1.FileName)
             Else
                 mnuConvertConvertFolder.Enabled = True
             End If
@@ -810,7 +810,7 @@ Partial Public Class Form1
             If .ShowDialog <> DialogResult.OK Then
                 Exit Sub
             End If
-            ProcessProjectOrSolution(.FileName)
+            Me.ProcessProjectOrSolution(.FileName)
         End With
     End Sub
 
@@ -834,7 +834,7 @@ Partial Public Class Form1
 
     Private Sub mnuFileSnippetLoadLast_Click(sender As Object, e As EventArgs) Handles mnuFileSnippetLoadLast.Click
         If My.Settings.ColorizeInput Then
-            mnuConvertConvertSnippet.Enabled = 0 <> LoadInputBufferFromStream(s_snippetFileWithPath)
+            mnuConvertConvertSnippet.Enabled = 0 <> Me.LoadInputBufferFromStream(s_snippetFileWithPath)
         Else
             ConversionInput.LoadFile(s_snippetFileWithPath, RichTextBoxStreamType.PlainText)
         End If
@@ -926,7 +926,7 @@ Partial Public Class Form1
         IgnoreFilesWithErrorsDialog.ShowDialog(Me)
         If Not String.IsNullOrWhiteSpace(IgnoreFilesWithErrorsDialog.FileToLoad) Then
             mnuConvertConvertFolder.Enabled = False
-            OpenSourceFile(IgnoreFilesWithErrorsDialog.FileToLoad)
+            Me.OpenSourceFile(IgnoreFilesWithErrorsDialog.FileToLoad)
         End If
         IgnoreFilesWithErrorsDialog.Dispose()
     End Sub
@@ -998,7 +998,7 @@ Partial Public Class Form1
         Next
         ' iterate through list and remove each from menu...
         For Each MRUToolStripItem As ToolStripItem In MRUToolStripItems
-            RemoveHandler MRUToolStripItem.Click, AddressOf mnu_MRUList_Click
+            RemoveHandler MRUToolStripItem.Click, AddressOf Me.mnu_MRUList_Click
             RemoveHandler MRUToolStripItem.MouseDown, AddressOf mnuMRUList_MouseDown
             dropDownItems.Remove(MRUToolStripItem)
         Next
@@ -1012,7 +1012,7 @@ Partial Public Class Form1
                 .Tag = "MRU:" & sPath
             }
             ' hook into the click event handler so we can open the file later...
-            AddHandler clsItem.Click, AddressOf mnu_MRUList_Click
+            AddHandler clsItem.Click, AddressOf Me.mnu_MRUList_Click
             AddHandler clsItem.MouseDown, AddressOf mnuMRUList_MouseDown
             ' insert into DropDownItems list...
             dropDownItems.Insert(dropDownItems.Count - 12, clsItem)
@@ -1033,9 +1033,9 @@ Partial Public Class Form1
     End Sub
 
     Private Sub OpenSourceFile(FileNameWithPath As String)
-        mnuConvertConvertSnippet.Enabled = LoadInputBufferFromStream(FileNameWithPath) <> 0
+        mnuConvertConvertSnippet.Enabled = Me.LoadInputBufferFromStream(FileNameWithPath) <> 0
         mnuAddToMRU(My.Settings.MRU_Data, FileNameWithPath)
-        MRU_UpdateUI(mnuFile.DropDownItems)
+        Me.MRU_UpdateUI(mnuFile.DropDownItems)
     End Sub
 
     ''' <summary>
@@ -1054,17 +1054,32 @@ Partial Public Class Form1
         Try
             ListBoxErrorList.Items.Clear()
             ListBoxFileList.Items.Clear()
-            SetButtonStopAndCursor(Me, ButtonStopConversion, StopButtonVisible:=True)
-            Stats.TotalFilesToProcess = GetFileCount(SourceDirectory, SourceLanguageExtension, My.Settings.SkipBinAndObjFolders, My.Settings.SkipTestResourceFiles)
+            SetButtonStopAndCursor(Me,
+                                   ButtonStopConversion,
+                                   StopButtonVisible:=True)
+            Stats.TotalFilesToProcess = GetFileCount(SourceDirectory,
+                                                     SourceLanguageExtension,
+                                                     My.Settings.SkipBinAndObjFolders,
+                                                     My.Settings.SkipTestResourceFiles)
             ' Process the list of files found in the directory.
-            Return Await ProcessDirectoryAsync(SourceDirectory, TargetDirectory, MeForm:=Me, ButtonStopConversion, ListBoxFileList, SourceLanguageExtension, Stats, AddressOf ProcessFileAsync, CancelToken).ConfigureAwait(True)
+            Return Await ProcessDirectoryAsync(SourceDirectory,
+                                               TargetDirectory,
+                                               MeForm:=Me,
+                                               ButtonStopConversion,
+                                               ListBoxFileList,
+                                               SourceLanguageExtension,
+                                               Stats,
+                                               AddressOf Me.ProcessFileAsync,
+                                               CancelToken).ConfigureAwait(True)
         Catch ex As OperationCanceledException
             ConversionProgressBar.Value = 0
         Catch ex As Exception
             ' don't crash on exit
             End
         Finally
-            SetButtonStopAndCursor(Me, ButtonStopConversion, StopButtonVisible:=False)
+            SetButtonStopAndCursor(Me,
+                                   ButtonStopConversion,
+                                   StopButtonVisible:=False)
         End Try
         Return False
     End Function
@@ -1083,13 +1098,13 @@ Partial Public Class Form1
         ButtonStopConversion.Visible = True
         ConversionOutput.Text = ""
         mnuAddToMRU(My.Settings.MRU_Data, SourceFileNameWithPath)
-        MRU_UpdateUI(mnuFile.DropDownItems)
-        Dim lines As Integer = LoadInputBufferFromStream(SourceFileNameWithPath)
+        Me.MRU_UpdateUI(mnuFile.DropDownItems)
+        Dim lines As Integer = Me.LoadInputBufferFromStream(SourceFileNameWithPath)
         If lines > 0 Then
             _requestToConvert = New ConvertRequest(SkipAutoGenerated, New Progress(Of ProgressReport)(AddressOf New TextProgressBar(ConversionProgressBar).Update), _cancellationTokenSource.Token) With {
                 .SourceCode = ConversionInput.Text
             }
-            If Not Await Convert_Compile_ColorizeAsync(_requestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences, CancelToken).ConfigureAwait(True) Then
+            If Not Await Me.Convert_Compile_ColorizeAsync(_requestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences, CancelToken).ConfigureAwait(True) Then
                 If _requestToConvert.CancelToken.IsCancellationRequested Then
                     ConversionProgressBar.Value = 0
                     Return False
@@ -1154,7 +1169,7 @@ Partial Public Class Form1
     ''' <returns></returns>
     Private Async Function ProcessOneProjectAsync(TaskProjectAnalyzer As IProjectAnalyzer, SolutionRoot As String, processedProjects As Integer, totalProjects As Integer, _cancellationTokenSource As CancellationTokenSource) As Task(Of (ErrorPrompt As String, ProjectsToBeAdded As List(Of String)))
         Application.DoEvents()
-        UpdateProgressLabels("Getting Analyzer Results", True)
+        Me.UpdateProgressLabels("Getting Analyzer Results", True)
         Dim TaskResults As Task(Of IAnalyzerResults) = GetResultsAsync(CType(TaskProjectAnalyzer, ProjectAnalyzer))
         While Not TaskResults.IsCompleted
             If _cancellationTokenSource.IsCancellationRequested Then
@@ -1163,7 +1178,7 @@ Partial Public Class Form1
             Await Task.Delay(100).ConfigureAwait(True)
         End While
         Dim results As IAnalyzerResults = TaskResults.Result
-        UpdateProgressLabels("Loading Workspace", True)
+        Me.UpdateProgressLabels("Loading Workspace", True)
         Dim TaskWorkspace As Task(Of AdhocWorkspace) = GetWorkspaceAsync(TaskProjectAnalyzer)
         Dim frameworkList As List(Of String) = GetFrameworks(results.TargetFrameworks.ToList)
         ' Under debugger each framework will be processed
@@ -1179,7 +1194,7 @@ Partial Public Class Form1
         End If
         Dim projectsToBeAdd As New List(Of String)
         Using workspace As AdhocWorkspace = TaskWorkspace.Result
-            UpdateProgressLabels("", False)
+            Me.UpdateProgressLabels("", False)
 
             If workspace.CurrentSolution.Projects.Count <> 1 Then
                 Return ($"of an unexpected number of projects {workspace.CurrentSolution.Projects.Count}, processing project will terminate!", New List(Of String))
@@ -1196,7 +1211,7 @@ Partial Public Class Form1
                 Application.DoEvents()
                 Dim csReferences As MetadataReference() = CSharpReferences(results(framework.Value).References, results(framework.Value).ProjectReferences).ToArray
                 Dim taskConvertOneProject As Task(Of Boolean) =
-                        ProcessOneProjectCore(currentProject,
+                        Me.ProcessOneProjectCore(currentProject,
                                                SolutionRoot,
                                                framework.Value,
                                                csReferences
@@ -1251,7 +1266,14 @@ Partial Public Class Form1
             ListBoxFileList.SelectedIndex = ListBoxFileList.Items.Count - 1
             FilesConversionProgress.Text = $"Processed {FilesProcessed:N0} of {TotalFilesToProcess:N0} Files"
             Application.DoEvents()
-            If Not Await ProcessFileAsync(currentDocument.FilePath, targetFileWithPath, "cs", CSPreprocessorSymbols, VBPreprocessorSymbols, References, SkipAutoGenerated:=False, _cancellationTokenSource.Token).ConfigureAwait(True) _
+            If Not Await Me.ProcessFileAsync(currentDocument.FilePath,
+                                             targetFileWithPath,
+                                             "cs",
+                                             CSPreprocessorSymbols,
+                                             VBPreprocessorSymbols,
+                                             References,
+                                             SkipAutoGenerated:=False,
+                                             _cancellationTokenSource.Token).ConfigureAwait(True) _
                             OrElse _requestToConvert.CancelToken.IsCancellationRequested Then
                 Return False
             End If
@@ -1273,7 +1295,7 @@ Partial Public Class Form1
         ListBoxFileList.Items.Clear()
         ConversionInput.Clear()
         ConversionOutput.Clear()
-        UpdateProgressLabels($"Getting Analyzer Manger for {fileName}", True)
+        Me.UpdateProgressLabels($"Getting Analyzer Manger for {fileName}", True)
         Try
             Dim TaskAnalyzerManager As Task(Of AnalyzerManager) = GetManagerAsync(fileName)
             While Not TaskAnalyzerManager.IsCompleted
@@ -1316,7 +1338,7 @@ Partial Public Class Form1
                     My.Settings.LastProject = projectFile
                     My.Settings.Save()
                     Application.DoEvents()
-                    results = Await ProcessOneProjectAsync(
+                    results = Await Me.ProcessOneProjectAsync(
                                         TaskProjectAnalyzer:=proj.Value,
                         SolutionRoot:=saveSolutionRoot, processedProjects:=processedProjects,
                         totalProjects:=totalProjects, _cancellationTokenSource:=_cancellationTokenSource).ConfigureAwait(True)
@@ -1340,7 +1362,7 @@ Partial Public Class Form1
                 End If
             Else
                 ' Single project
-                UpdateProgressLabels($"Getting Project Analyzer for {fileName}", True)
+                Me.UpdateProgressLabels($"Getting Project Analyzer for {fileName}", True)
                 Dim TaskProjectAnalyzer As Task(Of IProjectAnalyzer) = GetProjectAnalyzerAsync(fileName, solutionAnalyzerManager)
                 While Not TaskProjectAnalyzer.IsCompleted
                     If _cancellationTokenSource.IsCancellationRequested Then
@@ -1348,14 +1370,16 @@ Partial Public Class Form1
                     End If
                     Await Task.Delay(100).ConfigureAwait(True)
                 End While
-                UpdateProgressLabels("", False)
+                Me.UpdateProgressLabels("", False)
                 mnuFileLastProject.Text = $"Last Project - {fileName}"
                 mnuFileLastProject.Enabled = True
                 My.Settings.LastProject = fileName
                 My.Settings.Save()
-                prompt = (Await ProcessOneProjectAsync(TaskProjectAnalyzer.Result,
-                    saveSolutionRoot, processedProjects:=1,
-                    totalProjects:=1, _cancellationTokenSource:=_cancellationTokenSource).ConfigureAwait(True)).ErrorPrompt
+                prompt = (Await Me.ProcessOneProjectAsync(TaskProjectAnalyzer.Result,
+                                                          saveSolutionRoot,
+                                                          processedProjects:=1,
+                                                          totalProjects:=1,
+                                                          _cancellationTokenSource:=_cancellationTokenSource).ConfigureAwait(True)).ErrorPrompt
 
                 If prompt.Length = 0 Then
 #Disable Warning CA1308 ' Normalize strings to uppercase
@@ -1429,38 +1453,38 @@ Partial Public Class Form1
 
     Private Sub UpdateProgressLabels(progressStr As String, Value As Boolean)
         If InvokeRequired Then
-            Invoke(Sub()
-                       LabelProgress.Text = progressStr
-                       If Value Then
-                           ConversionInput.Text = ""
-                           ConversionOutput.Text = ""
-                           LabelProgress.Visible = True
-                           ProgressBar1.Visible = True
-                       Else
-                           LabelProgress.Visible = False
-                           ProgressBar1.Visible = False
-                       End If
-                       Application.DoEvents()
-                   End Sub)
+            Me.Invoke(Sub()
+                          LabelProgress.Text = progressStr
+                          If Value Then
+                              ConversionInput.Text = ""
+                              ConversionOutput.Text = ""
+                              LabelProgress.Visible = True
+                              ProgressBar1.Visible = True
+                          Else
+                              LabelProgress.Visible = False
+                              ProgressBar1.Visible = False
+                          End If
+                          Application.DoEvents()
+                      End Sub)
         Else
-            Invoke(Sub()
-                       LabelProgress.Text = progressStr
-                       If Value Then
-                           ConversionInput.Text = ""
-                           ConversionOutput.Text = ""
-                           LabelProgress.Visible = True
-                           ProgressBar1.Visible = True
-                       Else
-                           LabelProgress.Visible = False
-                           ProgressBar1.Visible = False
-                       End If
-                       Application.DoEvents()
-                   End Sub)
+            Me.Invoke(Sub()
+                          LabelProgress.Text = progressStr
+                          If Value Then
+                              ConversionInput.Text = ""
+                              ConversionOutput.Text = ""
+                              LabelProgress.Visible = True
+                              ProgressBar1.Visible = True
+                          Else
+                              LabelProgress.Visible = False
+                              ProgressBar1.Visible = False
+                          End If
+                          Application.DoEvents()
+                      End Sub)
         End If
     End Sub
 
     Protected Overrides Sub OnLoad(e As EventArgs)
-        SetStyle(ControlStyles.AllPaintingInWmPaint Or ControlStyles.UserPaint Or ControlStyles.DoubleBuffer, True)
+        Me.SetStyle(ControlStyles.AllPaintingInWmPaint Or ControlStyles.UserPaint Or ControlStyles.DoubleBuffer, True)
         ' enable events...
         MyBase.OnLoad(e)
         If My.Settings.IgnoreFileList Is Nothing Then
@@ -1472,12 +1496,12 @@ Partial Public Class Form1
             My.Settings.MRU_Data = New Specialized.StringCollection
         End If
         ' display MRU if there are any items to display...
-        MRU_UpdateUI(mnuFile.DropDownItems)
+        Me.MRU_UpdateUI(mnuFile.DropDownItems)
     End Sub
 
     Friend Sub mnu_MRUList_Click(sender As Object, e As EventArgs)
         ' open the file...
-        OpenSourceFile(DirectCast(sender, ToolStripItem).Tag.ToString().Substring(4))
+        Me.OpenSourceFile(DirectCast(sender, ToolStripItem).Tag.ToString().Substring(4))
     End Sub
 
     <STAThread()>

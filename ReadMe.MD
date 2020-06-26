@@ -62,6 +62,10 @@ It will try to create a VB project File from the original C# project file.
 
 https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json is added to NuGet Package Source to find
 Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpecific attributes used for testing.
+  New in 4.5.2.3/Converter 3.4.5.0
+  - Add VB editorConfig entry for instance and extension methods to require Me
+  - Fix ArgumentException in converter that was ignored, masking real issue
+
   New in 4.5.2.2/Converter 3.4.4.2
   - Fixed cref Generic Names to have space after Of
   - Fixed static class to not have Shared and NotInheritable
@@ -285,14 +289,14 @@ New in Release 4.2.4.0
 +------------------+--------+--------+--------+
 | Module           | Line   | Branch | Method |
 +------------------+--------+--------+--------+
-| VB.CodeConverter | 78.98% | 72.67% | 87.68% |
+| VB.CodeConverter | 79.09% | 72.74% | 87.84% |
 +------------------+--------+--------+--------+
 
 +---------+--------+--------+--------+
 |         | Line   | Branch | Method |
 +---------+--------+--------+--------+
-| Total   | 78.98% | 72.67% | 87.68% |
+| Total   | 79.09% | 72.74% | 87.84% |
 +---------+--------+--------+--------+
-| Average | 78.98% | 72.67% | 87.68% |
+| Average | 79.09% | 72.73% | 87.84% |
 +---------+--------+--------+--------+
 ```

@@ -53,7 +53,7 @@ Public Class TextProgressBar
     Public Sub Increment(Value As Integer)
         With _progressBar
             .Increment(Value)
-            pbPrecentage(_progressBar, $"{ .Value:N0} of { .Maximum:N0}")
+            Me.pbPrecentage(_progressBar, $"{ .Value:N0} of { .Maximum:N0}")
             Thread.Sleep(1)
             If .Value >= .Maximum Then
                 .Visible = False
@@ -68,7 +68,7 @@ Public Class TextProgressBar
             .Value = value.Current
         End With
 
-        pbPrecentage(_progressBar, $"{value.Current:N0} of {value.Maximum:N0}")
+        Me.pbPrecentage(_progressBar, $"{value.Current:N0} of {value.Maximum:N0}")
     End Sub
 
 #Region "IDisposable Support"
@@ -97,7 +97,7 @@ Public Class TextProgressBar
     ' This code added by Visual Basic to correctly implement the disposable pattern.
     Public Sub Dispose() Implements IDisposable.Dispose
         ' Do not change this code.  Put cleanup code in Dispose(disposing As Boolean) above.
-        Dispose(True)
+        Me.Dispose(True)
         ' TODO: uncomment the following line if Finalize() is overridden above.
         GC.SuppressFinalize(Me)
     End Sub

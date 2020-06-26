@@ -275,7 +275,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                                         Dim expression1 As CSS.ExpressionSyntax
                                         If TypeOf Invocation.Expression Is CSS.MemberAccessExpressionSyntax Then
                                             expression1 = CType(Invocation.Expression, CSS.MemberAccessExpressionSyntax).Expression
-                                            Dim _Typeinfo As TypeInfo = ModelExtensions.GetTypeInfo(_mSemanticModel, expression1)
+                                            Dim _Typeinfo As TypeInfo = _mSemanticModel.GetTypeInfo(expression1)
                                             If _Typeinfo.Type IsNot Nothing Then
                                                 If Not _Typeinfo.Type.IsErrorType Then
                                                     TypeName = ConvertToType(_Typeinfo.Type)
@@ -336,7 +336,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 Dim SelectCaseStatement As VBS.SelectStatementSyntax = VBFactory.SelectStatement(governingExpression.WithLeadingTrivia(SpaceTrivia)).WithLeadingTrivia(governingExpression.GetLeadingTrivia)
                 Dim ResultNameToken As SyntaxToken = VBFactory.Identifier(MethodBodyVisitor.GetUniqueVariableNameInScope(node, "tempVar", _mSemanticModel))
                 Dim ResultIdentifier As VBS.IdentifierNameSyntax = VBFactory.IdentifierName(ResultNameToken)
-                Dim _Typeinfo As TypeInfo = ModelExtensions.GetTypeInfo(_mSemanticModel, node.Arms(0).Expression)
+                Dim _Typeinfo As TypeInfo = _mSemanticModel.GetTypeInfo(node.Arms(0).Expression)
                 Dim AsClause As VBS.AsClauseSyntax = Nothing
                 If _Typeinfo.Type IsNot Nothing AndAlso Not _Typeinfo.Type.IsErrorType Then
                     If TypeOf _Typeinfo.Type Is INamedTypeSymbol AndAlso _Typeinfo.Type.IsTupleType Then

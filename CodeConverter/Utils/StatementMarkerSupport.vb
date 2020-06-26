@@ -366,6 +366,10 @@ Public Module StatementMarker
         Return ReplaceStatementsWithMarkedStatements(node, VBFactory.SingletonList(Statement), RemoveStatement)
     End Function
 
+    Friend Function ReplaceStatementsWithMarkedStatements(node As CS.CSharpSyntaxNode, Statements As List(Of StatementSyntax), Optional RemoveStatement As Boolean = False) As SyntaxList(Of StatementSyntax)
+        Return ReplaceStatementsWithMarkedStatements(node, VBFactory.List(Statements), RemoveStatement)
+    End Function
+
     Friend Function ReplaceStatementsWithMarkedStatements(node As CS.CSharpSyntaxNode, Statements As SyntaxList(Of StatementSyntax), Optional RemoveStatement As Boolean = False) As SyntaxList(Of StatementSyntax)
         If node Is Nothing Then
             Return Statements
