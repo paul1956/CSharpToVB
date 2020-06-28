@@ -13,12 +13,12 @@ Public Class IgnoreFilesWithErrorsList
 
     Private Sub btlClearErrorFileList_Click_1(sender As Object, e As EventArgs) Handles btlClearErrorFileList.Click
         My.Settings.IgnoreFileList.Clear()
-        UpdateGrid()
+        Me.UpdateGrid()
     End Sub
 
     Private Sub Cancel_Button_Click(sender As Object, e As EventArgs) Handles Cancel_Button.Click
         DialogResult = DialogResult.Cancel
-        Close()
+        Me.Close()
     End Sub
 
     Private Sub dgvIgnoredFilesList_CellClick(sender As Object, e As DataGridViewCellEventArgs) Handles dgvIgnoredFilesList.CellClick
@@ -29,7 +29,7 @@ Public Class IgnoreFilesWithErrorsList
         Select Case e.ColumnIndex
             Case dgvIgnoredFilesList.Columns("Delete").Index
                 My.Settings.IgnoreFileList.RemoveAt(e.RowIndex)
-                UpdateGrid()
+                Me.UpdateGrid()
             Case dgvIgnoredFilesList.Columns("Load").Index
                 _fileToLoad = My.Settings.IgnoreFileList(e.RowIndex)
             Case Else
@@ -38,7 +38,7 @@ Public Class IgnoreFilesWithErrorsList
     End Sub
 
     Private Sub IgnoreFilesWithErrorsListDialog_Load(sender As Object, e As EventArgs) Handles Me.Load
-        UpdateGrid()
+        Me.UpdateGrid()
         If dgvIgnoredFilesList.Columns.Count > 1 Then
             Exit Sub
         End If
@@ -74,7 +74,7 @@ Public Class IgnoreFilesWithErrorsList
     Private Sub OK_Button_Click(sender As Object, e As EventArgs) Handles OK_Button.Click
         DialogResult = DialogResult.OK
         My.Settings.Save()
-        Close()
+        Me.Close()
     End Sub
 
     Private Sub UpdateGrid()

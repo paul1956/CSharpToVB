@@ -20,7 +20,7 @@ Public NotInheritable Class AboutBox1
     End Sub
 
     Private Sub OKButton_Click(sender As Object, e As EventArgs) Handles OKButton.Click
-        Close()
+        Me.Close()
     End Sub
 
 End Class

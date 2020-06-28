@@ -14,7 +14,7 @@ Public Class AdvancedRTB
     Private _vertRightClicked As Boolean = False
 
     Public Sub New()
-        InitializeComponent()
+        Me.InitializeComponent()
     End Sub
 
     Public Event HorizScrollBarRightClicked(sender As Object, loc As Point)
@@ -73,10 +73,10 @@ Public Class AdvancedRTB
     Private Sub ToolStripMenuItem1_Click(sender As Object, e As EventArgs) Handles mnuScrollHere.Click
         With _sbi
             Dim SB_Size As Integer = .RC_ScrollBar.Bottom - .RC_ScrollBar.Top
-            Dim Percent As Double = 1 - (SB_Size - PointToClient(MousePosition).Y) / SB_Size
+            Dim Percent As Double = 1 - (SB_Size - Me.PointToClient(MousePosition).Y) / SB_Size
             Dim DesiredLine As Integer = CInt(Lines.Length * Percent)
-            [Select](GetFirstCharIndexFromLine(DesiredLine), 0)
-            ScrollToCaret()
+            Me.[Select](Me.GetFirstCharIndexFromLine(DesiredLine), 0)
+            Me.ScrollToCaret()
         End With
     End Sub
 
@@ -107,7 +107,7 @@ Public Class AdvancedRTB
 
         If _vertRightClicked Then
             _vertRightClicked = False
-            ContextMenuStrip1.Show(Me, PointToClient(MousePosition))
+            ContextMenuStrip1.Show(Me, Me.PointToClient(MousePosition))
         End If
     End Sub
 

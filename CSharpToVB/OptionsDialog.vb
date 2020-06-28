@@ -7,7 +7,7 @@ Public Class OptionsDialog
     Private _selectedColorName As String = "default"
     Private Sub Cancel_Button_Click(sender As Object, e As EventArgs) Handles Cancel_Button.Click
         DialogResult = DialogResult.Cancel
-        Close()
+        Me.Close()
     End Sub
 
     Private Sub ItemColor_ComboBox_DrawItem(sender As Object, e As DrawItemEventArgs) Handles ItemColor_ComboBox.DrawItem
@@ -48,7 +48,7 @@ Public Class OptionsDialog
         My.Settings.OptionStrictIncludeInCode = CheckBoxStrict.Checked
         My.Settings.Save()
         Application.DoEvents()
-        Close()
+        Me.Close()
     End Sub
 
     Private Sub OptionsDialog_Load(sender As Object, e As EventArgs) Handles Me.Load

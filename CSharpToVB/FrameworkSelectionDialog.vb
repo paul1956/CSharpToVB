@@ -8,7 +8,7 @@ Public Class FrameworkSelectionDialog
 
     Private Sub Cancel_Button_Click(ByVal sender As Object, ByVal e As EventArgs) Handles Cancel_Button.Click
         DialogResult = DialogResult.Cancel
-        Close()
+        Me.Close()
     End Sub
 
     Private Sub CheckedListBox1_Click(sender As Object, e As EventArgs) Handles CheckedListBox1.Click
@@ -35,7 +35,7 @@ Public Class FrameworkSelectionDialog
             'Return OK to the calling form
             _CurrentFramework = CheckedItems(0).ToString
             DialogResult = DialogResult.OK
-            Close()
+            Me.Close()
         Else
             'Show an error message, but keep the form open
             MessageBox.Show("You must select one framework.")

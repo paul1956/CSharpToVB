@@ -19,7 +19,7 @@ Public Class FindDialog
 
     Sub New(SourceBuffer As RichTextBox, ResultBuffer As AdvancedRTB, RootForm As Form1)
         ' This call is required by the designer.
-        InitializeComponent()
+        Me.InitializeComponent()
 
         ' Add any initialization after the InitializeComponent() call.
         _vbBuffer = ResultBuffer
@@ -68,17 +68,17 @@ Public Class FindDialog
 
     Private Sub CloseButton_Click(sender As Object, e As EventArgs) Handles CloseButton.Click
         _rootForm.mnuEditFind.Enabled = True
-        Hide()
+        Me.Hide()
     End Sub
 
     Private Sub DoFind(SearchForward As Boolean)
         MRU_UpdateUI(FindWhatComboBox)
         Dim prompt As String = ""
-        If _searchBuffer.IsFlagSet(SearchBuffers.CS) AndAlso Not FindTextInBuffer(_csBuffer, SearchForward) Then
+        If _searchBuffer.IsFlagSet(SearchBuffers.CS) AndAlso Not Me.FindTextInBuffer(_csBuffer, SearchForward) Then
             prompt = $"'{FindWhatComboBox.Text}' not found in C# code!"
         End If
 
-        If _searchBuffer.IsFlagSet(SearchBuffers.VB) AndAlso Not FindTextInBuffer(_vbBuffer, SearchForward) Then
+        If _searchBuffer.IsFlagSet(SearchBuffers.VB) AndAlso Not Me.FindTextInBuffer(_vbBuffer, SearchForward) Then
             If prompt.Any Then
                 prompt = $"'{FindWhatComboBox.Text}' not found in C# or Visual Basic code!"
             Else
@@ -108,13 +108,13 @@ Public Class FindDialog
         If e.CloseReason <> CloseReason.UserClosing Then
             Application.RemoveMessageFilter(Me)
         Else
-            Hide()
+            Me.Hide()
             e.Cancel = True
         End If
     End Sub
 
     Private Sub FindDialog_GotFocus(sender As Object, e As EventArgs) Handles Me.GotFocus
-        SetEnableFindButtons()
+        Me.SetEnableFindButtons()
     End Sub
 
     Private Sub FindDialog_Load(sender As Object, e As EventArgs) Handles Me.Load
@@ -128,7 +128,7 @@ Public Class FindDialog
     End Sub
 
     Private Sub FindDialog_MouseEnter(sender As Object, e As EventArgs) Handles Me.MouseEnter
-        Focus()
+        Me.Focus()
         Opacity = 1
         If _vbBuffer.Text.Any Then
             LookInComboBox.DropDownStyle = ComboBoxStyle.DropDownList
@@ -136,7 +136,7 @@ Public Class FindDialog
             LookInComboBox.DropDownStyle = ComboBoxStyle.Simple
         End If
 
-        SetEnableFindButtons()
+        Me.SetEnableFindButtons()
     End Sub
 
     Private Sub FindDialog_MouseLeave(sender As Object, e As EventArgs) Handles Me.MouseLeave
@@ -152,11 +152,11 @@ Public Class FindDialog
     End Sub
 
     Private Sub FindNextButton_Click(sender As Object, e As EventArgs) Handles FindNextButton.Click
-        DoFind(SearchForward:=True)
+        Me.DoFind(SearchForward:=True)
     End Sub
 
     Private Sub FindPreviousButton_Click(sender As Object, e As EventArgs) Handles FindPreviousButton.Click
-        DoFind(SearchForward:=False)
+        Me.DoFind(SearchForward:=False)
     End Sub
 
     ''' <summary>
@@ -203,11 +203,11 @@ Public Class FindDialog
     End Function
 
     Private Sub FindWhatComboBox_SelectedIndexChanged(sender As Object, e As EventArgs) Handles FindWhatComboBox.SelectedIndexChanged
-        SetEnableFindButtons()
+        Me.SetEnableFindButtons()
     End Sub
 
     Private Sub FindWhatComboBox_TextChanged(sender As Object, e As EventArgs) Handles FindWhatComboBox.TextChanged
-        SetEnableFindButtons()
+        Me.SetEnableFindButtons()
     End Sub
 
     Private Sub LookInComboBox_SelectedIndexChanged(sender As Object, e As EventArgs) Handles LookInComboBox.SelectedIndexChanged
@@ -219,22 +219,22 @@ Public Class FindDialog
             Case 2
                 _searchBuffer = SearchBuffers.Both
         End Select
-        SetEnableFindButtons()
+        Me.SetEnableFindButtons()
     End Sub
 
     Public Function PreFilterMessage(ByRef m As Message) As Boolean Implements IMessageFilter.PreFilterMessage
         If m.Msg = NativeTypes.WM_MOUSELEAVE OrElse m.Msg = NativeTypes.WM_MOUSEMOVE Then
             'hit test the client rectangle
             'since WM_MOUSELEAVE does not provide the mouse location, use MousePosition
-            Dim hit As Boolean = ClientRectangle.Contains(PointToClient(MousePosition))
+            Dim hit As Boolean = ClientRectangle.Contains(Me.PointToClient(MousePosition))
             If hit Then
                 If Not _mouseInForm Then
-                    OnMouseEnter(Nothing)
+                    Me.OnMouseEnter(Nothing)
                 End If
                 _mouseInForm = True
             Else
                 If _mouseInForm Then
-                    OnMouseLeave(Nothing)
+                    Me.OnMouseLeave(Nothing)
                 End If
                 _mouseInForm = False
             End If
