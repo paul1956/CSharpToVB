@@ -24,7 +24,7 @@ Public Module ExpressionSyntaxSupport
                 Dim typeInfo As TypeInfo = Model.GetTypeInfo(expression)
                 Dim symbolInfo As SymbolInfo = Model.GetSymbolInfo(expression)
                 If typeInfo.Type IsNot Nothing Then
-                    If (typeInfo.Type.IsErrorType) Then
+                    If typeInfo.Type.IsErrorType Then
                         Return (_Error:=True, Model.Compilation.ObjectType)
                     ElseIf SymbolEqualityComparer.Default.Equals(typeInfo.Type, Model.Compilation.ObjectType) Then
                         Return (_Error:=False, Model.Compilation.ObjectType)
@@ -64,7 +64,7 @@ Public Module ExpressionSyntaxSupport
                 Dim typeInfo As TypeInfo = Model.GetTypeInfo(expression)
                 Dim symbolInfo As SymbolInfo = Model.GetSymbolInfo(expression)
                 If typeInfo.Type IsNot Nothing Then
-                    If (typeInfo.Type.IsErrorType) Then
+                    If typeInfo.Type.IsErrorType Then
                         Return (_Error:=True, PredefinedTypeObject)
                     ElseIf SymbolEqualityComparer.Default.Equals(typeInfo.Type, Model.Compilation.ObjectType) Then
                         Return (_Error:=False, PredefinedTypeObject)
@@ -132,7 +132,7 @@ Public Module ExpressionSyntaxSupport
                     NewTriviaList.Add(Trivia)
                     AfterWhiteSpace = False
                     AfterEOL = True
-                Case VB.SyntaxKind.CommentTrivia
+                Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
                     If Not AfterWhiteSpace Then
                         NewTriviaList.Add(SpaceTrivia)
                     End If

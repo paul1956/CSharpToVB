@@ -11,7 +11,7 @@ Partial Friend Class SymbolEquivalenceComparer
 
     <ExcludeFromCodeCoverage>
     Public Shared Function AreRefKindsEquivalent(rk1 As RefKind, rk2 As RefKind, distinguishRefFromOut As Boolean) As Boolean
-        Return If(distinguishRefFromOut, rk1 = rk2, (rk1 = RefKind.None) = (rk2 = RefKind.None))
+        Return If(distinguishRefFromOut, rk1 = rk2, rk1 = RefKind.None = (rk2 = RefKind.None))
     End Function
 
     <ExcludeFromCodeCoverage>
@@ -47,11 +47,11 @@ Partial Friend Class SymbolEquivalenceComparer
         End Function
 
         Public Shadows Function Equals(x As IParameterSymbol, y As IParameterSymbol) As Boolean Implements IEqualityComparer(Of IParameterSymbol).Equals
-            Return Equals(x, y, Nothing, False, False)
+            Return Me.Equals(x, y, Nothing, False, False)
         End Function
 
         Public Shadows Function Equals(x As IParameterSymbol, y As IParameterSymbol, compareParameterName As Boolean, isCaseSensitive As Boolean) As Boolean
-            Return Equals(x, y, Nothing, compareParameterName, isCaseSensitive)
+            Return Me.Equals(x, y, Nothing, compareParameterName, isCaseSensitive)
         End Function
 
         Public Shadows Function GetHashCode(x As IParameterSymbol) As Integer Implements IEqualityComparer(Of IParameterSymbol).GetHashCode

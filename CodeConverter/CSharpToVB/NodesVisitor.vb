@@ -32,9 +32,9 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
             Private ReadOnly _mSemanticModel As SemanticModel
             Private ReadOnly _reportException As Action(Of Exception)
             Private _membersList As SyntaxList(Of VBS.StatementSyntax)
-            Private _placeholder As Integer = 1
-            Public ReadOnly _allImports As List(Of VBS.ImportsStatementSyntax) = New List(Of VBS.ImportsStatementSyntax)()
-            Public ReadOnly _inlineAssignHelperMarkers As List(Of CSS.BaseTypeDeclarationSyntax) = New List(Of CSS.BaseTypeDeclarationSyntax)()
+            Private ReadOnly _placeholder As Integer = 1
+            Public ReadOnly AllImports As New List(Of VBS.ImportsStatementSyntax)()
+            Public ReadOnly InlineAssignHelperMarkers As New List(Of CSS.BaseTypeDeclarationSyntax)()
 
             Public Sub New(lSemanticModel As SemanticModel, DefaultVBOptions As DefaultVBOptions, ReportException As Action(Of Exception))
                 _mSemanticModel = lSemanticModel
@@ -91,7 +91,6 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
 
                 Dim Options As SyntaxList(Of VBS.OptionStatementSyntax) = MapVBOptions(_defaultVBOptions)
                 _membersList = New SyntaxList(Of VBS.StatementSyntax)
-                Dim ListOfAttributes As SyntaxList(Of VBS.AttributesStatementSyntax) = VBFactory.List(node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) VBFactory.AttributesStatement(VBFactory.SingletonList(DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))))
                 For Each m As CSS.MemberDeclarationSyntax In node.Members
                     If s_originalRequest.CancelToken.IsCancellationRequested Then
                         Throw New OperationCanceledException
@@ -104,7 +103,8 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                     End If
                 Next
 
-                If _allImports.Any Then
+                Dim ListOfAttributes As SyntaxList(Of VBS.AttributesStatementSyntax) = VBFactory.List(node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) VBFactory.AttributesStatement(VBFactory.SingletonList(DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))))
+                If AllImports.Any Then
                     If _membersList.Any AndAlso _membersList(0).HasLeadingTrivia Then
                         If (TypeOf _membersList(0) IsNot VBS.NamespaceBlockSyntax AndAlso
                                 TypeOf _membersList(0) IsNot VBS.ModuleBlockSyntax) OrElse
@@ -127,12 +127,12 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                                     NewLeadingTrivia.Add(t)
                                 End If
                             Next
-                            _allImports(0) = _allImports(0).WithPrependedLeadingTrivia(NewLeadingTrivia)
+                            AllImports(0) = AllImports(0).WithPrependedLeadingTrivia(NewLeadingTrivia)
                         End If
                     End If
-                    If Options.Any AndAlso _allImports(0).GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
-                        Options = Options.Replace(Options(0), Options(0).WithLeadingTrivia(_allImports(0).GetLeadingTrivia))
-                        _allImports(0) = _allImports(0).WithLeadingTrivia(VBEOLTrivia)
+                    If Options.Any AndAlso AllImports(0).GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
+                        Options = Options.Replace(Options(0), Options(0).WithLeadingTrivia(AllImports(0).GetLeadingTrivia))
+                        AllImports(0) = AllImports(0).WithLeadingTrivia(VBEOLTrivia)
                     End If
                 ElseIf Options.Any AndAlso ListOfAttributes.Any AndAlso ListOfAttributes(0).GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
                     Options = Options.Replace(Options(0), Options(0).WithLeadingTrivia(ListOfAttributes(0).GetLeadingTrivia))
@@ -147,7 +147,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 End If
                 Dim compilationUnitSyntax1 As VBS.CompilationUnitSyntax =
                     VBFactory.CompilationUnit(Options,
-                                              VBFactory.List(_allImports),
+                                              VBFactory.List(AllImports),
                                               ListOfAttributes,
                                               _membersList,
                                               EndOfFileToken.WithConvertedTriviaFrom(node.EndOfFileToken)
@@ -342,7 +342,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                     If TypeOf _Typeinfo.Type Is INamedTypeSymbol AndAlso _Typeinfo.Type.IsTupleType Then
                         AsClause = VBFactory.SimpleAsClause(ConvertCSTupleToVBType(_Typeinfo.Type.ToString).WithLeadingTrivia(SpaceTrivia))
                     Else
-                        AsClause = VBFactory.SimpleAsClause(ConvertToType(_Typeinfo.Type.ToString).WithLeadingTrivia(SpaceTrivia))
+                        AsClause = VBFactory.SimpleAsClause(ConvertToType(_Typeinfo.Type).WithLeadingTrivia(SpaceTrivia))
                     End If
                 End If
 

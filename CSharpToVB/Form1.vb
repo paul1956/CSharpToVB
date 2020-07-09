@@ -1112,6 +1112,7 @@ Partial Public Class Form1
                 Select Case MsgBox($"Conversion failed, do you want to stop processing this file automatically in the future? Yes and No will continue processing files, Cancel will stop conversions!",
                                    MsgBoxStyle.YesNoCancel Or MsgBoxStyle.Exclamation Or MsgBoxStyle.MsgBoxSetForeground)
                     Case MsgBoxResult.Cancel
+                        _cancellationTokenSource.Cancel()
                         Return False
                     Case MsgBoxResult.No
                         Return True
@@ -1354,11 +1355,12 @@ Partial Public Class Form1
                         Exit For
                     End If
                 Next
-                ConvertSolutionFile(fileName, saveSolutionRoot, results.projectsToBeAdded)
                 If prompt.Length > 0 Then
                     MsgBox(prompt,
                            MsgBoxStyle.OkOnly Or If(prompt.Contains("terminated", StringComparison.OrdinalIgnoreCase), MsgBoxStyle.Critical, MsgBoxStyle.Information) Or MsgBoxStyle.MsgBoxSetForeground,
                            Title:="Convert C# to Visual Basic")
+                Else
+                    ConvertSolutionFile(fileName, saveSolutionRoot, results.projectsToBeAdded)
                 End If
             Else
                 ' Single project

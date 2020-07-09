@@ -40,6 +40,7 @@ Public Module ConvertProjectFileUtilities
              "_DotNetSdkVersionFile",
              "_NuGetRepackAssembly",
              "_OptimizedDependenciesDir",
+             "AppendTargetFrameworkToOutputPath",
              "ApplyNgenOptimization",
              "AssemblyName",
              "AssemblyVersion",
@@ -103,6 +104,7 @@ Public Module ConvertProjectFileUtilities
              "ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch",
              "RootNamespace",
              "RoslynProjectType",
+             "RuntimeIdentifier",
              "RuntimeIdentifiers",
              "ServerGarbageCollection",
              "ServiceHubAssemblyBasePath",
@@ -134,10 +136,12 @@ Public Module ConvertProjectFileUtilities
          "SubType", "#whitespace"})
 
     Private ReadOnly s_itemGroupIgnoreList As New List(Of String)(
-        {"DotNetCliToolReference", "ExpectedDependency",
+        {"AssemblyAttribute", "DotNetCliToolReference",
+        "ExpectedDependency",
          "Folder", "FrameworkReference",
          "Import", "InternalsVisibleTo", "None",
-         "NugetPackageToIncludeInVsix",
+         "NugetPackageToIncludeInVsix", "NukeExternalFiles",
+         "NukeSpecificationFiles",
          "PackageReference", "Reference", "RestrictedInternalsVisibleTo",
          "Service", "SuggestedBindingRedirects", "UsingTask",
          "VSCTCompile", "VsdConfigXmlFiles",
@@ -271,7 +275,7 @@ Public Module ConvertProjectFileUtilities
                                     ' No change necessary
                                 End If
                                 Select Case propertyGroupChildNode.Name
-                                    Case "AllowUnsafeBlocks", "NoWarn"
+                                    Case "AllowUnsafeBlocks", "NoWarn", "WarningsAsErrors"
                                         If childIndex > 0 AndAlso xmlDoc.DocumentElement.ChildNodes(index).ChildNodes(childIndex - 1).Name = "#whitespace" Then
                                             nodesToBeRemoved.Add((index, childIndex - 1))
                                         End If

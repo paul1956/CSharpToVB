@@ -137,7 +137,7 @@ Partial Friend Class SymbolEquivalenceComparer
     End Function
 
     Private Function EqualsCore(x As ISymbol, y As ISymbol, equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol)) As Boolean
-        Return GetEquivalenceVisitor().AreEquivalent(x, y, equivalentTypesWithDifferingAssemblies:=equivalentTypesWithDifferingAssemblies)
+        Return Me.GetEquivalenceVisitor().AreEquivalent(x, y, equivalentTypesWithDifferingAssemblies:=equivalentTypesWithDifferingAssemblies)
     End Function
 
     ' Very subtle logic here.  When checking if two parameters are the same, we can end up with
@@ -163,7 +163,7 @@ Partial Friend Class SymbolEquivalenceComparer
     ''' </summary>
 
     Public Shadows Function Equals(x As ISymbol, y As ISymbol) As Boolean Implements IEqualityComparer(Of ISymbol).Equals
-        Return EqualsCore(x, y, equivalentTypesWithDifferingAssemblies:=Nothing)
+        Return Me.EqualsCore(x, y, equivalentTypesWithDifferingAssemblies:=Nothing)
     End Function
 
     ''' <summary>
@@ -175,11 +175,11 @@ Partial Friend Class SymbolEquivalenceComparer
 
     Public Shadows Function Equals(x As ISymbol, y As ISymbol, equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol)) As Boolean
         Debug.Assert(_assemblyComparerOpt Is Nothing)
-        Return EqualsCore(x, y, equivalentTypesWithDifferingAssemblies:=equivalentTypesWithDifferingAssemblies)
+        Return Me.EqualsCore(x, y, equivalentTypesWithDifferingAssemblies:=equivalentTypesWithDifferingAssemblies)
     End Function
 
     Public Shadows Function GetHashCode(x As ISymbol) As Integer Implements IEqualityComparer(Of ISymbol).GetHashCode
-        Return GetGetHashCodeVisitor(compareMethodTypeParametersByIndex:=False, objectAndDynamicCompareEqually:=False).GetHashCode(x, currentHash:=0)
+        Return Me.GetGetHashCodeVisitor(compareMethodTypeParametersByIndex:=False, objectAndDynamicCompareEqually:=False).GetHashCode(x, currentHash:=0)
     End Function
 
 End Class

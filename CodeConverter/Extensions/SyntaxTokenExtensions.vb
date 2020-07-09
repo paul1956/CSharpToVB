@@ -77,8 +77,7 @@ Namespace CSharpToVBCodeConverter.Utilities
 
         <Extension()>
         Public Function RemoveExtraEOL(Token As SyntaxToken) As SyntaxToken
-            Dim LeadingTrivia As New List(Of SyntaxTrivia)
-            LeadingTrivia.AddRange(Token.LeadingTrivia())
+            Dim LeadingTrivia As List(Of SyntaxTrivia) = Token.LeadingTrivia.ToList
             Select Case LeadingTrivia.Count
                 Case 0
                     Return Token
@@ -95,7 +94,7 @@ Namespace CSharpToVBCodeConverter.Utilities
                             Return Token
                         Case VB.SyntaxKind.EndOfLineTrivia
                             If LeadingTrivia.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                                Return Token.WithLeadingTrivia(New SyntaxTriviaList)
+                                Return Token.WithLeadingTrivia(VBEOLTrivia)
                             End If
                             Return Token.WithLeadingTrivia(LeadingTrivia.Last)
                         Case Else

@@ -19,7 +19,7 @@ Partial Friend Class SymbolEquivalenceComparer
         End Sub
 
         Public Shadows Function Equals(x As ITypeSymbol, y As ITypeSymbol) As Boolean Implements IEqualityComparer(Of ITypeSymbol).Equals
-            Return Equals(x, y, Nothing)
+            Return Me.Equals(x, y, Nothing)
         End Function
 
         Public Shadows Function Equals(x As ITypeSymbol, y As ITypeSymbol, equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol)) As Boolean

@@ -124,7 +124,8 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                         For Each trivia As SyntaxTrivia In argumentWithTrivia.GetLeadingTrivia
                             Select Case trivia.RawKind
                                 Case VB.SyntaxKind.WhitespaceTrivia, VB.SyntaxKind.EndOfLineTrivia,
-                                     VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.IfDirectiveTrivia,
+                                     VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia,
+                                     VB.SyntaxKind.IfDirectiveTrivia,
                                      VB.SyntaxKind.DisabledTextTrivia, VB.SyntaxKind.ElseDirectiveTrivia,
                                      VB.SyntaxKind.ElseIfDirectiveTrivia, VB.SyntaxKind.EndIfDirectiveTrivia
                                     newLeadingTrivia.Add(trivia)

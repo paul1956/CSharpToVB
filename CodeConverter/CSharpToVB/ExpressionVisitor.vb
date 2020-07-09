@@ -79,7 +79,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
             Private Shared Function RestructureTrivia(node As CSS.MemberAccessExpressionSyntax, TriviaList As SyntaxTriviaList, FoundEOL As Boolean, ByRef OperatorTrailingTrivia As List(Of SyntaxTrivia)) As Boolean
                 For Each Trivia As SyntaxTrivia In TriviaList
                     Select Case Trivia.RawKind
-                        Case VB.SyntaxKind.CommentTrivia
+                        Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
                             OperatorTrailingTrivia.Add(Trivia)
                             FoundEOL = True
                         Case VB.SyntaxKind.EndOfLineTrivia
@@ -134,7 +134,9 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                     Dim _symbolInfo As SymbolInfo = _mSemanticModel.GetSymbolInfo(node)
                     symbol = TryCast(_symbolInfo.Symbol, IMethodSymbol)
                     returnsVoid = symbol.ReturnsVoid
-                    isErrorType = symbol.ReturnType.IsErrorType
+                    If Not returnsVoid Then
+                        isErrorType = Not symbol.ReturnType.IsType
+                    End If
                 Catch ex As OperationCanceledException
                     Throw
                 Catch ex As Exception
@@ -219,10 +221,23 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                             End Select
                         End If
                     End If
-                    If isFunction Then
-                        Return VBFactory.SingleLineLambdaExpression(VB.SyntaxKind.SingleLineFunctionLambdaExpression, lambdaHeader.WithAsClause(Nothing), body).WithConvertedTriviaFrom(node)
+                    If body.ToFullString.Contains(vbCrLf, StringComparison.OrdinalIgnoreCase) Then
+                        Dim syntaxList As SyntaxList(Of StatementSyntax)
+                        If TypeOf body Is StatementSyntax Then
+                            syntaxList = VBFactory.SingletonList(CType(body, StatementSyntax))
+                        Else
+                            syntaxList = VBFactory.SingletonList(Of StatementSyntax)(VBFactory.ReturnStatement(CType(body, ExpressionSyntax)))
+                        End If
+                        If isFunction Then
+                            Return VBFactory.MultiLineLambdaExpression(VB.SyntaxKind.MultiLineFunctionLambdaExpression, lambdaHeader.WithAsClause(Nothing), syntaxList, VBFactory.EndFunctionStatement()).WithConvertedTriviaFrom(node)
+                        End If
+                        Return VBFactory.MultiLineLambdaExpression(VB.SyntaxKind.MultiLineSubLambdaExpression, lambdaHeader.WithAsClause(Nothing), syntaxList, VBFactory.EndSubStatement()).WithConvertedTriviaFrom(node)
+                    Else
+                        If isFunction Then
+                            Return VBFactory.SingleLineLambdaExpression(VB.SyntaxKind.SingleLineFunctionLambdaExpression, lambdaHeader.WithAsClause(Nothing), body).WithConvertedTriviaFrom(node)
+                        End If
+                        Return VBFactory.SingleLineLambdaExpression(VB.SyntaxKind.SingleLineSubLambdaExpression, lambdaHeader.WithAsClause(Nothing), body).WithConvertedTriviaFrom(node)
                     End If
-                    Return VBFactory.SingleLineLambdaExpression(VB.SyntaxKind.SingleLineSubLambdaExpression, lambdaHeader.WithAsClause(Nothing), body).WithConvertedTriviaFrom(node)
                 End If
 
                 ' TypeOf block Is SyntaxList(Of CSS.StatementSyntax)
@@ -315,6 +330,9 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
 
             Private Function MakeAssignmentStatement(node As CSS.AssignmentExpressionSyntax) As StatementSyntax
                 Dim LeftNode As ExpressionSyntax = DirectCast(node.Left.Accept(Me), ExpressionSyntax)
+                If LeftNode.IsKind(VB.SyntaxKind.AddressOfExpression) Then
+                    LeftNode = CType(LeftNode, UnaryExpressionSyntax).Operand
+                End If
                 If CS.CSharpExtensions.Kind(node) = CS.SyntaxKind.CoalesceAssignmentExpression Then
                     Dim PossibleNullNode As ExpressionSyntax = DirectCast(node.Right.Accept(Me).WithLeadingTrivia(SpaceTrivia), ExpressionSyntax)
                     Dim rightBinaryExpression As BinaryConditionalExpressionSyntax = VBFactory.BinaryConditionalExpression(LeftNode.WithoutTrivia, PossibleNullNode)
@@ -390,7 +408,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
 
             Private Sub MarkPatchInlineAssignHelper(node As CS.CSharpSyntaxNode)
                 Dim parentDefinition As CSS.BaseTypeDeclarationSyntax = node.AncestorsAndSelf().OfType(Of CSS.BaseTypeDeclarationSyntax)().FirstOrDefault()
-                _inlineAssignHelperMarkers.Add(parentDefinition)
+                InlineAssignHelperMarkers.Add(parentDefinition)
             End Sub
 
             Private Function ReduceArrayUpperBoundExpression(expr As CSS.ExpressionSyntax) As ExpressionSyntax
@@ -433,7 +451,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                                     End If
                                 End If
                             End If
-                        Case VB.SyntaxKind.CommentTrivia
+                        Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
                             firstTrivia = False
                             If Not afterWhiteSpace Then
                                 finalLeadingTriviaList.Add(SpaceTrivia)
@@ -487,7 +505,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                                         End If
                                     Next
                                 End If
-                                If j = 0 OrElse (j < initialTriviaListUBound AndAlso initialTriviaList(j).RawKind = VB.SyntaxKind.CommentTrivia) Then
+                                If j = 0 OrElse (j < initialTriviaListUBound AndAlso initialTriviaList(j).IsComment) Then
                                     If String.IsNullOrWhiteSpace(NewWhiteSpaceString) Then
                                         finalTrailingTriviaList.Add(SpaceTrivia)
                                     Else
@@ -507,7 +525,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                                 afterLineContinuation = False
                                 afterWhiteSpace = False
                             End If
-                        Case VB.SyntaxKind.CommentTrivia
+                        Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
                             If Not afterWhiteSpace Then
                                 finalTrailingTriviaList.Add(SpaceTrivia)
                             End If
@@ -560,7 +578,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                                         Exit For
                                     End If
                                 Next
-                                If j < initialTriviaListUBound AndAlso initialTriviaList(j).RawKind = VB.SyntaxKind.CommentTrivia Then
+                                If j < initialTriviaListUBound AndAlso initialTriviaList(j).IsComment Then
                                     If String.IsNullOrWhiteSpace(newWhiteSpaceString) Then
                                         finalLeadingTriviaList.Add(SpaceTrivia)
                                     Else
@@ -574,7 +592,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                                     End If
                                 End If
                             End If
-                        Case VB.SyntaxKind.CommentTrivia
+                        Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
                             If Not afterWhiteSpace Then
                                 finalLeadingTriviaList.Add(SpaceTrivia)
                             End If
@@ -606,7 +624,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                         Case VB.SyntaxKind.EndOfLineTrivia
                             FinalTrailingTriviaList.Add(Trivia)
                             afterWhiteSpace = False
-                        Case VB.SyntaxKind.CommentTrivia
+                        Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
                             If Not afterWhiteSpace = True Then
                                 FinalTrailingTriviaList.Add(SpaceTrivia)
                             End If
@@ -736,7 +754,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                                 Else
                                     NewFieldLeadingTrivia.Add(t)
                                 End If
-                            Case VB.SyntaxKind.CommentTrivia
+                            Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
                                 If FoundComment Then
                                     Comment &= t.ToString.TrimStart.TrimStart("'"c)
                                 Else
@@ -753,7 +771,10 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                     End If
                     FieldInitializers.Add(Field.WithLeadingTrivia(NewFieldLeadingTrivia))
                 Next
-                Return VBFactory.AnonymousObjectCreationExpression(VBFactory.ObjectMemberInitializer(VBFactory.SeparatedList(FieldInitializers)))
+                If FieldInitializers.Any Then
+                    Return VBFactory.AnonymousObjectCreationExpression(VBFactory.ObjectMemberInitializer(VBFactory.SeparatedList(FieldInitializers)))
+                End If
+                Return VBFactory.ObjectCreationExpression(VBFactory.PredefinedType(ObjectKeyword))
             End Function
 
             Public Overrides Function VisitArrayCreationExpression(node As CSS.ArrayCreationExpressionSyntax) As VB.VisualBasicSyntaxNode
@@ -1129,7 +1150,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                                     If leftExpression.HasTrailingTrivia Then
                                         For Each t As SyntaxTrivia In leftExpression.GetTrailingTrivia
                                             Select Case t.RawKind
-                                                Case VB.SyntaxKind.CommentTrivia
+                                                Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
                                                     separatorTrailingTrivia.Add(SpaceTrivia)
                                                     separatorTrailingTrivia.Add(t)
                                                     separatorTrailingTrivia.Add(SpaceTrivia)
@@ -1251,7 +1272,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                     If leftExpression.HasTrailingTrivia Then
                         For Each t As SyntaxTrivia In leftExpression.GetTrailingTrivia
                             Select Case t.RawKind
-                                Case VB.SyntaxKind.CommentTrivia
+                                Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
                                     movedTrailingTrivia.Add(SpaceTrivia)
                                     movedTrailingTrivia.Add(t)
                                     movedTrailingTrivia.Add(SpaceTrivia)
@@ -1278,7 +1299,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                         Dim newOperatorTrailingTrivia As New List(Of SyntaxTrivia)
                         For Each t As SyntaxTrivia In operatorToken.TrailingTrivia
                             Select Case t.RawKind
-                                Case VB.SyntaxKind.CommentTrivia
+                                Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
                                     If foundEOL Then
                                         newOperatorTrailingTrivia.AddRange(movedTrailingTrivia)
                                         newOperatorTrailingTrivia.Add(SpaceTrivia)
@@ -1313,7 +1334,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                         foundEOL = False
                         For Each t As SyntaxTrivia In rightNode.GetTrailingTrivia
                             Select Case t.RawKind
-                                Case VB.SyntaxKind.CommentTrivia
+                                Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
                                     movedTrailingTrivia.Add(SpaceTrivia)
                                     movedTrailingTrivia.Add(t)
                                     movedTrailingTrivia.Add(SpaceTrivia)
@@ -1335,13 +1356,12 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                         For Each e As IndexClass(Of SyntaxTrivia) In rightNode.GetLeadingTrivia.WithIndex
                             Dim t As SyntaxTrivia = e.Value
                             Dim nextTrivia As SyntaxTrivia = If(Not e.IsLast, rightNode.GetLeadingTrivia(e.Index + 1), New SyntaxTrivia)
-                            Select Case t.RawKind
-                                Case VB.SyntaxKind.WhitespaceTrivia
-                                    If nextTrivia.IsKind(VB.SyntaxKind.CommentTrivia) Then
-                                        rightLeadingTrivia.Add(SpaceTrivia)
-                                        rightLeadingTrivia.Add(LineContinuation)
-                                    End If
-                            End Select
+                            If t.IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
+                                If nextTrivia.IsComment Then
+                                    rightLeadingTrivia.Add(SpaceTrivia)
+                                    rightLeadingTrivia.Add(LineContinuation)
+                                End If
+                            End If
                             rightLeadingTrivia.Add(t)
                         Next
                     Else
@@ -1547,7 +1567,9 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
 
                 Dim IfKeywordWithTrivia As SyntaxToken = IfKeyword.WithConvertedLeadingTriviaFrom(node.Condition.GetFirstToken)
                 Dim SecondCommaToken As SyntaxToken = ConvertAndModifyTokenTrivia(CommaToken, NodesOrTokens, Index:=3)
-
+                If Not SecondCommaToken.TrailingTrivia.ContainsCommentOrDirectiveTrivia AndAlso (WhenFalse Is Nothing OrElse Not WhenFalse.GetLeadingTrivia.Any) Then
+                    SecondCommaToken = SecondCommaToken.WithTrailingTrivia(SpaceTrivia)
+                End If
                 If Not csWhenFalse.IsKind(CS.SyntaxKind.ThrowExpression) AndAlso Not csWhenTrue.IsKind(CS.SyntaxKind.ThrowExpression) Then
                     Return VBFactory.TernaryConditionalExpression(
                     IfKeywordWithTrivia,
@@ -1806,7 +1828,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                     Next
                     Dim CloseBracketLeadingTriva As List(Of SyntaxTrivia) = ConvertTrivia(node.CloseBraceToken.LeadingTrivia).ToList
                     If CloseBracketLeadingTriva.Any Then
-                        If CloseBracketLeadingTriva.First.IsKind(VB.SyntaxKind.CommentTrivia) Then
+                        If CloseBracketLeadingTriva.First.IsComment Then
                             CloseBracketLeadingTriva.Insert(1, VBEOLTrivia)
                         End If
                     End If
@@ -2218,6 +2240,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                     End If
                 End If
 
+                Dim expressionTrailingTrivia As List(Of SyntaxTrivia) = Expression.GetTrailingTrivia.ToList
                 If TypeOf Expression Is NewExpressionSyntax AndAlso Not TypeOf Expression Is ArrayCreationExpressionSyntax Then
                     Dim UniqueName As String = MethodBodyVisitor.GetUniqueVariableNameInScope(node, "tempVar", _mSemanticModel)
                     Dim UniqueIdentifier As IdentifierNameSyntax = VBFactory.IdentifierName(VBFactory.Identifier(UniqueName))
@@ -2226,7 +2249,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                             FactoryDimStatement(UniqueName, AsClause, initializer:=Nothing).WithLeadingTrivia(Expression.GetLeadingTrivia).WithTrailingEOL
                     Dim StatementWithIssues As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
                     StatementWithIssues.AddMarker(DimStatement.WithTrailingEOL, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
-                    Expression = UniqueIdentifier.WithLeadingTrivia(Expression.GetLeadingTrivia.Last).WithTrailingTrivia(Expression.GetTrailingTrivia)
+                    Expression = UniqueIdentifier.WithLeadingTrivia(Expression.GetLeadingTrivia.Last).WithTrailingTrivia(expressionTrailingTrivia)
                 ElseIf TypeOf Expression Is CollectionInitializerSyntax Then
                     Dim UniqueName As String = MethodBodyVisitor.GetUniqueVariableNameInScope(node, "tempVar", _mSemanticModel)
                     Dim UniqueIdentifier As IdentifierNameSyntax = VBFactory.IdentifierName(VBFactory.Identifier(UniqueName))
@@ -2240,13 +2263,13 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
 
                 Dim NeedOperatorEOL As Boolean = False
                 Dim NewNameLeadingTrivia As New List(Of SyntaxTrivia)
-                Dim OperatorTrailingTrivia As New List(Of SyntaxTrivia)
+                Dim operatorTrailingTrivia As New List(Of SyntaxTrivia)
                 Dim OldNameLeadingTrivia As List(Of SyntaxTrivia) = ConvertTrivia(node.Name.GetLeadingTrivia).ToList
                 If OldNameLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
                     For Each t As SyntaxTrivia In ConvertTrivia(node.OperatorToken.TrailingTrivia)
                         Select Case t.RawKind
                             Case VB.SyntaxKind.WhitespaceTrivia
-                                OperatorTrailingTrivia.Add(t)
+                                operatorTrailingTrivia.Add(t)
                             Case VB.SyntaxKind.EndOfLineTrivia
                                 NeedOperatorEOL = True
                             Case Else
@@ -2258,8 +2281,8 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                         Select Case t.RawKind
                             Case VB.SyntaxKind.WhitespaceTrivia
                                 NewNameLeadingTrivia.Add(t)
-                            Case VB.SyntaxKind.CommentTrivia
-                                OperatorTrailingTrivia.Add(t)
+                            Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
+                                operatorTrailingTrivia.Add(t)
                             Case VB.SyntaxKind.EndOfLineTrivia
                                 ' Ignore
                             Case Else
@@ -2267,12 +2290,12 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                         End Select
                     Next
                 Else
-                    OperatorTrailingTrivia = ConvertTrivia(node.Name.GetLeadingTrivia).ToList
+                    operatorTrailingTrivia = ConvertTrivia(node.Name.GetLeadingTrivia).ToList
                 End If
                 If NeedOperatorEOL Then
-                    OperatorTrailingTrivia.Add(VBEOLTrivia)
+                    operatorTrailingTrivia.Add(VBEOLTrivia)
                 End If
-                Dim OperatorToken As SyntaxToken = DotToken.With(ConvertTrivia(node.OperatorToken.LeadingTrivia).ToList, OperatorTrailingTrivia)
+                Dim OperatorToken As SyntaxToken = DotToken.With(ConvertTrivia(node.OperatorToken.LeadingTrivia).ToList, operatorTrailingTrivia)
                 Dim Name As SimpleNameSyntax = DirectCast(node.Name.Accept(Me).With(NewNameLeadingTrivia, ConvertTrivia(node.Name.GetTrailingTrivia)), SimpleNameSyntax)
                 ValueText = Name.Identifier.ValueText
                 Dim keywordKind As VB.SyntaxKind = VB.SyntaxFacts.GetKeywordKind(ValueText)
@@ -2280,21 +2303,44 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                     Dim nameSyntax As IdentifierNameSyntax = VBFactory.IdentifierName($"[{ValueText}]")
                     Name = Name.WithIdentifier(nameSyntax.Identifier)
                 End If
-                OperatorTrailingTrivia.Clear()
+                operatorTrailingTrivia.Clear()
 
-                If Expression.GetLastToken.ContainsEOLTrivia Then
+                If expressionTrailingTrivia.LastOrDefault.IsKind(VB.SyntaxKind.EndOfLineTrivia) AndAlso Not expressionTrailingTrivia.ContainsCommentOrDirectiveTrivia Then
+                    expressionTrailingTrivia.InsertRange(expressionTrailingTrivia.Count - 1, {SpaceTrivia, LineContinuation})
+                    Expression = Expression.WithTrailingTrivia(expressionTrailingTrivia)
+                    OperatorToken = AdjustTokenTriviaWithLineContuations(OperatorToken)
+                ElseIf Expression.GetLastToken.ContainsEOLTrivia Then
                     Dim FoundEOL As Boolean = False
-                    FoundEOL = RestructureTrivia(node, TriviaList:=Expression.GetTrailingTrivia, FoundEOL, OperatorTrailingTrivia)
-                    FoundEOL = RestructureTrivia(node, TriviaList:=OperatorToken.LeadingTrivia, FoundEOL, OperatorTrailingTrivia)
+                    FoundEOL = RestructureTrivia(node, TriviaList:=VBFactory.TriviaList(expressionTrailingTrivia), FoundEOL, operatorTrailingTrivia)
+                    FoundEOL = RestructureTrivia(node, TriviaList:=OperatorToken.LeadingTrivia, FoundEOL, operatorTrailingTrivia)
 
                     If FoundEOL Then
-                        OperatorTrailingTrivia.Add(VBEOLTrivia)
+                        operatorTrailingTrivia.Add(VBEOLTrivia)
                     End If
                     Expression = Expression.WithoutTrailingTrivia
-                    OperatorToken = OperatorToken.WithoutTrivia.WithTrailingTrivia(OperatorTrailingTrivia)
+                    OperatorToken = OperatorToken.WithoutTrivia.WithTrailingTrivia(operatorTrailingTrivia)
                     Name = Name.WithLeadingTrivia(SpaceTrivia)
                 End If
                 Return Me.WrapTypedNameIfNecessary(name:=VBFactory.MemberAccessExpression(VB.SyntaxKind.SimpleMemberAccessExpression, Expression, OperatorToken, Name), originalName:=node).WithConvertedTriviaFrom(node)
+            End Function
+
+            Private Shared Function AdjustTokenTriviaWithLineContuations(OperatorToken As SyntaxToken) As SyntaxToken
+                Dim operatorLeadingTrivia As New List(Of SyntaxTrivia)
+                For Each e As IndexClass(Of SyntaxTrivia) In OperatorToken.LeadingTrivia.WithIndex
+                    If e.Value.IsComment Then
+                        If e.IsFirst Then
+                            operatorLeadingTrivia.InsertRange(0, {SpaceTrivia, LineContinuation})
+                        ElseIf OperatorToken.LeadingTrivia(e.Index - 1).IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
+                            operatorLeadingTrivia(e.Index - 1) = operatorLeadingTrivia(e.Index - 1).AdjustWhitespace(2)
+                            operatorLeadingTrivia.InsertRange(operatorLeadingTrivia.Count - 1, {SpaceTrivia, LineContinuation})
+                        Else
+                            Stop
+                        End If
+                    End If
+                    operatorLeadingTrivia.Add(e.Value)
+                Next
+                OperatorToken = OperatorToken.WithLeadingTrivia(operatorLeadingTrivia)
+                Return OperatorToken
             End Function
 
             Public Overrides Function VisitMemberBindingExpression(node As CSS.MemberBindingExpressionSyntax) As VB.VisualBasicSyntaxNode
@@ -2638,7 +2684,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                                             finalLeadingTriviaList.Add(LineContinuation)
                                         End If
                                     End If
-                                Case VB.SyntaxKind.CommentTrivia
+                                Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
                                     If Not finalLeadingTriviaList.Last.IsKind(VB.SyntaxKind.LineContinuationTrivia) Then
                                         If Not afterWhiteSpace Then
                                             finalLeadingTriviaList.Add(SpaceTrivia)

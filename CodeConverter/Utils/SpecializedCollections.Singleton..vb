@@ -49,7 +49,7 @@ Partial Public Module SpecializedCollections
         End Function
 
         Private Function IEnumerable_GetEnumerator() As IEnumerator Implements IEnumerable.GetEnumerator
-            Return GetEnumerator()
+            Return Me.GetEnumerator()
         End Function
 
         Default Public Property Item(index As Integer) As T Implements IList(Of T).Item
@@ -135,7 +135,7 @@ Partial Public Module SpecializedCollections
         ' This code added by Visual Basic to correctly implement the disposable pattern.
         Public Sub Dispose() Implements IDisposable.Dispose
             ' Do not change this code.  Put cleanup code in Dispose(disposing As Boolean) above.
-            Dispose(True)
+            Me.Dispose(True)
             ' TODO: uncomment the following line if Finalize() is overridden above.
             ' GC.SuppressFinalize(Me)
         End Sub

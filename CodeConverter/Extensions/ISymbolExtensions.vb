@@ -19,7 +19,7 @@ Namespace CSharpToVBCodeConverter.Utilities
         End Enum
 
         Private Function IsNonNestedTypeAccessible(assembly As IAssemblySymbol, declaredAccessibility As Accessibility, within As ISymbol) As Boolean
-            Dim withinAssembly As IAssemblySymbol = If((TryCast(within, IAssemblySymbol)), DirectCast(within, INamedTypeSymbol).ContainingAssembly)
+            Dim withinAssembly As IAssemblySymbol = If(TryCast(within, IAssemblySymbol), DirectCast(within, INamedTypeSymbol).ContainingAssembly)
             Select Case declaredAccessibility
                 Case Microsoft.CodeAnalysis.Accessibility.NotApplicable, Microsoft.CodeAnalysis.Accessibility.Public
                     ' Public symbols are always accessible from any context
@@ -53,7 +53,7 @@ Namespace CSharpToVBCodeConverter.Utilities
         '''</remarks>
         Private Function IsSymbolAccessibleCore(symbol As ISymbol, Within As ISymbol, throughTypeOpt As ITypeSymbol, ByRef failedThroughTypeCheck As Boolean) As Boolean ' must be assembly or named type symbol
             failedThroughTypeCheck = False
-            Dim withinAssembly As IAssemblySymbol = If((TryCast(Within, IAssemblySymbol)), DirectCast(Within, INamedTypeSymbol).ContainingAssembly)
+            Dim withinAssembly As IAssemblySymbol = If(TryCast(Within, IAssemblySymbol), DirectCast(Within, INamedTypeSymbol).ContainingAssembly)
 
             Select Case symbol.Kind
                 Case SymbolKind.Alias

@@ -69,8 +69,8 @@ Class TestClass
     Inherits BaseTestClass
 
     Private Sub TestMethod()
-        MyBase.
-            member = 0
+        MyBase _
+        .member = 0
         MyBase.member = 1
     End Sub
 End Class")
@@ -476,7 +476,7 @@ Public Shared Sub Linq40()
     Dim numbers As Integer() = {5, 4, 1, 3, 9, 8, 6, 7, 2, 0}
 
     Dim numberGroups = From n In numbers
-                       Group n By __groupByKey1__ = n Mod 5 Into g Select New With {Key .Remainder = g.Key, Key .Numbers = g}
+                       Group n By __groupByKey0__ = n Mod 5 Into g Select New With {Key .Remainder = g.Key, Key .Numbers = g}
 
     For Each g In numberGroups
         Console.WriteLine($""Numbers with a remainder of {g.Remainder} when divided by 5:"")

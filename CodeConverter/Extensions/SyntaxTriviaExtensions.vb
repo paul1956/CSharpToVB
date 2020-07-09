@@ -12,6 +12,11 @@ Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace CSharpToVBCodeConverter.Utilities
     Public Module SyntaxTriviaExtensions
+        <Extension>
+        Friend Function AdjustWhitespace(Whitespace As SyntaxTrivia, adjusment As Integer) As SyntaxTrivia
+            Return VBFactory.Whitespace(StrDup(Math.Max(Whitespace.ToString.Length - adjusment, 1), " "c))
+        End Function
+
 
         ''' <summary>
         '''
@@ -105,22 +110,18 @@ Namespace CSharpToVBCodeConverter.Utilities
                 Return False
             End If
             For Each t As SyntaxTrivia In TriviaList
+                If t.IsCommentOrDirectiveTrivia Then
+                    Return True
+                End If
                 If t.IsWhitespaceOrEndOfLine Then
                     Continue For
                 End If
                 If t.IsNone Then
                     Continue For
                 End If
-                If t.IsCommentOrDirectiveTrivia Then
-                    Return True
+                If t.IsKind(VB.SyntaxKind.LineContinuationTrivia) Then
+                    Continue For
                 End If
-                If t.RawKind = VB.SyntaxKind.DocumentationCommentTrivia Then
-                    Return True
-                End If
-                If t.RawKind = VB.SyntaxKind.DocumentationCommentExteriorTrivia Then
-                    Return True
-                End If
-
                 Throw UnexpectedValue(t.ToString)
             Next
             Return False
@@ -140,7 +141,7 @@ Namespace CSharpToVBCodeConverter.Utilities
                 If t.IsWhitespaceOrEndOfLine Then
                     Continue For
                 End If
-                If t.RawKind = 0 Then
+                If t.IsNone Then
                     Continue For
                 End If
                 If t.IsCommentOrDirectiveTrivia Then
@@ -313,27 +314,29 @@ Namespace CSharpToVBCodeConverter.Utilities
         End Function
 
         <Extension>
+        Public Function IndexOf(TriviaList As List(Of SyntaxTrivia), kind As VB.SyntaxKind) As Integer
+            For i As Integer = 0 To TriviaList.Count - 1
+                If TriviaList(i).IsKind(kind) Then
+                    Return i
+                End If
+            Next
+            Return -1
+        End Function
+
+
+        <Extension>
         Public Function IsComment(trivia As SyntaxTrivia) As Boolean
-            Return trivia.IsSingleLineComment OrElse trivia.IsMultiLineComment
+            Return trivia.IsSingleLineComment OrElse trivia.IsMultiLineComment OrElse trivia.IsDocComment
         End Function
 
         <Extension>
         Public Function IsCommentOrDirectiveTrivia(t As SyntaxTrivia) As Boolean
-            If t.IsSingleLineComment Then
-                Return True
-            End If
-            If t.IsMultiLineComment Then
-                Return True
-            End If
-            If t.IsDirective Then
-                Return True
-            End If
-            Return False
+            Return t.IsComment OrElse t.IsDirective
         End Function
 
         <Extension>
         Public Function IsDocComment(trivia As SyntaxTrivia) As Boolean
-            Return trivia.IsSingleLineDocComment() OrElse trivia.IsMultiLineDocComment()
+            Return trivia.IsKind(VB.SyntaxKind.DocumentationCommentExteriorTrivia) OrElse trivia.IsKind(VB.SyntaxKind.DocumentationCommentTrivia)
         End Function
 
         <Extension>
@@ -369,11 +372,6 @@ Namespace CSharpToVBCodeConverter.Utilities
             Return trivia.IsKind(CS.SyntaxKind.SingleLineCommentTrivia) OrElse
                 trivia.IsKind(CS.SyntaxKind.SingleLineDocumentationCommentTrivia) OrElse
                 trivia.IsKind(VB.SyntaxKind.CommentTrivia)
-        End Function
-
-        <Extension>
-        Public Function IsSingleLineDocComment(trivia As SyntaxTrivia) As Boolean
-            Return trivia.IsKind(CS.SyntaxKind.SingleLineDocumentationCommentTrivia)
         End Function
 
         <Extension>
@@ -455,6 +453,19 @@ Namespace CSharpToVBCodeConverter.Utilities
             Next
 
             Return Token.With(NewLeadingTrivia, NewTrailingTrivia)
+        End Function
+
+        <Extension>
+        Friend Function RemoveLineContinuation(triviaList As SyntaxTriviaList) As SyntaxTriviaList
+            Return triviaList.ToList.RemoveLineContinuation.ToSyntaxTriviaList
+        End Function
+
+        <Extension>
+        Friend Function RemoveLineContinuation(triviaList As List(Of SyntaxTrivia)) As List(Of SyntaxTrivia)
+            Dim lineContIndex As Integer = triviaList.IndexOf(VB.SyntaxKind.LineContinuationTrivia)
+            If lineContIndex = -1 Then Return triviaList
+            triviaList.RemoveRange(lineContIndex - 1, 2)
+            Return triviaList
         End Function
 
         <Extension>

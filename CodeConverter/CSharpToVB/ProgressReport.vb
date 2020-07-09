@@ -14,7 +14,7 @@ Public Structure ProgressReport
     Public ReadOnly Property Maximum As Integer
 
     Public Overrides Function Equals(obj As Object) As Boolean
-        Return (TypeOf obj Is ProgressReport) AndAlso Equals(DirectCast(obj, ProgressReport))
+        Return (TypeOf obj Is ProgressReport) AndAlso Me.Equals(DirectCast(obj, ProgressReport))
     End Function
 
     Public Overloads Function Equals(other As ProgressReport) As Boolean Implements IEquatable(Of ProgressReport).Equals

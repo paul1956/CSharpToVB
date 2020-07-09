@@ -180,7 +180,10 @@ Public Module ConvertSolutionFileUtilities
                             Dim endIndex As Integer = trimmedCurrentLine.IndexOf(" = ", StringComparison.OrdinalIgnoreCase)
                             If Not Testing Then
                                 Dim fileName As String = trimmedCurrentLine.Substring(0, endIndex)
-                                FileIO.FileSystem.CopyFile(Path.Combine(Path.GetDirectoryName(SolutionFilePath), fileName), saveSolutionRoot, overwrite:=True)
+                                Dim sourceFileFullPath As String = Path.Combine(Path.GetDirectoryName(SolutionFilePath), fileName)
+                                If File.Exists(sourceFileFullPath) Then
+                                    FileIO.FileSystem.CopyFile(sourceFileFullPath, Path.Combine(saveSolutionRoot, fileName), overwrite:=True)
+                                End If
                             End If
                             sb.AppendLine(currentLine)
                             currentLine = GetNextTextLine(sr)

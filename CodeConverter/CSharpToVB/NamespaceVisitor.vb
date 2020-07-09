@@ -161,8 +161,8 @@ End Function
             End Sub
 
             Private Iterator Function PatchInlineHelpers(node As CSS.BaseTypeDeclarationSyntax, IsModule As Boolean) As IEnumerable(Of VBS.StatementSyntax)
-                If _inlineAssignHelperMarkers.Contains(node) Then
-                    _inlineAssignHelperMarkers.Remove(node)
+                If InlineAssignHelperMarkers.Contains(node) Then
+                    InlineAssignHelperMarkers.Remove(node)
                     Yield TryCast(VBFactory.ParseSyntaxTree(InlineAssignHelperCode.Replace("Shared ", If(IsModule, "", "Shared "), StringComparison.Ordinal)).GetRoot().ChildNodes().FirstOrDefault(), VBS.StatementSyntax)
                 End If
             End Function
@@ -379,7 +379,7 @@ End Function
                                             NewTrailingTrivia.Add(NextTrivia)
                                             e.MoveNext()
                                         End If
-                                    Case VB.SyntaxKind.CommentTrivia
+                                    Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
                                         If Not FoundSpace Then
                                             NewTrailingTrivia.Add(SpaceTrivia)
                                         End If
@@ -721,8 +721,8 @@ End Function
                 Dim clause As VBS.ImportsClauseSyntax = VBFactory.SimpleImportsClause([Alias], ImportsName)
                 Dim import As VBS.ImportsStatementSyntax = VBFactory.ImportsStatement(VBFactory.SingletonSeparatedList(clause)).WithConvertedTriviaFrom(node)
                 Dim MatchNotFound As Boolean = True
-                If _allImports.Any Then
-                    For Each ImportStatement As VBS.ImportsStatementSyntax In _allImports
+                If AllImports.Any Then
+                    For Each ImportStatement As VBS.ImportsStatementSyntax In AllImports
                         Dim ImportsClause As VBS.SimpleImportsClauseSyntax = DirectCast(ImportStatement.ImportsClauses(0), VBS.SimpleImportsClauseSyntax)
                         If ImportsClause.Alias IsNot Nothing AndAlso ImportsClause.Alias.ToString = [Alias]?.ToString Then
                             MatchNotFound = False
@@ -736,7 +736,7 @@ End Function
                     Next
                 End If
                 If MatchNotFound Then
-                    _allImports.Add(import)
+                    AllImports.Add(import)
                 End If
 
                 SyncLock s_usedStacks

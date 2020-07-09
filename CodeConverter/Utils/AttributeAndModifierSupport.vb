@@ -542,7 +542,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
             Dim foundTheory As Boolean = False
             Dim isTheoryOrInlineData As Boolean
             For Each e As IndexClass(Of VBS.AttributeListSyntax) In vbAttributeLists.WithIndex
-                Dim attributeList As VBS.AttributeListSyntax = e.Value
+                Dim attributeList As VBS.AttributeListSyntax = e.Value.RemoveExtraLeadingEOL
                 isTheoryOrInlineData = attributeList.Attributes.FirstOrDefault.ToString.Contains({"Theory", "InlineData"}, StringComparison.OrdinalIgnoreCase)
                 If isTheoryOrInlineData Then
                     foundTheory = True

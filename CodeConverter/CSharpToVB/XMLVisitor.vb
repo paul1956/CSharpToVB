@@ -200,7 +200,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                     If NoEndTag Then
                         Dim LastToken As SyntaxToken = vbNode.GetLastToken
                         If LastToken.ValueText.IsNewLine Then
-                            vbNode = vbNode.ReplaceToken(LastToken, DirectCast(Nothing, SyntaxToken))
+                            vbNode = vbNode.ReplaceToken(LastToken, VBFactory.Token(VB.SyntaxKind.EmptyToken))
                         End If
                     End If
                     Content = Content.Add(vbNode)

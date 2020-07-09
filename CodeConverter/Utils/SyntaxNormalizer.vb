@@ -570,7 +570,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
                                 currentTriviaList.Add(Me.GetEndOfLine())
                                 _eolTraiingTriviaCount += 1
                             Else
-                                If currentTriviaList.Last.IsKind(SyntaxKind.CommentTrivia) AndAlso Not e.IsLast Then
+                                If currentTriviaList.Last.IsComment AndAlso Not e.IsLast Then
                                     currentTriviaList.Add(VBEOLTrivia)
                                 End If
                                 Continue For

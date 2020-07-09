@@ -103,13 +103,36 @@ Namespace CSharpToVBCodeConverter
                             DictionaryTypeElement.Add(CSharpConverter.ConvertCSTupleToVBType(PossibleTypes.Substring(0, EndIndex + 1).Trim))
                             EndIndex += 1
                         Else
-                            ' Type
-                            EndIndex = PossibleTypes.IndexOf(",", StringComparison.Ordinal)
-                            Dim FirstLessThan As Integer = PossibleTypes.IndexOf("<", StringComparison.Ordinal)
-                            EndIndex = If(EndIndex = -1 OrElse (FirstLessThan <> -1 AndAlso FirstLessThan < EndIndex), PossibleTypes.Length, EndIndex)
-                            DictionaryTypeElement.Add(ConvertToType(PossibleTypes.Substring(0, EndIndex) _
-                                                                                     .Replace("<", "(Of ", StringComparison.Ordinal) _
-                                                                                     .Replace(">", ")", StringComparison.Ordinal).Trim))
+                            Try
+                                ' Type
+                                Dim commaIndex As Integer = PossibleTypes.IndexOf(",", StringComparison.Ordinal)
+                                Dim FirstLessThan As Integer = PossibleTypes.IndexOf("<", StringComparison.Ordinal)
+                                If commaIndex = -1 Then
+                                    EndIndex = PossibleTypes.Length
+                                ElseIf FirstLessThan = -1 OrElse commaIndex < FirstLessThan Then
+                                    EndIndex = commaIndex
+                                Else
+                                    For i As Integer = FirstLessThan + 1 To PossibleTypes.Length - 1
+                                        Dim lessThanCount As Integer = 1
+                                        Select Case PossibleTypes.Chars(i)
+                                            Case "<"c
+                                                lessThanCount += 1
+                                            Case ">"c
+                                                lessThanCount -= 1
+                                        End Select
+                                        If lessThanCount = 0 Then
+                                            EndIndex = i + 1
+                                            Exit For
+                                        End If
+                                    Next
+                                End If
+                                Dim typeElement As String = PossibleTypes.Substring(0, EndIndex) _
+                                                                     .Replace("<", "(Of ", StringComparison.Ordinal) _
+                                                                     .Replace(">", ")", StringComparison.Ordinal).Trim
+                                DictionaryTypeElement.Add(ConvertToType(typeElement))
+                            Catch ex As Exception
+                                Stop
+                            End Try
                         End If
                         If EndIndex + 1 < PossibleTypes.Length Then
                             PossibleTypes = PossibleTypes.Substring(EndIndex + 1).Trim

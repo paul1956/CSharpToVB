@@ -62,35 +62,35 @@ Partial Friend Class SymbolEquivalenceComparer
         Private Function AreEquivalentWorker(x As ISymbol, y As ISymbol, k As SymbolKind, equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol)) As Boolean
             Select Case k
                 Case SymbolKind.ArrayType
-                    Return ArrayTypesAreEquivalent(DirectCast(x, IArrayTypeSymbol), DirectCast(y, IArrayTypeSymbol), equivalentTypesWithDifferingAssemblies)
+                    Return Me.ArrayTypesAreEquivalent(DirectCast(x, IArrayTypeSymbol), DirectCast(y, IArrayTypeSymbol), equivalentTypesWithDifferingAssemblies)
                 Case SymbolKind.Assembly
-                    Return AssembliesAreEquivalent(DirectCast(x, IAssemblySymbol), DirectCast(y, IAssemblySymbol))
+                    Return Me.AssembliesAreEquivalent(DirectCast(x, IAssemblySymbol), DirectCast(y, IAssemblySymbol))
                 Case SymbolKind.DynamicType
                     Return DynamicTypesAreEquivalent(DirectCast(x, IDynamicTypeSymbol), DirectCast(y, IDynamicTypeSymbol))
                 Case SymbolKind.Event
-                    Return EventsAreEquivalent(DirectCast(x, IEventSymbol), DirectCast(y, IEventSymbol), equivalentTypesWithDifferingAssemblies)
+                    Return Me.EventsAreEquivalent(DirectCast(x, IEventSymbol), DirectCast(y, IEventSymbol), equivalentTypesWithDifferingAssemblies)
                 Case SymbolKind.Field
-                    Return FieldsAreEquivalent(DirectCast(x, IFieldSymbol), DirectCast(y, IFieldSymbol), equivalentTypesWithDifferingAssemblies)
+                    Return Me.FieldsAreEquivalent(DirectCast(x, IFieldSymbol), DirectCast(y, IFieldSymbol), equivalentTypesWithDifferingAssemblies)
                 Case SymbolKind.Label
                     Return LabelsAreEquivalent(DirectCast(x, ILabelSymbol), DirectCast(y, ILabelSymbol))
                 Case SymbolKind.Local
                     Return LocalsAreEquivalent(DirectCast(x, ILocalSymbol), DirectCast(y, ILocalSymbol))
                 Case SymbolKind.Method
-                    Return MethodsAreEquivalent(DirectCast(x, IMethodSymbol), DirectCast(y, IMethodSymbol), equivalentTypesWithDifferingAssemblies)
+                    Return Me.MethodsAreEquivalent(DirectCast(x, IMethodSymbol), DirectCast(y, IMethodSymbol), equivalentTypesWithDifferingAssemblies)
                 Case SymbolKind.NetModule
-                    Return ModulesAreEquivalent(DirectCast(x, IModuleSymbol), DirectCast(y, IModuleSymbol))
+                    Return Me.ModulesAreEquivalent(DirectCast(x, IModuleSymbol), DirectCast(y, IModuleSymbol))
                 Case SymbolKind.NamedType, SymbolKind.ErrorType
-                    Return NamedTypesAreEquivalent(DirectCast(x, INamedTypeSymbol), DirectCast(y, INamedTypeSymbol), equivalentTypesWithDifferingAssemblies)
+                    Return Me.NamedTypesAreEquivalent(DirectCast(x, INamedTypeSymbol), DirectCast(y, INamedTypeSymbol), equivalentTypesWithDifferingAssemblies)
                 Case SymbolKind.Namespace
-                    Return NamespacesAreEquivalent(DirectCast(x, INamespaceSymbol), DirectCast(y, INamespaceSymbol), equivalentTypesWithDifferingAssemblies)
+                    Return Me.NamespacesAreEquivalent(DirectCast(x, INamespaceSymbol), DirectCast(y, INamespaceSymbol), equivalentTypesWithDifferingAssemblies)
                 Case SymbolKind.PointerType
-                    Return PointerTypesAreEquivalent(DirectCast(x, IPointerTypeSymbol), DirectCast(y, IPointerTypeSymbol), equivalentTypesWithDifferingAssemblies)
+                    Return Me.PointerTypesAreEquivalent(DirectCast(x, IPointerTypeSymbol), DirectCast(y, IPointerTypeSymbol), equivalentTypesWithDifferingAssemblies)
                 Case SymbolKind.Property
-                    Return PropertiesAreEquivalent(DirectCast(x, IPropertySymbol), DirectCast(y, IPropertySymbol), equivalentTypesWithDifferingAssemblies)
+                    Return Me.PropertiesAreEquivalent(DirectCast(x, IPropertySymbol), DirectCast(y, IPropertySymbol), equivalentTypesWithDifferingAssemblies)
                 Case SymbolKind.RangeVariable
                     Return RangeVariablesAreEquivalent(DirectCast(x, IRangeVariableSymbol), DirectCast(y, IRangeVariableSymbol))
                 Case SymbolKind.TypeParameter
-                    Return TypeParametersAreEquivalent(DirectCast(x, ITypeParameterSymbol), DirectCast(y, ITypeParameterSymbol), equivalentTypesWithDifferingAssemblies)
+                    Return Me.TypeParametersAreEquivalent(DirectCast(x, ITypeParameterSymbol), DirectCast(y, ITypeParameterSymbol), equivalentTypesWithDifferingAssemblies)
                 Case SymbolKind.Preprocessing
                     Return PreprocessingSymbolsAreEquivalent(DirectCast(x, IPreprocessingSymbol), DirectCast(y, IPreprocessingSymbol))
                 Case Else
@@ -99,7 +99,7 @@ Partial Friend Class SymbolEquivalenceComparer
         End Function
 
         Private Function ArrayTypesAreEquivalent(x As IArrayTypeSymbol, y As IArrayTypeSymbol, equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol)) As Boolean
-            Return x.Rank = y.Rank AndAlso AreEquivalent(x.CustomModifiers, y.CustomModifiers, equivalentTypesWithDifferingAssemblies) AndAlso AreEquivalent(x.ElementType, y.ElementType, equivalentTypesWithDifferingAssemblies)
+            Return x.Rank = y.Rank AndAlso Me.AreEquivalent(x.CustomModifiers, y.CustomModifiers, equivalentTypesWithDifferingAssemblies) AndAlso Me.AreEquivalent(x.ElementType, y.ElementType, equivalentTypesWithDifferingAssemblies)
         End Function
 
         Private Function AssembliesAreEquivalent(x As IAssemblySymbol, y As IAssemblySymbol) As Boolean
@@ -107,16 +107,16 @@ Partial Friend Class SymbolEquivalenceComparer
         End Function
 
         Private Function EventsAreEquivalent(x As IEventSymbol, y As IEventSymbol, equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol)) As Boolean
-            Return x.Name = y.Name AndAlso AreEquivalent(x.ContainingSymbol, y.ContainingSymbol, equivalentTypesWithDifferingAssemblies)
+            Return x.Name = y.Name AndAlso Me.AreEquivalent(x.ContainingSymbol, y.ContainingSymbol, equivalentTypesWithDifferingAssemblies)
         End Function
 
         Private Function FieldsAreEquivalent(x As IFieldSymbol, y As IFieldSymbol, equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol)) As Boolean
-            Return x.Name = y.Name AndAlso AreEquivalent(x.CustomModifiers, y.CustomModifiers, equivalentTypesWithDifferingAssemblies) AndAlso AreEquivalent(x.ContainingSymbol, y.ContainingSymbol, equivalentTypesWithDifferingAssemblies)
+            Return x.Name = y.Name AndAlso Me.AreEquivalent(x.CustomModifiers, y.CustomModifiers, equivalentTypesWithDifferingAssemblies) AndAlso Me.AreEquivalent(x.ContainingSymbol, y.ContainingSymbol, equivalentTypesWithDifferingAssemblies)
         End Function
 
         Private Function HandleAnonymousTypes(x As INamedTypeSymbol, y As INamedTypeSymbol, equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol)) As Boolean
             If x.TypeKind = TypeKind.Delegate Then
-                Return AreEquivalent(x.DelegateInvokeMethod, y.DelegateInvokeMethod, equivalentTypesWithDifferingAssemblies)
+                Return Me.AreEquivalent(x.DelegateInvokeMethod, y.DelegateInvokeMethod, equivalentTypesWithDifferingAssemblies)
             Else
                 Dim xMembers As IEnumerable(Of IPropertySymbol) = x.GetValidAnonymousTypeProperties()
                 Dim yMembers As IEnumerable(Of IPropertySymbol) = y.GetValidAnonymousTypeProperties()
@@ -132,7 +132,7 @@ Partial Friend Class SymbolEquivalenceComparer
                     Dim p1 As IPropertySymbol = xMembersEnumerator.Current
                     Dim p2 As IPropertySymbol = yMembersEnumerator.Current
 
-                    If p1.Name <> p2.Name OrElse p1.IsReadOnly <> p2.IsReadOnly OrElse Not AreEquivalent(p1.Type, p2.Type, equivalentTypesWithDifferingAssemblies) Then
+                    If p1.Name <> p2.Name OrElse p1.IsReadOnly <> p2.IsReadOnly OrElse Not Me.AreEquivalent(p1.Type, p2.Type, equivalentTypesWithDifferingAssemblies) Then
                         Return False
                     End If
                 Loop
@@ -157,7 +157,7 @@ Partial Friend Class SymbolEquivalenceComparer
                 End If
 
                 For index As Integer = 0 To xElements.Length - 1
-                    If Not AreEquivalent(xElements(index).Type, yElements(index).Type, equivalentTypesWithDifferingAssemblies) Then
+                    If Not Me.AreEquivalent(xElements(index).Type, yElements(index).Type, equivalentTypesWithDifferingAssemblies) Then
                         Return False
                     End If
                 Next
@@ -169,7 +169,7 @@ Partial Friend Class SymbolEquivalenceComparer
                 Return False
             End If
 
-            If Not AreEquivalent(x.ContainingSymbol, y.ContainingSymbol, equivalentTypesWithDifferingAssemblies) Then
+            If Not Me.AreEquivalent(x.ContainingSymbol, y.ContainingSymbol, equivalentTypesWithDifferingAssemblies) Then
                 Return False
             End If
 
@@ -181,13 +181,13 @@ Partial Friend Class SymbolEquivalenceComparer
             End If
 
             If x.IsAnonymousType Then
-                Return HandleAnonymousTypes(x, y, equivalentTypesWithDifferingAssemblies)
+                Return Me.HandleAnonymousTypes(x, y, equivalentTypesWithDifferingAssemblies)
             End If
 
             ' They look very similar at this point.  In the case of non constructed types, we're
             ' done.  However, if they are constructed, then their type arguments have to match
             ' as well.
-            Return IsConstructedFromSelf(x) OrElse x.IsUnboundGenericType OrElse TypeArgumentsAreEquivalent(x.TypeArguments, y.TypeArguments, equivalentTypesWithDifferingAssemblies)
+            Return IsConstructedFromSelf(x) OrElse x.IsUnboundGenericType OrElse Me.TypeArgumentsAreEquivalent(x.TypeArguments, y.TypeArguments, equivalentTypesWithDifferingAssemblies)
         End Function
 
         ''' <summary>
@@ -211,12 +211,12 @@ Partial Friend Class SymbolEquivalenceComparer
                 Dim ry As IMethodSymbol = y.ReducedFrom
 
                 ' reduced from symbols are equivalent
-                If Not AreEquivalent(rx, ry, equivalentTypesWithDifferingAssemblies) Then
+                If Not Me.AreEquivalent(rx, ry, equivalentTypesWithDifferingAssemblies) Then
                     Return False
                 End If
 
                 ' receiver types are equivalent
-                If Not AreEquivalent(x.ReceiverType, y.ReceiverType, equivalentTypesWithDifferingAssemblies) Then
+                If Not Me.AreEquivalent(x.ReceiverType, y.ReceiverType, equivalentTypesWithDifferingAssemblies) Then
                     Return False
                 End If
             Else
@@ -232,16 +232,16 @@ Partial Friend Class SymbolEquivalenceComparer
 
                 Dim checkContainingType_ As Boolean = CheckContainingType(x)
                 If checkContainingType_ Then
-                    If Not AreEquivalent(x.ContainingSymbol, y.ContainingSymbol, equivalentTypesWithDifferingAssemblies) Then
+                    If Not Me.AreEquivalent(x.ContainingSymbol, y.ContainingSymbol, equivalentTypesWithDifferingAssemblies) Then
                         Return False
                     End If
                 End If
 
-                If Not ParametersAreEquivalent(x.Parameters, y.Parameters, equivalentTypesWithDifferingAssemblies) Then
+                If Not Me.ParametersAreEquivalent(x.Parameters, y.Parameters, equivalentTypesWithDifferingAssemblies) Then
                     Return False
                 End If
 
-                If Not ReturnTypesAreEquivalent(x, y, equivalentTypesWithDifferingAssemblies) Then
+                If Not Me.ReturnTypesAreEquivalent(x, y, equivalentTypesWithDifferingAssemblies) Then
                     Return False
                 End If
             End If
@@ -251,11 +251,11 @@ Partial Friend Class SymbolEquivalenceComparer
                 Return True
             End If
 
-            Return TypeArgumentsAreEquivalent(x.TypeArguments, y.TypeArguments, equivalentTypesWithDifferingAssemblies)
+            Return Me.TypeArgumentsAreEquivalent(x.TypeArguments, y.TypeArguments, equivalentTypesWithDifferingAssemblies)
         End Function
 
         Private Function ModulesAreEquivalent(x As IModuleSymbol, y As IModuleSymbol) As Boolean
-            Return AssembliesAreEquivalent(x.ContainingAssembly, y.ContainingAssembly) AndAlso x.Name = y.Name
+            Return Me.AssembliesAreEquivalent(x.ContainingAssembly, y.ContainingAssembly) AndAlso x.Name = y.Name
         End Function
 
         Private Function NamedTypesAreEquivalent(x As INamedTypeSymbol, y As INamedTypeSymbol, equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol)) As Boolean
@@ -266,13 +266,13 @@ Partial Friend Class SymbolEquivalenceComparer
             If xTypeKind = TypeKind.Error OrElse yTypeKind = TypeKind.Error Then
                 ' Slow path: x or y is an error type. We need to compare
                 ' all the candidates in both.
-                Return NamedTypesAreEquivalentError(x, y, equivalentTypesWithDifferingAssemblies)
+                Return Me.NamedTypesAreEquivalentError(x, y, equivalentTypesWithDifferingAssemblies)
             End If
 
             ' Fast path: we can compare the symbols directly,
             ' avoiding any allocations associated with the Unwrap()
             ' enumerator.
-            Return xTypeKind = yTypeKind AndAlso HandleNamedTypesWorker(x, y, equivalentTypesWithDifferingAssemblies)
+            Return xTypeKind = yTypeKind AndAlso Me.HandleNamedTypesWorker(x, y, equivalentTypesWithDifferingAssemblies)
         End Function
 
         Private Function NamedTypesAreEquivalentError(x As INamedTypeSymbol, y As INamedTypeSymbol, equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol)) As Boolean
@@ -280,7 +280,7 @@ Partial Friend Class SymbolEquivalenceComparer
                 Dim typeKind1 As TypeKind = GetTypeKind(type1)
                 For Each type2 As INamedTypeSymbol In Unwrap(y)
                     Dim typeKind2 As TypeKind = GetTypeKind(type2)
-                    If typeKind1 = typeKind2 AndAlso HandleNamedTypesWorker(type1, type2, equivalentTypesWithDifferingAssemblies) Then
+                    If typeKind1 = typeKind2 AndAlso Me.HandleNamedTypesWorker(type1, type2, equivalentTypesWithDifferingAssemblies) Then
                         Return True
                     End If
                 Next type2
@@ -299,7 +299,7 @@ Partial Friend Class SymbolEquivalenceComparer
                 Return True
             End If
 
-            Return AreEquivalent(x.ContainingSymbol, y.ContainingSymbol, equivalentTypesWithDifferingAssemblies)
+            Return Me.AreEquivalent(x.ContainingSymbol, y.ContainingSymbol, equivalentTypesWithDifferingAssemblies)
         End Function
 
         Private Function ParametersAreEquivalent(xParameters As ImmutableArray(Of IParameterSymbol), yParameters As ImmutableArray(Of IParameterSymbol), equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol), Optional compareParameterName As Boolean = False, Optional isParameterNameCaseSensitive As Boolean = False) As Boolean
@@ -320,7 +320,7 @@ Partial Friend Class SymbolEquivalenceComparer
         End Function
 
         Private Function PointerTypesAreEquivalent(x As IPointerTypeSymbol, y As IPointerTypeSymbol, equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol)) As Boolean
-            Return AreEquivalent(x.CustomModifiers, y.CustomModifiers, equivalentTypesWithDifferingAssemblies) AndAlso AreEquivalent(x.PointedAtType, y.PointedAtType, equivalentTypesWithDifferingAssemblies)
+            Return Me.AreEquivalent(x.CustomModifiers, y.CustomModifiers, equivalentTypesWithDifferingAssemblies) AndAlso Me.AreEquivalent(x.PointedAtType, y.PointedAtType, equivalentTypesWithDifferingAssemblies)
         End Function
 
         Private Function PropertiesAreEquivalent(x As IPropertySymbol, y As IPropertySymbol, equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol)) As Boolean
@@ -334,7 +334,7 @@ Partial Friend Class SymbolEquivalenceComparer
                 End If
             End If
 
-            Return x.IsIndexer = y.IsIndexer AndAlso x.MetadataName = y.MetadataName AndAlso x.Parameters.Length = y.Parameters.Length AndAlso ParametersAreEquivalent(x.Parameters, y.Parameters, equivalentTypesWithDifferingAssemblies) AndAlso AreEquivalent(x.ContainingSymbol, y.ContainingSymbol, equivalentTypesWithDifferingAssemblies)
+            Return x.IsIndexer = y.IsIndexer AndAlso x.MetadataName = y.MetadataName AndAlso x.Parameters.Length = y.Parameters.Length AndAlso Me.ParametersAreEquivalent(x.Parameters, y.Parameters, equivalentTypesWithDifferingAssemblies) AndAlso Me.AreEquivalent(x.ContainingSymbol, y.ContainingSymbol, equivalentTypesWithDifferingAssemblies)
         End Function
 
         Private Function TypeArgumentsAreEquivalent(xTypeArguments As ImmutableArray(Of ITypeSymbol), yTypeArguments As ImmutableArray(Of ITypeSymbol), equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol)) As Boolean
@@ -344,7 +344,7 @@ Partial Friend Class SymbolEquivalenceComparer
             End If
 
             For index As Integer = 0 To count - 1
-                If Not AreEquivalent(xTypeArguments(index), yTypeArguments(index), equivalentTypesWithDifferingAssemblies) Then
+                If Not Me.AreEquivalent(xTypeArguments(index), yTypeArguments(index), equivalentTypesWithDifferingAssemblies) Then
                     Return False
                 End If
             Next
@@ -374,11 +374,11 @@ Partial Friend Class SymbolEquivalenceComparer
                 Return True
             End If
 
-            Return AreEquivalent(x.ContainingSymbol, y.ContainingSymbol, equivalentTypesWithDifferingAssemblies)
+            Return Me.AreEquivalent(x.ContainingSymbol, y.ContainingSymbol, equivalentTypesWithDifferingAssemblies)
         End Function
 
         Friend Function AreEquivalent(x As CustomModifier, y As CustomModifier, equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol)) As Boolean
-            Return x.IsOptional = y.IsOptional AndAlso AreEquivalent(x.Modifier, y.Modifier, equivalentTypesWithDifferingAssemblies)
+            Return x.IsOptional = y.IsOptional AndAlso Me.AreEquivalent(x.Modifier, y.Modifier, equivalentTypesWithDifferingAssemblies)
         End Function
 
         Friend Function AreEquivalent(x As ImmutableArray(Of CustomModifier), y As ImmutableArray(Of CustomModifier), equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol)) As Boolean
@@ -388,7 +388,7 @@ Partial Friend Class SymbolEquivalenceComparer
             End If
 
             For index As Integer = 0 To x.Length - 1
-                If Not AreEquivalent(x(index), y(index), equivalentTypesWithDifferingAssemblies) Then
+                If Not Me.AreEquivalent(x(index), y(index), equivalentTypesWithDifferingAssemblies) Then
                     Return False
                 End If
             Next index
@@ -397,7 +397,7 @@ Partial Friend Class SymbolEquivalenceComparer
         End Function
 
         Friend Function ReturnTypesAreEquivalent(x As IMethodSymbol, y As IMethodSymbol, Optional equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol) = Nothing) As Boolean
-            Return _symbolEquivalenceComparer.SignatureTypeEquivalenceComparer.Equals(x.ReturnType, y.ReturnType, equivalentTypesWithDifferingAssemblies) AndAlso AreEquivalent(x.ReturnTypeCustomModifiers, y.ReturnTypeCustomModifiers, equivalentTypesWithDifferingAssemblies)
+            Return _symbolEquivalenceComparer.SignatureTypeEquivalenceComparer.Equals(x.ReturnType, y.ReturnType, equivalentTypesWithDifferingAssemblies) AndAlso Me.AreEquivalent(x.ReturnTypeCustomModifiers, y.ReturnTypeCustomModifiers, equivalentTypesWithDifferingAssemblies)
         End Function
 
         Public Shared Function IsPropertyAccessor(kind As MethodKind) As Boolean
@@ -424,7 +424,7 @@ Partial Friend Class SymbolEquivalenceComparer
                 Return _objectAndDynamicCompareEqually AndAlso ((yKind = SymbolKind.DynamicType AndAlso xKind = SymbolKind.NamedType AndAlso DirectCast(x, ITypeSymbol).SpecialType = SpecialType.System_Object) OrElse (xKind = SymbolKind.DynamicType AndAlso yKind = SymbolKind.NamedType AndAlso DirectCast(y, ITypeSymbol).SpecialType = SpecialType.System_Object))
             End If
 
-            Return AreEquivalentWorker(x, y, xKind, equivalentTypesWithDifferingAssemblies)
+            Return Me.AreEquivalentWorker(x, y, xKind, equivalentTypesWithDifferingAssemblies)
 
         End Function
 

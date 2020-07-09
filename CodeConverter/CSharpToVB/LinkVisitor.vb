@@ -25,7 +25,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 Else
                     Dim group As CSS.GroupClauseSyntax = DirectCast(body.SelectOrGroup, CSS.GroupClauseSyntax)
                     Dim items As VBS.ExpressionRangeVariableSyntax = VBFactory.ExpressionRangeVariable(DirectCast(group.GroupExpression.Accept(Me), VBS.ExpressionSyntax))
-                    Dim nameEquals As VBS.VariableNameEqualsSyntax = VBFactory.VariableNameEquals(VBFactory.ModifiedIdentifier(GeneratePlaceholder("groupByKey")))
+                    Dim nameEquals As VBS.VariableNameEqualsSyntax = VBFactory.VariableNameEquals(VBFactory.ModifiedIdentifier(Me.GeneratePlaceholder("groupByKey")))
                     Dim expression As VBS.ExpressionSyntax = DirectCast(group.ByExpression.Accept(Me), VBS.ExpressionSyntax)
                     Dim keys As VBS.ExpressionRangeVariableSyntax
                     Dim functionName As SyntaxToken
@@ -39,7 +39,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                     Dim aggrationRange As VBS.AggregationRangeVariableSyntax = VBFactory.AggregationRangeVariable(VBFactory.FunctionAggregation(functionName))
                     Yield VBFactory.GroupByClause(VBFactory.SingletonSeparatedList(items), VBFactory.SingletonSeparatedList(keys), VBFactory.SingletonSeparatedList(aggrationRange))
                     If body.Continuation?.Body IsNot Nothing Then
-                        For Each clause As VBS.QueryClauseSyntax In ConvertQueryBody(body.Continuation.Body)
+                        For Each clause As VBS.QueryClauseSyntax In Me.ConvertQueryBody(body.Continuation.Body)
                             Yield clause
                         Next
                     End If
@@ -108,7 +108,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 ' From trivia handled in VisitFromClause
                 Dim fromClause As VBS.QueryClauseSyntax = DirectCast(node.FromClause.Accept(Me), VBS.QueryClauseSyntax)
                 Dim bodyClauses As IEnumerable(Of VBS.QueryClauseSyntax) = node.Body.Clauses.Select(Function(c As CSS.QueryClauseSyntax) DirectCast(c.Accept(Me).WithConvertedTriviaFrom(c), VBS.QueryClauseSyntax))
-                Dim body As IEnumerable(Of VBS.QueryClauseSyntax) = ConvertQueryBody(node.Body)
+                Dim body As IEnumerable(Of VBS.QueryClauseSyntax) = Me.ConvertQueryBody(node.Body)
                 Return VBFactory.QueryExpression(VBFactory.SingletonList(fromClause).AddRange(bodyClauses).AddRange(body)).WithConvertedTriviaFrom(node)
             End Function
 

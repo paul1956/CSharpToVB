@@ -437,7 +437,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                     If OneStatement.IsKind(VB.SyntaxKind.TryBlock) Then
                         Dim tryLeadingTrivia As SyntaxTriviaList = OneStatement.GetLeadingTrivia
                         If tryLeadingTrivia.Any Then
-                            If tryLeadingTrivia(0).IsKind(VB.SyntaxKind.CommentTrivia) AndAlso tryLeadingTrivia(0).ToFullString = "' TODO: This Try Block can be removed" Then
+                            If tryLeadingTrivia(0).IsComment AndAlso tryLeadingTrivia(0).ToFullString = "' TODO: This Try Block can be removed" Then
                                 StatementList.AddRange(DirectCast(OneStatement, TryBlockSyntax).Statements)
                                 StatementList(0) = StatementList(0).WithLeadingTrivia(NewLeadingTrivia)
                                 Dim Last As Integer = StatementList.Count - 1
@@ -575,7 +575,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                             CommentString.Append(t.ToString)
                         Case VB.SyntaxKind.EndOfLineTrivia
                             'ignore
-                        Case VB.SyntaxKind.CommentTrivia
+                        Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
                             CommentString.Append(t.ToString.Trim.TrimStart("'"c).Trim)
                         Case Else
                             Stop
@@ -1011,11 +1011,12 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                                 End Select
                             Case VB.SyntaxKind.InvocationExpression
                                 Dim MemberAccessExpression As InvocationExpressionSyntax = CType(AccessExpression.Expression, InvocationExpressionSyntax)
+                                MemberAccessExpression = MemberAccessExpression.WithTrailingTrivia(MemberAccessExpression.GetTrailingTrivia.RemoveLineContinuation)
                                 Initializer = VBFactory.EqualsValue(MemberAccessExpression.WithLeadingTrivia(SpaceTrivia))
                                 Declarator = VBFactory.VariableDeclarator(Names, asClause:=Nothing, Initializer)
                             Case VB.SyntaxKind.SimpleMemberAccessExpression
                                 Dim MemberAccessExpression As MemberAccessExpressionSyntax = CType(AccessExpression.Expression, MemberAccessExpressionSyntax)
-                                Initializer = VBFactory.EqualsValue(MemberAccessExpression.WithLeadingTrivia(SpaceTrivia))
+                                Initializer = VBFactory.EqualsValue(MemberAccessExpression.With({SpaceTrivia}, MemberAccessExpression.GetTrailingTrivia))
                                 Declarator = VBFactory.VariableDeclarator(Names, asClause:=Nothing, Initializer)
                             Case Else
                                 Declarator = Nothing
@@ -1435,9 +1436,6 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 Dim StatementWithIssues As CSS.StatementSyntax = Nothing
                 If TypeOf node.Parent Is CSS.BlockSyntax Then
                     Dim _parent As CSS.BlockSyntax = CType(node.Parent, CSS.BlockSyntax)
-                    If Not _parent.Parent.IsKind(CS.SyntaxKind.MethodDeclaration, CS.SyntaxKind.ConstructorDeclaration, CS.SyntaxKind.GetAccessorDeclaration) Then
-                        Return VBFactory.SingletonList(Of StatementSyntax)(VBFactory.EmptyStatement.WithLeadingTrivia(node.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=False, "Local Functions are Not support by VB")).WithPrependedLeadingTrivia(ConvertTrivia(node.GetLeadingTrivia)).WithConvertedTrailingTriviaFrom(node))
-                    End If
                     indexOfFirstReferencingStatement = _parent.Statements.TakeWhile(Function(s As CSS.StatementSyntax) Not ContainsLocalFunctionReference(s, localFunctionSymbol, _semanticModel)).Count()
                     If indexOfFirstReferencingStatement = _parent.Statements.Count Then
                         indexOfFirstReferencingStatement = 0
@@ -1562,7 +1560,11 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                                         WithConvertedTriviaFrom(node).
                                         WithTrailingEOL
                 Else
-                    Expression = DirectCast(node.Expression.Accept(_nodesVisitor), ExpressionSyntax)
+                    If TypeOf node.Expression Is CSS.ParenthesizedLambdaExpressionSyntax Then
+                        Expression = DirectCast(node.Expression.Accept(_nodesVisitor), ExpressionSyntax)
+                    Else
+                        Expression = DirectCast(node.Expression.Accept(_nodesVisitor), ExpressionSyntax)
+                    End If
                     ' TODO Handle ref expressions
                     If Expression IsNot Nothing Then
                         MovedLeadingTrivia.AddRange(ConvertTrivia(node.GetLeadingTrivia))
@@ -1780,7 +1782,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                                 Select Case t.RawKind
                                     Case VB.SyntaxKind.EndOfLineTrivia
                                         FoundEOL = True
-                                    Case VB.SyntaxKind.CommentTrivia
+                                    Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
                                         collectedCommentTrivia.Add(t)
                                     Case VB.SyntaxKind.WhitespaceTrivia
                                         collectedCommentTrivia.Add(t)

@@ -28,7 +28,7 @@ Public Module RestuructureSeparatedLists
             LastItemEndsWithEOL = Items.Last.HasTrailingTrivia AndAlso Items.Last.GetTrailingTrivia.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia)
         End If
         Dim newCloseToken As SyntaxToken = _CloseToken.WithModifiedTokenTrivia(LeadingToken:=False, LastItemEndsWithEOL)
-        _CloseToken = newCloseToken
+        _CloseToken = newCloseToken.RemoveExtraEOL
     End Sub
 
 End Module
