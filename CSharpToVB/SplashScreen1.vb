@@ -16,7 +16,7 @@ Public NotInheritable Class SplashScreen1
         '  properties dialog (under the "Project" menu).
 
         'Application title
-        ApplicationTitle.Text = If(String.IsNullOrWhiteSpace(My.Info.Title), IO.Path.GetFileNameWithoutExtension(My.Info.AssemblyName), My.Info.Title)
+        ApplicationTitle.Text = If(String.IsNullOrWhiteSpace(My.Application.Info.Title), IO.Path.GetFileNameWithoutExtension(My.Application.Info.AssemblyName), My.Application.Info.Title)
 
         'Format the version information using the text set into the Version control at design time as the
         '  formatting string.  This allows for effective localization if desired.
@@ -24,10 +24,10 @@ Public NotInheritable Class SplashScreen1
         '  Version control's design-time text to "Version {0}.{1:00}.{2}.{3}" or something similar.  See
         '  String.Format() in Help for more information.
         '
-        Version.Text = String.Format(CultureInfo.InvariantCulture, Version.Text, My.Info.Version.Major, My.Info.Version.Minor, My.Info.Version.Build, My.Info.Version.Revision)
+        Version.Text = String.Format(CultureInfo.InvariantCulture, Version.Text, My.Application.Info.Version.Major, My.Application.Info.Version.Minor, My.Application.Info.Version.Build, My.Application.Info.Version.Revision)
 
         'Copyright info
-        Copyright.Text = My.Info.Copyright
+        Copyright.Text = My.Application.Info.Copyright
     End Sub
 
 End Class
