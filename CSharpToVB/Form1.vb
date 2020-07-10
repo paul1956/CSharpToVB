@@ -1166,14 +1166,14 @@ Partial Public Class Form1
     ''' </summary>
     ''' <param name="TaskProjectAnalyzer"></param>
     ''' <param name="SolutionRoot"></param>
-    ''' <param name="_cancellationTokenSource"></param>
+    ''' <param name="cancelToken"></param>
     ''' <returns></returns>
-    Private Async Function ProcessOneProjectAsync(TaskProjectAnalyzer As IProjectAnalyzer, SolutionRoot As String, processedProjects As Integer, totalProjects As Integer, _cancellationTokenSource As CancellationTokenSource) As Task(Of (ErrorPrompt As String, ProjectsToBeAdded As List(Of String)))
+    Private Async Function ProcessOneProjectAsync(TaskProjectAnalyzer As IProjectAnalyzer, SolutionRoot As String, processedProjects As Integer, totalProjects As Integer, cancelToken As CancellationTokenSource) As Task(Of (ErrorPrompt As String, ProjectsToBeAdded As List(Of String)))
         Application.DoEvents()
         Me.UpdateProgressLabels("Getting Analyzer Results", True)
         Dim TaskResults As Task(Of IAnalyzerResults) = GetResultsAsync(CType(TaskProjectAnalyzer, ProjectAnalyzer))
         While Not TaskResults.IsCompleted
-            If _cancellationTokenSource.IsCancellationRequested Then
+            If cancelToken.IsCancellationRequested Then
                 Return ("", New List(Of String))
             End If
             Await Task.Delay(100).ConfigureAwait(True)
@@ -1185,7 +1185,7 @@ Partial Public Class Form1
         ' Under debugger each framework will be processed
         ' Under production the user will select one framework
         While Not TaskWorkspace.IsCompleted
-            If _cancellationTokenSource.IsCancellationRequested Then
+            If cancelToken.IsCancellationRequested Then
                 Return ("", New List(Of String))
             End If
             Await Task.Delay(100).ConfigureAwait(True)
@@ -1222,7 +1222,7 @@ Partial Public Class Form1
                     projectsToBeAdd.Add(projectToBeAdd)
                 End If
                 While Not taskConvertOneProject.IsCompleted
-                    If _cancellationTokenSource.IsCancellationRequested Then
+                    If cancelToken.IsCancellationRequested Then
                         Exit For
                     End If
                     Await Task.Delay(100).ConfigureAwait(True)
@@ -1340,9 +1340,11 @@ Partial Public Class Form1
                     My.Settings.Save()
                     Application.DoEvents()
                     results = Await Me.ProcessOneProjectAsync(
-                                        TaskProjectAnalyzer:=proj.Value,
-                        SolutionRoot:=saveSolutionRoot, processedProjects:=processedProjects,
-                        totalProjects:=totalProjects, _cancellationTokenSource:=_cancellationTokenSource).ConfigureAwait(True)
+                                            TaskProjectAnalyzer:=proj.Value,
+                                            saveSolutionRoot,
+                                            processedProjects,
+                                            totalProjects,
+                                            _cancellationTokenSource).ConfigureAwait(True)
                     If results.resultsString.Length = 0 Then
                         If _cancellationTokenSource.Token.IsCancellationRequested Then
                             prompt = $"Conversion canceled, {processedProjects} of {totalProjects} projects completed successfully."
@@ -1355,12 +1357,11 @@ Partial Public Class Form1
                         Exit For
                     End If
                 Next
+                ConvertSolutionFile(fileName, saveSolutionRoot, results.projectsToBeAdded)
                 If prompt.Length > 0 Then
                     MsgBox(prompt,
                            MsgBoxStyle.OkOnly Or If(prompt.Contains("terminated", StringComparison.OrdinalIgnoreCase), MsgBoxStyle.Critical, MsgBoxStyle.Information) Or MsgBoxStyle.MsgBoxSetForeground,
                            Title:="Convert C# to Visual Basic")
-                Else
-                    ConvertSolutionFile(fileName, saveSolutionRoot, results.projectsToBeAdded)
                 End If
             Else
                 ' Single project
@@ -1381,7 +1382,7 @@ Partial Public Class Form1
                                                           saveSolutionRoot,
                                                           processedProjects:=1,
                                                           totalProjects:=1,
-                                                          _cancellationTokenSource:=_cancellationTokenSource).ConfigureAwait(True)).ErrorPrompt
+                                                          cancelToken:=_cancellationTokenSource).ConfigureAwait(True)).ErrorPrompt
 
                 If prompt.Length = 0 Then
 #Disable Warning CA1308 ' Normalize strings to uppercase

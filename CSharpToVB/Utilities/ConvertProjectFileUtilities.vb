@@ -322,7 +322,7 @@ Public Module ConvertProjectFileUtilities
                                                     If dependentUponNodeValue.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) Then
                                                         xmlDoc.DocumentElement.ChildNodes(index).ChildNodes(childIndex).ChildNodes(k).ChildNodes(0).Value = ChangeExtension(dependentUponNodeValue, "cs", "vb")
                                                     Else
-                                                        CopyFile(ProjectSavePath, sourceFilePath, Path.Combine(Path.GetDirectoryName(compileValue), dependentUponNodeValue))
+                                                        CopyFile(basePath, sourceFilePath, Path.Combine(Path.GetDirectoryName(compileValue), dependentUponNodeValue))
                                                     End If
                                                 Case "Link"
                                                     Dim linkFileValue As String = xmlNode.ChildNodes(k).ChildNodes(0).Value
@@ -336,17 +336,17 @@ Public Module ConvertProjectFileUtilities
                                         Next k
                                     Case "Resource"
                                         For Each a As XmlAttribute In xmlNode.Attributes
-                                            CopyFile(ProjectSavePath, sourceFilePath, a.Value)
+                                            CopyFile(basePath, sourceFilePath, a.Value)
                                         Next
                                     Case "PublicAPI"
                                         For Each a As XmlAttribute In xmlNode.Attributes
                                             If a.Name.Equals("Include", StringComparison.OrdinalIgnoreCase) Then
-                                                CopyFile(ProjectSavePath, sourceFilePath, a.Value)
+                                                CopyFile(basePath, sourceFilePath, a.Value)
                                             End If
                                         Next
                                     Case "EmbeddedResource"
                                         If xmlNode.Attributes(0).Value.EndsWith(".resx", StringComparison.OrdinalIgnoreCase) Then
-                                            CopyFile(ProjectSavePath, sourceFilePath, xmlNode.Attributes(0).Value)
+                                            CopyFile(basePath, sourceFilePath, xmlNode.Attributes(0).Value)
                                         End If
                                         For k As Integer = 0 To xmlNode.ChildNodes.Count - 1
                                             If s_embeddedResourceIgnoreList.Contains(xmlNode.ChildNodes(k).Name, StringComparer.OrdinalIgnoreCase) Then
@@ -364,11 +364,11 @@ Public Module ConvertProjectFileUtilities
                                             End Select
                                         Next k
                                     Case "Content"
-                                        CopyFile(ProjectSavePath, sourceFilePath, xmlNode.Attributes(0).Value)
+                                        CopyFile(basePath, sourceFilePath, xmlNode.Attributes(0).Value)
                                     Case "ProjectReference"
                                         xmlDoc.DocumentElement.ChildNodes(index).ChildNodes(childIndex).Attributes(0).Value = xmlNode.Attributes(0).Value.Replace(".csproj", ".vbproj", StringComparison.OrdinalIgnoreCase)
                                     Case "Protobuf"
-                                        ConvertProtoNode(ProjectSavePath, sourceFilePath, xmlNode, TargetFramework)
+                                        ConvertProtoNode(basePath, sourceFilePath, xmlNode, TargetFramework)
                                         ProjectsToBeAdded = $"Project(""{{9A19103F-16F7-4668-BE54-9A1E7A4F7556}}"") = ""CSProto"", ""CSProto\CSProto.csproj"", ""{{{Guid.NewGuid.ToString.ToUpperInvariant}}}""{vbCrLf}EndProject{vbCrLf}"
                                         Dim elem As XmlElement = xmlDoc.CreateElement("ProjectReference")
                                         elem.SetAttribute("Include", "..\CSProto\CSProto.csproj")
@@ -392,10 +392,6 @@ Public Module ConvertProjectFileUtilities
                     Next
                 End If
             End If
-            If Not String.IsNullOrWhiteSpace(ProjectSavePath) Then
-                xmlDoc.Save(Path.Combine(ProjectSavePath, New FileInfo(sourceFilePath).Name.Replace(".csproj", ".vbproj", StringComparison.OrdinalIgnoreCase)))
-            End If
-            Return ProjectsToBeAdded
         Else
             Dim isDesktopProject As Boolean = xmlDoc.FirstChild.Attributes(0).Value = "Microsoft.NET.Sdk.WindowsDesktop"
             Dim leadingXMLSpace As XmlNode = xmlDoc.CreateDocumentFragment()
@@ -460,7 +456,7 @@ Public Module ConvertProjectFileUtilities
                                                     If dependentUponNodeValue.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) Then
                                                         xmlDoc.FirstChild.ChildNodes(index).ChildNodes(childIndex).ChildNodes(k).ChildNodes(0).Value = ChangeExtension(dependentUponNodeValue, "cs", "vb")
                                                     Else
-                                                        CopyFile(ProjectSavePath, sourceFilePath, Path.Combine(Path.GetDirectoryName(compileValue), dependentUponNodeValue))
+                                                        CopyFile(basePath, sourceFilePath, Path.Combine(Path.GetDirectoryName(compileValue), dependentUponNodeValue))
                                                     End If
                                                 Case "Link"
                                                     Dim linkFileValue As String = xmlNode.ChildNodes(k).ChildNodes(0).Value
@@ -473,17 +469,17 @@ Public Module ConvertProjectFileUtilities
                                         Next k
                                     Case "Resource"
                                         For Each a As XmlAttribute In xmlNode.Attributes
-                                            CopyFile(ProjectSavePath, sourceFilePath, a.Value)
+                                            CopyFile(basePath, sourceFilePath, a.Value)
                                         Next
                                     Case "PublicAPI"
                                         For Each a As XmlAttribute In xmlNode.Attributes
                                             If a.Name.Equals("Include", StringComparison.OrdinalIgnoreCase) Then
-                                                CopyFile(ProjectSavePath, sourceFilePath, a.Value)
+                                                CopyFile(basePath, sourceFilePath, a.Value)
                                             End If
                                         Next
                                     Case "EmbeddedResource"
                                         If xmlNode.Attributes(0).Value.EndsWith(".resx", StringComparison.OrdinalIgnoreCase) Then
-                                            CopyFile(ProjectSavePath, sourceFilePath, xmlNode.Attributes(0).Value)
+                                            CopyFile(basePath, sourceFilePath, xmlNode.Attributes(0).Value)
                                         End If
                                         For k As Integer = 0 To xmlNode.ChildNodes.Count - 1
                                             If s_embeddedResourceIgnoreList.Contains(xmlNode.ChildNodes(k).Name, StringComparer.OrdinalIgnoreCase) Then
@@ -499,7 +495,7 @@ Public Module ConvertProjectFileUtilities
                                             End Select
                                         Next k
                                     Case "Content"
-                                        CopyFile(ProjectSavePath, sourceFilePath, xmlNode.Attributes(0).Value)
+                                        CopyFile(basePath, sourceFilePath, xmlNode.Attributes(0).Value)
                                     Case "ProjectReference"
                                         xmlDoc.FirstChild.ChildNodes(index).ChildNodes(childIndex).Attributes(0).Value = xmlNode.Attributes(0).Value.Replace(".csproj", ".vbproj", StringComparison.OrdinalIgnoreCase)
                                     Case Else
@@ -519,11 +515,11 @@ Public Module ConvertProjectFileUtilities
                     Next
                 End If
             End If
-            If Not String.IsNullOrWhiteSpace(ProjectSavePath) Then
-                xmlDoc.Save(Path.Combine(ProjectSavePath, New FileInfo(sourceFilePath).Name.Replace(".csproj", ".vbproj", StringComparison.OrdinalIgnoreCase)))
-            End If
-            Return ProjectsToBeAdded
         End If
+        If Not String.IsNullOrWhiteSpace(basePath) Then
+            xmlDoc.Save(Path.Combine(basePath, Path.GetFileName(sourceFilePath).Replace(".csproj", ".vbproj", StringComparison.OrdinalIgnoreCase)))
+        End If
+        Return ProjectsToBeAdded
     End Function
 
 End Module
