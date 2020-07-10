@@ -4,7 +4,7 @@
 
 Imports Microsoft.Win32
 
-#If Not NET5 Then
+#If Not NETCOREAPP5_0 Then
 
 Imports VBMsgBox
 

@@ -18,7 +18,7 @@ Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Emit
 Imports Microsoft.VisualBasic.FileIO
 
-#If Not NET5 Then
+#If Not NETCOREAPP5_0 Then
 
 Imports VBMsgBox
 
@@ -1507,11 +1507,13 @@ Partial Public Class Form1
         Me.OpenSourceFile(DirectCast(sender, ToolStripItem).Tag.ToString().Substring(4))
     End Sub
 
+#If Not NETCOREAPP5_0 Then
     <STAThread()>
     Shared Sub main(args As String())
         Application.SetHighDpiMode(HighDpiMode.PerMonitorV2)
-        Dim MyApp As New My.MyApplication
-        MyApp.Run(args)
-        MyApp.Dispose()
+        Using MyApp As New My.MyApplication
+            MyApp.Run(args)
+        End Using
     End Sub
+#End If
 End Class
