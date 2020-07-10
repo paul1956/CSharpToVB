@@ -371,9 +371,11 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                         End Select
                         TestNode = TestNode.WithTrailingTrivia(testTrailingTrivia)
                         Dim Condition As ExpressionSyntax = VBFactory.IsExpression(TestNode, NothingExpression)
-                        Dim IfBlock As SingleLineIfStatementSyntax = VBFactory.SingleLineIfStatement(Condition,
-                                                                                                          Statements,
-                                                                                                          elseClause:=Nothing)
+                        Dim IfBlock As SingleLineIfStatementSyntax =
+                                            VBFactory.SingleLineIfStatement(Condition,
+                                                                            Statements,
+                                                                            elseClause:=Nothing
+                                                                           )
                         Dim StatementWithIssues As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
                         StatementWithIssues.AddMarker(IfBlock, StatementHandlingOption.PrependStatement, AllowDuplicates:=False)
                         RightNode = DirectCast(csRight.Left.Accept(Me), ExpressionSyntax)
@@ -401,9 +403,9 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                     End If
                 End If
                 Return VBFactory.AssignmentStatement(kind,
-                                                CType(LeftNode.WithModifiedNodeTrivia(SeparatorFollows:=True), ExpressionSyntax),
-                                                ExpressionKindToOperatorToken(kind),
-                                                RightNode)
+                                                     LeftNode.WithModifiedNodeTrivia(SeparatorFollows:=True),
+                                                     ExpressionKindToOperatorToken(kind),
+                                                     RightNode)
             End Function
 
             Private Sub MarkPatchInlineAssignHelper(node As CS.CSharpSyntaxNode)
@@ -709,7 +711,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
             Public Overrides Function VisitAnonymousMethodExpression(node As CSS.AnonymousMethodExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Dim Parameters As New SeparatedSyntaxList(Of CSS.ParameterSyntax)
                 If node.ParameterList IsNot Nothing Then
-                    Parameters = CType((node.ParameterList?.Parameters), SeparatedSyntaxList(Of CSS.ParameterSyntax))
+                    Parameters = CType(node.ParameterList?.Parameters, SeparatedSyntaxList(Of CSS.ParameterSyntax))
                 End If
                 Return Me.ConvertLambdaExpression(node:=node, block:=node.Block.Statements, parameters:=Parameters, Modifiers:=VBFactory.TokenList(node.AsyncKeyword)).WithConvertedTriviaFrom(node)
             End Function
@@ -1087,7 +1089,13 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                     Return VBFactory.SimpleAssignmentStatement(leftExpression, rightExpression)
                 End If
                 Me.MarkPatchInlineAssignHelper(node)
-                Return VBFactory.InvocationExpression(expression:=VBFactory.IdentifierName("__InlineAssignHelper"), argumentList:=VBFactory.ArgumentList(VBFactory.SeparatedList((New ArgumentSyntax() {VBFactory.SimpleArgument(leftExpression), VBFactory.SimpleArgument(rightExpression)})))).WithConvertedTriviaFrom(node)
+                Return VBFactory.InvocationExpression(
+                    expression:=VBFactory.IdentifierName("__InlineAssignHelper"),
+                    argumentList:=VBFactory.ArgumentList(VBFactory.SeparatedList(New ArgumentSyntax() {
+                                                                            VBFactory.SimpleArgument(leftExpression),
+                                                                            VBFactory.SimpleArgument(rightExpression)
+                                                                                                       })
+                                                        )).WithConvertedTriviaFrom(node)
             End Function
 
             Public Overrides Function VisitAwaitExpression(node As CSS.AwaitExpressionSyntax) As VB.VisualBasicSyntaxNode
@@ -2562,8 +2570,8 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                                                                                                                                    )
                     Return VBFactory.InvocationExpression(
                         vbMathExpression,
-                        VBFactory.ArgumentList(VBFactory.SeparatedList((New ArgumentSyntax() {VBFactory.SimpleArgument(vbArgumentInvocationExpression),
-                                                                                                      vbSecondArgumentSyntax})))).WithConvertedTriviaFrom(node)
+                        VBFactory.ArgumentList(VBFactory.SeparatedList(New ArgumentSyntax() {VBFactory.SimpleArgument(vbArgumentInvocationExpression),
+                                                                                                      vbSecondArgumentSyntax}))).WithConvertedTriviaFrom(node)
                 End If
             End Function
 
@@ -2600,7 +2608,11 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                     Else
                         Dim operatorName As String = If(kind = VB.SyntaxKind.AddAssignmentStatement, "Increment", "Decrement")
                         Dim MathExpression As NameSyntax = VBFactory.ParseName("System.Threading.Interlocked." & operatorName)
-                        Return VBFactory.InvocationExpression(MathExpression, VBFactory.ArgumentList(VBFactory.SeparatedList((New ArgumentSyntax() {VBFactory.SimpleArgument(vbOperandExpression)}))))
+                        Return VBFactory.InvocationExpression(MathExpression,
+                                                              VBFactory.ArgumentList(VBFactory.SeparatedList(
+                                                                                        New ArgumentSyntax() {VBFactory.SimpleArgument(vbOperandExpression)})
+                                                                                    )
+                                                             )
                     End If
                 End If
                 If kind = VB.SyntaxKind.AddressOfExpression Then

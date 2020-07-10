@@ -360,7 +360,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
             End Function
 
             Public Overrides Function VisitConstructorInitializer(node As CSS.ConstructorInitializerSyntax) As VB.VisualBasicSyntaxNode
-                Dim ArgumentList As VBS.ArgumentListSyntax = DirectCast((node?.ArgumentList.Accept(Me)), VBS.ArgumentListSyntax)
+                Dim ArgumentList As VBS.ArgumentListSyntax = DirectCast(node?.ArgumentList.Accept(Me), VBS.ArgumentListSyntax)
                 Dim SimpleMemberAccessExpression As VBS.MemberAccessExpressionSyntax
                 Dim parent As SyntaxNode = node.Parent.Parent
                 Dim MeOrMyExpression As VBS.ExpressionSyntax = If(TypeOf parent Is CSS.StructDeclarationSyntax,

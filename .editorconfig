@@ -176,8 +176,9 @@ dotnet_diagnostic.CA1303.severity = silent
 # CA1308: Do not pass literals as localized parameters
 dotnet_diagnostic.CA1308.severity = suggestion
 
+# IDE0004: Remove Unnecessary Cast
+dotnet_diagnostic.IDE0004.severity = warning
 
-# Xml project files
 [*.{csproj,vcxproj,vcxproj.filters,proj,nativeproj,locproj}]
 indent_size = 2
 
@@ -190,10 +191,6 @@ indent_size = 2
 indent_size = 2
 charset = utf-8-bom
 insert_final_newline = true
-
-# Shell scripts
-[*.sh]
-end_of_line = lf
 
 [*.{cmd,bat}]
 end_of_line = crlf

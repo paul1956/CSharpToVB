@@ -47,7 +47,7 @@ Partial Friend Class SymbolEquivalenceComparer
         End Function
 
         Private Shared Function CombineHashCodes(x As IPreprocessingSymbol, currentHash As Integer) As Integer
-            Return CodeRefactoringHash.Combine(DirectCast(x, Object).GetHashCode(), currentHash)
+            Return CodeRefactoringHash.Combine(x.GetHashCode(), currentHash)
         End Function
 
         Private Function CombineAnonymousTypeHashCode(x As INamedTypeSymbol, currentHash As Integer) As Integer
