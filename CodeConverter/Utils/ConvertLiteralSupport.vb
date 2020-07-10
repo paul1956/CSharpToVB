@@ -109,8 +109,8 @@ Namespace CSharpToVBCodeConverter.Utilities
                         Throw UnreachableException
                     End If
                     If TokenToString.StartsWith("0b", StringComparison.OrdinalIgnoreCase) Then
-                        If TypeOf value Is Integer Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(($"{Binary(CInt(value))}"), CInt(value)))
-                        If TypeOf value Is Byte Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(($"{Binary(CByte(value))}"), CByte(value)))
+                        If TypeOf value Is Integer Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal($"{Binary(CInt(value))}", CInt(value)))
+                        If TypeOf value Is Byte Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal($"{Binary(CByte(value))}", CByte(value)))
                         If TypeOf value Is SByte Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal($"{Binary(CSByte(value))}", CSByte(value)))
                         If TypeOf value Is Short Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal($"{Binary(CShort(value))}", CShort(value)))
                         If TypeOf value Is UShort Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal($"{Binary(CUShort(value))}", CUShort(value)))

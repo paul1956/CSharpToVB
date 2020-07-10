@@ -6,7 +6,7 @@ Namespace CSharpToVBCodeConverter.Utilities
     Friend Module NameGenerator
 
         Private Sub EnsureUniquenessInPlace(names As IList(Of String), isFixed As IList(Of Boolean), canUse As Func(Of String, Boolean), Optional isCaseSensitive As Boolean = True)
-            canUse = If(canUse, (Function(s As String) True))
+            canUse = If(canUse, Function(s As String) True)
 
             ' Don't enumerate as we will be modifying the collection in place.
             Dim i As Integer = 0
