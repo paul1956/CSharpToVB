@@ -2,6 +2,13 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
+
+#If Not netcoreapp5_0 Then
+Imports CSharpToVBApp.Microsoft.VisualBasic.ApplicationServices
+#Else
+Imports Microsoft.VisualBasic.ApplicationServices
+#End If
+
 Public NotInheritable Class AboutBox1
 
     Private Sub AboutBox1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
@@ -15,7 +22,7 @@ Public NotInheritable Class AboutBox1
 
         LabelCopyright.Text = My.Application.Info.Copyright
         LabelCompanyName.Text = $"Developer {My.Application.Info.CompanyName}"
-        Dim coreinfo As New Microsoft.VisualBasic.ApplicationServices.AssemblyInfo(GetType(CSharpToVBCodeConverter.CodeWithOptions).Assembly)
+        Dim coreinfo As New AssemblyInfo(GetType(CSharpToVBCodeConverter.CodeWithOptions).Assembly)
         TextBoxDescription.Text = $"{My.Application.Info.Description}{vbCrLf}{vbCrLf}{coreinfo.ProductName} {coreinfo.Version}"
     End Sub
 

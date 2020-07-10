@@ -176,7 +176,7 @@ dotnet_diagnostic.CA1308.severity = suggestion
 dotnet_diagnostic.IDE0004.severity = warning
 
 # Xml project files
-[*.{csproj,vcxproj,vcxproj.filters,proj,nativeproj,locproj}]
+[*.{csproj,vcxproj,vcxproj.filters,proj,nativeproj,locproj,vbproj}]
 indent_size = 2
 
 # Xml config files
