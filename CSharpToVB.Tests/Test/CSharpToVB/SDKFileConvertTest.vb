@@ -105,7 +105,7 @@ Namespace ProjectFile.Tests
             sourceXmlDoc.LoadXml(_originalProjectFile.ToString)
             Dim tempDirectory As String = Path.GetTempPath() & "Test" & Guid.NewGuid().ToString()
             Dim sourceDirectory As String = Path.Combine(tempDirectory, "Source")
-            Dim destinationDirectory As String = Path.Combine(tempDirectory, "Destination")
+            Dim destinationDirectory As String = Path.Combine(tempDirectory, "Source_vb")
             Dim originalProjectFileName As String = sourceDirectory & Path.DirectorySeparatorChar & "Test.csproj"
             Dim destinationProjectFileName As String = destinationDirectory & Path.DirectorySeparatorChar & "Test.vbproj"
             Try
@@ -1676,7 +1676,7 @@ EndGlobal
             sourceXmlDoc.LoadXml(_originalProjectFile.ToString)
             Dim tempDirectory As String = Path.GetTempPath() & "Test" & Guid.NewGuid().ToString()
             Dim sourceDirectory As String = Path.Combine(tempDirectory, "Source")
-            Dim destinationDirectory As String = Path.Combine(tempDirectory, "Destination")
+            Dim destinationDirectory As String = Path.Combine(tempDirectory, "Source_vb")
             Dim originalProjectFileName As String = sourceDirectory & Path.DirectorySeparatorChar & "Test.csproj"
             Dim destinationProjectFileName As String = destinationDirectory & Path.DirectorySeparatorChar & "Test.vbproj"
             Try
@@ -1740,7 +1740,7 @@ EndGlobal
             sourceXmlDoc.LoadXml(_originalProjectFile.ToString)
             Dim tempDirectory As String = Path.GetTempPath() & "Test" & Guid.NewGuid().ToString()
             Dim sourceDirectory As String = Path.Combine(tempDirectory, "Source")
-            Dim destinationDirectory As String = Path.Combine(tempDirectory, "Destination")
+            Dim destinationDirectory As String = Path.Combine(tempDirectory, "Source_vb")
             Dim originalProjectFileName As String = sourceDirectory & Path.DirectorySeparatorChar & "Test.csproj"
             Dim destinationProjectFileName As String = destinationDirectory & Path.DirectorySeparatorChar & "Test.vbproj"
             Try
