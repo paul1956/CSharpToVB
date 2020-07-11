@@ -19,9 +19,7 @@ Imports Microsoft.CodeAnalysis.Emit
 Imports Microsoft.VisualBasic.FileIO
 
 #If Not NETCOREAPP5_0 Then
-
 Imports VBMsgBox
-
 #End If
 
 Partial Public Class Form1

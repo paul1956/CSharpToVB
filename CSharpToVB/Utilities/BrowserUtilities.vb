@@ -5,9 +5,7 @@
 Imports Microsoft.Win32
 
 #If Not NETCOREAPP5_0 Then
-
 Imports VBMsgBox
-
 #End If
 
 Module BrowserUtilities
