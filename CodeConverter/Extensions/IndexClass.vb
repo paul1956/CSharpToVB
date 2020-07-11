@@ -4,7 +4,7 @@
 
 Public Class IndexClass(Of T)
     Public Property Value As T
-    Public Property Index As Integer                                                           ' first element has index = 0
+    Public Property Index As Integer ' first element has index = 0
 
     Public ReadOnly Property IsFirst As Boolean
         Get

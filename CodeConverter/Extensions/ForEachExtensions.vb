@@ -21,7 +21,7 @@ Public Module ForEachExtensions
                 wi.MoveNext()
                 Yield wi
                 hasNext = Not wi.IsLast
-                index = wi.Index                                                                   ' if .MoveNext was used
+                index = wi.Index ' if .MoveNext was used
             End While
         End Using
     End Function
