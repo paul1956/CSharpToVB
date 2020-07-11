@@ -57,11 +57,15 @@ Work to be done:
 There are several Stop statements for debugging, and if you continue past them reasonable things will
 happen but a better translation is possible.
 
-
-It will try to create a VB project File from the original C# project file.
-
+## Important Notes
 https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json is added to NuGet Package Source to find
 Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpecific attributes used for testing.
+
+Any changes to CSharpToVB application needs to change the version information in the project file **AND** in MyProject/AssemblyInfo.vb until Visual Studion is able to general file automatically for a WinForms application.
+
+  New in 4.5.2.5/Converter 3.4.5.2
+  - Combine RemoveLineContinuation code and rename a file
+  - Improve code coverage
 
   New in 4.5.2.5/Converter 3.4.5.1
   - Update ProjectConvert and related tests
@@ -300,14 +304,14 @@ New in Release 4.2.4.0
 +------------------+--------+--------+--------+
 | Module           | Line   | Branch | Method |
 +------------------+--------+--------+--------+
-| VB.CodeConverter | 79.09% | 72.74% | 87.84% |
+| VB.CodeConverter | 79.01% | 72.77% | 87.75% |
 +------------------+--------+--------+--------+
 
 +---------+--------+--------+--------+
 |         | Line   | Branch | Method |
 +---------+--------+--------+--------+
-| Total   | 79.09% | 72.74% | 87.84% |
+| Total   | 79.01% | 72.77% | 87.75% |
 +---------+--------+--------+--------+
-| Average | 79.09% | 72.73% | 87.84% |
+| Average | 79.01% | 72.77% | 87.75% |
 +---------+--------+--------+--------+
 ```

@@ -7,7 +7,10 @@ Imports System.Runtime.InteropServices
 Namespace Microsoft.VisualBasic.CompilerServices
 
     <ComVisible(False)>
-    Friend NotInheritable Class NativeMethods
+    Friend Module NativeMethods
+        <DllImport("user32.dll")>
+        Public Function LockWindowUpdate(hWndLock As IntPtr) As Boolean
+        End Function
 
 #Region "Scroll Bar Support"
 
@@ -29,14 +32,14 @@ Namespace Microsoft.VisualBasic.CompilerServices
         End Enum
 
         <DllImport("user32.dll", EntryPoint:=NameOf(GetScrollBarInfo))>
-        Friend Shared Function GetScrollBarInfo(hwnd As IntPtr,
+        Friend Function GetScrollBarInfo(hwnd As IntPtr,
                                          idObject As Integer,
                                          ByRef psbi As SCROLLBARINFO
                                          ) As <MarshalAs(UnmanagedType.Bool)> Boolean
         End Function
 
         <DllImport("user32.dll", SetLastError:=True)>
-        Friend Shared Function GetScrollInfo(
+        Friend Function GetScrollInfo(
                                      hWnd As IntPtr,
                                      <MarshalAs(UnmanagedType.I4)> fnBar As SBOrientation,
                                      ByRef lpsi As SCROLLINFO
@@ -44,7 +47,7 @@ Namespace Microsoft.VisualBasic.CompilerServices
         End Function
 
         <DllImport("user32.dll", SetLastError:=True, ThrowOnUnmappableChar:=True, CharSet:=CharSet.Auto)>
-        Friend Shared Function SetScrollInfo(
+        Friend Function SetScrollInfo(
                                      hWnd As IntPtr,
                                      <MarshalAs(UnmanagedType.I4)> nBar As SBOrientation,
                                      <MarshalAs(UnmanagedType.Struct)> ByRef lpsi As SCROLLINFO,
@@ -54,7 +57,7 @@ Namespace Microsoft.VisualBasic.CompilerServices
 
         'This function queries or sets system-wide parameters, and updates the user profile during the process.
         <DllImport("user32", EntryPoint:=NameOf(SystemParametersInfo), CharSet:=CharSet.Unicode, SetLastError:=True)>
-        Public Shared Function SystemParametersInfo(intAction As Integer,
+        Public Function SystemParametersInfo(intAction As Integer,
                                              intParam As Integer,
                                              strParam As String,
                                              intWinIniFlag As Integer
@@ -99,6 +102,6 @@ Namespace Microsoft.VisualBasic.CompilerServices
 
 #End Region
 
-    End Class
+    End Module
 
 End Namespace

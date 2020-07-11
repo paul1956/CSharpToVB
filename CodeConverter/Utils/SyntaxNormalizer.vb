@@ -152,7 +152,6 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Select Case nextTrivia.Kind
                 Case SyntaxKind.CommentTrivia
                     Return False
-                    Return Not isTrailingTrivia
                 Case SyntaxKind.DocumentationCommentExteriorTrivia, SyntaxKind.EmptyStatement,
                 SyntaxKind.IfDirectiveTrivia,
                 SyntaxKind.ElseIfDirectiveTrivia,

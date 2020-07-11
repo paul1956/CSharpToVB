@@ -73,7 +73,7 @@ Public Class AdvancedRTB
     Private Sub ToolStripMenuItem1_Click(sender As Object, e As EventArgs) Handles mnuScrollHere.Click
         With _sbi
             Dim SB_Size As Integer = .RC_ScrollBar.Bottom - .RC_ScrollBar.Top
-            Dim Percent As Double = 1 - (SB_Size - Me.PointToClient(MousePosition).Y) / SB_Size
+            Dim Percent As Double = 1 - ((SB_Size - Me.PointToClient(MousePosition).Y) / SB_Size)
             Dim DesiredLine As Integer = CInt(Lines.Length * Percent)
             Me.[Select](Me.GetFirstCharIndexFromLine(DesiredLine), 0)
             Me.ScrollToCaret()
