@@ -53,12 +53,12 @@ Public NotInheritable Class VisualBasicFormattingTestBase
         Optional experimental As Boolean = False) As Task
 
         Dim parseOptions As New VisualBasicParseOptions(LanguageVersion.VisualBasic16, DocumentationMode.None)
-        If (experimental) Then
+        If experimental Then
             ' There are no experimental features at this time.
             ' parseOptions = parseOptions.WithExperimentalFeatures
         End If
 
-        Return AssertFormatAsync(expected, code, spans, LanguageNames.VisualBasic, changedOptionSet, testWithTransformation, parseOptions)
+        Return Me.AssertFormatAsync(expected, code, spans, LanguageNames.VisualBasic, changedOptionSet, testWithTransformation, parseOptions)
     End Function
 
     Protected Overrides Function ParseCompilation(text As String, parseOptions As ParseOptions) As SyntaxNode
@@ -70,7 +70,7 @@ Public NotInheritable Class VisualBasicFormattingTestBase
         Dim spans As ImmutableArray(Of TextSpan) = Nothing
         MarkupTestFile.GetSpans(markupCode, code, spans)
 
-        Return AssertFormatAsync(expected, code, spans)
+        Return Me.AssertFormatAsync(expected, code, spans)
     End Function
 
     Public Sub Dispose() Implements IDisposable.Dispose

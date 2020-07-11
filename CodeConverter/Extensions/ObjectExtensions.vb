@@ -38,7 +38,7 @@ Public Module ObjectExtensions
         ElseIf defaultFunc IsNot Nothing Then
             Return defaultFunc(objType)
         Else
-            Return CType(Nothing, TResult)
+            Return Nothing
         End If
     End Function
 

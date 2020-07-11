@@ -40,7 +40,7 @@ Namespace CSharpToVBCodeConverter.Utilities
                     Case ")"
                         OpenParenCount -= 1
                         If OpenParenCount = 0 Then
-                            Dim TupleString As String = TypeString.Substring(OpenIndex, (CloseIndex - OpenIndex) + 1)
+                            Dim TupleString As String = TypeString.Substring(OpenIndex, CloseIndex - OpenIndex + 1)
                             Result &= CSharpConverter.ExtractConvertedTuple(TupleString)
                             If CloseIndex < TypeString.Length - 2 Then
                                 Stop
