@@ -1571,7 +1571,7 @@ EndGlobal
 "
             Dim tempDirectory As String = Path.GetTempPath() & "Test" & Guid.NewGuid().ToString()
             Dim sourceDirectory As String = Path.Combine(tempDirectory, "Source")
-            Dim destinationDirectory As String = Path.Combine(tempDirectory, "Destination")
+            Dim destinationDirectory As String = Path.Combine(tempDirectory, "Source_vb")
             Dim originalSolutionFileName As String = sourceDirectory & Path.DirectorySeparatorChar & "solution.sln"
             Dim destinationSolutionFileName As String = destinationDirectory & Path.DirectorySeparatorChar & "solution.sln"
             Try
