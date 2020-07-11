@@ -6,7 +6,7 @@
 Option Strict On
 Option Explicit On
 
-Namespace Microsoft.VisualBasic.ApplicationServices
+Namespace Global.Microsoft.VisualBasic.ApplicationServices
 
     ''' <summary>
     ''' Abstract class that defines the application Startup/Shutdown model for VB 

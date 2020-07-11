@@ -21,15 +21,15 @@ Namespace CSharpToVBCodeConverter.Utilities
         Private Function IsNonNestedTypeAccessible(assembly As IAssemblySymbol, declaredAccessibility As Accessibility, within As ISymbol) As Boolean
             Dim withinAssembly As IAssemblySymbol = If(TryCast(within, IAssemblySymbol), DirectCast(within, INamedTypeSymbol).ContainingAssembly)
             Select Case declaredAccessibility
-                Case Microsoft.CodeAnalysis.Accessibility.NotApplicable, Microsoft.CodeAnalysis.Accessibility.Public
+                Case Accessibility.NotApplicable, Accessibility.Public
                     ' Public symbols are always accessible from any context
                     Return True
 
-                Case Microsoft.CodeAnalysis.Accessibility.Private, Microsoft.CodeAnalysis.Accessibility.Protected, Microsoft.CodeAnalysis.Accessibility.ProtectedAndInternal
+                Case Accessibility.Private, Accessibility.Protected, Accessibility.ProtectedAndInternal
                     ' Shouldn't happen except in error cases.
                     Return False
 
-                Case Microsoft.CodeAnalysis.Accessibility.Internal, Microsoft.CodeAnalysis.Accessibility.ProtectedOrInternal
+                Case Accessibility.Internal, Accessibility.ProtectedOrInternal
                     ' An internal type is accessible if we're in the same assembly or we have
                     ' friend access to the assembly it was defined in.
                     Return withinAssembly.IsSameAssemblyOrHasFriendAccessTo(assembly)

@@ -6,7 +6,7 @@
 Imports System.Collections.ObjectModel
 Imports System.Reflection
 
-Namespace Microsoft.VisualBasic.ApplicationServices
+Namespace Global.Microsoft.VisualBasic.ApplicationServices
 
     ''' <summary>
     ''' A class that contains the information about an Application. This information can be

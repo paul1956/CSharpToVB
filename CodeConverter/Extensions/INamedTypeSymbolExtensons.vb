@@ -40,7 +40,7 @@ Namespace CSharpToVBCodeConverter.Utilities
                     Case ")"
                         OpenParenCount -= 1
                         If OpenParenCount = 0 Then
-                            Dim TupleString As String = TypeString.Substring(OpenIndex, CloseIndex - OpenIndex + 1)
+                            Dim TupleString As String = TypeString.Substring(OpenIndex, (CloseIndex - OpenIndex) + 1)
                             Result &= CSharpConverter.ExtractConvertedTuple(TupleString)
                             If CloseIndex < TypeString.Length - 2 Then
                                 Stop
@@ -234,7 +234,7 @@ Namespace CSharpToVBCodeConverter.Utilities
         End Function
 
         Private Function IsNonPublicImplementableAccessor(accessor As IMethodSymbol) As Boolean
-            Return accessor IsNot Nothing AndAlso IsImplementable(accessor) AndAlso accessor.DeclaredAccessibility <> Microsoft.CodeAnalysis.Accessibility.Public
+            Return accessor IsNot Nothing AndAlso IsImplementable(accessor) AndAlso accessor.DeclaredAccessibility <> Accessibility.Public
         End Function
 
         Private Function IsPropertyWithNonPublicImplementableAccessor(member As ISymbol) As Boolean

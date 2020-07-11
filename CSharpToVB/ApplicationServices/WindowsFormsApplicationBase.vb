@@ -14,7 +14,7 @@ Imports System.Security
 Imports System.Security.Permissions
 Imports System.Threading
 
-Namespace Microsoft.VisualBasic.ApplicationServices
+Namespace Global.Microsoft.VisualBasic.ApplicationServices
 
     ''' <summary>
     ''' Signature for the Shutdown event handler

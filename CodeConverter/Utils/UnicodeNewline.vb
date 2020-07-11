@@ -300,7 +300,7 @@ Public Module NewLine
     ''' </summary>
     <Extension>
     Public Function IsNewLine(ch As Char) As Boolean
-        Return ch = NewLine.CR OrElse ch = NewLine.LF OrElse ch = NewLine.NEL OrElse ch = NewLine.VT OrElse ch = NewLine.FF OrElse ch = NewLine.LS OrElse ch = NewLine.PS
+        Return ch = CR OrElse ch = LF OrElse ch = NEL OrElse ch = VT OrElse ch = FF OrElse ch = LS OrElse ch = PS
     End Function
 
     ''' <summary>
@@ -318,7 +318,7 @@ Public Module NewLine
             Case 0
                 Return False
             Case 1, 2
-                Return ch = NewLine.CR OrElse ch = NewLine.LF OrElse ch = NewLine.NEL OrElse ch = NewLine.VT OrElse ch = NewLine.FF OrElse ch = NewLine.LS OrElse ch = NewLine.PS
+                Return ch = CR OrElse ch = LF OrElse ch = NEL OrElse ch = VT OrElse ch = FF OrElse ch = LS OrElse ch = PS
             Case Else
                 Return False
         End Select

@@ -3,7 +3,7 @@
 ' See the LICENSE file in the project root for more information.
 #If Not NETCOREAPP5_0 Then
 
-Imports CSharpToVBApp.Microsoft.VisualBasic.ApplicationServices
+Imports Microsoft.VisualBasic.ApplicationServices
 
 Namespace My
     Partial Public Module Application
