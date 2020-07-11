@@ -2,10 +2,8 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 ' See the LICENSE file in the project root for more information.
-#If Not NETCOREAPP5_0 Then
-Imports CSharpToVBApp.Microsoft.VisualBasic.ApplicationServices
-#End If
 
+Imports Microsoft.VisualBasic.ApplicationServices
 Imports AppFramework = System.Windows.Forms.Application
 
 Namespace My

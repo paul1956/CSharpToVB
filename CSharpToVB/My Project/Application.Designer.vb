@@ -20,7 +20,7 @@ Namespace My
     ' Solution Explorer), and make changes on the Application tab.
     '
     Partial Friend Class MyApplication
-        Inherits Microsoft.VisualBasic.ApplicationServices.WindowsFormsApplicationBase
+        Inherits Global.Microsoft.VisualBasic.ApplicationServices.WindowsFormsApplicationBase
 
         <Global.System.Diagnostics.DebuggerStepThroughAttribute()>
         Public Sub New()
@@ -28,7 +28,7 @@ Namespace My
             Me.IsSingleInstance = True
             Me.EnableVisualStyles = True
             Me.SaveMySettingsOnExit = True
-            Me.ShutdownStyle = Microsoft.VisualBasic.ApplicationServices.ShutdownMode.AfterMainFormCloses
+            Me.ShutdownStyle = Global.Microsoft.VisualBasic.ApplicationServices.ShutdownMode.AfterMainFormCloses
         End Sub
 
         <Global.System.Diagnostics.DebuggerStepThroughAttribute()>

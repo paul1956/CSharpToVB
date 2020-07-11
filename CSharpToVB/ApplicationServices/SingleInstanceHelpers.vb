@@ -11,7 +11,7 @@ Imports System.IO.Pipes
 Imports System.Runtime.Serialization
 Imports System.Xml
 
-Namespace Microsoft.VisualBasic.ApplicationServices
+Namespace Global.Microsoft.VisualBasic.ApplicationServices
 
     Friend Module SingleInstanceHelpers
         Private Const NamedPipeOptions As PipeOptions = PipeOptions.CurrentUserOnly
