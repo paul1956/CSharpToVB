@@ -29,6 +29,18 @@ target = value
 Return value
 End Function
 "
+            Private Const ByRefHelperCode As String = "Private Function __VbByRefHelper(Of t)(ByRef byRefValue As t, byRefSetter As Func(Of t, t)) As t
+        Dim orgValue = byRefValue
+        byRefValue = byRefSetter(byRefValue)
+        Return orgValue
+    End Function
+
+    Private Function __VbByRefHelper(Of t, rt)(ByRef byRefValue As t, byRefSetter As Func(Of t, (ByRefValue As t, ReturnValue As rt))) As rt
+        Dim retValue = byRefSetter(byRefValue)
+        byRefValue = retValue.ByRefValue
+        Return retValue.ReturnValue
+    End Function
+"
 
             ''' <summary>
             ''' Returns new leading trivia for first Item in a List
@@ -164,6 +176,10 @@ End Function
                 If InlineAssignHelperMarkers.Contains(node) Then
                     InlineAssignHelperMarkers.Remove(node)
                     Yield TryCast(VBFactory.ParseSyntaxTree(InlineAssignHelperCode.Replace("Shared ", If(IsModule, "", "Shared "), StringComparison.Ordinal)).GetRoot().ChildNodes().FirstOrDefault(), VBS.StatementSyntax)
+                End If
+                If ByRefHelperMarkers.Contains(node) Then
+                    ByRefHelperMarkers.Remove(node)
+                    Yield TryCast(VBFactory.ParseSyntaxTree(ByRefHelperCode.Replace("Shared ", If(IsModule, "", "Shared "), StringComparison.Ordinal)).GetRoot().ChildNodes().FirstOrDefault(), VBS.StatementSyntax)
                 End If
             End Function
 

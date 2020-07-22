@@ -384,7 +384,9 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                     End If
                 Else
                     RightNode = DirectCast(node.Right.Accept(Me), ExpressionSyntax)
-                    RightNode = If(RightNode, VBFactory.IdentifierName("HandleRefExpression"))
+                    If RightNode Is Nothing Then
+                        RightNode = VBFactory.IdentifierName("HandleRefExpression")
+                    End If
                 End If
                 If node.IsKind(CS.SyntaxKind.AndAssignmentExpression,
                                CS.SyntaxKind.OrAssignmentExpression,
@@ -411,6 +413,11 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
             Private Sub MarkPatchInlineAssignHelper(node As CS.CSharpSyntaxNode)
                 Dim parentDefinition As CSS.BaseTypeDeclarationSyntax = node.AncestorsAndSelf().OfType(Of CSS.BaseTypeDeclarationSyntax)().FirstOrDefault()
                 InlineAssignHelperMarkers.Add(parentDefinition)
+            End Sub
+
+            Private Sub MarkPatchByRefHelper(node As CS.CSharpSyntaxNode)
+                Dim parentDefinition As CSS.BaseTypeDeclarationSyntax = node.AncestorsAndSelf().OfType(Of CSS.BaseTypeDeclarationSyntax)().FirstOrDefault()
+                ByRefHelperMarkers.Add(parentDefinition)
             End Sub
 
             Private Function ReduceArrayUpperBoundExpression(expr As CSS.ExpressionSyntax) As ExpressionSyntax

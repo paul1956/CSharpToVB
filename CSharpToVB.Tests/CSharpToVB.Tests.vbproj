@@ -5,7 +5,6 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <IsPackable>false</IsPackable>
-    <LangVersion>16</LangVersion>
     <NeutralLanguage>en-US</NeutralLanguage>
     <Authors>Paul M Cohen</Authors>
     <Company>Travel By Paul</Company>

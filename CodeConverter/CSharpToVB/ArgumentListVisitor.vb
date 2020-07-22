@@ -66,13 +66,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 Dim newTrailingTrivia As New List(Of SyntaxTrivia)
                 Try
                     If (Not node.RefKindKeyword.IsKind(CS.SyntaxKind.None)) AndAlso node.RefKindKeyword.Text = "ref" Then
-                        Dim vbExpression As VBS.ExpressionSyntax = DirectCast(node.Expression.Accept(Me), VBS.ExpressionSyntax)
-                        Dim identStr As String = vbExpression.ToString.Replace("[", "", StringComparison.Ordinal).Replace("]", "", StringComparison.Ordinal)
-                        GetStatementwithIssues(node).AddMarker(
-                            FlagUnsupportedStatements(GetStatementwithIssues(node), $"ref keyword, fix variables starting with 'HandleRef_' below", CommentOutOriginalStatements:=False),
-                            StatementHandlingOption.PrependStatement,
-                            AllowDuplicates:=True)
-                        argumentWithTrivia = VBFactory.ParseExpression($"HandleRef_{identStr}")
+                        argumentWithTrivia = DirectCast(node.Expression.Accept(Me), VBS.ExpressionSyntax)
                     ElseIf csExpression.IsKind(CS.SyntaxKind.CoalesceExpression) Then
                         Dim csBinaryExpression As CSS.BinaryExpressionSyntax = DirectCast(csExpression, CSS.BinaryExpressionSyntax)
                         If csBinaryExpression.Right.IsKind(CS.SyntaxKind.ThrowExpression) Then

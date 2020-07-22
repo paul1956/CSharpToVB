@@ -189,7 +189,6 @@ Public Module VisualBasicSyntaxFactory
 
 #Region "Predefined Types"
 
-    Public ReadOnly HandleRefType As TypeSyntax = VBFactory.ParseTypeName("HandleRefType")
     Public ReadOnly IntPtrType As TypeSyntax = VBFactory.ParseTypeName("IntPtr")
     Public ReadOnly PredefinedTypeBoolean As TypeSyntax = VBFactory.PredefinedType(BooleanKeyword)
     Public ReadOnly PredefinedTypeByte As TypeSyntax = VBFactory.PredefinedType(ByteKeyword)

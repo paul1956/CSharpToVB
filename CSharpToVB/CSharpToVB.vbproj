@@ -13,7 +13,6 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <PropertyGroup>
-    <LangVersion>16</LangVersion>
     <AssemblyName>CSharpToVBApp</AssemblyName>
     <AssemblyTitle>C# To Visual Basic Converter</AssemblyTitle>
     <ApplicationManifest>My Project\app.manifest</ApplicationManifest>
@@ -27,8 +26,8 @@
     <Product>CSharp To VB Converter</Product>
     <Copyright>Copyright (c) .NET Foundation and Contributors</Copyright>
     <PackageId>CSharp To VB Converter</PackageId>
-    <AssemblyVersion>4.5.2.5</AssemblyVersion>
-    <FileVersion>4.5.2.5</FileVersion>
+    <AssemblyVersion>4.5.2.6</AssemblyVersion>
+    <FileVersion>4.5.2.6</FileVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <NoWarn />

@@ -35,6 +35,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
             Private ReadOnly _placeholder As Integer = 1
             Public ReadOnly AllImports As New List(Of VBS.ImportsStatementSyntax)()
             Public ReadOnly InlineAssignHelperMarkers As New List(Of CSS.BaseTypeDeclarationSyntax)()
+            Public ReadOnly ByRefHelperMarkers As New List(Of CSS.BaseTypeDeclarationSyntax)()
 
             Public Sub New(lSemanticModel As SemanticModel, DefaultVBOptions As DefaultVBOptions, ReportException As Action(Of Exception))
                 _mSemanticModel = lSemanticModel
@@ -222,20 +223,20 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
 
             Public Overrides Function VisitRefExpression(node As CSS.RefExpressionSyntax) As VisualBasicSyntaxNode
                 Dim StatementwithIssue As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
-                StatementwithIssue.AddMarker(FlagUnsupportedStatements(StatementwithIssue, "ref expression", CommentOutOriginalStatements:=True), StatementHandlingOption.ReplaceStatement, AllowDuplicates:=False)
-                Return NothingExpression
+                StatementwithIssue.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=True, "ref expression")
+                Return node.Expression.Accept(Me)
             End Function
 
             Public Overrides Function VisitRefType(node As CSS.RefTypeSyntax) As VisualBasicSyntaxNode
                 Dim StatementwithIssue As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
-                StatementwithIssue.AddMarker(FlagUnsupportedStatements(StatementwithIssue, "ref type", CommentOutOriginalStatements:=True), StatementHandlingOption.ReplaceStatement, AllowDuplicates:=False)
-                Return HandleRefType
+                StatementwithIssue.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=True, "ref type")
+                Return node.Type.Accept(Me)
             End Function
 
             Public Overrides Function VisitRefTypeExpression(node As CSS.RefTypeExpressionSyntax) As VisualBasicSyntaxNode
                 Dim StatementwithIssue As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
-                StatementwithIssue.AddMarker(FlagUnsupportedStatements(StatementwithIssue, "ref type expression", CommentOutOriginalStatements:=True), StatementHandlingOption.ReplaceStatement, AllowDuplicates:=False)
-                Return Nothing
+                StatementwithIssue.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=True, "ref type expression")
+                Return node.Expression.Accept(Me)
             End Function
 
             ''' <summary>

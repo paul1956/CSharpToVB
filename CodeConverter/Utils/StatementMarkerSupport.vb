@@ -181,12 +181,17 @@ Public Module StatementMarker
             If csLeadingTrivia.Any AndAlso csLeadingTrivia.First.IsKind(CS.SyntaxKind.WhitespaceTrivia) Then
                 newTrailingTrivia.AddRange(ConvertTrivia({csLeadingTrivia(0)}))
             End If
-            ' NewTrailingTrivia.Add(VB_EOLTrivia)
+        End If
+        Dim leadingSpace As SyntaxTrivia = New SyntaxTrivia
+        If newLeadingTrivia.LastOrDefault.IsKind(VisualBasic.SyntaxKind.WhitespaceTrivia) Then
+            leadingSpace = newLeadingTrivia.Last
         End If
         newLeadingTrivia.Add(VBFactory.CommentTrivia($"' TODO: Visual Basic does not support {UnsupportedFeature}."))
         newLeadingTrivia.Add(VBEOLTrivia)
         If CommentOutOriginalStatements Then
-            newLeadingTrivia.Add(VBEOLTrivia)
+            If leadingSpace.IsKind(VisualBasic.SyntaxKind.WhitespaceTrivia) Then
+                newLeadingTrivia.Add(leadingSpace)
+            End If
             newLeadingTrivia.Add(VBFactory.CommentTrivia($"' Original Statement:"))
             newLeadingTrivia.Add(VBEOLTrivia)
             ' Match #
@@ -194,6 +199,9 @@ Public Module StatementMarker
                 If e.Value.TrimStart(" "c).StartsWith("#", StringComparison.Ordinal) Then
                     newLeadingTrivia.AddRange(ConvertDirectiveTrivia(e.Value))
                 Else
+                    If leadingSpace.IsKind(VisualBasic.SyntaxKind.WhitespaceTrivia) Then
+                        newLeadingTrivia.Add(leadingSpace)
+                    End If
                     newLeadingTrivia.Add(VBFactory.CommentTrivia($"' {e.Value}"))
                 End If
                 newLeadingTrivia.Add(VBEOLTrivia)
