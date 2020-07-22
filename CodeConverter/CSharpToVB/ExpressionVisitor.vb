@@ -415,10 +415,10 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 InlineAssignHelperMarkers.Add(parentDefinition)
             End Sub
 
-            Private Sub MarkPatchByRefHelper(node As CS.CSharpSyntaxNode)
-                Dim parentDefinition As CSS.BaseTypeDeclarationSyntax = node.AncestorsAndSelf().OfType(Of CSS.BaseTypeDeclarationSyntax)().FirstOrDefault()
-                ByRefHelperMarkers.Add(parentDefinition)
-            End Sub
+            'Private Sub MarkPatchByRefHelper(node As CS.CSharpSyntaxNode)
+            '    Dim parentDefinition As CSS.BaseTypeDeclarationSyntax = node.AncestorsAndSelf().OfType(Of CSS.BaseTypeDeclarationSyntax)().FirstOrDefault()
+            '    ByRefHelperMarkers.Add(parentDefinition)
+            'End Sub
 
             Private Function ReduceArrayUpperBoundExpression(expr As CSS.ExpressionSyntax) As ExpressionSyntax
                 Dim constant As [Optional](Of Object) = _mSemanticModel.GetConstantValue(expr)

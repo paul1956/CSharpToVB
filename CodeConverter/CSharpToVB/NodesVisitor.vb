@@ -35,7 +35,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
             Private ReadOnly _placeholder As Integer = 1
             Public ReadOnly AllImports As New List(Of VBS.ImportsStatementSyntax)()
             Public ReadOnly InlineAssignHelperMarkers As New List(Of CSS.BaseTypeDeclarationSyntax)()
-            Public ReadOnly ByRefHelperMarkers As New List(Of CSS.BaseTypeDeclarationSyntax)()
+            'Public ReadOnly ByRefHelperMarkers As New List(Of CSS.BaseTypeDeclarationSyntax)()
 
             Public Sub New(lSemanticModel As SemanticModel, DefaultVBOptions As DefaultVBOptions, ReportException As Action(Of Exception))
                 _mSemanticModel = lSemanticModel
