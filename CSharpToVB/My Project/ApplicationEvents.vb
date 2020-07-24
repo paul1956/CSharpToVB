@@ -1,8 +1,6 @@
 ﻿' Licensed to the .NET Foundation under one or more agreements.
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
-' See the LICENSE file in the project root for more information.
-
 Imports Microsoft.VisualBasic.ApplicationServices
 Imports AppFramework = System.Windows.Forms.Application
 
@@ -15,9 +13,6 @@ Namespace My
         Private Sub MyApplication_Startup(sender As Object, e As StartupEventArgs) Handles Me.Startup
             AppFramework.SetHighDpiMode(HighDpiMode.SystemAware)
             ' Get the splash screen.
-            'Dim splash As SplashScreen1 = CType(My.Application.SplashScreen, SplashScreen1)
-            ' Display current status information.
-            'splash.Status = "Current user: " & My.User.Name
         End Sub
 
         ' Shutdown: Raised after all application forms are closed.  This event is not raised if the application terminates abnormally.
