@@ -11,33 +11,6 @@ Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
 Module SyntaxTriviaListExtensions
 
-    <Extension>
-    Friend Function IndexOf(TriviaList As List(Of SyntaxTrivia), kind As VB.SyntaxKind) As Integer
-        If TriviaList Is Nothing Then
-            Throw New ArgumentNullException(NameOf(TriviaList))
-        End If
-
-        For i As Integer = 0 To TriviaList.Count - 1
-            If TriviaList(i).IsKind(kind) Then
-                Return i
-            End If
-        Next
-        Return -1
-    End Function
-
-    <Extension>
-    Friend Function RemoveLineContinuation(triviaList As SyntaxTriviaList) As SyntaxTriviaList
-        Return triviaList.ToList.RemoveLineContinuation.ToSyntaxTriviaList
-    End Function
-
-    <Extension>
-    Friend Function RemoveLineContinuation(triviaList As List(Of SyntaxTrivia)) As List(Of SyntaxTrivia)
-        Dim lineContIndex As Integer = triviaList.IndexOf(VB.SyntaxKind.LineContinuationTrivia)
-        If lineContIndex = -1 Then Return triviaList
-        triviaList.RemoveRange(lineContIndex - 1, 2)
-        Return triviaList
-    End Function
-
     ''' <summary>
     ''' Syntax Trivia in any Language
     ''' </summary>
@@ -76,6 +49,37 @@ Module SyntaxTriviaListExtensions
             Stop
         Next
         Return False
+    End Function
+
+    <Extension>
+    Friend Sub ModifyTrailingTrivia(VB_ModifierTrivia As SyntaxTriviaList, ByRef TrailingTrivia As List(Of SyntaxTrivia))
+        For Each t As SyntaxTrivia In VB_ModifierTrivia
+            Select Case t.RawKind
+                Case VB.SyntaxKind.None
+                Case VB.SyntaxKind.WhitespaceTrivia
+                    TrailingTrivia.Add(SpaceTrivia)
+                Case VB.SyntaxKind.EndOfLineTrivia
+                    TrailingTrivia.Add(SpaceTrivia)
+                Case VB.SyntaxKind.IfDirectiveTrivia, VB.SyntaxKind.ElseDirectiveTrivia, VB.SyntaxKind.ElseIfDirectiveTrivia,
+                     VB.SyntaxKind.DisabledTextTrivia, VB.SyntaxKind.EndIfDirectiveTrivia
+                    TrailingTrivia.Add(t)
+                Case VB.SyntaxKind.CommentTrivia
+                    TrailingTrivia.Add(t)
+                Case VB.SyntaxKind.DocumentationCommentTrivia
+                    TrailingTrivia.Add(t)
+                Case Else
+                    Stop
+            End Select
+        Next
+    End Sub
+
+    <Extension>
+    Friend Function RemoveLineContinuation(triviaList As SyntaxTriviaList) As SyntaxTriviaList
+        Dim lineContIndex As Integer = triviaList.IndexOf(VB.SyntaxKind.LineContinuationTrivia)
+        If lineContIndex = -1 Then Return triviaList
+        Dim returnList As List(Of SyntaxTrivia) = triviaList.ToList
+        returnList.RemoveRange(lineContIndex - 1, 2)
+        Return triviaList.ToSyntaxTriviaList
     End Function
 
     <Extension>
@@ -150,28 +154,6 @@ Module SyntaxTriviaListExtensions
         Next
         Return False
     End Function
-
-    <Extension>
-    Friend Sub ModifyTrailingTrivia(VB_ModifierTrivia As SyntaxTriviaList, ByRef TrailingTrivia As List(Of SyntaxTrivia))
-        For Each t As SyntaxTrivia In VB_ModifierTrivia
-            Select Case t.RawKind
-                Case VB.SyntaxKind.None
-                Case VB.SyntaxKind.WhitespaceTrivia
-                    TrailingTrivia.Add(SpaceTrivia)
-                Case VB.SyntaxKind.EndOfLineTrivia
-                    TrailingTrivia.Add(SpaceTrivia)
-                Case VB.SyntaxKind.IfDirectiveTrivia, VB.SyntaxKind.ElseDirectiveTrivia, VB.SyntaxKind.ElseIfDirectiveTrivia,
-                     VB.SyntaxKind.DisabledTextTrivia, VB.SyntaxKind.EndIfDirectiveTrivia
-                    TrailingTrivia.Add(t)
-                Case VB.SyntaxKind.CommentTrivia
-                    TrailingTrivia.Add(t)
-                Case VB.SyntaxKind.DocumentationCommentTrivia
-                    TrailingTrivia.Add(t)
-                Case Else
-                    Stop
-            End Select
-        Next
-    End Sub
 
     <Extension>
     Public Function ToSyntaxTriviaList(l As IEnumerable(Of SyntaxTrivia)) As SyntaxTriviaList
