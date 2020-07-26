@@ -8,10 +8,6 @@
 ' </auto-generated>
 '------------------------------------------------------------------------------
 
-Option Strict On
-Option Explicit On
-
-
 Namespace CSharpToVBApp.My_Project
     
     <Global.System.Runtime.CompilerServices.CompilerGeneratedAttribute(),  _

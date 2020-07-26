@@ -1,15 +1,13 @@
 ﻿' Licensed to the .NET Foundation under one or more agreements.
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
-#If Not NETCOREAPP5_0 Then
 
-Option Strict On
-Option Explicit On
+#If Not NETCOREAPP5_0 Then
 
 Namespace Global.Microsoft.VisualBasic.ApplicationServices
 
     ''' <summary>
-    ''' Abstract class that defines the application Startup/Shutdown model for VB 
+    ''' Abstract class that defines the application Startup/Shutdown model for VB
     ''' Windows Applications such as console, winforms, dll, service.
     ''' </summary>
     Public Class ApplicationBase
