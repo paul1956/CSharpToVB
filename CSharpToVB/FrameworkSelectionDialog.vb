@@ -45,4 +45,5 @@ Public Class FrameworkSelectionDialog
     Public Sub SetFrameworkList(Value As List(Of String))
         _frameworkList = Value
     End Sub
+
 End Class

@@ -1,0 +1,66 @@
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Imports System.Runtime.CompilerServices
+
+Imports Microsoft.CodeAnalysis
+Imports Microsoft.CodeAnalysis.CSharp
+Imports Microsoft.CodeAnalysis.VisualBasic
+
+Imports CS = Microsoft.CodeAnalysis.CSharp
+
+Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
+
+Namespace CSharpToVBCodeConverter.ToVisualBasic
+    Public Module MethodBodySupport
+
+        Friend Function ContainsLocalFunctionReference(syntax As SyntaxNode, localFunctionSymbol As IMethodSymbol, _semanticModel As SemanticModel) As Boolean
+            Return syntax.DescendantNodes().
+                                OfType(Of CSS.SimpleNameSyntax)().
+                                Any(Function(name As CSS.SimpleNameSyntax) name.Identifier.ValueText = localFunctionSymbol.Name AndAlso
+                                SymbolEqualityComparer.[Default].Equals(_semanticModel.GetSymbolInfo(name).Symbol, localFunctionSymbol))
+        End Function
+
+        <Extension>
+        Friend Function GetPossibleEventName(expression As CSS.ExpressionSyntax) As String
+            Dim ident As CSS.IdentifierNameSyntax = TryCast(expression, CSS.IdentifierNameSyntax)
+            If ident IsNot Nothing Then Return ident.Identifier.Text
+
+            If TypeOf expression Is CSS.ParenthesizedExpressionSyntax Then
+                expression = DirectCast(expression, CSS.ParenthesizedExpressionSyntax).Expression
+            Else
+                Return Nothing
+            End If
+            Dim fre As CSS.MemberAccessExpressionSyntax = TryCast(expression, CSS.MemberAccessExpressionSyntax)
+            If fre IsNot Nothing AndAlso fre.Expression.IsKind(CS.SyntaxKind.ThisExpression) Then Return fre.Name.Identifier.Text
+            Return Nothing
+        End Function
+
+        <Extension>
+        Friend Function GetUniqueVariableNameInScope(node As CSharpSyntaxNode, variableNameBase As String, lSemanticModel As SemanticModel) As String
+            Dim reservedNames As New List(Of String) From {
+                    "_"
+                }
+            reservedNames.AddRange(node.DescendantNodesAndSelf().SelectMany(Function(lSyntaxNode As SyntaxNode) lSemanticModel.LookupSymbols(lSyntaxNode.SpanStart).Select(Function(s As ISymbol) s.Name)).Distinct)
+            Dim UniqueVariableName As String = EnsureUniqueness(variableNameBase, reservedNames)
+            s_usedIdentifiers.Add(UniqueVariableName,
+                                    New SymbolTableEntry(UniqueVariableName,
+                                                         IsType:=False
+                                                         )
+                                    )
+            Return UniqueVariableName
+        End Function
+
+        <Extension>
+        Friend Function IsSimpleStatement(statement As CSS.StatementSyntax) As Boolean
+            Return TypeOf statement Is CSS.ExpressionStatementSyntax OrElse
+                    TypeOf statement Is CSS.BreakStatementSyntax OrElse
+                    TypeOf statement Is CSS.ContinueStatementSyntax OrElse
+                    TypeOf statement Is CSS.ReturnStatementSyntax OrElse
+                    TypeOf statement Is CSS.YieldStatementSyntax OrElse
+                    TypeOf statement Is CSS.ThrowStatementSyntax
+        End Function
+
+    End Module
+End Namespace

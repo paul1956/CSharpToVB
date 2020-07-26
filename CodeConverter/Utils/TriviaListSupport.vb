@@ -2,8 +2,6 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
-Imports CSharpToVBCodeConverter.Utilities
-
 Imports Microsoft.CodeAnalysis
 
 Imports CS = Microsoft.CodeAnalysis.CSharp
@@ -19,7 +17,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 Exit Sub
             End If
             For Each t As SyntaxTrivia In TriviaList
-                If Not (t.IsDirective OrElse t.MatchesKind(VB.SyntaxKind.DisabledTextTrivia,
+                If Not (t.IsDirective OrElse t.IsKind(VB.SyntaxKind.DisabledTextTrivia,
                                                            VB.SyntaxKind.RegionDirectiveTrivia,
                                                            VB.SyntaxKind.EndRegionDirectiveTrivia)) Then
                     Continue For

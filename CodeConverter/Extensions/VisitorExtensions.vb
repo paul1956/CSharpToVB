@@ -3,9 +3,8 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Runtime.CompilerServices
-
+Imports CSharpToVBCodeConverter.ToVisualBasic
 Imports CSharpToVBCodeConverter.ToVisualBasic.CSharpConverter
-Imports CSharpToVBCodeConverter.Utilities
 
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.CSharp.Syntax
@@ -22,7 +21,8 @@ Friend Module VisitorExtensions
         Dim Statements As New List(Of VBS.StatementSyntax)
         For Each localFunction As LocalFunctionStatementSyntax In block.DescendantNodes().OfType(Of LocalFunctionStatementSyntax).ToList()
             Dim EmptyStatement As VBS.StatementSyntax = localFunction.Accept(visitor)(0)
-            If EmptyStatement.ContainsCommentOrDirectiveTrivia Then
+            If EmptyStatement.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia OrElse
+                EmptyStatement.GetTrailingTrivia.ContainsCommentOrDirectiveTrivia Then
                 Statements.Add(EmptyStatement)
             End If
         Next

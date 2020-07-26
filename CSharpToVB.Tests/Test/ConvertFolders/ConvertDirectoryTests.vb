@@ -1,6 +1,7 @@
 ﻿' Licensed to the .NET Foundation under one or more agreements.
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
+
 Imports System.IO
 Imports System.Reflection
 Imports System.Threading
@@ -310,6 +311,7 @@ Namespace ConvertDirectory.Tests
         Public Async Function ConvertDirectoryWorkspaces() As Task
             Assert.True(Await Me.TestProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Workspaces")).ConfigureAwait(True), $"Failing file {_lastFileProcessed}")
         End Function
+
     End Class
 
 End Namespace

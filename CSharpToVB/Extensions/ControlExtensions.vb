@@ -1,10 +1,12 @@
 ﻿Option Explicit On
 Option Infer Off
 Option Strict On
+
 Imports System.Runtime.CompilerServices
 Imports CSharpToVBApp.Microsoft.VisualBasic.CompilerServices.NativeMethods
 
 Public Module ControlExtensions
+
     <Extension()>
     Friend Sub Suspend(Ctrl As Control)
         LockWindowUpdate(Ctrl.Handle)

@@ -1,9 +1,8 @@
 ﻿' Licensed to the .NET Foundation under one or more agreements.
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
-Imports System.Runtime.InteropServices
 
-Imports CSharpToVBCodeConverter.Utilities
+Imports System.Runtime.InteropServices
 
 Imports Microsoft.CodeAnalysis
 
@@ -23,117 +22,6 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
             Inherits CS.CSharpSyntaxVisitor(Of VB.VisualBasicSyntaxNode)
             Private Const CompilerServices As String = "System.Runtime.CompilerServices"
             Private ReadOnly _extensionAttribute As VBS.AttributeSyntax = VBFactory.Attribute(Nothing, VBFactory.ParseTypeName("Extension"), VBFactory.ArgumentList())
-
-            Private Shared Function ConvertOperatorDeclarationToken(lSyntaxKind As CS.SyntaxKind) As SyntaxToken
-                Select Case lSyntaxKind
-                    Case CS.SyntaxKind.AmpersandToken
-                        Return AndKeyword
-                    Case CS.SyntaxKind.AsteriskToken
-                        Return AsterickToken
-                    Case CS.SyntaxKind.BarToken
-                        Return OrKeyword
-                    Case CS.SyntaxKind.CaretToken
-                        Return XorKeyword
-                    Case CS.SyntaxKind.EqualsEqualsToken
-                        Return EqualsToken
-                    Case CS.SyntaxKind.EqualsGreaterThanToken
-                        Return GreaterThanEqualsToken
-                    Case CS.SyntaxKind.ExclamationEqualsToken
-                        Return LessThanGreaterThanToken
-                    Case CS.SyntaxKind.ExclamationToken
-                        Return NotKeyword
-                    Case CS.SyntaxKind.GreaterThanEqualsToken
-                        Return GreaterThanEqualsToken
-                    Case CS.SyntaxKind.GreaterThanToken
-                        Return GreaterThanToken
-                    Case CS.SyntaxKind.GreaterThanGreaterThanToken
-                        Return GreaterThanGreaterThanToken
-                    Case CS.SyntaxKind.LessThanToken
-                        Return LessThanToken
-                    Case CS.SyntaxKind.LessThanLessThanEqualsToken
-                        Return LessThanLessThanEqualsToken
-                    Case CS.SyntaxKind.LessThanLessThanToken
-                        Return LessThanLessThanToken
-                    Case CS.SyntaxKind.LessThanEqualsToken
-                        Return LessThanEqualsToken
-                    Case CS.SyntaxKind.MinusToken
-                        Return MinusToken
-                    Case CS.SyntaxKind.PlusToken
-                        Return PlusToken
-                    Case CS.SyntaxKind.SlashToken
-                        Return SlashToken
-                    Case CS.SyntaxKind.TildeToken
-                        Return NotKeyword
-                    Case CS.SyntaxKind.FalseKeyword
-                        Return IsFalse
-                    Case CS.SyntaxKind.TrueKeyword
-                        Return IsTrueKeyword
-                End Select
-                Throw New NotSupportedException($"Assignment Operator {lSyntaxKind} is not supported")
-            End Function
-
-            Private Shared Function DedupLeadingTrivia(Of T As CS.CSharpSyntaxNode)(node As T, Keyword As SyntaxToken, Attributes As List(Of VBS.AttributeListSyntax), Modifiers As List(Of SyntaxToken)) As List(Of SyntaxTrivia)
-                Dim NodeLeadingTrivia As New List(Of SyntaxTrivia)
-                NodeLeadingTrivia.AddRange(ConvertTrivia(node.GetLeadingTrivia))
-                If Attributes.Any Then
-                    If TriviaIsIdentical(Attributes(0).GetLeadingTrivia, NodeLeadingTrivia) Then
-                        NodeLeadingTrivia.Clear()
-                    End If
-                ElseIf Modifiers.Any Then
-                    If TriviaIsIdentical(Modifiers(0).LeadingTrivia, NodeLeadingTrivia) Then
-                        NodeLeadingTrivia.Clear()
-                    End If
-                ElseIf TriviaIsIdentical(Keyword.LeadingTrivia, NodeLeadingTrivia) Then
-                    NodeLeadingTrivia.Clear()
-                End If
-
-                Return NodeLeadingTrivia
-            End Function
-
-            Private Shared Function GetTriviaFromUnneededToken(_SemicolonToken As SyntaxToken) As List(Of SyntaxTrivia)
-                Dim NewTrailingTrivia As New List(Of SyntaxTrivia)
-                If _SemicolonToken.HasLeadingTrivia Then
-                    NewTrailingTrivia.AddRange(ConvertTrivia(_SemicolonToken.LeadingTrivia))
-                End If
-                If _SemicolonToken.HasTrailingTrivia Then
-                    NewTrailingTrivia.AddRange(ConvertTrivia(_SemicolonToken.TrailingTrivia))
-                End If
-                Return NewTrailingTrivia
-            End Function
-
-            Private Shared Function RelocateDirectivesInTrailingTrivia(ParameterList As VBS.ParameterListSyntax, StatementTrailingTrivia As List(Of SyntaxTrivia)) As VBS.ParameterListSyntax
-                If ParameterList IsNot Nothing AndAlso ParameterList.HasTrailingTrivia AndAlso ParameterList.GetTrailingTrivia.ContainsCommentOrDirectiveTrivia Then
-                    Dim ParameterListTrailingTrivia As New List(Of SyntaxTrivia)
-                    Dim TrailingTrivialist As SyntaxTriviaList = ParameterList.GetTrailingTrivia
-                    Dim FoundEndIf As Boolean = False
-                    For Each e As IndexClass(Of SyntaxTrivia) In TrailingTrivialist.WithIndex
-                        Dim NextTrivia As SyntaxTrivia = If(Not e.IsLast, TrailingTrivialist(e.Index + 1), Nothing)
-                        Select Case e.Value.RawKind
-                            Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
-                                ParameterListTrailingTrivia.Add(e.Value)
-                            Case VB.SyntaxKind.EndOfLineTrivia
-                                If FoundEndIf Then
-                                    StatementTrailingTrivia.Add(e.Value)
-                                Else
-                                    ParameterListTrailingTrivia.Add(e.Value)
-                                End If
-                            Case VB.SyntaxKind.WhitespaceTrivia
-                                ParameterListTrailingTrivia.Add(e.Value)
-                            Case VB.SyntaxKind.EndIfDirectiveTrivia
-                                FoundEndIf = True
-                                If Not StatementTrailingTrivia.Any Then
-                                    StatementTrailingTrivia.Add(VBEOLTrivia)
-                                End If
-                                StatementTrailingTrivia.Add(e.Value)
-                            Case Else
-                                Stop
-                        End Select
-                    Next
-                    ParameterList = ParameterList.WithTrailingTrivia(ParameterListTrailingTrivia)
-                End If
-
-                Return ParameterList
-            End Function
 
             Private Function ConvertAccessor(node As CSS.AccessorDeclarationSyntax, IsModule As Boolean, ByRef isIterator As Boolean) As VBS.AccessorBlockSyntax
                 Dim blockKind As VB.SyntaxKind
@@ -524,13 +412,13 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 Else
                     modifierList(0) = modifierList(0).WithLeadingTrivia(LeadingTrivia)
                 End If
-                Dim declarators As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) = RemodelVariableDeclaration(node.Declaration, Me, _mSemanticModel, IsFieldDeclaration:=True, LeadingTrivia)
+                Dim declarators As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) = node.Declaration.RemodelVariableDeclaration(Me, _mSemanticModel, IsFieldDeclaration:=True, LeadingTrivia)
                 Dim FieldDeclaration As VBS.FieldDeclarationSyntax
                 Dim modifiers As SyntaxTokenList = VBFactory.TokenList(modifierList)
                 FieldDeclaration = VBFactory.FieldDeclaration(Attributes, modifiers, declarators).WithLeadingTrivia(LeadingTrivia)
                 FieldDeclaration = AddSpecialCommentToField(node, FieldDeclaration)
                 Return FieldDeclaration.RestructureAttributesAndModifiers(Attributes.Any, modifiers.Any).
-                    WithMergedTrailingTrivia(GetTriviaFromUnneededToken(node.SemicolonToken)).WithTrailingEOL
+                    WithMergedTrailingTrivia(node.SemicolonToken.CollectTokenTrivia(Leading:=False)).WithTrailingEOL
             End Function
 
             Public Overrides Function VisitIndexerDeclaration(node As CSS.IndexerDeclarationSyntax) As VB.VisualBasicSyntaxNode
@@ -647,7 +535,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 Me.ConvertAndSplitAttributes(node.AttributeLists, Attributes, ReturnAttributes, FunctionStatementTrailingTrivia)
                 Dim ParameterList As VBS.ParameterListSyntax = DirectCast(node.ParameterList?.Accept(Me), VBS.ParameterListSyntax)
 
-                ParameterList = RelocateDirectivesInTrailingTrivia(ParameterList, FunctionStatementTrailingTrivia)
+                ParameterList = ParameterList.RelocateDirectivesInTrailingTrivia(FunctionStatementTrailingTrivia)
 
                 Dim FunctionStatementLeadingTrivia As New List(Of SyntaxTrivia)
                 Dim vbStatements As New List(Of VBS.StatementSyntax)
@@ -994,7 +882,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                     Case CS.SyntaxKind.PlusPlusToken
                         Return VBFactory.EmptyStatement.WithLeadingTrivia(node.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=False, "C# ++ operator not available in VB")).WithPrependedLeadingTrivia(ConvertTrivia(node.GetLeadingTrivia)).WithConvertedTrailingTriviaFrom(node)
                     Case Else
-                        Dim OperatorToken As SyntaxToken = ConvertOperatorDeclarationToken(lSyntaxKind)
+                        Dim OperatorToken As SyntaxToken = lSyntaxKind.ConvertOperatorKindToVBKeyword
                         Dim stmt As VBS.OperatorStatementSyntax = VBFactory.OperatorStatement(VBFactory.List(Attributes), VBFactory.TokenList(Modifiers), OperatorToken, parameterList, VBFactory.SimpleAsClause(ReturnAttributes, DirectCast(node.ReturnType.Accept(Me), VBS.TypeSyntax)))
                         If FinalTrailingDirective.Any Then
                             stmt = stmt.WithAppendedTrailingTrivia(FinalTrailingDirective)
@@ -1035,7 +923,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                         IdString = ExplicitInterfaceIdentifier.Right.ToString
                         Dim OpenParenIndex As Integer = IdString.IndexOf("(", StringComparison.Ordinal)
                         If OpenParenIndex > 0 Then
-                            IdString = IdString.Left(OpenParenIndex)
+                            IdString = IdString.Substring(0, OpenParenIndex)
                         End If
                         interfaceMembers = interfaceMembers.Add(VBFactory.QualifiedName(ExplicitInterfaceIdentifier, SimpleName))
                     ElseIf TypeOf VisualBasicSyntaxNode1 Is VBS.GenericNameSyntax Then
@@ -1238,7 +1126,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                     Else
                         Stop
                     End If
-                    Modifiers(0) = AdjustTokenTriviaWithLineContuations(Modifiers(0))
+                    Modifiers(0) = Modifiers(0).AdjustTokenTriviaWithLineContuations
                     Attributes(Attributes.Count - 1) = Attributes.Last.WithTrailingTrivia(attriuteTrailingTrivia)
                 End If
                 propertyStatement = VBFactory.PropertyStatement(VBFactory.List(Attributes),

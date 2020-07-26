@@ -5,8 +5,6 @@
 Imports System.Diagnostics.CodeAnalysis
 Imports System.Text
 
-Imports CSharpToVBCodeConverter.Utilities
-
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Simplification
 Imports Microsoft.CodeAnalysis.VisualBasic
@@ -30,9 +28,9 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
             Private ReadOnly _defaultVBOptions As DefaultVBOptions
             Private ReadOnly _isModuleStack As New Stack(Of Boolean)
             Private ReadOnly _mSemanticModel As SemanticModel
+            Private ReadOnly _placeholder As Integer = 1
             Private ReadOnly _reportException As Action(Of Exception)
             Private _membersList As SyntaxList(Of VBS.StatementSyntax)
-            Private ReadOnly _placeholder As Integer = 1
             Public ReadOnly AllImports As New List(Of VBS.ImportsStatementSyntax)()
             Public ReadOnly InlineAssignHelperMarkers As New List(Of CSS.BaseTypeDeclarationSyntax)()
             'Public ReadOnly ByRefHelperMarkers As New List(Of CSS.BaseTypeDeclarationSyntax)()
@@ -52,26 +50,6 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 End Get
             End Property
 
-            Private Shared Function MapVBOptions(DefaultVBOptions As DefaultVBOptions) As SyntaxList(Of VBS.OptionStatementSyntax)
-                Dim Options As New SyntaxList(Of VBS.OptionStatementSyntax)
-                With DefaultVBOptions
-                    If .OptionCompareInclude Then
-                        Options = Options.Add(VBFactory.OptionStatement(CompareToken, If(.OptionCompare = "Text", TextToken, BinaryToken)).WithTrailingEOL)
-                    End If
-                    If .OptionExplicitInclude Then
-                        Options = Options.Add(VBFactory.OptionStatement(ExplicitToken, If(.OptionExplicit = "On", OnToken, OffToken)).WithTrailingEOL)
-                    End If
-                    If .OptionInferInclude Then
-                        Options = Options.Add(VBFactory.OptionStatement(InferToken, If(.OptionInfer = "On", OnToken, OffToken)).WithTrailingEOL)
-
-                    End If
-                    If .OptionStrictInclude Then
-                        Options = Options.Add(VBFactory.OptionStatement(StrictToken, If(.OptionStrict = "On", OnToken, OffToken)).WithTrailingEOL)
-                    End If
-                End With
-                Return Options
-            End Function
-
             <ExcludeFromCodeCoverage>
             Public Overrides Function DefaultVisit(node As SyntaxNode) As VisualBasicSyntaxNode
                 Throw New NotImplementedException(node.[GetType]().ToString & " not implemented!")
@@ -90,7 +68,22 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                     externList.Add(extern.Accept(Me))
                 Next
 
-                Dim Options As SyntaxList(Of VBS.OptionStatementSyntax) = MapVBOptions(_defaultVBOptions)
+                Dim Options As New SyntaxList(Of VBS.OptionStatementSyntax)
+                With _defaultVBOptions
+                    If .OptionCompareInclude Then
+                        Options = Options.Add(VBFactory.OptionStatement(CompareToken, If(.OptionCompare = "Text", TextToken, BinaryToken)).WithTrailingEOL)
+                    End If
+                    If .OptionExplicitInclude Then
+                        Options = Options.Add(VBFactory.OptionStatement(ExplicitToken, If(.OptionExplicit = "On", OnToken, OffToken)).WithTrailingEOL)
+                    End If
+                    If .OptionInferInclude Then
+                        Options = Options.Add(VBFactory.OptionStatement(InferToken, If(.OptionInfer = "On", OnToken, OffToken)).WithTrailingEOL)
+
+                    End If
+                    If .OptionStrictInclude Then
+                        Options = Options.Add(VBFactory.OptionStatement(StrictToken, If(.OptionStrict = "On", OnToken, OffToken)).WithTrailingEOL)
+                    End If
+                End With
                 _membersList = New SyntaxList(Of VBS.StatementSyntax)
                 For Each m As CSS.MemberDeclarationSyntax In node.Members
                     If s_originalRequest.CancelToken.IsCancellationRequested Then
@@ -279,7 +272,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                                             Dim _Typeinfo As TypeInfo = _mSemanticModel.GetTypeInfo(expression1)
                                             If _Typeinfo.Type IsNot Nothing Then
                                                 If Not _Typeinfo.Type.IsErrorType Then
-                                                    TypeName = ConvertToType(_Typeinfo.Type)
+                                                    TypeName = _Typeinfo.Type.ConvertToType()
                                                     If TypeOf TypeName Is VBS.GenericNameSyntax Then
                                                         Dim _arguments As SeparatedSyntaxList(Of VBS.TypeSyntax) = CType(TypeName, VBS.GenericNameSyntax).TypeArgumentList.Arguments
                                                         If _arguments.Count = 2 Then
@@ -335,15 +328,15 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 Dim StatementWithIssue As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
                 Dim governingExpression As VBS.ExpressionSyntax = CType(node.GoverningExpression.Accept(Me), VBS.ExpressionSyntax)
                 Dim SelectCaseStatement As VBS.SelectStatementSyntax = VBFactory.SelectStatement(governingExpression.WithLeadingTrivia(SpaceTrivia)).WithLeadingTrivia(governingExpression.GetLeadingTrivia)
-                Dim ResultNameToken As SyntaxToken = VBFactory.Identifier(MethodBodyVisitor.GetUniqueVariableNameInScope(node, "tempVar", _mSemanticModel))
+                Dim ResultNameToken As SyntaxToken = VBFactory.Identifier(node.GetUniqueVariableNameInScope("tempVar", _mSemanticModel))
                 Dim ResultIdentifier As VBS.IdentifierNameSyntax = VBFactory.IdentifierName(ResultNameToken)
                 Dim _Typeinfo As TypeInfo = _mSemanticModel.GetTypeInfo(node.Arms(0).Expression)
                 Dim AsClause As VBS.AsClauseSyntax = Nothing
                 If _Typeinfo.Type IsNot Nothing AndAlso Not _Typeinfo.Type.IsErrorType Then
                     If TypeOf _Typeinfo.Type Is INamedTypeSymbol AndAlso _Typeinfo.Type.IsTupleType Then
-                        AsClause = VBFactory.SimpleAsClause(ConvertCSTupleToVBType(_Typeinfo.Type.ToString).WithLeadingTrivia(SpaceTrivia))
+                        AsClause = VBFactory.SimpleAsClause(_Typeinfo.Type.ConvertCSTupleToVBType.WithLeadingTrivia(SpaceTrivia))
                     Else
-                        AsClause = VBFactory.SimpleAsClause(ConvertToType(_Typeinfo.Type).WithLeadingTrivia(SpaceTrivia))
+                        AsClause = VBFactory.SimpleAsClause(_Typeinfo.Type.ConvertToType().WithLeadingTrivia(SpaceTrivia))
                     End If
                 End If
 

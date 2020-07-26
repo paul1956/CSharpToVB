@@ -1,6 +1,7 @@
 ﻿' Licensed to the .NET Foundation under one or more agreements.
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
+
 Imports System.ComponentModel
 Imports System.Globalization
 Imports System.IO
@@ -19,7 +20,9 @@ Imports Microsoft.CodeAnalysis.Emit
 Imports Microsoft.VisualBasic.FileIO
 
 #If Not NETCOREAPP5_0 Then
+
 Imports VBMsgBox
+
 #End If
 
 Partial Public Class Form1
@@ -1418,6 +1421,7 @@ Partial Public Class Form1
         ListBoxErrorList.Width = HalfClientWidth
         StatusStripCurrentFileName.Width = HalfClientWidth
     End Sub
+
     Private Sub SplitContainer1_SplitterMoved(sender As Object, e As SplitterEventArgs) Handles SplitContainer1.SplitterMoved
         ListBoxFileList.Height = SplitContainer1.Panel2.ClientSize.Height
         ListBoxErrorList.Height = SplitContainer1.Panel2.ClientSize.Height
@@ -1506,6 +1510,7 @@ Partial Public Class Form1
     End Sub
 
 #If Not NETCOREAPP5_0 Then
+
     <STAThread()>
     Shared Sub main(args As String())
         Application.SetHighDpiMode(HighDpiMode.PerMonitorV2)
@@ -1513,5 +1518,6 @@ Partial Public Class Form1
             MyApp.Run(args)
         End Using
     End Sub
+
 #End If
 End Class

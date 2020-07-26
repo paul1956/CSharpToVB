@@ -16,9 +16,12 @@
     <Product>VB Core Code Converter</Product>
     <RepositoryUrl>https://github.com/paul1956/CSharpToVB</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <AssemblyVersion>3.4.5.2</AssemblyVersion>
-    <FileVersion>3.4.5.2</FileVersion>
+    <AssemblyVersion>3.4.6.0</AssemblyVersion>
+    <FileVersion>3.4.6.0</FileVersion>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="CSharpToVB\BodyVisitor.vb" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis" Version="3.6.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.0.0">

@@ -3,6 +3,7 @@
 ' See the LICENSE file in the project root for more information.
 
 Public Class DefaultVBOptions
+
     Sub New(OptionCompare As String, OptionCompareInclude As Boolean, OptionExplicit As String, OptionExplicitInclude As Boolean, OptionInfer As String, OptionInferInclude As Boolean, OptionStrict As String, OptionStrictInclude As Boolean)
         Me.OptionCompare = OptionCompare
         Me.OptionCompareInclude = OptionCompareInclude

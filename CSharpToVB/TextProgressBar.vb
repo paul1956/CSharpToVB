@@ -72,6 +72,7 @@ Public Class TextProgressBar
     End Sub
 
 #Region "IDisposable Support"
+
     Private _disposedValue As Boolean ' To detect redundant calls
 
     ' IDisposable
@@ -101,6 +102,7 @@ Public Class TextProgressBar
         ' TODO: uncomment the following line if Finalize() is overridden above.
         GC.SuppressFinalize(Me)
     End Sub
+
 #End Region
 
 End Class

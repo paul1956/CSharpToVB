@@ -1,11 +1,12 @@
 ﻿' Licensed to the .NET Foundation under one or more agreements.
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
+
 Imports System.Diagnostics.CodeAnalysis
 Imports System.Runtime.InteropServices
 Imports System.Text
 
-Imports CSharpToVBCodeConverter.Utilities
+Imports CSharpToVBCodeConverter.ToVisualBasic
 
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.CSharp
@@ -18,7 +19,6 @@ Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
-Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 
@@ -43,36 +43,6 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
             End Sub
 
             Public Property IsInterator As Boolean
-
-            Private Shared Function ContainsLocalFunctionReference(syntax As SyntaxNode, localFunctionSymbol As IMethodSymbol, _semanticModel As SemanticModel) As Boolean
-                Return syntax.DescendantNodes().
-                                OfType(Of CSS.SimpleNameSyntax)().
-                                Any(Function(name As CSS.SimpleNameSyntax) name.Identifier.ValueText = localFunctionSymbol.Name AndAlso
-                                SymbolEqualityComparer.[Default].Equals(_semanticModel.GetSymbolInfo(name).Symbol, localFunctionSymbol))
-            End Function
-
-            Private Shared Function GetPossibleEventName(expression As CSS.ExpressionSyntax) As String
-                Dim ident As CSS.IdentifierNameSyntax = TryCast(expression, CSS.IdentifierNameSyntax)
-                If ident IsNot Nothing Then Return ident.Identifier.Text
-
-                If TypeOf expression Is CSS.ParenthesizedExpressionSyntax Then
-                    expression = DirectCast(expression, CSS.ParenthesizedExpressionSyntax).Expression
-                Else
-                    Return Nothing
-                End If
-                Dim fre As CSS.MemberAccessExpressionSyntax = TryCast(expression, CSS.MemberAccessExpressionSyntax)
-                If fre IsNot Nothing AndAlso fre.Expression.IsKind(CS.SyntaxKind.ThisExpression) Then Return fre.Name.Identifier.Text
-                Return Nothing
-            End Function
-
-            Private Shared Function IsSimpleStatement(statement As CSS.StatementSyntax) As Boolean
-                Return TypeOf statement Is CSS.ExpressionStatementSyntax OrElse
-                    TypeOf statement Is CSS.BreakStatementSyntax OrElse
-                    TypeOf statement Is CSS.ContinueStatementSyntax OrElse
-                    TypeOf statement Is CSS.ReturnStatementSyntax OrElse
-                    TypeOf statement Is CSS.YieldStatementSyntax OrElse
-                    TypeOf statement Is CSS.ThrowStatementSyntax
-            End Function
 
             Private Iterator Function AddLabels(blocks As CaseBlockSyntax(), gotoLabels As List(Of VisualBasicSyntaxNode)) As IEnumerable(Of CaseBlockSyntax)
                 For Each _block As CaseBlockSyntax In blocks
@@ -120,11 +90,13 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                         trailingTriviaList.AddRange(ConvertTrivia(node.Else.Statement.GetBraces.Item1.TrailingTrivia))
                     End If
                     Dim elseStatement As ElseStatementSyntax = VBFactory.ElseStatement(ElseKeyword.WithConvertedLeadingTriviaFrom(node.Else.ElseKeyword)).WithTrailingTrivia(trailingTriviaList)
-
+                    If statements.LastOrDefault.GetTrailingTrivia.LastOrDefault.IsEndOfLine AndAlso OpenBraceTrailingTrivia.FirstOrDefault.IsEndOfLine Then
+                        OpenBraceTrailingTrivia.RemoveAt(0)
+                    End If
                     elseBlock = VBFactory.ElseBlock(elseStatement, statements).WithPrependedLeadingTrivia(OpenBraceTrailingTrivia).WithAppendedTrailingTrivia(CloseBraceLeadingTrivia)
                     OpenBraceTrailingTrivia.Clear()
-                    CloseBraceLeadingTrivia.Clear()
-                End If
+                        CloseBraceLeadingTrivia.Clear()
+                    End If
             End Sub
 
             Private Function ConvertBlock(node As CSS.StatementSyntax, ByRef openBraceTrailiningTrivia As List(Of SyntaxTrivia), ByRef closeBraceLeadingTrivia As List(Of SyntaxTrivia)) As SyntaxList(Of StatementSyntax)
@@ -659,10 +631,10 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 End If
 
                 If singleStatement Is Nothing OrElse Not (TypeOf singleStatement.Expression Is CSS.InvocationExpressionSyntax) Then Return False
-                Dim possibleEventName As String = If(GetPossibleEventName(be.Left), GetPossibleEventName(be.Right))
+                Dim possibleEventName As String = If(be.Left.GetPossibleEventName, be.Right.GetPossibleEventName)
                 If possibleEventName Is Nothing Then Return False
                 Dim invocation As CSS.InvocationExpressionSyntax = DirectCast(singleStatement.Expression, CSS.InvocationExpressionSyntax)
-                Dim invocationName As String = GetPossibleEventName(invocation.Expression)
+                Dim invocationName As String = invocation.Expression.GetPossibleEventName
                 If possibleEventName <> invocationName Then Return False
                 name = VBFactory.IdentifierName(possibleEventName)
                 arguments.AddRange(invocation.ArgumentList.Arguments.Select(Function(a As CSS.ArgumentSyntax) DirectCast(a.Accept(_nodesVisitor), ArgumentSyntax)))
@@ -731,20 +703,6 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                     End If
                 End If
                 Return True
-            End Function
-
-            Public Shared Function GetUniqueVariableNameInScope(node As CSharpSyntaxNode, variableNameBase As String, lSemanticModel As SemanticModel) As String
-                Dim reservedNames As New List(Of String) From {
-                    "_"
-                }
-                reservedNames.AddRange(node.DescendantNodesAndSelf().SelectMany(Function(lSyntaxNode As SyntaxNode) lSemanticModel.LookupSymbols(lSyntaxNode.SpanStart).Select(Function(s As ISymbol) s.Name)).Distinct)
-                Dim UniqueVariableName As String = EnsureUniqueness(variableNameBase, reservedNames)
-                s_usedIdentifiers.Add(UniqueVariableName,
-                                    New SymbolTableEntry(UniqueVariableName,
-                                                         IsType:=False
-                                                         )
-                                    )
-                Return UniqueVariableName
             End Function
 
             <ExcludeFromCodeCoverage>
@@ -1071,8 +1029,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 If node.Type.IsVar Then
                     Dim variableITypeSymbol As (_Error As Boolean, _ITypeSymbol As ITypeSymbol) = node.Expression.DetermineType(_semanticModel)
                     If variableITypeSymbol._Error = False Then
-                        Dim _ITypeSymbol As ITypeSymbol = variableITypeSymbol._ITypeSymbol
-                        Dim type As TypeSyntax = NodesVisitor.GetElementType(_ITypeSymbol)
+                        Dim type As TypeSyntax = variableITypeSymbol._ITypeSymbol.GetElementType
                         asClause = If(type IsNot Nothing, VBFactory.SimpleAsClause(type), Nothing)
                     End If
                 Else
@@ -1347,7 +1304,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                             IsInvocationExpression = ExpressionStatement.Expression.DescendantNodes().OfType(Of CSS.ConditionalExpressionSyntax).Any
                         End If
                     End If
-                    If ListOfElseIfBlocks.Any() OrElse Not IsSimpleStatement(node.Statement) OrElse IsInvocationExpression Then
+                    If ListOfElseIfBlocks.Any() OrElse IsInvocationExpression OrElse Not node.Statement.IsSimpleStatement Then
                         stmt = VBFactory.MultiLineIfBlock(IfStatement,
                                                           Statements,
                                                           ElseIfBlocks,
@@ -1406,7 +1363,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                     modifiers.Add(DimKeyword)
                 End If
                 Dim LeadingTrivia As New List(Of SyntaxTrivia)
-                Dim declarators As SeparatedSyntaxList(Of VariableDeclaratorSyntax) = RemodelVariableDeclaration(node.Declaration, _nodesVisitor, _semanticModel, IsFieldDeclaration:=False, LeadingTrivia)
+                Dim declarators As SeparatedSyntaxList(Of VariableDeclaratorSyntax) = node.Declaration.RemodelVariableDeclaration(_nodesVisitor, _semanticModel, IsFieldDeclaration:=False, LeadingTrivia)
                 Dim localDeclarationStatement As LocalDeclarationStatementSyntax = VBFactory.LocalDeclarationStatement(
                                                         VBFactory.TokenList(modifiers),
                                                         declarators).
@@ -1730,7 +1687,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                         UsingStatement = VBFactory.UsingStatement(DirectCast(node.Expression?.Accept(_nodesVisitor), ExpressionSyntax), VBFactory.SeparatedList(Of VariableDeclaratorSyntax)())
                     End If
                 Else
-                    UsingStatement = VBFactory.UsingStatement(expression:=Nothing, RemodelVariableDeclaration(node.Declaration, _nodesVisitor, _semanticModel, IsFieldDeclaration:=False, LeadingTrivia))
+                    UsingStatement = VBFactory.UsingStatement(expression:=Nothing, node.Declaration.RemodelVariableDeclaration(_nodesVisitor, _semanticModel, IsFieldDeclaration:=False, LeadingTrivia))
                 End If
 
                 Dim EndUsing As EndBlockStatementSyntax = VBFactory.EndUsingStatement.WithConvertedTriviaFrom(node.Statement.GetBraces.Item2)

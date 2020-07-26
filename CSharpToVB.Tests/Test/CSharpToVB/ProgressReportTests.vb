@@ -5,6 +5,7 @@
 Imports Xunit
 
 Namespace MSCoreReference.Tests
+
     Public NotInheritable Class ProgressReportTests
 
         <Fact>
@@ -17,6 +18,7 @@ Namespace MSCoreReference.Tests
             Assert.False(p.Equals(New ProgressReport(1, 11)))
             Assert.True(p <> New ProgressReport(1, 11))
         End Sub
-    End Class
-End Namespace
 
+    End Class
+
+End Namespace

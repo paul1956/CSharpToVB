@@ -4,14 +4,11 @@
 
 Imports System.Runtime.CompilerServices
 
-Namespace CSharpToVBCodeConverter.Utilities
+Public Module EnumerableExtensions
 
-    Partial Public Module EnumerableExtensions
+    <Extension>
+    Friend Function Contains(Of T)(sequence As IEnumerable(Of T), predicate As Func(Of T, Boolean)) As Boolean
+        Return sequence.Any(predicate)
+    End Function
 
-        <Extension>
-        Friend Function Contains(Of T)(sequence As IEnumerable(Of T), predicate As Func(Of T, Boolean)) As Boolean
-            Return sequence.Any(predicate)
-        End Function
-
-    End Module
-End Namespace
+End Module

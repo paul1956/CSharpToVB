@@ -1,6 +1,7 @@
 ﻿' Licensed to the .NET Foundation under one or more agreements.
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
+
 Imports System.Threading
 
 Imports Microsoft.CodeAnalysis.Formatting
@@ -45,7 +46,7 @@ Namespace Microsoft.CodeAnalysis.UnitTests.Formatting
                 AssertFormat(Workspace, expected, Root, spans, Options, Await _Document.GetTextAsync().ConfigureAwait(False))
 
                 ' format with node and transform
-                AssertFormatWithTransformation(Workspace, expected, Root, spans, Options, treeCompare, parseOptions)
+                Me.AssertFormatWithTransformation(Workspace, expected, Root, spans, Options, treeCompare, parseOptions)
             End Using
         End Function
 
@@ -56,7 +57,7 @@ Namespace Microsoft.CodeAnalysis.UnitTests.Formatting
             Assert.Equal(expected, newRootNode.ToFullString())
 
             ' test doesn't use parsing option. add one if needed later
-            Dim newRootNodeFromString As SyntaxNode = ParseCompilation(expected, parseOptions)
+            Dim newRootNodeFromString As SyntaxNode = Me.ParseCompilation(expected, parseOptions)
             If treeCompare Then
                 ' simple check to see whether two nodes are equivalent each other.
                 Assert.[True](newRootNodeFromString.IsEquivalentTo(newRootNode))
@@ -72,7 +73,7 @@ Namespace Microsoft.CodeAnalysis.UnitTests.Formatting
 
         Friend Shared Sub AssertResult(expected As String, sourceText As SourceText, result As IList(Of TextChange))
             Dim actual As String = sourceText.WithChanges(result).ToString()
-            AssertEx.EqualOrDiff(expected, actual)
+            EqualOrDiff(expected, actual)
         End Sub
 
     End Class

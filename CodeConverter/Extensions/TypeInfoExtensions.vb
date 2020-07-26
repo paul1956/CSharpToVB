@@ -7,6 +7,7 @@ Imports System.Runtime.CompilerServices
 Imports Microsoft.CodeAnalysis
 
 Public Module TypeInfoExtensions
+
     <Extension>
     Friend Function IsString(_Typeinfo As TypeInfo) As Boolean
         Dim typeSymbol As ITypeSymbol = _Typeinfo.Type

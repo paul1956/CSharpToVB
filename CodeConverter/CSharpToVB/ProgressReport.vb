@@ -34,4 +34,5 @@ Public Structure ProgressReport
     Public Shared Operator <>(left As ProgressReport, right As ProgressReport) As Boolean
         Return Not left = right
     End Operator
+
 End Structure

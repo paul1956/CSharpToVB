@@ -6,15 +6,13 @@ Imports System.Runtime.CompilerServices
 
 Imports CSharpToVBCodeConverter
 Imports CSharpToVBCodeConverter.ToVisualBasic
-Imports CSharpToVBCodeConverter.Utilities
-
 Imports Microsoft.CodeAnalysis
 
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Public Module ExpressionSyntaxSupport
+Public Module ExpressionSyntaxExtensions
 
     <Extension>
     Friend Function DetermineType(expression As CSS.ExpressionSyntax, Model As SemanticModel) As (_Error As Boolean, _ITypeSymbol As ITypeSymbol)
@@ -81,10 +79,10 @@ Public Module ExpressionSyntaxSupport
                             Return (_Error:=True, PredefinedTypeObject)
                         End If
                         If _type.ToString.StartsWith("(", StringComparison.Ordinal) Then
-                            Return (_Error:=False, CSharpConverter.ConvertCSTupleToVBType(_type.ToString))
+                            Return (_Error:=False, _type.ConvertCSTupleToVBType)
                         End If
                     End If
-                    Return (_Error:=False, ConvertToType(symbol.ConvertISymbolToType(Model.Compilation)))
+                    Return (_Error:=False, symbol.ConvertISymbolToType(Model.Compilation).ConvertToType())
                 End If
 
             End If

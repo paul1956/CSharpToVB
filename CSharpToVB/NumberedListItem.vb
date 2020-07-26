@@ -3,10 +3,12 @@
 ' See the LICENSE file in the project root for more information.
 
 Public Class NumberedListItem
+
     Sub New(display As String, value As String)
         _displayItem = display
         _valueItem = value
     End Sub
+
     Private Property _displayItem As String
 
     Private Property _valueItem As String
@@ -30,4 +32,5 @@ Public Class NumberedListItem
     Public Overrides Function ToString() As String
         Return _displayItem.ToString(Globalization.CultureInfo.CurrentCulture)
     End Function
+
 End Class

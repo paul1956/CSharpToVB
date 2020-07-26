@@ -2,6 +2,7 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
+Imports System.Runtime.CompilerServices
 Imports System.Text
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
@@ -25,6 +26,7 @@ Namespace CSharpToVBCodeConverter
             Next
         End Sub
 
+        <Extension>
         Friend Function GetNewUniqueName(ConvertedIdentifier As String, ident As KeyValuePair(Of String, SymbolTableEntry)) As String
             Dim NewUniqueName As String
             If ident.Value.Name.StartsWith("_", StringComparison.Ordinal) Then

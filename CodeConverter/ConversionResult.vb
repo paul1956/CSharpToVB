@@ -1,6 +1,7 @@
 ﻿' Licensed to the .NET Foundation under one or more agreements.
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
+
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Formatting
 Imports Microsoft.CodeAnalysis.Options
@@ -45,10 +46,13 @@ Namespace CSharpToVBCodeConverter
         ''' Indicates File Conversion succeeded, failed or wasn't attempted (ignored)
         ''' </summary>
         Public Enum ResultTriState
+
             '     This file was ignored setting.
             Ignore = -2
+
             '     Conversion succeeded.
             Success = -1
+
             '     Conversion failed.
             Failure = 0
 

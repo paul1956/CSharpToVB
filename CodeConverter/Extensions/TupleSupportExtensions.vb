@@ -1,6 +1,8 @@
 ﻿' Licensed to the .NET Foundation under one or more agreements.
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
+
+Imports System.Runtime.CompilerServices
 Imports System.Text
 
 Imports Microsoft.CodeAnalysis
@@ -10,22 +12,36 @@ Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace CSharpToVBCodeConverter.ToVisualBasic
 
-    Partial Public Class CSharpConverter
+    Public Module TupleSupportExtensions
 
-        Private Shared Function ExtractName(CSNamedTypeString As String, i As Integer, CommaIndex As Integer) As String
+        ''' <summary>
+        ''' Extract String
+        ''' </summary>
+        ''' <param name="CSNamedTypeString">Source String</param>
+        ''' <param name="StartIndex">Start of Substring</param>
+        ''' <param name="PossibleIndex">End Index or -1 if no end</param>
+        ''' <returns>Substring from i to CommaIndex or end if CommanIndex = -1</returns>
+        <Extension>
+        Private Function ExtractName(CSNamedTypeString As String, StartIndex As Integer, PossibleIndex As Integer) As String
             Dim length As Integer
-            If CommaIndex < 0 Then
-                length = CSNamedTypeString.Length - i - 1
+            If PossibleIndex < 0 Then
+                length = CSNamedTypeString.Length - StartIndex - 1
             Else
-                length = CommaIndex - i
+                length = PossibleIndex - StartIndex
             End If
             If length <= 0 Then
                 Return ""
             End If
-            Return MakeVBSafeName(CSNamedTypeString.Substring(i, length).Trim)
+            Return MakeVBSafeName(CSNamedTypeString.Substring(StartIndex, length).Trim)
         End Function
 
-        Friend Shared Function ConvertCSTupleToVBType(CSNamedTypeStringIn As String) As VBS.TypeSyntax
+        <Extension>
+        Friend Function ConvertCSTupleToVBType(CSNamedType As ITypeSymbol) As VBS.TypeSyntax
+            Return ConvertCSTupleToVBType(CSNamedType.ToString)
+        End Function
+
+        <Extension>
+        Friend Function ConvertCSTupleToVBType(CSNamedTypeStringIn As String) As VBS.TypeSyntax
             Dim CSNamedTypeString As String = CSNamedTypeStringIn
             Dim IsArray As Boolean = False
             Dim Nullable As Boolean = False
@@ -41,7 +57,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 CSNamedTypeString = CSNamedTypeString.Substring(1, CSNamedTypeString.Length - 2).Trim
             End If
 
-            Dim ElementList As List(Of String) = ConvertTupleToVBTypeStrings(CSNamedTypeString, IncludeName:=True)
+            Dim ElementList As List(Of String) = CSNamedTypeString.ConvertTupleToVBTypeStrings(IncludeName:=True)
             Dim builder As New StringBuilder
             builder.Append("(")
             For Each e As IndexClass(Of String) In ElementList.WithIndex
@@ -54,15 +70,17 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
             Return VBFactory.ParseTypeName(TupleType).WithLeadingTrivia(SpaceTrivia)
         End Function
 
-        Friend Shared Function ConvertToTupleElement(TupleElement As IFieldSymbol) As VBS.TupleElementSyntax
+        <Extension>
+        Friend Function ConvertToTupleElement(TupleElement As IFieldSymbol) As VBS.TupleElementSyntax
             If TupleElement.Type Is Nothing Then
                 Return VBFactory.NamedTupleElement(TupleElement.Name.ToString(Globalization.CultureInfo.InvariantCulture))
             End If
-            Dim AsClause As VBS.SimpleAsClauseSyntax = VBFactory.SimpleAsClause(ConvertToType(TupleElement.Type))
+            Dim AsClause As VBS.SimpleAsClauseSyntax = VBFactory.SimpleAsClause(TupleElement.Type.ConvertToType())
             Return VBFactory.NamedTupleElement(VBFactory.Identifier(MakeVBSafeName(TupleElement.Name)), AsClause)
         End Function
 
-        Friend Shared Function ConvertTupleToVBTypeStrings(CSharpNamedTypeString As String, IncludeName As Boolean) As List(Of String)
+        <Extension>
+        Friend Function ConvertTupleToVBTypeStrings(CSharpNamedTypeString As String, IncludeName As Boolean) As List(Of String)
             Dim currentChar As String
             Dim openLT As Integer
             Dim openParen As Integer
@@ -100,7 +118,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                         If currentIndex >= CSharpNamedTypeString.Length - 1 OrElse Not ".[".Contains(CSharpNamedTypeString(currentIndex), StringComparison.OrdinalIgnoreCase) Then
                             Dim commaIndex As Integer = CSharpNamedTypeString.IndexOf(",", currentIndex, StringComparison.OrdinalIgnoreCase)
                             If IncludeName Then
-                                Dim name As String = ExtractName(CSharpNamedTypeString, currentIndex, commaIndex)
+                                Dim name As String = CSharpNamedTypeString.ExtractName(currentIndex, commaIndex)
                                 If name.Length = 0 Then
                                     ElementList.Add($"{ConvertToType(tmpString.ToString)}")
                                 Else
@@ -121,7 +139,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                         Dim TypePart As String = ConvertToType(tmpString.ToString).ToString
                         If IncludeName Then
                             currentIndex += 1
-                            Dim name As String = ExtractName(CSharpNamedTypeString, currentIndex, commaIndex)
+                            Dim name As String = CSharpNamedTypeString.ExtractName(currentIndex, commaIndex)
                             ElementList.Add($"{MakeVBSafeName(name)} As {TypePart}")
                         Else
                             ElementList.Add(TypePart)
@@ -140,7 +158,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                         Dim commaIndex As Integer = CSharpNamedTypeString.IndexOf(",", currentIndex + 1, StringComparison.OrdinalIgnoreCase)
                         If IncludeName Then
                             currentIndex += 1
-                            Dim name As String = ExtractName(CSharpNamedTypeString, currentIndex, commaIndex)
+                            Dim name As String = CSharpNamedTypeString.ExtractName(currentIndex, commaIndex)
                             If commaIndex < 0 Then
                                 ElementList.Add($"{MakeVBSafeName(name)} As {TypePart}")
                                 Exit For
@@ -181,7 +199,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                             End Select
                         End While
                         Dim subTupleList As New List(Of String)
-                        subTupleList.AddRange(ConvertTupleToVBTypeStrings(tmpString.ToString.Substring(1, tmpString.Length - 2), IncludeName))
+                        subTupleList.AddRange(tmpString.ToString.Substring(1, tmpString.Length - 2).ConvertTupleToVBTypeStrings(IncludeName))
                         ElementList.Add($"({subTupleList.ToArray.JoinLines(", ")})")
                         tmpString.Clear()
                         Dim commaIndex As Integer = CSharpNamedTypeString.IndexOf(",", currentIndex + 1, StringComparison.OrdinalIgnoreCase)
@@ -203,7 +221,8 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
             Return ElementList
         End Function
 
-        Friend Shared Function ExtractConvertedTuple(TupleString As String) As String
+        <Extension>
+        Friend Function ExtractConvertedTuple(TupleString As String) As String
             Dim TupleElements As New List(Of String)
             For Each t As String In TupleString.Substring(1, TupleString.Length - 2).Split(","c)
                 Dim TuplePart() As String = t.Trim.Split(" "c)
@@ -217,6 +236,6 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
             Return $"({String.Join(", ", TupleElements)})"
         End Function
 
-    End Class
+    End Module
 
 End Namespace

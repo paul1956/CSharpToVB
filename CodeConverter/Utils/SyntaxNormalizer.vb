@@ -1,9 +1,8 @@
 ﻿' Licensed to the .NET Foundation under one or more agreements.
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
-Imports System.Diagnostics.CodeAnalysis
 
-Imports CSharpToVBCodeConverter.Utilities
+Imports System.Diagnostics.CodeAnalysis
 
 Imports Microsoft.CodeAnalysis.Text
 
@@ -72,9 +71,9 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
             Return False
         End Function
 
-        Private Shared Function EndsWithColonSeparator(node As SyntaxToken) As Boolean
-            Return node.HasTrailingTrivia AndAlso
-                    node.TrailingTrivia.Last.IsKind(SyntaxKind.ColonTrivia)
+        Private Shared Function EndsWithColonSeparator(token As SyntaxToken) As Boolean
+            Return token.HasTrailingTrivia AndAlso
+                    token.TrailingTrivia.Last.IsKind(SyntaxKind.ColonTrivia)
         End Function
 
         Private Shared Function ExtraIndentNeeded(previousToken As SyntaxToken, CurrentToken As SyntaxToken) As Boolean

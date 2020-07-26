@@ -5,6 +5,7 @@
 Imports System.Runtime.CompilerServices
 
 Public Module ForEachExtensions
+
     <Extension>
     Public Iterator Function WithIndex(Of T)(
                                          source As IEnumerable(Of T)

@@ -6,7 +6,9 @@ Imports System.IO
 Imports System.Xml
 
 #If Not NETCOREAPP5_0 Then
+
 Imports VBMsgBox
+
 #End If
 
 Public Module ConvertProjectFileUtilities
@@ -144,6 +146,7 @@ Public Module ConvertProjectFileUtilities
          "Service", "SuggestedBindingRedirects", "UsingTask",
          "VSCTCompile", "VsdConfigXmlFiles",
          "VSIXSourceItem", "#whitespace"})
+
     Private Function ChangeExtension(AttributeValue As String, OldExtension As String, NewExtension As String) As String
         Return If(AttributeValue.EndsWith($".{OldExtension}", StringComparison.OrdinalIgnoreCase),
                Path.ChangeExtension(AttributeValue, NewExtension),

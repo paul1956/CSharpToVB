@@ -1,13 +1,8 @@
 ﻿' Licensed to the .NET Foundation under one or more agreements.
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
-Imports System.Collections
+
 Imports System.Collections.Immutable
-Imports System.Runtime.InteropServices
-Imports System.Threading
-
-Imports CSharpToVBCodeConverter.Utilities
-
 Imports Microsoft.CodeAnalysis
 
 Imports CS = Microsoft.CodeAnalysis.CSharp
@@ -29,7 +24,8 @@ target = value
 Return value
 End Function
 "
-            '            Private Const ByRefHelperCode As String = "Private Function __VbByRefHelper(Of t)(ByRef byRefValue As t, byRefSetter As Func(Of t, t)) As t
+
+            '    Private Const ByRefHelperCode As String = "Private Function __VbByRefHelper(Of t)(ByRef byRefValue As t, byRefSetter As Func(Of t, t)) As t
             '        Dim orgValue = byRefValue
             '        byRefValue = byRefSetter(byRefValue)
             '        Return orgValue
@@ -41,46 +37,6 @@ End Function
             '        Return retValue.ReturnValue
             '    End Function
             '"
-
-            ''' <summary>
-            ''' Returns new leading trivia for first Item in a List
-            ''' This Trivia consists of all the OpenBrace Leading Trivia and the trailing Trivia only of does not just contain a CRLF
-            ''' </summary>
-            ''' <param name="OpenBraceToken"></param>
-            ''' <returns>List(Of SyntaxTrivia) from OpenBrace</returns>
-            Private Shared Function ConvertOpenBraceTrivia(OpenBraceToken As SyntaxToken) As List(Of SyntaxTrivia)
-                Dim LeadingTrivia As List(Of SyntaxTrivia) = ConvertTrivia(OpenBraceToken.LeadingTrivia).ToList
-                Dim OpenBraceTrailingTrivia As SyntaxTriviaList = OpenBraceToken.TrailingTrivia
-                If OpenBraceTrailingTrivia.Count <> 1 OrElse Not OpenBraceTrailingTrivia(0).IsEndOfLine Then
-                    LeadingTrivia.AddRange(ConvertTrivia(OpenBraceTrailingTrivia))
-                End If
-                Return LeadingTrivia
-            End Function
-
-            Private Shared Function TryInitializeState(model As SemanticModel, node As SyntaxNode, CancelToken As CancellationToken,
-                                                       <Out()> ByRef classOrStructDecl As SyntaxNode, <Out()> ByRef classOrStructType As INamedTypeSymbol, <Out()> ByRef interfaceTypes As IEnumerable(Of INamedTypeSymbol)) As Boolean
-                Dim NodeTypeIsTypeSyntax As Boolean = TypeOf node Is CSS.TypeSyntax
-                Dim interfaceNode As CSS.TypeSyntax = If(NodeTypeIsTypeSyntax, CType(node, CSS.TypeSyntax), Nothing)
-                If NodeTypeIsTypeSyntax AndAlso TypeOf interfaceNode.Parent Is CSS.BaseTypeSyntax AndAlso interfaceNode.Parent.IsParentKind(CS.SyntaxKind.BaseList) AndAlso CType(interfaceNode.Parent, CSS.BaseTypeSyntax).Type Is interfaceNode Then
-                    If interfaceNode.Parent.Parent.IsParentKind(CS.SyntaxKind.ClassDeclaration) OrElse interfaceNode.Parent.Parent.IsParentKind(CS.SyntaxKind.StructDeclaration) Then
-                        Dim interfaceSymbolInfo As SymbolInfo = model.GetSymbolInfo(interfaceNode, CancelToken)
-                        If interfaceSymbolInfo.CandidateReason <> CandidateReason.WrongArity Then
-                            Dim interfaceType As INamedTypeSymbol = TryCast(interfaceSymbolInfo.GetAnySymbol(), INamedTypeSymbol)
-                            If interfaceType IsNot Nothing AndAlso interfaceType.TypeKind = Microsoft.CodeAnalysis.TypeKind.Interface Then
-                                classOrStructDecl = TryCast(interfaceNode.Parent.Parent.Parent, CSS.TypeDeclarationSyntax)
-                                classOrStructType = TryCast(model.GetDeclaredSymbol(classOrStructDecl, CancelToken), INamedTypeSymbol)
-                                interfaceTypes = SpecializedCollection.SingletonEnumerable(interfaceType)
-                                Return interfaceTypes IsNot Nothing AndAlso classOrStructType IsNot Nothing
-                            End If
-                        End If
-                    End If
-                End If
-
-                classOrStructDecl = Nothing
-                classOrStructType = Nothing
-                interfaceTypes = Nothing
-                Return False
-            End Function
 
             Private Sub ConvertBaseList(_Type As CSS.BaseTypeDeclarationSyntax, [inherits] As List(Of VBS.InheritsStatementSyntax), [implements] As List(Of VBS.ImplementsStatementSyntax), ByRef Optional ImplementedMembers As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))) = Nothing)
                 Dim TypeSyntaxArray As VBS.TypeSyntax()
@@ -118,7 +74,7 @@ End Function
                                 Dim classOrStructType As INamedTypeSymbol = Nothing
                                 Dim interfaceTypes As IEnumerable(Of INamedTypeSymbol) = Nothing
 
-                                If TryInitializeState(_mSemanticModel, ImplementsClause, s_originalRequest.CancelToken, classOrStructDecl, classOrStructType, interfaceTypes) Then
+                                If _mSemanticModel.TryInitializeState(ImplementsClause, s_originalRequest.CancelToken, classOrStructDecl, classOrStructType, interfaceTypes) Then
                                     Dim items As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))) = classOrStructType.GetAllImplementedMembers(interfaceTypes, s_originalRequest.CancelToken)
                                     ImplementedMembers = ImplementedMembers.AddRange(items)
                                 End If
@@ -181,26 +137,6 @@ End Function
                 '    ByRefHelperMarkers.Remove(node)
                 '    Yield TryCast(VBFactory.ParseSyntaxTree(ByRefHelperCode.Replace("Shared ", If(IsModule, "", "Shared "), StringComparison.Ordinal)).GetRoot().ChildNodes().FirstOrDefault(), VBS.StatementSyntax)
                 'End If
-            End Function
-
-            Friend Shared Function IsNotInStructure(node As CS.CSharpSyntaxNode) As Boolean
-                Dim StatementWithIssues As CS.CSharpSyntaxNode = node
-                While StatementWithIssues IsNot Nothing
-                    'If TypeOf StatementWithIssues Is CSS.ClassDeclarationSyntax Then
-                    '    Exit While
-                    'End If
-
-                    If TypeOf StatementWithIssues Is CSS.StructDeclarationSyntax Then
-                        Exit While
-                    End If
-
-                    StatementWithIssues = CType(StatementWithIssues.Parent, CS.CSharpSyntaxNode)
-                End While
-                If StatementWithIssues Is Nothing Then
-                    Return True
-                End If
-
-                Return False
             End Function
 
             Public Overrides Function VisitClassDeclaration(node As CSS.ClassDeclarationSyntax) As VB.VisualBasicSyntaxNode
@@ -286,7 +222,7 @@ End Function
                     If e.IsFirst Then
                         If node.OpenBraceToken.LeadingTrivia.ContainsCommentOrDirectiveTrivia Then
                             If members.Any Then
-                                members(0) = members(0).WithPrependedLeadingTrivia(ConvertOpenBraceTrivia(node.OpenBraceToken))
+                                members(0) = members(0).WithPrependedLeadingTrivia(CollectTokenTrivia(node.OpenBraceToken, Leading:=True))
                             Else
                                 Stop
                             End If
@@ -306,7 +242,7 @@ End Function
                     End If
                     id = id.WithTrailingTrivia(SpaceTrivia)
                 End If
-                Dim NotInsideClassOrStruct As Boolean = _isModuleStack.Count < 2 AndAlso IsNotInStructure(node)
+                Dim NotInsideClassOrStruct As Boolean = _isModuleStack.Count < 2 AndAlso node.IsNotInStructure
 
                 If IsModule AndAlso NotInsideClassOrStruct Then
                     Dim ModuleModifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, IsModule, TokenContext.InterfaceOrModule)
@@ -460,7 +396,7 @@ End Function
                     Dim csSeparatorTrailingTrivia As SyntaxTriviaList
                     Dim movedTrailingSpace As String = ""
                     Dim vbEnumSatement As VBS.StatementSyntax
-                    Dim leadingTrivia As List(Of SyntaxTrivia) = ConvertOpenBraceTrivia(node.OpenBraceToken)
+                    Dim leadingTrivia As List(Of SyntaxTrivia) = CollectTokenTrivia(node.OpenBraceToken, Leading:=True)
                     For Each e As IndexClass(Of CSS.EnumMemberDeclarationSyntax) In csMembers.WithIndex
                         If e.IsLast Then
                             Exit For
@@ -633,7 +569,7 @@ End Function
                     extern.Accept(Me)
                 Next
 
-                Dim LeadingTrivia As List(Of SyntaxTrivia) = ConvertOpenBraceTrivia(node.OpenBraceToken)
+                Dim LeadingTrivia As List(Of SyntaxTrivia) = CollectTokenTrivia(node.OpenBraceToken, Leading:=True)
                 Dim members As New List(Of VBS.StatementSyntax)
 
                 For Each e As IndexClass(Of CSS.MemberDeclarationSyntax) In node.Members.WithIndex
@@ -681,7 +617,7 @@ End Function
                     End If
                 End SyncLock
                 If Members.Any Then
-                    Members(0) = Members(0).WithPrependedLeadingTrivia(ConvertOpenBraceTrivia(node.OpenBraceToken))
+                    Members(0) = Members(0).WithPrependedLeadingTrivia(CollectTokenTrivia(node.OpenBraceToken, Leading:=True))
                 End If
                 Dim ListOfAttributes As SyntaxList(Of VBS.AttributeListSyntax) = VBFactory.List(node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))
                 Dim TypeParameterList As VBS.TypeParameterListSyntax = DirectCast(node.TypeParameterList?.Accept(Me), VBS.TypeParameterListSyntax)

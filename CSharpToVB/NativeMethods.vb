@@ -8,6 +8,7 @@ Namespace Microsoft.VisualBasic.CompilerServices
 
     <ComVisible(False)>
     Friend Module NativeMethods
+
         <DllImport("user32.dll")>
         Public Function LockWindowUpdate(hWndLock As IntPtr) As Boolean
         End Function

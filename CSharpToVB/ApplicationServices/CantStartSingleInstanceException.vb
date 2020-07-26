@@ -2,6 +2,7 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 #If Not NETCOREAPP5_0 Then
+
 Imports System.ComponentModel
 Imports System.Runtime.Serialization
 
@@ -38,6 +39,7 @@ Namespace Global.Microsoft.VisualBasic.ApplicationServices
         End Sub
 
     End Class
+
 End Namespace
 
 #End If

@@ -1,6 +1,7 @@
 ﻿' Licensed to the .NET Foundation under one or more agreements.
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
+
 Imports CodeConverter.Tests
 
 Imports Xunit
@@ -485,7 +486,6 @@ Class TestClass
             b = 1
         ElseIf a = 2 OrElse a = 3 Then
             b = 2
-
         Else
             b = 3
         End If

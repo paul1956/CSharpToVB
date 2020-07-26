@@ -8,7 +8,9 @@ Imports System.Threading
 Imports Microsoft.CodeAnalysis
 
 #If Not NETCOREAPP5_0 Then
+
 Imports VBMsgBox
+
 #End If
 
 Public Module FileUtilities

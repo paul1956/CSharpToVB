@@ -5,6 +5,7 @@
 Public Class OptionsDialog
     Private _selectedColor As Color
     Private _selectedColorName As String = "default"
+
     Private Sub Cancel_Button_Click(sender As Object, e As EventArgs) Handles Cancel_Button.Click
         DialogResult = DialogResult.Cancel
         Me.Close()

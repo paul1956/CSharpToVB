@@ -62,6 +62,9 @@ https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json is added to NuGe
 Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpecific attributes used for testing.
 
 Any changes to CSharpToVB application needs to change the version information in the project file **AND** in MyProject/AssemblyInfo.vb until Visual Studion is able to general file automatically for a WinForms application.
+  New in 4.5.2.7/3.4.6.0
+  - Major restructuring and simplification, removal of redundant code 
+
   New in 4.5.2.6/3.4.5.2
   - Translate Ref Return, and Call by Ref
 
@@ -306,14 +309,14 @@ New in Release 4.2.4.0
 +------------------+--------+--------+--------+
 | Module           | Line   | Branch | Method |
 +------------------+--------+--------+--------+
-| VB.CodeConverter | 78.86% | 72.61% | 87.75% |
+| VB.CodeConverter | 78.94% | 72.6%  | 88.26% |
 +------------------+--------+--------+--------+
 
 +---------+--------+--------+--------+
 |         | Line   | Branch | Method |
 +---------+--------+--------+--------+
-| Total   | 78.86% | 72.61% | 87.75% |
+| Total   | 78.94% | 72.6%  | 88.26% |
 +---------+--------+--------+--------+
-| Average | 78.86% | 72.61% | 87.75% |
+| Average | 78.94% | 72.59% | 88.26% |
 +---------+--------+--------+--------+
 ```
