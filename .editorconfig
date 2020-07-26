@@ -172,6 +172,8 @@ dotnet_diagnostic.CA1031.severity = silent
 dotnet_diagnostic.CA1303.severity = silent
 # CA1308: Do not pass literals as localized parameters
 dotnet_diagnostic.CA1308.severity = suggestion
+# CA1826: Do not use Enumerable methods on indexable collections. Instead use the collection directly
+dotnet_diagnostic.CA1826.severity = silent
 # IDE0004: Remove Unnecessary Cast
 dotnet_diagnostic.IDE0004.severity = warning
 
