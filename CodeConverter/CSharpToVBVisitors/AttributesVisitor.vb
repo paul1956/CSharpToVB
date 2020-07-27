@@ -48,10 +48,10 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                     Dim localTrailingTrivia As New List(Of SyntaxTrivia)
                     Dim Item As VBS.ArgumentSyntax = DirectCast(e.Value.Accept(Me), VBS.ArgumentSyntax)
                     If Item.HasLeadingTrivia Then
-                        Dim triviaList As SyntaxTriviaList = Item.GetLeadingTrivia
-                        For i1 As Integer = 0 To triviaList.Count - 1
-                            Dim Trivia As SyntaxTrivia = triviaList(i1)
-                            Dim NextTrivia As SyntaxTrivia = If(i1 < triviaList.Count - 1, triviaList(i1 + 1), Nothing)
+                        Dim initialTriviaList As SyntaxTriviaList = Item.GetLeadingTrivia
+                        For i1 As Integer = 0 To initialTriviaList.Count - 1
+                            Dim Trivia As SyntaxTrivia = initialTriviaList(i1)
+                            Dim NextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, i1)
                             If Trivia.IsComment Then
                                 trailingTriviaList.Add(Trivia)
                                 If NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then

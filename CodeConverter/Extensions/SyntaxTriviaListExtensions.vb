@@ -52,6 +52,14 @@ Module SyntaxTriviaListExtensions
     End Function
 
     <Extension>
+    Friend Function GetForwardTriviaOrDefault(triviaList As IEnumerable(Of SyntaxTrivia), index As Integer, Optional lookaheadCount As Integer = 1) As SyntaxTrivia
+        If triviaList Is Nothing Then
+            Throw New ArgumentNullException(NameOf(triviaList))
+        End If
+
+        Return If(index < triviaList.Count - lookaheadCount, triviaList(index + lookaheadCount), New SyntaxTrivia)
+    End Function
+
     Friend Sub ModifyTrailingTrivia(VB_ModifierTrivia As SyntaxTriviaList, ByRef TrailingTrivia As List(Of SyntaxTrivia))
         For Each t As SyntaxTrivia In VB_ModifierTrivia
             Select Case t.RawKind
@@ -79,7 +87,7 @@ Module SyntaxTriviaListExtensions
         If lineContIndex = -1 Then Return triviaList
         Dim returnList As List(Of SyntaxTrivia) = triviaList.ToList
         returnList.RemoveRange(lineContIndex - 1, 2)
-        Return triviaList.ToSyntaxTriviaList
+        Return returnList.ToSyntaxTriviaList
     End Function
 
     <Extension>
@@ -99,6 +107,9 @@ Module SyntaxTriviaListExtensions
             End If
             If t.IsComment Then
                 Return True
+            End If
+            If t.IsKind(VB.SyntaxKind.LineContinuationTrivia) Then
+                Continue For
             End If
             Stop
         Next

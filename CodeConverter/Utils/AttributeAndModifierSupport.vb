@@ -118,8 +118,8 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 If Not (VB_Modifier.IsKind(VB.SyntaxKind.None) OrElse VB_Modifier.IsKind(VB.SyntaxKind.EmptyToken)) Then
                     LeadingTrivia.Clear()
                     LeadingTrivia.Add(SpaceTrivia)
-                    VB_Modifier.LeadingTrivia.ModifyTrailingTrivia(TrailingTrivia)
-                    VB_Modifier.TrailingTrivia.ModifyTrailingTrivia(TrailingTrivia)
+                    ModifyTrailingTrivia(VB_Modifier.LeadingTrivia, TrailingTrivia)
+                    ModifyTrailingTrivia(VB_Modifier.TrailingTrivia, TrailingTrivia)
                     Yield VB_Modifier.With(LeadingTrivia, TrailingTrivia)
                 End If
             Next

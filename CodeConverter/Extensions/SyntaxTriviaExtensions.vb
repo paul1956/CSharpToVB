@@ -18,6 +18,18 @@ Public Module SyntaxTriviaExtensions
     End Function
 
     <Extension>
+    Friend Function AdjustWhitespace(trivia As SyntaxTrivia, nextTrivia As SyntaxTrivia, afterLineContinue As Boolean) As SyntaxTrivia
+        If trivia.Span.Length = nextTrivia.Span.Length Then
+            Return trivia
+        End If
+        Dim lineContinueOffset As Integer = If(afterLineContinue, 2, 0)
+        If trivia.Span.Length > nextTrivia.Span.Length Then
+            Return VBFactory.Whitespace(New String(" "c, Math.Max(trivia.FullWidth - lineContinueOffset, 1)))
+        End If
+        Return VBFactory.Whitespace(New String(" "c, Math.Max(nextTrivia.FullWidth - lineContinueOffset, 1)))
+    End Function
+
+    <Extension>
     Friend Function DirectiveNotAllowedHere(Trivia As SyntaxTrivia) As List(Of SyntaxTrivia)
         Dim NewTriviaList As New List(Of SyntaxTrivia)
         Dim LeadingTriviaList As New List(Of SyntaxTrivia) From {

@@ -105,11 +105,10 @@ Public Module ExpressionSyntaxExtensions
         Dim NeedLineContinuation As Boolean = True
         Dim NewTriviaList As New List(Of SyntaxTrivia)
 
-        Dim OldTriviaList As New List(Of SyntaxTrivia)
-        OldTriviaList.AddRange(Expression.GetLeadingTrivia)
-        For Each e As IndexClass(Of SyntaxTrivia) In OldTriviaList.WithIndex
+        Dim initialTriviaList As List(Of SyntaxTrivia) = Expression.GetLeadingTrivia.ToList
+        For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
             Dim Trivia As SyntaxTrivia = e.Value
-            Dim nextTrivia As SyntaxTrivia = If(Not e.IsLast, OldTriviaList(e.Index + 1), New SyntaxTrivia)
+            Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.Index)
             Select Case Trivia.RawKind
                 Case VB.SyntaxKind.WhitespaceTrivia
                     If NeedLineContinuation AndAlso Not nextTrivia.IsNone Then

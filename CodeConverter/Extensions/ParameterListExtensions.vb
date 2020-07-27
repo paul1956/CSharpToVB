@@ -15,10 +15,10 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
         Friend Function RelocateDirectivesInTrailingTrivia(ParameterList As VBS.ParameterListSyntax, StatementTrailingTrivia As List(Of SyntaxTrivia)) As VBS.ParameterListSyntax
             If ParameterList IsNot Nothing AndAlso ParameterList.HasTrailingTrivia AndAlso ParameterList.GetTrailingTrivia.ContainsCommentOrDirectiveTrivia Then
                 Dim ParameterListTrailingTrivia As New List(Of SyntaxTrivia)
-                Dim TrailingTrivialist As SyntaxTriviaList = ParameterList.GetTrailingTrivia
+                Dim initialTriviaList As SyntaxTriviaList = ParameterList.GetTrailingTrivia
                 Dim FoundEndIf As Boolean = False
-                For Each e As IndexClass(Of SyntaxTrivia) In TrailingTrivialist.WithIndex
-                    Dim NextTrivia As SyntaxTrivia = If(Not e.IsLast, TrailingTrivialist(e.Index + 1), Nothing)
+                For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
+                    Dim NextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.Index)
                     Select Case e.Value.RawKind
                         Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
                             ParameterListTrailingTrivia.Add(e.Value)

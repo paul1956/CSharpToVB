@@ -782,15 +782,14 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                     FunctionStatementTrailingTrivia.InsertRange(0, AsClause.GetTrailingTrivia.ToList)
                     AsClause = AsClause.WithTrailingTrivia(SpaceTrivia)
                 End If
-                Dim modifierLeadingTrivia As SyntaxTriviaList = If(Modifiers.Any, Modifiers(0).LeadingTrivia, Nothing)
+                Dim initialTriviaList As SyntaxTriviaList = If(Modifiers.Any, Modifiers(0).LeadingTrivia, Nothing)
 
                 Dim MovedModifierLeadingTrivia As New List(Of SyntaxTrivia)
-                If Attributes.Any AndAlso Modifiers.Any AndAlso modifierLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
+                If Attributes.Any AndAlso Modifiers.Any AndAlso initialTriviaList.ContainsCommentOrDirectiveTrivia Then
                     Dim FixedModifierLeadingTrivia As New List(Of SyntaxTrivia)
-
-                    For triviaIndex As Integer = 0 To modifierLeadingTrivia.Count - 1
-                        Dim t As SyntaxTrivia = modifierLeadingTrivia(triviaIndex)
-                        Dim NextTrivia As SyntaxTrivia = If(triviaIndex < modifierLeadingTrivia.Count - 1, modifierLeadingTrivia(triviaIndex + 1), Nothing)
+                    For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
+                        Dim t As SyntaxTrivia = e.Value
+                        Dim NextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.Index)
                         Select Case t.RawKind
                             Case VB.SyntaxKind.WhitespaceTrivia
                                 If NextTrivia.IsComment Then
@@ -798,7 +797,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                                     FixedModifierLeadingTrivia.Add(LineContinuation)
                                     FixedModifierLeadingTrivia.Add(t)
                                     FixedModifierLeadingTrivia.Add(NextTrivia)
-                                    triviaIndex += 1
+                                    e.MoveNext()
                                 Else
                                     FixedModifierLeadingTrivia.Add(t)
                                 End If

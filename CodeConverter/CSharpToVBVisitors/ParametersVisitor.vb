@@ -255,11 +255,11 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                         End Select
                     Next
                     Dim FoundEOL As Boolean
-                    Dim TrailingTrivia As New List(Of SyntaxTrivia)
-                    TrailingTrivia.AddRange(returnType.GetTrailingTrivia)
-                    For index As Integer = 0 To TrailingTrivia.Count - 1
-                        Dim Trivia As SyntaxTrivia = TrailingTrivia(index)
-                        Dim NextTrivia As SyntaxTrivia = If(index < returnType.GetTrailingTrivia.Count - 1, TrailingTrivia(index + 1), Nothing)
+                    Dim initialTriviaList As New List(Of SyntaxTrivia)
+                    initialTriviaList.AddRange(returnType.GetTrailingTrivia)
+                    For index As Integer = 0 To initialTriviaList.Count - 1
+                        Dim Trivia As SyntaxTrivia = initialTriviaList(index)
+                        Dim NextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, index)
 
                         Select Case Trivia.RawKind
                             Case VB.SyntaxKind.WhitespaceTrivia

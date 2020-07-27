@@ -790,11 +790,11 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                         Next
                         kind = VB.SyntaxKind.ConcatenateExpression
                         Dim vbNode As VB.VisualBasicSyntaxNode = CType(csNodesOrTokens(0), CSS.ExpressionSyntax).Accept(Me)
-                        leftVBNode = vbNode.ConvertAndModifyNodeTrivia(csNodesOrTokens, 0)
+                        leftVBNode = vbNode.ConvertAndModifyNodeTrivia(csNodesOrTokens, 0, IsStatement:=False)
                         For nodeOrTokenIndex As Integer = 1 To csNodesOrTokens.Count - 1 Step 2
                             vbOperatorToken = ConvertAndModifyTokenTrivia(AmpersandToken, csNodesOrTokens, nodeOrTokenIndex)
                             vbNode = CType(csNodesOrTokens(nodeOrTokenIndex + 1), CSS.ExpressionSyntax).Accept(Me)
-                            rightVBNode = vbNode.ConvertAndModifyNodeTrivia(csNodesOrTokens, nodeOrTokenIndex + 1)
+                            rightVBNode = vbNode.ConvertAndModifyNodeTrivia(csNodesOrTokens, nodeOrTokenIndex + 1, IsStatement:=False)
                             leftVBNode = VBFactory.ConcatenateExpression(
                                                             DirectCast(leftVBNode, ExpressionSyntax),
                                                             vbOperatorToken,
@@ -851,6 +851,12 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                                         secondExpression = secondExpression.WithLeadingTrivia(StatementTrivia.Last)
                                     End If
                                 End If
+                                Dim lastLeadingTrivia As SyntaxTrivia = secondExpression.GetLeadingTrivia.LastOrDefault
+
+                                If (Not (lastLeadingTrivia.IsWhitespace AndAlso lastLeadingTrivia.Span.Length > 0)) AndAlso node.OperatorToken.LeadingTrivia.LastOrDefault.IsKind(CS.SyntaxKind.WhitespaceTrivia) Then
+                                    secondExpression = secondExpression.WithLeadingTrivia(ConvertTrivia(node.OperatorToken.LeadingTrivia.Last))
+                                End If
+
                                 Dim binaryConditionalExpressionSyntax1 As BinaryConditionalExpressionSyntax = VBFactory.BinaryConditionalExpression(
                                                             IfKeywordWithTrivia,
                                                             OpenParenToken,
@@ -1025,9 +1031,10 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                     End If
                     Dim rightLeadingTrivia As New List(Of SyntaxTrivia)
                     If operatorToken.TrailingTrivia.Any AndAlso operatorToken.TrailingTrivia.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                        For Each e As IndexClass(Of SyntaxTrivia) In rightNode.GetLeadingTrivia.WithIndex
+                        Dim initialTriviaList As SyntaxTriviaList = rightNode.GetLeadingTrivia
+                        For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
                             Dim t As SyntaxTrivia = e.Value
-                            Dim nextTrivia As SyntaxTrivia = If(Not e.IsLast, rightNode.GetLeadingTrivia(e.Index + 1), New SyntaxTrivia)
+                            Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.Index)
                             If t.IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
                                 If nextTrivia.IsComment Then
                                     rightLeadingTrivia.Add(SpaceTrivia)
@@ -1221,12 +1228,15 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 Dim NewItemTrailingTrivia As New List(Of SyntaxTrivia)
                 Dim NewSeparatorTrailingTrivia As New List(Of SyntaxTrivia)
 
-                Dim Condition As ExpressionSyntax = DirectCast(node.Condition.Accept(Me).ConvertAndModifyNodeTrivia(NodesOrTokens, 0), ExpressionSyntax)
+                Dim Condition As ExpressionSyntax = DirectCast(node.Condition.Accept(Me).ConvertAndModifyNodeTrivia(NodesOrTokens, 0, IsStatement:=False), ExpressionSyntax)
 
                 Dim csWhenTrue As CSS.ExpressionSyntax = node.WhenTrue
                 Dim WhenTrue As ExpressionSyntax = Nothing
                 If Not csWhenTrue.IsKind(CS.SyntaxKind.ThrowExpression) Then
-                    WhenTrue = DirectCast(node.WhenTrue.Accept(Me).ConvertAndModifyNodeTrivia(NodesOrTokens, Index:=2), ExpressionSyntax)
+                    WhenTrue = DirectCast(node.WhenTrue.Accept(Me).ConvertAndModifyNodeTrivia(NodesOrTokens, Index:=2, IsStatement:=False), ExpressionSyntax)
+                    If WhenTrue.GetTrailingTrivia.ContainsCommentTrivia Then
+                        WhenTrue = WhenTrue.WithTrailingEOL
+                    End If
                 End If
 
                 Dim FirstCommaToken As SyntaxToken = CommaToken.ConvertAndModifyTokenTrivia(NodesOrTokens, Index:=1)
@@ -1234,7 +1244,10 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 Dim csWhenFalse As CSS.ExpressionSyntax = node.WhenFalse
                 Dim WhenFalse As ExpressionSyntax = Nothing
                 If Not csWhenFalse.IsKind(CS.SyntaxKind.ThrowExpression) Then
-                    WhenFalse = DirectCast(ConvertAndModifyNodeTrivia(node.WhenFalse.Accept(Me), NodesOrTokens, Index:=4), ExpressionSyntax)
+                    WhenFalse = DirectCast(ConvertAndModifyNodeTrivia(node.WhenFalse.Accept(Me), NodesOrTokens, Index:=4, IsStatement:=True), ExpressionSyntax)
+                    If WhenFalse.GetTrailingTrivia.ContainsCommentTrivia Then
+                        WhenFalse = WhenFalse.WithTrailingEOL
+                    End If
                 End If
 
                 Dim IfKeywordWithTrivia As SyntaxToken = IfKeyword.WithConvertedLeadingTriviaFrom(node.Condition.GetFirstToken)

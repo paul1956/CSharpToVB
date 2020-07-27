@@ -220,34 +220,36 @@ Public Module SyntaxTokenExtensions
 
     <Extension()>
     Public Function RemoveExtraEOL(Token As SyntaxToken) As SyntaxToken
-        Dim LeadingTrivia As List(Of SyntaxTrivia) = Token.LeadingTrivia.ToList
-        Select Case LeadingTrivia.Count
+        Dim initialTriviaList As SyntaxTriviaList = Token.LeadingTrivia
+        Select Case initialTriviaList.Count
             Case 0
                 Return Token
             Case 1
-                If LeadingTrivia.First.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                If initialTriviaList.First.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
                     Return Token.WithLeadingTrivia(New SyntaxTriviaList)
                 End If
             Case 2
-                Select Case LeadingTrivia.First.RawKind
+                Select Case initialTriviaList.First.RawKind
                     Case VB.SyntaxKind.WhitespaceTrivia
-                        If LeadingTrivia.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                        If initialTriviaList.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
                             Return Token.WithLeadingTrivia(New SyntaxTriviaList)
                         End If
                         Return Token
                     Case VB.SyntaxKind.EndOfLineTrivia
-                        If LeadingTrivia.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                        If initialTriviaList.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
                             Return Token.WithLeadingTrivia(VBEOLTrivia)
                         End If
-                        Return Token.WithLeadingTrivia(LeadingTrivia.Last)
+                        Return Token.WithLeadingTrivia(initialTriviaList.Last)
                     Case Else
+                        Stop
                 End Select
+                Stop
             Case Else
         End Select
         Dim NewLeadingTrivia As New List(Of SyntaxTrivia)
-        For Each e As IndexClass(Of SyntaxTrivia) In Token.LeadingTrivia.WithIndex
+        For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
             Dim trivia As SyntaxTrivia = e.Value
-            Dim nextTrivia As SyntaxTrivia = If(Not e.IsLast, Token.LeadingTrivia(e.Index + 1), Nothing)
+            Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.Index)
             If trivia.IsKind(VB.SyntaxKind.WhitespaceTrivia) AndAlso nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
                 Continue For
             End If
@@ -291,30 +293,29 @@ Public Module SyntaxTokenExtensions
         Else
             initialTriviaList.AddRange(Token.LeadingTrivia)
             triviaListUBound = initialTriviaList.Count - 1
-            For index As Integer = 0 To triviaListUBound
-                Dim trivia As SyntaxTrivia = initialTriviaList(index)
-                Dim NextTrivia As SyntaxTrivia = If(index < triviaListUBound, initialTriviaList(index + 1), Nothing)
-                Select Case trivia.RawKind
+            For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
+                Dim NextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.Index)
+                Select Case e.Value.RawKind
                     Case VB.SyntaxKind.WhitespaceTrivia
                         AfterEOL = False
                         afterLineContinuation = False
                         afterWhiteSpace = True
-                        finalLeadingTriviaList.Add(trivia)
+                        finalLeadingTriviaList.Add(e.Value)
                     Case VB.SyntaxKind.EndOfLineTrivia
                         afterLineContinuation = False
                         afterWhiteSpace = False
                         If AfterEOL Then
                             Continue For
                         End If
-                        finalLeadingTriviaList.Add(trivia)
+                        finalLeadingTriviaList.Add(e.Value)
                         ' What I do depends on whats next
-                        If index < triviaListUBound Then
+                        If Not e.IsLast Then
                             Dim j As Integer
                             Dim NewWhiteSpaceString As String = ""
-                            For j = index + 1 To triviaListUBound
+                            For j = e.Index + 1 To triviaListUBound
                                 If initialTriviaList(j).IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
                                     NewWhiteSpaceString &= initialTriviaList(j).ToString
-                                    index += 1
+                                    e.MoveNext()
                                 Else
                                     Exit For
                                 End If
@@ -342,12 +343,12 @@ Public Module SyntaxTokenExtensions
                             finalLeadingTriviaList.Add(LineContinuation)
                             finalLeadingTriviaList.Add(SpaceTrivia)
                         End If
-                        finalLeadingTriviaList.Add(trivia)
+                        finalLeadingTriviaList.Add(e.Value)
                         afterLineContinuation = False
                         afterWhiteSpace = False
                     Case VB.SyntaxKind.IfDirectiveTrivia, VB.SyntaxKind.DisabledTextTrivia
                         AfterEOL = False
-                        finalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(trivia))
+                        finalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(e.Value))
                         Select Case NextTrivia.RawKind
                             Case VB.SyntaxKind.None
                                 finalLeadingTriviaList.Add(VBEOLTrivia)
@@ -360,7 +361,7 @@ Public Module SyntaxTokenExtensions
                         End Select
                     Case VB.SyntaxKind.EndIfDirectiveTrivia
                         If Token.LeadingTrivia.ContainsDirectiveTrivia(VB.SyntaxKind.IfDirectiveTrivia, VB.SyntaxKind.ElseIfDirectiveTrivia) Then
-                            finalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(trivia))
+                            finalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(e.Value))
                             Select Case NextTrivia.RawKind
                                 Case VB.SyntaxKind.None
                                     finalLeadingTriviaList.Add(VBEOLTrivia)
@@ -375,7 +376,7 @@ Public Module SyntaxTokenExtensions
                         End If
                         AfterEOL = False
                         finalTrailingTriviaList.Add(VBEOLTrivia)
-                        finalTrailingTriviaList.Add(trivia)
+                        finalTrailingTriviaList.Add(e.Value)
                     Case Else
                         Stop
                 End Select
@@ -390,7 +391,7 @@ Public Module SyntaxTokenExtensions
         If LeadingToken Then
             For index As Integer = 0 To triviaListUBound
                 Dim trivia As SyntaxTrivia = initialTriviaList(index)
-                Dim nextTrivia As SyntaxTrivia = If(index < triviaListUBound, initialTriviaList(index + 1), New SyntaxTrivia)
+                Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, index)
                 Select Case trivia.RawKind
                     Case VB.SyntaxKind.WhitespaceTrivia
                         If nextTrivia.IsKind(VB.SyntaxKind.CommentTrivia) OrElse

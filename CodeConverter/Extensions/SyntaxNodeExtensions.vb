@@ -21,14 +21,14 @@ Public Module SyntaxNodeExtensions
     ''' Used at the end of a statement to adjust trivia from two items (like semicolon) the second
     ''' of which will be removed. Directives are allowed.
     ''' </summary>
-    ''' <param name="TriviaList"></param>
+    ''' <param name="InitialTriviaList"></param>
     ''' <param name="NewTrailingTrivia"></param>
     ''' <param name="FoundEOL"></param>
     ''' <param name="FoundWhiteSpace"></param>
-    Private Sub AdjustTrailingTrivia(TriviaList As IEnumerable(Of SyntaxTrivia), NewTrailingTrivia As List(Of SyntaxTrivia), ByRef FoundEOL As Boolean, ByRef FoundWhiteSpace As Boolean)
-        For Each e As IndexClass(Of SyntaxTrivia) In TriviaList.WithIndex
+    Private Sub AdjustTrailingTrivia(InitialTriviaList As IEnumerable(Of SyntaxTrivia), NewTrailingTrivia As List(Of SyntaxTrivia), ByRef FoundEOL As Boolean, ByRef FoundWhiteSpace As Boolean)
+        For Each e As IndexClass(Of SyntaxTrivia) In InitialTriviaList.WithIndex
             Dim Trivia As SyntaxTrivia = e.Value
-            Dim NextTrivia As SyntaxTrivia = If(Not e.IsLast, TriviaList(e.Index + 1), Nothing)
+            Dim NextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(InitialTriviaList, e.Index)
             Select Case Trivia.RawKind
                 Case VB.SyntaxKind.WhitespaceTrivia
                     If Not FoundWhiteSpace AndAlso Not NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
@@ -115,29 +115,26 @@ Public Module SyntaxNodeExtensions
     End Function
 
     <Extension>
-    Friend Function ConvertAndModifyNodeTrivia(Of T As VB.VisualBasicSyntaxNode)(Node As T, NodesOrTokens As List(Of SyntaxNodeOrToken), Index As Integer) As T
+    Friend Function ConvertAndModifyNodeTrivia(Of T As VB.VisualBasicSyntaxNode)(Node As T, NodesOrTokens As List(Of SyntaxNodeOrToken), Index As Integer, IsStatement As Boolean) As T
         If NodesOrTokens Is Nothing Then
             Throw New ArgumentNullException(NameOf(NodesOrTokens))
         End If
         Dim afterWhiteSpace As Boolean = False
         Dim afterLineContinuation As Boolean = False
-        Dim initialTriviaList As List(Of SyntaxTrivia) = ConvertTrivia(NodesOrTokens(Index).GetLeadingTrivia).ToList
-        Dim initialTriviaListUBound As Integer = initialTriviaList.Count - 1
-        Dim firstTrivia As Boolean = True
         Dim finalLeadingTriviaList As New List(Of SyntaxTrivia)
-        For triviaListIndex As Integer = 0 To initialTriviaListUBound
-            Dim Trivia As SyntaxTrivia = initialTriviaList(triviaListIndex)
-            Dim nextTrivia As SyntaxTrivia = If(triviaListIndex < initialTriviaListUBound, initialTriviaList(triviaListIndex + 1), New SyntaxTrivia)
-            Select Case Trivia.RawKind
+        Dim initialTriviaList As List(Of SyntaxTrivia) = ConvertTrivia(NodesOrTokens(Index).GetLeadingTrivia).ToList
+        For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
+            Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.Index)
+
+            Select Case e.Value.RawKind
                 Case VB.SyntaxKind.WhitespaceTrivia
                     afterLineContinuation = False
                     afterWhiteSpace = True
-                    firstTrivia = False
-                    finalLeadingTriviaList.Add(Trivia)
+                    finalLeadingTriviaList.Add(e.Value)
                 Case VB.SyntaxKind.EndOfLineTrivia
                     ' we want to skip any leading trivia
-                    If Not firstTrivia Then
-                        finalLeadingTriviaList.Add(Trivia)
+                    If Not e.IsFirst Then
+                        finalLeadingTriviaList.Add(e.Value)
                         afterLineContinuation = False
                         afterWhiteSpace = False
                         If Index < NodesOrTokens.Count - 1 Then
@@ -148,76 +145,66 @@ Public Module SyntaxNodeExtensions
                         End If
                     End If
                 Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
-                    firstTrivia = False
                     If Not afterWhiteSpace Then
                         finalLeadingTriviaList.Add(SpaceTrivia)
                     End If
                     finalLeadingTriviaList.Add(LineContinuation)
-                    finalLeadingTriviaList.Add(Trivia)
+                    finalLeadingTriviaList.Add(e.Value)
                     If Not nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
                         finalLeadingTriviaList.Add(VBEOLTrivia)
                     End If
                 Case VB.SyntaxKind.DisableWarningDirectiveTrivia, VB.SyntaxKind.EnableWarningDirectiveTrivia
-                    firstTrivia = False
                     Stop
                 Case VB.SyntaxKind.IfDirectiveTrivia
-                    firstTrivia = False
-                    finalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(Trivia))
+                    finalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(e.Value))
                 Case VB.SyntaxKind.DisabledTextTrivia
-                    firstTrivia = False
-                    finalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(Trivia))
+                    finalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(e.Value))
                 Case VB.SyntaxKind.ElseDirectiveTrivia
-                    firstTrivia = False
-                    finalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(Trivia))
+                    finalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(e.Value))
                 Case VB.SyntaxKind.EndIfDirectiveTrivia
-                    firstTrivia = False
-                    finalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(Trivia))
+                    finalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(e.Value))
                 Case Else
                     Stop
             End Select
         Next
         initialTriviaList.Clear()
         initialTriviaList.AddRange(ConvertTrivia(NodesOrTokens(Index).GetTrailingTrivia))
-        initialTriviaListUBound = initialTriviaList.Count - 1
 
         Dim finalTrailingTriviaList As New List(Of SyntaxTrivia)
-        For initialTriviaIndex As Integer = 0 To initialTriviaList.Count - 1
-            Dim trivia As SyntaxTrivia = initialTriviaList(initialTriviaIndex)
-            Select Case trivia.RawKind
+        For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
+            Select Case e.Value.RawKind
                 Case VB.SyntaxKind.WhitespaceTrivia
-                    finalTrailingTriviaList.Add(trivia)
+                    finalTrailingTriviaList.Add(e.Value)
                 Case VB.SyntaxKind.EndOfLineTrivia
                     ' What to do depends on whats next
                     If Index < NodesOrTokens.Count - 1 Then
                         Dim j As Integer
                         Dim NewWhiteSpaceString As String = ""
-                        If initialTriviaIndex < initialTriviaListUBound Then
-                            For j = initialTriviaIndex + 1 To initialTriviaListUBound
+                        If Not e.IsLast Then
+                            For j = e.Index + 1 To initialTriviaList.Count - 1
                                 If initialTriviaList(j).RawKind = VB.SyntaxKind.WhitespaceTrivia Then
                                     NewWhiteSpaceString &= initialTriviaList(j).ToString
-                                    initialTriviaIndex += 1
+                                    e.MoveNext()
                                 Else
                                     Exit For
                                 End If
                             Next
                         End If
-                        If j = 0 OrElse (j < initialTriviaListUBound AndAlso initialTriviaList(j).IsComment) Then
-                            If String.IsNullOrWhiteSpace(NewWhiteSpaceString) Then
-                                finalTrailingTriviaList.Add(SpaceTrivia)
-                            Else
-                                finalTrailingTriviaList.Add(VBFactory.WhitespaceTrivia(NewWhiteSpaceString))
-                            End If
+                        If (Not IsStatement) OrElse ((Not e.IsLast) AndAlso e.Value.IsComment) Then
+                            Dim whitespaceTrivia As SyntaxTrivia = If(NewWhiteSpaceString.Length = 0, SpaceTrivia, VBFactory.WhitespaceTrivia(NewWhiteSpaceString))
+                            finalTrailingTriviaList.Add(SpaceTrivia)
                             finalTrailingTriviaList.Add(LineContinuation)
-                            finalTrailingTriviaList.Add(trivia)
+                            finalTrailingTriviaList.Add(whitespaceTrivia)
+                            finalTrailingTriviaList.Add(e.Value)
                             afterLineContinuation = True
                         Else
-                            finalTrailingTriviaList.Add(trivia)
+                            finalTrailingTriviaList.Add(e.Value)
                             If Not String.IsNullOrWhiteSpace(NewWhiteSpaceString) Then
                                 finalTrailingTriviaList.Add(VBFactory.WhitespaceTrivia(NewWhiteSpaceString))
                             End If
                         End If
                     Else
-                        finalTrailingTriviaList.Add(trivia)
+                        finalTrailingTriviaList.Add(e.Value)
                         afterLineContinuation = False
                         afterWhiteSpace = False
                     End If
@@ -229,7 +216,7 @@ Public Module SyntaxNodeExtensions
                         finalTrailingTriviaList.Add(LineContinuation)
                         finalTrailingTriviaList.Add(SpaceTrivia)
                     End If
-                    finalTrailingTriviaList.Add(trivia)
+                    finalTrailingTriviaList.Add(e.Value)
                     afterLineContinuation = False
                     afterWhiteSpace = False
                 Case Else
@@ -387,9 +374,10 @@ Public Module SyntaxNodeExtensions
         End Select
         Dim NewLeadingTrivia As New List(Of SyntaxTrivia)
         Dim FirstTrivia As Boolean = True
-        For Each e As IndexClass(Of SyntaxTrivia) In node.GetLeadingTrivia.WithIndex
+        Dim intialTriviaList As SyntaxTriviaList = node.GetLeadingTrivia
+        For Each e As IndexClass(Of SyntaxTrivia) In intialTriviaList.WithIndex
             Dim Trivia As SyntaxTrivia = e.Value
-            Dim NextTrivia As SyntaxTrivia = If(Not e.IsLast, node.GetLeadingTrivia(e.Index + 1), Nothing)
+            Dim NextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(intialTriviaList, e.Index)
             If Trivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) AndAlso (FirstTrivia OrElse NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia)) Then
                 Continue For
             End If
@@ -465,7 +453,7 @@ Public Module SyntaxNodeExtensions
         Dim FinalTrailingTriviaList As New List(Of SyntaxTrivia)
         For Each e As IndexClass(Of SyntaxTrivia) In InitialTriviaList.WithIndex
             Dim Trivia As SyntaxTrivia = e.Value
-            Dim NextTrivia As SyntaxTrivia = If(Not e.IsLast, InitialTriviaList(e.Index + 1), VBFactory.ElasticMarker)
+            Dim NextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(InitialTriviaList, e.Index)
             Select Case Trivia.RawKind
                 Case VB.SyntaxKind.WhitespaceTrivia
                     If NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
@@ -544,7 +532,7 @@ Public Module SyntaxNodeExtensions
         Dim InitialTriviaList As List(Of SyntaxTrivia) = Node.GetLeadingTrivia.ToList
         For Each e As IndexClass(Of SyntaxTrivia) In InitialTriviaList.WithIndex
             Dim Trivia As SyntaxTrivia = e.Value
-            Dim NextTrivia As SyntaxTrivia = If(Not e.IsLast, InitialTriviaList(e.Index + 1), Nothing)
+            Dim NextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(InitialTriviaList, e.Index)
             Select Case Trivia.RawKind
                 Case VB.SyntaxKind.WhitespaceTrivia
                     If NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) OrElse AfterLineContinuation Then
@@ -630,7 +618,7 @@ Public Module SyntaxNodeExtensions
         Dim FinalTrailingTriviaList As New List(Of SyntaxTrivia)
         For Each e As IndexClass(Of SyntaxTrivia) In InitialTriviaList.WithIndex
             Dim Trivia As SyntaxTrivia = e.Value
-            Dim NextTrivia As SyntaxTrivia = If(Not e.IsLast, InitialTriviaList(e.Index + 1), VBFactory.ElasticMarker)
+            Dim NextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(InitialTriviaList, e.Index)
             Select Case Trivia.RawKind
                 Case VB.SyntaxKind.WhitespaceTrivia
                     If NextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
@@ -758,75 +746,131 @@ Public Module SyntaxNodeExtensions
         If Count = 0 Then
             Return node.WithTrailingTrivia(VBEOLTrivia)
         End If
-        Select Case Count
-            Case 1
-                Select Case TrailingTrivia.Last.RawKind
-                    Case VB.SyntaxKind.WhitespaceTrivia, VB.SyntaxKind.EndOfLineTrivia
-                        Return node.WithTrailingTrivia(VBEOLTrivia)
-                    Case Else
-                        TrailingTrivia.Add(VBEOLTrivia)
-                        Return node.WithTrailingTrivia(TrailingTrivia)
-                End Select
-            Case 2
-                Select Case TrailingTrivia.First.RawKind
-                    Case VB.SyntaxKind.WhitespaceTrivia
-                        Select Case TrailingTrivia.Last.RawKind
-                            Case VB.SyntaxKind.WhitespaceTrivia, VB.SyntaxKind.EndOfLineTrivia
-                                ' Replace Whitespace, Whitespace and Whitespace, EOL with just EOL
-                                TrailingTrivia = New List(Of SyntaxTrivia)
+        If Count = 1 Then
+            Select Case TrailingTrivia(0).RawKind
+                Case VB.SyntaxKind.EndOfLineTrivia
+                    Return node
+                Case VB.SyntaxKind.WhitespaceTrivia
+                    Return node.WithTrailingTrivia(VBEOLTrivia)
+            End Select
+            TrailingTrivia.Add(VBEOLTrivia)
+            Return node.WithTrailingTrivia(TrailingTrivia)
+        End If
+        If Count = 2 Then
+            Select Case TrailingTrivia(0).RawKind
+                Case VB.SyntaxKind.WhitespaceTrivia
+                    Select Case TrailingTrivia(1).RawKind
+                        Case VB.SyntaxKind.WhitespaceTrivia, VB.SyntaxKind.EndOfLineTrivia
+                            ' Replace Whitespace, Whitespace and Whitespace, EOL with just EOL
+                            TrailingTrivia = New List(Of SyntaxTrivia)
                                     ' EOL added below
-                            Case VB.SyntaxKind.CommentTrivia
-                                ' nothing to do EOL added below
-                            Case Else
-                                Stop
-                        End Select
-                    Case VB.SyntaxKind.EndOfLineTrivia
-                        If TrailingTrivia.Last.IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
-                            Return node
-                        ElseIf TrailingTrivia.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                            Return node.WithTrailingTrivia(VBEOLTrivia)
-                        ElseIf TrailingTrivia.Last.IsDirective Then
-                            Return node
-                        End If
-                        Stop
-                    Case VB.SyntaxKind.CommentTrivia
-                        If TrailingTrivia.Last.IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
-                            TrailingTrivia.RemoveAt(1)
-                            TrailingTrivia.Insert(0, SpaceTrivia)
-                            ' EOL added below
+                        Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.LineContinuationTrivia
+                            ' nothing to do EOL added below
+                        Case Else
                             Stop
-                        End If
-                    Case Else
-                        Stop
-                End Select
-                TrailingTrivia.Add(VBEOLTrivia)
-                Return node.WithTrailingTrivia(TrailingTrivia)
-            Case Else
-                Count -= 1 ' Last index
-                Select Case TrailingTrivia.Last.RawKind
-                    Case VB.SyntaxKind.EndOfLineTrivia
-                        If TrailingTrivia(Count - 1).IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                            TrailingTrivia.RemoveAt(Count)
-                            Return node.WithTrailingTrivia(TrailingTrivia).WithTrailingEOL
-                        End If
+                    End Select
+                Case VB.SyntaxKind.EndOfLineTrivia
+                    If TrailingTrivia(1).IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
                         Return node
-                    Case VB.SyntaxKind.WhitespaceTrivia
-                        If TrailingTrivia(Count - 1).IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
-                            TrailingTrivia.RemoveAt(Count - 1)
-                            Return node.WithTrailingTrivia(TrailingTrivia).WithTrailingEOL
-                        ElseIf TrailingTrivia(Count - 1).IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                            Return node
-                        ElseIf TrailingTrivia(Count - 1).IsCommentOrDirectiveTrivia Then
-                            TrailingTrivia.Insert(Count, VBEOLTrivia)
-                            Return node.WithTrailingTrivia(TrailingTrivia)
-                        End If
-                        Return node.WithTrailingTrivia(TrailingTrivia)
-                    Case Else
-                        Stop
-                End Select
-                Stop
-        End Select
-        Return node
+                    ElseIf TrailingTrivia(1).IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                        Return node.WithTrailingTrivia(VBEOLTrivia)
+                    ElseIf TrailingTrivia(1).IsDirective Then
+                        Return node
+                    End If
+                    Stop
+                Case VB.SyntaxKind.CommentTrivia
+                    If TrailingTrivia(1).IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
+                        TrailingTrivia.RemoveAt(1)
+                        TrailingTrivia.Insert(0, SpaceTrivia)
+                        ' EOL added below
+                    End If
+                Case Else
+                    Stop
+            End Select
+            TrailingTrivia.Add(VBEOLTrivia)
+            Return node.WithTrailingTrivia(TrailingTrivia)
+        End If
+        Dim newTrailingTrivia As New List(Of SyntaxTrivia)
+        For Each e As IndexClass(Of SyntaxTrivia) In TrailingTrivia.WithIndex
+            Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(TrailingTrivia, e.Index)
+            Select Case e.Value.RawKind
+                Case VB.SyntaxKind.WhitespaceTrivia
+                    Select Case nextTrivia.RawKind
+                        Case VB.SyntaxKind.WhitespaceTrivia
+                            newTrailingTrivia.Add(AdjustWhitespace(e.Value, nextTrivia, False))
+                            e.MoveNext()
+                            If e.IsLast Then
+                                newTrailingTrivia.Add(VBEOLTrivia)
+                            End If
+                        Case VB.SyntaxKind.EndOfLineTrivia
+                            ' Ignore white space before EOL
+                        Case VB.SyntaxKind.CommentTrivia
+                            newTrailingTrivia.Add(e.Value)
+                        Case VB.SyntaxKind.LineContinuationTrivia
+                            newTrailingTrivia.Add(e.Value)
+                        Case VB.SyntaxKind.None
+                            newTrailingTrivia.Add(e.Value)
+                        Case VB.SyntaxKind.RegionDirectiveTrivia,
+                             VB.SyntaxKind.EndRegionDirectiveTrivia
+                            newTrailingTrivia.Add(e.Value)
+                        Case Else
+                            Stop
+                    End Select
+                Case VB.SyntaxKind.EndOfLineTrivia
+                    If Not (nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) OrElse newTrailingTrivia.LastOrDefault.IsKind(VB.SyntaxKind.EndOfLineTrivia)) Then
+                        newTrailingTrivia.Add(e.Value)
+                    End If
+                Case VB.SyntaxKind.LineContinuationTrivia
+                    Select Case nextTrivia.RawKind
+                        Case VB.SyntaxKind.WhitespaceTrivia
+                            newTrailingTrivia.Add(e.Value)
+                        Case VB.SyntaxKind.EndOfLineTrivia
+                            newTrailingTrivia.Add(e.Value)
+                        Case VB.SyntaxKind.CommentTrivia
+                            newTrailingTrivia.Add(e.Value)
+                        Case VB.SyntaxKind.LineContinuationTrivia
+                            ' ignore
+                        Case Else
+                            Stop
+                    End Select
+                Case VB.SyntaxKind.CommentTrivia,
+                     VB.SyntaxKind.DocumentationCommentExteriorTrivia,
+                     VB.SyntaxKind.DocumentationCommentTrivia
+                    Select Case nextTrivia.RawKind
+                        Case VB.SyntaxKind.WhitespaceTrivia
+                            newTrailingTrivia.Add(e.Value)
+                            If GetForwardTriviaOrDefault(TrailingTrivia, e.Index, lookaheadCount:=2).IsKind(VB.SyntaxKind.LineContinuationTrivia) Then
+                                newTrailingTrivia.Add(VBEOLTrivia)
+                            Else
+                                e.MoveNext()
+                                If e.IsLast Then
+                                    newTrailingTrivia.Add(VBEOLTrivia)
+                                End If
+                            End If
+                        Case VB.SyntaxKind.EndOfLineTrivia
+                            newTrailingTrivia.Add(e.Value)
+                        Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentExteriorTrivia, VB.SyntaxKind.DocumentationCommentTrivia
+                            newTrailingTrivia.Add(e.Value)
+                            newTrailingTrivia.Add(VBEOLTrivia)
+                        Case Else
+                            Stop
+                    End Select
+                Case VB.SyntaxKind.IfDirectiveTrivia,
+                     VB.SyntaxKind.DisabledTextTrivia,
+                     VB.SyntaxKind.ElseIfDirectiveTrivia,
+                     VB.SyntaxKind.ElseDirectiveTrivia,
+                     VB.SyntaxKind.EndIfDirectiveTrivia,
+                     VB.SyntaxKind.RegionDirectiveTrivia,
+                     VB.SyntaxKind.EndRegionDirectiveTrivia
+                    newTrailingTrivia.Add(e.Value)
+                    If e.IsLast Then
+                        newTrailingTrivia.Add(VBEOLTrivia)
+                    End If
+                Case Else
+                    Stop
+            End Select
+        Next
+        Return node.WithTrailingTrivia(newTrailingTrivia)
     End Function
 
     <Extension>
@@ -1068,15 +1112,15 @@ Public Module SyntaxNodeExtensions
     End Function
 
     <Extension>
-    Public Function ConvertTrivia(TriviaToConvert As IReadOnlyCollection(Of SyntaxTrivia)) As IEnumerable(Of SyntaxTrivia)
+    Public Function ConvertTrivia(initialTriviaList As IReadOnlyCollection(Of SyntaxTrivia)) As IEnumerable(Of SyntaxTrivia)
         Dim TriviaList As New List(Of SyntaxTrivia)
-        If TriviaToConvert Is Nothing Then
+        If initialTriviaList Is Nothing Then
             Return TriviaList
         End If
         Try
-            For Each e As IndexClass(Of SyntaxTrivia) In TriviaToConvert.WithIndex
+            For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
                 Dim Trivia As SyntaxTrivia = e.Value
-                Dim NextTrivia As SyntaxTrivia = If(Not e.IsLast, TriviaToConvert(e.Index + 1), Nothing)
+                Dim NextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.Index)
                 Select Case Trivia.RawKind
                     Case CS.SyntaxKind.MultiLineCommentTrivia
                         Dim Lines() As String = Trivia.ToFullString.Substring(2).Split(CType(vbLf, Char))
@@ -1090,7 +1134,7 @@ Public Module SyntaxNodeExtensions
                                 TriviaList.Add(VBFactory.CommentTrivia($"' {RemoveLeadingSpacesAndStar(line)}"))
                                 TriviaList.Add(VBEOLTrivia)
                             End If
-                            If Lines.Length = 1 AndAlso (e.IsLast OrElse Not TriviaToConvert(e.Index + 1).IsEndOfLine) Then
+                            If Lines.Length = 1 AndAlso (e.IsLast OrElse Not initialTriviaList(e.Index + 1).IsEndOfLine) Then
                                 TriviaList.Add(VBEOLTrivia)
                             End If
                         Next

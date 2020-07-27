@@ -309,11 +309,11 @@ End Function
                         ClassStatement = ClassStatement.WithTrailingEOL
                     Else
                         If ClassStatement.GetTrailingTrivia.ContainsCommentOrDirectiveTrivia Then
-                            Dim OldTrailingTrivia As SyntaxTriviaList = ClassStatement.GetTrailingTrivia
+                            Dim initialTriviaList As SyntaxTriviaList = ClassStatement.GetTrailingTrivia
                             Dim NewTrailingTrivia As New List(Of SyntaxTrivia)
-                            For Each e As IndexClass(Of SyntaxTrivia) In OldTrailingTrivia.WithIndex
+                            For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
                                 Dim Trivia As SyntaxTrivia = e.Value
-                                Dim NextTrivia As SyntaxTrivia = If(Not e.IsLast, OldTrailingTrivia(e.Index + 1), Nothing)
+                                Dim NextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.Index)
                                 Dim FoundSpace As Boolean = False
                                 Select Case Trivia.RawKind
                                     Case VB.SyntaxKind.WhitespaceTrivia
