@@ -78,27 +78,30 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 If node.ToString = "void*" Then
                     Return PredefinedTypeObject.WithConvertedTriviaFrom(node.Parent)
                 End If
-                Dim NodeParent As SyntaxNode = node.Parent
-                If TypeOf NodeParent Is CSS.CastExpressionSyntax Then
-                    Dim OperandWithAmpersand As CSS.ExpressionSyntax = DirectCast(node.Parent, CSS.CastExpressionSyntax).Expression
-                    Return VBFactory.AddressOfExpression(VBFactory.ParseExpression(OperandWithAmpersand.ToString).WithConvertedTriviaFrom(OperandWithAmpersand))
-                End If
-                If TypeOf NodeParent Is CSS.VariableDeclarationSyntax Then
-                    Dim Operand As VBS.TypeSyntax = DirectCast(node.ElementType.Accept(Me), VBS.TypeSyntax)
-                    Return VBFactory.AddressOfExpression(VBFactory.ParseExpression(Operand.ToString).WithConvertedTriviaFrom(node.ElementType))
-                End If
-                If TypeOf NodeParent Is CSS.ParameterSyntax Then
-                    Dim Operand As VBS.TypeSyntax = DirectCast(node.ElementType.Accept(Me), VBS.TypeSyntax)
-                    Return Operand.WithConvertedTriviaFrom(node.ElementType)
-                End If
 
-                If node.ToString = "int*" Then
-                    Return IntPtrType
-                End If
-                If node.ToString = "char*" Then
-                    Return IntPtrType
-                End If
-                Return IntPtrType
+                Return node.Parent.TypeSwitch(
+                    Function(m As CSS.CastExpressionSyntax)
+                        Return VBFactory.AddressOfExpression(VBFactory.ParseExpression(m.Expression.ToString).WithConvertedTriviaFrom(m))
+                    End Function,
+                    Function(c As CSS.VariableDeclarationSyntax)
+                        Dim Operand As VBS.TypeSyntax = DirectCast(node.ElementType.Accept(Me), VBS.TypeSyntax)
+                        Return VBFactory.AddressOfExpression(VBFactory.ParseExpression(Operand.ToString).WithConvertedTriviaFrom(node.ElementType))
+                    End Function,
+                    Function(d As CSS.ParameterSyntax)
+                        Dim Operand As VBS.TypeSyntax = DirectCast(node.ElementType.Accept(Me), VBS.TypeSyntax)
+                        Return Operand.WithConvertedTriviaFrom(node.ElementType)
+                    End Function,
+                    Function(i As CSS.PointerTypeSyntax)
+                        Return IntPtrType
+                    End Function,
+                    Function(t As CSS.TypeOfExpressionSyntax)
+                        Return IntPtrType
+                    End Function,
+                    Function(Underscore As SyntaxNode) As VB.VisualBasicSyntaxNode
+                        Throw New NotImplementedException($"{Underscore.[GetType]().FullName} not implemented!")
+                    End Function
+                    )
+
             End Function
 
             Public Overrides Function VisitPredefinedType(node As CSS.PredefinedTypeSyntax) As VB.VisualBasicSyntaxNode

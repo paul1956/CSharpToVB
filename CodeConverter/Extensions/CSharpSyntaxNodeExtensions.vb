@@ -41,10 +41,6 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
         Friend Function IsNotInStructure(node As CS.CSharpSyntaxNode) As Boolean
             Dim StatementWithIssues As CS.CSharpSyntaxNode = node
             While StatementWithIssues IsNot Nothing
-                'If TypeOf StatementWithIssues Is CSS.ClassDeclarationSyntax Then
-                '    Exit While
-                'End If
-
                 If TypeOf StatementWithIssues Is CSS.StructDeclarationSyntax Then
                     Exit While
                 End If
