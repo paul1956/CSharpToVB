@@ -825,8 +825,8 @@ Namespace Global.Microsoft.VisualBasic.ApplicationServices
         <SecuritySafeCritical()>
         Public Sub Run(commandLine As String())
             'Prime the command line args with what we receive from Main() so that Click-Once windows apps don't have to do a System.Environment call which would require permissions.
-            InternalCommandLine = New ReadOnlyCollection(Of String)(commandLine)
-
+            Me.SetInternalCommandLine(New ReadOnlyCollection(Of String)(commandLine)
+)
             If Not IsSingleInstance Then
                 Me.DoApplicationModel()
             Else 'This is a Single-Instance application

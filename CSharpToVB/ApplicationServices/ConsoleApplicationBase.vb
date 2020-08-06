@@ -51,12 +51,9 @@ Namespace Global.Microsoft.VisualBasic.ApplicationServices
         ''' Allows derived classes to set what the command line should look like.  WindowsFormsApplicationBase calls this
         ''' for instance because we snag the command line from Main().
         ''' </summary>
-        <EditorBrowsable(EditorBrowsableState.Advanced)>
-        Protected WriteOnly Property InternalCommandLine() As ObjectModel.ReadOnlyCollection(Of String)
-            Set(value As ObjectModel.ReadOnlyCollection(Of String))
-                _commandLineArgs = value
-            End Set
-        End Property
+        Protected Sub SetInternalCommandLine(value As ObjectModel.ReadOnlyCollection(Of String))
+            _commandLineArgs = value
+        End Sub
 
         Private _commandLineArgs As ObjectModel.ReadOnlyCollection(Of String) ' Lazy-initialized and cached collection of command line arguments.
     End Class 'ApplicationBase

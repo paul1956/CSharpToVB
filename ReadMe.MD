@@ -65,6 +65,7 @@ Any changes to CSharpToVB application needs to change the version information in
   New in 4.5.2.8/3.4.6.1
   - Remove ByVal
   - Remove old suppressions
+  - Add \<ExcludeFromCodeCoverage\> Attribute for all the TypeSwitch Extensions that are not being used.<Br>If you use one remove this Attribute.
 
 
   New in 4.5.2.7/3.4.6.0
