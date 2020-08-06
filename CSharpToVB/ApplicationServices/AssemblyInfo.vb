@@ -22,7 +22,7 @@ Namespace Global.Microsoft.VisualBasic.ApplicationServices
         ''' Creates an AssemblyInfo from an assembly
         ''' </summary>
         ''' <param name="CurrentAssembly">The assembly for which we want to obtain the information.</param>
-        Public Sub New(ByVal currentAssembly As Assembly)
+        Public Sub New(currentAssembly As Assembly)
             If currentAssembly Is Nothing Then
                 Throw New ArgumentNullException(NameOf(currentAssembly))
             End If
@@ -195,7 +195,7 @@ Namespace Global.Microsoft.VisualBasic.ApplicationServices
         ''' </summary>
         ''' <param name="AttributeType">The type of the required attribute.</param>
         ''' <returns>The attribute with the given type gotten from the assembly, or Nothing.</returns>
-        Private Function GetAttribute(ByVal AttributeType As Type) As Object
+        Private Function GetAttribute(AttributeType As Type) As Object
 
             Debug.Assert(_assembly IsNot Nothing, "Null m_Assembly")
 

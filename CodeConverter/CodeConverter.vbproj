@@ -16,8 +16,8 @@
     <Product>VB Core Code Converter</Product>
     <RepositoryUrl>https://github.com/paul1956/CSharpToVB</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <AssemblyVersion>3.4.6.0</AssemblyVersion>
-    <FileVersion>3.4.6.0</FileVersion>
+    <AssemblyVersion>3.4.6.1</AssemblyVersion>
+    <FileVersion>3.4.6.1</FileVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="CSharpToVBVisitors\BodyVisitor.vb" />

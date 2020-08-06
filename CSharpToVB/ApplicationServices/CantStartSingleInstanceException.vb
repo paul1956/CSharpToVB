@@ -19,7 +19,7 @@ Namespace Global.Microsoft.VisualBasic.ApplicationServices
 
         ' De-serialization constructor must be defined since we are serializable
         <EditorBrowsable(EditorBrowsableState.Advanced)>
-        Protected Sub New(ByVal info As SerializationInfo, ByVal context As StreamingContext)
+        Protected Sub New(info As SerializationInfo, context As StreamingContext)
             MyBase.New(info, context)
         End Sub
 

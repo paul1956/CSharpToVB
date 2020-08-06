@@ -523,7 +523,7 @@ Namespace Global.Microsoft.VisualBasic.ApplicationServices
             _ok2CloseSplashScreen = True
         End Sub
 
-        Private Sub OnStartupNextInstanceMarshallingAdaptor(ByVal args As String())
+        Private Sub OnStartupNextInstanceMarshallingAdaptor(args As String())
             If MainForm Is Nothing Then
                 Exit Sub
             End If
@@ -808,7 +808,7 @@ Namespace Global.Microsoft.VisualBasic.ApplicationServices
         ''' that have the same Major and Minor Version Number
         ''' </returns>
         ''' <remarks>If GUID Attribute does not exist fall back to unique ModuleVersionId</remarks>
-        Private Shared Function GetApplicationInstanceID(ByVal Entry As Assembly) As String
+        Private Shared Function GetApplicationInstanceID(Entry As Assembly) As String
             Dim customAttributes As Object() = Entry.GetCustomAttributes(GetType(GuidAttribute), True)
             If customAttributes.Any Then
                 Dim attribute As GuidAttribute = CType(customAttributes.First, GuidAttribute)

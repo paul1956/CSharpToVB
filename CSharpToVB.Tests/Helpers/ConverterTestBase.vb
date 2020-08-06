@@ -174,9 +174,8 @@ Namespace CodeConverter.Tests
                     Return (index + 1, $"Expected Character ""{DesiredLine.Substring(index, 1)}"", Actual Character ""{ActualLine.Substring(index, 1)}""")
                 End If
             Next
-#Disable Warning CC0013 ' Use Ternary operator.
+
             If DesiredLine.Length > ActualLine.Length Then
-#Enable Warning CC0013 ' Use Ternary operator.
                 Return (minLength + 1, $"Expected Character ""{DesiredLine.Substring(minLength + 1, 1)}"", Actual Character Nothing")
             Else
                 Return (minLength + 1, $"Expected Character Nothing, Actual Character ""{ActualLine.Substring(minLength + 1, 1)}""")

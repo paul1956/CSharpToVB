@@ -4,12 +4,12 @@
 
 Imports System.Runtime.CompilerServices
 
-Public Module ObjectExtensions
+Friend Module ObjectExtensions
 
 #Region "TypeSwitch on Action"
 
     <Extension>
-    Public Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType)(obj As TBaseType, matchAction1 As Action(Of TDerivedType1), Optional defaultAction As Action(Of TBaseType) = Nothing)
+    Friend Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType)(obj As TBaseType, matchAction1 As Action(Of TDerivedType1), Optional defaultAction As Action(Of TBaseType) = Nothing)
         If TypeOf obj Is TDerivedType1 Then
             matchAction1(DirectCast(obj, TDerivedType1))
         ElseIf defaultAction IsNot Nothing Then
@@ -18,7 +18,7 @@ Public Module ObjectExtensions
     End Sub
 
     <Extension>
-    Public Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType)(obj As TBaseType, matchAction1 As Action(Of TDerivedType1), matchAction2 As Action(Of TDerivedType2), Optional defaultAction As Action(Of TBaseType) = Nothing)
+    Friend Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType)(obj As TBaseType, matchAction1 As Action(Of TDerivedType1), matchAction2 As Action(Of TDerivedType2), Optional defaultAction As Action(Of TBaseType) = Nothing)
         If TypeOf obj Is TDerivedType1 Then
             matchAction1(DirectCast(obj, TDerivedType1))
         ElseIf TypeOf obj Is TDerivedType2 Then
@@ -29,7 +29,7 @@ Public Module ObjectExtensions
     End Sub
 
     <Extension>
-    Public Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType)(obj As TBaseType, matchAction1 As Action(Of TDerivedType1), matchAction2 As Action(Of TDerivedType2), matchAction3 As Action(Of TDerivedType3), Optional defaultAction As Action(Of TBaseType) = Nothing)
+    Friend Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType)(obj As TBaseType, matchAction1 As Action(Of TDerivedType1), matchAction2 As Action(Of TDerivedType2), matchAction3 As Action(Of TDerivedType3), Optional defaultAction As Action(Of TBaseType) = Nothing)
         If TypeOf obj Is TDerivedType1 Then
             matchAction1(DirectCast(obj, TDerivedType1))
         ElseIf TypeOf obj Is TDerivedType2 Then
@@ -42,7 +42,7 @@ Public Module ObjectExtensions
     End Sub
 
     <Extension>
-    Public Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType)(obj As TBaseType, matchAction1 As Action(Of TDerivedType1), matchAction2 As Action(Of TDerivedType2), matchAction3 As Action(Of TDerivedType3), matchAction4 As Action(Of TDerivedType4), Optional defaultAction As Action(Of TBaseType) = Nothing)
+    Friend Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType)(obj As TBaseType, matchAction1 As Action(Of TDerivedType1), matchAction2 As Action(Of TDerivedType2), matchAction3 As Action(Of TDerivedType3), matchAction4 As Action(Of TDerivedType4), Optional defaultAction As Action(Of TBaseType) = Nothing)
         If TypeOf obj Is TDerivedType1 Then
             matchAction1(DirectCast(obj, TDerivedType1))
         ElseIf TypeOf obj Is TDerivedType2 Then
@@ -57,7 +57,7 @@ Public Module ObjectExtensions
     End Sub
 
     <Extension>
-    Public Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType)(obj As TBaseType, matchAction1 As Action(Of TDerivedType1), matchAction2 As Action(Of TDerivedType2), matchAction3 As Action(Of TDerivedType3), matchAction4 As Action(Of TDerivedType4), matchAction5 As Action(Of TDerivedType5),
+    Friend Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType)(obj As TBaseType, matchAction1 As Action(Of TDerivedType1), matchAction2 As Action(Of TDerivedType2), matchAction3 As Action(Of TDerivedType3), matchAction4 As Action(Of TDerivedType4), matchAction5 As Action(Of TDerivedType5),
         Optional defaultAction As Action(Of TBaseType) = Nothing)
         If TypeOf obj Is TDerivedType1 Then
             matchAction1(DirectCast(obj, TDerivedType1))
@@ -75,7 +75,7 @@ Public Module ObjectExtensions
     End Sub
 
     <Extension>
-    Public Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType)(obj As TBaseType, matchAction1 As Action(Of TDerivedType1), matchAction2 As Action(Of TDerivedType2), matchAction3 As Action(Of TDerivedType3), matchAction4 As Action(Of TDerivedType4), matchAction5 As Action(Of TDerivedType5),
         matchAction6 As Action(Of TDerivedType6), Optional defaultAction As Action(Of TBaseType) = Nothing)
         If TypeOf obj Is TDerivedType1 Then
@@ -96,7 +96,7 @@ Public Module ObjectExtensions
     End Sub
 
     <Extension>
-    Public Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType)(obj As TBaseType, matchAction1 As Action(Of TDerivedType1), matchAction2 As Action(Of TDerivedType2), matchAction3 As Action(Of TDerivedType3), matchAction4 As Action(Of TDerivedType4), matchAction5 As Action(Of TDerivedType5),
         matchAction6 As Action(Of TDerivedType6), matchAction7 As Action(Of TDerivedType7), Optional defaultAction As Action(Of TBaseType) = Nothing)
         If TypeOf obj Is TDerivedType1 Then
@@ -119,7 +119,7 @@ Public Module ObjectExtensions
     End Sub
 
     <Extension>
-    Public Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType)(obj As TBaseType, matchAction1 As Action(Of TDerivedType1), matchAction2 As Action(Of TDerivedType2), matchAction3 As Action(Of TDerivedType3), matchAction4 As Action(Of TDerivedType4), matchAction5 As Action(Of TDerivedType5),
         matchAction6 As Action(Of TDerivedType6), matchAction7 As Action(Of TDerivedType7), matchAction8 As Action(Of TDerivedType8), Optional defaultAction As Action(Of TBaseType) = Nothing)
         If TypeOf obj Is TDerivedType1 Then
@@ -144,7 +144,7 @@ Public Module ObjectExtensions
     End Sub
 
     <Extension>
-    Public Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType)(obj As TBaseType, matchAction1 As Action(Of TDerivedType1), matchAction2 As Action(Of TDerivedType2), matchAction3 As Action(Of TDerivedType3), matchAction4 As Action(Of TDerivedType4), matchAction5 As Action(Of TDerivedType5),
         matchAction6 As Action(Of TDerivedType6), matchAction7 As Action(Of TDerivedType7), matchAction8 As Action(Of TDerivedType8), matchAction9 As Action(Of TDerivedType9), Optional defaultAction As Action(Of TBaseType) = Nothing)
         If TypeOf obj Is TDerivedType1 Then
@@ -171,7 +171,7 @@ Public Module ObjectExtensions
     End Sub
 
     <Extension>
-    Public Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType)(obj As TBaseType, matchAction1 As Action(Of TDerivedType1), matchAction2 As Action(Of TDerivedType2), matchAction3 As Action(Of TDerivedType3), matchAction4 As Action(Of TDerivedType4), matchAction5 As Action(Of TDerivedType5),
         matchAction6 As Action(Of TDerivedType6), matchAction7 As Action(Of TDerivedType7), matchAction8 As Action(Of TDerivedType8), matchAction9 As Action(Of TDerivedType9), matchAction10 As Action(Of TDerivedType10), Optional defaultAction As Action(Of TBaseType) = Nothing)
         If TypeOf obj Is TDerivedType1 Then
@@ -200,7 +200,7 @@ Public Module ObjectExtensions
     End Sub
 
     <Extension>
-    Public Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType)(obj As TBaseType, matchAction1 As Action(Of TDerivedType1), matchAction2 As Action(Of TDerivedType2), matchAction3 As Action(Of TDerivedType3), matchAction4 As Action(Of TDerivedType4), matchAction5 As Action(Of TDerivedType5),
         matchAction6 As Action(Of TDerivedType6), matchAction7 As Action(Of TDerivedType7), matchAction8 As Action(Of TDerivedType8), matchAction9 As Action(Of TDerivedType9), matchAction10 As Action(Of TDerivedType10), matchAction11 As Action(Of TDerivedType11),
         Optional defaultAction As Action(Of TBaseType) = Nothing)
@@ -232,7 +232,7 @@ Public Module ObjectExtensions
     End Sub
 
     <Extension>
-    Public Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType)(obj As TBaseType, matchAction1 As Action(Of TDerivedType1), matchAction2 As Action(Of TDerivedType2), matchAction3 As Action(Of TDerivedType3), matchAction4 As Action(Of TDerivedType4), matchAction5 As Action(Of TDerivedType5),
         matchAction6 As Action(Of TDerivedType6), matchAction7 As Action(Of TDerivedType7), matchAction8 As Action(Of TDerivedType8), matchAction9 As Action(Of TDerivedType9), matchAction10 As Action(Of TDerivedType10), matchAction11 As Action(Of TDerivedType11),
@@ -267,7 +267,7 @@ Public Module ObjectExtensions
     End Sub
 
     <Extension>
-    Public Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType)(obj As TBaseType, matchAction1 As Action(Of TDerivedType1), matchAction2 As Action(Of TDerivedType2), matchAction3 As Action(Of TDerivedType3), matchAction4 As Action(Of TDerivedType4), matchAction5 As Action(Of TDerivedType5),
         matchAction6 As Action(Of TDerivedType6), matchAction7 As Action(Of TDerivedType7), matchAction8 As Action(Of TDerivedType8), matchAction9 As Action(Of TDerivedType9), matchAction10 As Action(Of TDerivedType10), matchAction11 As Action(Of TDerivedType11),
@@ -304,7 +304,7 @@ Public Module ObjectExtensions
     End Sub
 
     <Extension>
-    Public Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType)(obj As TBaseType, matchAction1 As Action(Of TDerivedType1), matchAction2 As Action(Of TDerivedType2), matchAction3 As Action(Of TDerivedType3), matchAction4 As Action(Of TDerivedType4), matchAction5 As Action(Of TDerivedType5),
         matchAction6 As Action(Of TDerivedType6), matchAction7 As Action(Of TDerivedType7), matchAction8 As Action(Of TDerivedType8), matchAction9 As Action(Of TDerivedType9), matchAction10 As Action(Of TDerivedType10), matchAction11 As Action(Of TDerivedType11),
@@ -343,7 +343,7 @@ Public Module ObjectExtensions
     End Sub
 
     <Extension>
-    Public Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType)(obj As TBaseType, matchAction1 As Action(Of TDerivedType1), matchAction2 As Action(Of TDerivedType2), matchAction3 As Action(Of TDerivedType3), matchAction4 As Action(Of TDerivedType4), matchAction5 As Action(Of TDerivedType5),
         matchAction6 As Action(Of TDerivedType6), matchAction7 As Action(Of TDerivedType7), matchAction8 As Action(Of TDerivedType8), matchAction9 As Action(Of TDerivedType9), matchAction10 As Action(Of TDerivedType10), matchAction11 As Action(Of TDerivedType11),
@@ -384,7 +384,7 @@ Public Module ObjectExtensions
     End Sub
 
     <Extension>
-    Public Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType)(obj As TBaseType, matchAction1 As Action(Of TDerivedType1), matchAction2 As Action(Of TDerivedType2), matchAction3 As Action(Of TDerivedType3), matchAction4 As Action(Of TDerivedType4), matchAction5 As Action(Of TDerivedType5),
         matchAction6 As Action(Of TDerivedType6), matchAction7 As Action(Of TDerivedType7), matchAction8 As Action(Of TDerivedType8), matchAction9 As Action(Of TDerivedType9), matchAction10 As Action(Of TDerivedType10), matchAction11 As Action(Of TDerivedType11),
@@ -427,7 +427,7 @@ Public Module ObjectExtensions
     End Sub
 
     <Extension>
-    Public Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType)(obj As TBaseType, matchAction1 As Action(Of TDerivedType1), matchAction2 As Action(Of TDerivedType2), matchAction3 As Action(Of TDerivedType3), matchAction4 As Action(Of TDerivedType4), matchAction5 As Action(Of TDerivedType5),
         matchAction6 As Action(Of TDerivedType6), matchAction7 As Action(Of TDerivedType7), matchAction8 As Action(Of TDerivedType8), matchAction9 As Action(Of TDerivedType9), matchAction10 As Action(Of TDerivedType10), matchAction11 As Action(Of TDerivedType11),
@@ -473,7 +473,7 @@ Public Module ObjectExtensions
     End Sub
 
     <Extension>
-    Public Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TDerivedType18 As TBaseType)(obj As TBaseType, matchAction1 As Action(Of TDerivedType1), matchAction2 As Action(Of TDerivedType2), matchAction3 As Action(Of TDerivedType3), matchAction4 As Action(Of TDerivedType4), matchAction5 As Action(Of TDerivedType5),
@@ -522,7 +522,7 @@ Public Module ObjectExtensions
     End Sub
 
     <Extension>
-    Public Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TDerivedType18 As TBaseType, TDerivedType19 As TBaseType)(obj As TBaseType, matchAction1 As Action(Of TDerivedType1), matchAction2 As Action(Of TDerivedType2), matchAction3 As Action(Of TDerivedType3), matchAction4 As Action(Of TDerivedType4), matchAction5 As Action(Of TDerivedType5),
@@ -573,7 +573,7 @@ Public Module ObjectExtensions
     End Sub
 
     <Extension>
-    Public Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TDerivedType18 As TBaseType, TDerivedType19 As TBaseType, TDerivedType20 As TBaseType)(obj As TBaseType, matchAction1 As Action(Of TDerivedType1), matchAction2 As Action(Of TDerivedType2), matchAction3 As Action(Of TDerivedType3), matchAction4 As Action(Of TDerivedType4), matchAction5 As Action(Of TDerivedType5),
@@ -626,7 +626,7 @@ Public Module ObjectExtensions
     End Sub
 
     <Extension>
-    Public Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TDerivedType18 As TBaseType, TDerivedType19 As TBaseType, TDerivedType20 As TBaseType, TDerivedType21 As TBaseType)(obj As TBaseType, matchAction1 As Action(Of TDerivedType1), matchAction2 As Action(Of TDerivedType2), matchAction3 As Action(Of TDerivedType3), matchAction4 As Action(Of TDerivedType4), matchAction5 As Action(Of TDerivedType5),
@@ -681,7 +681,7 @@ Public Module ObjectExtensions
     End Sub
 
     <Extension>
-    Public Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TDerivedType18 As TBaseType, TDerivedType19 As TBaseType, TDerivedType20 As TBaseType, TDerivedType21 As TBaseType, TDerivedType22 As TBaseType)(obj As TBaseType, matchAction1 As Action(Of TDerivedType1), matchAction2 As Action(Of TDerivedType2), matchAction3 As Action(Of TDerivedType3), matchAction4 As Action(Of TDerivedType4), matchAction5 As Action(Of TDerivedType5),
@@ -738,7 +738,7 @@ Public Module ObjectExtensions
     End Sub
 
     <Extension>
-    Public Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TDerivedType18 As TBaseType, TDerivedType19 As TBaseType, TDerivedType20 As TBaseType, TDerivedType21 As TBaseType, TDerivedType22 As TBaseType, TDerivedType23 As TBaseType)(obj As TBaseType, matchAction1 As Action(Of TDerivedType1), matchAction2 As Action(Of TDerivedType2), matchAction3 As Action(Of TDerivedType3), matchAction4 As Action(Of TDerivedType4), matchAction5 As Action(Of TDerivedType5),
@@ -798,7 +798,7 @@ Public Module ObjectExtensions
     End Sub
 
     <Extension>
-    Public Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TDerivedType18 As TBaseType, TDerivedType19 As TBaseType, TDerivedType20 As TBaseType, TDerivedType21 As TBaseType, TDerivedType22 As TBaseType, TDerivedType23 As TBaseType,
@@ -861,7 +861,7 @@ Public Module ObjectExtensions
     End Sub
 
     <Extension>
-    Public Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TDerivedType18 As TBaseType, TDerivedType19 As TBaseType, TDerivedType20 As TBaseType, TDerivedType21 As TBaseType, TDerivedType22 As TBaseType, TDerivedType23 As TBaseType,
@@ -926,7 +926,7 @@ Public Module ObjectExtensions
     End Sub
 
     <Extension>
-    Public Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TDerivedType18 As TBaseType, TDerivedType19 As TBaseType, TDerivedType20 As TBaseType, TDerivedType21 As TBaseType, TDerivedType22 As TBaseType, TDerivedType23 As TBaseType,
@@ -993,7 +993,7 @@ Public Module ObjectExtensions
     End Sub
 
     <Extension>
-    Public Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TDerivedType18 As TBaseType, TDerivedType19 As TBaseType, TDerivedType20 As TBaseType, TDerivedType21 As TBaseType, TDerivedType22 As TBaseType, TDerivedType23 As TBaseType,
@@ -1062,7 +1062,7 @@ Public Module ObjectExtensions
     End Sub
 
     <Extension>
-    Public Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TDerivedType18 As TBaseType, TDerivedType19 As TBaseType, TDerivedType20 As TBaseType, TDerivedType21 As TBaseType, TDerivedType22 As TBaseType, TDerivedType23 As TBaseType,
@@ -1133,7 +1133,7 @@ Public Module ObjectExtensions
     End Sub
 
     <Extension>
-    Public Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TDerivedType18 As TBaseType, TDerivedType19 As TBaseType, TDerivedType20 As TBaseType, TDerivedType21 As TBaseType, TDerivedType22 As TBaseType, TDerivedType23 As TBaseType,
@@ -1207,7 +1207,7 @@ Public Module ObjectExtensions
     End Sub
 
     <Extension>
-    Public Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TDerivedType18 As TBaseType, TDerivedType19 As TBaseType, TDerivedType20 As TBaseType, TDerivedType21 As TBaseType, TDerivedType22 As TBaseType, TDerivedType23 As TBaseType,
@@ -1284,7 +1284,7 @@ Public Module ObjectExtensions
     End Sub
 
     <Extension>
-    Public Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TDerivedType18 As TBaseType, TDerivedType19 As TBaseType, TDerivedType20 As TBaseType, TDerivedType21 As TBaseType, TDerivedType22 As TBaseType, TDerivedType23 As TBaseType,
@@ -1363,7 +1363,7 @@ Public Module ObjectExtensions
     End Sub
 
     <Extension>
-    Public Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TDerivedType18 As TBaseType, TDerivedType19 As TBaseType, TDerivedType20 As TBaseType, TDerivedType21 As TBaseType, TDerivedType22 As TBaseType, TDerivedType23 As TBaseType,
@@ -1444,7 +1444,7 @@ Public Module ObjectExtensions
     End Sub
 
     <Extension>
-    Public Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Sub TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TDerivedType18 As TBaseType, TDerivedType19 As TBaseType, TDerivedType20 As TBaseType, TDerivedType21 As TBaseType, TDerivedType22 As TBaseType, TDerivedType23 As TBaseType,
@@ -1531,7 +1531,7 @@ Public Module ObjectExtensions
 #Region "TypeSwitch on Func<T>"
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TResult)(obj As TBaseType, matchFunc1 As Func(Of TDerivedType1, TResult), Optional defaultFunc As Func(Of TBaseType, TResult) = Nothing) As TResult
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TResult)(obj As TBaseType, matchFunc1 As Func(Of TDerivedType1, TResult), Optional defaultFunc As Func(Of TBaseType, TResult) = Nothing) As TResult
         If TypeOf obj Is TDerivedType1 Then
             Return matchFunc1(DirectCast(obj, TDerivedType1))
         ElseIf defaultFunc IsNot Nothing Then
@@ -1542,7 +1542,7 @@ Public Module ObjectExtensions
     End Function
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TResult)(obj As TBaseType, matchFunc1 As Func(Of TDerivedType1, TResult), matchFunc2 As Func(Of TDerivedType2, TResult), Optional defaultFunc As Func(Of TBaseType, TResult) = Nothing) As TResult
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TResult)(obj As TBaseType, matchFunc1 As Func(Of TDerivedType1, TResult), matchFunc2 As Func(Of TDerivedType2, TResult), Optional defaultFunc As Func(Of TBaseType, TResult) = Nothing) As TResult
         If TypeOf obj Is TDerivedType1 Then
             Return matchFunc1(DirectCast(obj, TDerivedType1))
         ElseIf TypeOf obj Is TDerivedType2 Then
@@ -1555,7 +1555,7 @@ Public Module ObjectExtensions
     End Function
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TResult)(obj As TBaseType, matchFunc1 As Func(Of TDerivedType1, TResult), matchFunc2 As Func(Of TDerivedType2, TResult), matchFunc3 As Func(Of TDerivedType3, TResult), Optional defaultFunc As Func(Of TBaseType, TResult) = Nothing) As TResult
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TResult)(obj As TBaseType, matchFunc1 As Func(Of TDerivedType1, TResult), matchFunc2 As Func(Of TDerivedType2, TResult), matchFunc3 As Func(Of TDerivedType3, TResult), Optional defaultFunc As Func(Of TBaseType, TResult) = Nothing) As TResult
         If TypeOf obj Is TDerivedType1 Then
             Return matchFunc1(DirectCast(obj, TDerivedType1))
         ElseIf TypeOf obj Is TDerivedType2 Then
@@ -1570,7 +1570,7 @@ Public Module ObjectExtensions
     End Function
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TResult)(obj As TBaseType, matchFunc1 As Func(Of TDerivedType1, TResult), matchFunc2 As Func(Of TDerivedType2, TResult), matchFunc3 As Func(Of TDerivedType3, TResult), matchFunc4 As Func(Of TDerivedType4, TResult), Optional defaultFunc As Func(Of TBaseType, TResult) = Nothing) As TResult
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TResult)(obj As TBaseType, matchFunc1 As Func(Of TDerivedType1, TResult), matchFunc2 As Func(Of TDerivedType2, TResult), matchFunc3 As Func(Of TDerivedType3, TResult), matchFunc4 As Func(Of TDerivedType4, TResult), Optional defaultFunc As Func(Of TBaseType, TResult) = Nothing) As TResult
         If TypeOf obj Is TDerivedType1 Then
             Return matchFunc1(DirectCast(obj, TDerivedType1))
         ElseIf TypeOf obj Is TDerivedType2 Then
@@ -1587,7 +1587,7 @@ Public Module ObjectExtensions
     End Function
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TResult)(obj As TBaseType, matchFunc1 As Func(Of TDerivedType1, TResult), matchFunc2 As Func(Of TDerivedType2, TResult), matchFunc3 As Func(Of TDerivedType3, TResult), matchFunc4 As Func(Of TDerivedType4, TResult), matchFunc5 As Func(Of TDerivedType5, TResult),
         Optional defaultFunc As Func(Of TBaseType, TResult) = Nothing) As TResult
         If TypeOf obj Is TDerivedType1 Then
@@ -1608,7 +1608,7 @@ Public Module ObjectExtensions
     End Function
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TResult)(obj As TBaseType, matchFunc1 As Func(Of TDerivedType1, TResult), matchFunc2 As Func(Of TDerivedType2, TResult), matchFunc3 As Func(Of TDerivedType3, TResult), matchFunc4 As Func(Of TDerivedType4, TResult), matchFunc5 As Func(Of TDerivedType5, TResult),
         matchFunc6 As Func(Of TDerivedType6, TResult), Optional defaultFunc As Func(Of TBaseType, TResult) = Nothing) As TResult
         If TypeOf obj Is TDerivedType1 Then
@@ -1631,7 +1631,7 @@ Public Module ObjectExtensions
     End Function
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TResult)(obj As TBaseType, matchFunc1 As Func(Of TDerivedType1, TResult), matchFunc2 As Func(Of TDerivedType2, TResult), matchFunc3 As Func(Of TDerivedType3, TResult), matchFunc4 As Func(Of TDerivedType4, TResult), matchFunc5 As Func(Of TDerivedType5, TResult),
         matchFunc6 As Func(Of TDerivedType6, TResult), matchFunc7 As Func(Of TDerivedType7, TResult), Optional defaultFunc As Func(Of TBaseType, TResult) = Nothing) As TResult
         If TypeOf obj Is TDerivedType1 Then
@@ -1656,7 +1656,7 @@ Public Module ObjectExtensions
     End Function
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TResult)(obj As TBaseType, matchFunc1 As Func(Of TDerivedType1, TResult), matchFunc2 As Func(Of TDerivedType2, TResult), matchFunc3 As Func(Of TDerivedType3, TResult), matchFunc4 As Func(Of TDerivedType4, TResult), matchFunc5 As Func(Of TDerivedType5, TResult),
         matchFunc6 As Func(Of TDerivedType6, TResult), matchFunc7 As Func(Of TDerivedType7, TResult), matchFunc8 As Func(Of TDerivedType8, TResult), Optional defaultFunc As Func(Of TBaseType, TResult) = Nothing) As TResult
         If TypeOf obj Is TDerivedType1 Then
@@ -1683,7 +1683,7 @@ Public Module ObjectExtensions
     End Function
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TResult)(obj As TBaseType, matchFunc1 As Func(Of TDerivedType1, TResult), matchFunc2 As Func(Of TDerivedType2, TResult), matchFunc3 As Func(Of TDerivedType3, TResult), matchFunc4 As Func(Of TDerivedType4, TResult), matchFunc5 As Func(Of TDerivedType5, TResult),
         matchFunc6 As Func(Of TDerivedType6, TResult), matchFunc7 As Func(Of TDerivedType7, TResult), matchFunc8 As Func(Of TDerivedType8, TResult), matchFunc9 As Func(Of TDerivedType9, TResult), Optional defaultFunc As Func(Of TBaseType, TResult) = Nothing) As TResult
         If TypeOf obj Is TDerivedType1 Then
@@ -1712,7 +1712,7 @@ Public Module ObjectExtensions
     End Function
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TResult)(obj As TBaseType, matchFunc1 As Func(Of TDerivedType1, TResult), matchFunc2 As Func(Of TDerivedType2, TResult), matchFunc3 As Func(Of TDerivedType3, TResult), matchFunc4 As Func(Of TDerivedType4, TResult), matchFunc5 As Func(Of TDerivedType5, TResult),
         matchFunc6 As Func(Of TDerivedType6, TResult), matchFunc7 As Func(Of TDerivedType7, TResult), matchFunc8 As Func(Of TDerivedType8, TResult), matchFunc9 As Func(Of TDerivedType9, TResult), matchFunc10 As Func(Of TDerivedType10, TResult), Optional defaultFunc As Func(Of TBaseType, TResult) = Nothing) As TResult
         If TypeOf obj Is TDerivedType1 Then
@@ -1743,7 +1743,7 @@ Public Module ObjectExtensions
     End Function
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TResult)(obj As TBaseType, matchFunc1 As Func(Of TDerivedType1, TResult), matchFunc2 As Func(Of TDerivedType2, TResult), matchFunc3 As Func(Of TDerivedType3, TResult), matchFunc4 As Func(Of TDerivedType4, TResult), matchFunc5 As Func(Of TDerivedType5, TResult),
         matchFunc6 As Func(Of TDerivedType6, TResult), matchFunc7 As Func(Of TDerivedType7, TResult), matchFunc8 As Func(Of TDerivedType8, TResult), matchFunc9 As Func(Of TDerivedType9, TResult), matchFunc10 As Func(Of TDerivedType10, TResult), matchFunc11 As Func(Of TDerivedType11, TResult),
@@ -1778,7 +1778,7 @@ Public Module ObjectExtensions
     End Function
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TResult)(obj As TBaseType, matchFunc1 As Func(Of TDerivedType1, TResult), matchFunc2 As Func(Of TDerivedType2, TResult), matchFunc3 As Func(Of TDerivedType3, TResult), matchFunc4 As Func(Of TDerivedType4, TResult), matchFunc5 As Func(Of TDerivedType5, TResult),
         matchFunc6 As Func(Of TDerivedType6, TResult), matchFunc7 As Func(Of TDerivedType7, TResult), matchFunc8 As Func(Of TDerivedType8, TResult), matchFunc9 As Func(Of TDerivedType9, TResult), matchFunc10 As Func(Of TDerivedType10, TResult), matchFunc11 As Func(Of TDerivedType11, TResult),
@@ -1815,7 +1815,7 @@ Public Module ObjectExtensions
     End Function
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TResult)(obj As TBaseType, matchFunc1 As Func(Of TDerivedType1, TResult), matchFunc2 As Func(Of TDerivedType2, TResult), matchFunc3 As Func(Of TDerivedType3, TResult), matchFunc4 As Func(Of TDerivedType4, TResult), matchFunc5 As Func(Of TDerivedType5, TResult),
         matchFunc6 As Func(Of TDerivedType6, TResult), matchFunc7 As Func(Of TDerivedType7, TResult), matchFunc8 As Func(Of TDerivedType8, TResult), matchFunc9 As Func(Of TDerivedType9, TResult), matchFunc10 As Func(Of TDerivedType10, TResult), matchFunc11 As Func(Of TDerivedType11, TResult),
@@ -1854,7 +1854,7 @@ Public Module ObjectExtensions
     End Function
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TResult)(obj As TBaseType, matchFunc1 As Func(Of TDerivedType1, TResult), matchFunc2 As Func(Of TDerivedType2, TResult), matchFunc3 As Func(Of TDerivedType3, TResult), matchFunc4 As Func(Of TDerivedType4, TResult), matchFunc5 As Func(Of TDerivedType5, TResult),
         matchFunc6 As Func(Of TDerivedType6, TResult), matchFunc7 As Func(Of TDerivedType7, TResult), matchFunc8 As Func(Of TDerivedType8, TResult), matchFunc9 As Func(Of TDerivedType9, TResult), matchFunc10 As Func(Of TDerivedType10, TResult), matchFunc11 As Func(Of TDerivedType11, TResult),
@@ -1895,7 +1895,7 @@ Public Module ObjectExtensions
     End Function
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TResult)(obj As TBaseType, matchFunc1 As Func(Of TDerivedType1, TResult), matchFunc2 As Func(Of TDerivedType2, TResult), matchFunc3 As Func(Of TDerivedType3, TResult), matchFunc4 As Func(Of TDerivedType4, TResult), matchFunc5 As Func(Of TDerivedType5, TResult),
         matchFunc6 As Func(Of TDerivedType6, TResult), matchFunc7 As Func(Of TDerivedType7, TResult), matchFunc8 As Func(Of TDerivedType8, TResult), matchFunc9 As Func(Of TDerivedType9, TResult), matchFunc10 As Func(Of TDerivedType10, TResult), matchFunc11 As Func(Of TDerivedType11, TResult),
@@ -1938,7 +1938,7 @@ Public Module ObjectExtensions
     End Function
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TResult)(obj As TBaseType, matchFunc1 As Func(Of TDerivedType1, TResult), matchFunc2 As Func(Of TDerivedType2, TResult), matchFunc3 As Func(Of TDerivedType3, TResult), matchFunc4 As Func(Of TDerivedType4, TResult), matchFunc5 As Func(Of TDerivedType5, TResult),
         matchFunc6 As Func(Of TDerivedType6, TResult), matchFunc7 As Func(Of TDerivedType7, TResult), matchFunc8 As Func(Of TDerivedType8, TResult), matchFunc9 As Func(Of TDerivedType9, TResult), matchFunc10 As Func(Of TDerivedType10, TResult), matchFunc11 As Func(Of TDerivedType11, TResult),
@@ -1983,7 +1983,7 @@ Public Module ObjectExtensions
     End Function
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TResult)(obj As TBaseType, matchFunc1 As Func(Of TDerivedType1, TResult), matchFunc2 As Func(Of TDerivedType2, TResult), matchFunc3 As Func(Of TDerivedType3, TResult), matchFunc4 As Func(Of TDerivedType4, TResult), matchFunc5 As Func(Of TDerivedType5, TResult),
@@ -2032,7 +2032,7 @@ Public Module ObjectExtensions
     End Function
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TDerivedType18 As TBaseType, TResult)(obj As TBaseType, matchFunc1 As Func(Of TDerivedType1, TResult), matchFunc2 As Func(Of TDerivedType2, TResult), matchFunc3 As Func(Of TDerivedType3, TResult), matchFunc4 As Func(Of TDerivedType4, TResult), matchFunc5 As Func(Of TDerivedType5, TResult),
@@ -2083,7 +2083,7 @@ Public Module ObjectExtensions
     End Function
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TDerivedType18 As TBaseType, TDerivedType19 As TBaseType, TResult)(obj As TBaseType, matchFunc1 As Func(Of TDerivedType1, TResult), matchFunc2 As Func(Of TDerivedType2, TResult), matchFunc3 As Func(Of TDerivedType3, TResult), matchFunc4 As Func(Of TDerivedType4, TResult), matchFunc5 As Func(Of TDerivedType5, TResult),
@@ -2136,7 +2136,7 @@ Public Module ObjectExtensions
     End Function
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TDerivedType18 As TBaseType, TDerivedType19 As TBaseType, TDerivedType20 As TBaseType, TResult)(obj As TBaseType, matchFunc1 As Func(Of TDerivedType1, TResult), matchFunc2 As Func(Of TDerivedType2, TResult), matchFunc3 As Func(Of TDerivedType3, TResult), matchFunc4 As Func(Of TDerivedType4, TResult), matchFunc5 As Func(Of TDerivedType5, TResult),
@@ -2191,7 +2191,7 @@ Public Module ObjectExtensions
     End Function
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TDerivedType18 As TBaseType, TDerivedType19 As TBaseType, TDerivedType20 As TBaseType, TDerivedType21 As TBaseType, TResult)(obj As TBaseType, matchFunc1 As Func(Of TDerivedType1, TResult), matchFunc2 As Func(Of TDerivedType2, TResult), matchFunc3 As Func(Of TDerivedType3, TResult), matchFunc4 As Func(Of TDerivedType4, TResult), matchFunc5 As Func(Of TDerivedType5, TResult),
@@ -2248,7 +2248,7 @@ Public Module ObjectExtensions
     End Function
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TDerivedType18 As TBaseType, TDerivedType19 As TBaseType, TDerivedType20 As TBaseType, TDerivedType21 As TBaseType, TDerivedType22 As TBaseType, TResult)(obj As TBaseType, matchFunc1 As Func(Of TDerivedType1, TResult), matchFunc2 As Func(Of TDerivedType2, TResult), matchFunc3 As Func(Of TDerivedType3, TResult), matchFunc4 As Func(Of TDerivedType4, TResult), matchFunc5 As Func(Of TDerivedType5, TResult),
@@ -2307,7 +2307,7 @@ Public Module ObjectExtensions
     End Function
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TDerivedType18 As TBaseType, TDerivedType19 As TBaseType, TDerivedType20 As TBaseType, TDerivedType21 As TBaseType, TDerivedType22 As TBaseType, TDerivedType23 As TBaseType,
@@ -2370,7 +2370,7 @@ Public Module ObjectExtensions
     End Function
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TDerivedType18 As TBaseType, TDerivedType19 As TBaseType, TDerivedType20 As TBaseType, TDerivedType21 As TBaseType, TDerivedType22 As TBaseType, TDerivedType23 As TBaseType,
@@ -2435,7 +2435,7 @@ Public Module ObjectExtensions
     End Function
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TDerivedType18 As TBaseType, TDerivedType19 As TBaseType, TDerivedType20 As TBaseType, TDerivedType21 As TBaseType, TDerivedType22 As TBaseType, TDerivedType23 As TBaseType,
@@ -2502,7 +2502,7 @@ Public Module ObjectExtensions
     End Function
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TDerivedType18 As TBaseType, TDerivedType19 As TBaseType, TDerivedType20 As TBaseType, TDerivedType21 As TBaseType, TDerivedType22 As TBaseType, TDerivedType23 As TBaseType,
@@ -2571,7 +2571,7 @@ Public Module ObjectExtensions
     End Function
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TDerivedType18 As TBaseType, TDerivedType19 As TBaseType, TDerivedType20 As TBaseType, TDerivedType21 As TBaseType, TDerivedType22 As TBaseType, TDerivedType23 As TBaseType,
@@ -2642,7 +2642,7 @@ Public Module ObjectExtensions
     End Function
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TDerivedType18 As TBaseType, TDerivedType19 As TBaseType, TDerivedType20 As TBaseType, TDerivedType21 As TBaseType, TDerivedType22 As TBaseType, TDerivedType23 As TBaseType,
@@ -2715,7 +2715,7 @@ Public Module ObjectExtensions
     End Function
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TDerivedType18 As TBaseType, TDerivedType19 As TBaseType, TDerivedType20 As TBaseType, TDerivedType21 As TBaseType, TDerivedType22 As TBaseType, TDerivedType23 As TBaseType,
@@ -2792,7 +2792,7 @@ Public Module ObjectExtensions
     End Function
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TDerivedType18 As TBaseType, TDerivedType19 As TBaseType, TDerivedType20 As TBaseType, TDerivedType21 As TBaseType, TDerivedType22 As TBaseType, TDerivedType23 As TBaseType,
@@ -2871,7 +2871,7 @@ Public Module ObjectExtensions
     End Function
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TDerivedType18 As TBaseType, TDerivedType19 As TBaseType, TDerivedType20 As TBaseType, TDerivedType21 As TBaseType, TDerivedType22 As TBaseType, TDerivedType23 As TBaseType,
@@ -2952,7 +2952,7 @@ Public Module ObjectExtensions
     End Function
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TDerivedType18 As TBaseType, TDerivedType19 As TBaseType, TDerivedType20 As TBaseType, TDerivedType21 As TBaseType, TDerivedType22 As TBaseType, TDerivedType23 As TBaseType,
@@ -3035,7 +3035,7 @@ Public Module ObjectExtensions
     End Function
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TDerivedType18 As TBaseType, TDerivedType19 As TBaseType, TDerivedType20 As TBaseType, TDerivedType21 As TBaseType, TDerivedType22 As TBaseType, TDerivedType23 As TBaseType,
@@ -3120,7 +3120,7 @@ Public Module ObjectExtensions
     End Function
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TDerivedType18 As TBaseType, TDerivedType19 As TBaseType, TDerivedType20 As TBaseType, TDerivedType21 As TBaseType, TDerivedType22 As TBaseType, TDerivedType23 As TBaseType,
@@ -3207,7 +3207,7 @@ Public Module ObjectExtensions
     End Function
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TDerivedType18 As TBaseType, TDerivedType19 As TBaseType, TDerivedType20 As TBaseType, TDerivedType21 As TBaseType, TDerivedType22 As TBaseType, TDerivedType23 As TBaseType,
@@ -3298,7 +3298,7 @@ Public Module ObjectExtensions
     End Function
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TDerivedType18 As TBaseType, TDerivedType19 As TBaseType, TDerivedType20 As TBaseType, TDerivedType21 As TBaseType, TDerivedType22 As TBaseType, TDerivedType23 As TBaseType,
@@ -3391,7 +3391,7 @@ Public Module ObjectExtensions
     End Function
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TDerivedType18 As TBaseType, TDerivedType19 As TBaseType, TDerivedType20 As TBaseType, TDerivedType21 As TBaseType, TDerivedType22 As TBaseType, TDerivedType23 As TBaseType,
@@ -3486,7 +3486,7 @@ Public Module ObjectExtensions
     End Function
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TDerivedType18 As TBaseType, TDerivedType19 As TBaseType, TDerivedType20 As TBaseType, TDerivedType21 As TBaseType, TDerivedType22 As TBaseType, TDerivedType23 As TBaseType,
@@ -3583,7 +3583,7 @@ Public Module ObjectExtensions
     End Function
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TDerivedType18 As TBaseType, TDerivedType19 As TBaseType, TDerivedType20 As TBaseType, TDerivedType21 As TBaseType, TDerivedType22 As TBaseType, TDerivedType23 As TBaseType,
@@ -3682,7 +3682,7 @@ Public Module ObjectExtensions
     End Function
 
     <Extension>
-    Public Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
+    Friend Function TypeSwitch(Of TBaseType, TDerivedType1 As TBaseType, TDerivedType2 As TBaseType, TDerivedType3 As TBaseType, TDerivedType4 As TBaseType, TDerivedType5 As TBaseType,
         TDerivedType6 As TBaseType, TDerivedType7 As TBaseType, TDerivedType8 As TBaseType, TDerivedType9 As TBaseType, TDerivedType10 As TBaseType, TDerivedType11 As TBaseType,
         TDerivedType12 As TBaseType, TDerivedType13 As TBaseType, TDerivedType14 As TBaseType, TDerivedType15 As TBaseType, TDerivedType16 As TBaseType, TDerivedType17 As TBaseType,
         TDerivedType18 As TBaseType, TDerivedType19 As TBaseType, TDerivedType20 As TBaseType, TDerivedType21 As TBaseType, TDerivedType22 As TBaseType, TDerivedType23 As TBaseType,

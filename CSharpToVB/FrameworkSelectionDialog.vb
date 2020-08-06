@@ -6,7 +6,7 @@ Public Class FrameworkSelectionDialog
     Private _frameworkList As New List(Of String)
     Public ReadOnly Property CurrentFramework As String
 
-    Private Sub Cancel_Button_Click(ByVal sender As Object, ByVal e As EventArgs) Handles Cancel_Button.Click
+    Private Sub Cancel_Button_Click(sender As Object, e As EventArgs) Handles Cancel_Button.Click
         DialogResult = DialogResult.Cancel
         Me.Close()
     End Sub
@@ -29,7 +29,7 @@ Public Class FrameworkSelectionDialog
         Next
     End Sub
 
-    Private Sub OK_Button_Click(ByVal sender As Object, ByVal e As EventArgs) Handles OK_Button.Click
+    Private Sub OK_Button_Click(sender As Object, e As EventArgs) Handles OK_Button.Click
         Dim CheckedItems As CheckedListBox.CheckedItemCollection = CheckedListBox1.CheckedItems
         If CheckedItems.Count = 1 Then
             'Return OK to the calling form
