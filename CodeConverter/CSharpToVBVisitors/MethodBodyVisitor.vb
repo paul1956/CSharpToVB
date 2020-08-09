@@ -95,8 +95,8 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                     End If
                     elseBlock = VBFactory.ElseBlock(elseStatement, statements).WithPrependedLeadingTrivia(OpenBraceTrailingTrivia).WithAppendedTrailingTrivia(CloseBraceLeadingTrivia)
                     OpenBraceTrailingTrivia.Clear()
-                        CloseBraceLeadingTrivia.Clear()
-                    End If
+                    CloseBraceLeadingTrivia.Clear()
+                End If
             End Sub
 
             Private Function ConvertBlock(node As CSS.StatementSyntax, ByRef openBraceTrailiningTrivia As List(Of SyntaxTrivia), ByRef closeBraceLeadingTrivia As List(Of SyntaxTrivia)) As SyntaxList(Of StatementSyntax)

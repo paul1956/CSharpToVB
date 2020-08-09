@@ -5,7 +5,9 @@
 Imports System.Collections.Immutable
 Imports System.ComponentModel
 Imports System.Runtime.CompilerServices
+Imports System.Text
 Imports CSharpToVBCodeConverter
+Imports CSharpToVBCodeConverter.ToVisualBasic
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
@@ -111,6 +113,41 @@ Public Module ITypeSymbolExtensions
     <Extension>
     Friend Function ActionType(compilation As Compilation) As INamedTypeSymbol
         Return compilation.GetTypeByMetadataName(GetType(Action).FullName)
+    End Function
+
+    <Extension>
+    Friend Function ConvertCSTupleToVBType(CSNamedTypeStringIn As String) As TypeSyntax
+        Dim CSNamedTypeString As String = CSNamedTypeStringIn
+        Dim IsArray As Boolean = False
+        Dim Nullable As Boolean = False
+        If CSNamedTypeString.EndsWith("?", StringComparison.Ordinal) Then
+            Nullable = True
+            CSNamedTypeString = CSNamedTypeString.Substring(0, CSNamedTypeString.Length - 1).Trim
+        End If
+        If CSNamedTypeString.EndsWith("[]", StringComparison.Ordinal) Then
+            IsArray = True
+            CSNamedTypeString = CSNamedTypeString.Substring(0, CSNamedTypeString.Length - 2).Trim
+        End If
+        If CSNamedTypeString.StartsWith("(", StringComparison.OrdinalIgnoreCase) AndAlso CSNamedTypeString.EndsWith(")", StringComparison.OrdinalIgnoreCase) Then
+            CSNamedTypeString = CSNamedTypeString.Substring(1, CSNamedTypeString.Length - 2).Trim
+        End If
+
+        Dim ElementList As List(Of String) = CSNamedTypeString.ConvertTupleToVBTypeStrings(IncludeName:=True)
+        Dim builder As New StringBuilder
+        builder.Append("(")
+        For Each e As IndexClass(Of String) In ElementList.WithIndex
+            If e.IsLast Then Exit For
+            builder.Append($"{e.Value}, ")
+        Next
+        builder.Append(ElementList.Last & ")")
+        Dim TupleType As String = builder.ToString & If(IsArray, "()", "") & If(Nullable, "?", "")
+
+        Return VBFactory.ParseTypeName(TupleType).WithLeadingTrivia(SpaceTrivia)
+    End Function
+
+    <Extension>
+    Friend Function ConvertCSTupleToVBType(CSNamedType As ITypeSymbol) As TypeSyntax
+        Return ConvertCSTupleToVBType(CSNamedType.ToString)
     End Function
 
     <Extension>
@@ -240,11 +277,6 @@ Public Module ITypeSymbolExtensions
         Return type.GetBaseTypesAndThis.Contains(Function(t As ITypeSymbol) SymbolEquivalenceComparer.s_instance.Equals(t.OriginalDefinition, originalBaseType))
     End Function
 
-    <Extension()>
-    Public Function IsErrorType(symbol As ITypeSymbol) As Boolean
-        Return CBool(symbol?.TypeKind = TypeKind.Error)
-    End Function
-
     ' Is a member with declared accessibility "declaredAccessiblity" accessible from within
     ' "within", which must be a named type or an assembly.
     Friend Function IsMemberAccessible(containingType As INamedTypeSymbol, declaredAccessibility As Accessibility, within As ISymbol, throughTypeOpt As ITypeSymbol, ByRef failedThroughTypeCheck As Boolean) As Boolean
@@ -343,6 +375,11 @@ Public Module ITypeSymbolExtensions
             Return False
         End If
         Return symbol.TypeKind = TypeKind.[Delegate]
+    End Function
+
+    <Extension()>
+    Public Function IsErrorType(symbol As ITypeSymbol) As Boolean
+        Return CBool(symbol?.TypeKind = TypeKind.Error)
     End Function
 
     <Extension()>

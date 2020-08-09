@@ -21,11 +21,16 @@ Public Structure ProgressReport
         Return Current = other.Current AndAlso Maximum = other.Maximum
     End Function
 
-#Disable Warning IDE0070 ' Can't use System.HashCode on .NET Framework
-
+#If NET48 Then
     Public Overrides Function GetHashCode() As Integer
         Return (Current, Maximum).GetHashCode()
     End Function
+#Else
+    Public Overrides Function GetHashCode() As Integer
+        Return HashCode.Combine(Current, Maximum)
+    End Function
+#End If
+
 
     Public Shared Operator =(left As ProgressReport, right As ProgressReport) As Boolean
         Return left.Equals(right)

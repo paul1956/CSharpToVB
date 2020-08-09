@@ -17,31 +17,31 @@ Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 Public Module ConvertLiteralSupport
 
     Private Function Binary(Value As Byte) As String
-        Return $"&B{System.Convert.ToString(Value, 2).PadLeft(8, "0"c)}"
+        Return $"&B{Convert.ToString(Value, 2).PadLeft(8, "0"c)}"
     End Function
 
     Private Function Binary(Value As SByte) As String
-        Return $"&B{System.Convert.ToString(Value, 2).PadLeft(8, "0"c)}"
+        Return $"&B{Convert.ToString(Value, 2).PadLeft(8, "0"c)}"
     End Function
 
     Private Function Binary(Value As Short) As String
-        Return $"&B{System.Convert.ToString(Value, 2).PadLeft(16, "0"c)}"
+        Return $"&B{Convert.ToString(Value, 2).PadLeft(16, "0"c)}"
     End Function
 
     Private Function Binary(Value As UShort) As String
-        Return $"&B{System.Convert.ToString(Value, 2).PadLeft(16, "0"c)}"
+        Return $"&B{Convert.ToString(Value, 2).PadLeft(16, "0"c)}"
     End Function
 
     Private Function Binary(Value As Integer) As String
-        Return $"&B{System.Convert.ToString(Value, 2).PadLeft(32, "0"c)}"
+        Return $"&B{Convert.ToString(Value, 2).PadLeft(32, "0"c)}"
     End Function
 
     Private Function Binary(Value As UInteger) As String
-        Return $"&B{System.Convert.ToString(Value, 2).PadLeft(32, "0"c)}UI"
+        Return $"&B{Convert.ToString(Value, 2).PadLeft(32, "0"c)}UI"
     End Function
 
     Private Function Binary(Value As Long) As String
-        Return $"&B{System.Convert.ToString(Value, 2).PadLeft(64, "0"c)}"
+        Return $"&B{Convert.ToString(Value, 2).PadLeft(64, "0"c)}"
     End Function
 
     Friend Function ConvertCSharpEscapes(TokenString As String) As String

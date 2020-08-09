@@ -6,7 +6,7 @@ Imports System.Runtime.CompilerServices
 
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Public Module ListExtensions
+Public Module ImportsStatementListExtensions
 
     <Extension>
     Friend Function ContainsName(ImportList As List(Of VBS.ImportsStatementSyntax), ImportName As String) As Boolean

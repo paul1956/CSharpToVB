@@ -36,41 +36,6 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
         End Function
 
         <Extension>
-        Friend Function ConvertCSTupleToVBType(CSNamedType As ITypeSymbol) As VBS.TypeSyntax
-            Return ConvertCSTupleToVBType(CSNamedType.ToString)
-        End Function
-
-        <Extension>
-        Friend Function ConvertCSTupleToVBType(CSNamedTypeStringIn As String) As VBS.TypeSyntax
-            Dim CSNamedTypeString As String = CSNamedTypeStringIn
-            Dim IsArray As Boolean = False
-            Dim Nullable As Boolean = False
-            If CSNamedTypeString.EndsWith("?", StringComparison.Ordinal) Then
-                Nullable = True
-                CSNamedTypeString = CSNamedTypeString.Substring(0, CSNamedTypeString.Length - 1).Trim
-            End If
-            If CSNamedTypeString.EndsWith("[]", StringComparison.Ordinal) Then
-                IsArray = True
-                CSNamedTypeString = CSNamedTypeString.Substring(0, CSNamedTypeString.Length - 2).Trim
-            End If
-            If CSNamedTypeString.StartsWith("(", StringComparison.OrdinalIgnoreCase) AndAlso CSNamedTypeString.EndsWith(")", StringComparison.OrdinalIgnoreCase) Then
-                CSNamedTypeString = CSNamedTypeString.Substring(1, CSNamedTypeString.Length - 2).Trim
-            End If
-
-            Dim ElementList As List(Of String) = CSNamedTypeString.ConvertTupleToVBTypeStrings(IncludeName:=True)
-            Dim builder As New StringBuilder
-            builder.Append("(")
-            For Each e As IndexClass(Of String) In ElementList.WithIndex
-                If e.IsLast Then Exit For
-                builder.Append($"{e.Value}, ")
-            Next
-            builder.Append(ElementList.Last & ")")
-            Dim TupleType As String = builder.ToString & If(IsArray, "()", "") & If(Nullable, "?", "")
-
-            Return VBFactory.ParseTypeName(TupleType).WithLeadingTrivia(SpaceTrivia)
-        End Function
-
-        <Extension>
         Friend Function ConvertToTupleElement(TupleElement As IFieldSymbol) As VBS.TupleElementSyntax
             If TupleElement.Type Is Nothing Then
                 Return VBFactory.NamedTupleElement(TupleElement.Name.ToString(Globalization.CultureInfo.InvariantCulture))

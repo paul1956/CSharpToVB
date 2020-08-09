@@ -11,4 +11,13 @@ Public Module EnumerableExtensions
         Return sequence.Any(predicate)
     End Function
 
+    <Extension>
+    Friend Iterator Function IndexedSelect(Of T, TReturn)(source As IEnumerable(Of T), transform As Func(Of Integer, T, TReturn)) As IEnumerable(Of TReturn)
+        Dim i As Integer = 0
+        For Each item As T In source
+            Yield transform(i, item)
+            i += 1
+        Next item
+    End Function
+
 End Module

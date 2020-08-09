@@ -12,25 +12,49 @@ Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 
-Public Module SyntaxTokenExtensions
+Public Module TokenExtensions
 
     <Extension>
-    Friend Function AdjustTokenTriviaWithLineContuations(OperatorToken As SyntaxToken) As SyntaxToken
-        Dim operatorLeadingTrivia As New List(Of SyntaxTrivia)
-        For Each e As IndexClass(Of SyntaxTrivia) In OperatorToken.LeadingTrivia.WithIndex
+    Private Function RestructureModifierLeadingTrivia(Modifier As SyntaxToken, i As Integer, ByRef LeadingTriviaNotHandled As Boolean, ByRef StatementLeadingTrivia As List(Of SyntaxTrivia), ByRef StatementTrailingTrivia As List(Of SyntaxTrivia)) As SyntaxTriviaList
+        Dim NewModifierLeadingTrivia As New SyntaxTriviaList
+        If LeadingTriviaNotHandled Then
+            If i = 0 Then
+                StatementLeadingTrivia.AddRange(Modifier.LeadingTrivia)
+            Else
+                NewModifierLeadingTrivia = RelocateDirectiveDisabledTrivia(Modifier.LeadingTrivia, StatementLeadingTrivia, RemoveEOL:=True)
+            End If
+        Else
+            If i = 0 Then
+                If Modifier.LeadingTrivia.ContainsCommentOrDirectiveTrivia Then
+                    StatementTrailingTrivia.Add(VBEOLTrivia)
+                End If
+                StatementTrailingTrivia.AddRange(Modifier.LeadingTrivia)
+            Else
+                NewModifierLeadingTrivia = RelocateDirectiveDisabledTrivia(Modifier.LeadingTrivia, StatementTrailingTrivia, RemoveEOL:=True)
+            End If
+
+        End If
+        LeadingTriviaNotHandled = StatementLeadingTrivia.Count = 0
+        Return NewModifierLeadingTrivia
+    End Function
+
+    <Extension>
+    Friend Function AdjustTokenTriviaWithLineContuations(Token As SyntaxToken) As SyntaxToken
+        Dim leadingTrivia As New List(Of SyntaxTrivia)
+        For Each e As IndexClass(Of SyntaxTrivia) In Token.LeadingTrivia.WithIndex
             If e.Value.IsComment Then
                 If e.IsFirst Then
-                    operatorLeadingTrivia.InsertRange(0, {SpaceTrivia, LineContinuation})
-                ElseIf OperatorToken.LeadingTrivia(e.Index - 1).IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
-                    operatorLeadingTrivia(e.Index - 1) = operatorLeadingTrivia(e.Index - 1).AdjustWhitespace(2)
-                    operatorLeadingTrivia.InsertRange(operatorLeadingTrivia.Count - 1, {SpaceTrivia, LineContinuation})
+                    leadingTrivia.InsertRange(0, {SpaceTrivia, LineContinuation})
+                ElseIf Token.LeadingTrivia(e.Index - 1).IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
+                    leadingTrivia(e.Index - 1) = leadingTrivia(e.Index - 1).AdjustWhitespace(2)
+                    leadingTrivia.InsertRange(leadingTrivia.Count - 1, {SpaceTrivia, LineContinuation})
                 Else
                     Stop
                 End If
             End If
-            operatorLeadingTrivia.Add(e.Value)
+            leadingTrivia.Add(e.Value)
         Next
-        Return OperatorToken.WithLeadingTrivia(operatorLeadingTrivia)
+        Return Token.WithLeadingTrivia(leadingTrivia)
     End Function
 
     ''' <summary>
@@ -39,16 +63,16 @@ Public Module SyntaxTokenExtensions
     ''' </summary>
     ''' <param name="Token"></param>
     ''' <returns>List(Of SyntaxTrivia) from OpenBrace</returns>
-    ''' <param name="Leading"></param>
+    ''' <param name="IsLeading"></param>
     <Extension>
-    Friend Function CollectTokenTrivia(Token As SyntaxToken, Leading As Boolean) As List(Of SyntaxTrivia)
+    Friend Function CollectTokenTrivia(Token As SyntaxToken, IsLeading As Boolean) As List(Of SyntaxTrivia)
         Dim leadingTrivia As New List(Of SyntaxTrivia)
         If Token.HasLeadingTrivia Then
             leadingTrivia.AddRange(ConvertTrivia(Token.LeadingTrivia))
         End If
         Dim trailingTrivia As SyntaxTriviaList = Token.TrailingTrivia
         If Token.HasTrailingTrivia Then
-            If Not Leading OrElse trailingTrivia.Count <> 1 OrElse Not trailingTrivia(0).IsEndOfLine Then
+            If Not IsLeading OrElse trailingTrivia.Count <> 1 OrElse Not trailingTrivia(0).IsEndOfLine Then
                 leadingTrivia.AddRange(ConvertTrivia(trailingTrivia))
             End If
         End If
@@ -56,40 +80,46 @@ Public Module SyntaxTokenExtensions
     End Function
 
     <Extension>
-    Friend Function ConvertModifier(m As SyntaxToken, IsModule As Boolean, context As TokenContext, ByRef FoundVisibility As Boolean) As SyntaxToken
-        Dim Token As SyntaxToken = CS.CSharpExtensions.Kind(m).ConvertModifierKindToVBKeyword(IsModule, context, FoundVisibility)
-        If Token.IsKind(VB.SyntaxKind.EmptyToken) Then
-            Return EmptyToken.WithConvertedLeadingTriviaFrom(m)
+    Friend Function ConvertModifier(CSToken As SyntaxToken, IsModule As Boolean, context As TokenContext, ByRef FoundVisibility As Boolean) As SyntaxToken
+        If CSToken.Language <> "C#" Then
+            Throw New ArgumentException($"Invalid language {CSToken.Language}, for parameter,", NameOf(CSToken))
         End If
-        Return Token.WithConvertedTriviaFrom(m)
+        Dim Token As SyntaxToken = CS.CSharpExtensions.Kind(CSToken).ConvertModifierKindToVBKeyword(IsModule, context, FoundVisibility)
+        If Token.IsKind(VB.SyntaxKind.EmptyToken) Then
+            Return EmptyToken.WithConvertedLeadingTriviaFrom(CSToken)
+        End If
+        Return Token.WithConvertedTriviaFrom(CSToken)
     End Function
 
     <Extension>
-    Friend Function ConvertToInterpolatedStringTextToken(CSharpToken As SyntaxToken) As SyntaxToken
-        Dim TokenString As String = ConvertCSharpEscapes(CSharpToken.ValueText)
+    Friend Function ConvertToInterpolatedStringTextToken(Token As SyntaxToken) As SyntaxToken
+        If Token.Language <> "C#" Then
+            Throw New ArgumentException($"Invalid language {Token.Language}, for parameter", NameOf(Token))
+        End If
+        Dim TokenString As String = ConvertCSharpEscapes(Token.ValueText)
         Return VBFactory.InterpolatedStringTextToken(TokenString, TokenString)
     End Function
 
     <Extension>
-    Friend Function MakeIdentifierUnique(id As SyntaxToken, BracketNeeded As Boolean, QualifiedNameOrTypeName As Boolean) As SyntaxToken
-        Dim ConvertedIdentifier As String = If(BracketNeeded, $"[{id.ValueText}]", id.ValueText)
+    Friend Function MakeIdentifierUnique(IdentifierToken As SyntaxToken, IsBracketNeeded As Boolean, IsQualifiedNameOrTypeName As Boolean) As SyntaxToken
+        Dim ConvertedIdentifier As String = If(IsBracketNeeded, $"[{IdentifierToken.ValueText}]", IdentifierToken.ValueText)
         If ConvertedIdentifier = "_" Then
             ConvertedIdentifier = "underscore"
         End If
         ' Don't Change Qualified Names
-        If QualifiedNameOrTypeName Then
+        If IsQualifiedNameOrTypeName Then
             If Not s_usedIdentifiers.ContainsKey(ConvertedIdentifier) Then
                 s_usedIdentifiers.Add(ConvertedIdentifier, New SymbolTableEntry(ConvertedIdentifier, True))
             End If
-            Return VBFactory.Identifier(s_usedIdentifiers(ConvertedIdentifier).Name).WithConvertedTriviaFrom(id)
+            Return VBFactory.Identifier(s_usedIdentifiers(ConvertedIdentifier).Name).WithConvertedTriviaFrom(IdentifierToken)
         End If
         If s_usedIdentifiers.ContainsKey(ConvertedIdentifier) Then
             ' We have a case sensitive exact match so just return it
-            Return VBFactory.Identifier(s_usedIdentifiers(ConvertedIdentifier).Name).WithConvertedTriviaFrom(id)
+            Return VBFactory.Identifier(s_usedIdentifiers(ConvertedIdentifier).Name).WithConvertedTriviaFrom(IdentifierToken)
         End If
         Dim IsFieldIdentifier As Boolean = False
-        If TypeOf id.Parent Is CSS.VariableDeclaratorSyntax Then
-            Dim VarDecl As CSS.VariableDeclaratorSyntax = CType(id.Parent, CSS.VariableDeclaratorSyntax)
+        If TypeOf IdentifierToken.Parent Is CSS.VariableDeclaratorSyntax Then
+            Dim VarDecl As CSS.VariableDeclaratorSyntax = CType(IdentifierToken.Parent, CSS.VariableDeclaratorSyntax)
             Dim FieldDeclatationOrNothing As CSS.FieldDeclarationSyntax = VarDecl.FirstAncestorOrSelf(Of CSS.FieldDeclarationSyntax)
             If Char.IsLower(ConvertedIdentifier.Chars(0)) AndAlso FieldDeclatationOrNothing IsNot Nothing Then
                 If FieldDeclatationOrNothing.Modifiers.Any AndAlso FieldDeclatationOrNothing.Modifiers.Contains(CS.SyntaxKind.PrivateKeyword) Then
@@ -108,19 +138,68 @@ Public Module SyntaxTokenExtensions
                 If s_usedIdentifiers(ident.Key).IsType Then
                     s_usedIdentifiers.Add(ConvertedIdentifier, New SymbolTableEntry(Name:=NewUniqueName, IsType:=False))
                 Else
-                    s_usedIdentifiers.Add(ConvertedIdentifier, New SymbolTableEntry(Name:=NewUniqueName, IsType:=QualifiedNameOrTypeName))
+                    s_usedIdentifiers.Add(ConvertedIdentifier, New SymbolTableEntry(Name:=NewUniqueName, IsType:=IsQualifiedNameOrTypeName))
                 End If
-                Return VBFactory.Identifier(s_usedIdentifiers(ConvertedIdentifier).Name).WithConvertedTriviaFrom(id)
+                Return VBFactory.Identifier(s_usedIdentifiers(ConvertedIdentifier).Name).WithConvertedTriviaFrom(IdentifierToken)
             End If
         Next
         Dim _ConvertedIdentifier As String = $"{If(IsFieldIdentifier, "_", "")}{ConvertedIdentifier}"
-        s_usedIdentifiers.Add(ConvertedIdentifier, New SymbolTableEntry(_ConvertedIdentifier, QualifiedNameOrTypeName))
+        s_usedIdentifiers.Add(ConvertedIdentifier, New SymbolTableEntry(_ConvertedIdentifier, IsQualifiedNameOrTypeName))
         Return VBFactory.Identifier(_ConvertedIdentifier)
+    End Function
+
+    <Extension>
+    Friend Function RestructureModifier(NodeModifier As SyntaxToken, i As Integer, ByRef AttributesNotFound As Boolean, ByRef StatementLeadingTrivia As List(Of SyntaxTrivia), ByRef StatementTrailingTrivia As List(Of SyntaxTrivia)) As SyntaxToken
+        If (Not AttributesNotFound) AndAlso NodeModifier.RawKind = VB.SyntaxKind.EmptyToken AndAlso NodeModifier.HasLeadingTrivia AndAlso NodeModifier.LeadingTrivia.ContainsCommentOrDirectiveTrivia Then
+            StatementTrailingTrivia.Add(VBEOLTrivia)
+            StatementTrailingTrivia.AddRange(NodeModifier.LeadingTrivia)
+            NodeModifier = NodeModifier.WithLeadingTrivia(SpaceTrivia)
+        Else
+            NodeModifier = NodeModifier.WithLeadingTrivia(NodeModifier.RestructureModifierLeadingTrivia(i, AttributesNotFound, StatementLeadingTrivia, StatementTrailingTrivia))
+        End If
+        If NodeModifier.TrailingTrivia.ContainsCommentOrDirectiveTrivia Then
+            StatementLeadingTrivia.AddRange(RelocateDirectiveDisabledTrivia(NodeModifier.TrailingTrivia, StatementTrailingTrivia, RemoveEOL:=False))
+            If StatementLeadingTrivia.Any AndAlso StatementLeadingTrivia.Last.RawKind <> VB.SyntaxKind.EndOfLineTrivia Then
+                StatementLeadingTrivia.Add(VBEOLTrivia)
+            End If
+            Return NodeModifier.WithTrailingTrivia(SpaceTrivia)
+        End If
+        Return NodeModifier.WithTrailingTrivia(RelocateDirectiveDisabledTrivia(NodeModifier.TrailingTrivia, StatementTrailingTrivia, RemoveEOL:=True))
+    End Function
+
+    <Extension>
+    Friend Function WithConvertedTriviaFrom(Token As SyntaxToken, otherNode As SyntaxNode) As SyntaxToken
+        If otherNode.HasLeadingTrivia Then
+            Token = Token.WithLeadingTrivia(ConvertTrivia(otherNode.GetLeadingTrivia))
+        End If
+        If Not otherNode.HasTrailingTrivia OrElse ParentHasSameTrailingTrivia(otherNode) Then
+            Return Token
+        End If
+        Return Token.WithTrailingTrivia(ConvertTrivia(otherNode.GetTrailingTrivia()))
+    End Function
+
+    <Extension>
+    Friend Function WithConvertedTriviaFrom(Token As SyntaxToken, otherToken As SyntaxToken) As SyntaxToken
+        Try
+            If otherToken.HasLeadingTrivia Then
+                Token = Token.WithLeadingTrivia(ConvertTrivia(otherToken.LeadingTrivia).ToList())
+            End If
+            Return Token.WithTrailingTrivia(ConvertTrivia(otherToken.TrailingTrivia))
+        Catch ex As OperationCanceledException
+            Throw
+        Catch ex As Exception
+            Stop
+        End Try
     End Function
 
     <Extension>
     Friend Function WithPrependedLeadingTrivia(Token As SyntaxToken, Trivia As IEnumerable(Of SyntaxTrivia)) As SyntaxToken
         Return Token.WithPrependedLeadingTrivia(Trivia.ToSyntaxTriviaList())
+    End Function
+
+    <Extension>
+    Public Function [With](token As SyntaxToken, leading As IEnumerable(Of SyntaxTrivia), trailing As IEnumerable(Of SyntaxTrivia)) As SyntaxToken
+        Return token.WithLeadingTrivia(leading).WithTrailingTrivia(trailing)
     End Function
 
     <Extension>
@@ -137,6 +216,99 @@ Public Module SyntaxTokenExtensions
         Return False
     End Function
 
+    <Extension>
+    Public Function ConvertAndModifyTokenTrivia(Token As SyntaxToken, NodesOrTokens As List(Of SyntaxNodeOrToken), Index As Integer) As SyntaxToken
+        If NodesOrTokens Is Nothing Then
+            Throw New ArgumentNullException(NameOf(NodesOrTokens))
+        End If
+        Dim initialTriviaList As List(Of SyntaxTrivia) = ConvertTrivia(NodesOrTokens(Index).GetLeadingTrivia).ToList
+        Dim initialTriviaListUBound As Integer = initialTriviaList.Count - 1
+        Dim afterWhiteSpace As Boolean = False
+        Dim afterLineContinuation As Boolean = False
+        Dim finalLeadingTriviaList As New List(Of SyntaxTrivia)
+        For initialTriviaIndex As Integer = 0 To initialTriviaListUBound
+            Dim Trivia As SyntaxTrivia = initialTriviaList(initialTriviaIndex)
+            Select Case Trivia.RawKind
+                Case VB.SyntaxKind.WhitespaceTrivia
+                    afterLineContinuation = False
+                    afterWhiteSpace = True
+                    finalLeadingTriviaList.Add(Trivia)
+                Case VB.SyntaxKind.EndOfLineTrivia
+                    finalLeadingTriviaList.Add(Trivia)
+                    afterLineContinuation = False
+                    afterWhiteSpace = False
+                    ' What I do depends on whats next
+                    If initialTriviaIndex < initialTriviaListUBound Then
+                        Dim j As Integer
+                        Dim newWhiteSpaceString As String = ""
+                        For j = initialTriviaIndex + 1 To initialTriviaListUBound
+                            If initialTriviaList(j).RawKind = VB.SyntaxKind.WhitespaceTrivia Then
+                                newWhiteSpaceString &= initialTriviaList(j).ToString
+                                initialTriviaIndex += 1
+                            Else
+                                Exit For
+                            End If
+                        Next
+                        If j < initialTriviaListUBound AndAlso initialTriviaList(j).IsComment Then
+                            If String.IsNullOrWhiteSpace(newWhiteSpaceString) Then
+                                finalLeadingTriviaList.Add(SpaceTrivia)
+                            Else
+                                finalLeadingTriviaList.Add(VBFactory.WhitespaceTrivia(newWhiteSpaceString))
+                            End If
+                            finalLeadingTriviaList.Add(LineContinuation)
+                            afterLineContinuation = True
+                        Else
+                            If Not String.IsNullOrWhiteSpace(newWhiteSpaceString) Then
+                                finalLeadingTriviaList.Add(VBFactory.WhitespaceTrivia(newWhiteSpaceString))
+                            End If
+                        End If
+                    End If
+                Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
+                    If Not afterWhiteSpace Then
+                        finalLeadingTriviaList.Add(SpaceTrivia)
+                    End If
+                    If Not afterLineContinuation Then
+                        finalLeadingTriviaList.Add(LineContinuation)
+                        finalLeadingTriviaList.Add(SpaceTrivia)
+                    End If
+                    finalLeadingTriviaList.Add(Trivia)
+                    afterLineContinuation = False
+                    afterWhiteSpace = False
+                Case VB.SyntaxKind.EndIfDirectiveTrivia
+                    finalLeadingTriviaList.AddRange(DirectiveNotAllowedHere(Trivia))
+                    finalLeadingTriviaList.Add(VBEOLTrivia)
+                    afterLineContinuation = False
+                    afterWhiteSpace = False
+                Case Else
+                    Stop
+            End Select
+        Next
+        initialTriviaList.Clear()
+        initialTriviaList.AddRange(ConvertTrivia(NodesOrTokens(Index).GetTrailingTrivia))
+        Dim FinalTrailingTriviaList As New List(Of SyntaxTrivia)
+        For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
+            Dim Trivia As SyntaxTrivia = e.Value
+            Select Case Trivia.RawKind
+                Case VB.SyntaxKind.WhitespaceTrivia
+                    FinalTrailingTriviaList.Add(Trivia)
+                    afterWhiteSpace = True
+                Case VB.SyntaxKind.EndOfLineTrivia
+                    FinalTrailingTriviaList.Add(Trivia)
+                    afterWhiteSpace = False
+                Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
+                    If Not afterWhiteSpace = True Then
+                        FinalTrailingTriviaList.Add(SpaceTrivia)
+                    End If
+                    FinalTrailingTriviaList.Add(LineContinuation)
+                    FinalTrailingTriviaList.Add(Trivia)
+                    afterWhiteSpace = False
+                Case Else
+                    Stop
+            End Select
+        Next
+        Return Token.With(finalLeadingTriviaList, FinalTrailingTriviaList)
+    End Function
+
     ''' <summary>
     ''' Returns the token after this token in the syntax tree.
     ''' </summary>
@@ -145,22 +317,22 @@ Public Module SyntaxTokenExtensions
     ''' <param name="stepInto">Delegate applied to trivia.  If this delegate is present then trailing trivia is
     ''' included in the search.</param>
     <Extension>
-    Public Function GetNextToken(Node As SyntaxToken, predicate As Func(Of SyntaxToken, Boolean), Optional stepInto As Func(Of SyntaxTrivia, Boolean) = Nothing) As SyntaxToken
-        If Node = Nothing Then
+    Public Function GetNextToken(Token As SyntaxToken, predicate As Func(Of SyntaxToken, Boolean), Optional stepInto As Func(Of SyntaxTrivia, Boolean) = Nothing) As SyntaxToken
+        If Token = Nothing Then
             Return Nothing
         End If
 
-        Return SyntaxNavigator.s_instance.GetNextToken(Node, predicate, stepInto)
+        Return SyntaxNavigator.s_instance.GetNextToken(Token, predicate, stepInto)
     End Function
 
     <Extension>
-    Public Function IsKind(token As SyntaxToken, ParamArray kinds() As CSharp.SyntaxKind) As Boolean
-        Return kinds.Contains(CType(token.RawKind, CSharp.SyntaxKind))
+    Public Function IsKind(Token As SyntaxToken, ParamArray kinds() As CS.SyntaxKind) As Boolean
+        Return kinds.Contains(CType(Token.RawKind, CS.SyntaxKind))
     End Function
 
     <Extension>
-    Public Function IsKind(token As SyntaxToken, ParamArray kinds() As VB.SyntaxKind) As Boolean
-        Return kinds.Contains(CType(token.RawKind, VB.SyntaxKind))
+    Public Function IsKind(Token As SyntaxToken, ParamArray kinds() As VB.SyntaxKind) As Boolean
+        Return kinds.Contains(CType(Token.RawKind, VB.SyntaxKind))
     End Function
 
     ''' <summary>
@@ -268,8 +440,13 @@ Public Module SyntaxTokenExtensions
     End Function
 
     <Extension>
-    Public Function WithAppendedTrailingTrivia(token As SyntaxToken, trivia As IEnumerable(Of SyntaxTrivia)) As SyntaxToken
-        Return token.WithTrailingTrivia(token.TrailingTrivia.Concat(trivia))
+    Public Function WithAppendedTrailingTrivia(Token As SyntaxToken, TriviaList As IEnumerable(Of SyntaxTrivia)) As SyntaxToken
+        Return Token.WithTrailingTrivia(Token.TrailingTrivia.Concat(TriviaList))
+    End Function
+
+    <Extension>
+    Public Function WithConvertedTrailingTriviaFrom(Token As SyntaxToken, otherToken As SyntaxToken) As SyntaxToken
+        Return Token.WithTrailingTrivia(ConvertTrivia(otherToken.TrailingTrivia()))
     End Function
 
     ''' <summary>
@@ -458,12 +635,12 @@ Public Module SyntaxTokenExtensions
     End Function
 
     <Extension>
-    Public Function WithPrependedLeadingTrivia(token As SyntaxToken, trivia As SyntaxTriviaList) As SyntaxToken
-        If trivia.Count = 0 Then
-            Return token
+    Public Function WithPrependedLeadingTrivia(Token As SyntaxToken, TriviaList As SyntaxTriviaList) As SyntaxToken
+        If TriviaList.Count = 0 Then
+            Return Token
         End If
 
-        Return token.WithLeadingTrivia(trivia.Concat(token.LeadingTrivia))
+        Return Token.WithLeadingTrivia(TriviaList.Concat(Token.LeadingTrivia))
     End Function
 
 End Module

@@ -418,7 +418,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 FieldDeclaration = VBFactory.FieldDeclaration(Attributes, modifiers, declarators).WithLeadingTrivia(LeadingTrivia)
                 FieldDeclaration = AddSpecialCommentToField(node, FieldDeclaration)
                 Return FieldDeclaration.RestructureAttributesAndModifiers(Attributes.Any, modifiers.Any).
-                    WithMergedTrailingTrivia(node.SemicolonToken.CollectTokenTrivia(Leading:=False)).WithTrailingEOL
+                    WithMergedTrailingTrivia(node.SemicolonToken.CollectTokenTrivia(IsLeading:=False)).WithTrailingEOL
             End Function
 
             Public Overrides Function VisitIndexerDeclaration(node As CSS.IndexerDeclarationSyntax) As VB.VisualBasicSyntaxNode

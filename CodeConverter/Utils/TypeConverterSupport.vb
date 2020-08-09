@@ -271,13 +271,13 @@ Namespace CSharpToVBCodeConverter
                 ElseIf TypeOf id.Parent?.Parent Is CSS.MemberAccessExpressionSyntax Then
                     bracketNeeded = CType(id.Parent?.Parent, CSS.MemberAccessExpressionSyntax).Expression.ToString.Equals(id.ToString, StringComparison.Ordinal)
                 End If
-                Return id.MakeIdentifierUnique(bracketNeeded, QualifiedNameOrTypeName:=IsQualifiedName)
+                Return id.MakeIdentifierUnique(bracketNeeded, IsQualifiedNameOrTypeName:=IsQualifiedName)
             End If
             If IsTypeName Then
                 IsQualifiedName = True
             Else
                 If VB.SyntaxFacts.IsPredefinedType(keywordKind) Then
-                    Return id.MakeIdentifierUnique(BracketNeeded:=True, QualifiedNameOrTypeName:=IsQualifiedName)
+                    Return id.MakeIdentifierUnique(IsBracketNeeded:=True, IsQualifiedNameOrTypeName:=IsQualifiedName)
                 End If
             End If
 
@@ -287,7 +287,7 @@ Namespace CSharpToVBCodeConverter
                 IsQualifiedName = MethodDeclaration Is Nothing OrElse String.Compare(MethodDeclaration.Identifier.ValueText, id.ValueText, ignoreCase:=True, Globalization.CultureInfo.InvariantCulture) = 0
                 IsQualifiedName = IsQualifiedName Or String.Compare(Param.Type.ToString, id.ValueText, ignoreCase:=False, Globalization.CultureInfo.InvariantCulture) = 0
             End If
-            Return MakeIdentifierUnique(id, BracketNeeded:=False, QualifiedNameOrTypeName:=IsQualifiedName)
+            Return MakeIdentifierUnique(id, IsBracketNeeded:=False, IsQualifiedNameOrTypeName:=IsQualifiedName)
         End Function
 
     End Module

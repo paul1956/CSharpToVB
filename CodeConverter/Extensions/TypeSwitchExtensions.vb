@@ -4,7 +4,7 @@
 
 Imports System.Runtime.CompilerServices
 
-Friend Module ObjectExtensions
+Friend Module TypeSwitchExtensions
 
 #Region "TypeSwitch on Action"
 

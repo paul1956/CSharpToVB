@@ -14,6 +14,9 @@ Namespace My
         Private Sub MyApplication_Startup(sender As Object, e As StartupEventArgs) Handles Me.Startup
             AppFramework.SetHighDpiMode(HighDpiMode.SystemAware)
             ' Get the splash screen.
+#If NETCOREAPP5_0 Then
+            Forms.SplashScreen1.UserName.Text = "Current user: " & User.Name
+#End If
         End Sub
 
         ' Shutdown: Raised after all application forms are closed.  This event is not raised if the application terminates abnormally.
@@ -26,7 +29,7 @@ Namespace My
             'My.Application.Log.WriteException(e.Exception, TraceEventType.Critical, "Unhandled Exception.")
         End Sub
 
-        ' StartupNextInstance: Raised when launching a single-instance application and the application is already active. 
+        ' StartupNextInstance: Raised when launching a single-instance application and the application is already active.
         Public Sub MyApplication_StartupNextInstance(sender As Object, e As StartupNextInstanceEventArgs) Handles Me.StartupNextInstance
             Stop
         End Sub

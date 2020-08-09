@@ -222,7 +222,7 @@ End Function
                     If e.IsFirst Then
                         If node.OpenBraceToken.LeadingTrivia.ContainsCommentOrDirectiveTrivia Then
                             If members.Any Then
-                                members(0) = members(0).WithPrependedLeadingTrivia(CollectTokenTrivia(node.OpenBraceToken, Leading:=True))
+                                members(0) = members(0).WithPrependedLeadingTrivia(CollectTokenTrivia(node.OpenBraceToken, IsLeading:=True))
                             Else
                                 Stop
                             End If
@@ -396,7 +396,7 @@ End Function
                     Dim csSeparatorTrailingTrivia As SyntaxTriviaList
                     Dim movedTrailingSpace As String = ""
                     Dim vbEnumSatement As VBS.StatementSyntax
-                    Dim leadingTrivia As List(Of SyntaxTrivia) = CollectTokenTrivia(node.OpenBraceToken, Leading:=True)
+                    Dim leadingTrivia As List(Of SyntaxTrivia) = CollectTokenTrivia(node.OpenBraceToken, IsLeading:=True)
                     For Each e As IndexClass(Of CSS.EnumMemberDeclarationSyntax) In csMembers.WithIndex
                         If e.IsLast Then
                             Exit For
@@ -569,7 +569,7 @@ End Function
                     extern.Accept(Me)
                 Next
 
-                Dim LeadingTrivia As List(Of SyntaxTrivia) = CollectTokenTrivia(node.OpenBraceToken, Leading:=True)
+                Dim LeadingTrivia As List(Of SyntaxTrivia) = CollectTokenTrivia(node.OpenBraceToken, IsLeading:=True)
                 Dim members As New List(Of VBS.StatementSyntax)
 
                 For Each e As IndexClass(Of CSS.MemberDeclarationSyntax) In node.Members.WithIndex
@@ -617,7 +617,7 @@ End Function
                     End If
                 End SyncLock
                 If Members.Any Then
-                    Members(0) = Members(0).WithPrependedLeadingTrivia(CollectTokenTrivia(node.OpenBraceToken, Leading:=True))
+                    Members(0) = Members(0).WithPrependedLeadingTrivia(CollectTokenTrivia(node.OpenBraceToken, IsLeading:=True))
                 End If
                 Dim ListOfAttributes As SyntaxList(Of VBS.AttributeListSyntax) = VBFactory.List(node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))
                 Dim TypeParameterList As VBS.TypeParameterListSyntax = DirectCast(node.TypeParameterList?.Accept(Me), VBS.TypeParameterListSyntax)

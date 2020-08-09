@@ -44,7 +44,6 @@ Public Class IgnoreFilesWithErrorsList
         End If
         ' Initialize the button column.
         _fileToLoad = ""
-#Disable Warning IDE0067 ' Dispose objects before losing scope
         Dim buttonDeleteEntry As New DataGridViewButtonColumn
         With buttonDeleteEntry
             .HeaderText = "Delete"
@@ -68,7 +67,6 @@ Public Class IgnoreFilesWithErrorsList
         End With
         ' Add the button column to the control.
         dgvIgnoredFilesList.Columns.Insert(1, buttonLoadFile)
-#Enable Warning IDE0067 ' Dispose objects before losing scope
     End Sub
 
     Private Sub OK_Button_Click(sender As Object, e As EventArgs) Handles OK_Button.Click

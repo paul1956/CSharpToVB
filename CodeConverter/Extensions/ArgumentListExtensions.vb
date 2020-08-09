@@ -11,20 +11,7 @@ Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 
 Namespace CSharpToVBCodeConverter.ToVisualBasic
 
-    Public Module DirectiveSupport
-
-        <Flags>
-        Public Enum DirectiveStates
-            None = 0
-            IfFound = 1
-            ElseFound = 2
-            ElIf = 4
-            DisabledText = 8
-            EndIfFound = 16
-            Region = 32
-            EndRegion = 64
-            PragmaWarning = 128
-        End Enum
+    Public Module ArgumentListExtensions
 
         <Extension>
         Friend Function ContainsConditionalDirective(ArgumentList As CSS.ArgumentListSyntax) As Boolean

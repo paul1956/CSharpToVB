@@ -3,13 +3,11 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Runtime.CompilerServices
-
 Imports Microsoft.CodeAnalysis
-
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
-Module SyntaxTriviaListExtensions
+Module TriviaListExtensions
 
     ''' <summary>
     ''' Syntax Trivia in any Language
