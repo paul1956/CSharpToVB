@@ -20,9 +20,6 @@
     <FileVersion>3.4.6.1</FileVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="CSharpToVBVisitors\BodyVisitor.vb" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis" Version="3.6.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.0.0">
       <PrivateAssets>all</PrivateAssets>
