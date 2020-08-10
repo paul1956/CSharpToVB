@@ -142,8 +142,10 @@ End Function
             Public Overrides Function VisitClassDeclaration(node As CSS.ClassDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim saveUsedIdentifiers As Dictionary(Of String, SymbolTableEntry) = s_usedIdentifiers
                 SyncLock s_usedStacks
-                    s_usedStacks.Push(s_usedIdentifiers)
-                    s_usedIdentifiers.Clear()
+                    If s_usedIdentifiers.Any Then
+                        s_usedStacks.Push(s_usedIdentifiers)
+                        s_usedIdentifiers.Clear()
+                    End If
                     _isModuleStack.Push(node.Modifiers.Contains(CS.SyntaxKind.StaticKeyword) And node.TypeParameterList Is Nothing)
                     If s_implementedMembers.Any Then
                         s_implementedMembersStack.Push(s_implementedMembers)
@@ -657,9 +659,11 @@ End Function
 
             Public Overrides Function VisitUsingDirective(node As CSS.UsingDirectiveSyntax) As VB.VisualBasicSyntaxNode
                 SyncLock s_usedStacks
-                    s_usedStacks.Push(s_usedIdentifiers)
+                    If s_usedIdentifiers.Any Then
+                        s_usedStacks.Push(s_usedIdentifiers)
+                        s_usedIdentifiers.Clear()
+                    End If
                 End SyncLock
-                s_usedIdentifiers.Clear()
                 Dim ImportsName As VBS.NameSyntax
                 Dim [Alias] As VBS.ImportAliasClauseSyntax = Nothing
                 Dim Identifier As SyntaxToken

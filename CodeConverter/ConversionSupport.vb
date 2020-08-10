@@ -105,8 +105,10 @@ Namespace CSharpToVBCodeConverter
                                 mProgress,
                                 CancelToken
                                 )
-                    s_usedStacks.Clear()
-                    s_usedIdentifiers.Clear()
+                    SyncLock s_usedStacks
+                        s_usedStacks.Clear()
+                        s_usedIdentifiers.Clear()
+                    End SyncLock
                     Return New ConversionResult(ConvertedNode, LanguageNames.CSharp, LanguageNames.VisualBasic, VBPreprocessorSymbols)
                 End If
             Catch ex As OperationCanceledException

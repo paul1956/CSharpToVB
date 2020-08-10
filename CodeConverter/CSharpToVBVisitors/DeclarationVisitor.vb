@@ -838,7 +838,9 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                     subOrFunctionStatement = subOrFunctionStatement.WithPrependedLeadingTrivia(ConvertTrivia(node.GetLeadingTrivia))
                 End If
                 subOrFunctionStatement = DirectCast(PrependStatementWithMarkedStatementTrivia(node, subOrFunctionStatement), VBS.MethodStatementSyntax)
-                s_usedIdentifiers = DirectCast(s_usedStacks.Pop, Dictionary(Of String, SymbolTableEntry))
+                If s_usedStacks.Count > 0 Then
+                    s_usedIdentifiers = DirectCast(s_usedStacks.Pop, Dictionary(Of String, SymbolTableEntry))
+                End If
 
                 If body Is Nothing Then
                     Return subOrFunctionStatement

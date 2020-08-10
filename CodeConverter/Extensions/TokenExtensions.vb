@@ -117,16 +117,16 @@ Public Module TokenExtensions
             ' We have a case sensitive exact match so just return it
             Return VBFactory.Identifier(s_usedIdentifiers(ConvertedIdentifier).Name).WithConvertedTriviaFrom(IdentifierToken)
         End If
-        Dim IsFieldIdentifier As Boolean = False
-        If TypeOf IdentifierToken.Parent Is CSS.VariableDeclaratorSyntax Then
-            Dim VarDecl As CSS.VariableDeclaratorSyntax = CType(IdentifierToken.Parent, CSS.VariableDeclaratorSyntax)
-            Dim FieldDeclatationOrNothing As CSS.FieldDeclarationSyntax = VarDecl.FirstAncestorOrSelf(Of CSS.FieldDeclarationSyntax)
-            If Char.IsLower(ConvertedIdentifier.Chars(0)) AndAlso FieldDeclatationOrNothing IsNot Nothing Then
-                If FieldDeclatationOrNothing.Modifiers.Any AndAlso FieldDeclatationOrNothing.Modifiers.Contains(CS.SyntaxKind.PrivateKeyword) Then
-                    IsFieldIdentifier = True
-                End If
-            End If
-        End If
+        'Dim IsFieldIdentifier As Boolean = False
+        'If TypeOf IdentifierToken.Parent Is CSS.VariableDeclaratorSyntax Then
+        '    Dim VarDecl As CSS.VariableDeclaratorSyntax = CType(IdentifierToken.Parent, CSS.VariableDeclaratorSyntax)
+        '    Dim FieldDeclatationOrNothing As CSS.FieldDeclarationSyntax = VarDecl.FirstAncestorOrSelf(Of CSS.FieldDeclarationSyntax)
+        '    If Char.IsLower(ConvertedIdentifier.Chars(0)) AndAlso FieldDeclatationOrNothing IsNot Nothing Then
+        '        If FieldDeclatationOrNothing.Modifiers.Any AndAlso FieldDeclatationOrNothing.Modifiers.Contains(CS.SyntaxKind.PrivateKeyword) Then
+        '            IsFieldIdentifier = True
+        '        End If
+        '    End If
+        'End If
         For Each ident As KeyValuePair(Of String, SymbolTableEntry) In s_usedIdentifiers
             If String.Compare(ident.Key, ConvertedIdentifier, ignoreCase:=False, Globalization.CultureInfo.InvariantCulture) = 0 Then
                 ' We have an exact match keep looking
@@ -143,7 +143,8 @@ Public Module TokenExtensions
                 Return VBFactory.Identifier(s_usedIdentifiers(ConvertedIdentifier).Name).WithConvertedTriviaFrom(IdentifierToken)
             End If
         Next
-        Dim _ConvertedIdentifier As String = $"{If(IsFieldIdentifier, "_", "")}{ConvertedIdentifier}"
+        Dim _ConvertedIdentifier As String = ConvertedIdentifier
+        'Dim _ConvertedIdentifier As String = $"{If(IsFieldIdentifier, "_", "")}{ConvertedIdentifier}"
         s_usedIdentifiers.Add(ConvertedIdentifier, New SymbolTableEntry(_ConvertedIdentifier, IsQualifiedNameOrTypeName))
         Return VBFactory.Identifier(_ConvertedIdentifier)
     End Function
