@@ -29,14 +29,12 @@ Namespace CSharpToVBCodeConverter
         Public Property ToLanguage() As String
         Public Property ToLanguageVersion() As Integer
 
-        Public Function SetFromLanguage(Optional name As String = LanguageNames.CSharp, Optional version As Integer = CS.LanguageVersion.Latest) As CodeWithOptions
-            FromLanguage = name
+        Public Function SetFromLanguageVersion(Optional version As Integer = CS.LanguageVersion.Latest) As CodeWithOptions
             FromLanguageVersion = version
             Return Me
         End Function
 
-        Public Function SetToLanguage(Optional name As String = LanguageNames.VisualBasic, Optional version As Integer = VisualBasic.LanguageVersion.Latest) As CodeWithOptions
-            ToLanguage = name
+        Public Function SetToLanguageVersion(Optional version As Integer = VisualBasic.LanguageVersion.Latest) As CodeWithOptions
             ToLanguageVersion = version
             Return Me
         End Function
