@@ -39,9 +39,7 @@ Namespace CSharpToVBCodeConverter
             End If
             Dim fromLanguage As String = LanguageNames.CSharp
             Dim toLanguage As String = LanguageNames.VisualBasic
-            Dim fromVersion As Integer = GetDefaultVersionForLanguage("cs")
-            Dim toVersion As Integer = GetDefaultVersionForLanguage("vb")
-            Dim codeWithOptions As CodeWithOptions = New CodeWithOptions(RequestToConvert)
+            Dim codeWithOptions As CodeWithOptions = New CodeWithOptions(RequestToConvert).SetFromLanguageVersion(GetDefaultVersionForLanguage("cs")).SetToLanguageVersion(GetDefaultVersionForLanguage("vb"))
             s_originalRequest = RequestToConvert
             SyncLock s_usedStacks
                 s_usedStacks.Push(s_usedIdentifiers)
