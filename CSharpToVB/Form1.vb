@@ -19,10 +19,9 @@ Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Emit
 Imports Microsoft.VisualBasic.FileIO
 
-#If Not NETCOREAPP5_0 Then
 
+#If NETCOREAPP3_1 Then
 Imports VBMsgBox
-
 #End If
 
 Partial Public Class Form1
@@ -44,6 +43,7 @@ Partial Public Class Form1
     Private _requestToConvert As ConvertRequest
 
     Private _resultOfConversion As ConversionResult
+    Private _doNotFailOnError As Boolean
 
     Public Sub New()
         Me.InitializeComponent()
@@ -97,43 +97,45 @@ Partial Public Class Form1
                     ListBoxErrorList.Items.Add($"{dia.Id} Line = {dia.Location.GetLineSpan.StartLinePosition.Line + 1} {dia.GetMessage}")
                 Next
             End If
-            Dim Progress As New TextProgressBar(ConversionProgressBar)
-            Progress.Maximum(Lines)
+            Using Progress As New TextProgressBar(ConversionProgressBar)
 
-            With ConversionBuffer
-                .Clear()
-                .Select(.TextLength, 0)
-                For Each range As Range In FragmentRange
+                Progress.Maximum(Lines)
+
+                With ConversionBuffer
+                    .Clear()
                     .Select(.TextLength, 0)
-                    .SelectionColor = ColorSelector.GetColorFromName(range.ClassificationType)
-                    .AppendText(range.Text)
-                    If range.Text.Contains(vbLf, StringComparison.OrdinalIgnoreCase) Then
-                        Progress.Increment(range.Text.Count(CType(vbLf, Char)))
-                        Application.DoEvents()
-                    End If
-                    If _requestToConvert?.CancelToken.IsCancellationRequested Then
-                        Exit Sub
-                    End If
-                Next range
-                Application.DoEvents()
-                If failures?.Count > 0 Then
-                    For Each dia As Diagnostic In failures
-                        Dim ErrorLine As Integer = dia.Location.GetLineSpan.StartLinePosition.Line
-                        Dim ErrorCharactorPosition As Integer = dia.Location.GetLineSpan.StartLinePosition.Character
-                        Dim Length As Integer = dia.Location.GetLineSpan.EndLinePosition.Character - ErrorCharactorPosition
-                        .Select(.GetFirstCharIndexFromLine(ErrorLine) + ErrorCharactorPosition, Length)
-                        .SelectionColor = Color.Red
+                    For Each range As Range In FragmentRange
                         .Select(.TextLength, 0)
-                    Next
-                    .Select(.GetFirstCharIndexFromLine(failures(0).Location.GetLineSpan.StartLinePosition.Line), 0)
-                    .ScrollToCaret()
+                        .SelectionColor = ColorSelector.GetColorFromName(range.ClassificationType)
+                        .AppendText(range.Text)
+                        If range.Text.Contains(vbLf, StringComparison.OrdinalIgnoreCase) Then
+                            Progress.Increment(range.Text.Count(CType(vbLf, Char)))
+                            Application.DoEvents()
+                        End If
+                        If _requestToConvert?.CancelToken.IsCancellationRequested Then
+                            Exit Sub
+                        End If
+                    Next range
+                    Application.DoEvents()
+                    If failures?.Count > 0 Then
+                        For Each dia As Diagnostic In failures
+                            Dim ErrorLine As Integer = dia.Location.GetLineSpan.StartLinePosition.Line
+                            Dim ErrorCharactorPosition As Integer = dia.Location.GetLineSpan.StartLinePosition.Character
+                            Dim Length As Integer = dia.Location.GetLineSpan.EndLinePosition.Character - ErrorCharactorPosition
+                            .Select(.GetFirstCharIndexFromLine(ErrorLine) + ErrorCharactorPosition, Length)
+                            .SelectionColor = Color.Red
+                            .Select(.TextLength, 0)
+                        Next
+                        .Select(.GetFirstCharIndexFromLine(failures(0).Location.GetLineSpan.StartLinePosition.Line), 0)
+                        .ScrollToCaret()
+                    End If
+                End With
+                If failures?.Count > 0 Then
+                    LineNumbersForConversionInput.Visible = True
+                    LineNumbersForConversionOutput.Visible = True
                 End If
-            End With
-            If failures?.Count > 0 Then
-                LineNumbersForConversionInput.Visible = True
-                LineNumbersForConversionOutput.Visible = True
-            End If
-            Progress.Clear()
+                Progress.Clear()
+            End Using
         Catch ex As Exception
             Stop
             Throw
@@ -236,9 +238,8 @@ Partial Public Class Form1
     Private Sub ConversionInput_TextChanged(sender As Object, e As EventArgs) Handles ConversionInput.TextChanged
         Dim InputBufferInUse As Boolean = CType(sender, RichTextBox).TextLength > 0
         mnuViewShowSourceLineNumbers.Checked = InputBufferInUse And My.Settings.ShowSourceLineNumbers
-        mnuFileSnippetSave.Enabled = InputBufferInUse
+        mnuFileSaveSnippet.Enabled = InputBufferInUse
         mnuConvertConvertSnippet.Enabled = InputBufferInUse
-        mnuConvertConvertFolder.Enabled = InputBufferInUse
         If mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
             Me.Colorize(GetClassifiedRanges(SourceCode:=ConversionInput.Text, LanguageNames.CSharp), ConversionBuffer:=ConversionInput, Lines:=ConversionInput.Lines.Length)
         End If
@@ -340,7 +341,7 @@ Partial Public Class Form1
                 mnuOptionsDelayBetweenConversions.SelectedIndex = 0
         End Select
 
-        mnuFileSnippetLoadLast.Enabled = File.Exists(s_snippetFileWithPath)
+        mnuFileLoadLastSnippet.Enabled = File.Exists(s_snippetFileWithPath)
         mnuOptionsPauseConvertOnSuccess.Checked = My.Settings.PauseConvertOnSuccess
         mnuOptionsSkipSkipAutoGenerated.Checked = My.Settings.SkipAutoGenerated
         mnuOptionsSkipSkipBinAndObjFolders.Checked = My.Settings.SkipBinAndObjFolders
@@ -583,29 +584,39 @@ Partial Public Class Form1
             _cancellationTokenSource.Dispose()
         End If
         _cancellationTokenSource = New CancellationTokenSource
-        _requestToConvert = New ConvertRequest(My.Settings.SkipAutoGenerated, New Progress(Of ProgressReport)(AddressOf New TextProgressBar(ConversionProgressBar).Update), _cancellationTokenSource.Token) With
-            {
-            .SourceCode = ConversionInput.Text
-            }
-        Dim CSPreprocessorSymbols As New List(Of String) From {
+        Using textProgressBar As TextProgressBar = New TextProgressBar(ConversionProgressBar)
+
+            _requestToConvert = New ConvertRequest(My.Settings.SkipAutoGenerated, New Progress(Of ProgressReport)(AddressOf textProgressBar.Update), _cancellationTokenSource.Token) With
+                {
+                .SourceCode = ConversionInput.Text
+                }
+            Dim CSPreprocessorSymbols As New List(Of String) From {
             My.Settings.Framework
         }
-        Dim VBPreprocessorSymbols As New List(Of KeyValuePair(Of String, Object)) From {
+
+#If NET48 Then
+            Dim VBPreprocessorSymbols As New List(Of KeyValuePair(Of String, Object)) From {
+                New KeyValuePair(Of String, Object)(My.Settings.Framework, True)
+            }
+#Else
+            Dim VBPreprocessorSymbols As New List(Of KeyValuePair(Of String, Object)) From {
             KeyValuePair.Create(Of String, Object)(My.Settings.Framework, True)
-        }
-        Dim DontDisplayLineNumbers As Boolean = Await Me.Convert_Compile_ColorizeAsync(_requestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences:=SharedReferences.CSharpReferences(Assembly.Load("System.Windows.Forms").Location, Nothing).ToArray, CancelToken:=_cancellationTokenSource.Token).ConfigureAwait(True)
-        If _requestToConvert.CancelToken.IsCancellationRequested Then
-            MsgBox($"Conversion canceled.",
-                   MsgBoxStyle.OkOnly Or MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground,
-                   Title:="C# to Visual Basic")
-            ConversionProgressBar.Value = 0
-        End If
-        mnuConvertConvertFolder.Enabled = True
-        SetButtonStopAndCursor(MeForm:=Me, StopButton:=ButtonStopConversion, StopButtonVisible:=False)
-        LineNumbersForConversionOutput.Visible = (Not DontDisplayLineNumbers) OrElse My.Settings.ShowDestinationLineNumbers
+            }
+#End If
+            Dim DontDisplayLineNumbers As Boolean = Await Me.Convert_Compile_ColorizeAsync(_requestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, SharedReferences.CSharpReferences(Assembly.Load("System.Windows.Forms").Location, OptionalReference:=Nothing).ToArray, _cancellationTokenSource.Token).ConfigureAwait(True)
+            If _requestToConvert.CancelToken.IsCancellationRequested Then
+                MsgBox($"Conversion canceled.",
+                       MsgBoxStyle.OkOnly Or MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground,
+                       Title:="C# to Visual Basic")
+                ConversionProgressBar.Value = 0
+            End If
+            SetButtonStopAndCursor(MeForm:=Me, StopButton:=ButtonStopConversion, StopButtonVisible:=False)
+            LineNumbersForConversionOutput.Visible = (Not DontDisplayLineNumbers) OrElse My.Settings.ShowDestinationLineNumbers
+        End Using
     End Sub
 
     Private Async Sub mnuConvertFolder_Click(sender As Object, e As EventArgs) Handles mnuConvertConvertFolder.Click
+        mnuConvertConvertFolder.Enabled = False
         LineNumbersForConversionInput.Visible = False
         LineNumbersForConversionOutput.Visible = False
         StatusStripCurrentFileName.Text = ""
@@ -617,6 +628,7 @@ Partial Public Class Form1
                 .SelectedPath = My.Settings.DefaultProjectDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) & Path.DirectorySeparatorChar
                 .ShowNewFolderButton = False
                 If .ShowDialog(Me) <> DialogResult.OK Then
+                    mnuConvertConvertFolder.Enabled = True
                     Exit Sub
                 End If
                 SourceFolderName = .SelectedPath
@@ -628,12 +640,14 @@ Partial Public Class Form1
             MsgBox($"{SourceFolderName} is not a directory.",
                    MsgBoxStyle.OkOnly Or MsgBoxStyle.Exclamation Or MsgBoxStyle.MsgBoxSetForeground,
                    Title:="Convert C# to Visual Basic")
+            mnuConvertConvertFolder.Enabled = True
             Exit Sub
         End If
         If String.IsNullOrWhiteSpace(solutionSavePath) Then
             MsgBox($"Conversion aborted.",
                    MsgBoxStyle.OkOnly Or MsgBoxStyle.Exclamation Or MsgBoxStyle.MsgBoxSetForeground,
                    Title:="Convert C# to Visual Basic")
+            mnuConvertConvertFolder.Enabled = True
             Exit Sub
         End If
         Dim LastFileNameWithPath As String = If(My.Settings.StartFolderConvertFromLastFile, My.Settings.MRU_Data.Last, "")
@@ -670,6 +684,7 @@ Partial Public Class Form1
                Title:="Convert C# to Visual Basic")
         Dim elapsed As TimeSpan = stopwatch.Elapsed
         StatusStripElapasedTimeLabel.Text = $"Elapsed Time - {elapsed.Hours}: {elapsed.Minutes}:{elapsed.Seconds}.{elapsed.Milliseconds}"
+        mnuConvertConvertFolder.Enabled = True
 
     End Sub
 
@@ -788,10 +803,7 @@ Partial Public Class Form1
             .Title = $"Open C# Source file"
             .ValidateNames = True
             If .ShowDialog = DialogResult.OK Then
-                mnuConvertConvertFolder.Enabled = False
                 Me.OpenSourceFile(OpenFileDialog1.FileName)
-            Else
-                mnuConvertConvertFolder.Enabled = True
             End If
         End With
     End Sub
@@ -833,7 +845,7 @@ Partial Public Class Form1
         End If
     End Sub
 
-    Private Sub mnuFileSnippetLoadLast_Click(sender As Object, e As EventArgs) Handles mnuFileSnippetLoadLast.Click
+    Private Sub mnuFileSnippetLoadLast_Click(sender As Object, e As EventArgs) Handles mnuFileLoadLastSnippet.Click
         If My.Settings.ColorizeInput Then
             mnuConvertConvertSnippet.Enabled = 0 <> Me.LoadInputBufferFromStream(s_snippetFileWithPath)
         Else
@@ -842,18 +854,18 @@ Partial Public Class Form1
         mnuCompile.Enabled = True
     End Sub
 
-    Private Sub mnuFileSnippetSave_Click(sender As Object, e As EventArgs) Handles mnuFileSnippetSave.Click
+    Private Sub mnuFileSnippetSave_Click(sender As Object, e As EventArgs) Handles mnuFileSaveSnippet.Click
         If ConversionInput.TextLength = 0 Then
             Exit Sub
         End If
         ConversionInput.SaveFile(s_snippetFileWithPath, RichTextBoxStreamType.PlainText)
     End Sub
 
-    Private Sub mnuFileSnippett_Click(sender As Object, e As EventArgs) Handles mnuFileSnippet.Click
-        If Not File.Exists(s_snippetFileWithPath) Then
-            Exit Sub
-        End If
-    End Sub
+    'Private Sub mnuFileSnippett_Click(sender As Object, e As EventArgs) Handles mnuFileSnippet.Click
+    '    If Not File.Exists(s_snippetFileWithPath) Then
+    '        Exit Sub
+    '    End If
+    'End Sub
 
     Private Sub mnuHelpAboutMenuItem_Click(sender As Object, e As EventArgs) Handles mnuHelpAboutMenuItem.Click
         Dim About As New AboutBox1
@@ -926,7 +938,6 @@ Partial Public Class Form1
         Dim IgnoreFilesWithErrorsDialog As New IgnoreFilesWithErrorsList
         IgnoreFilesWithErrorsDialog.ShowDialog(Me)
         If Not String.IsNullOrWhiteSpace(IgnoreFilesWithErrorsDialog.FileToLoad) Then
-            mnuConvertConvertFolder.Enabled = False
             Me.OpenSourceFile(IgnoreFilesWithErrorsDialog.FileToLoad)
         End If
         IgnoreFilesWithErrorsDialog.Dispose()
@@ -985,41 +996,10 @@ Partial Public Class Form1
         My.Settings.Save()
     End Sub
 
-    Private Sub MRU_UpdateUI(dropDownItems As ToolStripItemCollection)
-        ' clear MRU menu items...
-        Dim MRUToolStripItems As New List(Of ToolStripItem)
-        ' create a temporary collection containing every MRU menu item
-        ' (identified by the tag text when added to the list)...
-        For Each FileMenuItem As ToolStripItem In dropDownItems
-            If Not FileMenuItem.Tag Is Nothing Then
-                If FileMenuItem.Tag.ToString().StartsWith("MRU:", StringComparison.Ordinal) Then
-                    MRUToolStripItems.Add(FileMenuItem)
-                End If
-            End If
-        Next
-        ' iterate through list and remove each from menu...
-        For Each MRUToolStripItem As ToolStripItem In MRUToolStripItems
-            RemoveHandler MRUToolStripItem.Click, AddressOf Me.mnu_MRUList_Click
-            RemoveHandler MRUToolStripItem.MouseDown, AddressOf mnuMRUList_MouseDown
-            dropDownItems.Remove(MRUToolStripItem)
-        Next
-        ' display items (in reverse order so the most recent is on top)...
-        For iCounter As Integer = My.Settings.MRU_Data.Count - 1 To 0 Step -1
-            Dim sPath As String = My.Settings.MRU_Data(iCounter)
-            ' create new ToolStripItem, displaying the name of the file...
-            ' set the tag - identifies the ToolStripItem as an MRU item and
-            ' contains the full path so it can be opened later...
-            Dim clsItem As New ToolStripMenuItem(sPath) With {
-                .Tag = "MRU:" & sPath
-            }
-            ' hook into the click event handler so we can open the file later...
-            AddHandler clsItem.Click, AddressOf Me.mnu_MRUList_Click
-            AddHandler clsItem.MouseDown, AddressOf mnuMRUList_MouseDown
-            ' insert into DropDownItems list...
-            dropDownItems.Insert(dropDownItems.Count - 12, clsItem)
-        Next
-        ' show separator...
+
+    Private Sub UpdateLastFileMeus()
         My.Settings.Save()
+        ' show separator...
         If My.Settings.MRU_Data.Count > 0 Then
             mnuFileLastFolder.Text = Path.GetDirectoryName(My.Settings.MRU_Data.Last)
             mnuFileLastFolder.Visible = True
@@ -1030,13 +1010,13 @@ Partial Public Class Form1
             mnuFileSep1.Visible = False
             mnuFileSep2.Visible = False
         End If
-
     End Sub
 
     Private Sub OpenSourceFile(FileNameWithPath As String)
         mnuConvertConvertSnippet.Enabled = Me.LoadInputBufferFromStream(FileNameWithPath) <> 0
         mnuAddToMRU(My.Settings.MRU_Data, FileNameWithPath)
-        Me.MRU_UpdateUI(mnuFile.DropDownItems)
+        MRU_UpdateUI(mnuFile.DropDownItems, AddressOf Me.mnu_MRUList_Click, IncludeMouseDownEvent:=True)
+        Me.UpdateLastFileMeus()
     End Sub
 
     ''' <summary>
@@ -1099,52 +1079,63 @@ Partial Public Class Form1
         ButtonStopConversion.Visible = True
         ConversionOutput.Text = ""
         mnuAddToMRU(My.Settings.MRU_Data, SourceFileNameWithPath)
-        Me.MRU_UpdateUI(mnuFile.DropDownItems)
+        Me.UpdateLastFileMeus()
+        MRU_UpdateUI(mnuFile.DropDownItems, AddressOf Me.mnu_MRUList_Click, IncludeMouseDownEvent:=True)
         Dim lines As Integer = Me.LoadInputBufferFromStream(SourceFileNameWithPath)
         If lines > 0 Then
-            _requestToConvert = New ConvertRequest(SkipAutoGenerated, New Progress(Of ProgressReport)(AddressOf New TextProgressBar(ConversionProgressBar).Update), _cancellationTokenSource.Token) With {
-                .SourceCode = ConversionInput.Text
-            }
-            If Not Await Me.Convert_Compile_ColorizeAsync(_requestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences, CancelToken).ConfigureAwait(True) Then
-                If _requestToConvert.CancelToken.IsCancellationRequested Then
-                    ConversionProgressBar.Value = 0
-                    Return False
-                End If
-                Select Case MsgBox($"Conversion failed, do you want to stop processing this file automatically in the future? Yes and No will continue processing files, Cancel will stop conversions!",
-                                   MsgBoxStyle.YesNoCancel Or MsgBoxStyle.Exclamation Or MsgBoxStyle.MsgBoxSetForeground)
-                    Case MsgBoxResult.Cancel
-                        _cancellationTokenSource.Cancel()
+            Using textProgressBar As TextProgressBar = New TextProgressBar(ConversionProgressBar)
+
+                _requestToConvert = New ConvertRequest(SkipAutoGenerated, New Progress(Of ProgressReport)(AddressOf textProgressBar.Update), _cancellationTokenSource.Token) With {
+                    .SourceCode = ConversionInput.Text
+                }
+                If Not Await Me.Convert_Compile_ColorizeAsync(_requestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences, CancelToken).ConfigureAwait(True) Then
+                    If _requestToConvert.CancelToken.IsCancellationRequested Then
+                        ConversionProgressBar.Value = 0
                         Return False
-                    Case MsgBoxResult.No
-                        Return True
-                    Case MsgBoxResult.Yes
-                        If Not My.Settings.IgnoreFileList.Contains(SourceFileNameWithPath) Then
-                            My.Settings.IgnoreFileList.Add(SourceFileNameWithPath)
-                            My.Settings.Save()
+                    End If
+                    Dim msgBoxResult As MsgBoxResult
+                    If _doNotFailOnError Then
+                        msgBoxResult = MsgBoxResult.Yes
+                    Else
+                        msgBoxResult = MsgBox($"Conversion failed, do you want to stop processing this file automatically in the future? Yes and No will continue processing files, Cancel will stop conversions!",
+                                             MsgBoxStyle.YesNoCancel Or MsgBoxStyle.Exclamation Or MsgBoxStyle.MsgBoxSetForeground)
+                    End If
+                    Select Case msgBoxResult
+                        Case MsgBoxResult.Cancel
+                            _cancellationTokenSource.Cancel()
+                            Return False
+                        Case MsgBoxResult.No
+                            Return True
+                        Case MsgBoxResult.Yes
+                            If Not My.Settings.IgnoreFileList.Contains(SourceFileNameWithPath) Then
+                                My.Settings.IgnoreFileList.Add(SourceFileNameWithPath)
+                                My.Settings.Save()
+                            End If
                             ListBoxErrorList.Text = ""
                             LineNumbersForConversionInput.Visible = My.Settings.ShowSourceLineNumbers
                             LineNumbersForConversionOutput.Visible = My.Settings.ShowDestinationLineNumbers
+                            _doNotFailOnError = True
+                            Return True
+                    End Select
+                Else
+                    If Not String.IsNullOrWhiteSpace(TargetDirectory) Then
+                        If _requestToConvert.CancelToken.IsCancellationRequested Then
+                            Return False
                         End If
-                        Return True
-                End Select
-            Else
-                If Not String.IsNullOrWhiteSpace(TargetDirectory) Then
-                    If _requestToConvert.CancelToken.IsCancellationRequested Then
-                        Return False
+                        If LabelErrorCount.Text = "File Skipped" Then
+                            Return True
+                        End If
+                        Dim NewFileName As String = Path.ChangeExtension(New FileInfo(SourceFileNameWithPath).Name, If(SourceLanguageExtension = "vb", "cs", "vb"))
+                        WriteTextToStream(TargetDirectory, NewFileName, ConversionOutput.Text)
                     End If
-                    If LabelErrorCount.Text = "File Skipped" Then
-                        Return True
-                    End If
-                    Dim NewFileName As String = Path.ChangeExtension(New FileInfo(SourceFileNameWithPath).Name, If(SourceLanguageExtension = "vb", "cs", "vb"))
-                    WriteTextToStream(TargetDirectory, NewFileName, ConversionOutput.Text)
-                End If
-                If My.Settings.PauseConvertOnSuccess Then
-                    If MsgBox($"{SourceFileNameWithPath} successfully converted, Continue?",
-                              MsgBoxStyle.YesNo Or MsgBoxStyle.Question Or MsgBoxStyle.MsgBoxSetForeground) = MsgBoxResult.No Then
-                        Return False
+                    If My.Settings.PauseConvertOnSuccess Then
+                        If MsgBox($"{SourceFileNameWithPath} successfully converted, Continue?",
+                                  MsgBoxStyle.YesNo Or MsgBoxStyle.Question Or MsgBoxStyle.MsgBoxSetForeground) = MsgBoxResult.No Then
+                            Return False
+                        End If
                     End If
                 End If
-            End If
+            End Using
             ' 5 second delay
             Const LoopSleep As Integer = 25
             Dim Delay As Integer = (1000 * My.Settings.ConversionDelay) \ LoopSleep
@@ -1252,11 +1243,19 @@ Partial Public Class Form1
         Dim TotalFilesToProcess As Integer = currentProject.Documents.Count
         Dim convertedFramework As String = FrameworkNameToConstant(Framework)
         Dim CSPreprocessorSymbols As New List(Of String) From {Framework, convertedFramework}
+#If NET48 Then
+        Dim VBPreprocessorSymbols As New List(Of KeyValuePair(Of String, Object)) From {
+                                  New KeyValuePair(Of String, Object)(convertedFramework, True)}
+        If Not convertedFramework.Equals(Framework, StringComparison.OrdinalIgnoreCase) Then
+            VBPreprocessorSymbols.Add(New KeyValuePair(Of String, Object)(Framework, True))
+        End If
+#Else
         Dim VBPreprocessorSymbols As New List(Of KeyValuePair(Of String, Object)) From {
                                     KeyValuePair.Create(Of String, Object)(convertedFramework, True)}
         If Not convertedFramework.Equals(Framework, StringComparison.OrdinalIgnoreCase) Then
             VBPreprocessorSymbols.Add(KeyValuePair.Create(Of String, Object)(Framework, True))
         End If
+#End If
 
         For Each currentDocument As Document In currentProject.Documents
             If _cancellationTokenSource.IsCancellationRequested Then
@@ -1274,7 +1273,7 @@ Partial Public Class Form1
                                              CSPreprocessorSymbols,
                                              VBPreprocessorSymbols,
                                              References,
-                                             SkipAutoGenerated:=False,
+                                             SkipAutoGenerated:=True,
                                              _cancellationTokenSource.Token).ConfigureAwait(True) _
                             OrElse _requestToConvert.CancelToken.IsCancellationRequested Then
                 Return False
@@ -1499,17 +1498,18 @@ Partial Public Class Form1
         ' load MRU...
         If My.Settings.MRU_Data Is Nothing Then
             My.Settings.MRU_Data = New Specialized.StringCollection
+            Me.UpdateLastFileMeus()
         End If
         ' display MRU if there are any items to display...
-        Me.MRU_UpdateUI(mnuFile.DropDownItems)
+        MRU_UpdateUI(mnuFile.DropDownItems, AddressOf Me.mnu_MRUList_Click, IncludeMouseDownEvent:=True)
     End Sub
 
     Friend Sub mnu_MRUList_Click(sender As Object, e As EventArgs)
         ' open the file...
-        Me.OpenSourceFile(DirectCast(sender, ToolStripItem).Tag.ToString().Substring(4))
+        Me.OpenSourceFile(DirectCast(sender, ToolStripItem).Tag.ToString().Substring(startIndex:=4))
     End Sub
 
-#If Not NETCOREAPP5_0 Then
+#If NETCOREAPP3_1 Then
 
     <STAThread()>
     Shared Sub main(args As String())
@@ -1517,6 +1517,14 @@ Partial Public Class Form1
         Using MyApp As New My.MyApplication
             MyApp.Run(args)
         End Using
+    End Sub
+
+    Private Sub mnuConvert_DropDownOpened(sender As Object, e As EventArgs) Handles mnuConvert.DropDownOpened
+        mnuConvertConvertSnippet.Enabled = ConversionInput.TextLength > 0
+    End Sub
+
+    Private Sub mnuFile_DropDownOpening(sender As Object, e As EventArgs) Handles mnuFile.DropDownOpening
+        mnuFileLoadLastSnippet.Enabled = File.Exists(s_snippetFileWithPath)
     End Sub
 
 #End If

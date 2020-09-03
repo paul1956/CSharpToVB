@@ -12,7 +12,7 @@ Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
-Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
+Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 
 <EditorBrowsable(EditorBrowsableState.Never)>
 Public Module ITypeSymbolExtensions
@@ -111,30 +111,25 @@ Public Module ITypeSymbolExtensions
     End Function
 
     <Extension>
-    Friend Function ActionType(compilation As Compilation) As INamedTypeSymbol
-        Return compilation.GetTypeByMetadataName(GetType(Action).FullName)
-    End Function
-
-    <Extension>
     Friend Function ConvertCSTupleToVBType(CSNamedTypeStringIn As String) As TypeSyntax
         Dim CSNamedTypeString As String = CSNamedTypeStringIn
         Dim IsArray As Boolean = False
         Dim Nullable As Boolean = False
         If CSNamedTypeString.EndsWith("?", StringComparison.Ordinal) Then
             Nullable = True
-            CSNamedTypeString = CSNamedTypeString.Substring(0, CSNamedTypeString.Length - 1).Trim
+            CSNamedTypeString = CSNamedTypeString.Substring(startIndex:=0, CSNamedTypeString.Length - 1).Trim
         End If
         If CSNamedTypeString.EndsWith("[]", StringComparison.Ordinal) Then
             IsArray = True
-            CSNamedTypeString = CSNamedTypeString.Substring(0, CSNamedTypeString.Length - 2).Trim
+            CSNamedTypeString = CSNamedTypeString.Substring(startIndex:=0, CSNamedTypeString.Length - 2).Trim
         End If
         If CSNamedTypeString.StartsWith("(", StringComparison.OrdinalIgnoreCase) AndAlso CSNamedTypeString.EndsWith(")", StringComparison.OrdinalIgnoreCase) Then
-            CSNamedTypeString = CSNamedTypeString.Substring(1, CSNamedTypeString.Length - 2).Trim
+            CSNamedTypeString = CSNamedTypeString.Substring(startIndex:=1, CSNamedTypeString.Length - 2).Trim
         End If
 
         Dim ElementList As List(Of String) = CSNamedTypeString.ConvertTupleToVBTypeStrings(IncludeName:=True)
         Dim builder As New StringBuilder
-        builder.Append("(")
+        builder.Append("("c)
         For Each e As IndexClass(Of String) In ElementList.WithIndex
             If e.IsLast Then Exit For
             builder.Append($"{e.Value}, ")
@@ -142,7 +137,7 @@ Public Module ITypeSymbolExtensions
         builder.Append(ElementList.Last & ")")
         Dim TupleType As String = builder.ToString & If(IsArray, "()", "") & If(Nullable, "?", "")
 
-        Return VBFactory.ParseTypeName(TupleType).WithLeadingTrivia(SpaceTrivia)
+        Return Factory.ParseTypeName(TupleType).WithLeadingTrivia(VBSpaceTrivia)
     End Function
 
     <Extension>
@@ -185,7 +180,7 @@ Public Module ITypeSymbolExtensions
             If GenericdName.TypeArgumentList.Arguments.Count = 1 Then
                 Return GenericdName.TypeArgumentList.Arguments(0)
             Else
-                Return VBFactory.ParseTypeName(GenericdName.TypeArgumentList.Arguments.ToString & ")")
+                Return Factory.ParseTypeName(GenericdName.TypeArgumentList.Arguments.ToString & ")")
             End If
         End If
         If TypeOf _TypeSyntax Is GenericNameSyntax Then
@@ -197,7 +192,7 @@ Public Module ITypeSymbolExtensions
             End If
         End If
         If TypeOf _TypeSyntax Is IdentifierNameSyntax Then
-            Return VBFactory.ParseTypeName(_TypeSyntax.ToString)
+            Return Factory.ParseTypeName(_TypeSyntax.ToString)
         End If
 
         If _TypeSyntax.IsKind(VB.SyntaxKind.PredefinedType) Then
@@ -232,7 +227,7 @@ Public Module ITypeSymbolExtensions
                     Stop
             End Select
         End If
-        Return VBFactory.PredefinedType(ObjectKeyword)
+        Return Factory.PredefinedType(ObjectKeyword)
     End Function
 
     <Extension>
@@ -249,7 +244,7 @@ Public Module ITypeSymbolExtensions
             Dim NewType As String
             If index > 0 Then
                 NewType = NamedType.ToString.Substring(index + StrIEnumerableOf.Length)
-                Return VBFactory.ParseName(NewType)
+                Return Factory.ParseName(NewType)
             End If
             index = NamedType.ToString.IndexOf(StrIDictionary, StringComparison.Ordinal)
             If index > 0 Then
@@ -264,7 +259,7 @@ Public Module ITypeSymbolExtensions
         Dim index1 As Integer = expressionConvertedType.ToString.IndexOf(StrIEnumerableOf, StringComparison.Ordinal)
         If index1 > 0 Then
             Dim NewType As String = expressionConvertedType.ToString.Substring(index1 + StrIEnumerableOf.Length)
-            Return VBFactory.ParseName(NewType)
+            Return Factory.ParseName(NewType)
         End If
         Return Nothing
     End Function
@@ -343,10 +338,9 @@ Public Module ITypeSymbolExtensions
 
             Case Accessibility.Protected
                 Return IsProtectedSymbolAccessible(withinNamedType, withinAssembly, throughTypeOpt, originalContainingType, failedThroughTypeCheck)
-
             Case Else
-                Throw UnreachableException()
-
+                Stop
+                Throw UnreachableException
         End Select
     End Function
 
@@ -374,7 +368,7 @@ Public Module ITypeSymbolExtensions
         If symbol Is Nothing Then
             Return False
         End If
-        Return symbol.TypeKind = TypeKind.[Delegate]
+        Return symbol.TypeKind = TypeKind.Delegate
     End Function
 
     <Extension()>
@@ -388,7 +382,7 @@ Public Module ITypeSymbolExtensions
             Return False
         End If
 
-        Return symbol.TypeKind = TypeKind.[Interface]
+        Return symbol.TypeKind = TypeKind.Interface
     End Function
 
 End Module

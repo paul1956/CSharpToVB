@@ -30,11 +30,29 @@ Namespace CSharpToVBCodeConverter
                 Dim _Document As Document = project.AddDocument("Document", ConvertedTree)
                 Dim _SyntaxTree As SyntaxTree = _Document.GetSyntaxTreeAsync().Result
 
-                Dim Root As SyntaxNode = _SyntaxTree.GetRootAsync().Result
-                ConvertedCode = WorkspaceFormat(Workspace, Root, spans:=Nothing, Workspace.Options, _Document.GetTextAsync().Result)
-                Me.ConvertedTree = DirectCast(Root, VB.VisualBasicSyntaxNode)
-            End Using
+                Dim Root As SyntaxNode = _SyntaxTree.GetRootAsync().GetAwaiter.GetResult
+                'Dim NodesAndTokenWithIssues As IEnumerable(Of SyntaxNodeOrToken) = Root.DescendantNodesAndTokensAndSelf().Where(Function(nodeOrToken) nodeOrToken.Language <> LanguageNames.VisualBasic)
+                'If NodesAndTokenWithIssues.Any Then
+                '    Stop
+                'End If
+                Try
+                    ConvertedCode = WorkspaceFormat(Workspace, Root, spans:=Nothing, Workspace.Options, _Document.GetTextAsync().GetAwaiter.GetResult)
+                    Me.ConvertedTree = DirectCast(Root, VB.VisualBasicSyntaxNode)
+                    Exit Sub
+                Catch ex As Exception
+                End Try
 
+                Dim tree As SyntaxTree = VB.VisualBasicSyntaxTree.ParseText(Root.ToFullString)
+                Dim Root1 As SyntaxNode = tree.GetRootAsync().GetAwaiter.GetResult
+                Try
+                    Dim ConvertedCode1 As String = WorkspaceFormat(Workspace, Root1, spans:=Nothing, Workspace.Options, _Document.GetTextAsync().GetAwaiter.GetResult)
+                    ConvertedCode = ConvertedCode1
+                    Me.ConvertedTree = DirectCast(Root1, VB.VisualBasicSyntaxNode)
+                Catch ex As Exception
+                    ConvertedCode = DirectCast(Root, VB.VisualBasicSyntaxNode).ToFullString
+                End Try
+                Me.ConvertedTree = DirectCast(Root1, VB.VisualBasicSyntaxNode)
+            End Using
         End Sub
 
         Public Sub New(ParamArray exceptions() As Exception)

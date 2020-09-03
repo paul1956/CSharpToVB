@@ -20,6 +20,12 @@ Namespace CodeConverter.Tests
 
     Public Class ConverterTestBase
 
+        Private Const OptionHeaderText As String = "Option Explicit Off
+Option Infer On
+Option Strict Off
+
+"
+
         ' Do not remove Version
         Public Property Version As Integer = 1
 
@@ -71,6 +77,35 @@ Namespace CodeConverter.Tests
             doc = workspace.CurrentSolution.GetProject(projectId).GetDocument(documentId)
         End Sub
 
+        Private Shared Function FindFirstDifferenceColumn(DesiredLine As String, ActualLine As String) As (ColumnIndex As Integer, Character As String)
+            Dim minLength As Integer = Math.Min(DesiredLine.Length, ActualLine.Length) - 1
+            For index As Integer = 0 To minLength
+                If Not DesiredLine.Chars(index).Equals(ActualLine.Chars(index)) Then
+                    Return (index + 1, $"Expected Character ""{DesiredLine.Chars(index)}"", Actual Character ""{ActualLine.Chars(index)}""")
+                End If
+            Next
+
+            If DesiredLine.Length > ActualLine.Length Then
+                Return (minLength + 1, $"Expected Character ""{DesiredLine.Chars(minLength + 1)}"", Actual Character Nothing")
+            Else
+                Return (minLength + 1, $"Expected Character Nothing, Actual Character ""{ActualLine.Chars(minLength + 1)}""")
+            End If
+        End Function
+
+        Private Shared Function FindFirstDifferenceLine(DesiredText As String, ActualText As String) As String
+            Dim Desiredlines() As String = DesiredText.SplitLines()
+            Dim ActuaLines() As String = ActualText.SplitLines()
+            For index As Integer = 0 To Math.Min(Desiredlines.GetUpperBound(0), ActuaLines.GetUpperBound(0))
+                Dim DesiredLine As String = Desiredlines(index)
+                Dim ActualLine As String = ActuaLines(index)
+                If Not DesiredLine.Equals(ActualLine, StringComparison.CurrentCulture) Then
+                    Dim p As (ColumnIndex As Integer, Character As String) = FindFirstDifferenceColumn(DesiredLine, ActualLine)
+                    Return $"{vbCrLf}Expected Line_{index + 1} {DesiredLine}{vbCrLf}Actual Line___{index + 1} {ActualLine}{vbCrLf}Column {p.ColumnIndex} {p.Character}"
+                End If
+            Next
+            Return "Files identical"
+        End Function
+
         Private Shared Sub VBWorkspaceSetup(ByRef workspace As TestWorkspace, ByRef doc As Document, Optional parseOptions As VisualBasicParseOptions = Nothing)
             workspace = New TestWorkspace()
             If parseOptions Is Nothing Then
@@ -111,7 +146,12 @@ Namespace CodeConverter.Tests
             doc = workspace.CurrentSolution.GetProject(ProjectId).GetDocument(DocumentID)
         End Sub
 
-        Friend Shared Sub TestConversionCSharpToVisualBasic(csharpCode As String, DesiredResult As String, Optional csharpOptions As CSharpParseOptions = Nothing, Optional vbOptions As VisualBasicParseOptions = Nothing)
+        Protected Shared Function WorkspaceFormat(workspace As Workspace, root As SyntaxNode, spans As IEnumerable(Of TextSpan), pOptionSet As OptionSet, pSourceText As SourceText) As String
+            Dim result As IList(Of TextChange) = Formatter.GetFormattedTextChanges(root, spans, workspace, pOptionSet)
+            Return pSourceText?.WithChanges(result).ToString()
+        End Function
+
+        Friend Shared Sub TestConversionCSharpToVisualBasic(csharpCode As String, DesiredResult As String, Optional csharpOptions As CSharpParseOptions = Nothing, Optional vbOptions As VisualBasicParseOptions = Nothing, Optional IncludeOptions As Boolean = True)
             Dim csharpWorkspace As TestWorkspace = Nothing
             Dim vbWorkspace As TestWorkspace = Nothing
             Dim inputDocument As Document = Nothing
@@ -154,6 +194,10 @@ Namespace CodeConverter.Tests
 
             End Using
 
+            If IncludeOptions Then
+                ActualResult = ActualResult.Replace(OptionHeaderText, "", StringComparison.OrdinalIgnoreCase)
+            End If
+
             ActualResult = HomogenizeEol(ActualResult).TrimEnd()
             DesiredResult = HomogenizeEol(DesiredResult).TrimEnd()
             Dim VBTestBase As New VisualBasicFormattingTestBase()
@@ -166,41 +210,6 @@ Namespace CodeConverter.Tests
             csharpWorkspace.Dispose()
             vbWorkspace.Dispose()
         End Sub
-
-        Private Shared Function FindFirstDifferenceColumn(DesiredLine As String, ActualLine As String) As (ColumnIndex As Integer, Character As String)
-            Dim minLength As Integer = Math.Min(DesiredLine.Length, ActualLine.Length) - 1
-            For index As Integer = 0 To minLength
-                If Not DesiredLine.Chars(index).Equals(ActualLine.Chars(index)) Then
-                    Return (index + 1, $"Expected Character ""{DesiredLine.Substring(index, 1)}"", Actual Character ""{ActualLine.Substring(index, 1)}""")
-                End If
-            Next
-
-            If DesiredLine.Length > ActualLine.Length Then
-                Return (minLength + 1, $"Expected Character ""{DesiredLine.Substring(minLength + 1, 1)}"", Actual Character Nothing")
-            Else
-                Return (minLength + 1, $"Expected Character Nothing, Actual Character ""{ActualLine.Substring(minLength + 1, 1)}""")
-            End If
-        End Function
-
-        Private Shared Function FindFirstDifferenceLine(DesiredText As String, ActualText As String) As String
-            Dim Desiredlines() As String = DesiredText.SplitLines()
-            Dim ActuaLines() As String = ActualText.SplitLines()
-            For index As Integer = 0 To Math.Min(Desiredlines.GetUpperBound(0), ActuaLines.GetUpperBound(0))
-                Dim DesiredLine As String = Desiredlines(index)
-                Dim ActualLine As String = ActuaLines(index)
-                If Not DesiredLine.Equals(ActualLine, StringComparison.CurrentCulture) Then
-                    Dim p As (ColumnIndex As Integer, Character As String) = FindFirstDifferenceColumn(DesiredLine, ActualLine)
-                    Return $"{vbCrLf}Expected Line_{index + 1} {DesiredLine}{vbCrLf}Actual Line___{index + 1} {ActualLine}{vbCrLf}Column {p.ColumnIndex} {p.Character}"
-                End If
-            Next
-            Return "Files identical"
-        End Function
-
-        Protected Shared Function WorkspaceFormat(workspace As Workspace, root As SyntaxNode, spans As IEnumerable(Of TextSpan), OptionSet As OptionSet, SourceText As SourceText) As String
-            Contracts.Contract.Requires(SourceText IsNot Nothing)
-            Dim result As IList(Of TextChange) = Formatter.GetFormattedTextChanges(root, spans, workspace, OptionSet)
-            Return SourceText.WithChanges(result).ToString()
-        End Function
 
     End Class
 

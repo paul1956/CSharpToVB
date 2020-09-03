@@ -5,15 +5,12 @@
 Imports System.Runtime.CompilerServices
 Imports Microsoft.CodeAnalysis
 Imports CS = Microsoft.CodeAnalysis.CSharp
+Imports CSFactory = Microsoft.CodeAnalysis.CSharp.SyntaxFactory
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
-Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
+Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 
 Public Module TriviaExtensions
 
-    <Extension>
-    Friend Function AdjustWhitespace(Whitespace As SyntaxTrivia, adjusment As Integer) As SyntaxTrivia
-        Return VBFactory.Whitespace(StrDup(Math.Max(Whitespace.ToString.Length - adjusment, 1), " "c))
-    End Function
 
     <Extension>
     Friend Function AdjustWhitespace(Trivia As SyntaxTrivia, nextTrivia As SyntaxTrivia, afterLineContinue As Boolean) As SyntaxTrivia
@@ -22,33 +19,42 @@ Public Module TriviaExtensions
         End If
         Dim lineContinueOffset As Integer = If(afterLineContinue, 2, 0)
         If Trivia.Span.Length > nextTrivia.Span.Length Then
-            Return VBFactory.Whitespace(New String(" "c, Math.Max(Trivia.FullWidth - lineContinueOffset, 1)))
+            Return Factory.Whitespace(New String(" "c, Math.Max(Trivia.FullWidth - lineContinueOffset, 1)))
         End If
-        Return VBFactory.Whitespace(New String(" "c, Math.Max(nextTrivia.FullWidth - lineContinueOffset, 1)))
+        Return Factory.Whitespace(New String(" "c, Math.Max(nextTrivia.FullWidth - lineContinueOffset, 1)))
     End Function
 
     <Extension>
-    Friend Function DirectiveNotAllowedHere(Trivia As SyntaxTrivia) As List(Of SyntaxTrivia)
-        Dim NewTriviaList As New List(Of SyntaxTrivia)
-        Dim LeadingTriviaList As New List(Of SyntaxTrivia) From {
-            SpaceTrivia,
-            LineContinuation,
-            SpaceTrivia
-        }
+    Friend Function AppendWhitespace(FirstTrivia As SyntaxTrivia, Width As Integer) As SyntaxTrivia
+        If FirstTrivia.Language = "C#" Then
+            Return CSFactory.Whitespace(StrDup(Math.Max(FirstTrivia.FullWidth + Width, 1), " "c))
+        Else
+            Return Factory.Whitespace(StrDup(Math.Max(FirstTrivia.FullWidth + Width, 1), " "c))
+        End If
+    End Function
+
+    <Extension>
+    Friend Function DirectiveNotAllowedHere(Trivia As SyntaxTrivia) As SyntaxTriviaList
+        Dim NewTriviaList As New SyntaxTriviaList
+        Dim LeadingTriviaList As New SyntaxTriviaList
+        LeadingTriviaList = LeadingTriviaList.AddRange({VBSpaceTrivia,
+                                                        LineContinuation,
+                                                        VBSpaceTrivia})
+
         Dim TriviaAsString As String = ""
 
         If Trivia.IsKind(VB.SyntaxKind.DisabledTextTrivia) Then
-            NewTriviaList.AddRange(LeadingTriviaList)
-            NewTriviaList.Add(VBFactory.CommentTrivia($" ' TODO VB does not allow Disabled Text here, original text:"))
-            NewTriviaList.Add(VBEOLTrivia)
+            NewTriviaList = NewTriviaList.AddRange(LeadingTriviaList)
+            NewTriviaList = NewTriviaList.Add(Factory.CommentTrivia($" ' TODO VB does not allow Disabled Text here, original text:"))
+            NewTriviaList = NewTriviaList.Add(VBEOLTrivia)
             Dim TextStrings() As String = Trivia.ToFullString.SplitLines
             For Each TriviaAsString In TextStrings
-                NewTriviaList.AddRange(LeadingTriviaList)
-                NewTriviaList.Add(VBFactory.CommentTrivia($" ' {TriviaAsString}".Replace("  ", " ", StringComparison.Ordinal).TrimEnd))
-                NewTriviaList.Add(VBEOLTrivia)
+                NewTriviaList = NewTriviaList.AddRange(LeadingTriviaList)
+                NewTriviaList = NewTriviaList.Add(Factory.CommentTrivia($" ' {TriviaAsString}".Replace("  ", " ", StringComparison.Ordinal).TrimEnd))
+                NewTriviaList = NewTriviaList.Add(VBEOLTrivia)
             Next
             If NewTriviaList.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                NewTriviaList.RemoveAt(NewTriviaList.Count - 1)
+                NewTriviaList = NewTriviaList.RemoveAt(NewTriviaList.Count - 1)
             End If
             Return NewTriviaList
         End If
@@ -70,26 +76,29 @@ Public Module TriviaExtensions
                 Stop
         End Select
         Const Msg As String = " ' TODO VB does not allow directives here, original directive: "
-        NewTriviaList = New List(Of SyntaxTrivia) From {
-            SpaceTrivia,
+        NewTriviaList = New SyntaxTriviaList
+        NewTriviaList = NewTriviaList.AddRange({
+            VBSpaceTrivia,
             LineContinuation,
-            VBEOLTrivia,
-            SpaceTrivia,
-            LineContinuation,
-            SpaceTrivia,
-            VBFactory.CommentTrivia($"{Msg}{TriviaAsString}".Replace("  ", " ", StringComparison.Ordinal).TrimEnd)
-            }
+            VBSpaceTrivia,
+            Factory.CommentTrivia($"{Msg}{TriviaAsString}".Replace("  ", " ", StringComparison.Ordinal).TrimEnd)
+            })
         Return NewTriviaList
     End Function
 
     <Extension>
     Friend Function FullWidth(Trivia As SyntaxTrivia) As Integer
-        Return Trivia.FullSpan.Length
+        If Trivia.Language = "C#" AndAlso Trivia.IsKind(CS.SyntaxKind.WhitespaceTrivia) Then
+            Return 0
+        End If
+        Return Trivia.Span.Length
     End Function
 
     <Extension>
     Friend Function IsComment(Trivia As SyntaxTrivia) As Boolean
-        Return Trivia.IsSingleLineComment OrElse Trivia.IsMultiLineComment OrElse Trivia.IsDocComment
+        Return Trivia.IsSingleLineComment OrElse
+            Trivia.IsMultiLineComment OrElse
+            Trivia.IsDocComment
     End Function
 
     <Extension>
@@ -99,7 +108,11 @@ Public Module TriviaExtensions
 
     <Extension>
     Friend Function IsDocComment(Trivia As SyntaxTrivia) As Boolean
-        Return Trivia.IsKind(VB.SyntaxKind.DocumentationCommentExteriorTrivia) OrElse Trivia.IsKind(VB.SyntaxKind.DocumentationCommentTrivia)
+        Return Trivia.IsKind(CS.SyntaxKind.DocumentationCommentExteriorTrivia) OrElse
+               Trivia.IsKind(CS.SyntaxKind.MultiLineDocumentationCommentTrivia) OrElse
+               Trivia.IsKind(CS.SyntaxKind.SingleLineDocumentationCommentTrivia) OrElse
+               Trivia.IsKind(VB.SyntaxKind.DocumentationCommentExteriorTrivia) OrElse
+               Trivia.IsKind(VB.SyntaxKind.DocumentationCommentTrivia)
     End Function
 
     <Extension>
@@ -121,13 +134,7 @@ Public Module TriviaExtensions
     <Extension>
     Friend Function IsMultiLineComment(Trivia As SyntaxTrivia) As Boolean
         Return Trivia.IsKind(CS.SyntaxKind.MultiLineCommentTrivia) OrElse
-            Trivia.IsKind(CS.SyntaxKind.DocumentationCommentExteriorTrivia) OrElse
             Trivia.IsKind(CS.SyntaxKind.MultiLineDocumentationCommentTrivia)
-    End Function
-
-    <Extension>
-    Friend Function IsMultiLineDocComment(Trivia As SyntaxTrivia) As Boolean
-        Return Trivia.IsKind(CS.SyntaxKind.MultiLineDocumentationCommentTrivia)
     End Function
 
     <Extension>
@@ -137,30 +144,47 @@ Public Module TriviaExtensions
 
     <Extension>
     Friend Function IsRegularOrDocComment(Trivia As SyntaxTrivia) As Boolean
-        Return Trivia.IsSingleLineComment() OrElse Trivia.IsMultiLineComment() OrElse Trivia.IsDocComment()
+        Return Trivia.IsSingleLineComment OrElse
+            Trivia.IsMultiLineComment() OrElse
+            Trivia.IsDocComment()
     End Function
 
     <Extension>
     Friend Function IsSingleLineComment(Trivia As SyntaxTrivia) As Boolean
-        Return Trivia.IsKind(CS.SyntaxKind.SingleLineCommentTrivia) OrElse
-            Trivia.IsKind(CS.SyntaxKind.SingleLineDocumentationCommentTrivia) OrElse
-            Trivia.IsKind(VB.SyntaxKind.CommentTrivia)
+        Return Trivia.RawKind = CS.SyntaxKind.SingleLineCommentTrivia OrElse
+            Trivia.RawKind = CS.SyntaxKind.SingleLineDocumentationCommentTrivia OrElse
+            Trivia.RawKind = VB.SyntaxKind.CommentTrivia OrElse
+            Trivia.RawKind = VB.SyntaxKind.DocumentationCommentExteriorTrivia
+    End Function
+
+    <Extension>
+    Friend Function IsSkippedOrDisabledTrivia(t As SyntaxTrivia) As Boolean
+        If t.RawKind = VB.SyntaxKind.DisabledTextTrivia Then
+            Return True
+        End If
+        If t.RawKind = CS.SyntaxKind.DisabledTextTrivia Then
+            Return True
+        End If
+        If t.RawKind = VB.SyntaxKind.SkippedTokensTrivia Then
+            Return True
+        End If
+        If t.RawKind = CS.SyntaxKind.SkippedTokensTrivia Then
+            Return True
+        End If
+
+        Return False
     End Function
 
     <Extension>
     Friend Function IsWhitespace(Trivia As SyntaxTrivia) As Boolean
-        Return Trivia.IsKind(CS.SyntaxKind.WhitespaceTrivia) OrElse
-            Trivia.IsKind(CS.SyntaxKind.EndOfLineTrivia) OrElse
-            Trivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) OrElse
-            Trivia.IsKind(VB.SyntaxKind.WhitespaceTrivia)
+        Return Trivia.RawKind = CS.SyntaxKind.WhitespaceTrivia OrElse
+            Trivia.RawKind = VB.SyntaxKind.WhitespaceTrivia
     End Function
 
     <Extension>
     Friend Function IsWhitespaceOrEndOfLine(Trivia As SyntaxTrivia) As Boolean
-        Return Trivia.IsKind(CS.SyntaxKind.WhitespaceTrivia) OrElse
-            Trivia.IsKind(CS.SyntaxKind.EndOfLineTrivia) OrElse
-            Trivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) OrElse
-            Trivia.IsKind(VB.SyntaxKind.WhitespaceTrivia)
+        Return Trivia.IsWhitespace OrElse
+             Trivia.IsEndOfLine
     End Function
 
 End Module

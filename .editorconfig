@@ -9,6 +9,7 @@ root = true
 [*]
 indent_style = space
 indent_size = 4
+file_header_template = Licensed to the .NET Foundation under one or more agreements.\nThe .NET Foundation licenses this file to you under the MIT license.\nSee the LICENSE file in the project root for more information.
 
 [*.json]
 indent_size = 2
@@ -19,7 +20,6 @@ charset = utf-8-bom
 insert_final_newline = true
 trim_trailing_whitespace = true
 
-file_header_template = Licensed to the .NET Foundation under one or more agreements.\nThe .NET Foundation licenses this file to you under the MIT license.\nSee the LICENSE file in the project root for more information.
 dotnet_separate_import_directive_groups = false
 dotnet_style_parentheses_in_arithmetic_binary_operators = always_for_clarity:suggestion
 dotnet_style_parentheses_in_other_binary_operators = always_for_clarity:suggestion
@@ -166,16 +166,18 @@ csharp_space_between_square_brackets = false
 # Modifier preferences
 visual_basic_preferred_modifier_order = Partial,Default,Private,Protected,Public,Friend,NotOverridable,Overridable,MustOverride,Overloads,Overrides,MustInherit,NotInheritable,Static,Shared,Shadows,ReadOnly,WriteOnly,Dim,Const,WithEvents,Widening,Narrowing,Custom,Async:suggestion
 dotnet_style_qualification_for_method = true:warning
+
 # CA1031: Do not catch general exception types
 dotnet_diagnostic.CA1031.severity = silent
+
 # CA1303: Do not pass literals as localized parameters
 dotnet_diagnostic.CA1303.severity = silent
+
 # CA1308: Do not pass literals as localized parameters
 dotnet_diagnostic.CA1308.severity = suggestion
+
 # CA1826: Do not use Enumerable methods on indexable collections. Instead use the collection directly
 dotnet_diagnostic.CA1826.severity = silent
-# IDE0004: Remove Unnecessary Cast
-dotnet_diagnostic.IDE0004.severity = warning
 
 # Xml project files
 [*.{csproj,vcxproj,vcxproj.filters,proj,nativeproj,locproj,vbproj}]

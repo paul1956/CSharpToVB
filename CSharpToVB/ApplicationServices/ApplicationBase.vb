@@ -2,7 +2,7 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
-#If Not NETCOREAPP5_0 Then
+#If NETCOREAPP3_1 Then
 
 Namespace Global.Microsoft.VisualBasic.ApplicationServices
 
@@ -90,7 +90,6 @@ Namespace Global.Microsoft.VisualBasic.ApplicationServices
         ''' <exception cref="ArgumentNullException">if name is Nothing.</exception>
         ''' <exception cref="ArgumentException">if the specified environment variable does not exist.</exception>
         Public Function GetEnvironmentVariable(name As String) As String
-#Enable Warning CA1822 ' Mark members as static
 
             ' Framework returns Null if not found.
             Dim VariableValue As String = Environment.GetEnvironmentVariable(name)
@@ -103,12 +102,7 @@ Namespace Global.Microsoft.VisualBasic.ApplicationServices
             Return VariableValue
         End Function
 
-#Disable Warning CA1822 ' Mark members as static, Justification:=<Public API>
-#Enable Warning CA1822 ' Mark members as static
-
-        'Lazy-initialized and cached log object.
-        ' The executing application (the EntryAssembly)
-    End Class 'ApplicationBase
+    End Class
 
 End Namespace
 

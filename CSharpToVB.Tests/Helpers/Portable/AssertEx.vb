@@ -38,11 +38,11 @@ Namespace Roslyn.Test.Utilities
             For Each line As DiffPiece In diff.Lines
                 Select Case line.Type
                     Case ChangeType.Inserted
-                        messageBuilder.Append("+")
+                        messageBuilder.Append("+"c)
                     Case ChangeType.Deleted
-                        messageBuilder.Append("-")
+                        messageBuilder.Append("-"c)
                     Case Else
-                        messageBuilder.Append(" ")
+                        messageBuilder.Append(" "c)
                 End Select
 
                 messageBuilder.AppendLine(line.Text)

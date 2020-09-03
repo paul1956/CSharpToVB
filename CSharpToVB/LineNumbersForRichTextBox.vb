@@ -33,18 +33,18 @@ Public Class LineNumbersForRichTextBox : Inherits Control
     Private _zLineNumbers_Format As String = "0"
     Private _zLineNumbers_Offset As New Size(0, 0)
     Private _zLineNumbers_Show As Boolean = True
-    Private _zLineNumbers_ShowAsHexadecimal As Boolean = False
+    Private _zLineNumbers_ShowAsHexadecimal As Boolean
     Private _zLineNumbers_ShowLeadingZeroes As Boolean = True
     Private _zMarginLines_Color As Color = Color.SlateGray
     Private _zMarginLines_Show As Boolean = True
     Private _zMarginLines_Side As LineNumberDockSides = LineNumberDockSides.Right
     Private _zMarginLines_Style As Drawing2D.DashStyle = Drawing2D.DashStyle.Solid
     Private _zMarginLines_Thickness As Single = 1
-    Private _zParentInMe As Integer = 0
-    Private _zParentIsScrolling As Boolean = False
+    Private _zParentInMe As Integer
+    Private _zParentIsScrolling As Boolean
     Private _zPointInMe As New Point(0, 0)
     Private _zPointInParent As New Point(0, 0)
-    Private _zSeeThroughMode As Boolean = False
+    Private _zSeeThroughMode As Boolean
 
     Public Sub New()
         Me.InitializeComponent()

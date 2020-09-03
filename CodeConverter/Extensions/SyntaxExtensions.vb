@@ -7,8 +7,6 @@ Imports System.Runtime.CompilerServices
 Imports Microsoft.CodeAnalysis
 
 Imports CS = Microsoft.CodeAnalysis.CSharp
-Imports VB = Microsoft.CodeAnalysis.VisualBasic
-Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Public Module SyntaxExtensions

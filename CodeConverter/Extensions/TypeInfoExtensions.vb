@@ -16,7 +16,7 @@ Public Module TypeInfoExtensions
             Return False
         End If
 
-        If typeSymbol.ToString.Replace("?", "", StringComparison.OrdinalIgnoreCase).Equals("string", StringComparison.OrdinalIgnoreCase) Then
+        If typeSymbol.ToString.RemoveAll("?").Equals("string", StringComparison.OrdinalIgnoreCase) Then
             Return True
         End If
 

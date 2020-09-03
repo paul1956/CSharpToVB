@@ -12,14 +12,12 @@ Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
-Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
-
-Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
+Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 
 Public Module StatementMarker
     Private ReadOnly s_statementDictionary As New Dictionary(Of CS.CSharpSyntaxNode, Integer)
     Private ReadOnly s_statementSupportTupleList As New List(Of (Index As Integer, Statement As VB.VisualBasicSyntaxNode, RemoveStatement As StatementHandlingOption))
-    Private s_nextIndex As Integer = 0
+    Private s_nextIndex As Integer
 
     Public Enum StatementHandlingOption
         PrependStatement ' Perpend original statement
@@ -31,65 +29,54 @@ Public Module StatementMarker
         Return Statement1.
                     WithoutTrivia.
                     ToFullString.
-                    Replace(vbCrLf, "", StringComparison.Ordinal).
-                    Replace(" ", "", StringComparison.Ordinal) =
+                    RemoveAll(vbCrLf, " ") =
                 Statement2.
                     WithoutTrivia.
-                    ToFullString.Replace(vbCrLf, "", StringComparison.Ordinal).
-                    Replace(" ", "", StringComparison.Ordinal)
+                    ToFullString.
+                    RemoveAll(vbCrLf, " ")
     End Function
 
-    Private Function ConvertDirectiveTrivia(OriginalText As String) As List(Of SyntaxTrivia)
+    Private Function ConvertDirectiveTrivia(OriginalText As String) As SyntaxTriviaList
         Dim Text As String = OriginalText.Trim(" "c)
-        Dim ResultTrivia As New List(Of SyntaxTrivia)
         Debug.Assert(Text.StartsWith("#", StringComparison.Ordinal), "All directives must start with #")
-
+        Dim ResultTrivia As New SyntaxTriviaList
         If Text.StartsWith("#if", StringComparison.Ordinal) OrElse Text.StartsWith("#elif", StringComparison.Ordinal) Then
-            Dim Expression1 As String = Text.Replace("#if ", "", StringComparison.Ordinal).
-                    Replace("#elif ", "", StringComparison.Ordinal).
-                    Replace("!", "Not ", StringComparison.Ordinal).
-                    Replace("==", "=", StringComparison.Ordinal).
-                    Replace("!=", "<>", StringComparison.Ordinal).
-                    Replace("&&", "And", StringComparison.Ordinal).
-                    Replace("||", "Or", StringComparison.Ordinal).
-                    Replace("  ", " ", StringComparison.Ordinal).
-                    Replace("false", "False", StringComparison.Ordinal).
-                    Replace("true", "True", StringComparison.Ordinal).
-                    Replace("//", " ' ", StringComparison.Ordinal).
-                    Replace("  ", " ", StringComparison.Ordinal)
+            Dim Expression1 As String = Text.
+                    RemoveAll("#if ", "#elif ").
+                    ConvertCondition
 
             Dim Kind As VB.SyntaxKind = If(Text.StartsWith("#if", StringComparison.Ordinal), VB.SyntaxKind.IfDirectiveTrivia, VB.SyntaxKind.ElseIfDirectiveTrivia)
             Dim IfOrElseIfKeyword As SyntaxToken = If(Text.StartsWith("#if", StringComparison.Ordinal), IfKeyword, ElseIfKeyword)
-            Dim Expr As ExpressionSyntax = VBFactory.ParseExpression(Expression1)
-            Dim IfDirectiveTrivia As IfDirectiveTriviaSyntax = VBFactory.IfDirectiveTrivia(IfOrElseIfKeyword, Expr)
-            ResultTrivia.Add(VBFactory.Trivia(IfDirectiveTrivia))
+            Dim Expr As ExpressionSyntax = Factory.ParseExpression(Expression1)
+            Dim IfDirectiveTrivia As IfDirectiveTriviaSyntax = Factory.IfDirectiveTrivia(IfOrElseIfKeyword, Expr)
+            ResultTrivia = ResultTrivia.Add(Factory.Trivia(IfDirectiveTrivia))
             Return ResultTrivia
         End If
         If Text.StartsWith("#region", StringComparison.Ordinal) OrElse Text.StartsWith("# region", StringComparison.Ordinal) Then
-            ResultTrivia.AddRange(ConvertTrivia(CS.SyntaxFactory.ParseLeadingTrivia(Text)))
+            ResultTrivia = ResultTrivia.AddRange(CS.SyntaxFactory.ParseLeadingTrivia(Text).ConvertTriviaList())
             Return ResultTrivia
         End If
         If Text.StartsWith("#endregion", StringComparison.Ordinal) Then
-            ResultTrivia.Add(VBFactory.Trivia(VBFactory.EndRegionDirectiveTrivia()))
-            Text = Text.Replace("#endregion", "", StringComparison.Ordinal)
+            ResultTrivia = ResultTrivia.Add(Factory.Trivia(Factory.EndRegionDirectiveTrivia()))
+            Text = Text.RemoveAll("#endregion")
             If Text.Length > 0 Then
                 Stop
             End If
             Return ResultTrivia
         End If
         If Text.StartsWith("#else", StringComparison.Ordinal) Then
-            Dim ElseKeywordWithTrailingTrivia As SyntaxToken = ElseKeyword.WithTrailingTrivia(ConvertTrivia(CS.SyntaxFactory.ParseTrailingTrivia(Text.Replace("#else", "", StringComparison.Ordinal))))
-            ResultTrivia.Add(VBFactory.Trivia(VBFactory.ElseDirectiveTrivia(HashToken, ElseKeywordWithTrailingTrivia)))
+            Dim ElseKeywordWithTrailingTrivia As SyntaxToken = ElseKeyword.WithTrailingTrivia(CS.SyntaxFactory.ParseTrailingTrivia(Text.RemoveAll("#else")).ConvertTriviaList())
+            ResultTrivia = ResultTrivia.Add(Factory.Trivia(Factory.ElseDirectiveTrivia(HashToken, ElseKeywordWithTrailingTrivia)))
             Return ResultTrivia
         End If
         If Text.StartsWith("#endif", StringComparison.Ordinal) Then
-            Text = Text.Replace("#endif", "", StringComparison.Ordinal)
-            Dim IfKeywordWithTrailingTrivia As SyntaxToken = IfKeyword.WithTrailingTrivia(ConvertTrivia(CS.SyntaxFactory.ParseTrailingTrivia(Text.Replace("#endif", "", StringComparison.Ordinal))))
-            ResultTrivia.Add(VBFactory.Trivia(VBFactory.EndIfDirectiveTrivia(HashToken, EndKeyword, IfKeywordWithTrailingTrivia)))
+            Text = Text.RemoveAll("#endif")
+            Dim IfKeywordWithTrailingTrivia As SyntaxToken = IfKeyword.WithTrailingTrivia(CS.SyntaxFactory.ParseTrailingTrivia(Text.RemoveAll("#endif")).ConvertTriviaList())
+            ResultTrivia = ResultTrivia.Add(Factory.Trivia(Factory.EndIfDirectiveTrivia(HashToken, EndKeyword, IfKeywordWithTrailingTrivia)))
             Return ResultTrivia
         End If
         If Text.StartsWith("#pragma warning", StringComparison.Ordinal) Then
-            ResultTrivia.AddRange(ConvertTrivia(CS.SyntaxFactory.ParseLeadingTrivia(Text)))
+            ResultTrivia = ResultTrivia.AddRange(CS.SyntaxFactory.ParseLeadingTrivia(Text).ConvertTriviaList())
             Return ResultTrivia
         Else
             Throw New NotImplementedException($"Directive ""{Text}"" Is unknown")
@@ -107,7 +94,7 @@ Public Module StatementMarker
         If Not String.IsNullOrWhiteSpace(LeadingComment) Then
             Dim LeadingCommentLines() As String = LeadingComment.SplitLines
             For Each Line As String In LeadingCommentLines
-                NewTrivia = NewTrivia.Add(VBFactory.CommentTrivia($"' {Line.Trim}"))
+                NewTrivia = NewTrivia.Add(Factory.CommentTrivia($"' {Line.Trim}"))
                 NewTrivia = NewTrivia.Add(VBEOLTrivia)
             Next
         End If
@@ -115,7 +102,7 @@ Public Module StatementMarker
         For Each chr As String In FullString
             If chr.IsNewLine Then
                 If strBuilder.Length > 0 Then
-                    NewTrivia = NewTrivia.Add(VBFactory.CommentTrivia($"' {strBuilder.ToString.Trim}"))
+                    NewTrivia = NewTrivia.Add(Factory.CommentTrivia($"' {strBuilder.ToString.Trim}"))
                     NewTrivia = NewTrivia.Add(VBEOLTrivia)
                     strBuilder.Clear()
                 End If
@@ -126,7 +113,7 @@ Public Module StatementMarker
             End If
         Next
         If strBuilder.Length > 0 Then
-            NewTrivia = NewTrivia.Add(VBFactory.CommentTrivia($"' {strBuilder}"))
+            NewTrivia = NewTrivia.Add(Factory.CommentTrivia($"' {strBuilder}"))
             NewTrivia = NewTrivia.Add(VBEOLTrivia)
         End If
 
@@ -176,7 +163,7 @@ Public Module StatementMarker
             If t.Index = Index AndAlso TypeOf Statement IsNot EmptyStatementSyntax AndAlso CompareWithoutTrivia(Statement, t.Statement) AndAlso t.StatementHandlingOption = StatementHandling Then
                 Exit Sub
             End If
-            If t.Index = Index AndAlso TriviaIsIdentical(t.Statement.GetLeadingTrivia, Statement.GetLeadingTrivia.ToList) Then
+            If t.Index = Index AndAlso EndsWithSimilarTrivia(Statement.GetLeadingTrivia, t.Statement.GetLeadingTrivia) Then
                 IdenticalTrivia = True
             End If
         Next
@@ -190,36 +177,36 @@ Public Module StatementMarker
         If Not s_statementDictionary.ContainsKey(node) Then
             Return FieldDeclaration
         End If
-        Dim LeadingTrivia As New List(Of SyntaxTrivia)
         Dim Index As Integer = s_statementDictionary(node)
+        Dim newLeadingTrivia As New SyntaxTriviaList
         For Each StatementTuple As (Index As Integer, Statement As StatementSyntax, StatementHandling As StatementHandlingOption) In s_statementSupportTupleList
             If StatementTuple.Index = Index AndAlso StatementTuple.StatementHandling <> StatementHandlingOption.AppendEmptyStatement Then
-                LeadingTrivia.AddRange(StatementTuple.Statement.GetLeadingTrivia)
+                newLeadingTrivia = newLeadingTrivia.AddRange(StatementTuple.Statement.GetLeadingTrivia)
                 s_statementDictionary.Remove(node)
             End If
         Next
         If s_statementDictionary.Count = 0 Then
             s_statementSupportTupleList.Clear()
         End If
-        LeadingTrivia.AddRange(FieldDeclaration.GetLeadingTrivia)
-        Return FieldDeclaration.WithLeadingTrivia(LeadingTrivia)
+        newLeadingTrivia = newLeadingTrivia.AddRange(FieldDeclaration.GetLeadingTrivia)
+        Return FieldDeclaration.WithLeadingTrivia(newLeadingTrivia)
     End Function
 
     <Extension>
     Friend Function CheckCorrectnessLeadingTrivia(Of T As SyntaxNode)(NodeWithIssue As T, AttemptToPortMade As Boolean, Optional MessageFragment As String = "") As SyntaxTriviaList
-        Dim LeadingTrivia As New List(Of SyntaxTrivia) From {
-            VBFactory.CommentTrivia($"' TODO TASK: {MessageFragment}:")
-        }
+        Dim newLeadingTrivia As New SyntaxTriviaList
+        newLeadingTrivia = newLeadingTrivia.Add(Factory.CommentTrivia($"' TODO TASK: {MessageFragment}:"))
+
         If NodeWithIssue IsNot Nothing Then
-            LeadingTrivia.Add(VBFactory.CommentTrivia($"' Original Statement:"))
-            LeadingTrivia.Add(VBEOLTrivia)
-            LeadingTrivia.AddRange(ConvertSourceTextToTriviaList(NodeWithIssue.ToFullString))
+            newLeadingTrivia = newLeadingTrivia.Add(Factory.CommentTrivia($"' Original Statement:"))
+            newLeadingTrivia = newLeadingTrivia.Add(VBEOLTrivia)
+            newLeadingTrivia = newLeadingTrivia.AddRange(ConvertSourceTextToTriviaList(NodeWithIssue.ToFullString))
         End If
         If AttemptToPortMade Then
-            LeadingTrivia.Add(VBFactory.CommentTrivia($"' An attempt was made to correctly port the code, check the code below for correctness"))
+            newLeadingTrivia = newLeadingTrivia.Add(Factory.CommentTrivia($"' An attempt was made to correctly port the code, check the code below for correctness"))
         End If
-        LeadingTrivia.Add(VBEOLTrivia)
-        Return LeadingTrivia.ToSyntaxTriviaList
+        newLeadingTrivia = newLeadingTrivia.Add(VBEOLTrivia)
+        Return newLeadingTrivia.ToSyntaxTriviaList
     End Function
 
     Friend Sub ClearMarker()
@@ -229,43 +216,43 @@ Public Module StatementMarker
     End Sub
 
     Friend Function FlagUnsupportedStatements(node As CS.CSharpSyntaxNode, UnsupportedFeature As String, CommentOutOriginalStatements As Boolean) As EmptyStatementSyntax
-        Dim newLeadingTrivia As New List(Of SyntaxTrivia)
-        Dim newTrailingTrivia As New List(Of SyntaxTrivia)
+        Dim newLeadingTrivia As New SyntaxTriviaList
+        Dim newTrailingTrivia As New SyntaxTriviaList
         If CommentOutOriginalStatements Then
-            newLeadingTrivia.AddRange(ConvertTrivia(node.GetLeadingTrivia))
-            newTrailingTrivia.AddRange(ConvertTrivia(node.GetTrailingTrivia))
+            newLeadingTrivia = node.GetLeadingTrivia.ConvertTriviaList()
+            newTrailingTrivia = node.GetTrailingTrivia.ConvertTriviaList()
         Else
             Dim csLeadingTrivia As SyntaxTriviaList = node.GetLeadingTrivia
             If csLeadingTrivia.Any AndAlso csLeadingTrivia.First.IsKind(CS.SyntaxKind.WhitespaceTrivia) Then
-                newTrailingTrivia.AddRange(ConvertTrivia({csLeadingTrivia(0)}))
+                newTrailingTrivia = newTrailingTrivia.Add(csLeadingTrivia(0).ConvertTrivia())
             End If
         End If
         Dim leadingSpace As SyntaxTrivia = New SyntaxTrivia
         If newLeadingTrivia.LastOrDefault.IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
             leadingSpace = newLeadingTrivia.Last
         End If
-        newLeadingTrivia.Add(VBFactory.CommentTrivia($"' TODO: Visual Basic does not support {UnsupportedFeature}."))
-        newLeadingTrivia.Add(VBEOLTrivia)
+        newLeadingTrivia = newLeadingTrivia.Add(Factory.CommentTrivia($"' TODO: Visual Basic does not support {UnsupportedFeature}."))
+        newLeadingTrivia = newLeadingTrivia.Add(VBEOLTrivia)
         If CommentOutOriginalStatements Then
             If leadingSpace.IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
-                newLeadingTrivia.Add(leadingSpace)
+                newLeadingTrivia = newLeadingTrivia.Add(leadingSpace)
             End If
-            newLeadingTrivia.Add(VBFactory.CommentTrivia($"' Original Statement:"))
-            newLeadingTrivia.Add(VBEOLTrivia)
+            newLeadingTrivia = newLeadingTrivia.Add(Factory.CommentTrivia($"' Original Statement:"))
+            newLeadingTrivia = newLeadingTrivia.Add(VBEOLTrivia)
             ' Match #
             For Each e As IndexClass(Of String) In node.ToString.SplitLines().WithIndex
                 If e.Value.TrimStart(" "c).StartsWith("#", StringComparison.Ordinal) Then
-                    newLeadingTrivia.AddRange(ConvertDirectiveTrivia(e.Value))
+                    newLeadingTrivia = newLeadingTrivia.AddRange(ConvertDirectiveTrivia(e.Value))
                 Else
                     If leadingSpace.IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
-                        newLeadingTrivia.Add(leadingSpace)
+                        newLeadingTrivia = newLeadingTrivia.Add(leadingSpace)
                     End If
-                    newLeadingTrivia.Add(VBFactory.CommentTrivia($"' {e.Value}"))
+                    newLeadingTrivia = newLeadingTrivia.Add(Factory.CommentTrivia($"' {e.Value}"))
                 End If
-                newLeadingTrivia.Add(VBEOLTrivia)
+                newLeadingTrivia = newLeadingTrivia.Add(VBEOLTrivia)
             Next
         End If
-        Return VBFactory.EmptyStatement.With(newLeadingTrivia, newTrailingTrivia)
+        Return Factory.EmptyStatement.With(newLeadingTrivia, newTrailingTrivia)
     End Function
 
     Friend Function GetMarkerErrorMessage() As String
@@ -279,18 +266,20 @@ Public Module StatementMarker
 
     Friend Function GetStatementwithIssues(node As CS.CSharpSyntaxNode, Optional ReportErrors As Boolean = True) As CS.CSharpSyntaxNode
         Dim StatementWithIssues As CS.CSharpSyntaxNode = node
+
         While StatementWithIssues IsNot Nothing
             If TypeOf StatementWithIssues Is CSS.FieldDeclarationSyntax Then
-                Exit While
-            End If
-
-            If TypeOf StatementWithIssues Is CSS.ArrowExpressionClauseSyntax Then
-                Exit While
+                Return StatementWithIssues
             End If
 
             If TypeOf StatementWithIssues Is CSS.ExpressionStatementSyntax Then
-                Exit While
+                Return StatementWithIssues
             End If
+
+            If TypeOf StatementWithIssues Is CSS.ArrowExpressionClauseSyntax Then
+                Return StatementWithIssues
+            End If
+
 
             If TypeOf StatementWithIssues Is CSS.StatementSyntax Then
                 Dim StatementWithIssueParent As SyntaxNode = StatementWithIssues.Parent
@@ -298,39 +287,43 @@ Public Module StatementMarker
                     StatementWithIssues = StatementWithIssues.Parent.FirstAncestorOrSelf(Of CSS.StatementSyntax)
                     StatementWithIssueParent = StatementWithIssues.Parent
                 End While
-                Exit While
+                Return StatementWithIssues
             End If
 
             If TypeOf StatementWithIssues Is CSS.PropertyDeclarationSyntax Then
-                Exit While
+                Return StatementWithIssues
             End If
 
             If TypeOf StatementWithIssues Is CSS.MethodDeclarationSyntax Then
-                Exit While
+                Return StatementWithIssues
             End If
 
             If TypeOf StatementWithIssues Is CSS.ClassDeclarationSyntax Then
-                Exit While
+                Return StatementWithIssues
             End If
 
             If TypeOf StatementWithIssues Is CSS.ConversionOperatorDeclarationSyntax Then
-                Exit While
+                Return StatementWithIssues
             End If
 
             If TypeOf StatementWithIssues Is CSS.ConstructorDeclarationSyntax Then
-                Exit While
+                Return StatementWithIssues
             End If
 
             If TypeOf StatementWithIssues Is CSS.EnumDeclarationSyntax Then
-                Exit While
+                Return StatementWithIssues
             End If
 
             If TypeOf StatementWithIssues Is CSS.StructDeclarationSyntax Then
-                Exit While
+                Return StatementWithIssues
             End If
 
             If TypeOf StatementWithIssues Is CSS.UsingDirectiveSyntax Then
-                Exit While
+                Return StatementWithIssues
+            End If
+
+            If TypeOf StatementWithIssues Is CSS.DelegateDeclarationSyntax Then
+                Return StatementWithIssues
             End If
 
             StatementWithIssues = CType(StatementWithIssues.Parent, CS.CSharpSyntaxNode)
@@ -429,11 +422,11 @@ Public Module StatementMarker
     End Function
 
     Friend Function ReplaceOneStatementWithMarkedStatements(node As CS.CSharpSyntaxNode, Statement As StatementSyntax, Optional RemoveStatement As Boolean = False) As SyntaxList(Of StatementSyntax)
-        Return ReplaceStatementsWithMarkedStatements(node, VBFactory.SingletonList(Statement), RemoveStatement)
+        Return ReplaceStatementsWithMarkedStatements(node, Factory.SingletonList(Statement), RemoveStatement)
     End Function
 
     Friend Function ReplaceStatementsWithMarkedStatements(node As CS.CSharpSyntaxNode, Statements As List(Of StatementSyntax), Optional RemoveStatement As Boolean = False) As SyntaxList(Of StatementSyntax)
-        Return ReplaceStatementsWithMarkedStatements(node, VBFactory.List(Statements), RemoveStatement)
+        Return ReplaceStatementsWithMarkedStatements(node, Factory.List(Statements), RemoveStatement)
     End Function
 
     Friend Function ReplaceStatementsWithMarkedStatements(node As CS.CSharpSyntaxNode, Statements As SyntaxList(Of StatementSyntax), Optional RemoveStatement As Boolean = False) As SyntaxList(Of StatementSyntax)
@@ -477,7 +470,7 @@ Public Module StatementMarker
             NewNodesList.AddRange(Statements)
         End If
         NewNodesList.AddRange(TrailingNodesList)
-        Return VBFactory.List(NewNodesList)
+        Return Factory.List(NewNodesList)
     End Function
 
     Friend Function StatementDictionaryEmpty() As Boolean
@@ -492,8 +485,8 @@ Public Module StatementMarker
     ''' <returns></returns>
     Friend Function WrapInComment(nodes As SyntaxList(Of StatementSyntax), NodeWithComments As CSS.StatementSyntax, comment As String) As SyntaxList(Of StatementSyntax)
         If nodes.Any Then
-            nodes = nodes.Replace(nodes(0), nodes(0).WithConvertedTriviaFrom(NodeWithComments).WithPrependedLeadingTrivia(VBFactory.CommentTrivia($"' BEGIN TODO: {comment}")).WithTrailingEOL)
-            nodes = nodes.Add(VBFactory.EmptyStatement.WithLeadingTrivia(VBEOLTrivia, VBFactory.CommentTrivia($"' END TODO: {comment}")))
+            nodes = nodes.Replace(nodes(0), nodes(0).WithConvertedTriviaFrom(NodeWithComments).WithPrependedLeadingTrivia(Factory.CommentTrivia($"' BEGIN TODO: {comment}")).WithTrailingEOL(RemoveLastLineContinuation:=True))
+            nodes = nodes.Add(Factory.EmptyStatement.WithLeadingTrivia(VBEOLTrivia, Factory.CommentTrivia($"' END TODO: {comment}")))
         End If
         Return nodes
     End Function

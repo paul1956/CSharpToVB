@@ -20,7 +20,7 @@ Public Class DefaultVBOptions
     End Sub
 
     Public ReadOnly Property OptionCompare As String = "Text"
-    Public ReadOnly Property OptionCompareInclude As Boolean = False
+    Public ReadOnly Property OptionCompareInclude As Boolean
     Public ReadOnly Property OptionExplicit As String = "Off"
     Public ReadOnly Property OptionExplicitInclude As Boolean = True
     Public ReadOnly Property OptionInfer As String = "On"

@@ -21,8 +21,8 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         Private ReadOnly _usePreserveCRLF As Boolean
         Private _afterIndentation As Boolean
         Private _afterLineBreak As Boolean
-        Private _eolLeadingTriviaCount As Integer = 0
-        Private _eolTraiingTriviaCount As Integer = 0
+        Private _eolLeadingTriviaCount As Integer
+        Private _eolTraiingTriviaCount As Integer
         Private _indentationDepth As Integer
         Private _indentations As List(Of SyntaxTrivia)
         Private _isInStructuredTrivia As Boolean
@@ -486,7 +486,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         End Function
 
         Private Function GetSpace() As SyntaxTrivia
-            Return If(_useElasticTrivia, SpaceTrivia, SpaceTrivia)
+            Return If(_useElasticTrivia, VBSpaceTrivia, VBSpaceTrivia)
         End Function
 
         Private Function LineBreaksBetween(currentToken As SyntaxToken, nextToken As SyntaxToken) As Integer
@@ -524,25 +524,20 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
         ''' <param name="lineBreaksAfter">Number of Line Breaks required after this token (0 or 1)</param>
         ''' <param name="lineBreaksBefore">Number of Line Breaks required before this token</param>
         ''' <returns></returns>
-        Private Function RewriteTrivia(
-                                        CurrentToken As SyntaxToken,
-                                        triviaList As SyntaxTriviaList,
-                                        depth As Integer,
-                                        isTrailing As Boolean,
-                                        mustBeIndented As Boolean,
-                                        mustHaveSeparator As Boolean,
-                                        lineBreaksAfter As Integer,
-                                        lineBreaksBefore As Integer) As SyntaxTriviaList
+        Private Function RewriteTrivia(CurrentToken As SyntaxToken,
+                                       triviaList As SyntaxTriviaList,
+                                       depth As Integer,
+                                       isTrailing As Boolean,
+                                       mustBeIndented As Boolean,
+                                       mustHaveSeparator As Boolean,
+                                       lineBreaksAfter As Integer,
+                                       lineBreaksBefore As Integer) As SyntaxTriviaList
 
-            'If CurrentToken.ToString = "Case" Then
-            '    Stop
-            'End If
-
-            Dim currentTriviaList As New List(Of SyntaxTrivia)
+            Dim currentTriviaList As New SyntaxTriviaList
             Try
                 For index As Integer = 1 To lineBreaksBefore
                     If _eolLeadingTriviaCount < 2 Then
-                        currentTriviaList.Add(Me.GetEndOfLine())
+                        currentTriviaList = currentTriviaList.Add(Me.GetEndOfLine())
                         _eolLeadingTriviaCount += 1
                     End If
                     _afterLineBreak = True
@@ -555,7 +550,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
                     ' just keep non whitespace trivia
                     If Trivia.IsKind(SyntaxKind.WhitespaceTrivia) Then
                         If _usePreserveCRLF AndAlso Not _afterIndentation Then
-                            MinLeadingSpaces = Trivia.ToString.Count
+                            MinLeadingSpaces = Trivia.ToString.Length
                         End If
                         Continue For
                     ElseIf Trivia.FullWidth = 0 OrElse
@@ -565,17 +560,17 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
                     If Trivia.IsKind(SyntaxKind.EndOfLineTrivia) Then
                         If isTrailing Then
                             If _eolTraiingTriviaCount = 0 Then
-                                currentTriviaList.Add(Me.GetEndOfLine())
+                                currentTriviaList = currentTriviaList.Add(Me.GetEndOfLine())
                                 _eolTraiingTriviaCount += 1
                             Else
                                 If currentTriviaList.Last.IsComment AndAlso Not e.IsLast Then
-                                    currentTriviaList.Add(VBEOLTrivia)
+                                    currentTriviaList = currentTriviaList.Add(VBEOLTrivia)
                                 End If
                                 Continue For
                             End If
                         Else
                             If _eolLeadingTriviaCount < 1 Then
-                                currentTriviaList.Add(Me.GetEndOfLine())
+                                currentTriviaList = currentTriviaList.Add(Me.GetEndOfLine())
                                 _eolLeadingTriviaCount += 1
                             Else
                                 Continue For
@@ -586,13 +581,13 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
                     End If
                     If Trivia.IsKind(SyntaxKind.LineContinuationTrivia) Then
                         If Not _afterIndentation Then
-                            currentTriviaList.Add(SyntaxFactory.WhitespaceTrivia(Space(MinLeadingSpaces)))
+                            currentTriviaList = currentTriviaList.Add(SyntaxFactory.WhitespaceTrivia(Space(MinLeadingSpaces)))
                         End If
-                        currentTriviaList.Add(LineContinuation)
+                        currentTriviaList = currentTriviaList.Add(LineContinuation)
                         If isTrailing Then
                             _afterIndentation = False
                         Else
-                            currentTriviaList.Add(SpaceTrivia)
+                            currentTriviaList = currentTriviaList.Add(VBSpaceTrivia)
                             _afterIndentation = True
                         End If
                         _afterLineBreak = False
@@ -613,7 +608,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
 
                     If needsLineBreak AndAlso Not _afterLineBreak Then
                         If _eolTraiingTriviaCount = 0 Then
-                            currentTriviaList.Add(Me.GetEndOfLine())
+                            currentTriviaList = currentTriviaList.Add(Me.GetEndOfLine())
                             _eolTraiingTriviaCount += 1
                         End If
                         _afterLineBreak = True
@@ -622,12 +617,12 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
 
                     If _afterLineBreak And Not isTrailing Then
                         If Not _afterIndentation AndAlso NeedsIndentAfterLineBreak(Trivia) Then
-                            currentTriviaList.Add(Me.GetIndentation(Me.GetIndentationDepth(Trivia), CurrentToken))
+                            currentTriviaList = currentTriviaList.Add(Me.GetIndentation(Me.GetIndentationDepth(Trivia), CurrentToken))
                             _afterIndentation = True
                         End If
 
                     ElseIf needsSeparator Then
-                        currentTriviaList.Add(Me.GetSpace())
+                        currentTriviaList = currentTriviaList.Add(Me.GetSpace())
                         If MinLeadingSpaces > 0 Then
                             MinLeadingSpaces -= 1
                         End If
@@ -638,7 +633,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
                                 SyntaxFactory.DocumentationCommentExteriorTrivia(SyntaxFacts.GetText(SyntaxKind.DocumentationCommentExteriorTrivia)).ToString = Trivia.ToString
                     If Trivia.HasStructure Then
                         Dim structuredTrivia As SyntaxTrivia = Me.VisitStructuredTrivia(Trivia)
-                        currentTriviaList.Add(structuredTrivia)
+                        currentTriviaList = currentTriviaList.Add(structuredTrivia)
                     Else
                         ' in structured trivia, the XML doc ''' token contains leading whitespace as text
                         If Trivia.IsKind(SyntaxKind.DocumentationCommentExteriorTrivia) OrElse NeedExtraSpace Then
@@ -648,10 +643,10 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
                             ' Skip it if was already handled
                         Else
                             If isTrailing Then
-                                currentTriviaList.Add(SyntaxFactory.WhitespaceTrivia(Space(MinLeadingSpaces)))
+                                currentTriviaList = currentTriviaList.Add(SyntaxFactory.WhitespaceTrivia(Space(MinLeadingSpaces)))
                                 MinLeadingSpaces = 0
                             End If
-                            currentTriviaList.Add(Trivia)
+                            currentTriviaList = currentTriviaList.Add(Trivia)
                             ' Allow one return after this trivia
                             _eolTraiingTriviaCount = 0
                         End If
@@ -659,7 +654,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
 
                     If NeedsLineBreakAfter(Trivia) Then
                         If Not isTrailing Then
-                            currentTriviaList.Add(Me.GetEndOfLine())
+                            currentTriviaList = currentTriviaList.Add(Me.GetEndOfLine())
                             _eolLeadingTriviaCount += 1
                         End If
                         _afterLineBreak = True
@@ -679,7 +674,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
                             Throw UnexpectedValue("IsTrailing")
                         End If
                         If _eolTraiingTriviaCount = 0 Then
-                            currentTriviaList.Add(Me.GetEndOfLine())
+                            currentTriviaList = currentTriviaList.Add(Me.GetEndOfLine())
                         End If
                         _eolLeadingTriviaCount = 0
                         _eolTraiingTriviaCount += 1
@@ -688,13 +683,13 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
                     Next index
 
                 ElseIf mustHaveSeparator Then
-                    currentTriviaList.Add(Me.GetSpace())
+                    currentTriviaList = currentTriviaList.Add(Me.GetSpace())
                     _afterLineBreak = False
                     _afterIndentation = False
                 End If
 
                 If mustBeIndented Then
-                    currentTriviaList.Add(Me.GetIndentation(depth, CurrentToken))
+                    currentTriviaList = currentTriviaList.Add(Me.GetIndentation(depth, CurrentToken))
                     _afterIndentation = True
                     _afterLineBreak = False
                 End If
@@ -707,7 +702,6 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
                     Return SyntaxFactory.TriviaList(currentTriviaList)
                 End If
             Finally
-                currentTriviaList.Clear()
             End Try
         End Function
 

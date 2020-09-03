@@ -321,7 +321,41 @@ Namespace CSharpToVBApp.My_Project
                 Me("StartFolderConvertFromLastFile") = value
             End Set
         End Property
-        
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute()>
+        Public Property TSFindMRU_Data() As Global.System.Collections.Specialized.StringCollection
+            Get
+                Return CType(Me("TSFindMRU_Data"), Global.System.Collections.Specialized.StringCollection)
+            End Get
+            Set
+                Me("TSFindMRU_Data") = Value
+            End Set
+        End Property
+
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("False")>
+        Public Property TSFindMatchCase() As Boolean
+            Get
+                Return CType(Me("TSFindMatchCase"), Boolean)
+            End Get
+            Set
+                Me("TSFindMatchCase") = Value
+            End Set
+        End Property
+
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("False")>
+        Public Property TSFindMatchWholeWord() As Boolean
+            Get
+                Return CType(Me("TSFindMatchWholeWord"), Boolean)
+            End Get
+            Set
+                Me("TSFindMatchWholeWord") = Value
+            End Set
+        End Property
+
         <Global.System.Configuration.UserScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
          Global.System.Configuration.DefaultSettingValueAttribute("True")>  _

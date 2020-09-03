@@ -28,23 +28,19 @@ Namespace CSharpToVB.Tests
         string s = nameof(AB);
         string s2 = nameof(ab);
     }
-}", "Option Explicit Off
-Option Infer On
-Option Strict Off
-
-Public Class ClashingNames
+}", "Public Class ClashingNames
 
     Private ab As String
 
     Private Sub Test()
-        Dim _aB As Object = 5
-        Dim Ab_Renamed As Integer = 7
+        Dim aB1 As Object = 5
+        Dim Ab2 As Integer = 7
     End Sub
 
     Private Sub Test2(ab As Integer)
-        Dim _aB As Object = 5
-        Dim AB_Renamed As Integer = 6
-        Dim s As String = NameOf(AB_Renamed)
+        Dim aB1 As Object = 5
+        Dim AB3 As Integer = 6
+        Dim s As String = NameOf(AB3)
         Dim s2 As String = NameOf(ab)
     End Sub
 End Class")

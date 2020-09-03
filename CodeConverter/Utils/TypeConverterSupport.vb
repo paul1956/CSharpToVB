@@ -6,11 +6,11 @@ Imports System.Runtime.CompilerServices
 Imports CSharpToVBCodeConverter.ToVisualBasic
 
 Imports Microsoft.CodeAnalysis
+Imports Microsoft.CodeAnalysis.CSharp
 
-Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
-Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
+Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace CSharpToVBCodeConverter
@@ -24,21 +24,21 @@ Namespace CSharpToVBCodeConverter
                 If TypeOf ElementType Is VBS.ArrayTypeSyntax Then
                     Return ElementType
                 End If
-                Return VBFactory.ArrayType(ElementType)
+                Return Factory.ArrayType(ElementType)
             End If
             If PossibleTupleType.IsTupleType Then
                 Dim TupleElementList As New List(Of VBS.TupleElementSyntax)
                 For Each TupleElement As IFieldSymbol In DirectCast(PossibleTupleType, INamedTypeSymbol).TupleElements
                     TupleElementList.Add(TupleElement.ConvertToTupleElement)
                 Next
-                Return VBFactory.TupleType(TupleElementList.ToArray)
+                Return Factory.TupleType(TupleElementList.ToArray)
             End If
             If PossibleTupleType.Name = "Tuple" Then
                 Dim TupleElementList As New List(Of VBS.TypeSyntax)
                 For Each TupleElement As ITypeSymbol In DirectCast(PossibleTupleType, INamedTypeSymbol).TypeArguments
                     TupleElementList.Add(TupleElement.ConvertToType())
                 Next
-                Return VBFactory.GenericName("Tuple", VBFactory.TypeArgumentList(VBFactory.SeparatedList(TupleElementList)))
+                Return Factory.GenericName("Tuple", Factory.TypeArgumentList(Factory.SeparatedList(TupleElementList)))
             End If
             Dim PossibleName As String = PossibleTupleType.ToString.Trim
             Dim StartIndex As Integer = PossibleName.IndexOf("<", StringComparison.Ordinal)
@@ -80,9 +80,7 @@ Namespace CSharpToVBCodeConverter
                                         End If
                                     Next
                                 End If
-                                Dim typeElement As String = PossibleTypes.Substring(0, EndIndex) _
-                                                                     .Replace("<", "(Of ", StringComparison.Ordinal) _
-                                                                     .Replace(">", ")", StringComparison.Ordinal).Trim
+                                Dim typeElement As String = PossibleTypes.Substring(0, EndIndex).ConvertTypeArgumentList.Trim
                                 DictionaryTypeElement.Add(ConvertToType(typeElement))
                             Catch ex As Exception
                                 Stop
@@ -94,7 +92,7 @@ Namespace CSharpToVBCodeConverter
                             Exit While
                         End If
                     End While
-                    Return VBFactory.GenericName(Name, VBFactory.TypeArgumentList(VBFactory.SeparatedList(DictionaryTypeElement)))
+                    Return Factory.GenericName(Name, Factory.TypeArgumentList(Factory.SeparatedList(DictionaryTypeElement)))
                 End If
                 ' Could be dictionary or List
                 If TypeOf PossibleTupleType Is INamedTypeSymbol AndAlso PossibleName.Contains(",", StringComparison.Ordinal) Then
@@ -106,10 +104,10 @@ Namespace CSharpToVBCodeConverter
                     For Each Element As ITypeSymbol In NamedType.TypeArguments
                         DictionaryTypeElement.Add(Element.ConvertToType())
                     Next
-                    Return VBFactory.GenericName(Name,
-                                                     VBFactory.TypeArgumentList(OpenParenToken,
-                                                                                OfKeyword.WithTrailingTrivia(SpaceTrivia),
-                                                                                VBFactory.SeparatedList(DictionaryTypeElement),
+                    Return Factory.GenericName(Name,
+                                                     Factory.TypeArgumentList(OpenParenToken,
+                                                                                OfKeyword.WithTrailingTrivia(VBSpaceTrivia),
+                                                                                Factory.SeparatedList(DictionaryTypeElement),
                                                                                 CloseParenToken
                                                                                 )
                                                     )
@@ -146,8 +144,7 @@ Namespace CSharpToVBCodeConverter
             End If
 
             If typeString.Contains("<", StringComparison.Ordinal) Then
-                typeString = typeString.Replace("<", "(Of ", StringComparison.Ordinal).
-                                    Replace(">", ")", StringComparison.Ordinal)
+                typeString = typeString.ConvertTypeArgumentList
             End If
             Dim IndexOf As Integer = typeString.IndexOf("(Of ", StringComparison.OrdinalIgnoreCase)
             If IndexOf >= 0 Then
@@ -181,15 +178,15 @@ Namespace CSharpToVBCodeConverter
                             End Select
                         Next
                     End If
-                    TypeList.Add(ConvertToType(PossibleTypes.Substring(0, EndIndex)).WithLeadingTrivia(SpaceTrivia))
+                    TypeList.Add(ConvertToType(PossibleTypes.Substring(0, EndIndex)).WithLeadingTrivia(VBSpaceTrivia))
                     If EndIndex + 1 < PossibleTypes.Length Then
                         PossibleTypes = PossibleTypes.Substring(EndIndex + 1).Trim
                     Else
                         Exit While
                     End If
                 End While
-                Dim TypeArguemntList As VBS.TypeArgumentListSyntax = VBFactory.TypeArgumentList(VBFactory.SeparatedList(TypeList))
-                Return VBFactory.GenericName(Name, TypeArguemntList)
+                Dim TypeArguemntList As VBS.TypeArgumentListSyntax = Factory.TypeArgumentList(Factory.SeparatedList(TypeList))
+                Return Factory.GenericName(Name, TypeArguemntList)
             End If
             If typeString.EndsWith("*", StringComparison.OrdinalIgnoreCase) Then
                 Return IntPtrType
@@ -233,13 +230,42 @@ Namespace CSharpToVBCodeConverter
                     typeString = "Object"
                 Case Else
                     If typeString.Contains("[", StringComparison.OrdinalIgnoreCase) Then
-                        typeString = typeString.
-                                        Replace("[", "(", StringComparison.Ordinal).
-                                        Replace("]", ")", StringComparison.Ordinal)
+                        typeString = typeString.ConvertTypeArgumentList
                     End If
                     typeString = MakeVBSafeName(typeString)
             End Select
-            Return VBFactory.ParseTypeName($"{typeString}{arrayRank}")
+            Return Factory.ParseTypeName($"{typeString}{arrayRank}")
+        End Function
+
+        Public Function GenerateSafeVBIdentifier(csIdentifier As SyntaxToken, Node As CSharpSyntaxNode, Model As SemanticModel) As VBS.NameSyntax
+            If Node Is Nothing Then
+                Throw New ArgumentNullException(NameOf(Node))
+            End If
+
+            Dim keywordKind As VB.SyntaxKind = VB.SyntaxFacts.GetKeywordKind(csIdentifier.ValueText)
+            Dim BaseVBIdent As String = csIdentifier.ValueText
+            If BaseVBIdent = "_" Then
+                BaseVBIdent = "__"
+            End If
+            Dim isBracketNeeded As Boolean = False
+            If VB.SyntaxFacts.IsKeywordKind(keywordKind) Then
+                isBracketNeeded = False
+                If keywordKind.MatchesKind(VB.SyntaxKind.REMKeyword, VB.SyntaxKind.DelegateKeyword) OrElse csIdentifier.Text.Chars(0) = "@" Then
+                    isBracketNeeded = True
+                ElseIf TypeOf csIdentifier.Parent?.Parent Is CSS.MemberAccessExpressionSyntax Then
+                    isBracketNeeded = CType(csIdentifier.Parent?.Parent, CSS.MemberAccessExpressionSyntax).Expression.ToString.Equals(csIdentifier.ToString, StringComparison.Ordinal)
+                ElseIf csIdentifier.Parent.AncestorsAndSelf().OfType(Of CSS.UsingDirectiveSyntax)().FirstOrDefault().IsKind(SyntaxKind.UsingDirective) Then
+                    csIdentifier = Factory.Token(keywordKind).WithTriviaFrom(csIdentifier)
+                    isBracketNeeded = False
+                End If
+            End If
+            BaseVBIdent = If(isBracketNeeded, $"[{BaseVBIdent}]", BaseVBIdent)
+            Dim isField As Boolean = Node.AncestorsAndSelf().OfType(Of CSS.FieldDeclarationSyntax).Any
+            Dim symbolEntry As (SyntaxToken, Boolean) = GetSymbolTableEntry(csIdentifier, BaseVBIdent, Node, Model, IsQualifiedNameOrTypeName:=False, isField)
+            If isField Then
+                Factory.QualifiedName(Factory.IdentifierName(MeKeyword), Factory.IdentifierName(BaseVBIdent))
+            End If
+            Return Factory.IdentifierName(BaseVBIdent)
         End Function
 
         ''' <summary>
@@ -247,47 +273,56 @@ Namespace CSharpToVBCodeConverter
         ''' </summary>
         ''' <param name="id"></param>
         ''' <returns></returns>
-        Public Function GenerateSafeVBToken(id As SyntaxToken) As SyntaxToken
-            Return GenerateSafeVBToken(id, IsQualifiedName:=False, IsTypeName:=False)
+        ''' <param name="Node"></param><param name="Model"></param>
+        Public Function GenerateSafeVBToken(id As SyntaxToken, Node As CSharpSyntaxNode, Model As SemanticModel) As SyntaxToken
+            Return GenerateSafeVBToken(id, Node, Model, IsQualifiedName:=False, IsTypeName:=False)
         End Function
 
         ''' <summary>
         ''' Returns Safe VB Name
         ''' </summary>
-        ''' <param name="id">Original Name</param>
+        ''' <param name="id">Original Variable Name</param>
+        ''' <param name="Node"></param>
+        ''' <param name="Model"></param>
         ''' <param name="IsQualifiedName">True if name is part of a Qualified Name and should not be renamed</param>
         ''' <param name="IsTypeName"></param>
         ''' <returns></returns>
-        Public Function GenerateSafeVBToken(id As SyntaxToken, IsQualifiedName As Boolean, IsTypeName As Boolean) As SyntaxToken
-            Debug.Assert(id.Language = "C#", $"In {NameOf(GenerateSafeVBToken)} Language of Token is not C#")
-            Debug.Assert((Not id.HasLeadingTrivia) OrElse id.LeadingTrivia(0).Language = "C#", $"In {NameOf(GenerateSafeVBToken)} Language of ID Token leading trivia is not VB")
-            Debug.Assert((Not id.HasTrailingTrivia) OrElse id.TrailingTrivia(0).Language = "C#", $"In {NameOf(GenerateSafeVBToken)} Language of ID Token trailing trivia is not VB")
+        Public Function GenerateSafeVBToken(id As SyntaxToken, Node As CSharpSyntaxNode, Model As SemanticModel, IsQualifiedName As Boolean, IsTypeName As Boolean) As SyntaxToken
+            If Node Is Nothing Then
+                Throw New ArgumentNullException(NameOf(Node))
+            End If
 
             Dim keywordKind As VB.SyntaxKind = VB.SyntaxFacts.GetKeywordKind(id.ValueText)
-            If VB.SyntaxFacts.IsKeywordKind(keywordKind) Then
-                Dim bracketNeeded As Boolean = True
-                If keywordKind = VB.SyntaxKind.REMKeyword Then
-                    bracketNeeded = True
-                ElseIf TypeOf id.Parent?.Parent Is CSS.MemberAccessExpressionSyntax Then
-                    bracketNeeded = CType(id.Parent?.Parent, CSS.MemberAccessExpressionSyntax).Expression.ToString.Equals(id.ToString, StringComparison.Ordinal)
-                End If
-                Return id.MakeIdentifierUnique(bracketNeeded, IsQualifiedNameOrTypeName:=IsQualifiedName)
-            End If
             If IsTypeName Then
                 IsQualifiedName = True
             Else
                 If VB.SyntaxFacts.IsPredefinedType(keywordKind) Then
-                    Return id.MakeIdentifierUnique(IsBracketNeeded:=True, IsQualifiedNameOrTypeName:=IsQualifiedName)
+                    Return id.MakeIdentifierUnique(Node, Model, IsBracketNeeded:=True, IsQualifiedName)
                 End If
             End If
 
-            If id.Parent?.IsParentKind(CS.SyntaxKind.Parameter) Then
+            If VB.SyntaxFacts.IsKeywordKind(keywordKind) Then
+                Dim bracketNeeded As Boolean = True
+                If keywordKind.MatchesKind(VB.SyntaxKind.REMKeyword, VB.SyntaxKind.DelegateKeyword) OrElse id.Text.Chars(0) = "@" Then
+                    bracketNeeded = True
+                ElseIf id.Parent Is Nothing Then
+                    bracketNeeded = True
+                ElseIf TypeOf id.Parent.Parent Is CSS.MemberAccessExpressionSyntax Then
+                    bracketNeeded = CType(id.Parent?.Parent, CSS.MemberAccessExpressionSyntax).Expression.ToString.Equals(id.ToString, StringComparison.Ordinal)
+                ElseIf id.Parent.AncestorsAndSelf().OfType(Of CSS.UsingDirectiveSyntax)().FirstOrDefault().IsKind(SyntaxKind.UsingDirective) Then
+                    id = Factory.Token(keywordKind).WithTriviaFrom(id)
+                    bracketNeeded = False
+                End If
+                Return id.MakeIdentifierUnique(Node, Model, bracketNeeded, IsQualifiedNameOrTypeName:=IsQualifiedName)
+            End If
+
+            If id.Parent?.IsParentKind(SyntaxKind.Parameter) Then
                 Dim Param As CSS.ParameterSyntax = DirectCast(id.Parent.Parent, CSS.ParameterSyntax)
                 Dim MethodDeclaration As CSS.MethodDeclarationSyntax = TryCast(Param.Parent?.Parent, CSS.MethodDeclarationSyntax)
                 IsQualifiedName = MethodDeclaration Is Nothing OrElse String.Compare(MethodDeclaration.Identifier.ValueText, id.ValueText, ignoreCase:=True, Globalization.CultureInfo.InvariantCulture) = 0
                 IsQualifiedName = IsQualifiedName Or String.Compare(Param.Type.ToString, id.ValueText, ignoreCase:=False, Globalization.CultureInfo.InvariantCulture) = 0
             End If
-            Return MakeIdentifierUnique(id, IsBracketNeeded:=False, IsQualifiedNameOrTypeName:=IsQualifiedName)
+            Return id.MakeIdentifierUnique(Node, Model, IsBracketNeeded:=False, IsQualifiedName)
         End Function
 
     End Module

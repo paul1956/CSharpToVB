@@ -5,14 +5,14 @@
 Friend Module NameGenerator
     Friend s_usedIdentifiers As New Dictionary(Of String, SymbolTableEntry)(StringComparer.Ordinal)
 
-    Private Sub EnsureUniquenessInPlace(names As IList(Of String), isFixed As IList(Of Boolean), canUse As Func(Of String, Boolean), Optional isCaseSensitive As Boolean = True)
+    Private Sub EnsureUniquenessInPlace(names As IList(Of String), isFixed As IList(Of Boolean), canUse As Func(Of String, Boolean))
         canUse = If(canUse, Function(s As String) True)
 
         ' Don't enumerate as we will be modifying the collection in place.
         Dim i As Integer = 0
         Do While i < names.Count
             Dim name As String = names(i)
-            Dim collisionIndices As List(Of Integer) = GetCollisionIndices(names, name, isCaseSensitive)
+            Dim collisionIndices As List(Of Integer) = GetCollisionIndices(names, name, isCaseSensitive:=False)
 
             If canUse(name) AndAlso collisionIndices.Count < 2 Then
                 ' no problems with this parameter name, move onto the next one.
@@ -20,7 +20,7 @@ Friend Module NameGenerator
                 Continue Do
             End If
 
-            HandleCollisions(isFixed, names, name, collisionIndices, canUse, isCaseSensitive)
+            HandleCollisions(isFixed, names, name, collisionIndices, canUse, isCaseSensitive:=False)
             i += 1
         Loop
     End Sub
@@ -73,13 +73,35 @@ Friend Module NameGenerator
         For Each s As SymbolTableEntry In s_usedIdentifiers.Values
             names.Add(s.Name)
         Next
-
-        'names.AddRange(reservedNames.Distinct())
-        names.AddRange(reservedNames)
+        For Each s As String In reservedNames.Distinct
+            If names.Contains(s) Then Continue For
+            names.Add(s)
+        Next
         isFixed.AddRange(Enumerable.Repeat(True, names.Count - 1))
 
         Dim result As IList(Of String) = EnsureUniqueness(names, isFixed)
         Return result.First()
+    End Function
+
+    Public Function GenerateUniqueName(baseName As String, canUse As Func(Of String, Boolean)) As String
+        Return GenerateUniqueName(baseName, String.Empty, canUse)
+    End Function
+
+    Public Function GenerateUniqueName(baseName As String, extension As String, canUse As Func(Of String, Boolean)) As String
+        If Not String.IsNullOrEmpty(extension) AndAlso Not extension.StartsWith(".", StringComparison.OrdinalIgnoreCase) Then
+            extension = "." & extension
+        End If
+
+        Dim name As String = baseName & extension
+        Dim index As Integer = 1
+
+        ' Check for collisions
+        Do While Not canUse(name)
+            name = baseName & index & extension
+            index += 1
+        Loop
+
+        Return name
     End Function
 
 End Module

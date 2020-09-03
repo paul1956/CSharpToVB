@@ -7,10 +7,22 @@ Imports System.Runtime.InteropServices
 Imports CSharpToVBCodeConverter.ToVisualBasic
 Imports Microsoft.CodeAnalysis
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
-Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
+Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Public Module StatementExtensions
+    <Extension>
+    Friend Function ContainsName(ImportList As List(Of VBS.ImportsStatementSyntax), ImportName As String) As Boolean
+        For Each ImportToCheck As VBS.ImportsStatementSyntax In ImportList
+            For Each Clause As VBS.ImportsClauseSyntax In ImportToCheck.ImportsClauses
+                If Clause.ToString = ImportName Then
+                    Return True
+                End If
+            Next
+        Next
+        Return False
+    End Function
+
 
     <Extension>
     Friend Function RestructureArguments(VB_Node As VBS.StatementSyntax, csArgumentList As CSS.ArgumentListSyntax) As VBS.StatementSyntax
@@ -18,26 +30,25 @@ Public Module StatementExtensions
             Return VB_Node
         End If
 
-        Dim StatementLeadingTrivia As New List(Of SyntaxTrivia)
-        Dim StatementTrailingTrivia As New List(Of SyntaxTrivia)
         If TypeOf VB_Node Is VBS.ExpressionStatementSyntax Then
             Dim ExpressionStatement As VBS.ExpressionStatementSyntax = DirectCast(VB_Node, VBS.ExpressionStatementSyntax)
             Dim Expr As VBS.InvocationExpressionSyntax = DirectCast(ExpressionStatement.Expression, VBS.InvocationExpressionSyntax)
             If Expr.ArgumentList.Arguments.Count = 0 Then
                 Return VB_Node
             End If
+            Dim StatementLeadingTrivia As New SyntaxTriviaList
+            Dim StatementTrailingTrivia As New SyntaxTriviaList
             For Each e As IndexClass(Of CSS.ArgumentSyntax) In csArgumentList.Arguments.WithIndex
-                Dim newArgumentLeadingTrivia As SyntaxTriviaList = RelocateDirectiveDisabledTrivia(VBFactory.TriviaList(ConvertTrivia(e.Value.GetLeadingTrivia)), StatementLeadingTrivia, RemoveEOL:=True)
-                Dim newArgumentTrailingTrivia As SyntaxTriviaList = RelocateDirectiveDisabledTrivia(VBFactory.TriviaList(ConvertTrivia(e.Value.GetTrailingTrivia)), StatementTrailingTrivia, RemoveEOL:=False)
+                Dim newArgumentLeadingTrivia As SyntaxTriviaList = RelocateDirectiveDisabledTrivia(Factory.TriviaList(e.Value.GetLeadingTrivia.ConvertTriviaList()), StatementLeadingTrivia, RemoveEOL:=True)
+                Dim newArgumentTrailingTrivia As SyntaxTriviaList = RelocateDirectiveDisabledTrivia(Factory.TriviaList(e.Value.GetTrailingTrivia.ConvertTriviaList()), StatementTrailingTrivia, RemoveEOL:=False)
                 ExpressionStatement = ExpressionStatement.ReplaceNode(
                                             Expr.ArgumentList.Arguments(e.Index),
                                             Expr.ArgumentList.Arguments(e.Index).With(newArgumentLeadingTrivia, newArgumentTrailingTrivia)
                                             )
             Next
-            StatementTrailingTrivia.AddRange(ConvertTrivia(csArgumentList.CloseParenToken.LeadingTrivia))
-            StatementTrailingTrivia.AddRange(ConvertTrivia(csArgumentList.CloseParenToken.TrailingTrivia))
+            StatementTrailingTrivia.AddRange(CollectConvertedTokenTrivia(csArgumentList.CloseParenToken, GetLeading:=True, GetTrailing:=True))
             If StatementTrailingTrivia.Any AndAlso StatementTrailingTrivia(0).IsDirective Then
-                StatementTrailingTrivia.Insert(0, VBEOLTrivia)
+                StatementTrailingTrivia = StatementTrailingTrivia.Insert(0, VBEOLTrivia)
             End If
             Return ExpressionStatement.WithPrependedLeadingTrivia(StatementLeadingTrivia).
                                             WithMergedTrailingTrivia(StatementTrailingTrivia)
@@ -57,21 +68,19 @@ Public Module StatementExtensions
         Dim keywordLeadingTrivia As SyntaxTriviaList
         Dim newAttributeLeadingTrivia As SyntaxTriviaList
         Dim newModifiers As New SyntaxTokenList
-        Dim statementLeadingTrivia As New List(Of SyntaxTrivia)
-        Dim statementTrailingTrivia As New List(Of SyntaxTrivia)
+        Dim statementLeadingTrivia As SyntaxTriviaList
+        Dim statementTrailingTrivia As SyntaxTriviaList
 
         If TypeOf Statement Is VBS.ClassStatementSyntax Then
             Dim classStatement As VBS.ClassStatementSyntax = DirectCast(Statement, VBS.ClassStatementSyntax)
             If HasAttributes Then
                 RestructureAttributeList(classStatement.AttributeLists, attributeLists, newAttributeLeadingTrivia, statementLeadingTrivia, statementTrailingTrivia)
-                classStatement = classStatement.WithAttributeLists(VBFactory.List(attributeLists))
+                classStatement = classStatement.WithAttributeLists(Factory.List(attributeLists))
             End If
 
             If HasModifiers Then
                 For Each e As IndexClass(Of SyntaxToken) In classStatement.Modifiers.WithIndex
                     newModifiers = newModifiers.Add(RestructureModifier(e.Value, e.Index, Not statementLeadingTrivia.ContainsCommentOrDirectiveTrivia, statementLeadingTrivia, statementTrailingTrivia))
-                Next
-                For index As Integer = 0 To classStatement.Modifiers.Count - 1
                 Next
                 classStatement = classStatement.WithModifiers(newModifiers)
             End If
@@ -89,7 +98,7 @@ Public Module StatementExtensions
 
             If HasAttributes Then
                 RestructureAttributeList(EnumStatement.AttributeLists, attributeLists, newAttributeLeadingTrivia, statementLeadingTrivia, statementTrailingTrivia)
-                EnumStatement = EnumStatement.WithAttributeLists(VBFactory.List(attributeLists))
+                EnumStatement = EnumStatement.WithAttributeLists(Factory.List(attributeLists))
             End If
 
             If HasModifiers Then
@@ -111,7 +120,7 @@ Public Module StatementExtensions
 
             If HasAttributes Then
                 RestructureAttributeList(FieldStatement.AttributeLists, attributeLists, newAttributeLeadingTrivia, statementLeadingTrivia, statementTrailingTrivia)
-                FieldStatement = FieldStatement.WithAttributeLists(VBFactory.List(attributeLists))
+                FieldStatement = FieldStatement.WithAttributeLists(Factory.List(attributeLists))
             End If
 
             If HasModifiers Then
@@ -129,7 +138,7 @@ Public Module StatementExtensions
 
             If HasAttributes Then
                 RestructureAttributeList(InterfaceStatement.AttributeLists, attributeLists, newAttributeLeadingTrivia, statementLeadingTrivia, statementTrailingTrivia)
-                InterfaceStatement = InterfaceStatement.WithAttributeLists(VBFactory.List(attributeLists)).WithLeadingTrivia(statementLeadingTrivia)
+                InterfaceStatement = InterfaceStatement.WithAttributeLists(Factory.List(attributeLists)).WithLeadingTrivia(statementLeadingTrivia)
             End If
 
             If HasModifiers Then
@@ -151,7 +160,7 @@ Public Module StatementExtensions
 
             If HasAttributes Then
                 RestructureAttributeList(MethodStatement.AttributeLists, attributeLists, newAttributeLeadingTrivia, statementLeadingTrivia, statementTrailingTrivia)
-                MethodStatement = MethodStatement.WithAttributeLists(VBFactory.List(attributeLists))
+                MethodStatement = MethodStatement.WithAttributeLists(Factory.List(attributeLists))
             End If
 
             If HasModifiers Then
@@ -176,7 +185,7 @@ Public Module StatementExtensions
 
             If HasAttributes Then
                 RestructureAttributeList(moduleStatement.AttributeLists, attributeLists, newAttributeLeadingTrivia, statementLeadingTrivia, statementTrailingTrivia)
-                moduleStatement = moduleStatement.WithAttributeLists(VBFactory.List(attributeLists))
+                moduleStatement = moduleStatement.WithAttributeLists(Factory.List(attributeLists))
             End If
 
             If HasModifiers Then
@@ -199,7 +208,7 @@ Public Module StatementExtensions
 
             If HasAttributes Then
                 RestructureAttributeList(PropertyStatement.AttributeLists, attributeLists, newAttributeLeadingTrivia, statementLeadingTrivia, statementTrailingTrivia)
-                PropertyStatement = PropertyStatement.WithAttributeLists(VBFactory.List(attributeLists))
+                PropertyStatement = PropertyStatement.WithAttributeLists(Factory.List(attributeLists))
             End If
 
             If HasModifiers Then
@@ -223,7 +232,7 @@ Public Module StatementExtensions
 
             If HasAttributes Then
                 RestructureAttributeList(StructureStatement.AttributeLists, attributeLists, newAttributeLeadingTrivia, statementLeadingTrivia, statementTrailingTrivia)
-                StructureStatement = StructureStatement.WithAttributeLists(VBFactory.List(attributeLists))
+                StructureStatement = StructureStatement.WithAttributeLists(Factory.List(attributeLists))
             End If
 
             If HasModifiers Then
@@ -244,7 +253,7 @@ Public Module StatementExtensions
 
             If HasAttributes Then
                 RestructureAttributeList(SubNewStatement.AttributeLists, attributeLists, newAttributeLeadingTrivia, statementLeadingTrivia, statementTrailingTrivia)
-                SubNewStatement = SubNewStatement.WithAttributeLists(VBFactory.List(attributeLists))
+                SubNewStatement = SubNewStatement.WithAttributeLists(Factory.List(attributeLists))
             End If
 
             If HasModifiers Then
@@ -279,11 +288,11 @@ Public Module StatementExtensions
     End Function
 
     <Extension>
-    Public Function RemoveLineContinuation(Statement As VBS.StatementSyntax) As VBS.StatementSyntax
+    Friend Function WithoutLastLineContinuation(Statement As VBS.StatementSyntax) As VBS.StatementSyntax
         If Statement Is Nothing Then
             Throw New ArgumentNullException(NameOf(Statement))
         End If
-        Return Statement.WithTrailingTrivia(Statement.GetTrailingTrivia.RemoveLineContinuation)
+        Return Statement.WithTrailingTrivia(Statement.GetTrailingTrivia.WithoutLastLineContinuation)
     End Function
 
 End Module

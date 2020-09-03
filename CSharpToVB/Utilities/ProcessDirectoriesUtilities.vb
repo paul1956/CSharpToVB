@@ -46,6 +46,14 @@ Public Module ProcessDirectoriesUtilities
     ''' False if error and user wants to stop, True if success or user wants to ignore error
     ''' </returns>
     Public Async Function ProcessDirectoryAsync(SourceDirectory As String, TargetDirectory As String, MeForm As Form1, StopButton As Button, ListBoxFileList As ListBox, SourceLanguageExtension As String, Stats As ProcessingStats, ProcessFileAsync As Func(Of String, String, String, List(Of String), List(Of KeyValuePair(Of String, Object)), MetadataReference(), Boolean, CancellationToken, Task(Of Boolean)), CancelToken As CancellationToken) As Task(Of Boolean)
+        If ProcessFileAsync Is Nothing Then
+            Throw New ArgumentNullException(NameOf(ProcessFileAsync))
+        End If
+
+        If Stats Is Nothing Then
+            Throw New ArgumentNullException(NameOf(Stats))
+        End If
+
         If String.IsNullOrWhiteSpace(SourceDirectory) OrElse Not Directory.Exists(SourceDirectory) Then
             Return True
         End If
@@ -55,9 +63,16 @@ Public Module ProcessDirectoriesUtilities
             Dim CSPreprocessorSymbols As New List(Of String) From {
                                         My.Settings.Framework
                                     }
+#If NET48 Then
+            Dim VBPreprocessorSymbols As New List(Of KeyValuePair(Of String, Object)) From {
+                                        New KeyValuePair(Of String, Object)(My.Settings.Framework, True)
+                                    }
+#Else
             Dim VBPreprocessorSymbols As New List(Of KeyValuePair(Of String, Object)) From {
                                         KeyValuePair.Create(Of String, Object)(My.Settings.Framework, True)
                                     }
+#End If
+
             For Each SourcePathWithFileName As String In DirectoryList
                 Stats.FilesProcessed += 1
                 If Stats.LastFileNameWithPath.Length = 0 OrElse Stats.LastFileNameWithPath = SourcePathWithFileName Then

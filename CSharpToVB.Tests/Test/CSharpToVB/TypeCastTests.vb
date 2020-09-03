@@ -11,142 +11,273 @@ Namespace CSharpToVB.Tests
     <TestClass()> Public Class TypeCastTests
         Inherits ConverterTestBase
 
+        <Fact(Skip:="Many code generation")>
+        Public Shared Sub CSharpToVBCastCharacterIncrement()
+            TestConversionCSharpToVisualBasic(
+"void Test() {
+    char a = 'A';
+    a++;
+}
+",
+"Private Sub Test()
+    Dim a As Char = ""A""c
+    a = ChrW(AscW(a) + 1)
+End Sub")
+        End Sub
+
+        <Fact>
+        Public Shared Sub CSharpToVBCastCharacterToNumber()
+            TestConversionCSharpToVisualBasic(
+"static class TestClass
+{
+    void Test() {
+        byte a = (byte)'A';
+        decimal b = (byte)'B';
+    }
+}
+",
+"Module TestClass
+
+    Private Sub Test()
+        Dim a As Byte = AscW(""A""c)
+        Dim b As Decimal = AscW(""B""c)
+    End Sub
+
+End Module")
+        End Sub
+
+        <Fact>
+        Public Shared Sub CSharpToVBCastConstantNumberToCharacter()
+            TestConversionCSharpToVisualBasic(
+"class TestClass
+{
+    void Test() {
+        char CR = (char)0xD;
+    }
+}",
+"Class TestClass
+
+    Private Sub Test()
+        Dim CR As Char = ChrW(&HD)
+    End Sub
+End Class")
+        End Sub
+
+        <Fact>
+        Public Shared Sub CSharpToVBCastConstantNumberToDecimal()
+            TestConversionCSharpToVisualBasic(
+                "static class TestClass
+{
+    void Test()
+    {
+        object o = 5.0m;
+    }
+}", "Module TestClass
+
+    Private Sub Test()
+        Dim o As Object = 5.0D
+    End Sub
+
+End Module")
+        End Sub
+
+        <Fact>
+        Public Shared Sub CSharpToVBCastConstantNumberToFloat()
+            TestConversionCSharpToVisualBasic(
+                "static class TestClass
+{
+    void Test()
+    {
+        object o = 5.0f;
+    }
+}", "Module TestClass
+
+    Private Sub Test()
+        Dim o As Object = 5.0F
+    End Sub
+
+End Module")
+        End Sub
+
+        <Fact>
+        Public Shared Sub CSharpToVBCastConstantNumberToLong()
+            TestConversionCSharpToVisualBasic(
+                "static class TestClass
+{
+    void Test()
+    {
+        object o = 5L;
+    }
+}", "Module TestClass
+
+    Private Sub Test()
+        Dim o As Object = 5L
+    End Sub
+
+End Module")
+        End Sub
+
+        <Fact>
+        Public Shared Sub CSharpToVBCastObjectToGenericList()
+            TestConversionCSharpToVisualBasic(
+                "class TestClass
+{
+    void Test()
+    {
+        object o = new System.Collections.Generic.List<int>();
+        System.Collections.Generic.List<int> l = (System.Collections.Generic.List<int>) o;
+    }
+}", "Class TestClass
+
+    Private Sub Test()
+        Dim o As Object = New Collections.Generic.List(Of Integer)
+        Dim l As Collections.Generic.List(Of Integer) = CType(o, Collections.Generic.List(Of Integer))
+    End Sub
+End Class")
+        End Sub
+
+
         <Fact>
         Public Shared Sub CSharpToVBCastObjectToInteger()
-            TestConversionCSharpToVisualBasic("void Test()
+            ' The leading and trailing newlines check that surrounding trivia is selected as part of this (in the comments auto-testing)
+            TestConversionCSharpToVisualBasic(
+                "static class TestClass
 {
-    object o = 5;
-    int i = (int) o;
-}
-", "Option Explicit Off
-Option Infer On
-Option Strict Off
+    void Test()
+    {
+        object o = 5;
+        int i = (int) o;
+    }
+}", "Module TestClass
 
-Private Sub Test()
-    Dim o As Object = 5
-    Dim i As Integer = CInt(Fix(o))
-End Sub
+    Private Sub Test()
+        Dim o As Object = 5
+        Dim i As Integer = CInt(Fix(o))
+    End Sub
+
+End Module
 ")
         End Sub
 
         <Fact>
         Public Shared Sub CSharpToVBCastObjectToString()
-            TestConversionCSharpToVisualBasic("void Test()
+            TestConversionCSharpToVisualBasic(
+                "static class TestClass
 {
-    object o = ""Test"";
-    string s = (string) o;
-}
-", "Option Explicit Off
-Option Infer On
-Option Strict Off
+    void Test()
+    {
+        object o = ""Test"";
+        string s = (string) o;
+    }", "Module TestClass
 
-Private Sub Test()
-    Dim o As Object = ""Test""
-    Dim s As String = CStr(o)
-End Sub
-")
+    Private Sub Test()
+        Dim o As Object = ""Test""
+        Dim s As String = CStr(o)
+    End Sub
+
+End Module")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVBCastObjectToGenericList()
-            TestConversionCSharpToVisualBasic("void Test()
-{
-    object o = new System.Collections.Generic.List<int>();
-    System.Collections.Generic.List<int> l = (System.Collections.Generic.List<int>) o;
+        Public Shared Sub CSharpToVBMethodInvocation()
+            TestConversionCSharpToVisualBasic(
+"public class Test {
+    public void TestMethod() { }
 }
-", "Option Explicit Off
-Option Infer On
-Option Strict Off
+public class Test2 {
+    public void TestMethod(object o) {
+        ((Test)o).TestMethod();
+    }
+}", "Public Class Test
 
-Private Sub Test()
-    Dim o As Object = New System.Collections.Generic.List(Of Integer)
-    Dim l As System.Collections.Generic.List(Of Integer) = CType(o, System.Collections.Generic.List(Of Integer))
-End Sub
-")
+    Public Sub TestMethod()
+    End Sub
+End Class
+
+Public Class Test2
+
+    Public Sub TestMethod(o As Object)
+        CType(o, Test).TestMethod()
+    End Sub
+End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVBTryCastObjectToInteger()
-            TestConversionCSharpToVisualBasic("void Test()
-{
-    object o = 5;
-    System.Nullable<int> i = o as int;
+        Public Shared Sub CSharpToVBMethodInvocationTryCast()
+            TestConversionCSharpToVisualBasic(
+"public class Test {
+    public void TestMethod() { }
 }
-", "Option Explicit Off
-Option Infer On
-Option Strict Off
+public class Test2 {
+    public void TestMethod(object o) {
+        (o as Test).TestMethod();
+    }
+}", "Public Class Test
 
-Private Sub Test()
-    Dim o As Object = 5
-    Dim i As System.Nullable(Of Integer) = TryCast(o, Integer)
-End Sub
-")
+    Public Sub TestMethod()
+    End Sub
+End Class
+
+Public Class Test2
+
+    Public Sub TestMethod(o As Object)
+        TryCast(o, Test).TestMethod()
+    End Sub
+End Class")
         End Sub
 
         <Fact>
         Public Shared Sub CSharpToVBTryCastObjectToGenericList()
-            TestConversionCSharpToVisualBasic("void Test()
-{
-    object o = new System.Collections.Generic.List<int>();
-    System.Collections.Generic.List<int> l = o as System.Collections.Generic.List<int>;
-}
-", "Option Explicit Off
-Option Infer On
-Option Strict Off
+            TestConversionCSharpToVisualBasic(
+                "class TestClass {
+    void Test()
+    {
+        object o = new System.Collections.Generic.List<int>();
+        System.Collections.Generic.List<int> l = o as System.Collections.Generic.List<int>;
+    }
+", "Class TestClass
 
-Private Sub Test()
-    Dim o As Object = New System.Collections.Generic.List(Of Integer)
-    Dim l As System.Collections.Generic.List(Of Integer) = TryCast(o, System.Collections.Generic.List(Of Integer))
-End Sub
-")
+    Private Sub Test()
+        Dim o As Object = New Collections.Generic.List(Of Integer)
+        Dim l As Collections.Generic.List(Of Integer) = TryCast(o, Collections.Generic.List(Of Integer))
+    End Sub
+End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVBCastConstantNumberToLong()
-            TestConversionCSharpToVisualBasic("void Test()
+        Public Shared Sub CSharpToVBTryCastObjectToGenericType()
+            TestConversionCSharpToVisualBasic(
+"class TestClass
 {
-    object o = 5L;
-}
-", "Option Explicit Off
-Option Infer On
-Option Strict Off
+    T Test<T>() where T : class {
+        return this as T;
+    }
+}",
+"Class TestClass
 
-Private Sub Test()
-    Dim o As Object = 5L
-End Sub
-")
+    Private Function Test(Of T As Class)() As T
+        Return TryCast(Me, T)
+    End Function
+End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVBCastConstantNumberToFloat()
-            TestConversionCSharpToVisualBasic("void Test()
+        Public Shared Sub CSharpToVBTryCastObjectToInteger()
+            TestConversionCSharpToVisualBasic(
+                "class TestClass
 {
-    object o = 5.0f;
+    void Test()
+    {
+        object o = 5;
+        System.Nullable<int> i = o as int?;
 }
-", "Option Explicit Off
-Option Infer On
-Option Strict Off
+}", "Class TestClass
 
-Private Sub Test()
-    Dim o As Object = 5F
-End Sub
-")
-        End Sub
-
-        <Fact>
-        Public Shared Sub CSharpToVBCastConstantNumberToDecimal()
-            TestConversionCSharpToVisualBasic("void Test()
-{
-    object o = 5.0m;
-}
-", "Option Explicit Off
-Option Infer On
-Option Strict Off
-
-Private Sub Test()
-    Dim o As Object = 5.0D
-End Sub
-")
+    Private Sub Test()
+        Dim o As Object = 5
+        Dim i As Nullable(Of Integer) = TryCast(o, Integer?)
+    End Sub
+End Class")
         End Sub
 
     End Class

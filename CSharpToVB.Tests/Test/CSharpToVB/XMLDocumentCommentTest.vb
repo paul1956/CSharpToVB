@@ -8,7 +8,7 @@ Imports Xunit
 
 Namespace CSharpToVB.Tests
 
-    <TestClass()> Public Class XMLDocumentCommentTest1
+    <TestClass()> Public Class XMLDocumentCommentTest
         Inherits ConverterTestBase
 
         Private Const CsharpCode As String = "// Licensed to the .NET Foundation under one or more agreements.
@@ -89,7 +89,7 @@ End Namespace
 
         <Fact>
         Public Shared Sub CSharpToVBMalformedDocumentComments()
-            TestConversionCSharpToVisualBasic(CsharpCode, DesiredResult)
+            TestConversionCSharpToVisualBasic(CsharpCode, DesiredResult, IncludeOptions:=False)
         End Sub
 
     End Class

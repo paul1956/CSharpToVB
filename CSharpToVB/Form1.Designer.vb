@@ -44,11 +44,9 @@ Partial Class Form1
         Me.mnuFileLastProject = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuFileLastSolution = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuFileSaveAs = New System.Windows.Forms.ToolStripMenuItem()
+        Me.mnuFileLoadLastSnippet = New System.Windows.Forms.ToolStripMenuItem()
+        Me.mnuFileSaveSnippet = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuFileSep4 = New System.Windows.Forms.ToolStripSeparator()
-        Me.mnuFileSnippet = New System.Windows.Forms.ToolStripMenuItem()
-        Me.mnuFileSnippetLoadLast = New System.Windows.Forms.ToolStripMenuItem()
-        Me.mnuFileSnippetSave = New System.Windows.Forms.ToolStripMenuItem()
-        Me.mnuFileSep6 = New System.Windows.Forms.ToolStripSeparator()
         Me.mnuFileExit = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuEdit = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuEditFind = New System.Windows.Forms.ToolStripMenuItem()
@@ -139,7 +137,7 @@ Partial Class Form1
         '
         'mnuFile
         '
-        Me.mnuFile.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuFileOpen, Me.mnuFileSep1, Me.mnuFileSep2, Me.mnuFileLabelLastFolder, Me.mnuFileLastFolder, Me.mnuFileSep3, Me.mnuFileConvertProject, Me.mnuFileLastProject, Me.mnuFileLastSolution, Me.mnuFileSaveAs, Me.mnuFileSep4, Me.mnuFileSnippet, Me.mnuFileSep6, Me.mnuFileExit})
+        Me.mnuFile.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuFileOpen, Me.mnuFileLoadLastSnippet, Me.mnuFileSaveSnippet, Me.mnuFileSep1, Me.mnuFileSep2, Me.mnuFileLabelLastFolder, Me.mnuFileLastFolder, Me.mnuFileSep3, Me.mnuFileConvertProject, Me.mnuFileLastProject, Me.mnuFileLastSolution, Me.mnuFileSaveAs, Me.mnuFileSep4, Me.mnuFileExit})
         Me.mnuFile.Name = "mnuFile"
         Me.mnuFile.ShortcutKeys = CType((System.Windows.Forms.Keys.Alt Or System.Windows.Forms.Keys.F), System.Windows.Forms.Keys)
         Me.mnuFile.Size = New System.Drawing.Size(37, 20)
@@ -152,7 +150,21 @@ Partial Class Form1
         Me.mnuFileOpen.Name = "mnuFileOpen"
         Me.mnuFileOpen.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.O), System.Windows.Forms.Keys)
         Me.mnuFileOpen.Size = New System.Drawing.Size(289, 22)
-        Me.mnuFileOpen.Text = "Open File..."
+        Me.mnuFileOpen.Text = "Open C# File..."
+        '
+        'mnuFileLoadLastSnippet
+        '
+        Me.mnuFileLoadLastSnippet.Enabled = False
+        Me.mnuFileLoadLastSnippet.Name = "mnuFileLoadLastSnippet"
+        Me.mnuFileLoadLastSnippet.Size = New System.Drawing.Size(124, 22)
+        Me.mnuFileLoadLastSnippet.Text = "Load Last Snippet"
+        '
+        'mnuFileSaveSnippet
+        '
+        Me.mnuFileSaveSnippet.Enabled = False
+        Me.mnuFileSaveSnippet.Name = "mnuFileSaveSnippet"
+        Me.mnuFileSaveSnippet.Size = New System.Drawing.Size(124, 22)
+        Me.mnuFileSaveSnippet.Text = "Save Snippet"
         '
         'mnuFileSep1
         '
@@ -169,7 +181,7 @@ Partial Class Form1
         Me.mnuFileLabelLastFolder.Enabled = False
         Me.mnuFileLabelLastFolder.Name = "mnuFileLabelLastFolder"
         Me.mnuFileLabelLastFolder.Size = New System.Drawing.Size(289, 22)
-        Me.mnuFileLabelLastFolder.Text = "Last Folder"
+        Me.mnuFileLabelLastFolder.Text = "Last Converted Folder"
         '
         'mnuFileLastFolder
         '
@@ -220,32 +232,6 @@ Partial Class Form1
         '
         Me.mnuFileSep4.Name = "mnuFileSep4"
         Me.mnuFileSep4.Size = New System.Drawing.Size(286, 6)
-        '
-        'mnuFileSnippet
-        '
-        Me.mnuFileSnippet.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuFileSnippetLoadLast, Me.mnuFileSnippetSave})
-        Me.mnuFileSnippet.Name = "mnuFileSnippet"
-        Me.mnuFileSnippet.Size = New System.Drawing.Size(289, 22)
-        Me.mnuFileSnippet.Text = "Snippet"
-        '
-        'mnuFileSnippetLoadLast
-        '
-        Me.mnuFileSnippetLoadLast.Enabled = False
-        Me.mnuFileSnippetLoadLast.Name = "mnuFileSnippetLoadLast"
-        Me.mnuFileSnippetLoadLast.Size = New System.Drawing.Size(124, 22)
-        Me.mnuFileSnippetLoadLast.Text = "Load Last"
-        '
-        'mnuFileSnippetSave
-        '
-        Me.mnuFileSnippetSave.Enabled = False
-        Me.mnuFileSnippetSave.Name = "mnuFileSnippetSave"
-        Me.mnuFileSnippetSave.Size = New System.Drawing.Size(124, 22)
-        Me.mnuFileSnippetSave.Text = "Save"
-        '
-        'mnuFileSep6
-        '
-        Me.mnuFileSep6.Name = "mnuFileSep6"
-        Me.mnuFileSep6.Size = New System.Drawing.Size(286, 6)
         '
         'mnuFileExit
         '
@@ -940,7 +926,6 @@ Partial Class Form1
     Friend WithEvents ContextMenuCut As ToolStripMenuItem
     Friend WithEvents ContextMenuPaste As ToolStripMenuItem
     Friend WithEvents mnuOptionsPauseConvertOnSuccess As ToolStripMenuItem
-    Friend WithEvents mnuFileSep4 As ToolStripSeparator
     Friend WithEvents mnuFileLabelLastFolder As ToolStripMenuItem
     Friend WithEvents ButtonStopConversion As Button
     Friend WithEvents LabelErrorCount As Label
@@ -955,11 +940,10 @@ Partial Class Form1
     Friend WithEvents ListBoxFileList As ListBox
     Friend WithEvents mnuOptionsStartFolderConvertFromLastFile As ToolStripMenuItem
     Friend WithEvents mnuFileExit As ToolStripMenuItem
-    Friend WithEvents mnuFileSep6 As ToolStripSeparator
+    Friend WithEvents mnuFileSep4 As ToolStripSeparator
     Friend WithEvents mnuFileSep1 As ToolStripSeparator
-    Friend WithEvents mnuFileSnippet As ToolStripMenuItem
-    Friend WithEvents mnuFileSnippetSave As ToolStripMenuItem
-    Friend WithEvents mnuFileSnippetLoadLast As ToolStripMenuItem
+    Friend WithEvents mnuFileSaveSnippet As ToolStripMenuItem
+    Friend WithEvents mnuFileLoadLastSnippet As ToolStripMenuItem
     Friend WithEvents mnuFileSep3 As ToolStripSeparator
     Friend WithEvents mnuView As ToolStripMenuItem
     Friend WithEvents mnuViewShowSourceLineNumbers As ToolStripMenuItem

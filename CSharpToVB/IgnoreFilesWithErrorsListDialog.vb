@@ -44,29 +44,6 @@ Public Class IgnoreFilesWithErrorsList
         End If
         ' Initialize the button column.
         _fileToLoad = ""
-        Dim buttonDeleteEntry As New DataGridViewButtonColumn
-        With buttonDeleteEntry
-            .HeaderText = "Delete"
-            .Name = "Delete"
-            .Text = "Delete Entry"
-            ' Use the Text property for the button text for all cells rather
-            ' than using each cell's value as the text for its own button.
-            .UseColumnTextForButtonValue = True
-        End With
-        ' Add the button column to the control.
-        dgvIgnoredFilesList.Columns.Insert(0, buttonDeleteEntry)
-
-        Dim buttonLoadFile As New DataGridViewButtonColumn
-        With buttonLoadFile
-            .HeaderText = "Load File"
-            .Name = "Load"
-            .Text = "Load File"
-            ' Use the Text property for the button text for all cells rather
-            ' than using each cell's value as the text for its own button.
-            .UseColumnTextForButtonValue = True
-        End With
-        ' Add the button column to the control.
-        dgvIgnoredFilesList.Columns.Insert(1, buttonLoadFile)
     End Sub
 
     Private Sub OK_Button_Click(sender As Object, e As EventArgs) Handles OK_Button.Click

@@ -5,14 +5,164 @@
 Imports System.Runtime.CompilerServices
 
 Imports CSharpToVBCodeConverter
-Imports CSharpToVBCodeConverter.ToVisualBasic
+Imports CSharpToVBCodeConverter.ToVisualBasic.CSharpConverter
 Imports Microsoft.CodeAnalysis
 
+Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
+Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Public Module ExpressionSyntaxExtensions
+
+    <Extension>
+    Friend Function AdjustExpressionTrivia(Expression As VBS.ExpressionSyntax, AdjustLeading As Boolean) As VBS.ExpressionSyntax
+        If Expression Is Nothing Then
+            Throw New ArgumentNullException(NameOf(Expression))
+        End If
+
+        'Debug.WriteLine($"Exp In          :{Expression.ToFullString}")
+        Dim initialTriviaList As SyntaxTriviaList = Expression.GetLeadingTrivia
+        Dim newLeadingTrivia As New SyntaxTriviaList
+
+        If AdjustLeading Then
+            For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
+                Dim Trivia As SyntaxTrivia = e.Value
+                Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.Index, LookaheadCount:=1)
+
+                Select Case Trivia.RawKind
+                    Case VB.SyntaxKind.WhitespaceTrivia
+                        Select Case nextTrivia.RawKind
+                            Case VB.SyntaxKind.WhitespaceTrivia
+                                newLeadingTrivia = newLeadingTrivia.Add(If(Trivia.Span.Length > nextTrivia.Span.Length, Trivia, nextTrivia))
+                                e.MoveNext()
+                            Case VB.SyntaxKind.LineContinuationTrivia
+                                newLeadingTrivia = newLeadingTrivia.Add(VBSpaceTrivia)
+                                newLeadingTrivia = newLeadingTrivia.Add(LineContinuation)
+                                e.MoveNext()
+                                nextTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.Index, LookaheadCount:=1)
+                                If nextTrivia.IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
+                                    newLeadingTrivia = newLeadingTrivia.Add(If(Trivia.Span.Length > nextTrivia.Span.Length, Trivia, nextTrivia))
+                                    e.MoveNext()
+                                End If
+                            Case VB.SyntaxKind.None,
+                                 VB.SyntaxKind.EndOfLineTrivia
+                            Case VB.SyntaxKind.CommentTrivia,
+                             VB.SyntaxKind.DocumentationCommentTrivia
+                                newLeadingTrivia = newLeadingTrivia.Add(VBSpaceTrivia)
+                                newLeadingTrivia = newLeadingTrivia.Add(LineContinuation)
+                                newLeadingTrivia = newLeadingTrivia.Add(e.Value)
+                            Case Else
+                                If e.Value.IsDirective Then
+                                    newLeadingTrivia = newLeadingTrivia.Add(e.Value)
+                                Else
+                                    Stop
+                                End If
+                        End Select
+                    Case VB.SyntaxKind.EndOfLineTrivia
+                        If e.IsFirst Then
+                            Continue For
+                        End If
+                        newLeadingTrivia = newLeadingTrivia.Add(Trivia)
+                    Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
+                        Select Case nextTrivia.RawKind
+                            Case VB.SyntaxKind.WhitespaceTrivia, VB.SyntaxKind.LineContinuationTrivia
+                                newLeadingTrivia = newLeadingTrivia.Add(Trivia)
+                                e.MoveNext()
+                            Case VB.SyntaxKind.None
+                                newLeadingTrivia = newLeadingTrivia.Add(Trivia)
+                                newLeadingTrivia = newLeadingTrivia.Add(VBEOLTrivia)
+                            Case VB.SyntaxKind.EndOfLineTrivia
+                                newLeadingTrivia = newLeadingTrivia.Add(Trivia)
+                            Case Else
+                                Stop
+                        End Select
+                    Case VB.SyntaxKind.LineContinuationTrivia
+                        newLeadingTrivia = newLeadingTrivia.Add(Trivia)
+                    Case Else
+                        Stop
+                End Select
+            Next
+            Expression = Expression.WithLeadingTrivia(newLeadingTrivia)
+        End If
+
+        initialTriviaList = Expression.GetTrailingTrivia
+        Dim NewTrailingTrivia As New SyntaxTriviaList
+
+        For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
+            Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.Index, LookaheadCount:=1)
+            Select Case e.Value.RawKind
+                Case VB.SyntaxKind.WhitespaceTrivia
+                    Select Case nextTrivia.RawKind
+                        Case VB.SyntaxKind.None
+                            NewTrailingTrivia = NewTrailingTrivia.Add(e.Value)
+                        Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
+                            NewTrailingTrivia = NewTrailingTrivia.Add(VBSpaceTrivia)
+                            NewTrailingTrivia = NewTrailingTrivia.Add(LineContinuation)
+                            NewTrailingTrivia = NewTrailingTrivia.Add(e.Value)
+                        Case VB.SyntaxKind.WhitespaceTrivia,
+                             VB.SyntaxKind.EndOfLineTrivia
+                        Case VB.SyntaxKind.LineContinuationTrivia
+                            NewTrailingTrivia = NewTrailingTrivia.Add(e.Value)
+                        Case Else
+                            Stop
+                            NewTrailingTrivia = NewTrailingTrivia.Add(e.Value)
+                    End Select
+                Case VB.SyntaxKind.EndOfLineTrivia
+                    Select Case nextTrivia.RawKind
+                        Case VB.SyntaxKind.EndOfLineTrivia
+                                ' skip it
+                        Case VB.SyntaxKind.None
+                            If Not NewTrailingTrivia.Any Then
+                                NewTrailingTrivia = NewTrailingTrivia.Add(VBSpaceTrivia)
+                                NewTrailingTrivia = NewTrailingTrivia.Add(LineContinuation)
+                                NewTrailingTrivia = NewTrailingTrivia.Add(e.Value)
+                            End If
+                        Case VB.SyntaxKind.WhitespaceTrivia
+                            NewTrailingTrivia = NewTrailingTrivia.Add(VBSpaceTrivia)
+                            NewTrailingTrivia = NewTrailingTrivia.Add(LineContinuation)
+                            NewTrailingTrivia = NewTrailingTrivia.Add(e.Value)
+                            e.MoveNext()
+                        Case Else
+                            Stop
+                            NewTrailingTrivia = NewTrailingTrivia.Add(e.Value)
+                    End Select
+                Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
+                    NewTrailingTrivia = NewTrailingTrivia.Add(e.Value)
+                    NewTrailingTrivia = NewTrailingTrivia.Add(VBEOLTrivia)
+                    If nextTrivia.IsEndOfLine Then
+                        e.MoveNext()
+                    End If
+                Case VB.SyntaxKind.LineContinuationTrivia
+                    NewTrailingTrivia = NewTrailingTrivia.Add(e.Value) ' _
+                    If nextTrivia.IsKind(VB.SyntaxKind.WhitespaceTrivia) OrElse
+                        nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                        e.MoveNext()
+                        NewTrailingTrivia = NewTrailingTrivia.Add(e.Value)
+                    End If
+                Case Else
+                    Stop
+            End Select
+        Next
+        Expression = Expression.WithTrailingTrivia(NewTrailingTrivia)
+        'Debug.WriteLine($"Exp Out         :{Expression.ToFullString}")
+        Return Expression
+    End Function
+
+    <Extension>
+    Friend Function ConvertDirectiveCondition(Condition As CSS.ExpressionSyntax) As String
+        Return Condition.ToString.ConvertCondition
+    End Function
+
+    Friend Function CreateArgList(Of T As VBS.ExpressionSyntax)(ParamArray args() As T) As VBS.ArgumentListSyntax
+        Return CreateVbArgList(args)
+    End Function
+
+    <Extension>
+    Friend Function CreateVbArgList(Of T As VBS.ExpressionSyntax)(argExpressions As IEnumerable(Of T)) As VBS.ArgumentListSyntax
+        Return Factory.ArgumentList(Factory.SeparatedList(argExpressions.Select(Function(e) CType(Factory.SimpleArgument(e), VBS.ArgumentSyntax))))
+    End Function
 
     <Extension>
     Friend Function DetermineType(expression As CSS.ExpressionSyntax, Model As SemanticModel) As (_Error As Boolean, _ITypeSymbol As ITypeSymbol)
@@ -46,9 +196,6 @@ Public Module ExpressionSyntaxExtensions
 
             End If
         Catch ex As OperationCanceledException
-            Throw
-        Catch ex As Exception
-            Stop
             Throw
         End Try
         Return (_Error:=True, Model.Compilation.ObjectType)
@@ -95,62 +242,77 @@ Public Module ExpressionSyntaxExtensions
     End Function
 
     <Extension>
-    Public Function AdjustExpressionLeadingTrivia(Expression As VBS.ExpressionSyntax) As VBS.ExpressionSyntax
-        If Expression Is Nothing Then
-            Throw New ArgumentNullException(NameOf(Expression))
+    Friend Function GetExpressionBodyStatements(ArrowExpressionClause As CSS.ArrowExpressionClauseSyntax, visitor As NodesVisitor) As SyntaxList(Of VBS.StatementSyntax)
+        Dim Statement As VBS.StatementSyntax
+        Dim ExpressionBody As VB.VisualBasicSyntaxNode = ArrowExpressionClause.Accept(visitor)
+        If TypeOf ExpressionBody Is VBS.TryBlockSyntax Then
+            Dim TryBlock As VBS.TryBlockSyntax = CType(ExpressionBody, VBS.TryBlockSyntax)
+            Dim StatementList As SyntaxList(Of VBS.StatementSyntax) = ReplaceOneStatementWithMarkedStatements(ArrowExpressionClause, TryBlock.Statements(0))
+            For Each e As IndexClass(Of VBS.StatementSyntax) In TryBlock.Statements.WithIndex
+                StatementList = StatementList.Add(e.Value)
+            Next
+            Return StatementList
+        ElseIf TypeOf ExpressionBody Is VBS.AssignmentStatementSyntax OrElse
+                        TypeOf ExpressionBody Is VBS.AddRemoveHandlerStatementSyntax OrElse
+                        TypeOf ExpressionBody Is VBS.RaiseEventStatementSyntax OrElse
+                        TypeOf ExpressionBody Is VBS.ThrowStatementSyntax Then
+            Statement = DirectCast(ExpressionBody, VBS.StatementSyntax).WithTrailingEOL(RemoveLastLineContinuation:=True)
+        ElseIf ArrowExpressionClause.Parent.IsKind(CS.syntaxkind.SetAccessorDeclaration) Then
+            Statement = Factory.ExpressionStatement(CType(ExpressionBody, VBS.ExpressionSyntax))
+        Else
+            Statement = Factory.ReturnStatement(DirectCast(ExpressionBody.WithLeadingTrivia(VBSpaceTrivia), VBS.ExpressionSyntax)) _
+                                        .WithLeadingTrivia(ExpressionBody.GetLeadingTrivia)
+        End If
+        Return ReplaceOneStatementWithMarkedStatements(ArrowExpressionClause, Statement.WithTrailingEOL(RemoveLastLineContinuation:=True))
+    End Function
+
+    <Extension>
+    Friend Function IsReferenceComparison(Expression1 As CSS.ExpressionSyntax, Expression2 As CSS.ExpressionSyntax, Model As SemanticModel) As Boolean
+        Dim TypeSymbol1 As (IsRefType As Boolean, IsString As Boolean) = IsReferenceTypeOrString(Expression1, Model)
+        Dim TypeSymbol2 As (IsRefType As Boolean, IsString As Boolean) = IsReferenceTypeOrString(Expression2, Model)
+        Return TypeSymbol1.IsRefType AndAlso TypeSymbol2.IsRefType AndAlso Not (TypeSymbol1.IsString AndAlso TypeSymbol2.IsString)
+    End Function
+
+    <Extension>
+    Friend Function IsReferenceTypeOrString(Expression1 As CSS.ExpressionSyntax, Model As SemanticModel) As (IsRefType As Boolean, IsString As Boolean)
+        Dim TypeSymbol1 As (_Error As Boolean, _ITypeSymbol As ITypeSymbol) = DetermineType(Expression1, Model)
+        If TypeSymbol1._Error Then
+            Return (False, False)
+        End If
+        Return (TypeSymbol1._ITypeSymbol.IsReferenceType, TypeSymbol1._ITypeSymbol.Name = "String")
+    End Function
+
+    <Extension>
+    Friend Function IsReturnValueDiscarded(node As CSS.ExpressionSyntax) As Boolean
+        If TypeOf node.Parent Is CSS.ExpressionStatementSyntax Then
+            Dim csExpression As CSS.ExpressionStatementSyntax = CType(node.Parent, CSS.ExpressionStatementSyntax)
+            If TypeOf csExpression.Expression Is CSS.AssignmentExpressionSyntax Then
+                Dim AssignmentExpression As CSS.AssignmentExpressionSyntax = CType(csExpression.Expression, CSS.AssignmentExpressionSyntax)
+                If TypeOf AssignmentExpression.Left Is CSS.DeclarationExpressionSyntax OrElse
+                     TypeOf AssignmentExpression.Left Is CSS.TupleExpressionSyntax Then
+                    Return False
+                End If
+            End If
+            Return True
         End If
 
-        Dim AfterWhiteSpace As Boolean = False
-        Dim AfterEOL As Boolean = False
-        Dim NeedLineContinuation As Boolean = True
-        Dim NewTriviaList As New List(Of SyntaxTrivia)
+        Return TypeOf node.Parent Is CSS.SimpleLambdaExpressionSyntax OrElse
+               TypeOf node.Parent Is CSS.ForStatementSyntax OrElse
+               node.Parent.IsParentKind(CS.SyntaxKind.SetAccessorDeclaration)
+    End Function
 
-        Dim initialTriviaList As List(Of SyntaxTrivia) = Expression.GetLeadingTrivia.ToList
-        For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
-            Dim Trivia As SyntaxTrivia = e.Value
-            Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.Index)
-            Select Case Trivia.RawKind
-                Case VB.SyntaxKind.WhitespaceTrivia
-                    If NeedLineContinuation AndAlso Not nextTrivia.IsNone Then
-                        NewTriviaList.Add(SpaceTrivia)
-                        NewTriviaList.Add(LineContinuation)
-                    End If
-                    NewTriviaList.Add(Trivia)
-                    AfterEOL = False
-                    AfterWhiteSpace = True
-                    NeedLineContinuation = False
-                Case VB.SyntaxKind.EndOfLineTrivia
-                    If AfterEOL Then
-                        Continue For
-                    End If
-                    If nextTrivia.IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
-                        NeedLineContinuation = True
-                    End If
-                    NewTriviaList.Add(Trivia)
-                    AfterWhiteSpace = False
-                    AfterEOL = True
-                Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
-                    If Not AfterWhiteSpace Then
-                        NewTriviaList.Add(SpaceTrivia)
-                    End If
-                    If NeedLineContinuation Then
-                        NewTriviaList.Add(LineContinuation)
-                        NeedLineContinuation = False
-                    End If
-                    NewTriviaList.Add(Trivia)
-                    If Not nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                        NewTriviaList.Add(VBEOLTrivia)
-                    End If
-                Case VB.SyntaxKind.LineContinuationTrivia
-                    NewTriviaList.Add(Trivia)
-                    AfterEOL = False
-                    AfterWhiteSpace = False
-                    NeedLineContinuation = False
-                Case Else
-                    Stop
-            End Select
-        Next
-        Return Expression.WithLeadingTrivia(NewTriviaList)
+    <Extension>
+    Friend Function RemoveLeadingSystemDot(Expression As VBS.ExpressionSyntax) As VBS.ExpressionSyntax
+
+        If Expression.StartsWithSystemDot Then
+            Return Factory.ParseExpression(Expression.ToString.Substring("System.".Length)).WithTriviaFrom(Expression)
+        End If
+        Return Expression
+    End Function
+
+    <Extension>
+    Friend Function StartsWithSystemDot(Expression As VBS.ExpressionSyntax) As Boolean
+        Return Expression.ToString.StartsWith("System.", StringComparison.Ordinal)
     End Function
 
 End Module

@@ -12,7 +12,7 @@ Public Class AdvancedRTB
 
     Private _sbi As SCROLLBARINFO
 
-    Private _vertRightClicked As Boolean = False
+    Private _vertRightClicked As Boolean
 
     Public Sub New()
         Me.InitializeComponent()

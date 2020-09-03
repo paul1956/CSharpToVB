@@ -20,4 +20,9 @@ Public Module EnumerableExtensions
         Next item
     End Function
 
+    <Extension>
+    Public Iterator Function [Yield](Of T)(singleElement As T) As IEnumerable(Of T)
+        Yield singleElement
+    End Function
+
 End Module

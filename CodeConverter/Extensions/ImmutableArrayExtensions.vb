@@ -28,7 +28,11 @@ Public Module ImmutableArrayExtensions
     ''' <param name="predicate">The delegate that defines the conditions of the element to search for.</param>
     ''' <returns></returns>
     <Extension>
-    Public Function WhereAsArray(Of T)(array As ImmutableArray(Of T), predicate As Func(Of T, Boolean)) As ImmutableArray(Of T)
+    Friend Function WhereAsArray(Of T)(array As ImmutableArray(Of T), predicate As Func(Of T, Boolean)) As ImmutableArray(Of T)
+        If predicate Is Nothing Then
+            Throw New ArgumentNullException(NameOf(predicate))
+        End If
+
         Debug.Assert(Not array.IsDefault)
 
         Dim builder As List(Of T) = Nothing

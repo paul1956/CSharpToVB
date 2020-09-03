@@ -12,35 +12,35 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
     Module ParameterListExtensions
 
         <Extension>
-        Friend Function RelocateDirectivesInTrailingTrivia(ParameterList As VBS.ParameterListSyntax, StatementTrailingTrivia As List(Of SyntaxTrivia)) As VBS.ParameterListSyntax
+        Friend Function RelocateDirectivesInTrailingTrivia(ParameterList As VBS.ParameterListSyntax, StatementTrailingTrivia As SyntaxTriviaList) As VBS.ParameterListSyntax
             If ParameterList IsNot Nothing AndAlso ParameterList.HasTrailingTrivia AndAlso ParameterList.GetTrailingTrivia.ContainsCommentOrDirectiveTrivia Then
-                Dim ParameterListTrailingTrivia As New List(Of SyntaxTrivia)
+                Dim parameterListTrailingTrivia As New SyntaxTriviaList
                 Dim initialTriviaList As SyntaxTriviaList = ParameterList.GetTrailingTrivia
                 Dim FoundEndIf As Boolean = False
                 For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
-                    Dim NextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.Index)
+                    Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.Index, LookaheadCount:=1)
                     Select Case e.Value.RawKind
                         Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
-                            ParameterListTrailingTrivia.Add(e.Value)
+                            parameterListTrailingTrivia = parameterListTrailingTrivia.Add(e.Value)
                         Case VB.SyntaxKind.EndOfLineTrivia
                             If FoundEndIf Then
-                                StatementTrailingTrivia.Add(e.Value)
+                                StatementTrailingTrivia = StatementTrailingTrivia.Add(e.Value)
                             Else
-                                ParameterListTrailingTrivia.Add(e.Value)
+                                parameterListTrailingTrivia = parameterListTrailingTrivia.Add(e.Value)
                             End If
                         Case VB.SyntaxKind.WhitespaceTrivia
-                            ParameterListTrailingTrivia.Add(e.Value)
+                            parameterListTrailingTrivia = parameterListTrailingTrivia.Add(e.Value)
                         Case VB.SyntaxKind.EndIfDirectiveTrivia
                             FoundEndIf = True
                             If Not StatementTrailingTrivia.Any Then
-                                StatementTrailingTrivia.Add(VBEOLTrivia)
+                                StatementTrailingTrivia = StatementTrailingTrivia.Add(VBEOLTrivia)
                             End If
-                            StatementTrailingTrivia.Add(e.Value)
+                            StatementTrailingTrivia = StatementTrailingTrivia.Add(e.Value)
                         Case Else
                             Stop
                     End Select
                 Next
-                ParameterList = ParameterList.WithTrailingTrivia(ParameterListTrailingTrivia)
+                ParameterList = ParameterList.WithTrailingTrivia(parameterListTrailingTrivia)
             End If
 
             Return ParameterList

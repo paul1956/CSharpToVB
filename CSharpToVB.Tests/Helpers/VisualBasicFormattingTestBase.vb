@@ -18,7 +18,7 @@ Public NotInheritable Class VisualBasicFormattingTestBase
 
     Private _ws As Workspace
 
-    Protected ReadOnly Property DefaultWorkspace As Workspace
+    Protected Friend ReadOnly Property DefaultWorkspace As Workspace
         Get
             If _ws Is Nothing Then
                 _ws = New AdhocWorkspace()
@@ -32,7 +32,7 @@ Public NotInheritable Class VisualBasicFormattingTestBase
         Return String.Join(Environment.NewLine, lines)
     End Function
 
-    Protected Shared Function CreateMethod(ParamArray lines() As String) As String
+    Protected Friend Shared Function CreateMethod(ParamArray lines() As String) As String
         Dim adjustedLines As New List(Of String) From {
             "Class C",
             "    Sub Method()"
@@ -44,7 +44,7 @@ Public NotInheritable Class VisualBasicFormattingTestBase
         Return StringFromLines(adjustedLines.ToArray())
     End Function
 
-    Protected Overloads Function AssertFormatAsync(
+    Protected Friend Overloads Function AssertFormatAsync(
         expected As String,
         code As String,
         spans As IEnumerable(Of TextSpan),

@@ -185,11 +185,11 @@ Namespace Roslyn.Test.Utilities
             Return SortedMatches
         End Function
 
-        Private Function GetOrAdd(Of K, V)(dictionary_Renamed As IDictionary(Of K, V), key As K, [function] As Func(Of K, V)) As V
+        Private Function GetOrAdd(Of K, V)(Dictionary As IDictionary(Of K, V), key As K, [function] As Func(Of K, V)) As V
             Dim value As V = Nothing
-            If Not dictionary_Renamed.TryGetValue(key, value) Then
+            If Not Dictionary.TryGetValue(key, value) Then
                 value = [function](key)
-                dictionary_Renamed.Add(key, value)
+                Dictionary.Add(key, value)
             End If
 
             Return value
@@ -202,7 +202,7 @@ Namespace Roslyn.Test.Utilities
             Dim spanStartTuple As Tuple(Of Integer, String) = spanStartStack.Pop()
 
             Dim span As TextSpan = TextSpan.FromBounds(spanStartTuple.Item1, finalIndex)
-            GetOrAdd(spans, spanStartTuple.Item2, Function(underscore As String) New List(Of TextSpan)).Add(span)
+            GetOrAdd(spans, spanStartTuple.Item2, Function(__ As String) New List(Of TextSpan)).Add(span)
         End Sub
 
         Private Sub AddMatch(input As String, value As String, currentIndex As Integer, matches As List(Of Tuple(Of Integer, String)))
@@ -217,12 +217,15 @@ Namespace Roslyn.Test.Utilities
             Dim mDictionary As IDictionary(Of String, List(Of TextSpan)) = Nothing
             Parse(input, output, cursorPositionOpt, mDictionary)
 
-            Dim builder As List(Of TextSpan) = GetOrAdd(mDictionary, String.Empty, Function(underscore As String) New List(Of TextSpan))
+            Dim builder As List(Of TextSpan) = GetOrAdd(mDictionary, String.Empty, Function(__ As String) New List(Of TextSpan))
             spans = ImmutableArray.Create(builder.ToArray)
         End Sub
 
-        Public Sub GetPositionAndSpans(
-            input As String, <Out> ByRef output As String, <Out> ByRef cursorPositionOpt As Integer?, <Out> ByRef spans As IDictionary(Of String, ImmutableArray(Of TextSpan)))
+        Public Sub GetPositionAndSpans(input As String, <Out> ByRef output As String, <Out> ByRef cursorPositionOpt As Integer?, <Out> ByRef spans As IDictionary(Of String, ImmutableArray(Of TextSpan)))
+            If input Is Nothing Then
+                Throw New ArgumentNullException(NameOf(input))
+            End If
+
             Dim mDictionary As IDictionary(Of String, List(Of TextSpan)) = Nothing
             Parse(input, output, cursorPositionOpt, mDictionary)
             Dim KeySelector As Func(Of KeyValuePair(Of String, List(Of TextSpan)), String) = Function(kvp As KeyValuePair(Of String, List(Of TextSpan)))

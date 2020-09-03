@@ -6,14 +6,13 @@ Imports System.Runtime.CompilerServices
 Imports System.Text
 
 Imports Microsoft.CodeAnalysis
-
-Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
+Imports Microsoft.CodeAnalysis.CSharp
+Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace CSharpToVBCodeConverter.ToVisualBasic
 
     Public Module TupleSupportExtensions
-
         ''' <summary>
         ''' Extract String
         ''' </summary>
@@ -38,10 +37,10 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
         <Extension>
         Friend Function ConvertToTupleElement(TupleElement As IFieldSymbol) As VBS.TupleElementSyntax
             If TupleElement.Type Is Nothing Then
-                Return VBFactory.NamedTupleElement(TupleElement.Name.ToString(Globalization.CultureInfo.InvariantCulture))
+                Return Factory.NamedTupleElement(TupleElement.Name.ToString(Globalization.CultureInfo.InvariantCulture))
             End If
-            Dim AsClause As VBS.SimpleAsClauseSyntax = VBFactory.SimpleAsClause(TupleElement.Type.ConvertToType())
-            Return VBFactory.NamedTupleElement(VBFactory.Identifier(MakeVBSafeName(TupleElement.Name)), AsClause)
+            Dim AsClause As VBS.SimpleAsClauseSyntax = Factory.SimpleAsClause(TupleElement.Type.ConvertToType())
+            Return Factory.NamedTupleElement(Factory.Identifier(MakeVBSafeName(TupleElement.Name)), AsClause)
         End Function
 
         <Extension>
@@ -64,17 +63,17 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                             Select Case currentChar
                                 Case ">"
                                     openLT -= 1
-                                    tmpString.Append(">")
+                                    tmpString.Append(">"c)
                                     If openLT = 0 Then
                                         Exit While
                                     End If
                                 Case "<"
                                     openLT += 1
-                                    tmpString.Append("<")
+                                    tmpString.Append("<"c)
                                 Case "["
-                                    tmpString.Append("(")
+                                    tmpString.Append("("c)
                                 Case "]"
-                                    tmpString.Append(")")
+                                    tmpString.Append(")"c)
                                 Case Else
                                     tmpString.Append(currentChar)
                             End Select
@@ -145,20 +144,20 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                             Stop
                         End If
                         openParen += 1
-                        tmpString.Append("(")
+                        tmpString.Append("("c)
                         While openParen <> 0
                             currentIndex += 1
                             currentChar = CSharpNamedTypeString(currentIndex)
                             Select Case currentChar
                                 Case ")"
                                     openParen -= 1
-                                    tmpString.Append(")")
+                                    tmpString.Append(")"c)
                                     If openParen = 0 Then
                                         Exit While
                                     End If
                                 Case "("
                                     openParen += 1
-                                    tmpString.Append("(")
+                                    tmpString.Append("("c)
                                 Case Else
                                     tmpString.Append(currentChar)
                             End Select
@@ -184,21 +183,6 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 ElementList.Add(TypePart)
             End If
             Return ElementList
-        End Function
-
-        <Extension>
-        Friend Function ExtractConvertedTuple(TupleString As String) As String
-            Dim TupleElements As New List(Of String)
-            For Each t As String In TupleString.Substring(1, TupleString.Length - 2).Split(","c)
-                Dim TuplePart() As String = t.Trim.Split(" "c)
-                If TuplePart.Length = 1 Then
-                    TupleElements.Add(ConvertToType(TuplePart(0).ToString(Globalization.CultureInfo.InvariantCulture)).ToString)
-                Else
-                    Dim Identifier As SyntaxToken = CSharp.SyntaxFactory.Identifier(TuplePart(1))
-                    TupleElements.Add($"{GenerateSafeVBToken(Identifier).ValueText} As {ConvertToType(TuplePart(0).ToString(Globalization.CultureInfo.InvariantCulture))}")
-                End If
-            Next
-            Return $"({String.Join(", ", TupleElements)})"
         End Function
 
     End Module

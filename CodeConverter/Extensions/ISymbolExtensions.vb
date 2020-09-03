@@ -2,11 +2,53 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
+Imports System.Collections.Immutable
 Imports System.Runtime.CompilerServices
-
 Imports Microsoft.CodeAnalysis
+Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
+Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Public Module ISymbolExtensions
+    <Extension>
+    Private Function ActionType(compilation As Compilation) As INamedTypeSymbol
+        Return compilation.GetTypeByMetadataName(GetType(Action).FullName)
+    End Function
+
+    <Extension>
+    Friend Function GetImplementsClauseForProperty(csProperty As IPropertySymbol, Node As CSharp.CSharpSyntaxNode, Model As SemanticModel, ListOfRequiredInterfaces As ImmutableArray(Of (InterfaceName As INamedTypeSymbol, MethodList As ImmutableArray(Of ISymbol)))) As VBS.ImplementsClauseSyntax
+        If Not ListOfRequiredInterfaces.Any Then
+            Return Nothing
+        End If
+        Dim SeparatedList As New List(Of VBS.QualifiedNameSyntax)
+        For Each entry As (InterfaceName As INamedTypeSymbol, MethodList As ImmutableArray(Of ISymbol)) In ListOfRequiredInterfaces
+            Dim InterfaceName As VBS.NameSyntax = Factory.IdentifierName(entry.InterfaceName.ToString)
+            For Each InterfaceProperty As ISymbol In entry.MethodList
+                Dim _Right As VBS.SimpleNameSyntax = Nothing
+                If TypeOf InterfaceProperty Is IPropertySymbol Then
+                    If ImplementsMethodOrProperty(csProperty, CType(InterfaceProperty, IPropertySymbol), _Right) Then
+                        Dim name As VBS.NameSyntax = ConvertISymbolToNameSyntaxInterfaceName(Node, InterfaceProperty, Model)
+                        If TypeOf name Is VBS.QualifiedNameSyntax Then
+                            Dim qualifiedName As VBS.QualifiedNameSyntax = CType(name, VBS.QualifiedNameSyntax)
+                            SeparatedList.Add(Factory.QualifiedName(qualifiedName, _Right))
+                        ElseIf TypeOf name Is VBS.SimpleNameSyntax Then
+                            Dim simpleName As VBS.SimpleNameSyntax = CType(name, VBS.SimpleNameSyntax)
+                            SeparatedList.Add(Factory.QualifiedName(simpleName, _Right))
+                        ElseIf TypeOf name Is VBS.IdentifierNameSyntax Then
+                            Dim identifier As VBS.IdentifierNameSyntax = CType(name, VBS.IdentifierNameSyntax)
+                            SeparatedList.Add(Factory.QualifiedName(identifier, _Right))
+                        Else
+                            Stop
+                        End If
+                        Exit For
+                    End If
+                End If
+            Next
+        Next
+        If SeparatedList.Count = 0 Then
+            Return Nothing
+        End If
+        Return Factory.ImplementsClause(Factory.SeparatedList(SeparatedList))
+    End Function
 
     <Extension()>
     Friend Function GetOverriddenMember(symbol As ISymbol) As ISymbol
@@ -109,6 +151,52 @@ Public Module ISymbolExtensions
         Return compilation.ObjectType
     End Function
 
+    <Extension()>
+    Public Function ExplicitInterfaceImplementations(symbol As ISymbol) As ImmutableArray(Of ISymbol)
+        If symbol Is Nothing Then
+            Throw New ArgumentNullException(NameOf(symbol))
+        End If
+
+        Return symbol.TypeSwitch(
+        Function([event] As IEventSymbol) [event].ExplicitInterfaceImplementations.As(Of ISymbol)(),
+        Function(method As IMethodSymbol) method.ExplicitInterfaceImplementations.As(Of ISymbol)(),
+        Function([property] As IPropertySymbol) [property].ExplicitInterfaceImplementations.As(Of ISymbol)(),
+        Function(__) ImmutableArray.Create(Of ISymbol)())
+    End Function
+
+    <Extension>
+    Public Function ExtractBestMatch(Of TSymbol As {Class, ISymbol})(info As SymbolInfo, Optional isMatch As Func(Of TSymbol, Boolean) = Nothing) As TSymbol
+        isMatch = If(isMatch, Function(_1) True)
+        If info.Symbol Is Nothing AndAlso info.CandidateSymbols.Length = 0 Then
+            Return Nothing
+        End If
+        If info.Symbol IsNot Nothing Then
+            Return TryCast(info.Symbol, TSymbol)
+        End If
+        Dim matches As List(Of TSymbol) = info.CandidateSymbols.OfType(Of TSymbol)().Where(isMatch).ToList()
+        If matches.Count = 1 Then
+            Return matches.Single()
+        End If
+
+        Return Nothing
+    End Function
+
+    <Extension()>
+    Public Function GetArity(symbol As ISymbol) As Integer
+        If symbol Is Nothing Then
+            Throw New ArgumentNullException(NameOf(symbol))
+        End If
+
+        Select Case symbol.Kind
+            Case SymbolKind.NamedType
+                Return CType(symbol, INamedTypeSymbol).Arity
+            Case SymbolKind.Method
+                Return CType(symbol, IMethodSymbol).Arity
+            Case Else
+                Return 0
+        End Select
+    End Function
+
     <Extension>
     Public Function GetReturnType(symbol As ISymbol) As ITypeSymbol
         If symbol Is Nothing Then
@@ -141,6 +229,15 @@ Public Module ISymbolExtensions
     End Function
 
     <Extension()>
+    Public Function IsDefinedInSource(symbol As ISymbol) As Boolean
+        If symbol Is Nothing Then
+            Throw New ArgumentNullException(NameOf(symbol))
+        End If
+
+        Return symbol.Locations.Any(Function(loc) loc.IsInSource)
+    End Function
+
+    <Extension()>
     Public Function IsInterfaceType(symbol As ISymbol) As Boolean
         If symbol Is Nothing OrElse TryCast(symbol, ITypeSymbol) Is Nothing Then
             Return False
@@ -154,6 +251,14 @@ Public Module ISymbolExtensions
             Return False
         End If
         Return symbol.Kind = kind
+    End Function
+
+    <Extension>
+    Public Function MatchesKind(symbol As ISymbol, ParamArray kinds() As SymbolKind) As Boolean
+        If symbol Is Nothing Then
+            Return False
+        End If
+        Return kinds.Contains(symbol.Kind)
     End Function
 
 End Module

@@ -3,6 +3,7 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Runtime.CompilerServices
+Imports System.Text
 
 Public Module StringExtensions
 
@@ -15,11 +16,33 @@ Public Module StringExtensions
             Return False
         End If
         For Each str As String In StringArray
-            If s.IndexOf(str, comparisonType) >= 0 Then
+            If s.Contains(str, comparisonType) Then
                 Return True
             End If
         Next
         Return False
+    End Function
+
+    <Extension>
+    Friend Function ConvertCondition(condition As String) As String
+        Return condition.
+                Replace("==", "=", StringComparison.Ordinal).
+                Replace("!=", "Not ", StringComparison.Ordinal).
+                Replace("&&", "And", StringComparison.Ordinal).
+                Replace("||", "Or", StringComparison.Ordinal).
+                Replace("!", "Not ", StringComparison.Ordinal).
+                Replace("false", "False", StringComparison.Ordinal).
+                Replace("true", "True", StringComparison.Ordinal).
+                Replace("  ", " ", StringComparison.Ordinal).
+                Replace("//", " ' ", StringComparison.Ordinal)
+    End Function
+
+    <Extension>
+    Friend Function ConvertTypeArgumentList(TypeString As String) As String
+        Return TypeString.
+        Replace("<", "(Of ", StringComparison.Ordinal).
+        Replace(">", ")", StringComparison.Ordinal)
+
     End Function
 
     ' String isn't IEnumerable<char> in the current Portable profile.
@@ -61,5 +84,37 @@ Public Module StringExtensions
 #End Region
 
 #End If
+
+    <Extension>
+    Friend Function RemoveAll(input As String, ParamArray StringsToBeRemoved() As String) As String
+        For Each s As String In StringsToBeRemoved
+            input = input.Replace(s, "", StringComparison.Ordinal)
+        Next
+        Return input
+    End Function
+
+    <Extension>
+    Friend Function RemoveAll(input As String, StringsToBeRemoved As String) As String
+        Return input.Replace(StringsToBeRemoved, "", StringComparison.Ordinal)
+    End Function
+
+    <Extension>
+    Friend Function RemoveBrackets(input As String) As String
+        Return input.Replace("["c, "", StringComparison.Ordinal).
+                     Replace("]"c, "", StringComparison.Ordinal)
+    End Function
+
+    <Extension>
+    Friend Function RemoveLeadingSystemDot(input As String) As String
+        Return input.Substring("System.".Length)
+    End Function
+
+    <Extension>
+    Friend Function TrimStart(input As String, TrimString As String) As String
+        If Not input.StartsWith(TrimString, StringComparison.OrdinalIgnoreCase) Then
+            Return input
+        End If
+        Return input.Substring(TrimString.Length)
+    End Function
 
 End Module

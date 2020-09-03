@@ -3,45 +3,84 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Runtime.CompilerServices
-
 Imports CSharpToVBCodeConverter.ToVisualBasic.CSharpConverter
-
 Imports Microsoft.CodeAnalysis
-
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
+Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
-Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Public Module ConvertLiteralSupport
 
     Private Function Binary(Value As Byte) As String
-        Return $"&B{Convert.ToString(Value, 2).PadLeft(8, "0"c)}"
+        Return $"&B{Convert.ToString(Value, toBase:=2).PadLeft(totalWidth:=8, "0"c)}"
     End Function
 
     Private Function Binary(Value As SByte) As String
-        Return $"&B{Convert.ToString(Value, 2).PadLeft(8, "0"c)}"
+        Return $"&B{Convert.ToString(Value, toBase:=2).PadLeft(totalWidth:=8, "0"c)}"
     End Function
 
     Private Function Binary(Value As Short) As String
-        Return $"&B{Convert.ToString(Value, 2).PadLeft(16, "0"c)}"
+        Return $"&B{Convert.ToString(Value, toBase:=2).PadLeft(totalWidth:=16, "0"c)}"
     End Function
 
     Private Function Binary(Value As UShort) As String
-        Return $"&B{Convert.ToString(Value, 2).PadLeft(16, "0"c)}"
+        Return $"&B{Convert.ToString(Value, toBase:=2).PadLeft(totalWidth:=16, "0"c)}"
     End Function
 
     Private Function Binary(Value As Integer) As String
-        Return $"&B{Convert.ToString(Value, 2).PadLeft(32, "0"c)}"
+        Return $"&B{Convert.ToString(Value, toBase:=2).PadLeft(totalWidth:=32, "0"c)}"
     End Function
 
     Private Function Binary(Value As UInteger) As String
-        Return $"&B{Convert.ToString(Value, 2).PadLeft(32, "0"c)}UI"
+        Return $"&B{Convert.ToString(Value, toBase:=2).PadLeft(totalWidth:=32, "0"c)}UI"
     End Function
 
     Private Function Binary(Value As Long) As String
-        Return $"&B{Convert.ToString(Value, 2).PadLeft(64, "0"c)}"
+        Return $"&B{Convert.ToString(Value, toBase:=2).PadLeft(totalWidth:=64, "0"c)}"
+    End Function
+
+    Private Function GetTypeCharacters(TokenAString As String) As String
+        Dim typeChars As String = ""
+        For i As Integer = TokenAString.Length - 1 To 0 Step -1
+            If Char.IsLetter(TokenAString.Chars(i)) Then
+                typeChars = TokenAString.Chars(i) & typeChars
+            Else
+                Exit For
+            End If
+        Next
+
+        Return typeChars
+    End Function
+
+    Private Function TranslateTypeCharacter(token As SyntaxToken) As String
+
+        Dim TokenAString As String = token.ToString
+
+        Dim typeChars As String = GetTypeCharacters(TokenAString)
+
+        If typeChars.Length = 0 Then
+            Return TokenAString
+        End If
+        Dim newType As String = ""
+        Select Case typeChars.ToUpperInvariant
+            Case "F"
+                newType = "F"
+            Case "M"
+                newType = "D"
+            Case "D"
+                newType = "R"
+            Case "S"
+                newType = "S"
+            Case "L"
+                newType = "L"
+            Case "U", "UL", "LU"
+                newType = "UL"
+            Case Else
+                Stop
+        End Select
+        Return TokenAString.Replace(typeChars, newType, StringComparison.OrdinalIgnoreCase)
     End Function
 
     Friend Function ConvertCSharpEscapes(TokenString As String) As String
@@ -63,8 +102,9 @@ Public Module ConvertLiteralSupport
                         Replace("\""", Quote, StringComparison.Ordinal).
                         Replace("\\", "\", StringComparison.Ordinal).
                         Replace(Quote, DoubleQuote, StringComparison.Ordinal).NormalizeLineEndings
-            _Buffer = _Buffer.Replace("{", "{{", StringComparison.Ordinal).
-                                Replace("}", "}}", StringComparison.Ordinal)
+            ' TODO Remove comment
+            '_Buffer = _Buffer.Replace("{", "{{", StringComparison.Ordinal).
+            '                    Replace("}", "}}", StringComparison.Ordinal)
             If _Buffer.Contains(UnicodeOpenQuote, StringComparison.Ordinal) Then
                 _Buffer = _Buffer.ConverUnicodeQuotes(UnicodeOpenQuote)
             End If
@@ -80,6 +120,7 @@ Public Module ConvertLiteralSupport
             Throw
         Catch ex As Exception
             Stop
+            Throw
         End Try
         Return TokenString
     End Function
@@ -96,39 +137,45 @@ Public Module ConvertLiteralSupport
             Case CS.SyntaxKind.NumericLiteralToken
                 Dim TokenToString As String = Token.ToString
                 If TokenToString.StartsWith("0x", StringComparison.OrdinalIgnoreCase) Then
-                    Dim HEXValueString As String = $"&H{TokenToString.Substring(2)}".Replace("ul", "", StringComparison.OrdinalIgnoreCase).Replace("u", "", StringComparison.OrdinalIgnoreCase).Replace("l", "", StringComparison.OrdinalIgnoreCase)
-                    If TypeOf value Is Integer Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(HEXValueString, CInt(value)))
-                    If TypeOf value Is SByte Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(HEXValueString, CSByte(value)))
-                    If TypeOf value Is Short Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(HEXValueString, CShort(value)))
-                    If TypeOf value Is UShort Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(HEXValueString, CUShort(value)))
-                    If TypeOf value Is UInteger Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(HEXValueString & "UI", CUInt(value)))
-                    If TypeOf value Is Long Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(HEXValueString, CLng(value)))
-                    If TypeOf value Is ULong Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(HEXValueString & "UL", CULng(value)))
+                    Dim HEXValueString As String = $"&H{TokenToString.Substring(startIndex:=2)}".Replace("ul", "", StringComparison.OrdinalIgnoreCase).Replace("u", "", StringComparison.OrdinalIgnoreCase).Replace("l", "", StringComparison.OrdinalIgnoreCase)
+                    If TypeOf value Is Integer Then Return Factory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, Factory.Literal(HEXValueString, CInt(value)))
+                    If TypeOf value Is SByte Then Return Factory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, Factory.Literal(HEXValueString, CSByte(value)))
+                    If TypeOf value Is Short Then Return Factory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, Factory.Literal(HEXValueString, CShort(value)))
+                    If TypeOf value Is UShort Then Return Factory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, Factory.Literal(HEXValueString, CUShort(value)))
+                    If TypeOf value Is UInteger Then Return Factory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, Factory.Literal(HEXValueString & "UI", CUInt(value)))
+                    If TypeOf value Is Long Then Return Factory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, Factory.Literal(HEXValueString, CLng(value)))
+                    If TypeOf value Is ULong Then Return Factory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, Factory.Literal(HEXValueString & "UL", CULng(value)))
                     Throw UnreachableException
                 End If
                 If TokenToString.StartsWith("0b", StringComparison.OrdinalIgnoreCase) Then
-                    If TypeOf value Is Integer Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal($"{Binary(CInt(value))}", CInt(value)))
-                    If TypeOf value Is Byte Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal($"{Binary(CByte(value))}", CByte(value)))
-                    If TypeOf value Is SByte Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal($"{Binary(CSByte(value))}", CSByte(value)))
-                    If TypeOf value Is Short Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal($"{Binary(CShort(value))}", CShort(value)))
-                    If TypeOf value Is UShort Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal($"{Binary(CUShort(value))}", CUShort(value)))
-                    If TypeOf value Is UInteger Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal($"{Binary(CUInt(value))}", CUInt(value)))
-                    If TypeOf value Is Long Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal($"{Binary(CLng(value))}", CLng(value)))
-                    If TypeOf value Is ULong Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal($"{Binary(CType(CULng(value), Long))}UL", CULng(value)))
+                    If TypeOf value Is Integer Then Return Factory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, Factory.Literal($"{Binary(CInt(value))}", CInt(value)))
+                    If TypeOf value Is Byte Then Return Factory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, Factory.Literal($"{Binary(CByte(value))}", CByte(value)))
+                    If TypeOf value Is SByte Then Return Factory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, Factory.Literal($"{Binary(CSByte(value))}", CSByte(value)))
+                    If TypeOf value Is Short Then Return Factory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, Factory.Literal($"{Binary(CShort(value))}", CShort(value)))
+                    If TypeOf value Is UShort Then Return Factory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, Factory.Literal($"{Binary(CUShort(value))}", CUShort(value)))
+                    If TypeOf value Is UInteger Then Return Factory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, Factory.Literal($"{Binary(CUInt(value))}", CUInt(value)))
+                    If TypeOf value Is Long Then Return Factory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, Factory.Literal($"{Binary(CLng(value))}", CLng(value)))
+                    If TypeOf value Is ULong Then Return Factory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, Factory.Literal($"{Binary(CType(CULng(value), Long))}UL", CULng(value)))
                     Throw UnreachableException
                 End If
 
-                If TypeOf value Is Integer Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(CInt(value)))
-                If TypeOf value Is Byte Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(CByte(value)))
-                If TypeOf value Is SByte Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(CSByte(value)))
-                If TypeOf value Is Short Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(CShort(value)))
-                If TypeOf value Is UShort Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(CUShort(value)))
-                If TypeOf value Is UInteger Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(CUInt(value)))
-                If TypeOf value Is Long Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(CLng(value)))
-                If TypeOf value Is ULong Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(CULng(value)))
-                If TypeOf value Is Single Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(CSng(value)))
-                If TypeOf value Is Double Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(CDbl(value)))
-                If TypeOf value Is Decimal Then Return VBFactory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, VBFactory.Literal(CDec(value)))
+                Dim ValueText As String = TranslateTypeCharacter(Token)
+                If TypeOf value Is Integer Then Return Factory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, Factory.Literal(ValueText, CInt(value)))
+                If TypeOf value Is Byte Then Return Factory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, Factory.Literal(ValueText, CByte(value)))
+                If TypeOf value Is SByte Then Return Factory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, Factory.Literal(ValueText, CSByte(value)))
+                If TypeOf value Is Short Then Return Factory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, Factory.Literal(ValueText, CShort(value)))
+                If TypeOf value Is UShort Then Return Factory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, Factory.Literal(ValueText, CUShort(value)))
+                If TypeOf value Is UInteger Then Return Factory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, Factory.Literal(ValueText, CUInt(value)))
+                If TypeOf value Is Long Then Return Factory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, Factory.Literal(ValueText, CLng(value)))
+                If TypeOf value Is ULong Then
+                    If GetTypeCharacters(ValueText).Length = 0 AndAlso CULng(value) >= Long.MaxValue Then
+                        ValueText &= "UL"
+                    End If
+                    Return Factory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, Factory.Literal(ValueText, CULng(value)))
+                End If
+                If TypeOf value Is Single Then Return Factory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, Factory.Literal(ValueText, CSng(value)))
+                If TypeOf value Is Double Then Return Factory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, Factory.Literal(ValueText, CDbl(value)))
+                If TypeOf value Is Decimal Then Return Factory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, Factory.Literal(ValueText, CDec(value)))
                 Throw UnreachableException
             Case CS.SyntaxKind.StringLiteralToken
                 If TypeOf value Is String Then
@@ -145,25 +192,39 @@ Public Module ConvertLiteralSupport
                     If StrValue.Contains(UnicodeFullWidthQuoationMark, StringComparison.Ordinal) Then
                         StrValue = StrValue.ConverUnicodeQuotes(UnicodeFullWidthQuoationMark)
                     End If
-                    Return VBFactory.LiteralExpression(VB.SyntaxKind.StringLiteralExpression, VBFactory.Literal(StrValue))
+                    Select Case StrValue
+                        Case vbCrLf
+                            Return Factory.ParseExpression("Microsoft.VisualBasic.vbNewLine")
+                        Case vbCr
+                            Return Factory.ParseExpression("Microsoft.VisualBasic.vbCr")
+                        Case vbLf
+                            Return Factory.ParseExpression("Microsoft.VisualBasic.vbLf")
+                        Case vbVerticalTab
+                            Return Factory.ParseExpression("Microsoft.VisualBasic.vbVerticalTab")
+                        Case vbBack
+                            Return Factory.ParseExpression("Microsoft.VisualBasic.vbBack")
+                        Case vbFormFeed
+                            Return Factory.ParseExpression("Microsoft.VisualBasic.vbFormFeed")
+                    End Select
+                    Return Factory.LiteralExpression(VB.SyntaxKind.StringLiteralExpression, Factory.Literal(StrValue))
                 End If
             Case CS.SyntaxKind.FalseKeyword
-                Return VBFactory.FalseLiteralExpression(FalseKeyword)
+                Return Factory.FalseLiteralExpression(FalseKeyword)
             Case CS.SyntaxKind.NullKeyword
                 Return NothingExpression
             Case CS.SyntaxKind.TrueKeyword
-                Return VBFactory.TrueLiteralExpression(TrueKeyword)
+                Return Factory.TrueLiteralExpression(TrueKeyword)
             Case CS.SyntaxKind.CharacterLiteralToken
                 If AscW(CChar(value)) = &H201C Then
-                    Return VBFactory.LiteralExpression(VB.SyntaxKind.CharacterLiteralExpression, VBFactory.Literal($"{UnicodeOpenQuote}{UnicodeOpenQuote}"))
+                    Return Factory.LiteralExpression(VB.SyntaxKind.CharacterLiteralExpression, Factory.Literal($"{UnicodeOpenQuote}{UnicodeOpenQuote}"))
                 End If
                 If AscW(CChar(value)) = &H201D Then
-                    Return VBFactory.LiteralExpression(VB.SyntaxKind.CharacterLiteralExpression, VBFactory.Literal($"{UnicodeCloseQuote}{UnicodeCloseQuote}"))
+                    Return Factory.LiteralExpression(VB.SyntaxKind.CharacterLiteralExpression, Factory.Literal($"{UnicodeCloseQuote}{UnicodeCloseQuote}"))
                 End If
                 If Token.Text.StartsWith("'\u", StringComparison.OrdinalIgnoreCase) Then
-                    Return VBFactory.ParseExpression($"ChrW(&H{Token.Text.Replace("'", "", StringComparison.Ordinal).Substring(2)})")
+                    Return Factory.ParseExpression($"ChrW(&H{Token.Text.RemoveAll("'").Substring(startIndex:=2)})")
                 End If
-                Return VBFactory.LiteralExpression(VB.SyntaxKind.CharacterLiteralExpression, VBFactory.Literal(CChar(value)))
+                Return Factory.LiteralExpression(VB.SyntaxKind.CharacterLiteralExpression, Factory.Literal(CChar(value)))
             Case CS.SyntaxKind.DefaultKeyword
                 Dim ReturnType As VBS.TypeSyntax
                 Dim MethodStatement As CSS.MethodDeclarationSyntax = Token.Parent.GetAncestor(Of CSS.MethodDeclarationSyntax)
@@ -172,16 +233,16 @@ Public Module ConvertLiteralSupport
                     Dim PropertyDeclaration As CSS.PropertyDeclarationSyntax = Token.Parent.GetAncestor(Of CSS.PropertyDeclarationSyntax)
                     If PropertyDeclaration IsNot Nothing Then
                         ReturnType = DirectCast(PropertyDeclaration.Type.Accept(_NodesVisitor), VBS.TypeSyntax)
-                        Return VBFactory.CTypeExpression(NothingExpression, ReturnType)
+                        Return Factory.CTypeExpression(NothingExpression, ReturnType)
                     End If
                     If MethodStatement IsNot Nothing Then
                         ReturnType = DirectCast(MethodStatement.ReturnType.Accept(_NodesVisitor), VBS.TypeSyntax)
-                        Return VBFactory.CTypeExpression(NothingExpression, ReturnType)
+                        Return Factory.CTypeExpression(NothingExpression, ReturnType)
                     End If
                     Dim OperatorStatement As CSS.ConversionOperatorDeclarationSyntax = Token.Parent.GetAncestor(Of CSS.ConversionOperatorDeclarationSyntax)
                     If OperatorStatement IsNot Nothing Then
                         ReturnType = DirectCast(OperatorStatement.Type.Accept(_NodesVisitor), VBS.TypeSyntax)
-                        Return VBFactory.CTypeExpression(NothingExpression, ReturnType)
+                        Return Factory.CTypeExpression(NothingExpression, ReturnType)
                     End If
                     Throw UnreachableException
                 End If
@@ -190,7 +251,7 @@ Public Module ConvertLiteralSupport
                     Dim Parameter As CSS.ParameterSyntax = Token.Parent.GetAncestor(Of CSS.ParameterSyntax)
                     If Parameter IsNot Nothing Then
                         ReturnType = DirectCast(Parameter.Type.Accept(_NodesVisitor), VBS.TypeSyntax)
-                        Return VBFactory.CTypeExpression(NothingExpression, ReturnType)
+                        Return Factory.CTypeExpression(NothingExpression, ReturnType)
                     End If
                     Throw UnreachableException
                 End If
@@ -200,11 +261,11 @@ Public Module ConvertLiteralSupport
                         If TypeOf AssignmentExpression.Left Is CSS.ThisExpressionSyntax Then
                             Dim ClassAncestor As CSS.ClassDeclarationSyntax = Token.Parent.GetAncestor(Of CSS.ClassDeclarationSyntax)
                             If ClassAncestor IsNot Nothing Then
-                                Return VBFactory.CTypeExpression(NothingExpression, VBFactory.ParseTypeName(ClassAncestor.Identifier.ValueText))
+                                Return Factory.CTypeExpression(NothingExpression, Factory.ParseTypeName(ClassAncestor.Identifier.ValueText))
                             End If
                             Dim StructAncestor As CSS.StructDeclarationSyntax = Token.Parent.GetAncestor(Of CSS.StructDeclarationSyntax)
                             If StructAncestor IsNot Nothing Then
-                                Return VBFactory.CTypeExpression(NothingExpression, VBFactory.ParseTypeName(StructAncestor.Identifier.ValueText))
+                                Return Factory.CTypeExpression(NothingExpression, Factory.ParseTypeName(StructAncestor.Identifier.ValueText))
                             End If
                             Stop
                             Return NothingExpression
@@ -235,7 +296,7 @@ Public Module ConvertLiteralSupport
                         For Each P As CSS.ParameterSyntax In MethodStatement.ParameterList.Parameters
                             If P.Identifier.ValueText = IDString Then
                                 ReturnType = DirectCast(P.Type.Accept(_NodesVisitor), VBS.TypeSyntax)
-                                Return VBFactory.CTypeExpression(NothingExpression, ReturnType)
+                                Return Factory.CTypeExpression(NothingExpression, ReturnType)
                             End If
                         Next
                         Return NothingExpression
@@ -249,7 +310,7 @@ Public Module ConvertLiteralSupport
                 End If
                 Return NothingExpression
             Case CS.SyntaxKind.ArgListKeyword
-                Return VBFactory.IdentifierName("__Arglist")
+                Return Factory.IdentifierName("__Arglist")
         End Select
         Stop
         Return NothingExpression

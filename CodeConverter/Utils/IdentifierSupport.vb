@@ -4,10 +4,12 @@
 
 Imports System.Runtime.CompilerServices
 Imports System.Text
+Imports CSharpToVBCodeConverter.ToVisualBasic
+Imports Microsoft.CodeAnalysis
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
-Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
+Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace CSharpToVBCodeConverter
@@ -27,29 +29,19 @@ Namespace CSharpToVBCodeConverter
         End Sub
 
         <Extension>
-        Friend Function GetNewUniqueName(ConvertedIdentifier As String, ident As KeyValuePair(Of String, SymbolTableEntry)) As String
-            Dim NewUniqueName As String
-            If ident.Value.Name.StartsWith("_", StringComparison.Ordinal) Then
-                NewUniqueName = ConvertedIdentifier
-            Else
-                Dim validVBName As String
-                If Char.IsLower(ConvertedIdentifier.Chars(0)) Then
-                    validVBName = $"_{ConvertedIdentifier}"
-                Else
-                    If ident.Value.IsType Then
-                        validVBName = $"{ConvertedIdentifier}"
-                    Else
-                        validVBName = $"{ConvertedIdentifier}_Renamed"
-                    End If
-                End If
-                NewUniqueName = If(ConvertedIdentifier.StartsWith("[", StringComparison.Ordinal),
-                                   ConvertedIdentifier.Replace("[", "_", StringComparison.Ordinal).
-                                                       Replace("]", "", StringComparison.Ordinal),
-                                   validVBName
-                                   )
+        Friend Function GetNewUniqueName(ConvertedIdentifier As String, IsType As Boolean, Node As CS.CSharpSyntaxNode, Model As SemanticModel) As String
+            If IsType Then
+                Return ConvertedIdentifier
             End If
 
-            Return NewUniqueName
+            ConvertedIdentifier = ConvertedIdentifier.RemoveBrackets
+
+            Dim uniqueID As String = GetUniqueVariableNameInScope(Node, ConvertedIdentifier, Model)
+            If VB.SyntaxFacts.GetKeywordKind(uniqueID) = VB.SyntaxKind.None Then
+                Return uniqueID
+            End If
+
+            Return $"[{uniqueID}]"
         End Function
 
         Friend Function IsSpecialReservedWord(ID As String) As Boolean
@@ -84,9 +76,9 @@ Namespace CSharpToVBCodeConverter
             For Each e As IndexClass(Of CSS.VariableDesignationSyntax) In node.Variables.WithIndex
                 Dim vbVariableDeclarator As VBS.ModifiedIdentifierSyntax
                 If e.Value.RawKind = CS.SyntaxKind.DiscardDesignation Then
-                    vbVariableDeclarator = VBFactory.ModifiedIdentifier("_")
+                    vbVariableDeclarator = Factory.ModifiedIdentifier("_")
                 Else
-                    vbVariableDeclarator = VBFactory.ModifiedIdentifier(MakeVBSafeName(e.Value.ToString))
+                    vbVariableDeclarator = Factory.ModifiedIdentifier(MakeVBSafeName(e.Value.ToString))
                 End If
                 vbVariables.Add(vbVariableDeclarator)
             Next

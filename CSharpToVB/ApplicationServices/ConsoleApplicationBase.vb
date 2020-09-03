@@ -2,9 +2,7 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
-#If Not NETCOREAPP5_0 Then
-
-Imports System.ComponentModel
+#If NETCOREAPP3_1 Then
 
 Namespace Global.Microsoft.VisualBasic.ApplicationServices
 

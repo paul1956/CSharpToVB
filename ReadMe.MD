@@ -27,7 +27,7 @@ description: "C# to VB Converter"
 - Code Converter
 
 ## Updated
-- 07/27/2020
+- 09/02/2020
 
 ## Description
 This application will convert C# to VB while trying to preserve comments, formatting and as many Directives
@@ -62,257 +62,30 @@ https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json is added to NuGe
 Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpecific attributes used for testing.
 
 Any changes to CSharpToVB application needs to change the version information in the project file **AND** in MyProject/AssemblyInfo.vb until Visual Studion is able to general file automatically for a WinForms application.
-  New in converter 3.4.6.2
-  - Fixed Name clashes issue #48 and added Test for it
-  - Major restructuring, removal of dead code
-  - More compatibility with Core 5.0
 
-  New in 4.5.2.8/3.4.6.1
-  - Remove ByVal
-  - Remove old suppressions
-  - Add \<ExcludeFromCodeCoverage\> Attribute for all the TypeSwitch Extensions that are not being used.<Br>If you use one remove this Attribute.
+## Major New Release
+  New in 4.6.0.0/4.0.0.0
 
+  - Added or updated 100's of tests (10 skipped and will fail)
+  - Removed redundant tests
+  - Fixed Event Conversion
+  - Fixed Invoking New InvocationExpressions expressions
+  - Improvements in merging and preserving trivia
+  - Improvement in Reference =
+  - Some File menu improvements
+  - Improve compatibility with Core 5.0
+  - Fix translation of + Operator for String
+  - Replace List(Of SyntaxTrivia) with SyntaxTriviaList which caused a lot of changes
+  - Preserve Banner on top of file
+  - Preserve C# numeric literal suffix characters
+  - Fixed math issue with -9223372036854775808 needs to be translated to -9223372036854775808UL
+  - Fixed Issue with When clause in the Case Label
 
-  New in 4.5.2.7/3.4.6.0
-  - Major restructuring and simplification, removal of redundant code 
-
-  New in 4.5.2.6/3.4.5.2
-  - Translate Ref Return, and Call by Ref
-
-  New in 4.5.2.5/Converter 3.4.5.2
-  - Combine RemoveLineContinuation code and rename a file
-  - Improve code coverage
-
-  New in 4.5.2.5/Converter 3.4.5.1
-  - Update ProjectConvert and related tests
-  - Formatting cleanup
-
-  New in 4.5.2.4/Converter 3.4.5.1
-  - Improve Local Function, switch and project translation
-  - Fix issue with AddressOf is incorrectly added to assignment statements
-  - Improvement in Solution file conversion
-  - Fixes for C# use of DocComments instead of regular comments
-
-  New in 4.5.2.3/Converter 3.4.5.0
-  - Add VB editorConfig entry for instance and extension methods to require Me
-  - Fix ArgumentException in converter that was ignored, masking real issue
-
-  New in 4.5.2.2/Converter 3.4.4.2
-  - Fixed cref Generic Names to have space after Of
-  - Fixed static class to not have Shared and NotInheritable
-  - Added app.manifest for support high DPI monitors
-  - Cleanup code after adding new editorConfig rules
-
-  New in 4.5.2.0/Converter 3.4.4.1
-  Fix coalescing operation split over 2 lines
-
-  New in 4.5.2.0/Converter 3.4.4.0
-  - Update gRPC projects to reference Proto Project,new CSProto project will be added to solution
-  - Delete more dead code
-  - Update tests to support NotInheritable change
-  - Move NativeTypes to dedicated file
-  - Add support to convert classes with only static members to be declared NotInheritable
-  - Add support for Discards in more places
-  - improve conversion of Switch Expressions
-  
-  New in 4.5.0.9/Converter 3.4.3.0
-  - Add support for translation of await foreach
-  - Add support for translation of gRPC projects, it is not perfect.
-    A new C# Project is created that compiles the Proto files.
-    You will still have to put a ProjectLink from your VB projects to the new C# project and
-    for now delete gRPC/Google PackageReference that give you errors.
-  - Fix editing edit menu's being enabled/disabled at the wrong times 
-
-  New in 4.5.0.8/Converter 3.4.2.11
-  - Fix crash is in File Edit
-  - Improve error handling in GetLiteralExpression
-  - Set SetHighDpiMode
-
-  New in 4.5.0.7/Converter 3.4.2.10
-  - Fix long standing issue with LineNumbers not being shown correctly the first time they are displayed
-  - Fix code that uses additional formats for line feeds around : and }
-
-  New in 4.5.0.6
-  - Workaround long standing issue with LineNumbers not being shown correctly the first time they are displayed
-  - Add AssemblyInfo.vb from Core 5.0 to My Project, this file should be autogenerate but isn't so any changes to any property must be made manually.
-  - Fill out Application Events will all possible events with example use
-
-  New in 4.5.0.4
-  - Convert the User Controls to proper designer controls (even if they don't currently work in Preview 1 designer)
-  - Move shared code from Form1 to appropriate Utilities Files
-
-  New in 4.5.0.3
-  - Add Icons where possible to menus
-
-  New in 4.5.0.2
-  - Support systems with multiple preview versions of .Net Core Frameworks
-  - Some restructuring to support future Core 5.0 with VB support
-
-  New in 4.5.0.1
-  - Restore data deleted from About.Designer.VB by older designer
-  - Create ApplicationEvents.vb to under MyProject and move stuff to it from Form1
-
-  New in 4.5.0.0
-  - Added support for Undo/Redo for editing and add shortcut keys and images for editing menus
-  - Improved Edit Menu handling
-
-  New in 4.4.3.3/converter 3.4.2.9
-  - CodeConverter Namespace Changes to clarify functions
-  - Cleanup code that finds all the client frameworks
-
-  New in 4.4.3.2
-  - Add missing license header
-  - Fix CodeStyle violations
-
-  New in 4.4.3.1
-  - Do not show console window used to get DotNet Version info
-
-  New in 4.4.3.0
-  - Redesign Framework menus to only list installed framework SDK's reducing a lot of clutter
-  - Add support for Core 5.0 target framework
-  - A compile time variable representing the selected framework will be set for folder and snip-it conversions
-
-  New in 4.4.2.5
-  - Update Form1.Designer.VB with changes from new WinForms designer
-
-  New in 4.4.2.4
-  - Improved File Processed and File Error ListBoxes to only be enabled when there is something in them
-
-  New in 4.4.2.3/Converter 3.4.2.8
-  - Add TODO Check to converted local functions as comment
-  - Add TODO around Inherits with directive conditional parameters
-  - Fixed Interface translation
-  - Fix Clear Highlighted Text algorithm to put cursor in correct place
-  - Fix search history list management
-  - Fix Tuple Assignment
-  - Improve comment handling for Switch statement
-  - Remove unused code
-
-  New in 4.4.2.2/Converter 3.4.2.6
-  - Improvement in exception messages 
-
-  New in 4.4.2.1/Converter 3.4.2.5
-  - Update NuGet packages
-  - Dispose more stuff and add 'Shared' to keep analyzers happy
-
-  New in 4.4.2.0/Converter 3.4.2.4
-  - Complete rewrite of Find, made it a floating tool window, added support for match whole word and match case
-  - Added a 5 memory temporary buffer for text search terms
-  - TODO save settings and history for Find tool window
-  - General code cleanup, added support for Firebox browser
-
-  New in 4.4.1.3/Converter 3.4.2.3
-  - Clear status line at start of conversions
-  - Improve handling of Array Types and Collection Initializers
-
-  New in 4.4.1.2/Converter 3.4.2.2
-  - Improve handling of "Is Type" to handle value types
-
-  New in 4.4.1.0/Converter 3.4.2.1
-  - Remove most _Renamed name changes, if you still find ant please open issue
-  - Correct handling of MyBase
-  - Improve formatting of parameters
-  - Fix type for Sub Lambda expressions
-
-  New in 4.4.1.1/Converter 3.4.1.1
-  - Fix formatting for Optional and ParamArray parameters
-
-  New in Release 4.4.0.4/Converter 3.4.0.3
-  - Update to use new single-instance design
-  - Improve menu names, add some titles
-  - Update About Box information and all dialog box titles 
-  - Improvements in Local Function handling, including nested local functions 
-  - Fix formatting of arguments of so they are not left justified.
-
-  New in Release 4.4.0.2/Converter 3.4.0.0
-  - No logic changes, update and correct license banners and remove unused C# code.
-
-
-  New in Release 4.4.0.1/Converter 3.4.0.0
-  - All the changes are in the converter which now handles many local functions.
-  - Please provide feedback if you have a specific local function that is not correctly converted.
-  - I want to thank Joseph Musser @jnm2 for help with the algorithm that figures out where to patch in the lambda function that simulate the C# local function. 
-
-  New in Release 4.4.0.0
-  - Convert Solutions and better conversions of Projects
-  - There is a prompt to select which framework to use during conversion for project with more then one framework, under Visual Studio all frameworks will be converted but only the last will be saved for each project
-  - Under Visual Studio as Frameworks will be converted but just the last will be saved
-  - Improve Index Extension to allow MoveNext
-  - Remove unused code
-  - Added ability to save last project and solution on File menu
-  - Current status of project/solution conversion and Framework shown on status bar
-
-  New in Release 4.3.2.0
-  - Implement For Each with Index Extension and using it where possible
-  - Catch ArgumentException where expected and allow throw other exceptions
-  - Start changing locals to begin with lowercase character(s)
-  - Fix long outstanding issue where ignored files were being written to output directory as empty files and total files was calculated correctly.
-  - Fix deconstruction tuple elements when elements are constructed on left of equals for example (EvalStackFrame frameOpt, IOperation operationOpt) = _evalStack.Pop();
-  - Correctly Autonomous Types when converting Projects
-
-  New in Release 4.3.1.1
-  - Spelling corrections
-
-  New in Release 4.3.1.0
-  - Support double-click in file list Window to open C# and VB File for Folder Convert in addition to Project Convert 
-
-  New in Release 4.3.0.4
-  - Minor cleanup to StartNextInstance
-
-  New in Release 4.3.0.3
-  - Fix #45 missing () when Properties are called
-  - Upgrade Buildalyzer
-
-  New in Release 4.3.0.2
-  - Fix #14 formatting of Array Literals
-
-  New in Release 4.3.0.1
-  - Minor fix for Deconstruction inside ArrowExpressionClauseSyntax
-  - Add comment to show original code where directives are removed in ArrowExpressionClauseSyntax
-
-  New in Release 4.3.0.0
-  - Major rewrite of ArrowExpressionClauseSyntax handling
-  - Fix issue #24 You can now specify VB Options that are included in converted file and what values the Options are
-  - Fixes changing Options included in converted file reflected without restarting application
-  - Fix issues #36, #37, #38, #39, #40, #41, $43, #44 and #46 Issue details can be found here https://github.com/paul1956/CSharpToVB/issues
-
-  New in Release 4.2.10.1
-  - Minor formatting updates
-
- New in Release 4.2.10.0
- - Improve Startup Screen
- - Make single instance (great example of doing in Core using NamedPipes)
-
- New in Release 4.2.9.0
-- Allow user to specify what Visual Basic Options are included in converted file. Tests will continue to use existing behavior.
-- Options are specified under Advanced Options menu and are saved per user.
-- About Box has been modified to show CodeConverter version information
-- Update <RepositoryType>git</RepositoryType> in project files
-
-New in Release 4.2.8.0
-- Fix conversion of x ??= y to use x = If(x, y)
-- If you just type a random Snippet that does not look like a program this version will not try compile it, and will be able to convert anything that can be converted inside a function.
-- Fix version display in splash screen
-- Add ability to open some default browsers at the GitHub issues page for this Repo. Currently only iE, Chrome and Edge are supported, if you would like additional browsers supported open an issue with browser ProgID from registry and full path.
-- Fix case when handling
-- Fix coalescing assignment operator handling
-- Fix formatting around deleted break statements
- 
-New in Release 4.2.7.0
-- Added Tests for 3 major Core project types and fixed bugs found in project translation
-
-New in Release 4.2.6.0
-- Restructure Convert Project to enable better error handling, better progress messages and prepare for Convert Solution
-
-New in Release 4.2.5.0
-- Double clicking on Error List line will scroll VB buffer to the error
-- Issue #29 closed, at the end of a project conversion the root of the VB project will open in explorer
-
-New in Release 4.2.4.0
-- Improved status is given during Convert Project during the long startup delay
-- Warning is given for non-SDK projects but the C# files are converted
-- Issues #27,  #28, #30, #32, #33, #34, #36 are closed
-- Issue #37 closed, double clicking on C# file is list will open it and converted VB file
+  In Process
+  - Replace FindDialog with Find ToolStrip
+  - Simplify Trivia restructuring removing duplicate code
+  - Finish supporting skipped tests
+  - Improvements in Formating long binary, octal and hex numbers as strings using _ separator
 
 
 ## Code Coverage
@@ -320,14 +93,14 @@ New in Release 4.2.4.0
 +------------------+--------+--------+--------+
 | Module           | Line   | Branch | Method |
 +------------------+--------+--------+--------+
-| VB.CodeConverter | 79.24% | 72.94% | 88.83% |
+| VB.CodeConverter | 79.19% | 72.97% | 88.01% |
 +------------------+--------+--------+--------+
 
 +---------+--------+--------+--------+
 |         | Line   | Branch | Method |
 +---------+--------+--------+--------+
-| Total   | 79.24% | 72.94% | 88.83% |
+| Total   | 79.19% | 72.97% | 88.01% |
 +---------+--------+--------+--------+
-| Average | 79.23% | 72.94% | 88.83% |
+| Average | 79.19% | 72.97% | 88.01% |
 +---------+--------+--------+--------+
 ```

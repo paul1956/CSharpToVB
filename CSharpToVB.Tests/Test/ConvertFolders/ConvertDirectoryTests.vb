@@ -5,9 +5,7 @@
 Imports System.IO
 Imports System.Reflection
 Imports System.Threading
-
 Imports CSharpToVBApp
-
 Imports CSharpToVBCodeConverter
 Imports CSharpToVBCodeConverter.ConversionResult
 
@@ -48,7 +46,7 @@ Namespace ConvertDirectory.Tests
                 If ResultOfConversion.ResultStatus = ResultTriState.Failure Then
                     Return Task.FromResult(False)
                 End If
-                Dim CompileResult As (CompileSuccess As Boolean, EmitResult As EmitResult) = CompileVisualBasicString(StringToBeCompiled:=ResultOfConversion.ConvertedCode, VBPreprocessorSymbols, SeverityToReport:=DiagnosticSeverity.Error, ResultOfConversion:=ResultOfConversion)
+                Dim CompileResult As (CompileSuccess As Boolean, EmitResult As EmitResult) = CompileVisualBasicString(StringToBeCompiled:=ResultOfConversion.ConvertedCode, VBPreprocessorSymbols, DiagnosticSeverity.Error, ResultOfConversion)
                 If Not CompileResult.CompileSuccess OrElse ResultOfConversion.GetFilteredListOfFailures().Any Then
                     Dim Msg As String = If(CompileResult.CompileSuccess, ResultOfConversion.GetFilteredListOfFailures()(0).GetMessage, "Fatal Compile error")
                     Throw New ApplicationException($"{PathWithFileName} failed to compile with error :{vbCrLf}{Msg}")

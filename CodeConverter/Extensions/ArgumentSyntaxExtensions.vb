@@ -16,16 +16,16 @@ Module ArgumentSyntaxExtensions
     ''' <returns></returns>
     <Extension>
     Friend Function RemoveDirectiveTrivia(node As VBS.ArgumentSyntax, ByRef FoundEOL As Boolean) As VBS.ArgumentSyntax
-        Dim NewLeadingTrivia As New List(Of SyntaxTrivia)
-        Dim NewTrailingTrivia As New List(Of SyntaxTrivia)
+        Dim newLeadingTrivia As SyntaxTriviaList
+        Dim NewTrailingTrivia As SyntaxTriviaList
         For Each trivia As SyntaxTrivia In node.GetLeadingTrivia
             Select Case trivia.RawKind
                 Case VB.SyntaxKind.WhitespaceTrivia, VB.SyntaxKind.CommentTrivia
-                    NewLeadingTrivia.Add(trivia)
+                    newLeadingTrivia = newLeadingTrivia.Add(trivia)
                     FoundEOL = False
                 Case VB.SyntaxKind.EndOfLineTrivia
                     If Not FoundEOL Then
-                        NewLeadingTrivia.Add(trivia)
+                        newLeadingTrivia = newLeadingTrivia.Add(trivia)
                     End If
                     FoundEOL = True
                 Case VB.SyntaxKind.DisabledTextTrivia,
@@ -42,11 +42,11 @@ Module ArgumentSyntaxExtensions
         For Each trivia As SyntaxTrivia In node.GetTrailingTrivia
             Select Case trivia.RawKind
                 Case VB.SyntaxKind.WhitespaceTrivia, VB.SyntaxKind.CommentTrivia
-                    NewTrailingTrivia.Add(trivia)
+                    NewTrailingTrivia = NewTrailingTrivia.Add(trivia)
                     FoundEOL = False
                 Case VB.SyntaxKind.EndOfLineTrivia
                     If Not FoundEOL Then
-                        NewTrailingTrivia.Add(trivia)
+                        NewTrailingTrivia = NewTrailingTrivia.Add(trivia)
                         FoundEOL = True
                     End If
                 Case VB.SyntaxKind.DisableWarningDirectiveTrivia,
@@ -60,7 +60,7 @@ Module ArgumentSyntaxExtensions
             End Select
         Next
 
-        Return node.With(NewLeadingTrivia, NewTrailingTrivia)
+        Return node.With(newLeadingTrivia, NewTrailingTrivia)
     End Function
 
 End Module

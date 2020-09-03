@@ -13,7 +13,7 @@ Namespace MSCoreReference.Tests
 
         <Fact>
         Public Shared Sub VerifyReferencesExist()
-            Dim tree As SyntaxTree = CSharpSyntaxTree.ParseText("using System;
+            Dim tree As SyntaxTree = CSharpSyntaxTree.ParseText("using System; //Not required in VB due to global imports
 class test : IComparable { }")
 
             Dim compilation As CSharpCompilation = CSharpCompilation.Create("MyCompilation", syntaxTrees:={tree}, CSharpReferences("", New List(Of MetadataReference)))

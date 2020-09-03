@@ -7,7 +7,7 @@ Imports Microsoft.CodeAnalysis
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
-Imports VBFactory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
+Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace CSharpToVBCodeConverter.ToVisualBasic
@@ -43,7 +43,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 Next
                 RestructureNodesAndSeparators(OpenParenTokenWithTrivia, Items, Separators, CloseParenTokenWithTrivia)
 
-                Return VBFactory.ParameterList(OpenParenTokenWithTrivia, VBFactory.SeparatedList(Items, Separators), CloseParenToken).WithConvertedTriviaFrom(node)
+                Return Factory.ParameterList(OpenParenTokenWithTrivia, Factory.SeparatedList(Items, Separators), CloseParenToken).WithConvertedTriviaFrom(node)
             End Function
 
             Public Overrides Function VisitParameter(node As CSS.ParameterSyntax) As VB.VisualBasicSyntaxNode
@@ -52,66 +52,71 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 End If
 
                 Dim returnType As VBS.TypeSyntax = DirectCast(node.Type?.Accept(Me), VBS.TypeSyntax)
-                Dim EqualsLeadingTrivia As New List(Of SyntaxTrivia)
+                Dim EqualsLeadingTrivia As New SyntaxTriviaList
                 If returnType IsNot Nothing Then
                     If returnType.ToString.StartsWith("[", StringComparison.Ordinal) Then
-                        Dim TReturnType As VBS.TypeSyntax = VBFactory.ParseTypeName(returnType.ToString.Substring(1).Replace("]", "", StringComparison.Ordinal)).WithTriviaFrom(returnType)
+                        Dim TReturnType As VBS.TypeSyntax = Factory.ParseTypeName(returnType.ToString.Substring(startIndex:=1) _
+                                                                                                     .Replace("]", "", StringComparison.Ordinal)).WithTriviaFrom(returnType)
                         If Not TReturnType.IsMissing Then
                             returnType = TReturnType
                         End If
 
                     End If
                     If returnType.GetTrailingTrivia.Any AndAlso returnType.GetTrailingTrivia.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                        Dim trailingTrivia As New List(Of SyntaxTrivia)
-                        trailingTrivia.AddRange(returnType.GetTrailingTrivia)
-                        trailingTrivia.InsertRange(trailingTrivia.Count - 1, {SpaceTrivia, LineContinuation})
+                        Dim trailingTrivia As New SyntaxTriviaList
+                        trailingTrivia = trailingTrivia.AddRange(returnType.GetTrailingTrivia)
+                        trailingTrivia = trailingTrivia.InsertRange(trailingTrivia.Count - 1, {VBSpaceTrivia, LineContinuation})
                         returnType = returnType.WithTrailingTrivia(trailingTrivia)
                     End If
                     If returnType IsNot Nothing Then
-                        EqualsLeadingTrivia.AddRange(ConvertTrivia(node.Type.GetLeadingTrivia))
+                        EqualsLeadingTrivia = EqualsLeadingTrivia.AddRange(node.Type.GetLeadingTrivia.ConvertTriviaList())
                     End If
                     If node.Identifier.HasLeadingTrivia Then
-                        EqualsLeadingTrivia.AddRange(ConvertTrivia(node.Identifier.LeadingTrivia))
+                        EqualsLeadingTrivia = EqualsLeadingTrivia.AddRange(node.Identifier.LeadingTrivia.ConvertTriviaList())
                     End If
                     If node.Identifier.HasTrailingTrivia AndAlso node.Identifier.TrailingTrivia.ContainsCommentOrDirectiveTrivia Then
-                        returnType = returnType.WithAppendedTrailingTrivia(ConvertTrivia(node.Identifier.TrailingTrivia))
+                        returnType = returnType.WithAppendedTrailingTrivia(node.Identifier.TrailingTrivia.ConvertTriviaList())
                     End If
                 End If
                 Dim defaultValue As VBS.EqualsValueSyntax = Nothing
                 If node.Default IsNot Nothing Then
-                    defaultValue = VBFactory.EqualsValue(EqualsToken.WithLeadingTrivia(EqualsLeadingTrivia), DirectCast(node.Default?.Value.Accept(Me), VBS.ExpressionSyntax))
+                    defaultValue = Factory.EqualsValue(EqualsToken.WithLeadingTrivia(EqualsLeadingTrivia), DirectCast(node.Default?.Value.Accept(Me), VBS.ExpressionSyntax))
                 End If
 
                 Dim newAttributes As VBS.AttributeListSyntax()
                 Dim modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, IsModule, TokenContext.Local)
                 If (modifiers.Count = 0 AndAlso returnType IsNot Nothing) OrElse node.Modifiers.Contains(CS.SyntaxKind.ThisKeyword) Then
-                    modifiers = VBFactory.TokenList(ByValKeyword).ToList
+                    modifiers = Factory.TokenList(ByValKeyword).ToList
                     newAttributes = Array.Empty(Of VBS.AttributeListSyntax)
                 ElseIf node.Modifiers.Contains(CS.SyntaxKind.OutKeyword) Then
-                    newAttributes = {VBFactory.AttributeList(VBFactory.SingletonSeparatedList(VBFactory.Attribute(RuntimeInteropServicesOut)))}
+                    If Not AllImports.ContainsName(InteropServices) Then
+                        AllImports.Add(ImportInteropServices)
+                    End If
+
+                    newAttributes = {Factory.AttributeList(Factory.SingletonSeparatedList(Factory.Attribute(RuntimeInteropServicesOut)))}
                 Else
                     newAttributes = Array.Empty(Of VBS.AttributeListSyntax)
                 End If
 
-                Dim parameterTrailingTrivia As New List(Of SyntaxTrivia)
-                Dim modifierLeadingTrivia As New List(Of SyntaxTrivia)
-                Dim modifierTrailingTrivia As New List(Of SyntaxTrivia)
+                Dim parameterTrailingTrivia As New SyntaxTriviaList
 
-                Dim id As SyntaxToken = GenerateSafeVBToken(id:=node.Identifier).
-                    WithTrailingTrivia(SpaceTrivia)
+                Dim id As SyntaxToken = GenerateSafeVBToken(node.Identifier, node, _mSemanticModel).
+                    WithTrailingTrivia(VBSpaceTrivia)
 
-                Dim typeLeadingTrivia As New List(Of SyntaxTrivia)
-                typeLeadingTrivia.AddRange(ConvertTrivia(node.Type?.GetLeadingTrivia))
+                Dim typeLeadingTrivia As New SyntaxTriviaList
+                If node.Type IsNot Nothing Then
+                    typeLeadingTrivia = node.Type.GetLeadingTrivia.ConvertTriviaList()
+                End If
                 If defaultValue IsNot Nothing Then
                     modifiers.Add(OptionalKeyword.WithLeadingTrivia(typeLeadingTrivia))
                 End If
                 If modifiers.Any AndAlso Not modifiers(0).RawKind = VB.SyntaxKind.ByValKeyword Then
                     If modifiers(0).RawKind = VB.SyntaxKind.OptionalKeyword OrElse
                         modifiers(0).RawKind = VB.SyntaxKind.ParamArrayKeyword Then
-                        typeLeadingTrivia.InsertRange(0, modifiers(0).LeadingTrivia)
+                        typeLeadingTrivia = typeLeadingTrivia.InsertRange(0, modifiers(0).LeadingTrivia)
                         modifiers(0) = modifiers(0).WithLeadingTrivia(typeLeadingTrivia)
                     End If
-                    id = id.WithLeadingTrivia(SpaceTrivia)
+                    id = id.WithLeadingTrivia(VBSpaceTrivia)
                 Else
                     id = id.WithLeadingTrivia(typeLeadingTrivia)
                 End If
@@ -127,13 +132,12 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                     Next
                 Next
                 originalAttributeListWithTrivia = If(OriginalAttributeListHasOut, originalAttributeListWithTrivia, newAttributes.Concat(originalAttributeListWithTrivia)).ToList
-                Dim parameterLeadingTrivia As New List(Of SyntaxTrivia)
-                Dim leadingIndent As SyntaxTrivia = SpaceTrivia
+                Dim leadingIndent As SyntaxTrivia = VBSpaceTrivia
 
                 If originalAttributeListWithTrivia.Any Then
                     For index As Integer = 0 To originalAttributeListWithTrivia.Count - 1
-                        Dim attributeLeadingTrivia As New List(Of SyntaxTrivia)
-                        Dim attributeTrailingTrivia As New List(Of SyntaxTrivia)
+                        Dim attributeLeadingTrivia As SyntaxTriviaList
+                        Dim attributeTrailingTrivia As SyntaxTriviaList
                         Dim needEOL As Boolean = False
                         Dim foundEOL As Boolean = False
                         For Each e As IndexClass(Of SyntaxTrivia) In originalAttributeListWithTrivia(index).GetLeadingTrivia.WithIndex
@@ -142,34 +146,34 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                                 If index = 0 Then
                                     leadingIndent = trivia
                                 End If
-                                attributeLeadingTrivia.Add(leadingIndent)
+                                attributeLeadingTrivia = attributeLeadingTrivia.Add(leadingIndent)
                                 Continue For
                             End If
                             Select Case trivia.RawKind
                                 Case VB.SyntaxKind.CommentTrivia
                                     If returnType IsNot Nothing Then
-                                        parameterTrailingTrivia.Add(trivia)
+                                        parameterTrailingTrivia = parameterTrailingTrivia.Add(trivia)
                                     Else
-                                        attributeTrailingTrivia.Add(SpaceTrivia)
-                                        attributeTrailingTrivia.Add(trivia)
+                                        attributeTrailingTrivia = attributeTrailingTrivia.Add(VBSpaceTrivia)
+                                        attributeTrailingTrivia = attributeTrailingTrivia.Add(trivia)
                                         needEOL = True
                                     End If
                                 Case VB.SyntaxKind.EndOfLineTrivia
                                     If needEOL Then
-                                        attributeTrailingTrivia.Add(trivia)
+                                        attributeTrailingTrivia = attributeTrailingTrivia.Add(trivia)
                                     Else
-                                        parameterTrailingTrivia.Add(trivia)
+                                        parameterTrailingTrivia = parameterTrailingTrivia.Add(trivia)
                                     End If
                                     needEOL = False
                                 Case VB.SyntaxKind.WhitespaceTrivia
-                                    If attributeLeadingTrivia.Any AndAlso attributeLeadingTrivia?.Last.RawKind <> VB.SyntaxKind.WhitespaceTrivia Then
-                                        attributeLeadingTrivia.Add(SpaceTrivia)
+                                    If attributeLeadingTrivia.Any AndAlso attributeLeadingTrivia.Last.RawKind <> VB.SyntaxKind.WhitespaceTrivia Then
+                                        attributeLeadingTrivia = attributeLeadingTrivia.Add(VBSpaceTrivia)
                                     End If
                                     needEOL = False
                                 Case VB.SyntaxKind.DisableWarningDirectiveTrivia
-                                    GetStatementwithIssues(node).AddMarker(VBFactory.EmptyStatement.WithLeadingTrivia(trivia), StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
+                                    GetStatementwithIssues(node).AddMarker(Factory.EmptyStatement.WithLeadingTrivia(trivia), StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
                                 Case VB.SyntaxKind.EnableWarningDirectiveTrivia
-                                    GetStatementwithIssues(node).AddMarker(VBFactory.EmptyStatement.WithLeadingTrivia(trivia), StatementHandlingOption.AppendEmptyStatement, AllowDuplicates:=True)
+                                    GetStatementwithIssues(node).AddMarker(Factory.EmptyStatement.WithLeadingTrivia(trivia), StatementHandlingOption.AppendEmptyStatement, AllowDuplicates:=True)
                                 Case Else
                                     Stop
                             End Select
@@ -179,51 +183,54 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                             Select Case t.RawKind
                                 Case VB.SyntaxKind.CommentTrivia
                                     If returnType IsNot Nothing Then
-                                        parameterTrailingTrivia.Add(t)
+                                        parameterTrailingTrivia = parameterTrailingTrivia.Add(t)
                                     Else
-                                        attributeTrailingTrivia.Add(SpaceTrivia)
-                                        attributeTrailingTrivia.Add(t)
+                                        attributeTrailingTrivia = attributeTrailingTrivia.Add(VBSpaceTrivia)
+                                        attributeTrailingTrivia = attributeTrailingTrivia.Add(t)
                                         FoundComment = True
                                     End If
                                 Case VB.SyntaxKind.EndOfLineTrivia
-                                    attributeTrailingTrivia.Add(t)
+                                    attributeTrailingTrivia = attributeTrailingTrivia.Add(t)
                                 Case VB.SyntaxKind.WhitespaceTrivia
-                                    attributeTrailingTrivia.Add(t)
+                                    attributeTrailingTrivia = attributeTrailingTrivia.Add(t)
                                     FoundComment = False
                                 Case VB.SyntaxKind.LineContinuationTrivia
-                                    attributeTrailingTrivia.Add(t)
+                                    attributeTrailingTrivia = attributeTrailingTrivia.Add(t)
                                 Case Else
                                     Stop
                             End Select
                             If FoundComment Then
-                                attributeTrailingTrivia.Add(VBEOLTrivia)
+                                attributeTrailingTrivia = attributeTrailingTrivia.Add(VBEOLTrivia)
                             End If
                         Next
                         originalAttributeListWithTrivia(index) = originalAttributeListWithTrivia(index).With(attributeLeadingTrivia, attributeTrailingTrivia)
                     Next
                 End If
-                Dim AttributeLists As SyntaxList(Of VBS.AttributeListSyntax) = VBFactory.List(originalAttributeListWithTrivia)
-                Dim Identifier As VBS.ModifiedIdentifierSyntax = VBFactory.ModifiedIdentifier(id)
+                Dim AttributeLists As SyntaxList(Of VBS.AttributeListSyntax) = Factory.List(originalAttributeListWithTrivia)
+                Dim Identifier As VBS.ModifiedIdentifierSyntax = Factory.ModifiedIdentifier(id)
 
+                Dim modifierLeadingTrivia As New SyntaxTriviaList
                 Dim NewModifiersWithoutComments As New List(Of SyntaxToken)
                 For Each m As SyntaxToken In modifiers
                     For Each t As SyntaxTrivia In m.LeadingTrivia
                         If t.IsComment Then
-                            parameterTrailingTrivia.Add(t)
+                            parameterTrailingTrivia = parameterTrailingTrivia.Add(t)
                         Else
-                            modifierLeadingTrivia.Add(t)
+                            modifierLeadingTrivia = modifierLeadingTrivia.Add(t)
                         End If
                     Next
+
+                    Dim modifierTrailingTrivia As SyntaxTriviaList
                     For Each t As SyntaxTrivia In m.TrailingTrivia
                         If t.IsComment Then
-                            parameterTrailingTrivia.Add(t)
+                            parameterTrailingTrivia = parameterTrailingTrivia.Add(t)
                         Else
-                            modifierTrailingTrivia.Add(t)
+                            modifierTrailingTrivia = modifierTrailingTrivia.Add(t)
                         End If
                     Next
                     NewModifiersWithoutComments.Add(m.With(modifierLeadingTrivia, modifierTrailingTrivia))
                 Next
-                modifiers = VBFactory.TokenList(NewModifiersWithoutComments).ToList
+                modifiers = Factory.TokenList(NewModifiersWithoutComments).ToList
                 Dim ByValIndex As Integer = modifiers.FindIndex(Function(t As SyntaxToken) t.IsKind(VB.SyntaxKind.ByValKeyword))
                 If ByValIndex >= 0 Then
                     modifiers.RemoveAt(ByValIndex)
@@ -237,9 +244,9 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                             Case VB.SyntaxKind.EndOfLineTrivia
                                 ' Ignore
                             Case VB.SyntaxKind.CommentTrivia
-                                parameterTrailingTrivia.Add(Trivia)
+                                parameterTrailingTrivia = parameterTrailingTrivia.Add(Trivia)
                             Case VB.SyntaxKind.EndIfDirectiveTrivia
-                                parameterTrailingTrivia.Add(Trivia)
+                                parameterTrailingTrivia = parameterTrailingTrivia.Add(Trivia)
                             Case VB.SyntaxKind.IfDirectiveTrivia
                                 ' TODO Ignore for now
                             Case VB.SyntaxKind.DisabledTextTrivia
@@ -247,31 +254,30 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                             Case VB.SyntaxKind.ElseDirectiveTrivia
                                 ' TODO Ignore for now
                             Case VB.SyntaxKind.DisableWarningDirectiveTrivia
-                                GetStatementwithIssues(node).AddMarker(VBFactory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
+                                GetStatementwithIssues(node).AddMarker(Factory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
                             Case VB.SyntaxKind.EnableWarningDirectiveTrivia
-                                GetStatementwithIssues(node).AddMarker(VBFactory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.AppendEmptyStatement, AllowDuplicates:=True)
+                                GetStatementwithIssues(node).AddMarker(Factory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.AppendEmptyStatement, AllowDuplicates:=True)
                             Case Else
                                 Stop
                         End Select
                     Next
                     Dim FoundEOL As Boolean
-                    Dim initialTriviaList As New List(Of SyntaxTrivia)
-                    initialTriviaList.AddRange(returnType.GetTrailingTrivia)
+                    Dim initialTriviaList As SyntaxTriviaList = returnType.GetTrailingTrivia
                     For index As Integer = 0 To initialTriviaList.Count - 1
                         Dim Trivia As SyntaxTrivia = initialTriviaList(index)
-                        Dim NextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, index)
+                        Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, index, LookaheadCount:=1)
 
                         Select Case Trivia.RawKind
                             Case VB.SyntaxKind.WhitespaceTrivia
-                                If NextTrivia.IsKind(VB.SyntaxKind.LineContinuationTrivia) Then
-                                    parameterTrailingTrivia.Add(Trivia)
+                                If nextTrivia.IsKind(VB.SyntaxKind.LineContinuationTrivia) Then
+                                    parameterTrailingTrivia = parameterTrailingTrivia.Add(Trivia)
                                 End If
                             Case VB.SyntaxKind.EndOfLineTrivia
                                 FoundEOL = True
                             Case VB.SyntaxKind.CommentTrivia
-                                parameterTrailingTrivia.Add(Trivia)
+                                parameterTrailingTrivia = parameterTrailingTrivia.Add(Trivia)
                             Case VB.SyntaxKind.EndIfDirectiveTrivia
-                                parameterTrailingTrivia.Add(Trivia)
+                                parameterTrailingTrivia = parameterTrailingTrivia.Add(Trivia)
                             Case VB.SyntaxKind.IfDirectiveTrivia
                                 ' TODO Ignore for now
                             Case VB.SyntaxKind.DisabledTextTrivia
@@ -281,28 +287,28 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                             Case VB.SyntaxKind.ElseDirectiveTrivia
                                 ' TODO Ignore for now
                             Case VB.SyntaxKind.DisableWarningDirectiveTrivia
-                                GetStatementwithIssues(node).AddMarker(VBFactory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
+                                GetStatementwithIssues(node).AddMarker(Factory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
                             Case VB.SyntaxKind.EnableWarningDirectiveTrivia
-                                GetStatementwithIssues(node).AddMarker(VBFactory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.AppendEmptyStatement, AllowDuplicates:=True)
+                                GetStatementwithIssues(node).AddMarker(Factory.EmptyStatement.WithLeadingTrivia(Trivia), StatementHandlingOption.AppendEmptyStatement, AllowDuplicates:=True)
                             Case VB.SyntaxKind.LineContinuationTrivia
-                                parameterTrailingTrivia.Add(Trivia)
+                                parameterTrailingTrivia = parameterTrailingTrivia.Add(Trivia)
                             Case Else
                                 Stop
                         End Select
                     Next
                     If FoundEOL Then
-                        parameterTrailingTrivia.Add(VBEOLTrivia)
+                        parameterTrailingTrivia = parameterTrailingTrivia.Add(VBEOLTrivia)
                     End If
-                    AsClause = VBFactory.SimpleAsClause(returnType.WithoutTrivia).WithTrailingTrivia(parameterTrailingTrivia)
+                    AsClause = Factory.SimpleAsClause(returnType.WithoutTrivia).WithTrailingTrivia(parameterTrailingTrivia)
                 Else
                     Identifier = Identifier.WithTrailingTrivia(parameterTrailingTrivia)
                 End If
 
-                Dim parameterSyntax1 As VBS.ParameterSyntax = VBFactory.Parameter(AttributeLists,
-                                                                                VBFactory.TokenList(modifiers),
+                Dim parameterSyntax1 As VBS.ParameterSyntax = Factory.Parameter(AttributeLists,
+                                                                                Factory.TokenList(modifiers),
                                                                                 Identifier,
                                                                                 AsClause,
-                                                                                defaultValue) ' .WithLeadingTrivia(SpaceTrivia)
+                                                                                defaultValue) ' .WithLeadingTrivia(VBSpaceTrivia)
                 Return parameterSyntax1
             End Function
 
@@ -320,13 +326,13 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 For index As Integer = 0 To SeparatorCount
                     Dim ItemWithTrivia As VBS.ParameterSyntax = DirectCast(node.Parameters(index).Accept(Me), VBS.ParameterSyntax)
                     ItemWithTrivia = ItemWithTrivia.RemoveModifier(VB.SyntaxKind.ByValKeyword)
-                    Items.Add(ItemWithTrivia.WithModifiedNodeTrivia(SeparatorCount > index))
+                    Items.Add(ItemWithTrivia.AdjustNodeTrivia(SeparatorCount > index))
                     If SeparatorCount > index Then
                         Separators.Add(CommaToken.WithConvertedTrailingTriviaFrom(csSeparators(index)))
                     End If
                 Next
                 RestructureNodesAndSeparators(OpenParenTokenWithTrivia, Items, Separators, CloseParenTokenWithTrivia)
-                Return VBFactory.ParameterList(OpenParenTokenWithTrivia, VBFactory.SeparatedList(Items, Separators), CloseParenTokenWithTrivia)
+                Return Factory.ParameterList(OpenParenTokenWithTrivia, Factory.SeparatedList(Items, Separators), CloseParenTokenWithTrivia)
             End Function
 
         End Class

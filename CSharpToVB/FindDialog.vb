@@ -14,7 +14,7 @@ Public Class FindDialog
     Private ReadOnly _rootForm As Form1
     Private ReadOnly _vbBuffer As RichTextBox
 
-    Private _mouseInForm As Boolean = False
+    Private _mouseInForm As Boolean
     Private _searchBuffer As SearchBuffers = SearchBuffers.CS
 
     Sub New(SourceBuffer As RichTextBox, ResultBuffer As AdvancedRTB, RootForm As Form1)
@@ -125,6 +125,8 @@ Public Class FindDialog
             LookInComboBox.DropDownStyle = ComboBoxStyle.Simple
         End If
         LookInComboBox.SelectedIndex = 0
+        MatchCaseCheckBox.Checked = My.Settings.TSFindMatchCase
+        MatchWholeWordCheckBox.Checked = My.Settings.TSFindMatchWholeWord
     End Sub
 
     Private Sub FindDialog_MouseEnter(sender As Object, e As EventArgs) Handles Me.MouseEnter
@@ -242,4 +244,13 @@ Public Class FindDialog
         Return False
     End Function
 
+    Private Sub MatchCaseCheckBox_CheckedChanged(sender As Object, e As EventArgs)
+        My.Settings.TSFindMatchCase = MatchCaseCheckBox.Checked
+        My.Settings.Save()
+    End Sub
+
+    Private Sub MatchWholeWordCheckBox_CheckedChanged(sender As Object, e As EventArgs)
+        My.Settings.TSFindMatchWholeWord = MatchWholeWordCheckBox.Checked
+        My.Settings.Save()
+    End Sub
 End Class

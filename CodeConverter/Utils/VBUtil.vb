@@ -112,7 +112,43 @@ Public Module VBUtil
         Throw New NotSupportedException($"Expression.Kind {t} is not supported!")
     End Function
 
-    Public Function ConvertTypesTokenToKind(t As CS.SyntaxKind, Optional context As TokenContext = TokenContext.[Global]) As SyntaxToken
+    Public Function ConvertKindToTypesToken(t As VB.SyntaxKind) As SyntaxToken
+
+        Select Case t
+                ' built-in types
+            Case VB.SyntaxKind.BooleanKeyword
+                Return BooleanKeyword
+            Case VB.SyntaxKind.ByteKeyword
+                Return ByteKeyword
+            Case VB.SyntaxKind.SByteKeyword
+                Return SByteKeyword
+            Case VB.SyntaxKind.ShortKeyword
+                Return ShortKeyword
+            Case VB.SyntaxKind.UShortKeyword
+                Return UShortKeyword
+            Case VB.SyntaxKind.IntegerKeyword
+                Return IntegerKeyword
+            Case VB.SyntaxKind.UIntegerKeyword
+                Return UIntegerKeyword
+            Case VB.SyntaxKind.LongKeyword
+                Return LongKeyword
+            Case VB.SyntaxKind.ULongKeyword
+                Return ULongKeyword
+            Case VB.SyntaxKind.DoubleKeyword
+                Return DoubleKeyword
+            Case VB.SyntaxKind.DecimalKeyword
+                Return DecimalKeyword
+            Case VB.SyntaxKind.StringKeyword
+                Return StringKeyword
+            Case VB.SyntaxKind.CharKeyword
+                Return CharKeyword
+            Case VB.SyntaxKind.ObjectKeyword
+                Return ObjectKeyword
+        End Select
+
+        Throw New NotSupportedException($"Type.Kind {t} is not supported!")
+    End Function
+    Public Function ConvertKindToTypesToken(t As CS.SyntaxKind, Optional context As TokenContext = TokenContext.Global) As SyntaxToken
 
         Select Case t
             Case CS.SyntaxKind.None
@@ -159,16 +195,24 @@ Public Module VBUtil
         Throw New NotSupportedException($"Type.Kind {t} is not supported!")
     End Function
 
+
     ''' <summary>
     '''Get VB Expression Operator Token Kind from VB Expression Kind
     ''' </summary>
     ''' <param name="op"></param>
     ''' <returns></returns>
-    Public Function ExpressionKindToOperatorToken(op As VB.SyntaxKind) As SyntaxToken
+    ''' <param name="IsReferenceType"></param>
+    Public Function ExpressionKindToOperatorToken(op As VB.SyntaxKind, IsReferenceType As Boolean) As SyntaxToken
         Select Case op
             Case VB.SyntaxKind.EqualsExpression
+                If IsReferenceType Then
+                    Return IsKeyword
+                End If
                 Return EqualsToken
             Case VB.SyntaxKind.NotEqualsExpression
+                If IsReferenceType Then
+                    Return IsNotKeyword
+                End If
                 Return LessThanGreaterThanToken
             Case VB.SyntaxKind.GreaterThanExpression
                 Return GreaterThanToken

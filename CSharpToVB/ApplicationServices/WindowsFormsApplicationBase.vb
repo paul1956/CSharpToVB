@@ -2,7 +2,7 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
-#If Not NETCOREAPP5_0 Then
+#If NETCOREAPP3_1 Then
 
 Imports System.Collections.ObjectModel
 Imports System.ComponentModel
@@ -790,7 +790,6 @@ Namespace Global.Microsoft.VisualBasic.ApplicationServices
         '''  Processes all windows messages currently in the message queue
         ''' </summary>
         Public Shared Sub DoEvents()
-#Enable Warning CA1822 ' Mark members as static
             Application.DoEvents()
         End Sub
 
