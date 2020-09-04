@@ -47,7 +47,7 @@ Module TargetFrameworkUtilities
     ''' <returns></returns>
     Friend Function FrameworkNameToConstant(Framework As String) As String
         If Framework = "netcoreapp5.0" Then
-            Return "NETCOREAPP5_0"
+            Return "NET5_0"
         End If
         Return Framework.ToUpperInvariant.Replace(".", "_", StringComparison.OrdinalIgnoreCase)
     End Function
@@ -117,7 +117,7 @@ Module TargetFrameworkUtilities
     End Function
 
     ''' <summary>
-    ''' Run a Windows command and return pipes text result to caller 
+    ''' Run a Windows command and return pipes text result to caller
     ''' </summary>
     ''' <param name="Command"></param>
     ''' <param name="Args"></param>
