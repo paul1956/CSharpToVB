@@ -5,7 +5,7 @@
 Imports System.IO
 Imports System.Xml
 
-#If NETCOREAPP3_1 Then
+#If Not (NET48 OrElse NET5_0) Then
 Imports VBMsgBox
 #End If
 

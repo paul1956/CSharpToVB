@@ -14,14 +14,14 @@ Public Module MenuSupport
         })
     End Sub
 
-    Friend Sub mnuAddToMRU(mru_Data As Specialized.StringCollection, Path As String)
+    Friend Sub mnuAddToMRU(mru_Data As Specialized.StringCollection, Text As String)
         ' remove the item from the collection if exists so that we can
         ' re-add it to the beginning...
-        If mru_Data.Contains(Path) Then
-            mru_Data.Remove(Path)
+        If mru_Data.Contains(Text) Then
+            mru_Data.Remove(Text)
         End If
         ' add to MRU list..
-        mru_Data.Add(Path)
+        mru_Data.Add(Text)
         ' make sure there are only ever 5 items...
         While mru_Data.Count > 5
             mru_Data.RemoveAt(0)
@@ -34,7 +34,7 @@ Public Module MenuSupport
         End If
     End Sub
 
-    Friend Sub MRU_UpdateUI(dropDownItems As ToolStripItemCollection, ClickEvent As EventHandler, IncludeMouseDownEvent As Boolean)
+    Friend Sub FileMenuMRUUpdateUI(dropDownItems As ToolStripItemCollection, ClickEvent As EventHandler)
         ' clear MRU menu items...
         Dim MRUToolStripItems As New List(Of ToolStripItem)
         ' create a temporary collection containing every MRU menu item
@@ -49,9 +49,7 @@ Public Module MenuSupport
         ' iterate through list and remove each from menu...
         For Each MRUToolStripItem As ToolStripItem In MRUToolStripItems
             RemoveHandler MRUToolStripItem.Click, ClickEvent
-            If IncludeMouseDownEvent Then
-                RemoveHandler MRUToolStripItem.MouseDown, AddressOf mnuMRUList_MouseDown
-            End If
+            RemoveHandler MRUToolStripItem.MouseDown, AddressOf mnuMRUList_MouseDown
             dropDownItems.Remove(MRUToolStripItem)
         Next
         ' display items (in reverse order so the most recent is on top)...
@@ -67,13 +65,21 @@ Public Module MenuSupport
 #Enable Warning CA2000 ' Dispose objects before losing scope
             ' hook into the click event handler so we can open the file later...
             AddHandler clsItem.Click, ClickEvent
-            If IncludeMouseDownEvent Then
-                AddHandler clsItem.MouseDown, AddressOf mnuMRUList_MouseDown
-            End If
+            AddHandler clsItem.MouseDown, AddressOf mnuMRUList_MouseDown
             ' insert into DropDownItems list...
             dropDownItems.Insert(dropDownItems.Count - 10, clsItem)
         Next
 
+    End Sub
+
+    Friend Sub TSFindWhatMRUUpdateUI(dropDownItems As ToolStripComboBox)
+        ' clear MRU menu items...
+        Dim MRUToolStripItems As New List(Of ToolStripItem)
+        dropDownItems.Items.Clear()
+        ' display items (in reverse order so the most recent is on top)...
+        For iCounter As Integer = My.Settings.TSFindMRU_Data.Count - 1 To 0 Step -1
+            dropDownItems.Items.Add(My.Settings.TSFindMRU_Data(iCounter))
+        Next
     End Sub
 
 End Module

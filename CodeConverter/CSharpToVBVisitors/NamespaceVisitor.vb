@@ -578,8 +578,10 @@ End Function
                 Dim NamespaceStatement As VBS.NamespaceStatementSyntax = Factory.NamespaceStatement(NamespaceKeyword, DirectCast(node.Name.Accept(Me), VBS.NameSyntax)).WithTrailingEOL(RemoveLastLineContinuation:=True)
                 Dim members1 As SyntaxList(Of VBS.StatementSyntax) = Factory.List(members)
                 Dim EndNamespaceStatement As VBS.EndBlockStatementSyntax = Factory.EndNamespaceStatement
-                Dim namespaceBlock As VBS.NamespaceBlockSyntax = Factory.NamespaceBlock(NamespaceStatement, members1, EndNamespaceStatement).With(node.NamespaceKeyword.LeadingTrivia.ConvertTriviaList.WithUniqueTrivia(VBHeaderLeadingTrivia),
-                                                                                                                                                  node.GetTrailingTrivia.ConvertTriviaList)
+                Dim namespaceBlock As VBS.NamespaceBlockSyntax = Factory.NamespaceBlock(NamespaceStatement, members1, EndNamespaceStatement) _
+                                                                        .WithConvertedLeadingTriviaFrom(node.NamespaceKeyword) _
+                                                                        .WithUniqueLeadingTrivia(VBHeaderLeadingTrivia) _
+                                                                        .WithTrailingTrivia(node.GetTrailingTrivia.ConvertTriviaList)
                 Return namespaceBlock
             End Function
 
@@ -672,7 +674,10 @@ End Function
                 If AllImports.Any Then
                     import = Factory.ImportsStatement(Factory.SingletonSeparatedList(clause)).WithConvertedTriviaFrom(node)
                 Else
-                    import = Factory.ImportsStatement(Factory.SingletonSeparatedList(clause)).With(WithUniqueTrivia(node.GetLeadingTrivia, VBHeaderLeadingTrivia), node.GetTrailingTrivia.ConvertTriviaList)
+                    import = Factory.ImportsStatement(Factory.SingletonSeparatedList(clause)) _
+                                                    .WithConvertedLeadingTriviaFrom(node) _
+                                                    .WithUniqueLeadingTrivia(VBHeaderLeadingTrivia) _
+                                                    .WithTrailingTrivia(node.GetTrailingTrivia.ConvertTriviaList)
                 End If
                 Dim MatchNotFound As Boolean = True
                 If AllImports.Any Then

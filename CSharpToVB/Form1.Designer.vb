@@ -13,9 +13,6 @@ Partial Class Form1
                 If _cancellationTokenSource IsNot Nothing Then
                     _cancellationTokenSource.Dispose()
                 End If
-                If _findDiablog IsNot Nothing Then
-                    _findDiablog.Dispose()
-                End If
             End If
         Finally
             MyBase.Dispose(disposing)
@@ -35,6 +32,8 @@ Partial Class Form1
         Me.MenuStrip1 = New System.Windows.Forms.MenuStrip()
         Me.mnuFile = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuFileOpen = New System.Windows.Forms.ToolStripMenuItem()
+        Me.mnuFileLoadLastSnippet = New System.Windows.Forms.ToolStripMenuItem()
+        Me.mnuFileSaveSnippet = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuFileSep1 = New System.Windows.Forms.ToolStripSeparator()
         Me.mnuFileSep2 = New System.Windows.Forms.ToolStripSeparator()
         Me.mnuFileLabelLastFolder = New System.Windows.Forms.ToolStripMenuItem()
@@ -44,8 +43,6 @@ Partial Class Form1
         Me.mnuFileLastProject = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuFileLastSolution = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuFileSaveAs = New System.Windows.Forms.ToolStripMenuItem()
-        Me.mnuFileLoadLastSnippet = New System.Windows.Forms.ToolStripMenuItem()
-        Me.mnuFileSaveSnippet = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuFileSep4 = New System.Windows.Forms.ToolStripSeparator()
         Me.mnuFileExit = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuEdit = New System.Windows.Forms.ToolStripMenuItem()
@@ -87,6 +84,18 @@ Partial Class Form1
         Me.mnuHelp = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuHelpReportIssueMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuHelpAboutMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.TSFindToolStrip = New System.Windows.Forms.ToolStrip()
+        Me.TSFindFindWhatComboBox = New System.Windows.Forms.ToolStripComboBox()
+        Me.TSFindFindPreviousButton = New System.Windows.Forms.ToolStripButton()
+        Me.TSFindFindNextButton = New System.Windows.Forms.ToolStripButton()
+        Me.TSFindLookInLabel = New System.Windows.Forms.ToolStripLabel()
+        Me.TSFindLookInComboBox = New System.Windows.Forms.ToolStripComboBox()
+        Me.TSFindSeparator1 = New System.Windows.Forms.ToolStripSeparator()
+        Me.TSFindMatchCaseCheckBox = New ToolStripCheckBox()
+        Me.TSFindMatchWholeWordCheckBox = New ToolStripCheckBox()
+        Me.TSFindSeparator2 = New System.Windows.Forms.ToolStripSeparator()
+        Me.TSFindClearHighlightsButton = New System.Windows.Forms.ToolStripButton()
+        Me.TSFindSeparator3 = New System.Windows.Forms.ToolStripSeparator()
         Me.SaveFileDialog1 = New System.Windows.Forms.SaveFileDialog()
         Me.ContextMenuStrip1 = New System.Windows.Forms.ContextMenuStrip(Me.components)
         Me.ContextMenuUndo = New System.Windows.Forms.ToolStripMenuItem()
@@ -116,6 +125,7 @@ Partial Class Form1
         Me.LabelProgress = New System.Windows.Forms.Label()
         Me.ToolTipFileList = New System.Windows.Forms.ToolTip(Me.components)
         Me.ToolTipErrorList = New System.Windows.Forms.ToolTip(Me.components)
+        Me.TSFindToolStrip.SuspendLayout()
         Me.MenuStrip1.SuspendLayout()
         Me.ContextMenuStrip1.SuspendLayout()
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -156,14 +166,14 @@ Partial Class Form1
         '
         Me.mnuFileLoadLastSnippet.Enabled = False
         Me.mnuFileLoadLastSnippet.Name = "mnuFileLoadLastSnippet"
-        Me.mnuFileLoadLastSnippet.Size = New System.Drawing.Size(124, 22)
+        Me.mnuFileLoadLastSnippet.Size = New System.Drawing.Size(289, 22)
         Me.mnuFileLoadLastSnippet.Text = "Load Last Snippet"
         '
         'mnuFileSaveSnippet
         '
         Me.mnuFileSaveSnippet.Enabled = False
         Me.mnuFileSaveSnippet.Name = "mnuFileSaveSnippet"
-        Me.mnuFileSaveSnippet.Size = New System.Drawing.Size(124, 22)
+        Me.mnuFileSaveSnippet.Size = New System.Drawing.Size(289, 22)
         Me.mnuFileSaveSnippet.Text = "Save Snippet"
         '
         'mnuFileSep1
@@ -554,6 +564,90 @@ Partial Class Form1
         Me.mnuHelpAboutMenuItem.Size = New System.Drawing.Size(177, 22)
         Me.mnuHelpAboutMenuItem.Text = "About"
         '
+        'TSFindToolStrip
+        '
+        Me.TSFindToolStrip.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.TSFindFindWhatComboBox, Me.TSFindFindPreviousButton, Me.TSFindFindNextButton, Me.TSFindLookInLabel, Me.TSFindLookInComboBox, Me.TSFindSeparator1, Me.TSFindMatchCaseCheckBox, Me.TSFindMatchWholeWordCheckBox, Me.TSFindSeparator2, Me.TSFindClearHighlightsButton, Me.TSFindSeparator3})
+        Me.TSFindToolStrip.Location = New System.Drawing.Point(0, 24)
+        Me.TSFindToolStrip.Name = "TSFindToolStrip"
+        Me.TSFindToolStrip.Size = New System.Drawing.Size(1812, 25)
+        Me.TSFindToolStrip.TabIndex = 2
+        Me.TSFindToolStrip.Text = "ToolStrip1"
+        '
+        'TSFindLookInComboBox
+        '
+        Me.TSFindLookInComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems
+        Me.TSFindLookInComboBox.AutoSize = False
+        Me.TSFindLookInComboBox.Items.AddRange(New Object() {"C# Source", "Visual Basic Output", "Both"})
+        Me.TSFindLookInComboBox.Margin() = New System.Windows.Forms.Padding(0, 0, right:=5, 0)
+        Me.TSFindLookInComboBox.Name = "TSFindLookInComboBox"
+        Me.TSFindLookInComboBox.Size = New System.Drawing.Size(130, 23)
+        '
+        'TSFindFindWhatComboBox
+        '
+        Me.TSFindFindWhatComboBox.AutoSize = False
+        Me.TSFindFindWhatComboBox.Name = "TSFindFindWhatComboBox"
+        Me.TSFindFindWhatComboBox.Size = New System.Drawing.Size(400, 23)
+        '
+        'TSFindFindPreviousButton
+        '
+        Me.TSFindFindPreviousButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text
+        Me.TSFindFindPreviousButton.ImageTransparentColor = System.Drawing.Color.Magenta
+        Me.TSFindFindPreviousButton.Name = "TSFindFindPreviousButton"
+        Me.TSFindFindPreviousButton.Size = New System.Drawing.Size(82, 22)
+        Me.TSFindFindPreviousButton.Text = "Find Previous"
+        '
+        'TSFindFindNextButton
+        '
+        Me.TSFindFindNextButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text
+        Me.TSFindFindNextButton.ImageTransparentColor = System.Drawing.Color.Magenta
+        Me.TSFindFindNextButton.Name = "TSFindFindNextButton"
+        Me.TSFindFindNextButton.Size = New System.Drawing.Size(62, 22)
+        Me.TSFindFindNextButton.Text = "Find Next"
+        '
+        'TSFindLookInLabel
+        '
+        Me.TSFindLookInLabel.Name = "TSFindLookInLabel"
+        Me.TSFindLookInLabel.Size = New System.Drawing.Size(49, 22)
+        Me.TSFindLookInLabel.Text = "Look In:"
+        '
+        'TSFindSeparator1
+        '
+        Me.TSFindSeparator1.Name = "TSFindSeparator1"
+        Me.TSFindSeparator1.Margin = New System.Windows.Forms.Padding(left:=0, 0, 5, 0)
+        Me.TSFindSeparator1.Size = New System.Drawing.Size(6, 25)
+        '
+        'TSFindMatchCaseCheckBox
+        '
+        Me.TSFindMatchCaseCheckBox.Checked = False
+        Me.TSFindMatchCaseCheckBox.Name = "TSFindMatchCaseCheckBox"
+        Me.TSFindMatchCaseCheckBox.Size = New System.Drawing.Size(88, 22)
+        Me.TSFindMatchCaseCheckBox.Text = "Match Case"
+        '
+        'TSFindMatchWholeWordCheckBox
+        '
+        Me.TSFindMatchWholeWordCheckBox.Checked = False
+        Me.TSFindMatchWholeWordCheckBox.Name = "TSFindMatchWholeWordCheckBox"
+        Me.TSFindMatchWholeWordCheckBox.Size = New System.Drawing.Size(129, 22)
+        Me.TSFindMatchWholeWordCheckBox.Text = "Match Whole Word"
+        '
+        'TSFindSeparator2
+        '
+        Me.TSFindSeparator2.Name = "TSFindSeparator2"
+        Me.TSFindSeparator2.Size = New System.Drawing.Size(6, 25)
+        '
+        'TSFindClearHighlightsButton
+        '
+        Me.TSFindClearHighlightsButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text
+        Me.TSFindClearHighlightsButton.ImageTransparentColor = System.Drawing.Color.Magenta
+        Me.TSFindClearHighlightsButton.Name = "TSFindClearHighlightsButton"
+        Me.TSFindClearHighlightsButton.Size = New System.Drawing.Size(96, 22)
+        Me.TSFindClearHighlightsButton.Text = "Clear Highlights"
+        '
+        'TSFindSeparator3
+        '
+        Me.TSFindSeparator3.Name = "TSFindSeparator3"
+        Me.TSFindSeparator3.Size = New System.Drawing.Size(6, 25)
+        '
         'ContextMenuStrip1
         '
         Me.ContextMenuStrip1.ImageScalingSize = New System.Drawing.Size(36, 36)
@@ -659,7 +753,7 @@ Partial Class Form1
         Me.SplitContainer1.Panel2.Controls.Add(Me.ListBoxFileList)
         Me.SplitContainer1.Panel2.Controls.Add(Me.ListBoxErrorList)
         Me.SplitContainer1.Size = New System.Drawing.Size(1923, 591)
-        Me.SplitContainer1.SplitterDistance = 510
+        Me.SplitContainer1.SplitterDistance = 512
         Me.SplitContainer1.SplitterWidth = 2
         Me.SplitContainer1.TabIndex = 22
         '
@@ -671,7 +765,7 @@ Partial Class Form1
         Me.ConversionInput.Font = New System.Drawing.Font("Segoe UI", 11.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point)
         Me.ConversionInput.Location = New System.Drawing.Point(23, 0)
         Me.ConversionInput.Name = "ConversionInput"
-        Me.ConversionInput.Size = New System.Drawing.Size(950, 510)
+        Me.ConversionInput.Size = New System.Drawing.Size(950, 512)
         Me.ConversionInput.TabIndex = 0
         Me.ConversionInput.Text = ""
         Me.ConversionInput.WordWrap = False
@@ -724,7 +818,7 @@ Partial Class Form1
         Me.ConversionOutput.HScrollPos = 0
         Me.ConversionOutput.Location = New System.Drawing.Point(999, 0)
         Me.ConversionOutput.Name = "ConversionOutput"
-        Me.ConversionOutput.Size = New System.Drawing.Size(924, 510)
+        Me.ConversionOutput.Size = New System.Drawing.Size(924, 512)
         Me.ConversionOutput.TabIndex = 1
         Me.ConversionOutput.Text = ""
         Me.ConversionOutput.VScrollPos = 0
@@ -876,6 +970,7 @@ Partial Class Form1
         Me.Controls.Add(Me.LabelErrorCount)
         Me.Controls.Add(Me.ButtonStopConversion)
         Me.Controls.Add(Me.SplitContainer1)
+        Me.Controls.Add(Me.TSFindToolStrip)
         Me.Controls.Add(Me.MenuStrip1)
         Me.Controls.Add(Me.StatusStrip1)
         Me.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point)
@@ -887,6 +982,8 @@ Partial Class Form1
         Me.Text = "Convert C# to Visual Basic"
         Me.MenuStrip1.ResumeLayout(False)
         Me.MenuStrip1.PerformLayout()
+        Me.TSFindToolStrip.ResumeLayout(False)
+        Me.TSFindToolStrip.PerformLayout()
         Me.ContextMenuStrip1.ResumeLayout(False)
         Me.SplitContainer1.Panel1.ResumeLayout(False)
         Me.SplitContainer1.Panel2.ResumeLayout(False)
@@ -979,6 +1076,18 @@ Partial Class Form1
     Friend WithEvents ToolTipErrorList As ToolTip
     Friend WithEvents mnuFileLastProject As ToolStripMenuItem
     Friend WithEvents mnuFileLastSolution As ToolStripMenuItem
+    Friend WithEvents TSFindToolStrip As ToolStrip
+    Friend WithEvents TSFindFindWhatComboBox As ToolStripComboBox
+    Friend WithEvents TSFindMatchCaseCheckBox As ToolStripCheckBox
+    Friend WithEvents TSFindMatchWholeWordCheckBox As ToolStripCheckBox
+    Friend WithEvents TSFindLookInLabel As ToolStripLabel
+    Friend WithEvents TSFindLookInComboBox As ToolStripComboBox
+    Friend WithEvents TSFindFindPreviousButton As ToolStripButton
+    Friend WithEvents TSFindFindNextButton As ToolStripButton
+    Friend WithEvents TSFindSeparator1 As ToolStripSeparator
+    Friend WithEvents TSFindSeparator2 As ToolStripSeparator
+    Friend WithEvents TSFindSeparator3 As ToolStripSeparator
+    Friend WithEvents TSFindClearHighlightsButton As ToolStripButton
     Friend WithEvents ContextMenuUndo As ToolStripMenuItem
     Friend WithEvents ContextMenuRedo As ToolStripMenuItem
     Friend WithEvents ContextMenuSeparator1 As ToolStripSeparator

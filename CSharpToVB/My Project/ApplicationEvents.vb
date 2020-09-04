@@ -4,7 +4,7 @@
 
 Imports Microsoft.VisualBasic.ApplicationServices
 
-#If Not NETCOREAPP3_1 Then
+#If NET48 OrElse NET5_0 Then
 Imports Microsoft.VisualBasic.Devices
 #End If
 
@@ -18,7 +18,7 @@ Namespace My
     ' NetworkAvailabilityChanged: Raised when the network connection is connected or disconnected.
     Partial Friend Class MyApplication
 
-#If Not NETCOREAPP3_1 Then
+#If NET48 OrElse NET5_0 Then
         Private Sub MyApplication_NetworkAvailabilityChanged(sender As Object, e As NetworkAvailableEventArgs) Handles Me.NetworkAvailabilityChanged
             ' My.Forms.Form1.SetConnectionStatus(e.IsNetworkAvailable)
         End Sub
@@ -29,7 +29,7 @@ Namespace My
         End Sub
 
         Private Sub MyApplication_Startup(sender As Object, e As StartupEventArgs) Handles Me.Startup
-#If Not NETCOREAPP3_1 Then
+#If NET48 OrElse NET5_0 Then
             AppFramework.SetHighDpiMode(HighDpiMode.SystemAware)
             ' Get the splash screen.
             Forms.SplashScreen1.UserName.Text = "Current user: " & User.Name

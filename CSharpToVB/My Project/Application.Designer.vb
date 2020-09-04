@@ -19,13 +19,13 @@ Namespace My
     ' Solution Explorer), and make changes on the Application tab.
     '
     Partial Friend Class MyApplication
-#If NETCOREAPP3_1 Then
+#If Not (NET48 OrElse NET5_0) Then
         Inherits Global.Microsoft.VisualBasic.ApplicationServices.WindowsFormsApplicationBase
 #End If
 
         <Global.System.Diagnostics.DebuggerStepThroughAttribute()>
         Public Sub New()
-#If NETCOREAPP5_0 Then
+#If NETP5_0 Then
             MyBase.New(Global.Microsoft.VisualBasic.ApplicationServices.AuthenticationMode.Windows)
 #Else
             MyBase.New()
@@ -39,7 +39,7 @@ Namespace My
 
         <Global.System.Diagnostics.DebuggerStepThroughAttribute()>
         Protected Overrides Sub OnCreateMainForm()
-#If NETCOREAPP3_1 Then
+#If Not (NET48 OrElse NET5_0) Then
             Me.MainForm = New Form1
 #Else
             Me.MainForm = Global.CSharpToVBApp.Form1
@@ -48,7 +48,7 @@ Namespace My
 
         <Global.System.Diagnostics.DebuggerStepThroughAttribute()>
         Protected Overrides Sub OnCreateSplashScreen()
-#If NETCOREAPP3_1 Then
+#If Not (NET48 OrElse NET5_0) Then
             Me.SplashScreen = New SplashScreen1
 #Else
             Me.SplashScreen = Global.CSharpToVBApp.SplashScreen1

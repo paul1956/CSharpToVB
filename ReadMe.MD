@@ -27,7 +27,7 @@ description: "C# to VB Converter"
 - Code Converter
 
 ## Updated
-- 09/02/2020
+- 09/03/2020
 
 ## Description
 This application will convert C# to VB while trying to preserve comments, formatting and as many Directives
@@ -64,8 +64,11 @@ Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpec
 Any changes to CSharpToVB application needs to change the version information in the project file **AND** in MyProject/AssemblyInfo.vb until Visual Studion is able to general file automatically for a WinForms application.
 
 ## Major New Release
-  New in 4.6.0.0/4.0.0.0
+  New in 4.6.0.1/4.0.0.1
+  - New improved Find Toolbar
+  - Minor fix for duplicate trivia around synthesized imports that C# doesn't need but VB does
 
+  New in 4.6.0.0/4.0.0.0
   - Added or updated 100's of tests (10 skipped and will fail)
   - Removed redundant tests
   - Fixed Event Conversion
@@ -82,11 +85,9 @@ Any changes to CSharpToVB application needs to change the version information in
   - Fixed Issue with When clause in the Case Label
 
   In Process
-  - Replace FindDialog with Find ToolStrip
   - Simplify Trivia restructuring removing duplicate code
   - Finish supporting skipped tests
   - Improvements in Formating long binary, octal and hex numbers as strings using _ separator
-
 
 ## Code Coverage
 ```

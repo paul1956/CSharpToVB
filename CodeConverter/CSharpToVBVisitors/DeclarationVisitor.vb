@@ -610,7 +610,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                         newLeadingTrivia = newLeadingTrivia.AddRange(Modifiers(0).LeadingTrivia)
                         Modifiers(0) = Modifiers(0).WithLeadingTrivia(VBSpaceTrivia)
                     End If
-                    Attributes.Insert(0, Factory.AttributeList(Factory.SingletonSeparatedList(ExtensionAttribute)).WithLeadingTrivia(newLeadingTrivia))
+                    Attributes.Insert(0, Factory.AttributeList(Factory.SingletonSeparatedList(ExtensionAttribute)).WithPrependedLeadingTrivia(newLeadingTrivia))
                     newLeadingTrivia = New SyntaxTriviaList
                     If Not DirectCast(node.SyntaxTree, CS.CSharpSyntaxTree).HasUsingDirective(CompilerServices) Then
                         If Not AllImports.ContainsName(CompilerServices) Then

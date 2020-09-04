@@ -2,7 +2,7 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
-#If NETCOREAPP3_1 Then
+#If Not (NET48 OrElse NET5_0) Then
 
 Imports System.Collections.ObjectModel
 Imports System.Reflection

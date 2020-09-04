@@ -19,9 +19,10 @@ Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Emit
 Imports Microsoft.VisualBasic.FileIO
 
+#If Not (NET48 OrElse NET5_0) Then
 
-#If NETCOREAPP3_1 Then
 Imports VBMsgBox
+
 #End If
 
 Partial Public Class Form1
@@ -36,14 +37,14 @@ Partial Public Class Form1
 
     Private _currentBuffer As Control
 
-    Private _findDiablog As FindDialog
+    Private _doNotFailOnError As Boolean
 
     Private _inColorize As Boolean
 
     Private _requestToConvert As ConvertRequest
 
     Private _resultOfConversion As ConversionResult
-    Private _doNotFailOnError As Boolean
+    Private _searchBuffer As SearchBuffers = SearchBuffers.CS
 
     Public Sub New()
         Me.InitializeComponent()
@@ -236,10 +237,8 @@ Partial Public Class Form1
     End Sub
 
     Private Sub ConversionInput_TextChanged(sender As Object, e As EventArgs) Handles ConversionInput.TextChanged
-        Dim InputBufferInUse As Boolean = CType(sender, RichTextBox).TextLength > 0
-        mnuViewShowSourceLineNumbers.Checked = InputBufferInUse And My.Settings.ShowSourceLineNumbers
-        mnuFileSaveSnippet.Enabled = InputBufferInUse
-        mnuConvertConvertSnippet.Enabled = InputBufferInUse
+        Dim inputBufferInUse As Boolean = Me.SetSearchControls(True)
+        mnuViewShowSourceLineNumbers.Checked = inputBufferInUse And My.Settings.ShowSourceLineNumbers
         If mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
             Me.Colorize(GetClassifiedRanges(SourceCode:=ConversionInput.Text, LanguageNames.CSharp), ConversionBuffer:=ConversionInput, Lines:=ConversionInput.Lines.Length)
         End If
@@ -404,6 +403,10 @@ Partial Public Class Form1
         ToolTipErrorList.SetToolTip(ListBoxErrorList, "Double-Click to scroll to VB error")
         ToolTipFileList.SetToolTip(ListBoxFileList, "Double-Click to open C# and corresponding VB file if available")
         Application.DoEvents()
+        TSFindLookInComboBox.DropDownStyle = ComboBoxStyle.Simple
+        TSFindLookInComboBox.SelectedIndex = 0
+        TSFindMatchCaseCheckBox.Checked = My.Settings.TSFindMatchCase
+        TSFindMatchWholeWordCheckBox.Checked = My.Settings.TSFindMatchWholeWord
     End Sub
 
     Private Sub Form1_Resize(sender As Object, e As EventArgs) Handles Me.Resize
@@ -569,7 +572,7 @@ Partial Public Class Form1
         Me.Compile_Colorize(ConversionOutput.Text, VBPreprocessorSymbols)
     End Sub
 
-    Private Sub mnuConvert_Click(sender As Object, e As EventArgs) Handles mnuConvert.Click
+    Private Sub mnuConvert_DropDownOpened(sender As Object, e As EventArgs) Handles mnuConvert.DropDownOpened
         mnuConvertConvertSnippet.Enabled = ConversionInput.TextLength > 0
     End Sub
 
@@ -719,11 +722,7 @@ Partial Public Class Form1
     End Sub
 
     Private Sub mnuEditFind_Click(sender As Object, e As EventArgs) Handles mnuEditFind.Click
-        If _findDiablog Is Nothing Then
-            _findDiablog = New FindDialog(ConversionInput, ConversionOutput, Me)
-        End If
-        mnuEditFind.Enabled = False
-        _findDiablog.Show()
+        TSFindToolStrip.Visible = Not TSFindToolStrip.Visible
     End Sub
 
     Private Sub mnuEditPaste_Click(sender As Object, e As EventArgs) Handles mnuEditPaste.Click
@@ -745,6 +744,10 @@ Partial Public Class Form1
         If sourceControl IsNot Nothing AndAlso sourceControl.CanUndo Then
             sourceControl.Undo()
         End If
+    End Sub
+
+    Private Sub mnuFile_DropDownOpening(sender As Object, e As EventArgs) Handles mnuFile.DropDownOpening
+        mnuFileLoadLastSnippet.Enabled = File.Exists(s_snippetFileWithPath)
     End Sub
 
     Private Sub mnuFileExit_Click(sender As Object, e As EventArgs) Handles mnuFileExit.Click
@@ -996,7 +999,6 @@ Partial Public Class Form1
         My.Settings.Save()
     End Sub
 
-
     Private Sub UpdateLastFileMeus()
         My.Settings.Save()
         ' show separator...
@@ -1015,7 +1017,7 @@ Partial Public Class Form1
     Private Sub OpenSourceFile(FileNameWithPath As String)
         mnuConvertConvertSnippet.Enabled = Me.LoadInputBufferFromStream(FileNameWithPath) <> 0
         mnuAddToMRU(My.Settings.MRU_Data, FileNameWithPath)
-        MRU_UpdateUI(mnuFile.DropDownItems, AddressOf Me.mnu_MRUList_Click, IncludeMouseDownEvent:=True)
+        FileMenuMRUUpdateUI(mnuFile.DropDownItems, AddressOf Me.mnu_MRUList_Click)
         Me.UpdateLastFileMeus()
     End Sub
 
@@ -1080,7 +1082,7 @@ Partial Public Class Form1
         ConversionOutput.Text = ""
         mnuAddToMRU(My.Settings.MRU_Data, SourceFileNameWithPath)
         Me.UpdateLastFileMeus()
-        MRU_UpdateUI(mnuFile.DropDownItems, AddressOf Me.mnu_MRUList_Click, IncludeMouseDownEvent:=True)
+        FileMenuMRUUpdateUI(mnuFile.DropDownItems, AddressOf Me.mnu_MRUList_Click)
         Dim lines As Integer = Me.LoadInputBufferFromStream(SourceFileNameWithPath)
         If lines > 0 Then
             Using textProgressBar As TextProgressBar = New TextProgressBar(ConversionProgressBar)
@@ -1498,10 +1500,17 @@ Partial Public Class Form1
         ' load MRU...
         If My.Settings.MRU_Data Is Nothing Then
             My.Settings.MRU_Data = New Specialized.StringCollection
-            Me.UpdateLastFileMeus()
         End If
+        Me.UpdateLastFileMeus()
+
+        If My.Settings.TSFindMRU_Data Is Nothing Then
+            My.Settings.TSFindMRU_Data = New Specialized.StringCollection
+            My.Settings.Save()
+        End If
+        TSFindWhatMRUUpdateUI(TSFindFindWhatComboBox)
+
         ' display MRU if there are any items to display...
-        MRU_UpdateUI(mnuFile.DropDownItems, AddressOf Me.mnu_MRUList_Click, IncludeMouseDownEvent:=True)
+        FileMenuMRUUpdateUI(mnuFile.DropDownItems, AddressOf Me.mnu_MRUList_Click)
     End Sub
 
     Friend Sub mnu_MRUList_Click(sender As Object, e As EventArgs)
@@ -1509,7 +1518,165 @@ Partial Public Class Form1
         Me.OpenSourceFile(DirectCast(sender, ToolStripItem).Tag.ToString().Substring(startIndex:=4))
     End Sub
 
-#If NETCOREAPP3_1 Then
+#Region "FindToolbar"
+
+    <Flags>
+    Enum SearchBuffers
+        CS = 1
+        VB = 2
+        Both = CS Or VB
+    End Enum
+
+    Private Sub ClearHighlightsButton_Click(sender As Object, e As EventArgs) Handles TSFindClearHighlightsButton.Click
+        Dim selectionstart As Integer
+        If _searchBuffer.IsFlagSet(SearchBuffers.CS) Then
+            selectionstart = ConversionInput.SelectionStart
+            ConversionInput.SelectAll()
+            ConversionInput.SelectionBackColor = Color.White
+            ConversionInput.Select(selectionstart, 0)
+            ConversionInput.ScrollToCaret()
+        End If
+        If _searchBuffer.IsFlagSet(SearchBuffers.VB) Then
+            selectionstart = ConversionOutput.SelectionStart
+            ConversionOutput.SelectAll()
+            ConversionOutput.SelectionBackColor = Color.White
+            ConversionOutput.Select(selectionstart, 0)
+            ConversionOutput.ScrollToCaret()
+        End If
+        Application.DoEvents()
+    End Sub
+
+    Private Sub DoFind(SearchForward As Boolean)
+        mnuAddToMRU(My.Settings.TSFindMRU_Data, TSFindFindWhatComboBox.Text)
+        My.Settings.Save()
+        TSFindWhatMRUUpdateUI(TSFindFindWhatComboBox)
+        Dim prompt As String = ""
+        If _searchBuffer.IsFlagSet(SearchBuffers.CS) AndAlso Not Me.FindTextInBuffer(ConversionInput, SearchForward) Then
+            prompt = $"'{TSFindFindWhatComboBox.Text}' not found in C# code!"
+        End If
+
+        If _searchBuffer.IsFlagSet(SearchBuffers.VB) AndAlso Not Me.FindTextInBuffer(ConversionOutput, SearchForward) Then
+            If prompt.Any Then
+                prompt = $"'{TSFindFindWhatComboBox.Text}' not found in C# or Visual Basic code!"
+            Else
+                prompt = $"'{TSFindFindWhatComboBox.Text}' not found in Visual Basic code!"
+            End If
+        End If
+
+        If prompt.Any Then
+            MsgBox(prompt,
+                   MsgBoxStyle.OkOnly Or MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground,
+                   "Text Not Found!")
+        End If
+
+    End Sub
+
+    Private Sub FindNextButton_Click(sender As Object, e As EventArgs) Handles TSFindFindNextButton.Click
+        Me.DoFind(SearchForward:=True)
+    End Sub
+
+    Private Sub FindPreviousButton_Click(sender As Object, e As EventArgs) Handles TSFindFindPreviousButton.Click
+        Me.DoFind(SearchForward:=False)
+    End Sub
+
+    ''' <summary>
+    ''' Look in SearchBuffer for text and highlight it
+    ''' No error is displayed if not found
+    ''' </summary>
+    ''' <param name="SearchBuffer"></param>
+    ''' <param name="SearchForward"></param>
+    ''' <returns>True if found, False is not found</returns>
+    Private Function FindTextInBuffer(SearchBuffer As RichTextBox, SearchForward As Boolean) As Boolean
+        If SearchBuffer.SelectionStart >= SearchBuffer.Text.Length - 1 OrElse SearchBuffer.SelectionStart < 0 Then
+            SearchBuffer.SelectionStart = If(SearchForward, 0, SearchBuffer.Text.Length - 1)
+            SearchBuffer.SelectionLength = 0
+        End If
+        Dim findFrom As Integer = SearchBuffer.SelectionStart
+        Dim findTo As Integer = SearchBuffer.TextLength - 1
+        Dim Options As RichTextBoxFinds = If(TSFindMatchCaseCheckBox.Checked, RichTextBoxFinds.MatchCase, RichTextBoxFinds.None)
+        Options = Options Or If(TSFindMatchWholeWordCheckBox.Checked, RichTextBoxFinds.WholeWord, RichTextBoxFinds.None)
+        If Not SearchForward Then
+            Options = Options Or RichTextBoxFinds.Reverse
+            findTo = findFrom
+            findFrom = 0
+        End If
+        Dim findIndex As Integer = SearchBuffer.Find(TSFindFindWhatComboBox.Text, findFrom, findTo, Options)
+
+        If findIndex < 0 Then
+            SearchBuffer.SelectionStart = If(SearchForward, 0, TSFindFindWhatComboBox.Text.Length - 1)
+            SearchBuffer.SelectionLength = 0
+            Return False
+        End If
+        SearchBuffer.SelectionStart = findIndex
+        SearchBuffer.ScrollToCaret()
+        SearchBuffer.SelectionBackColor = Color.Orange
+        ' Find the end index. End Index = number of characters in textbox
+        SearchBuffer.SelectionLength = TSFindFindWhatComboBox.Text.Length
+        ' Highlight the search string
+        SearchBuffer.Select(SearchBuffer.SelectionStart, SearchBuffer.SelectionLength)
+        Application.DoEvents()
+        ' mark the start position after the position of
+        ' last search string
+        SearchBuffer.SelectionStart = If(SearchForward, SearchBuffer.SelectionStart + SearchBuffer.SelectionLength, SearchBuffer.SelectionStart)
+        Return True
+    End Function
+
+    Private Function SetSearchControls(Optional InputBuffer As Boolean = False) As Boolean
+        Dim inputBufferInUse As Boolean = ConversionInput.Text.Any
+        Dim outputBufferInUse As Boolean = ConversionOutput.Text.Any
+        Dim EnableFind As Boolean = (inputBufferInUse Or outputBufferInUse) And TSFindFindWhatComboBox.Text.Any
+        mnuConvertConvertSnippet.Enabled = inputBufferInUse
+        TSFindClearHighlightsButton.Enabled = EnableFind
+        TSFindFindNextButton.Enabled = EnableFind
+        TSFindFindPreviousButton.Enabled = EnableFind
+        Dim selectedIndex As Integer = TSFindLookInComboBox.SelectedIndex
+        If outputBufferInUse Then
+            TSFindLookInComboBox.DropDownStyle = ComboBoxStyle.DropDown
+            TSFindLookInComboBox.SelectedIndex = selectedIndex
+        Else
+            TSFindLookInComboBox.DropDownStyle = ComboBoxStyle.Simple
+            TSFindLookInComboBox.SelectedIndex = 0
+        End If
+        Return If(InputBuffer, inputBufferInUse, outputBufferInUse)
+    End Function
+
+    Private Sub TSFindFindWhatComboBox_SelectedIndexChanged(sender As Object, e As EventArgs) Handles TSFindFindWhatComboBox.SelectedIndexChanged
+        Me.SetSearchControls()
+    End Sub
+
+    Private Sub TSFindFindWhatComboBox_TextChanged(sender As Object, e As EventArgs) Handles TSFindFindWhatComboBox.TextChanged
+        Me.SetSearchControls()
+    End Sub
+
+    Private Sub TSFindLookInComboBox_Click(sender As Object, e As EventArgs) Handles TSFindLookInComboBox.Click
+        Me.SetSearchControls()
+    End Sub
+
+    Private Sub TSFindLookInComboBox_SelectedIndexChanged(sender As Object, e As EventArgs) Handles TSFindLookInComboBox.SelectedIndexChanged
+        Select Case TSFindLookInComboBox.SelectedIndex
+            Case 0
+                _searchBuffer = SearchBuffers.CS
+            Case 1
+                _searchBuffer = SearchBuffers.VB
+            Case 2
+                _searchBuffer = SearchBuffers.Both
+        End Select
+        Me.SetSearchControls()
+    End Sub
+
+    Private Sub TSFindMatchCaseCheckBox_Click(sender As Object, e As EventArgs) Handles TSFindMatchCaseCheckBox.Click
+        My.Settings.TSFindMatchCase = TSFindMatchCaseCheckBox.Checked
+        My.Settings.Save()
+    End Sub
+
+    Private Sub TSFindMatchWholeWordCheckBox_Click(sender As Object, e As EventArgs) Handles TSFindMatchWholeWordCheckBox.Click
+        My.Settings.TSFindMatchWholeWord = TSFindMatchWholeWordCheckBox.Checked
+        My.Settings.Save()
+    End Sub
+
+#End Region
+
+#If Not (NET48 OrElse NET5_0) Then
 
     <STAThread()>
     Shared Sub main(args As String())
@@ -1517,14 +1684,6 @@ Partial Public Class Form1
         Using MyApp As New My.MyApplication
             MyApp.Run(args)
         End Using
-    End Sub
-
-    Private Sub mnuConvert_DropDownOpened(sender As Object, e As EventArgs) Handles mnuConvert.DropDownOpened
-        mnuConvertConvertSnippet.Enabled = ConversionInput.TextLength > 0
-    End Sub
-
-    Private Sub mnuFile_DropDownOpening(sender As Object, e As EventArgs) Handles mnuFile.DropDownOpening
-        mnuFileLoadLastSnippet.Enabled = File.Exists(s_snippetFileWithPath)
     End Sub
 
 #End If

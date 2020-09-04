@@ -316,44 +316,4 @@ Module SyntaxTriviaListExtensions
         Return returnList.RemoveAt(lineContIndex).RemoveAt(lineContIndex - 1)
     End Function
 
-    ''' <summary>
-    ''' Compare 2 Node.GetLeadingTrivia with HeaderTriviaList
-    ''' </summary>
-    ''' <param name="NodeLeadingTrivia"></param>
-    ''' <param name="HeaderLeadingTrivia"></param>
-    ''' <returns>Converted Trivia with HeaderLeadingTrivia</returns>
-    <Extension>
-    Friend Function WithUniqueTrivia(NodeLeadingTrivia As SyntaxTriviaList, HeaderLeadingTrivia As SyntaxTriviaList) As SyntaxTriviaList
-        If NodeLeadingTrivia.Count = 0 Then
-            Return New SyntaxTriviaList
-        End If
-        If NodeLeadingTrivia.First.Language = "C#" Then
-            NodeLeadingTrivia = NodeLeadingTrivia.ConvertTriviaList
-        End If
-        If HeaderLeadingTrivia.Count = 0 Then
-            Return NodeLeadingTrivia
-        End If
-
-        If Not NodeLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
-            Return NodeLeadingTrivia
-        End If
-        Dim index As Integer
-        For index = 0 To HeaderLeadingTrivia.Count - 1
-            If HeaderLeadingTrivia(index).RawKind <> NodeLeadingTrivia(index).RawKind Then
-                Exit For
-            End If
-            If HeaderLeadingTrivia(index).ToString <> NodeLeadingTrivia(index).ToString Then
-                Exit For
-            End If
-        Next
-        Dim newLeadingTrivia As New SyntaxTriviaList
-        For i As Integer = index To NodeLeadingTrivia.Count - 1
-            If i <> 0 AndAlso i = index AndAlso NodeLeadingTrivia(i).IsKind(CS.SyntaxKind.EndOfLineTrivia) Then
-                Continue For
-            End If
-            newLeadingTrivia = newLeadingTrivia.Add(NodeLeadingTrivia(i))
-        Next
-        Return newLeadingTrivia
-    End Function
-
 End Module

@@ -120,7 +120,6 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 Next
 
                 Dim ListOfAttributes As List(Of VBS.AttributesStatementSyntax) = node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) Factory.AttributesStatement(Factory.SingletonList(DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))).ToList
-                Dim firstImportOrEmpty As VBS.StatementSyntax = Factory.EmptyStatement
                 If AllImports.Any Then
                     If _membersList.Any AndAlso _membersList(0).HasLeadingTrivia Then
                         If (TypeOf _membersList(0) IsNot VBS.NamespaceBlockSyntax AndAlso
@@ -146,19 +145,26 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                             AllImports(0) = AllImports(0).WithPrependedLeadingTrivia(newLeadingTrivia)
                         End If
                     End If
-                    For Each e As IndexClass(Of VBS.ImportsStatementSyntax) In AllImports.WithIndex
-                        Dim importsClause As VBS.ImportsClauseSyntax = e.Value.ImportsClauses.FirstOrDefault
+                    For i As Integer = 0 To AllImports.Count - 1
+                        Dim importsClause As VBS.ImportsClauseSyntax = AllImports(i).ImportsClauses.FirstOrDefault
                         If TypeOf importsClause Is VBS.SimpleImportsClauseSyntax Then
                             Dim simpleImportsClause As VBS.SimpleImportsClauseSyntax = DirectCast(importsClause, VBS.SimpleImportsClauseSyntax)
                             If TypeOf simpleImportsClause.Name Is VBS.IdentifierNameSyntax Then
-                                If DirectCast(simpleImportsClause.Name, VBS.IdentifierNameSyntax).Identifier.ValueText = "System" Then
-                                    If Not e.IsLast Then
-                                        AllImports(e.Index + 1) = AllImports(e.Index + 1).WithMergedLeadingTrivia(e.Value.GetLeadingTrivia)
-                                    Else
-                                        firstImportOrEmpty = Factory.EmptyStatement.WithTriviaFrom(AllImports(e.Index))
-                                    End If
-                                    AllImports.RemoveAt(e.Index)
-                                    Exit For
+                                If i = 0 Then
+                                    Select Case DirectCast(simpleImportsClause.Name, VBS.IdentifierNameSyntax).Identifier.ValueText
+                                        Case "System"
+                                            Dim IsLast As Boolean = i = (AllImports.Count - 1)
+                                            If Not IsLast Then
+                                                AllImports(i + 1) = AllImports(i + 1).WithMergedLeadingTrivia(AllImports(i).GetLeadingTrivia)
+                                            End If
+                                            AllImports.RemoveAt(i)
+                                            Exit For
+                                        Case CompilerServices, InteropServices
+                                            AllImports(0) = AllImports(0).WithLeadingTrivia(node.GetLeadingTrivia).WithUniqueLeadingTrivia(VBHeaderLeadingTrivia)
+                                            If _membersList.Any Then
+                                                _membersList = _membersList.Replace(_membersList(0), _membersList(0).WithUniqueLeadingTrivia(AllImports(0).GetLeadingTrivia))
+                                            End If
+                                    End Select
                                 End If
                             End If
                         End If
@@ -174,7 +180,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                 ElseIf Options.Any Then
                     If ListOfAttributes.Any AndAlso ListOfAttributes(0).GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
                         Options = Options.Replace(Options(0), Options(0).WithLeadingTrivia(ListOfAttributes(0).GetLeadingTrivia))
-                        ListOfAttributes(0) = ListOfAttributes(0).WithLeadingTrivia(ListOfAttributes(0).GetLeadingTrivia.WithUniqueTrivia(VBHeaderLeadingTrivia))
+                        ListOfAttributes(0) = ListOfAttributes(0).WithUniqueLeadingTrivia(VBHeaderLeadingTrivia)
                         If Not ListOfAttributes.First.GetLeadingTrivia.FirstOrDefault.IsKind(SyntaxKind.EndOfLineTrivia) Then
                             Options = Options.Replace(Options.Last, Options.Last.WithAppendedEOL)
                         End If
@@ -183,12 +189,12 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                         _membersList(0).GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
 
                         Options = Options.Replace(Options(0), Options(0).WithLeadingTrivia(VBHeaderLeadingTrivia))
-                        _membersList = _membersList.Replace(_membersList(0), _membersList(0).WithLeadingTrivia(_membersList(0).GetLeadingTrivia.WithUniqueTrivia(VBHeaderLeadingTrivia)))
+                        _membersList = _membersList.Replace(_membersList(0), _membersList(0).WithUniqueLeadingTrivia(VBHeaderLeadingTrivia))
                         If Not _membersList(0).GetLeadingTrivia.FirstOrDefault.IsKind(SyntaxKind.EndOfLineTrivia) Then
                             Options = Options.Replace(Options.Last, Options.Last.WithAppendedEOL)
                         End If
                     Else
-                        If VBHeaderLeadingTrivia.Any Then
+                            If VBHeaderLeadingTrivia.Any Then
                             Options = Options.Replace(Options(0), Options(0).WithLeadingTrivia(VBHeaderLeadingTrivia.Add(VBEOLTrivia)))
                         End If
                         Options = Options.Replace(Options.Last, Options.Last.WithAppendedEOL)
