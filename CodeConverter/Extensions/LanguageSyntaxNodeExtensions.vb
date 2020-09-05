@@ -39,10 +39,10 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                         If nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) OrElse AfterLineContinuation Then
                             Continue For
                         ElseIf nextTrivia.IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
-                            If Trivia.Span.Length = 0 OrElse Trivia.Span.Length <= nextTrivia.Span.Length Then
+                            If Trivia.Span.IsEmpty OrElse Trivia.Span.Length <= nextTrivia.Span.Length Then
                                 Continue For
                             Else
-                                If nextTrivia.Span.Length = 0 Then
+                                If nextTrivia.Span.IsEmpty Then
                                     e.MoveNext()
                                 End If
                             End If

@@ -167,7 +167,7 @@ Public Module ISymbolExtensions
     <Extension>
     Public Function ExtractBestMatch(Of TSymbol As {Class, ISymbol})(info As SymbolInfo, Optional isMatch As Func(Of TSymbol, Boolean) = Nothing) As TSymbol
         isMatch = If(isMatch, Function(_1) True)
-        If info.Symbol Is Nothing AndAlso info.CandidateSymbols.Length = 0 Then
+        If info.Symbol Is Nothing AndAlso info.CandidateSymbols.IsEmpty Then
             Return Nothing
         End If
         If info.Symbol IsNot Nothing Then

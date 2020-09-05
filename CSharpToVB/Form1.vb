@@ -19,7 +19,7 @@ Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Emit
 Imports Microsoft.VisualBasic.FileIO
 
-#If Not (NET48 OrElse NET5_0) Then
+#If Not NET5_0 Then
 
 Imports VBMsgBox
 
@@ -597,15 +597,10 @@ Partial Public Class Form1
             My.Settings.Framework
         }
 
-#If NET48 Then
-            Dim VBPreprocessorSymbols As New List(Of KeyValuePair(Of String, Object)) From {
-                New KeyValuePair(Of String, Object)(My.Settings.Framework, True)
-            }
-#Else
             Dim VBPreprocessorSymbols As New List(Of KeyValuePair(Of String, Object)) From {
             KeyValuePair.Create(Of String, Object)(My.Settings.Framework, True)
             }
-#End If
+
             Dim DontDisplayLineNumbers As Boolean = Await Me.Convert_Compile_ColorizeAsync(_requestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, SharedReferences.CSharpReferences(Assembly.Load("System.Windows.Forms").Location, OptionalReference:=Nothing).ToArray, _cancellationTokenSource.Token).ConfigureAwait(True)
             If _requestToConvert.CancelToken.IsCancellationRequested Then
                 MsgBox($"Conversion canceled.",
@@ -1245,19 +1240,12 @@ Partial Public Class Form1
         Dim TotalFilesToProcess As Integer = currentProject.Documents.Count
         Dim convertedFramework As String = FrameworkNameToConstant(Framework)
         Dim CSPreprocessorSymbols As New List(Of String) From {Framework, convertedFramework}
-#If NET48 Then
-        Dim VBPreprocessorSymbols As New List(Of KeyValuePair(Of String, Object)) From {
-                                  New KeyValuePair(Of String, Object)(convertedFramework, True)}
-        If Not convertedFramework.Equals(Framework, StringComparison.OrdinalIgnoreCase) Then
-            VBPreprocessorSymbols.Add(New KeyValuePair(Of String, Object)(Framework, True))
-        End If
-#Else
+
         Dim VBPreprocessorSymbols As New List(Of KeyValuePair(Of String, Object)) From {
                                     KeyValuePair.Create(Of String, Object)(convertedFramework, True)}
         If Not convertedFramework.Equals(Framework, StringComparison.OrdinalIgnoreCase) Then
             VBPreprocessorSymbols.Add(KeyValuePair.Create(Of String, Object)(Framework, True))
         End If
-#End If
 
         For Each currentDocument As Document In currentProject.Documents
             If _cancellationTokenSource.IsCancellationRequested Then
@@ -1676,15 +1664,4 @@ Partial Public Class Form1
 
 #End Region
 
-#If Not (NET48 OrElse NET5_0) Then
-
-    <STAThread()>
-    Shared Sub main(args As String())
-        Application.SetHighDpiMode(HighDpiMode.PerMonitorV2)
-        Using MyApp As New My.MyApplication
-            MyApp.Run(args)
-        End Using
-    End Sub
-
-#End If
 End Class

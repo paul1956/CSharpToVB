@@ -2,7 +2,7 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
-#If Not (NET48 OrElse NET5_0) Then
+#If Not NET5_0 Then
 
 Imports System.ComponentModel
 Imports System.Runtime.Serialization

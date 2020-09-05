@@ -19,14 +19,16 @@ Namespace My
     ' Solution Explorer), and make changes on the Application tab.
     '
     Partial Friend Class MyApplication
-#If Not (NET48 OrElse NET5_0) Then
+#If NET5_0 Then
         Inherits Global.Microsoft.VisualBasic.ApplicationServices.WindowsFormsApplicationBase
+#Else
+        Inherits ApplicationServices.WindowsFormsApplicationBase
 #End If
 
         <Global.System.Diagnostics.DebuggerStepThroughAttribute()>
         Public Sub New()
-#If NETP5_0 Then
-            MyBase.New(Global.Microsoft.VisualBasic.ApplicationServices.AuthenticationMode.Windows)
+#If NET5_0 Then
+            MyBase.New(ApplicationServices.AuthenticationMode.Windows)
 #Else
             MyBase.New()
 #End If
@@ -34,24 +36,28 @@ Namespace My
             Me.IsSingleInstance = True
             Me.MinimumSplashScreenDisplayTime = 5000
             Me.SaveMySettingsOnExit = True
+#If Not NET5_0 Then
             Me.ShutdownStyle = Global.Microsoft.VisualBasic.ApplicationServices.ShutdownMode.AfterMainFormCloses
+#Else
+            Me.ShutdownStyle = ApplicationServices.ShutdownMode.AfterMainFormCloses
+#End If
         End Sub
 
         <Global.System.Diagnostics.DebuggerStepThroughAttribute()>
         Protected Overrides Sub OnCreateMainForm()
-#If Not (NET48 OrElse NET5_0) Then
+#If Not NET5_0 Then
             Me.MainForm = New Form1
 #Else
-            Me.MainForm = Global.CSharpToVBApp.Form1
+            Me.MainForm = New CSharpToVBApp.Form1
 #End If
         End Sub
 
         <Global.System.Diagnostics.DebuggerStepThroughAttribute()>
         Protected Overrides Sub OnCreateSplashScreen()
-#If Not (NET48 OrElse NET5_0) Then
+#If Not NET5_0 Then
             Me.SplashScreen = New SplashScreen1
 #Else
-            Me.SplashScreen = Global.CSharpToVBApp.SplashScreen1
+            Me.SplashScreen = New CSharpToVBApp.SplashScreen1
 #End If
         End Sub
     End Class

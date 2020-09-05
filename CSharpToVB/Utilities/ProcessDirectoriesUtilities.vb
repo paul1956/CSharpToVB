@@ -63,15 +63,9 @@ Public Module ProcessDirectoriesUtilities
             Dim CSPreprocessorSymbols As New List(Of String) From {
                                         My.Settings.Framework
                                     }
-#If NET48 Then
-            Dim VBPreprocessorSymbols As New List(Of KeyValuePair(Of String, Object)) From {
-                                        New KeyValuePair(Of String, Object)(My.Settings.Framework, True)
-                                    }
-#Else
             Dim VBPreprocessorSymbols As New List(Of KeyValuePair(Of String, Object)) From {
                                         KeyValuePair.Create(Of String, Object)(My.Settings.Framework, True)
                                     }
-#End If
 
             For Each SourcePathWithFileName As String In DirectoryList
                 Stats.FilesProcessed += 1

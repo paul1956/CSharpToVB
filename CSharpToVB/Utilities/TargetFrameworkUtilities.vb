@@ -19,7 +19,7 @@ Module TargetFrameworkUtilities
         ElseIf releaseKey >= 394802 Then
             Return "NET462"
         ElseIf releaseKey >= 394254 Then
-            Return "461"
+            Return "NET4461"
         ElseIf releaseKey >= 393295 Then
             Return "NET46"
         ElseIf releaseKey >= 379893 Then

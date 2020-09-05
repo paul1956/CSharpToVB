@@ -2,7 +2,6 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
-#If Not (NET48 OrElse NET5_0) Then
 
 Imports Microsoft.VisualBasic.ApplicationServices
 
@@ -22,5 +21,3 @@ Namespace My
     End Module
 
 End Namespace
-
-#End If
