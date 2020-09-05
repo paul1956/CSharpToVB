@@ -4,54 +4,56 @@
 
 Imports System.Runtime.CompilerServices
 
-Public Module StringExtensions
+Namespace CSharpToVBConverter
 
-    <Extension()>
-    Public Function ContainsAny(s As String, comparisonType As StringComparison, ParamArray StringArray() As String) As Boolean
-        If String.IsNullOrWhiteSpace(s) Then
-            Return False
-        End If
-        If StringArray Is Nothing OrElse StringArray.Length = 0 Then
-            Return False
-        End If
-        For Each str As String In StringArray
-            If s.Contains(str, comparisonType) Then
-                Return True
+    Public Module StringExtensions
+
+        <Extension()>
+        Public Function ContainsAny(s As String, comparisonType As StringComparison, ParamArray StringArray() As String) As Boolean
+            If String.IsNullOrWhiteSpace(s) Then
+                Return False
             End If
-        Next
-        Return False
-    End Function
+            If StringArray Is Nothing OrElse StringArray.Length = 0 Then
+                Return False
+            End If
+            For Each str As String In StringArray
+                If s.Contains(str, comparisonType) Then
+                    Return True
+                End If
+            Next
+            Return False
+        End Function
 
-    <Extension>
-    Friend Function ConvertCondition(condition As String) As String
-        Return condition.
-                Replace("==", "=", StringComparison.Ordinal).
-                Replace("!=", "Not ", StringComparison.Ordinal).
-                Replace("&&", "And", StringComparison.Ordinal).
-                Replace("||", "Or", StringComparison.Ordinal).
-                Replace("!", "Not ", StringComparison.Ordinal).
-                Replace("false", "False", StringComparison.Ordinal).
-                Replace("true", "True", StringComparison.Ordinal).
-                Replace("  ", " ", StringComparison.Ordinal).
-                Replace("//", " ' ", StringComparison.Ordinal)
-    End Function
+        <Extension>
+        Friend Function ConvertCondition(condition As String) As String
+            Return condition.
+                    Replace("==", "=", StringComparison.Ordinal).
+                    Replace("!=", "Not ", StringComparison.Ordinal).
+                    Replace("&&", "And", StringComparison.Ordinal).
+                    Replace("||", "Or", StringComparison.Ordinal).
+                    Replace("!", "Not ", StringComparison.Ordinal).
+                    Replace("false", "False", StringComparison.Ordinal).
+                    Replace("true", "True", StringComparison.Ordinal).
+                    Replace("  ", " ", StringComparison.Ordinal).
+                    Replace("//", " ' ", StringComparison.Ordinal)
+        End Function
 
-    <Extension>
-    Friend Function ConvertTypeArgumentList(TypeString As String) As String
-        Return TypeString.
-        Replace("<", "(Of ", StringComparison.Ordinal).
-        Replace(">", ")", StringComparison.Ordinal)
+        <Extension>
+        Friend Function ConvertTypeArgumentList(TypeString As String) As String
+            Return TypeString.
+            Replace("<", "(Of ", StringComparison.Ordinal).
+            Replace(">", ")", StringComparison.Ordinal)
 
-    End Function
+        End Function
 
-    ' String isn't IEnumerable<char> in the current Portable profile.
-    <Extension>
-    Public Function Last(arg As String) As Char
-        If String.IsNullOrEmpty(arg) Then
-            Return CChar(vbNullChar)
-        End If
-        Return arg(arg.Length - 1)
-    End Function
+        ' String isn't IEnumerable<char> in the current Portable profile.
+        <Extension>
+        Public Function Last(arg As String) As Char
+            If String.IsNullOrEmpty(arg) Then
+                Return CChar(vbNullChar)
+            End If
+            Return arg(arg.Length - 1)
+        End Function
 
 #If NET48 Then
 
@@ -84,36 +86,37 @@ Public Module StringExtensions
 
 #End If
 
-    <Extension>
-    Friend Function RemoveAll(input As String, ParamArray StringsToBeRemoved() As String) As String
-        For Each s As String In StringsToBeRemoved
-            input = input.Replace(s, "", StringComparison.Ordinal)
-        Next
-        Return input
-    End Function
-
-    <Extension>
-    Friend Function RemoveAll(input As String, StringsToBeRemoved As String) As String
-        Return input.Replace(StringsToBeRemoved, "", StringComparison.Ordinal)
-    End Function
-
-    <Extension>
-    Friend Function RemoveBrackets(input As String) As String
-        Return input.Replace("["c, "", StringComparison.Ordinal).
-                     Replace("]"c, "", StringComparison.Ordinal)
-    End Function
-
-    <Extension>
-    Friend Function RemoveLeadingSystemDot(input As String) As String
-        Return input.Substring("System.".Length)
-    End Function
-
-    <Extension>
-    Friend Function TrimStart(input As String, TrimString As String) As String
-        If Not input.StartsWith(TrimString, StringComparison.OrdinalIgnoreCase) Then
+        <Extension>
+        Friend Function RemoveAll(input As String, ParamArray StringsToBeRemoved() As String) As String
+            For Each s As String In StringsToBeRemoved
+                input = input.Replace(s, "", StringComparison.Ordinal)
+            Next
             Return input
-        End If
-        Return input.Substring(TrimString.Length)
-    End Function
+        End Function
 
-End Module
+        <Extension>
+        Friend Function RemoveAll(input As String, StringsToBeRemoved As String) As String
+            Return input.Replace(StringsToBeRemoved, "", StringComparison.Ordinal)
+        End Function
+
+        <Extension>
+        Friend Function RemoveBrackets(input As String) As String
+            Return input.Replace("["c, "", StringComparison.Ordinal).
+                         Replace("]"c, "", StringComparison.Ordinal)
+        End Function
+
+        <Extension>
+        Friend Function RemoveLeadingSystemDot(input As String) As String
+            Return input.Substring("System.".Length)
+        End Function
+
+        <Extension>
+        Friend Function TrimStart(input As String, TrimString As String) As String
+            If Not input.StartsWith(TrimString, StringComparison.OrdinalIgnoreCase) Then
+                Return input
+            End If
+            Return input.Substring(TrimString.Length)
+        End Function
+
+    End Module
+End Namespace
