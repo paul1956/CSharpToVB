@@ -6,9 +6,11 @@ Imports CodeConverter.Tests
 Imports Xunit
 
 Namespace CSharpToVB.Tests
+
     <TestClass()>
     Public Class SymbolRenameTests
         Inherits ConverterTestBase
+
         <Fact>
         Public Shared Sub CSharpToVBSymbolRename()
             TestConversionCSharpToVisualBasic("public class ClashingNames
@@ -47,4 +49,5 @@ End Class")
         End Sub
 
     End Class
+
 End Namespace

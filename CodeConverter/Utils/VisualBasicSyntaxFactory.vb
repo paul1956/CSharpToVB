@@ -15,6 +15,7 @@ Public Module VisualBasicSyntaxFactory
 
     Public Const Quote As String = """"
     Public Const DoubleQuote As String = """"""
+    Public Const SyntaxKindNone As SyntaxKind = 0
     Public Const SystemString As SpecialType = SpecialType.System_String
     Public Const UnicodeOpenQuote As Char = ChrW(&H201C)
     Public Const UnicodeCloseQuote As Char = ChrW(&H201D)

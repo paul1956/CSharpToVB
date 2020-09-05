@@ -795,7 +795,6 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                                              )
                 End If
 
-
                 Me.MarkPatchInlineAssignHelper(node)
                 Return Factory.InvocationExpression(
                     expression:=Factory.IdentifierName("__InlineAssignHelper"),

@@ -4,13 +4,11 @@
 
 Imports System.Runtime.CompilerServices
 Imports CSharpToVBCodeConverter.ToVisualBasic
-
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.CSharp
-
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
-Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
+Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace CSharpToVBCodeConverter

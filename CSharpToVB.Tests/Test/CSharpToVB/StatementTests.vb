@@ -188,7 +188,6 @@ End Class")
 End Class")
         End Sub
 
-
         <Fact>
         Public Shared Sub CSharpToVBArrayInitializationStatementWithLength()
             TestConversionCSharpToVisualBasic("class TestClass
@@ -581,7 +580,6 @@ BC30516: Overload resolution failed because no accessible 'Val' accepts this num
     End Sub
 End Class")
         End Sub
-
 
         <Fact>
         Public Shared Sub CSharpToVBForWithBlockDecrement()
@@ -1191,7 +1189,6 @@ End Class")
     End Sub
 End Class")
         End Sub
-
 
         <Fact>
         Public Shared Sub CSharpToVBSelectCaseWithDotInCaseLabel()

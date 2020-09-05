@@ -26,11 +26,12 @@ Public Structure ProgressReport
         Return (Current, Maximum).GetHashCode()
     End Function
 #Else
+
     Public Overrides Function GetHashCode() As Integer
         Return HashCode.Combine(Current, Maximum)
     End Function
-#End If
 
+#End If
 
     Public Shared Operator =(left As ProgressReport, right As ProgressReport) As Boolean
         Return left.Equals(right)

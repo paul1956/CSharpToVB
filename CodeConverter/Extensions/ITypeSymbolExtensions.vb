@@ -10,9 +10,8 @@ Imports CSharpToVBCodeConverter
 Imports CSharpToVBCodeConverter.ToVisualBasic
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
-
-Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
+Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
 <EditorBrowsable(EditorBrowsableState.Never)>
 Public Module ITypeSymbolExtensions

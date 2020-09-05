@@ -1,5 +1,6 @@
 ﻿Public Class ToolStripCheckBox
     Inherits ToolStripControlHost
+
     <CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification:="No reason, it is disposed on close")>
     Public Sub New()
         MyBase.New(New CheckBox)
@@ -55,4 +56,5 @@
     Private Sub CheckedChangedHandler(sender As Object, e As EventArgs)
         RaiseEvent CheckedChanged(Me, e)
     End Sub
+
 End Class

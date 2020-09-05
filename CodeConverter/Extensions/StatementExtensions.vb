@@ -11,6 +11,7 @@ Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Public Module StatementExtensions
+
     <Extension>
     Friend Function ContainsName(ImportList As List(Of VBS.ImportsStatementSyntax), ImportName As String) As Boolean
         For Each ImportToCheck As VBS.ImportsStatementSyntax In ImportList
@@ -22,7 +23,6 @@ Public Module StatementExtensions
         Next
         Return False
     End Function
-
 
     <Extension>
     Friend Function RestructureArguments(VB_Node As VBS.StatementSyntax, csArgumentList As CSS.ArgumentListSyntax) As VBS.StatementSyntax

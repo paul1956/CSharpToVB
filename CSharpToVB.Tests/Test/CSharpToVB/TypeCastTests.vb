@@ -136,7 +136,6 @@ End Module")
 End Class")
         End Sub
 
-
         <Fact>
         Public Shared Sub CSharpToVBCastObjectToInteger()
             ' The leading and trailing newlines check that surrounding trivia is selected as part of this (in the comments auto-testing)

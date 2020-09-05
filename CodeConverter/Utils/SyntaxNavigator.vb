@@ -8,8 +8,6 @@ Namespace Microsoft.CodeAnalysis
 
     Friend NotInheritable Class SyntaxNavigator
 
-        Private Const None As Integer = 0
-
         Private Shared ReadOnly s_childEnumeratorStackPool As New ObjectPool(Of Stack(Of ChildSyntaxList.Enumerator))(Function() New Stack(Of ChildSyntaxList.Enumerator)(), 10)
         Public Shared ReadOnly s_instance As SyntaxNavigator = New SyntaxNavigator()
 
@@ -26,7 +24,7 @@ Namespace Microsoft.CodeAnalysis
                 If trivia.HasStructure AndAlso stepInto(trivia) Then
                     Dim [structure] As SyntaxNode = trivia.GetStructure()
                     Dim token As SyntaxToken = Me.GetFirstToken([structure], predicate, stepInto)
-                    If token.RawKind <> None Then
+                    If token.RawKind <> SyntaxKindNone Then
                         Return token
                     End If
                 End If
@@ -40,7 +38,7 @@ Namespace Microsoft.CodeAnalysis
             If stepInto IsNot Nothing Then
                 ' search in leading trivia
                 Dim firstToken As SyntaxToken = Me.GetFirstToken(token.LeadingTrivia, predicate, stepInto)
-                If firstToken.RawKind <> None Then
+                If firstToken.RawKind <> SyntaxKindNone Then
                     Return firstToken
                 End If
             End If
@@ -52,7 +50,7 @@ Namespace Microsoft.CodeAnalysis
             If stepInto IsNot Nothing Then
                 ' search in trailing trivia
                 Dim firstToken As SyntaxToken = Me.GetFirstToken(token.TrailingTrivia, predicate, stepInto)
-                If firstToken.RawKind <> None Then
+                If firstToken.RawKind <> SyntaxKindNone Then
                     Return firstToken
                 End If
             End If
@@ -70,7 +68,7 @@ Namespace Microsoft.CodeAnalysis
                         Dim child As SyntaxNodeOrToken = en.Current
                         If child.IsToken Then
                             Dim token As SyntaxToken = Me.GetFirstToken(child.AsToken(), predicate, stepInto)
-                            If token.RawKind <> None Then
+                            If token.RawKind <> SyntaxKindNone Then
                                 Return token
                             End If
                         End If
@@ -97,7 +95,7 @@ Namespace Microsoft.CodeAnalysis
                         Dim [structure] As SyntaxNode = trivia.GetStructure()
                         Dim token As SyntaxToken = Me.GetFirstToken([structure], predicate, stepInto)
                         'BC30518: Overload resolution failed because no accessible 'GetFirstToken' can be called with these arguments:
-                        If token.RawKind <> None Then
+                        If token.RawKind <> SyntaxKindNone Then
                             Return token
                         End If
                     End If
@@ -117,7 +115,7 @@ Namespace Microsoft.CodeAnalysis
             Dim returnNext As Boolean = False
             ' look inside leading trivia for current & next
             Dim token As SyntaxToken = Me.GetNextToken(current, current.Token.LeadingTrivia, predicate, stepInto, returnNext)
-            If token.RawKind <> None Then
+            If token.RawKind <> SyntaxKindNone Then
                 Return token
             End If
 
@@ -128,7 +126,7 @@ Namespace Microsoft.CodeAnalysis
 
             ' look inside trailing trivia for current & next (or just next)
             token = Me.GetNextToken(current, current.Token.TrailingTrivia, predicate, stepInto, returnNext)
-            If token.RawKind <> None Then
+            If token.RawKind <> SyntaxKindNone Then
                 Return token
             End If
 
@@ -145,13 +143,13 @@ Namespace Microsoft.CodeAnalysis
                         If child.IsToken Then
                             Dim token As SyntaxToken = Me.GetFirstToken(child.AsToken(), predicate, stepInto)
                             'BC30518: Overload resolution failed because no accessible 'GetFirstToken' can be called with these arguments:
-                            If token.RawKind <> None Then
+                            If token.RawKind <> SyntaxKindNone Then
                                 Return token
                             End If
                         Else
                             Dim token As SyntaxToken = Me.GetFirstToken(child.AsNode(), predicate, stepInto)
                             'BC30518: Overload resolution failed because no accessible 'GetFirstToken' can be called with these arguments:
-                            If token.RawKind <> None Then
+                            If token.RawKind <> SyntaxKindNone Then
                                 Return token
                             End If
                         End If
@@ -177,7 +175,7 @@ Namespace Microsoft.CodeAnalysis
                 ' look inside trailing trivia for structure
                 If searchInsideCurrentTokenTrailingTrivia Then
                     Dim firstToken As SyntaxToken = Me.GetFirstToken(current.TrailingTrivia, predicate, stepInto)
-                    If firstToken.RawKind <> None Then
+                    If firstToken.RawKind <> SyntaxKindNone Then
                         Return firstToken
                     End If
                 End If
@@ -189,12 +187,12 @@ Namespace Microsoft.CodeAnalysis
                     If returnNext Then
                         If child.IsToken Then
                             Dim token As SyntaxToken = Me.GetFirstToken(child.AsToken(), predicate, stepInto)
-                            If token.RawKind <> None Then
+                            If token.RawKind <> SyntaxKindNone Then
                                 Return token
                             End If
                         Else
                             Dim token As SyntaxToken = Me.GetFirstToken(child.AsNode(), predicate, stepInto)
-                            If token.RawKind <> None Then
+                            If token.RawKind <> SyntaxKindNone Then
                                 Return token
                             End If
                         End If

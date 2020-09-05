@@ -6,11 +6,10 @@ Imports System.Runtime.CompilerServices
 Imports Microsoft.CodeAnalysis
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSFactory = Microsoft.CodeAnalysis.CSharp.SyntaxFactory
-Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
+Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
 Public Module TriviaExtensions
-
 
     <Extension>
     Friend Function AdjustWhitespace(Trivia As SyntaxTrivia, nextTrivia As SyntaxTrivia, afterLineContinue As Boolean) As SyntaxTrivia

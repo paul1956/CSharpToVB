@@ -7,7 +7,9 @@ Imports System.Threading
 Imports Microsoft.CodeAnalysis
 
 #If Not NET5_0 Then
+
 Imports VBMsgBox
+
 #End If
 
 Public Module FileUtilities

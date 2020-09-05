@@ -3,11 +3,10 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports Microsoft.CodeAnalysis
-
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
-Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
+Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace CSharpToVBCodeConverter.ToVisualBasic

@@ -6,13 +6,13 @@ Imports System.Runtime.CompilerServices
 Imports System.Text
 
 Imports Microsoft.CodeAnalysis
-Imports Microsoft.CodeAnalysis.CSharp
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace CSharpToVBCodeConverter.ToVisualBasic
 
     Public Module TupleSupportExtensions
+
         ''' <summary>
         ''' Extract String
         ''' </summary>

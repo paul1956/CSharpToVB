@@ -257,7 +257,7 @@ Public Module ExpressionSyntaxExtensions
                         TypeOf ExpressionBody Is VBS.RaiseEventStatementSyntax OrElse
                         TypeOf ExpressionBody Is VBS.ThrowStatementSyntax Then
             Statement = DirectCast(ExpressionBody, VBS.StatementSyntax).WithTrailingEOL(RemoveLastLineContinuation:=True)
-        ElseIf ArrowExpressionClause.Parent.IsKind(CS.syntaxkind.SetAccessorDeclaration) Then
+        ElseIf ArrowExpressionClause.Parent.IsKind(CS.SyntaxKind.SetAccessorDeclaration) Then
             Statement = Factory.ExpressionStatement(CType(ExpressionBody, VBS.ExpressionSyntax))
         Else
             Statement = Factory.ReturnStatement(DirectCast(ExpressionBody.WithLeadingTrivia(VBSpaceTrivia), VBS.ExpressionSyntax)) _

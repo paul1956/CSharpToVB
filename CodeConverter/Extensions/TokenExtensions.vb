@@ -9,8 +9,8 @@ Imports CSharpToVBCodeConverter.ToVisualBasic.AttributeAndModifierSupport
 Imports Microsoft.CodeAnalysis
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
-Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
+Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
 Public Module TokenExtensions
 
@@ -125,7 +125,6 @@ Public Module TokenExtensions
         End If
         Return Token.WithTrailingTrivia(newTrailingTrivia)
     End Function
-
 
     ''' <summary>
     ''' Combines leading and trailing trivia for a Token

@@ -4,11 +4,10 @@
 
 Imports System.Collections.Immutable
 Imports Microsoft.CodeAnalysis
-
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
-Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
+Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace CSharpToVBCodeConverter.ToVisualBasic
@@ -556,7 +555,7 @@ End Function
                     extern.Accept(Me)
                 Next
 
-                Dim newOpenBrackTrivia As SyntaxTriviaList = CollectConvertedTokenTrivia(node.OpenBraceToken, GetLeading:=True, GetTrailing:=true)
+                Dim newOpenBrackTrivia As SyntaxTriviaList = CollectConvertedTokenTrivia(node.OpenBraceToken, GetLeading:=True, GetTrailing:=True)
                 Dim members As New List(Of VBS.StatementSyntax)
 
                 For Each e As IndexClass(Of CSS.MemberDeclarationSyntax) In node.Members.WithIndex

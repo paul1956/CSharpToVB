@@ -11,7 +11,6 @@ Imports Microsoft.CodeAnalysis.VisualBasic
 
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
-Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
@@ -34,6 +33,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
             Private _membersList As SyntaxList(Of VBS.StatementSyntax)
             Public ReadOnly AllImports As New List(Of VBS.ImportsStatementSyntax)()
             Public ReadOnly InlineAssignHelperMarkers As New List(Of CSS.BaseTypeDeclarationSyntax)()
+
             'Public ReadOnly ByRefHelperMarkers As New List(Of CSS.BaseTypeDeclarationSyntax)()
             Public VBHeaderLeadingTrivia As SyntaxTriviaList
 
@@ -194,7 +194,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                             Options = Options.Replace(Options.Last, Options.Last.WithAppendedEOL)
                         End If
                     Else
-                            If VBHeaderLeadingTrivia.Any Then
+                        If VBHeaderLeadingTrivia.Any Then
                             Options = Options.Replace(Options(0), Options(0).WithLeadingTrivia(VBHeaderLeadingTrivia.Add(VBEOLTrivia)))
                         End If
                         Options = Options.Replace(Options.Last, Options.Last.WithAppendedEOL)
@@ -211,7 +211,6 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                                              Factory.List(ListOfAttributes),
                                              _membersList,
                                              EndOfFileToken.WithConvertedTriviaFrom(node.EndOfFileToken))
-
                 Else
                     _membersList = _membersList.Add(Factory.EmptyStatement.WithLeadingTrivia(VBHeaderLeadingTrivia))
                     compilationUnitSyntax1 = Factory.CompilationUnit(options:=Nothing,

@@ -10,9 +10,12 @@ Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.CSharp
 Imports Microsoft.CodeAnalysis.VisualBasic
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
+
 Imports CS = Microsoft.CodeAnalysis.CSharp
+
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
+
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
 Namespace CSharpToVBCodeConverter.ToVisualBasic
@@ -1148,7 +1151,6 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                     Dim openBraceLeadingTrivia As New SyntaxTriviaList
                     Dim closeBraceTrailingTrivia As New SyntaxTriviaList
                     Me.CollectElseBlocks(node, ListOfElseIfBlocks, ElseBlock, openBraceLeadingTrivia, closeBraceTrailingTrivia)
-
 
                     Dim OpenParenToken As SyntaxToken = node.OpenParenToken
 

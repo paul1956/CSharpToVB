@@ -44,7 +44,6 @@ Namespace Global.Microsoft.VisualBasic.ApplicationServices
             End Get
         End Property
 
-
         ''' <summary>
         ''' Allows derived classes to set what the command line should look like.  WindowsFormsApplicationBase calls this
         ''' for instance because we snag the command line from Main().

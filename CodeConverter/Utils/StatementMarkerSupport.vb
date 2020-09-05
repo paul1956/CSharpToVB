@@ -4,15 +4,13 @@
 
 Imports System.Runtime.CompilerServices
 Imports System.Text
-
 Imports CSharpToVBCodeConverter.ToVisualBasic
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
-
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
-Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
+Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
 Public Module StatementMarker
     Private ReadOnly s_statementDictionary As New Dictionary(Of CS.CSharpSyntaxNode, Integer)
@@ -279,7 +277,6 @@ Public Module StatementMarker
             If TypeOf StatementWithIssues Is CSS.ArrowExpressionClauseSyntax Then
                 Return StatementWithIssues
             End If
-
 
             If TypeOf StatementWithIssues Is CSS.StatementSyntax Then
                 Dim StatementWithIssueParent As SyntaxNode = StatementWithIssues.Parent

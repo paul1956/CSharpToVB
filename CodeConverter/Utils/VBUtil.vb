@@ -148,6 +148,7 @@ Public Module VBUtil
 
         Throw New NotSupportedException($"Type.Kind {t} is not supported!")
     End Function
+
     Public Function ConvertKindToTypesToken(t As CS.SyntaxKind, Optional context As TokenContext = TokenContext.Global) As SyntaxToken
 
         Select Case t
@@ -194,7 +195,6 @@ Public Module VBUtil
 
         Throw New NotSupportedException($"Type.Kind {t} is not supported!")
     End Function
-
 
     ''' <summary>
     '''Get VB Expression Operator Token Kind from VB Expression Kind

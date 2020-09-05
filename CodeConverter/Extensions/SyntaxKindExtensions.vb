@@ -160,6 +160,5 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
             Return Kinds.Contains(Kind)
         End Function
 
-
     End Module
 End Namespace

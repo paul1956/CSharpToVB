@@ -10,6 +10,7 @@ Imports Microsoft.CodeAnalysis.Rename
 
 <ExcludeFromCodeCoverage>
 Friend Module SymbolRenamer
+
     <Extension()>
     Private Function GetParameterSignature(methodSymbol As IMethodSymbol) As String
         Return String.Join(" ", methodSymbol.Parameters.Select(Function(p) p.Type))
