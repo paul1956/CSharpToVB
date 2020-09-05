@@ -14,7 +14,7 @@ Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace CSharpToVBCodeConverter.ToVisualBasic
+Namespace CSharpToVBConverter.ToVisualBasic
 
     Partial Public Class CSharpConverter
 

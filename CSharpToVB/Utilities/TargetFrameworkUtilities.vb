@@ -2,6 +2,7 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
+Imports CSharpToVBConverter
 Imports Microsoft.Win32
 
 Module TargetFrameworkUtilities
@@ -19,7 +20,7 @@ Module TargetFrameworkUtilities
         ElseIf releaseKey >= 394802 Then
             Return "NET462"
         ElseIf releaseKey >= 394254 Then
-            Return "NET4461"
+            Return "NET461"
         ElseIf releaseKey >= 393295 Then
             Return "NET46"
         ElseIf releaseKey >= 379893 Then

@@ -12,7 +12,7 @@ Imports CS = Microsoft.CodeAnalysis.CSharp
 
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 
-Namespace CSharpToVBCodeConverter.ToVisualBasic
+Namespace CSharpToVBConverter.ToVisualBasic
     Public Module MethodBodySupport
 
         Friend Function ContainsLocalFunctionReference(syntax As SyntaxNode, localFunctionSymbol As IMethodSymbol, _semanticModel As SemanticModel) As Boolean

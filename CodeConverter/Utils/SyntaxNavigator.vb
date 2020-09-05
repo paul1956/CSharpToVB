@@ -3,8 +3,9 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports CSharpToVB.PooledObjects
+Imports Microsoft.CodeAnalysis
 
-Namespace Microsoft.CodeAnalysis
+Namespace CSharpToVBConverter
 
     Friend NotInheritable Class SyntaxNavigator
 

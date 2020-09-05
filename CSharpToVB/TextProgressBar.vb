@@ -4,6 +4,7 @@
 
 Imports System.Drawing.Drawing2D
 Imports System.Threading
+Imports CSharpToVBConverter
 
 Public Class TextProgressBar
     Implements IDisposable

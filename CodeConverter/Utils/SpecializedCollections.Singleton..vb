@@ -1,147 +1,151 @@
 ﻿' Licensed to the .NET Foundation under one or more agreements.
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
-Partial Public Module SpecializedCollections
 
-    Friend NotInheritable Class SingletonList(Of T)
-        Implements IList(Of T), IReadOnlyCollection(Of T)
+Namespace CSharpToVBConverter
 
-        Private ReadOnly _loneValue As T
+    Partial Public Module SpecializedCollections
 
-        Public Sub New(value As T)
-            _loneValue = value
-        End Sub
+        Friend NotInheritable Class SingletonList(Of T)
+            Implements IList(Of T), IReadOnlyCollection(Of T)
 
-        Public Sub Add(item As T) Implements ICollection(Of T).Add
-            Throw New NotSupportedException()
-        End Sub
+            Private ReadOnly _loneValue As T
 
-        Public Sub Clear() Implements ICollection(Of T).Clear
-            Throw New NotSupportedException()
-        End Sub
+            Public Sub New(value As T)
+                _loneValue = value
+            End Sub
 
-        Public Function Contains(item As T) As Boolean Implements ICollection(Of T).Contains
-            Return EqualityComparer(Of T).Default.Equals(_loneValue, item)
-        End Function
+            Public Sub Add(item As T) Implements ICollection(Of T).Add
+                Throw New NotSupportedException()
+            End Sub
 
-        Public Sub CopyTo(array() As T, arrayIndex As Integer) Implements ICollection(Of T).CopyTo
-            array(arrayIndex) = _loneValue
-        End Sub
+            Public Sub Clear() Implements ICollection(Of T).Clear
+                Throw New NotSupportedException()
+            End Sub
 
-        Public ReadOnly Property Count() As Integer Implements ICollection(Of T).Count, IReadOnlyCollection(Of T).Count
-            Get
-                Return 1
-            End Get
-        End Property
+            Public Function Contains(item As T) As Boolean Implements ICollection(Of T).Contains
+                Return EqualityComparer(Of T).Default.Equals(_loneValue, item)
+            End Function
 
-        Public ReadOnly Property IsReadOnly() As Boolean Implements ICollection(Of T).IsReadOnly
-            Get
-                Return True
-            End Get
-        End Property
+            Public Sub CopyTo(array() As T, arrayIndex As Integer) Implements ICollection(Of T).CopyTo
+                array(arrayIndex) = _loneValue
+            End Sub
 
-        Public Function Remove(item As T) As Boolean Implements ICollection(Of T).Remove
-            Throw New NotSupportedException()
-        End Function
+            Public ReadOnly Property Count() As Integer Implements ICollection(Of T).Count, IReadOnlyCollection(Of T).Count
+                Get
+                    Return 1
+                End Get
+            End Property
 
-        Public Function GetEnumerator() As IEnumerator(Of T) Implements IEnumerable(Of T).GetEnumerator
-            Return New Enumerator(Of T)(_loneValue)
-        End Function
+            Public ReadOnly Property IsReadOnly() As Boolean Implements ICollection(Of T).IsReadOnly
+                Get
+                    Return True
+                End Get
+            End Property
 
-        Private Function IEnumerable_GetEnumerator() As IEnumerator Implements IEnumerable.GetEnumerator
-            Return Me.GetEnumerator()
-        End Function
+            Public Function Remove(item As T) As Boolean Implements ICollection(Of T).Remove
+                Throw New NotSupportedException()
+            End Function
 
-        Default Public Property Item(index As Integer) As T Implements IList(Of T).Item
-            Get
-                If index <> 0 Then
-                    Throw New IndexOutOfRangeException()
+            Public Function GetEnumerator() As IEnumerator(Of T) Implements IEnumerable(Of T).GetEnumerator
+                Return New Enumerator(Of T)(_loneValue)
+            End Function
+
+            Private Function IEnumerable_GetEnumerator() As IEnumerator Implements IEnumerable.GetEnumerator
+                Return Me.GetEnumerator()
+            End Function
+
+            Default Public Property Item(index As Integer) As T Implements IList(Of T).Item
+                Get
+                    If index <> 0 Then
+                        Throw New IndexOutOfRangeException()
+                    End If
+
+                    Return _loneValue
+                End Get
+
+                Set(value As T)
+                    Throw New NotSupportedException()
+                End Set
+            End Property
+
+            Public Function IndexOf(item As T) As Integer Implements IList(Of T).IndexOf
+                If Equals(_loneValue, item) Then
+                    Return 0
                 End If
 
-                Return _loneValue
-            End Get
+                Return -1
+            End Function
 
-            Set(value As T)
+            Public Sub Insert(index As Integer, item As T) Implements IList(Of T).Insert
                 Throw New NotSupportedException()
-            End Set
-        End Property
+            End Sub
 
-        Public Function IndexOf(item As T) As Integer Implements IList(Of T).IndexOf
-            If Equals(_loneValue, item) Then
-                Return 0
-            End If
+            Public Sub RemoveAt(index As Integer) Implements IList(Of T).RemoveAt
+                Throw New NotSupportedException()
+            End Sub
 
-            Return -1
-        End Function
+        End Class
 
-        Public Sub Insert(index As Integer, item As T) Implements IList(Of T).Insert
-            Throw New NotSupportedException()
-        End Sub
+        Friend Class Enumerator(Of T)
+            Implements IEnumerator(Of T)
 
-        Public Sub RemoveAt(index As Integer) Implements IList(Of T).RemoveAt
-            Throw New NotSupportedException()
-        End Sub
+            Private _moveNextCalled As Boolean
 
-    End Class
+            Public Sub New(value As T)
+                Current = value
+                _moveNextCalled = False
+            End Sub
 
-    Friend Class Enumerator(Of T)
-        Implements IEnumerator(Of T)
+            Public ReadOnly Property Current() As T Implements IEnumerator(Of T).Current
 
-        Private _moveNextCalled As Boolean
+            Private ReadOnly Property IEnumerator_Current() As Object Implements IEnumerator.Current
+                Get
+                    Return Current
+                End Get
+            End Property
 
-        Public Sub New(value As T)
-            Current = value
-            _moveNextCalled = False
-        End Sub
+            Public Function MoveNext() As Boolean Implements IEnumerator(Of T).MoveNext
+                If Not _moveNextCalled Then
+                    _moveNextCalled = True
+                    Return True
+                End If
 
-        Public ReadOnly Property Current() As T Implements IEnumerator(Of T).Current
+                Return False
+            End Function
 
-        Private ReadOnly Property IEnumerator_Current() As Object Implements IEnumerator.Current
-            Get
-                Return Current
-            End Get
-        End Property
-
-        Public Function MoveNext() As Boolean Implements IEnumerator(Of T).MoveNext
-            If Not _moveNextCalled Then
-                _moveNextCalled = True
-                Return True
-            End If
-
-            Return False
-        End Function
-
-        Public Sub Reset() Implements IEnumerator(Of T).Reset
-            _moveNextCalled = False
-        End Sub
+            Public Sub Reset() Implements IEnumerator(Of T).Reset
+                _moveNextCalled = False
+            End Sub
 
 #Region "IDisposable Support"
 
-        Private _disposedValue As Boolean ' To detect redundant calls
+            Private _disposedValue As Boolean ' To detect redundant calls
 
-        ' IDisposable
-        Protected Overridable Sub Dispose(disposing As Boolean)
-            If Not _disposedValue Then
-                If disposing Then
-                    ' TODO: dispose managed state (managed objects).
+            ' IDisposable
+            Protected Overridable Sub Dispose(disposing As Boolean)
+                If Not _disposedValue Then
+                    If disposing Then
+                        ' TODO: dispose managed state (managed objects).
+                    End If
+
+                    ' TODO: free unmanaged resources (unmanaged objects) and override Finalize() below.
+                    ' TODO: set large fields to null.
                 End If
+                _disposedValue = True
+            End Sub
 
-                ' TODO: free unmanaged resources (unmanaged objects) and override Finalize() below.
-                ' TODO: set large fields to null.
-            End If
-            _disposedValue = True
-        End Sub
-
-        ' This code added by Visual Basic to correctly implement the disposable pattern.
-        Public Sub Dispose() Implements IDisposable.Dispose
-            ' Do not change this code.  Put cleanup code in Dispose(disposing As Boolean) above.
-            Me.Dispose(True)
-            ' TODO: uncomment the following line if Finalize() is overridden above.
-            ' GC.SuppressFinalize(Me)
-        End Sub
+            ' This code added by Visual Basic to correctly implement the disposable pattern.
+            Public Sub Dispose() Implements IDisposable.Dispose
+                ' Do not change this code.  Put cleanup code in Dispose(disposing As Boolean) above.
+                Me.Dispose(True)
+                ' TODO: uncomment the following line if Finalize() is overridden above.
+                ' GC.SuppressFinalize(Me)
+            End Sub
 
 #End Region
 
-    End Class
+        End Class
 
-End Module
+    End Module
+End Namespace

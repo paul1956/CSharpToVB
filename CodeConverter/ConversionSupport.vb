@@ -5,14 +5,13 @@
 Imports System.Collections.Immutable
 Imports System.Diagnostics.CodeAnalysis
 Imports System.Threading
-
-Imports CSharpToVBCodeConverter.ToVisualBasic
+Imports CSharpToVBConverter.ToVisualBasic
 Imports Microsoft.CodeAnalysis
 
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
-Namespace CSharpToVBCodeConverter
+Namespace CSharpToVBConverter
     Public Module ConversionSupport
         Friend ReadOnly s_usedStacks As New Stack(New Dictionary(Of String, SymbolTableEntry)(StringComparer.Ordinal))
         Friend s_implementedMembers As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))) = (New List(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))).ToImmutableArray

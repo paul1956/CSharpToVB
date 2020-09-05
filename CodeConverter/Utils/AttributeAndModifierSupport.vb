@@ -8,7 +8,7 @@ Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace CSharpToVBCodeConverter.ToVisualBasic
+Namespace CSharpToVBConverter.ToVisualBasic
 
     Public Module AttributeAndModifierSupport
 

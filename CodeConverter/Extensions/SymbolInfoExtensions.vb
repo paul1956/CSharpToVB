@@ -6,11 +6,14 @@ Imports System.Runtime.CompilerServices
 
 Imports Microsoft.CodeAnalysis
 
-Public Module SymbolInfoExtensions
+Namespace CSharpToVBConverter
 
-    <Extension>
-    Public Function GetAnySymbol(info As SymbolInfo) As ISymbol
-        Return If(info.Symbol, info.CandidateSymbols.FirstOrDefault())
-    End Function
+    Public Module SymbolInfoExtensions
 
-End Module
+        <Extension>
+        Public Function GetAnySymbol(info As SymbolInfo) As ISymbol
+            Return If(info.Symbol, info.CandidateSymbols.FirstOrDefault())
+        End Function
+
+    End Module
+End Namespace

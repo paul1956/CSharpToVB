@@ -7,7 +7,7 @@ Imports Microsoft.CodeAnalysis
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
-Namespace CSharpToVBCodeConverter.ToVisualBasic
+Namespace CSharpToVBConverter.ToVisualBasic
     Module SyntaxKindExtensions
 
         <Extension>

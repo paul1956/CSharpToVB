@@ -8,61 +8,62 @@ Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.FindSymbols
 Imports Microsoft.CodeAnalysis.Rename
 
-<ExcludeFromCodeCoverage>
-Friend Module SymbolRenamer
+Namespace CSharpToVBConverter
+    <ExcludeFromCodeCoverage>
+    Friend Module SymbolRenamer
 
-    <Extension()>
-    Private Function GetParameterSignature(methodSymbol As IMethodSymbol) As String
-        Return String.Join(" ", methodSymbol.Parameters.Select(Function(p) p.Type))
-    End Function
+        <Extension()>
+        Private Function GetParameterSignature(methodSymbol As IMethodSymbol) As String
+            Return String.Join(" ", methodSymbol.Parameters.Select(Function(p) p.Type))
+        End Function
 
-    <Extension()>
-    Private Function GetUnqualifiedMethodSignature(methodSymbol As IMethodSymbol, caseSensitiveName As Boolean) As (Name As String, TypeParameterCount As Integer, ParameterTypes As String)
+        <Extension()>
+        Private Function GetUnqualifiedMethodSignature(methodSymbol As IMethodSymbol, caseSensitiveName As Boolean) As (Name As String, TypeParameterCount As Integer, ParameterTypes As String)
 #Disable Warning CA1308 ' Normalize strings to uppercase
-        Return (If(caseSensitiveName, methodSymbol.Name, methodSymbol.Name.ToLowerInvariant()), methodSymbol.TypeParameters.Length, GetParameterSignature(methodSymbol))
+            Return (If(caseSensitiveName, methodSymbol.Name, methodSymbol.Name.ToLowerInvariant()), methodSymbol.TypeParameters.Length, GetParameterSignature(methodSymbol))
 #Enable Warning CA1308 ' Normalize strings to uppercase
-    End Function
+        End Function
 
-    Private Iterator Function FollowProperty(Of TIn As TOut, TOut As Class)(start As TIn, getProperty As Func(Of TOut, TOut)) As IEnumerable(Of TOut)
-        Dim current As TOut = start
-        While current IsNot Nothing
-            Yield current
-            current = getProperty(current)
-        End While
-    End Function
+        Private Iterator Function FollowProperty(Of TIn As TOut, TOut As Class)(start As TIn, getProperty As Func(Of TOut, TOut)) As IEnumerable(Of TOut)
+            Dim current As TOut = start
+            While current IsNot Nothing
+                Yield current
+                current = getProperty(current)
+            End While
+        End Function
 
-    <Extension()>
-    Private Function FollowProperty(Of TOut As Class)(start As TOut, getProperty As Func(Of TOut, TOut)) As IEnumerable(Of TOut)
-        Return FollowProperty(Of TOut, TOut)(start, getProperty)
-    End Function
+        <Extension()>
+        Private Function FollowProperty(Of TOut As Class)(start As TOut, getProperty As Func(Of TOut, TOut)) As IEnumerable(Of TOut)
+            Return FollowProperty(Of TOut, TOut)(start, getProperty)
+        End Function
 
-    Private Function GetBaseForNewName(declaration As ISymbol) As String
-        Dim _name As String = GetName(declaration)
-        Dim tempVar As String
+        Private Function GetBaseForNewName(declaration As ISymbol) As String
+            Dim _name As String = GetName(declaration)
+            Dim tempVar As String
 
-        Select Case declaration.Kind
-            Case = SymbolKind.Method
-                tempVar = _name & "Method"
-            Case = SymbolKind.Property
-                tempVar = _name & "Prop"
-            Case = SymbolKind.NamedType
-                tempVar = _name & "Type"
-            Case = SymbolKind.Field
-                tempVar = _name & "Field"
-            Case Else
+            Select Case declaration.Kind
+                Case = SymbolKind.Method
+                    tempVar = _name & "Method"
+                Case = SymbolKind.Property
+                    tempVar = _name & "Prop"
+                Case = SymbolKind.NamedType
+                    tempVar = _name & "Type"
+                Case = SymbolKind.Field
+                    tempVar = _name & "Field"
+                Case Else
 #Disable Warning CA1308 ' Normalize strings to uppercase
-                tempVar = $"{declaration.Kind.ToString().ToLowerInvariant()(0)}{Char.ToUpperInvariant(_name.Chars(index:=0))}{_name.Substring(startIndex:=1)}"
+                    tempVar = $"{declaration.Kind.ToString().ToLowerInvariant()(0)}{Char.ToUpperInvariant(_name.Chars(index:=0))}{_name.Substring(startIndex:=1)}"
 #Enable Warning CA1308 ' Normalize strings to uppercase
-        End Select
+            End Select
 
-        Return tempVar
-    End Function
+            Return tempVar
+        End Function
 
-    Private Function GetMethodSymbolsWithNewNames(methodSymbols As IMethodSymbol(),
+        Private Function GetMethodSymbolsWithNewNames(methodSymbols As IMethodSymbol(),
         names As HashSet(Of String),
         specialSymbolUsingName As Boolean, caseSensitive As Boolean) As (Original As ISymbol, NewName As String)()
-        Dim _stringComparer As StringComparer = If(caseSensitive, StringComparer.Ordinal, StringComparer.OrdinalIgnoreCase)
-        Dim methodsBySignature() As (original As ISymbol, NewName As String) = methodSymbols _
+            Dim _stringComparer As StringComparer = If(caseSensitive, StringComparer.Ordinal, StringComparer.OrdinalIgnoreCase)
+            Dim methodsBySignature() As (original As ISymbol, NewName As String) = methodSymbols _
             .ToLookup(Function(m) m.GetUnqualifiedMethodSignature(caseSensitive)) _
             .Where(Function(g) g.Count() > 1) _
             .SelectMany(Function(clashingMethodGroup) As (Original As ISymbol, NewName As String)()
@@ -73,33 +74,33 @@ Friend Module SymbolRenamer
                             Return symbolsWithNewNames
                         End Function).ToArray()
 
-        For Each newMethodNames As String In methodsBySignature.Select(Function(m) m.NewName)
-            names.Add(newMethodNames)
-        Next
+            For Each newMethodNames As String In methodsBySignature.Select(Function(m) m.NewName)
+                names.Add(newMethodNames)
+            Next
 
-        Return methodsBySignature
-    End Function
+            Return methodsBySignature
+        End Function
 
-    Public Function GetName(m As ISymbol) As String
-        If m.CanBeReferencedByName Then
+        Public Function GetName(m As ISymbol) As String
+            If m.CanBeReferencedByName Then
+                Return m.Name
+            End If
+            If m.ExplicitInterfaceImplementations().Any() Then
+                Return m.Name.Split("."c).Last()
+            End If
+
             Return m.Name
-        End If
-        If m.ExplicitInterfaceImplementations().Any() Then
-            Return m.Name.Split("."c).Last()
-        End If
+        End Function
 
-        Return m.Name
-    End Function
-
-    Public Function GetNamespacesAndTypesInAssembly(_project As Project, _compilation As Compilation) As IEnumerable(Of INamespaceOrTypeSymbol)
-        Return _compilation.GlobalNamespace.FollowProperty(Function(n As INamespaceOrTypeSymbol) CType(n.GetMembers.OfType(Of INamespaceOrTypeSymbol)() _
+        Public Function GetNamespacesAndTypesInAssembly(_project As Project, _compilation As Compilation) As IEnumerable(Of INamespaceOrTypeSymbol)
+            Return _compilation.GlobalNamespace.FollowProperty(Function(n As INamespaceOrTypeSymbol) CType(n.GetMembers.OfType(Of INamespaceOrTypeSymbol)() _
                                                                                                                    .Where(Function(s) s.IsDefinedInSource() AndAlso s?.ContainingAssembly?.Name = _project.AssemblyName), INamespaceSymbol))
-    End Function
+        End Function
 
-    Public Function GetSymbolsWithNewNames(toRename As IEnumerable(Of ISymbol),
+        Public Function GetSymbolsWithNewNames(toRename As IEnumerable(Of ISymbol),
                                                                canUse As Func(Of String, Boolean),
                                            canKeepOne As Boolean) As IEnumerable(Of (Original As ISymbol, NewName As String))
-        Dim symbolsWithNewNames As IEnumerable(Of (Original As ISymbol, NewName As String)) =
+            Dim symbolsWithNewNames As IEnumerable(Of (Original As ISymbol, NewName As String)) =
                 toRename.
                 OrderByDescending(Function(x) x.DeclaredAccessibility).
                 ThenByDescending(Function(x) x.Kind = SymbolKind.Parameter OrElse x.Kind = SymbolKind.Property).
@@ -108,31 +109,32 @@ Friend Module SymbolRenamer
                            Dim newName As String = GenerateUniqueName(GetBaseForNewName(tr), canUse)
                            Return (Original:=tr, newName)
                        End Function)
-        Return symbolsWithNewNames
-    End Function
+            Return symbolsWithNewNames
+        End Function
 
-    Public Function GetSymbolsWithNewNames(symbolGroup As IReadOnlyCollection(Of ISymbol), names As HashSet(Of String), caseSensitive As Boolean) As IEnumerable(Of (Original As ISymbol, NewName As String))
-        Dim canRename As IReadOnlyCollection(Of ISymbol) = symbolGroup.Where(Function(s) s.IsDefinedInSource() AndAlso s.CanBeReferencedByName).ToArray()
-        Dim specialSymbolUsingName As Boolean = canRename.Count < symbolGroup.Count
-        Dim methodSymbols As IMethodSymbol() = canRename.OfType(Of IMethodSymbol)().ToArray()
-        Dim canKeepOneNormalMemberName As Boolean = Not specialSymbolUsingName AndAlso Not methodSymbols.Any()
-        symbolGroup = canRename.Except(methodSymbols).ToArray()
-        Dim methodsWithNewNames As (Original As ISymbol, NewName As String)() = GetMethodSymbolsWithNewNames(methodSymbols.ToArray(), names, specialSymbolUsingName, caseSensitive)
-        Return GetSymbolsWithNewNames(symbolGroup, AddressOf names.Add, canKeepOneNormalMemberName).Concat(methodsWithNewNames)
-    End Function
+        Public Function GetSymbolsWithNewNames(symbolGroup As IReadOnlyCollection(Of ISymbol), names As HashSet(Of String), caseSensitive As Boolean) As IEnumerable(Of (Original As ISymbol, NewName As String))
+            Dim canRename As IReadOnlyCollection(Of ISymbol) = symbolGroup.Where(Function(s) s.IsDefinedInSource() AndAlso s.CanBeReferencedByName).ToArray()
+            Dim specialSymbolUsingName As Boolean = canRename.Count < symbolGroup.Count
+            Dim methodSymbols As IMethodSymbol() = canRename.OfType(Of IMethodSymbol)().ToArray()
+            Dim canKeepOneNormalMemberName As Boolean = Not specialSymbolUsingName AndAlso Not methodSymbols.Any()
+            symbolGroup = canRename.Except(methodSymbols).ToArray()
+            Dim methodsWithNewNames As (Original As ISymbol, NewName As String)() = GetMethodSymbolsWithNewNames(methodSymbols.ToArray(), names, specialSymbolUsingName, caseSensitive)
+            Return GetSymbolsWithNewNames(symbolGroup, AddressOf names.Add, canKeepOneNormalMemberName).Concat(methodsWithNewNames)
+        End Function
 
-    Public Async Function PerformRenamesAsync(_project As Project, symbolsWithNewNames As IReadOnlyCollection(Of (Original As ISymbol, NewName As String))) As Task(Of Project)
-        Dim _solution As Solution = _project.Solution
-        Dim v As (Original As ISymbol, NewName As String)
-        For Each v In symbolsWithNewNames
-            _project = _solution.GetProject(_project.Id)
-            Dim Compilation As Compilation = Await _project.GetCompilationAsync().ConfigureAwait(False)
-            Dim currentDeclaration As ISymbol = SymbolFinder.FindSimilarSymbols(v.Original, Compilation).FirstOrDefault()
-            If currentDeclaration Is Nothing Then Continue For ' Must have already renamed this symbol for a different reason
-            _solution = Await Renamer.RenameSymbolAsync(_solution, currentDeclaration, v.NewName, _solution.Workspace.Options).ConfigureAwait(False)
-        Next
+        Public Async Function PerformRenamesAsync(_project As Project, symbolsWithNewNames As IReadOnlyCollection(Of (Original As ISymbol, NewName As String))) As Task(Of Project)
+            Dim _solution As Solution = _project.Solution
+            Dim v As (Original As ISymbol, NewName As String)
+            For Each v In symbolsWithNewNames
+                _project = _solution.GetProject(_project.Id)
+                Dim Compilation As Compilation = Await _project.GetCompilationAsync().ConfigureAwait(False)
+                Dim currentDeclaration As ISymbol = SymbolFinder.FindSimilarSymbols(v.Original, Compilation).FirstOrDefault()
+                If currentDeclaration Is Nothing Then Continue For ' Must have already renamed this symbol for a different reason
+                _solution = Await Renamer.RenameSymbolAsync(_solution, currentDeclaration, v.NewName, _solution.Workspace.Options).ConfigureAwait(False)
+            Next
 
-        Return _solution.GetProject(_project.Id)
-    End Function
+            Return _solution.GetProject(_project.Id)
+        End Function
 
-End Module
+    End Module
+End Namespace

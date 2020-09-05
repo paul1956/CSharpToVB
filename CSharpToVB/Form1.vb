@@ -11,10 +11,8 @@ Imports System.Threading
 Imports Buildalyzer
 
 Imports CSharpToVBApp
-
-Imports CSharpToVBCodeConverter
-Imports CSharpToVBCodeConverter.ConversionResult
-
+Imports CSharpToVBConverter
+Imports CSharpToVBConverter.ConversionResult
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Emit
 Imports Microsoft.VisualBasic.FileIO
@@ -270,15 +268,15 @@ Partial Public Class Form1
             End Sub
 
         Using ProgressBar As TextProgressBar = New TextProgressBar(ConversionProgressBar)
+            Dim defaultVBOptions As New DefaultVBOptions
+            With My.Settings
+                defaultVBOptions = New DefaultVBOptions(.OptionCompare, .OptionCompareIncludeInCode, .OptionExplicit, .OptionExplicitIncludeInCode, .OptionInfer, .OptionInferIncludeInCode, .OptionStrict, .OptionStrictIncludeInCode)
+            End With
             ' The System.Progress class invokes the callback on the UI thread. It does this because we create the
             ' System.Progress object on the main thread. During creation, it reads SynchronizationContext.Current so
             ' that it knows how to get back to the main thread to invoke the callback there no matter what thread calls
             ' IProgress.Report.
             Dim progress As New Progress(Of ProgressReport)(AddressOf ProgressBar.Update)
-            Dim defaultVBOptions As New DefaultVBOptions
-            With My.Settings
-                defaultVBOptions = New DefaultVBOptions(.OptionCompare, .OptionCompareIncludeInCode, .OptionExplicit, .OptionExplicitIncludeInCode, .OptionInfer, .OptionInferIncludeInCode, .OptionStrict, .OptionStrictIncludeInCode)
-            End With
             _resultOfConversion = Await Task.Run(Function() ConvertInputRequest(
                                                     RequestToConvert,
                                                     defaultVBOptions,
@@ -296,7 +294,7 @@ Partial Public Class Form1
             mnuFileSaveAs.Enabled = False
             Return False
         Else
-            mnuFileSaveAs.Enabled = Me._resultOfConversion.ResultStatus = ResultTriState.Success
+            mnuFileSaveAs.Enabled = _resultOfConversion.ResultStatus = ResultTriState.Success
         End If
         Select Case _resultOfConversion.ResultStatus
             Case ResultTriState.Success

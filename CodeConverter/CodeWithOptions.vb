@@ -6,7 +6,7 @@ Imports Microsoft.CodeAnalysis
 
 Imports CS = Microsoft.CodeAnalysis.CSharp
 
-Namespace CSharpToVBCodeConverter
+Namespace CSharpToVBConverter
 
     Public Class CodeWithOptions
 

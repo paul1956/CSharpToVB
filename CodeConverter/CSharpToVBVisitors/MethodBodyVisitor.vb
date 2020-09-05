@@ -5,7 +5,7 @@
 Imports System.Diagnostics.CodeAnalysis
 Imports System.Runtime.InteropServices
 Imports System.Text
-Imports CSharpToVBCodeConverter.ToVisualBasic
+Imports CSharpToVBConverter.ToVisualBasic
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.CSharp
 Imports Microsoft.CodeAnalysis.VisualBasic
@@ -18,7 +18,7 @@ Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
-Namespace CSharpToVBCodeConverter.ToVisualBasic
+Namespace CSharpToVBConverter.ToVisualBasic
 
     Partial Public NotInheritable Class CSharpConverter
 
@@ -1419,11 +1419,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                                         WithConvertedTriviaFrom(node).
                                         WithTrailingEOL(RemoveLastLineContinuation:=True)
                 Else
-                    If TypeOf node.Expression Is CSS.ParenthesizedLambdaExpressionSyntax Then
-                        Expression = DirectCast(node.Expression.Accept(_nodesVisitor), ExpressionSyntax)
-                    Else
-                        Expression = DirectCast(node.Expression.Accept(_nodesVisitor), ExpressionSyntax)
-                    End If
+                    Expression = DirectCast(node.Expression.Accept(_nodesVisitor), ExpressionSyntax)
                     ' TODO Handle ref expressions
                     If Expression IsNot Nothing Then
                         MovedLeadingTrivia = MovedLeadingTrivia.AddRange(ConvertTriviaList(node.GetLeadingTrivia))

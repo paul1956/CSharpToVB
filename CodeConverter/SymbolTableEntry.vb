@@ -1,15 +1,20 @@
 ﻿' Licensed to the .NET Foundation under one or more agreements.
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
-Public Class SymbolTableEntry
 
-    Public Sub New(Name As String, IsType As Boolean, IsProperty As Boolean)
-        Me.Name = Name
-        Me.IsType = IsType
-        Me.isProperty = IsProperty
-    End Sub
+Namespace CSharpToVBConverter
 
-    Public ReadOnly Property isProperty As Boolean
-    Public ReadOnly Property IsType As Boolean
-    Public ReadOnly Property Name As String
-End Class
+    Public Class SymbolTableEntry
+
+        Public Sub New(Name As String, IsType As Boolean, IsProperty As Boolean)
+            Me.Name = Name
+            Me.IsType = IsType
+            Me.isProperty = IsProperty
+        End Sub
+
+        Public ReadOnly Property isProperty As Boolean
+        Public ReadOnly Property IsType As Boolean
+        Public ReadOnly Property Name As String
+    End Class
+
+End Namespace

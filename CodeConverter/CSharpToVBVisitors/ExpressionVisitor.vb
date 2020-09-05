@@ -11,7 +11,7 @@ Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
-Namespace CSharpToVBCodeConverter.ToVisualBasic
+Namespace CSharpToVBConverter.ToVisualBasic
 
     Partial Public Class CSharpConverter
 
@@ -873,7 +873,7 @@ Namespace CSharpToVBCodeConverter.ToVisualBasic
                                 End If
                                 Dim lastLeadingTrivia As SyntaxTrivia = rightExp.GetLeadingTrivia.LastOrDefault
 
-                                If (Not (lastLeadingTrivia.IsWhitespace AndAlso lastLeadingTrivia.Span.Length > 0)) AndAlso node.OperatorToken.LeadingTrivia.LastOrDefault.IsWhitespace Then
+                                If (Not (lastLeadingTrivia.IsWhitespace AndAlso Not lastLeadingTrivia.Span.IsEmpty)) AndAlso node.OperatorToken.LeadingTrivia.LastOrDefault.IsWhitespace Then
                                     rightExp = rightExp.WithLeadingTrivia(node.OperatorToken.LeadingTrivia.Last.ConvertTrivia())
                                 End If
 

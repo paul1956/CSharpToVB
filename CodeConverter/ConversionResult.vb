@@ -9,7 +9,7 @@ Imports Microsoft.CodeAnalysis.Text
 
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
-Namespace CSharpToVBCodeConverter
+Namespace CSharpToVBConverter
 
     Public Class ConversionResult
 

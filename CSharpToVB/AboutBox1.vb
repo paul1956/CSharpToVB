@@ -17,7 +17,7 @@ Public NotInheritable Class AboutBox1
 
         LabelCopyright.Text = My.Info.Copyright
         LabelCompanyName.Text = $"Developer {My.Info.CompanyName}"
-        Dim coreinfo As New AssemblyInfo(GetType(CSharpToVBCodeConverter.CodeWithOptions).Assembly)
+        Dim coreinfo As New AssemblyInfo(GetType(CSharpToVBConverter.CodeWithOptions).Assembly)
         TextBoxDescription.Text = $"{My.Info.Description}{vbCrLf}{vbCrLf}{coreinfo.ProductName} {coreinfo.Version}"
     End Sub
 

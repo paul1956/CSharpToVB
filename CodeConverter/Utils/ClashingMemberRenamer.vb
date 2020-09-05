@@ -8,7 +8,7 @@ Imports Microsoft.CodeAnalysis
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 
-Namespace ICSharpCode.CodeConverter.VB
+Namespace CSharpToVBConverter
 
     <ExcludeFromCodeCoverage>
     Friend Module ClashingMemberRenamer

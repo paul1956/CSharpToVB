@@ -4,7 +4,7 @@
 
 Imports System.Collections.Immutable
 Imports System.Runtime.CompilerServices
-Imports CSharpToVBCodeConverter
+Imports CSharpToVBConverter
 Imports Microsoft.CodeAnalysis
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax

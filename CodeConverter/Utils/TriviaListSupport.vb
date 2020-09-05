@@ -7,7 +7,7 @@ Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
-Namespace CSharpToVBCodeConverter.ToVisualBasic
+Namespace CSharpToVBConverter.ToVisualBasic
 
     Public Module TriviaListSupport
 

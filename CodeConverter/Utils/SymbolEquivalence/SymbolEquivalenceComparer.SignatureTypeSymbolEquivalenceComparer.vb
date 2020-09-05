@@ -6,30 +6,34 @@ Imports System.Diagnostics.CodeAnalysis
 
 Imports Microsoft.CodeAnalysis
 
-Partial Friend Class SymbolEquivalenceComparer
+Namespace CSharpToVBConverter
 
-    <ExcludeFromCodeCoverage>
-    Friend Class SignatureTypeSymbolEquivalenceComparer
-        Implements IEqualityComparer(Of ITypeSymbol)
+    Partial Friend Class SymbolEquivalenceComparer
 
-        Private ReadOnly _symbolEquivalenceComparer As SymbolEquivalenceComparer
+        <ExcludeFromCodeCoverage>
+        Friend Class SignatureTypeSymbolEquivalenceComparer
+            Implements IEqualityComparer(Of ITypeSymbol)
 
-        Public Sub New(symbolEquivalenceComparer As SymbolEquivalenceComparer)
-            _symbolEquivalenceComparer = symbolEquivalenceComparer
-        End Sub
+            Private ReadOnly _symbolEquivalenceComparer As SymbolEquivalenceComparer
 
-        Public Shadows Function Equals(x As ITypeSymbol, y As ITypeSymbol) As Boolean Implements IEqualityComparer(Of ITypeSymbol).Equals
-            Return Me.Equals(x, y, Nothing)
-        End Function
+            Public Sub New(symbolEquivalenceComparer As SymbolEquivalenceComparer)
+                _symbolEquivalenceComparer = symbolEquivalenceComparer
+            End Sub
 
-        Public Shadows Function Equals(x As ITypeSymbol, y As ITypeSymbol, equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol)) As Boolean
-            Return _symbolEquivalenceComparer.GetEquivalenceVisitor(compareMethodTypeParametersByIndex:=True, objectAndDynamicCompareEqually:=True).AreEquivalent(x, y, equivalentTypesWithDifferingAssemblies)
-        End Function
+            Public Shadows Function Equals(x As ITypeSymbol, y As ITypeSymbol) As Boolean Implements IEqualityComparer(Of ITypeSymbol).Equals
+                Return Me.Equals(x, y, Nothing)
+            End Function
 
-        Public Shadows Function GetHashCode(x As ITypeSymbol) As Integer Implements IEqualityComparer(Of ITypeSymbol).GetHashCode
-            Return _symbolEquivalenceComparer.GetGetHashCodeVisitor(compareMethodTypeParametersByIndex:=True, objectAndDynamicCompareEqually:=True).GetHashCode(x, currentHash:=0)
-        End Function
+            Public Shadows Function Equals(x As ITypeSymbol, y As ITypeSymbol, equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol)) As Boolean
+                Return _symbolEquivalenceComparer.GetEquivalenceVisitor(compareMethodTypeParametersByIndex:=True, objectAndDynamicCompareEqually:=True).AreEquivalent(x, y, equivalentTypesWithDifferingAssemblies)
+            End Function
+
+            Public Shadows Function GetHashCode(x As ITypeSymbol) As Integer Implements IEqualityComparer(Of ITypeSymbol).GetHashCode
+                Return _symbolEquivalenceComparer.GetGetHashCodeVisitor(compareMethodTypeParametersByIndex:=True, objectAndDynamicCompareEqually:=True).GetHashCode(x, currentHash:=0)
+            End Function
+
+        End Class
 
     End Class
 
-End Class
+End Namespace

@@ -5,7 +5,7 @@
 Imports System.IO
 Imports System.Reflection
 Imports System.Threading
-
+Imports CSharpToVBConverter
 Imports Microsoft.CodeAnalysis
 
 Public Module ProcessDirectoriesUtilities

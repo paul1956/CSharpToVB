@@ -4,6 +4,7 @@
 
 Imports System.IO
 Imports System.Threading
+Imports CSharpToVBConverter
 Imports Microsoft.CodeAnalysis
 
 #If Not NET5_0 Then

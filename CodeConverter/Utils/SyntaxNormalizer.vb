@@ -3,10 +3,12 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Diagnostics.CodeAnalysis
-
+Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Text
+Imports Microsoft.CodeAnalysis.VisualBasic
+Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace Microsoft.CodeAnalysis.VisualBasic.Syntax
+Namespace CSharpToVBConverter
 
     Friend Class SyntaxNormalizer
         Inherits VisualBasicSyntaxRewriter

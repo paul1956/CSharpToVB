@@ -6,8 +6,8 @@ Imports System.IO
 Imports System.Reflection
 Imports System.Threading
 Imports CSharpToVBApp
-Imports CSharpToVBCodeConverter
-Imports CSharpToVBCodeConverter.ConversionResult
+Imports CSharpToVBConverter
+Imports CSharpToVBConverter.ConversionResult
 
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Emit

@@ -8,7 +8,7 @@ Imports Microsoft.CodeAnalysis
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace CSharpToVBCodeConverter.ToVisualBasic
+Namespace CSharpToVBConverter.ToVisualBasic
     Module ParameterListExtensions
 
         <Extension>

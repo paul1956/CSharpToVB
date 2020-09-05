@@ -7,31 +7,34 @@ Imports Microsoft.CodeAnalysis
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
-Public Module ParseUtilities
+Namespace CSharpToVBConverter
 
-    Public Function GetCSharpParseOptions(CSPreprocessorSymbols As List(Of String)) As CS.CSharpParseOptions
-        Return New CS.CSharpParseOptions(
+    Public Module ParseUtilities
+
+        Public Function GetCSharpParseOptions(CSPreprocessorSymbols As List(Of String)) As CS.CSharpParseOptions
+            Return New CS.CSharpParseOptions(
                                         CS.LanguageVersion.Latest,
                                         DocumentationMode.Parse,
                                         SourceCodeKind.Script,
                                         CSPreprocessorSymbols)
-    End Function
+        End Function
 
-    Public Function GetVBParseOptions(VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object))) As VB.VisualBasicParseOptions
-        Return New VB.VisualBasicParseOptions(
+        Public Function GetVBParseOptions(VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object))) As VB.VisualBasicParseOptions
+            Return New VB.VisualBasicParseOptions(
                                     VB.LanguageVersion.Latest,
                                     DocumentationMode.Diagnose,
                                     SourceCodeKind.Regular,
                                     VBPreprocessorSymbols)
-    End Function
+        End Function
 
-    Public Function ParseCSharpSource(SourceText As String, CSPreprocessorSymbols As List(Of String)) As SyntaxTree
-        Dim CSharpParseOptions As CS.CSharpParseOptions = GetCSharpParseOptions(CSPreprocessorSymbols)
-        Dim ParsedCSharpTree As SyntaxTree = CS.SyntaxFactory.ParseSyntaxTree(
+        Public Function ParseCSharpSource(SourceText As String, CSPreprocessorSymbols As List(Of String)) As SyntaxTree
+            Dim CSharpParseOptions As CS.CSharpParseOptions = GetCSharpParseOptions(CSPreprocessorSymbols)
+            Dim ParsedCSharpTree As SyntaxTree = CS.SyntaxFactory.ParseSyntaxTree(
                                                             Text.SourceText.From(SourceText),
                                                             CSharpParseOptions
                                                             )
-        Return ParsedCSharpTree
-    End Function
+            Return ParsedCSharpTree
+        End Function
 
-End Module
+    End Module
+End Namespace
