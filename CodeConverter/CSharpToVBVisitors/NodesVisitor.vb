@@ -127,9 +127,9 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                 _membersList(0).GetLeadingTrivia.ToFullString.Contains("auto-generated", StringComparison.OrdinalIgnoreCase) Then
                             Dim HeadingTriviaList As SyntaxTriviaList = _membersList(0).GetLeadingTrivia
                             If HeadingTriviaList(0).IsKind(SyntaxKind.EndOfLineTrivia) Then
-                                HeadingTriviaList.RemoveAt(0)
+                                HeadingTriviaList = HeadingTriviaList.RemoveAt(0)
                                 If HeadingTriviaList.Any Then
-                                    HeadingTriviaList.Add(VBEOLTrivia)
+                                    HeadingTriviaList = HeadingTriviaList.Add(VBEOLTrivia)
                                 End If
                             End If
                             Dim NewMemberList As New SyntaxList(Of VBS.StatementSyntax)
