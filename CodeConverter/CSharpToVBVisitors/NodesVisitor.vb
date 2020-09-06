@@ -160,7 +160,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                             AllImports.RemoveAt(i)
                                             Exit For
                                         Case CompilerServices, InteropServices
-                                            AllImports(0) = AllImports(0).WithLeadingTrivia(node.GetLeadingTrivia).WithUniqueLeadingTrivia(VBHeaderLeadingTrivia)
+                                            AllImports(0) = AllImports(0).WithLeadingTrivia(node.GetLeadingTrivia.ConvertTriviaList).WithUniqueLeadingTrivia(VBHeaderLeadingTrivia)
                                             If _membersList.Any Then
                                                 _membersList = _membersList.Replace(_membersList(0), _membersList(0).WithUniqueLeadingTrivia(AllImports(0).GetLeadingTrivia))
                                             End If
