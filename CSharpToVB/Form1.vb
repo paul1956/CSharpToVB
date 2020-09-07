@@ -204,11 +204,12 @@ Partial Public Class Form1
 
     Private Sub ContextMenuStrip1_Opening(sender As Object, e As CancelEventArgs) Handles ContextMenuStrip1.Opening
         Dim ContextMenu As ContextMenuStrip = CType(sender, ContextMenuStrip)
+
         If TypeOf CurrentBuffer Is RichTextBox Then
             Dim sourceBuffer As RichTextBox = CType(CurrentBuffer, RichTextBox)
-            ContextMenu.Items(IndexOf(ContextMenu, NameOf(ContextMenuCopy))).Enabled = sourceBuffer.TextLength > 0 And sourceBuffer.SelectedText.Length > 0
-            ContextMenu.Items(IndexOf(ContextMenu, NameOf(ContextMenuCut))).Enabled = sourceBuffer.TextLength > 0 And sourceBuffer.SelectedText.Length > 0
-            ContextMenu.Items(IndexOf(ContextMenu, NameOf(ContextMenuPaste))).Enabled = sourceBuffer.CanPaste(DataFormats.GetFormat(DataFormats.Rtf))
+            ContextMenu.Items(IndexOf(ContextMenu, NameOf(ContextMenuCopy))).Enabled = sourceBuffer.TextLength > 0 And sourceBuffer.SelectedText.Any
+            ContextMenu.Items(IndexOf(ContextMenu, NameOf(ContextMenuCut))).Enabled = sourceBuffer.TextLength > 0 And sourceBuffer.SelectedText.Any
+            ContextMenu.Items(IndexOf(ContextMenu, NameOf(ContextMenuPaste))).Enabled = sourceBuffer.CanPaste(DataFormats.GetFormat(DataFormats.Rtf)) OrElse sourceBuffer.CanPaste(DataFormats.GetFormat(DataFormats.Text))
             ContextMenu.Items(IndexOf(ContextMenu, NameOf(ContextMenuRedo))).Enabled = sourceBuffer.CanRedo
             ContextMenu.Items(IndexOf(ContextMenu, NameOf(ContextMenuUndo))).Enabled = sourceBuffer.CanUndo
         Else
@@ -687,9 +688,9 @@ Partial Public Class Form1
     Private Sub mnuEdit_DropDownOpening(sender As Object, e As EventArgs) Handles mnuEdit.DropDownOpening
         If TypeOf CurrentBuffer Is RichTextBox Then
             Dim sourceBuffer As RichTextBox = CType(CurrentBuffer, RichTextBox)
-            mnuEditCopy.Enabled = sourceBuffer.TextLength > 0 And sourceBuffer.SelectedText.Length > 0
-            mnuEditCut.Enabled = sourceBuffer.TextLength > 0 And sourceBuffer.SelectedText.Length > 0
-            mnuEditPaste.Enabled = sourceBuffer.CanPaste(DataFormats.GetFormat(DataFormats.Rtf))
+            mnuEditCopy.Enabled = sourceBuffer.TextLength > 0 AndAlso sourceBuffer.SelectedText.Length > 0
+            mnuEditCut.Enabled = sourceBuffer.TextLength > 0 AndAlso sourceBuffer.SelectedText.Length > 0
+            mnuEditPaste.Enabled = sourceBuffer.CanPaste(DataFormats.GetFormat(DataFormats.Rtf)) OrElse sourceBuffer.CanPaste(DataFormats.GetFormat(DataFormats.Text))
             mnuEditUndo.Enabled = sourceBuffer.CanUndo
             mnuEditRedo.Enabled = sourceBuffer.CanRedo
         Else
@@ -1609,19 +1610,19 @@ Partial Public Class Form1
 
     Private Function SetSearchControls(Optional InputBuffer As Boolean = False) As Boolean
         Dim inputBufferInUse As Boolean = ConversionInput.Text.Any
+        mnuConvertConvertSnippet.Enabled = inputBufferInUse
         Dim outputBufferInUse As Boolean = ConversionOutput.Text.Any
         Dim EnableFind As Boolean = (inputBufferInUse Or outputBufferInUse) And TSFindFindWhatComboBox.Text.Any
-        mnuConvertConvertSnippet.Enabled = inputBufferInUse
         TSFindClearHighlightsButton.Enabled = EnableFind
         TSFindFindNextButton.Enabled = EnableFind
         TSFindFindPreviousButton.Enabled = EnableFind
         Dim selectedIndex As Integer = TSFindLookInComboBox.SelectedIndex
-        If outputBufferInUse Then
+        If inputBufferInUse AndAlso outputBufferInUse Then
             TSFindLookInComboBox.DropDownStyle = ComboBoxStyle.DropDown
             TSFindLookInComboBox.SelectedIndex = selectedIndex
         Else
             TSFindLookInComboBox.DropDownStyle = ComboBoxStyle.Simple
-            TSFindLookInComboBox.SelectedIndex = 0
+            TSFindLookInComboBox.SelectedIndex = If(inputBufferInUse, 0, 1)
         End If
         Return If(InputBuffer, inputBufferInUse, outputBufferInUse)
     End Function

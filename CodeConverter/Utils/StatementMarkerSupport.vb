@@ -91,20 +91,20 @@ Namespace CSharpToVBConverter
         ''' <returns></returns>
         ''' <remarks>Added by PC</remarks>
         Private Function ConvertSourceTextToTriviaList(FullString As String, Optional LeadingComment As String = "") As SyntaxTriviaList
-            Dim NewTrivia As New SyntaxTriviaList
+            Dim NewTrivia As New List(Of SyntaxTrivia)
             If Not String.IsNullOrWhiteSpace(LeadingComment) Then
                 Dim LeadingCommentLines() As String = LeadingComment.SplitLines
                 For Each Line As String In LeadingCommentLines
-                    NewTrivia = NewTrivia.Add(Factory.CommentTrivia($"' {Line.Trim}"))
-                    NewTrivia = NewTrivia.Add(VBEOLTrivia)
+                    NewTrivia.Add(Factory.CommentTrivia($"' {Line.Trim}"))
+                    NewTrivia.Add(VBEOLTrivia)
                 Next
             End If
             Dim strBuilder As New StringBuilder
             For Each chr As String In FullString
                 If chr.IsNewLine Then
                     If strBuilder.Length > 0 Then
-                        NewTrivia = NewTrivia.Add(Factory.CommentTrivia($"' {strBuilder.ToString.Trim}"))
-                        NewTrivia = NewTrivia.Add(VBEOLTrivia)
+                        NewTrivia.Add(Factory.CommentTrivia($"' {strBuilder.ToString.Trim}"))
+                        NewTrivia.Add(VBEOLTrivia)
                         strBuilder.Clear()
                     End If
                 ElseIf chr = vbTab Then
@@ -114,11 +114,11 @@ Namespace CSharpToVBConverter
                 End If
             Next
             If strBuilder.Length > 0 Then
-                NewTrivia = NewTrivia.Add(Factory.CommentTrivia($"' {strBuilder}"))
-                NewTrivia = NewTrivia.Add(VBEOLTrivia)
+                NewTrivia.Add(Factory.CommentTrivia($"' {strBuilder}"))
+                NewTrivia.Add(VBEOLTrivia)
             End If
 
-            Return NewTrivia
+            Return NewTrivia.ToSyntaxTriviaList
         End Function
 
         Friend Function AddFinalTriviaToField(node As CSS.FieldDeclarationSyntax) As List(Of StatementSyntax)
@@ -179,34 +179,34 @@ Namespace CSharpToVBConverter
                 Return FieldDeclaration
             End If
             Dim Index As Integer = s_statementDictionary(node)
-            Dim newLeadingTrivia As New SyntaxTriviaList
+            Dim newLeadingTrivia As New List(Of SyntaxTrivia)
             For Each StatementTuple As (Index As Integer, Statement As StatementSyntax, StatementHandling As StatementHandlingOption) In s_statementSupportTupleList
                 If StatementTuple.Index = Index AndAlso StatementTuple.StatementHandling <> StatementHandlingOption.AppendEmptyStatement Then
-                    newLeadingTrivia = newLeadingTrivia.AddRange(StatementTuple.Statement.GetLeadingTrivia)
+                    newLeadingTrivia.AddRange(StatementTuple.Statement.GetLeadingTrivia)
                     s_statementDictionary.Remove(node)
                 End If
             Next
             If s_statementDictionary.Count = 0 Then
                 s_statementSupportTupleList.Clear()
             End If
-            newLeadingTrivia = newLeadingTrivia.AddRange(FieldDeclaration.GetLeadingTrivia)
+            newLeadingTrivia.AddRange(FieldDeclaration.GetLeadingTrivia)
             Return FieldDeclaration.WithLeadingTrivia(newLeadingTrivia)
         End Function
 
         <Extension>
         Friend Function CheckCorrectnessLeadingTrivia(Of T As SyntaxNode)(NodeWithIssue As T, AttemptToPortMade As Boolean, Optional MessageFragment As String = "") As SyntaxTriviaList
-            Dim newLeadingTrivia As New SyntaxTriviaList
-            newLeadingTrivia = newLeadingTrivia.Add(Factory.CommentTrivia($"' TODO TASK: {MessageFragment}:"))
+            Dim newLeadingTrivia As New List(Of SyntaxTrivia)
+            newLeadingTrivia.Add(Factory.CommentTrivia($"' TODO TASK: {MessageFragment}:"))
 
             If NodeWithIssue IsNot Nothing Then
-                newLeadingTrivia = newLeadingTrivia.Add(Factory.CommentTrivia($"' Original Statement:"))
-                newLeadingTrivia = newLeadingTrivia.Add(VBEOLTrivia)
-                newLeadingTrivia = newLeadingTrivia.AddRange(ConvertSourceTextToTriviaList(NodeWithIssue.ToFullString))
+                newLeadingTrivia.Add(Factory.CommentTrivia($"' Original Statement:"))
+                newLeadingTrivia.Add(VBEOLTrivia)
+                newLeadingTrivia.AddRange(ConvertSourceTextToTriviaList(NodeWithIssue.ToFullString))
             End If
             If AttemptToPortMade Then
-                newLeadingTrivia = newLeadingTrivia.Add(Factory.CommentTrivia($"' An attempt was made to correctly port the code, check the code below for correctness"))
+                newLeadingTrivia.Add(Factory.CommentTrivia($"' An attempt was made to correctly port the code, check the code below for correctness"))
             End If
-            newLeadingTrivia = newLeadingTrivia.Add(VBEOLTrivia)
+            newLeadingTrivia.Add(VBEOLTrivia)
             Return newLeadingTrivia.ToSyntaxTriviaList
         End Function
 
@@ -217,40 +217,40 @@ Namespace CSharpToVBConverter
         End Sub
 
         Friend Function FlagUnsupportedStatements(node As CS.CSharpSyntaxNode, UnsupportedFeature As String, CommentOutOriginalStatements As Boolean) As EmptyStatementSyntax
-            Dim newLeadingTrivia As New SyntaxTriviaList
-            Dim newTrailingTrivia As New SyntaxTriviaList
+            Dim newLeadingTrivia As New List(Of SyntaxTrivia)
+            Dim newTrailingTrivia As New List(Of SyntaxTrivia)
             If CommentOutOriginalStatements Then
-                newLeadingTrivia = node.GetLeadingTrivia.ConvertTriviaList()
-                newTrailingTrivia = node.GetTrailingTrivia.ConvertTriviaList()
+                node.GetLeadingTrivia.ConvertTriviaList()
+                node.GetTrailingTrivia.ConvertTriviaList()
             Else
                 Dim csLeadingTrivia As SyntaxTriviaList = node.GetLeadingTrivia
                 If csLeadingTrivia.Any AndAlso csLeadingTrivia.First.IsKind(CS.SyntaxKind.WhitespaceTrivia) Then
-                    newTrailingTrivia = newTrailingTrivia.Add(csLeadingTrivia(0).ConvertTrivia())
+                    newTrailingTrivia.Add(csLeadingTrivia(0).ConvertTrivia())
                 End If
             End If
             Dim leadingSpace As SyntaxTrivia = New SyntaxTrivia
             If newLeadingTrivia.LastOrDefault.IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
                 leadingSpace = newLeadingTrivia.Last
             End If
-            newLeadingTrivia = newLeadingTrivia.Add(Factory.CommentTrivia($"' TODO: Visual Basic does not support {UnsupportedFeature}."))
-            newLeadingTrivia = newLeadingTrivia.Add(VBEOLTrivia)
+            newLeadingTrivia.Add(Factory.CommentTrivia($"' TODO: Visual Basic does not support {UnsupportedFeature}."))
+            newLeadingTrivia.Add(VBEOLTrivia)
             If CommentOutOriginalStatements Then
                 If leadingSpace.IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
-                    newLeadingTrivia = newLeadingTrivia.Add(leadingSpace)
+                    newLeadingTrivia.Add(leadingSpace)
                 End If
-                newLeadingTrivia = newLeadingTrivia.Add(Factory.CommentTrivia($"' Original Statement:"))
-                newLeadingTrivia = newLeadingTrivia.Add(VBEOLTrivia)
+                newLeadingTrivia.Add(Factory.CommentTrivia($"' Original Statement:"))
+                newLeadingTrivia.Add(VBEOLTrivia)
                 ' Match #
                 For Each e As IndexClass(Of String) In node.ToString.SplitLines().WithIndex
                     If e.Value.TrimStart(" "c).StartsWith("#", StringComparison.Ordinal) Then
-                        newLeadingTrivia = newLeadingTrivia.AddRange(ConvertDirectiveTrivia(e.Value))
+                        newLeadingTrivia.AddRange(ConvertDirectiveTrivia(e.Value))
                     Else
                         If leadingSpace.IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
-                            newLeadingTrivia = newLeadingTrivia.Add(leadingSpace)
+                            newLeadingTrivia.Add(leadingSpace)
                         End If
-                        newLeadingTrivia = newLeadingTrivia.Add(Factory.CommentTrivia($"' {e.Value}"))
+                        newLeadingTrivia.Add(Factory.CommentTrivia($"' {e.Value}"))
                     End If
-                    newLeadingTrivia = newLeadingTrivia.Add(VBEOLTrivia)
+                    newLeadingTrivia.Add(VBEOLTrivia)
                 Next
             End If
             Return Factory.EmptyStatement.With(newLeadingTrivia, newTrailingTrivia)
