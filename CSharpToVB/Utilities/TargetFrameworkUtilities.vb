@@ -38,7 +38,7 @@ Module TargetFrameworkUtilities
     Private Function MapNameToFramework(Base As String, Separator As String, Name As String) As String
         Dim NameSplit() As String = Name.Split(".")
         Dim Minor As String = NameSplit(1)
-        Return $"{Base}{NameSplit(0)}{Separator}{Minor}"
+        Return $"{If(CInt(NameSplit(0)) >= 5, "NET", Base) }{NameSplit(0)}{Separator}{Minor}"
     End Function
 
     ''' <summary>

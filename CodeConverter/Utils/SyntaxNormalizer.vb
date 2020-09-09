@@ -59,7 +59,7 @@ Namespace CSharpToVBConverter
 
             If trivia.IsKind(SyntaxKind.DisabledTextTrivia) Then
                 Dim text As String = trivia.ToFullString()
-                Return text.Length > 0 AndAlso IsNewLineChar(text.Last())
+                Return text.Any AndAlso IsNewLineChar(text.Last())
             End If
 
             If trivia.HasStructure Then

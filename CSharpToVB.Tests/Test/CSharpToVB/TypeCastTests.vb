@@ -11,18 +11,24 @@ Namespace CSharpToVB.Tests
     <TestClass()> Public Class TypeCastTests
         Inherits ConverterTestBase
 
-        <Fact(Skip:="Many code generation")>
+        <Fact>
         Public Shared Sub CSharpToVBCastCharacterIncrement()
             TestConversionCSharpToVisualBasic(
-"void Test() {
-    char a = 'A';
-    a++;
-}
-",
-"Private Sub Test()
-    Dim a As Char = ""A""c
-    a = ChrW(AscW(a) + 1)
-End Sub")
+"static class TestClass
+    {
+    void Test() {
+        char a = 'A';
+        a++;
+    }
+}",
+"Module TestClass
+
+    Private Sub Test()
+        Dim a As Char = ""A""c
+        a = ChrW(AscW(a)) + 1
+    End Sub
+
+End Module")
         End Sub
 
         <Fact>

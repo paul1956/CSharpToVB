@@ -253,7 +253,7 @@ End Property")
 End Class")
         End Sub
 
-        <Fact(Skip:="Implements System. not removed")>
+        <Fact>
         Public Shared Sub CSharpToVBExplicitImplementationsMustNotDifferOnlyByReturnType()
             TestConversionCSharpToVisualBasic(
 "using System.Collections;
@@ -282,11 +282,12 @@ Public Class AdditionalLocals
     Private ReadOnly _additionalLocals As New Stack(Of Dictionary(Of String, Integer))
 
     Public Function GetEnumerator() As IEnumerator(Of KeyValuePair(Of String, Integer))
-        Implements IEnumerable(Of KeyValuePair(Of String, Integer)).GetEnumerator
+        Implements System.Collections.Generic.IEnumerable(Of System.Collections.Generic.KeyValuePair(Of String, Integer)).GetEnumerator
         Return _additionalLocals.Peek().GetEnumerator()
     End Function
 
-    Private Function GetEnumerator1() As IEnumerator Implements IEnumerable.GetEnumerator
+    Private Function GetEnumerator1() As IEnumerator
+        Implements System.Collections.IEnumerable.GetEnumerator
         Return _additionalLocals.Peek().GetEnumerator()
     End Function
 End Class")

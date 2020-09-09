@@ -135,15 +135,24 @@ Namespace CSharpToVBConverter
         ''' <returns>New SyntaxTriviaList</returns>
         <Extension>
         Friend Function CollectConvertedTokenTrivia(Token As SyntaxToken, GetLeading As Boolean, GetTrailing As Boolean) As SyntaxTriviaList
-            Dim leadingTrivia As New SyntaxTriviaList
-            If GetLeading AndAlso Token.LeadingTrivia.ContainsCommentOrDirectiveTrivia Then
-                leadingTrivia = leadingTrivia.AddRange(Token.LeadingTrivia.ConvertTriviaList())
+            Dim CombinedTrivia As New SyntaxTriviaList
+            Dim leadingTrivia As SyntaxTriviaList = Token.LeadingTrivia
+            If GetLeading Then
+                If leadingTrivia.ContainsCommentOrDirectiveTrivia Then
+                    CombinedTrivia = CombinedTrivia.AddRange(Token.LeadingTrivia.ConvertTriviaList())
+                ElseIf leadingTrivia.ContainsEOLTrivia Then
+                    CombinedTrivia = CombinedTrivia.Add(VBEOLTrivia)
+                End If
             End If
-            Dim trailingTrivia As SyntaxTriviaList = Token.TrailingTrivia
-            If GetTrailing AndAlso Token.TrailingTrivia.ContainsCommentOrDirectiveTrivia Then
-                leadingTrivia = leadingTrivia.AddRange(trailingTrivia.ConvertTriviaList())
+            If GetTrailing Then
+                Dim trailingTrivia As SyntaxTriviaList = Token.TrailingTrivia
+                If trailingTrivia.ContainsCommentOrDirectiveTrivia Then
+                    CombinedTrivia = CombinedTrivia.AddRange(trailingTrivia.ConvertTriviaList())
+                ElseIf trailingTrivia.ContainsEOLTrivia AndAlso Not CombinedTrivia.ContainsEOLTrivia Then
+                    CombinedTrivia = CombinedTrivia.Add(VBEOLTrivia)
+                End If
             End If
-            Return leadingTrivia
+            Return CombinedTrivia
         End Function
 
         <Extension>

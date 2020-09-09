@@ -107,6 +107,9 @@ Namespace CSharpToVBConverter
 
         <Extension>
         Friend Function RemoveLeadingSystemDot(input As String) As String
+            If Not input.StartsWith("System.", StringComparison.Ordinal) Then
+                Return input
+            End If
             Return input.Substring("System.".Length)
         End Function
 

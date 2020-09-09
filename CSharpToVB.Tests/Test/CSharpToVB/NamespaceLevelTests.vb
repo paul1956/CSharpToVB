@@ -59,6 +59,7 @@ public interface iDisplay
     Property iDisplay_Name As String Implements iDisplay.Name
 
     Private Sub DisplayName()
+        Implements iDisplay.DisplayName
     End Sub
 End Class
 
@@ -85,13 +86,14 @@ public interface iDisplay {
     Implements iDisplay
 
     Default Private Property Item(i As Integer) As Object
-        Get
-            Throw New NotImplementedException
-        End Get
+    Implements iDisplay.Item
+    Get
+    Throw New NotImplementedException
+    End Get
 
-        Set(Value As Object)
-            Throw New NotImplementedException
-        End Set
+    Set(Value As Object)
+    Throw New NotImplementedException
+    End Set
     End Property
 End Class
 
@@ -201,7 +203,7 @@ End Class")
 End Enum")
         End Sub
 
-        <Fact(Skip:="Implements Issue")>
+        <Fact>
         Public Shared Sub CSharpToVBFullQualificationInImplements()
             TestConversionCSharpToVisualBasic(
 "public class TestClass : System.ComponentModel.INotifyPropertyChanged {
@@ -210,7 +212,8 @@ End Enum")
 "Public Class TestClass
     Implements ComponentModel.INotifyPropertyChanged
 
-    Public Event PropertyChanged As ComponentModel.PropertyChangedEventHandler Implements System.ComponentModel.INotifyPropertyChanged.PropertyChanged
+    Public Event PropertyChanged As ComponentModel.PropertyChangedEventHandler
+    Implements System.ComponentModel.INotifyPropertyChanged.PropertyChanged
 End Class")
         End Sub
 
@@ -235,7 +238,7 @@ Class ThisUri
 End Class")
         End Sub
 
-        <Fact(Skip:="Implements Missing")>
+        <Fact>
         Public Shared Sub CSharpToVBImplementsEvent()
             TestConversionCSharpToVisualBasic(
 "using System.ComponentModel;
@@ -246,11 +249,12 @@ public class TestClass : INotifyPropertyChanged {
 Public Class TestClass
     Implements INotifyPropertyChanged
 
-    Public Event PropertyChanged As PropertyChangedEventHandler Implements INotifyPropertyChanged.PropertyChanged
+    Public Event PropertyChanged As PropertyChangedEventHandler
+    Implements System.ComponentModel.INotifyPropertyChanged.PropertyChanged
 End Class")
         End Sub
 
-        <Fact(Skip:="Interface issue")>
+        <Fact>
         Public Shared Sub CSharpToVBImplementsGenericInterface()
             TestConversionCSharpToVisualBasic(
 "public interface ITestInterface<T> {
@@ -431,7 +435,7 @@ End Class")
 End Namespace")
         End Sub
 
-        <Fact> '(Skip:="Public NotInheritable not shared")>
+        <Fact>
         Public Shared Sub CSharpToVBStaticGenericClass()
             TestConversionCSharpToVisualBasic(
 "using System.Threading.Tasks;
@@ -478,7 +482,7 @@ End Class")
 End Structure")
         End Sub
 
-        <Fact(Skip:="For Namespace Test.[class] Class should not be in []")>
+        <Fact>
         Public Shared Sub CSharpToVBTestAbstractClass()
             TestConversionCSharpToVisualBasic(
 "namespace Test.@class
@@ -493,26 +497,30 @@ namespace Test
     {
     }
 }
-", "Namespace Test.class
+", "Namespace Test.[class]
+
     Public MustInherit Class TestClass
     End Class
 End Namespace
 
 Namespace Test
+
     Public Class Test1
         Inherits [class].TestClass
+
     End Class
 End Namespace")
         End Sub
 
-        <Fact(Skip:="For Namespace Test.[class] Class should not be in []")>
+        <Fact>
         Public Shared Sub CSharpToVBTestClass()
             TestConversionCSharpToVisualBasic("namespace Test.@class
 {
     class TestClass<T>
     {
     }
-}", "Namespace Test.class
+}", "Namespace Test.[class]
+
     Class TestClass(Of T)
     End Class
 End Namespace")

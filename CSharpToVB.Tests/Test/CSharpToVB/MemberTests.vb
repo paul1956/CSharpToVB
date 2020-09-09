@@ -584,7 +584,7 @@ End Class")
 End Class")
         End Sub
 
-        <Fact(Skip:="Implements Missing")>
+        <Fact>
         Public Shared Sub CSharpToVBIndexerEmptySetter()
             TestConversionCSharpToVisualBasic(
 "using System.Collections
@@ -600,13 +600,14 @@ class TestClass : IList {
 Class TestClass
     Implements IList
 
-    Default Public Property Item(index As Integer) As Object Implements IList.Item
-        Get
-            Return index
-        End Get
+    Default Public Property Item(index As Integer) As Object
+    Implements System.Collections.IList.Item
+    Get
+    Return index
+    End Get
 
-        Set(Value As Object)
-        End Set
+    Set(Value As Object)
+    End Set
     End Property
 End Class")
         End Sub
@@ -647,7 +648,7 @@ End Interface")
 End Interface")
         End Sub
 
-        <Fact(Skip:="This case is not yet supported")>
+        <Fact(Skip:="Overloads Missing")>
         Public Shared Sub CSharpToVBMethodOverloads()
             TestConversionCSharpToVisualBasic(
 "public class MailEmployee {
@@ -1523,7 +1524,7 @@ End Class")
 End Class")
         End Sub
 
-        <Fact>  '(Skip:="set => _num++; not supported")>
+        <Fact>
         Public Shared Sub CSharpToVBTestPropertyWithExpressionBodyThatCanBeStatement()
             TestConversionCSharpToVisualBasic(
                 "using System; //Not required in VB due to global imports

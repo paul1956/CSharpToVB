@@ -135,7 +135,6 @@ class TestClass
     End Sub
 
     Private Sub MyHandler(sender As Object, e As EventArgs)
-
     End Sub
 End Class")
         End Sub
@@ -806,7 +805,7 @@ End Class")
 End Class")
         End Sub
 
-        <Fact> '(Skip:="System. not removed")>
+        <Fact>
         Public Shared Sub CSharpToVBLabeledAndForStatement()
             TestConversionCSharpToVisualBasic("class GotoTest1
 {

@@ -27,6 +27,7 @@ Namespace CSharpToVBConverter
 
 #Region "Token"
 
+        Public ReadOnly AddHandlerKeyword As SyntaxToken = Factory.Token(SyntaxKind.AddHandlerKeyword)
         Public ReadOnly AddressOfKeyword As SyntaxToken = Factory.Token(SyntaxKind.AddressOfKeyword)
         Public ReadOnly AmpersandToken As SyntaxToken = Factory.Token(SyntaxKind.AmpersandToken)
         Public ReadOnly AndAlsoKeyword As SyntaxToken = Factory.Token(SyntaxKind.AndAlsoKeyword)
@@ -150,6 +151,7 @@ Namespace CSharpToVBConverter
         Public ReadOnly QuestionToken As SyntaxToken = Factory.Token(SyntaxKind.QuestionToken)
         Public ReadOnly ReadOnlyKeyword As SyntaxToken = Factory.Token(SyntaxKind.ReadOnlyKeyword)
         Public ReadOnly RegionKeyword As SyntaxToken = Factory.Token(SyntaxKind.RegionKeyword)
+        Public ReadOnly RemoveHandlerKeyword As SyntaxToken = Factory.Token(SyntaxKind.RemoveHandlerKeyword)
         Public ReadOnly SByteKeyword As SyntaxToken = Factory.Token(SyntaxKind.SByteKeyword)
         Public ReadOnly SelectKeyword As SyntaxToken = Factory.Token(SyntaxKind.SelectKeyword)
         Public ReadOnly SetKeyword As SyntaxToken = Factory.Token(SyntaxKind.SetKeyword)
@@ -254,6 +256,11 @@ Namespace CSharpToVBConverter
             Return Factory.LocalDeclarationStatement(DimModifier, declarators)
         End Function
 
+        Public Function FactoryEndBlockStatement(EndBlockKind As SyntaxKind, BlockKeyword As SyntaxToken, finaltrivia As SyntaxTriviaList) As EndBlockStatementSyntax
+            Return Factory.EndBlockStatement(EndBlockKind, EndKeyword, BlockKeyword) _
+                          .WithTrailingEOL(RemoveLastLineContinuation:=True) _
+                          .WithAppendedTrailingTrivia(finaltrivia)
+        End Function
 #End If
 
     End Module

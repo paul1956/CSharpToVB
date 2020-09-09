@@ -450,7 +450,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         End Select
                         FirstTrivia = False
                     Next
-                    If Comment.Length > 0 Then
+                    If Comment.Any Then
                         NewFieldLeadingTrivia = NewFieldLeadingTrivia.Add(Factory.CommentTrivia(Comment))
                     End If
                     FieldInitializers.Add(Field.WithLeadingTrivia(NewFieldLeadingTrivia))
@@ -883,11 +883,9 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                                                              CommaToken,
                                                                              rightExp,
                                                                              CloseParenToken)
-                                'Debug.WriteLine(retExp.ToFullString)
                                 Return retExp
                             End If
                             If TypeOf rightNode Is ThrowStatementSyntax Then
-                                'Dim condition As ExpressionSyntax = Factory.IsExpression(leftExp.WithTrailingTrivia(VBSpaceTrivia), NothingExpression)
                                 Dim condition As ExpressionSyntax = Factory.IsExpression(leftExp, NothingExpression)
                                 Dim ifStatement As IfStatementSyntax = Factory.IfStatement(IfKeywordWithTrivia, condition, ThenKeyword)
 
@@ -898,7 +896,6 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                                                                                statements,
                                                                                                elseClause:=Nothing).WithTrailingEOL(RemoveLastLineContinuation:=True)
                                 GetStatementwithIssues(node).AddMarker(ifBlock, StatementHandlingOption.PrependStatement, AllowDuplicates:=False)
-                                'Debug.WriteLine(leftNode.ToFullString)
                                 Return leftNode
                             Else
                                 Stop
@@ -2131,6 +2128,24 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 End If
                 Dim kind As VB.SyntaxKind = ConvertCSExpressionsKindToVBKind(CSExpressionKind)
                 If TypeOf node.Parent Is CSS.ExpressionStatementSyntax OrElse TypeOf node.Parent Is CSS.ForStatementSyntax Then
+                    Try
+                        Dim operandTypeInfo As TypeInfo = _mSemanticModel.GetTypeInfo(node.Operand)
+                        If operandTypeInfo.ConvertedType.ToString = "char" Then
+                            Dim convertedperandExpression As ExpressionSyntax = Factory.ParseExpression($"ChrW(AscW({vbOperandExpression}))").WithTriviaFrom(vbOperandExpression)
+                            kind = If(kind = VB.SyntaxKind.AddAssignmentStatement, VB.SyntaxKind.AddExpression, VB.SyntaxKind.SubtractExpression)
+                            Dim mathExpression As ExpressionSyntax = Factory.BinaryExpression(kind, convertedperandExpression, ExpressionKindToOperatorToken(kind, IsReferenceType:=False), ExpressionD1)
+                            Return Factory.AssignmentStatement(VB.SyntaxKind.SimpleAssignmentStatement,
+                                                               vbOperandExpression,
+                                                               EqualsToken,
+                                                               mathExpression)
+
+                        End If
+                    Catch ex As OperationCanceledException
+                        Throw
+                    Catch ex As Exception
+                        ' ignore
+                    End Try
+
                     Return Factory.AssignmentStatement(ConvertCSExpressionsKindToVBKind(CS.CSharpExtensions.Kind(node)),
                                                             vbOperandExpression,
                                                             ExpressionKindToOperatorToken(kind, IsReferenceType:=False),

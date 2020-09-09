@@ -373,6 +373,9 @@ Namespace CSharpToVBConverter
         ''' <param name="RemoveLastLineContinuation"></param>
         <Extension()>
         Friend Function WithTrailingEOL(Of T As SyntaxNode)(node As T, RemoveLastLineContinuation As Boolean) As T
+            If node Is Nothing Then
+                Return Nothing
+            End If
             Dim TrailingTrivia As SyntaxTriviaList = node.GetTrailingTrivia
             Dim newTrailingTrivia As New SyntaxTriviaList
             Dim Count As Integer = TrailingTrivia.Count
@@ -408,8 +411,10 @@ Namespace CSharpToVBConverter
                                     Throw UnexpectedValue($"TrailingTrivia(1).RawKind = {TrailingTrivia(1).RawKind}")
                             End Select
                         Case VB.SyntaxKind.EndOfLineTrivia
-                            If TrailingTrivia(1).IsKind(VB.SyntaxKind.WhitespaceTrivia, VB.SyntaxKind.EndOfLineTrivia) Then
+                            If TrailingTrivia(1).IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
                                 Return node.WithTrailingTrivia(VBEOLTrivia)
+                            ElseIf TrailingTrivia(1).IsEndOfLine Then
+                                Return node
                             ElseIf TrailingTrivia(1).IsCommentOrDirectiveTrivia Then
                                 Return node.WithAppendedEOL
                             End If
@@ -446,7 +451,7 @@ Namespace CSharpToVBConverter
                                             newTrailingTrivia = newTrailingTrivia.Add(MaxTrivia)
                                         End If
                                     Case VB.SyntaxKind.EndOfLineTrivia
-                           ' Ignore white space before EOL
+                                        ' Ignore white space before EOL
                                     Case VB.SyntaxKind.LineContinuationTrivia
                                         newTrailingTrivia = newTrailingTrivia.Add(e.Value)
                                     Case VB.SyntaxKind.CommentTrivia
@@ -454,7 +459,7 @@ Namespace CSharpToVBConverter
                                     Case VB.SyntaxKind.None
                                         newTrailingTrivia = newTrailingTrivia.Add(e.Value)
                                     Case VB.SyntaxKind.RegionDirectiveTrivia,
-                             VB.SyntaxKind.EndRegionDirectiveTrivia
+                                         VB.SyntaxKind.EndRegionDirectiveTrivia
                                         newTrailingTrivia = newTrailingTrivia.Add(e.Value)
                                     Case Else
                                         Stop
@@ -479,8 +484,8 @@ Namespace CSharpToVBConverter
                                         Throw UnexpectedValue($"{nextTrivia.RawKind}")
                                 End Select
                             Case VB.SyntaxKind.CommentTrivia,
-                     VB.SyntaxKind.DocumentationCommentExteriorTrivia,
-                     VB.SyntaxKind.DocumentationCommentTrivia
+                                 VB.SyntaxKind.DocumentationCommentExteriorTrivia,
+                                 VB.SyntaxKind.DocumentationCommentTrivia
                                 Select Case nextTrivia.RawKind
                                     Case VB.SyntaxKind.WhitespaceTrivia
                                         newTrailingTrivia = newTrailingTrivia.Add(e.Value)
@@ -499,17 +504,19 @@ Namespace CSharpToVBConverter
                                         newTrailingTrivia = newTrailingTrivia.Add(VBEOLTrivia)
                                     Case VB.SyntaxKind.None
                                         newTrailingTrivia = newTrailingTrivia.Add(e.Value)
+                                    Case VB.SyntaxKind.EndIfDirectiveTrivia
+                                        newTrailingTrivia = newTrailingTrivia.Add(e.Value)
                                     Case Else
                                         Stop
                                         Throw UnexpectedValue($"{nextTrivia.RawKind}")
                                 End Select
                             Case VB.SyntaxKind.IfDirectiveTrivia,
-                     VB.SyntaxKind.DisabledTextTrivia,
-                     VB.SyntaxKind.ElseIfDirectiveTrivia,
-                     VB.SyntaxKind.ElseDirectiveTrivia,
-                     VB.SyntaxKind.EndIfDirectiveTrivia,
-                     VB.SyntaxKind.RegionDirectiveTrivia,
-                     VB.SyntaxKind.EndRegionDirectiveTrivia
+                                 VB.SyntaxKind.DisabledTextTrivia,
+                                 VB.SyntaxKind.ElseIfDirectiveTrivia,
+                                 VB.SyntaxKind.ElseDirectiveTrivia,
+                                 VB.SyntaxKind.EndIfDirectiveTrivia,
+                                 VB.SyntaxKind.RegionDirectiveTrivia,
+                                 VB.SyntaxKind.EndRegionDirectiveTrivia
                                 newTrailingTrivia = newTrailingTrivia.Add(e.Value)
                                 If Not nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
                                     newTrailingTrivia = newTrailingTrivia.Add(VBEOLTrivia)

@@ -48,7 +48,7 @@ Namespace CSharpToVBConverter
                 Dim PossibleTypes As String = PossibleName.Substring(StartIndex + 1, IndexOfLastGreaterThan - StartIndex - 1)
                 If PossibleTupleType.ToString.StartsWith("System.Func", StringComparison.Ordinal) Then
                     Dim DictionaryTypeElement As New List(Of VBS.TypeSyntax)
-                    While PossibleTypes.Length > 0
+                    While PossibleTypes.Any
                         Dim EndIndex As Integer
                         ' Tuple
                         If PossibleTypes.StartsWith("(", StringComparison.Ordinal) Then
@@ -154,7 +154,7 @@ Namespace CSharpToVBConverter
                 typeString = typeString.Substring(0, IndexOfLastCloseParen)
                 Dim TypeList As New List(Of VBS.TypeSyntax)
                 Dim PossibleTypes As String = typeString.Trim
-                While PossibleTypes.Length > 0
+                While PossibleTypes.Any
                     Dim EndIndex As Integer
                     ' Type
                     EndIndex = PossibleTypes.IndexOf(",", StringComparison.Ordinal)

@@ -60,7 +60,7 @@ Namespace CSharpToVBConverter
             If Text.StartsWith("#endregion", StringComparison.Ordinal) Then
                 ResultTrivia = ResultTrivia.Add(Factory.Trivia(Factory.EndRegionDirectiveTrivia()))
                 Text = Text.RemoveAll("#endregion")
-                If Text.Length > 0 Then
+                If Text.Any Then
                     Stop
                 End If
                 Return ResultTrivia
@@ -195,8 +195,8 @@ Namespace CSharpToVBConverter
 
         <Extension>
         Friend Function CheckCorrectnessLeadingTrivia(Of T As SyntaxNode)(NodeWithIssue As T, AttemptToPortMade As Boolean, Optional MessageFragment As String = "") As SyntaxTriviaList
-            Dim newLeadingTrivia As New List(Of SyntaxTrivia)
-            newLeadingTrivia.Add(Factory.CommentTrivia($"' TODO TASK: {MessageFragment}:"))
+            Dim newLeadingTrivia As New List(Of SyntaxTrivia) From {
+                Factory.CommentTrivia($"' TODO TASK: {MessageFragment}:")}
 
             If NodeWithIssue IsNot Nothing Then
                 newLeadingTrivia.Add(Factory.CommentTrivia($"' Original Statement:"))

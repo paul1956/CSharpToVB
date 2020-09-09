@@ -205,7 +205,6 @@ End Class")
 
     Private Shared Sub SimpleQuery()
         Dim numbers As Integer() = {7, 9, 5, 3, 6}           ' Test
-
     End Sub
 End Class")
         End Sub
@@ -425,7 +424,6 @@ End Class")
     End Property
 
     Public Bar As Integer
-
 End Class")
         End Sub
 
@@ -652,7 +650,6 @@ End Class")
     End Property
 
     Public Bar As String
-
 End Class")
         End Sub
 

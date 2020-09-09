@@ -312,7 +312,7 @@ Namespace CSharpToVBConverter
         ''' </summary>
         <Extension>
         Public Function IsNewLine(str As String) As Boolean
-            If str Is Nothing OrElse str.Length = 0 Then
+            If String.IsNullOrEmpty(str) Then
                 Return False
             End If
             Dim ch As Char = str.Chars(0)

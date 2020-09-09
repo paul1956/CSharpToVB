@@ -66,7 +66,7 @@ End Function
                             StartImplementsIndex = 1
                             TypeSyntaxArray = _Type.BaseList?.Types.Skip(StartImplementsIndex).Select(Function(t As CSS.BaseTypeSyntax) DirectCast(t.Type.Accept(Me).WithTrailingTrivia(VBSpaceTrivia), VBS.TypeSyntax)).ToArray()
                         End If
-                        If TypeSyntaxArray.Length > 0 Then
+                        If TypeSyntaxArray.Any Then
                             [implements].Add(Factory.ImplementsStatement(TypeSyntaxArray))
                             Dim ImplementsClauses As IEnumerable(Of CSS.TypeSyntax) = _Type.BaseList?.Types.Skip(StartImplementsIndex).Select(Function(t As CSS.BaseTypeSyntax) t.Type)
                             For Each ImplementsClause As CSS.TypeSyntax In ImplementsClauses
@@ -83,7 +83,7 @@ End Function
 
                     Case CS.SyntaxKind.StructDeclaration
                         TypeSyntaxArray = _Type.BaseList?.Types.Select(Function(t As CSS.BaseTypeSyntax) DirectCast(t.Type.Accept(Me), VBS.TypeSyntax)).ToArray()
-                        If TypeSyntaxArray?.Length > 0 Then
+                        If TypeSyntaxArray?.Any Then
                             [implements].Add(Factory.ImplementsStatement(TypeSyntaxArray))
                         End If
                     Case CS.SyntaxKind.InterfaceDeclaration
@@ -254,7 +254,7 @@ End Function
                                                                             RestructureAttributesAndModifiers(ListOfAttributes.Any, ModuleModifiers.Any), VBS.ModuleStatementSyntax).WithTrailingEOL(RemoveLastLineContinuation:=True)
 
                     ModuleStatement = DirectCast(PrependStatementWithMarkedStatementTrivia(node, ModuleStatement), VBS.ModuleStatementSyntax)
-                    Dim EndModule As VBS.EndBlockStatementSyntax = Factory.EndModuleStatement().WithConvertedTriviaFrom(node.CloseBraceToken)
+                    Dim EndModule As VBS.EndBlockStatementSyntax = FactoryEndBlockStatement(VB.SyntaxKind.EndModuleStatement, ModuleKeyword, CollectConvertedTokenTrivia(node.CloseBraceToken, GetLeading:=True, GetTrailing:=True))
                     Dim ModuleBlock As VBS.ModuleBlockSyntax = Factory.ModuleBlock(
                                                                                     ModuleStatement,
                                                                                     Factory.List([inherits]),
@@ -342,14 +342,14 @@ End Function
                             ClassStatement = ClassStatement.WithTrailingTrivia(VBSpaceTrivia)
                         End If
                     End If
-                    Dim EndClass As VBS.EndBlockStatementSyntax = Factory.EndClassStatement().WithConvertedTriviaFrom(node.CloseBraceToken)
+                    Dim EndClass As VBS.EndBlockStatementSyntax = FactoryEndBlockStatement(VB.SyntaxKind.EndClassStatement, ClassKeyWord, CollectConvertedTokenTrivia(node.CloseBraceToken, GetLeading:=True, GetTrailing:=True))
                     Dim ClassBlock As VBS.ClassBlockSyntax = Factory.ClassBlock(
                                                                                 ClassStatement,
                                                                                 Factory.List([inherits]),
                                                                                 Factory.List([implements]),
                                                                                 Factory.List(members),
                                                                                 EndClass
-                                                                                ).WithConvertedTrailingTriviaFrom(node)
+                                                                                ).WithAppendedTrailingTrivia(node.GetTrailingTrivia.ConvertTriviaList)
                     s_usedIdentifiers = saveUsedIdentifiers
                     SyncLock s_usedStacks
                         _isModuleStack.Pop()
@@ -468,7 +468,7 @@ End Function
                                                                                                UnderlyingType).
                                                                                        RestructureAttributesAndModifiers(ListOfAttributes.Any, Modifiers.Any), VBS.EnumStatementSyntax)
 
-                Dim EndBlockStatement As VBS.EndBlockStatementSyntax = Factory.EndEnumStatement().WithConvertedTriviaFrom(node.CloseBraceToken)
+                Dim EndBlockStatement As VBS.EndBlockStatementSyntax = FactoryEndBlockStatement(VB.SyntaxKind.EndEnumStatement, EnumKeyword, CollectConvertedTokenTrivia(node.CloseBraceToken, GetLeading:=True, GetTrailing:=True))
                 Dim EnumBlock As VBS.EnumBlockSyntax = Factory.EnumBlock(EnumStatement.WithTrailingEOL(RemoveLastLineContinuation:=True),
                                                                            Factory.List(members),
                                                                            EndBlockStatement
@@ -532,13 +532,14 @@ End Function
                 Dim InheritsStatementList As SyntaxList(Of VBS.InheritsStatementSyntax) = Factory.List([inherits])
                 Dim ImplementsStatementList As SyntaxList(Of VBS.ImplementsStatementSyntax) = Factory.List([implements])
                 Dim StatementList As SyntaxList(Of VBS.StatementSyntax) = Factory.List(members)
-                Dim EndInterfaceStatement As VBS.EndBlockStatementSyntax = Factory.EndInterfaceStatement.WithConvertedLeadingTriviaFrom(node.CloseBraceToken)
+                Dim EndInterfaceStatement As VBS.EndBlockStatementSyntax = FactoryEndBlockStatement(VB.SyntaxKind.EndInterfaceStatement, InterfaceKeyword, CollectConvertedTokenTrivia(node.CloseBraceToken, GetLeading:=True, GetTrailing:=True))
+
                 Return Factory.InterfaceBlock(InterfaceStatement,
                                                     InheritsStatementList,
                                                     ImplementsStatementList,
                                                     StatementList,
                                                     EndInterfaceStatement
-                                                    ).WithConvertedTriviaFrom(node)
+                                                    ).WithConvertedLeadingTriviaFrom(node)
             End Function
 
             Public Overrides Function VisitNamespaceDeclaration(node As CSS.NamespaceDeclarationSyntax) As VB.VisualBasicSyntaxNode
@@ -577,8 +578,7 @@ End Function
 
                 Dim NamespaceStatement As VBS.NamespaceStatementSyntax = Factory.NamespaceStatement(NamespaceKeyword, DirectCast(node.Name.Accept(Me), VBS.NameSyntax)).WithTrailingEOL(RemoveLastLineContinuation:=True)
                 Dim members1 As SyntaxList(Of VBS.StatementSyntax) = Factory.List(members)
-                Dim EndNamespaceStatement As VBS.EndBlockStatementSyntax = Factory.EndNamespaceStatement
-                Dim namespaceBlock As VBS.NamespaceBlockSyntax = Factory.NamespaceBlock(NamespaceStatement, members1, EndNamespaceStatement) _
+                Dim namespaceBlock As VBS.NamespaceBlockSyntax = Factory.NamespaceBlock(NamespaceStatement, members1, Factory.EndNamespaceStatement) _
                                                                         .WithConvertedLeadingTriviaFrom(node.NamespaceKeyword) _
                                                                         .WithUniqueLeadingTrivia(VBHeaderLeadingTrivia) _
                                                                         .WithTrailingTrivia(node.GetTrailingTrivia.ConvertTriviaList)
