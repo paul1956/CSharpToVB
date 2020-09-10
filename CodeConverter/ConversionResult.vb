@@ -15,7 +15,7 @@ Namespace CSharpToVBConverter
 
         Private _filteredListOfFailures As List(Of Diagnostic)
 
-        Public Sub New(ConvertedTree As SyntaxNode, InputLanguage As String, OutputLanguage As String, VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)))
+        Friend Sub New(ConvertedTree As SyntaxNode, InputLanguage As String, OutputLanguage As String, VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)))
             Exceptions = New List(Of Exception)
             SourceLanguage = InputLanguage
             ResultStatus = ResultTriState.Success
@@ -55,7 +55,7 @@ Namespace CSharpToVBConverter
             End Using
         End Sub
 
-        Public Sub New(ParamArray exceptions() As Exception)
+        Friend Sub New(ParamArray exceptions() As Exception)
             ResultStatus = If(exceptions.Any, ResultTriState.Failure, ResultTriState.Ignore)
             Me.Exceptions = exceptions
         End Sub

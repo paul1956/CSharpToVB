@@ -56,10 +56,23 @@ Namespace CSharpToVBConverter
             .SelectMany(Function(i) _semanticModel.LookupSymbols(i.SpanStart, fieldSymbol.ContainingType))
         End Function
 
+        Private Function GetCsSymbolsDeclaredByMethod(Of TNode)(_semanticModel As SemanticModel, methodSymbol As IMethodSymbol, selectWhereNotNull As Func(Of TNode, CS.CSharpSyntaxNode), kinds As SymbolKind()) As IEnumerable(Of IEnumerable(Of ISymbol))
+            If methodSymbol Is Nothing Then
+                Return Enumerable.Empty(Of IEnumerable(Of ISymbol))()
+            End If
+            Dim bodies As IEnumerable(Of CS.CSharpSyntaxNode) = DeclarationWhereNotNull(methodSymbol, selectWhereNotNull).Where(Function(x) x.SyntaxTree Is _semanticModel.SyntaxTree)
+            Return bodies.SelectMany(AddressOf GetDeepestBlocks).Select(Function(block) _semanticModel.LookupSymbols(block.SpanStart).Where(Function(x As ISymbol) x.MatchesKind(kinds)))
+        End Function
+
         Private Function GetCsSymbolsDeclaredByProperty(_semanticModel As SemanticModel, propertySymbol As IPropertySymbol) As IEnumerable(Of IEnumerable(Of ISymbol))
             Dim getAccessorBody As Func(Of CSS.AccessorDeclarationSyntax, CS.CSharpSyntaxNode) = Function(n) If(CType(n.ExpressionBody, CS.CSharpSyntaxNode), n.Body)
             Return GetCsSymbolsDeclaredByMethod(_semanticModel, propertySymbol.GetMethod, getAccessorBody, New SymbolKind() {SymbolKind.Local, SymbolKind.Parameter, SymbolKind.TypeParameter}) _
             .Concat(GetCsSymbolsDeclaredByMethod(_semanticModel, propertySymbol.SetMethod, getAccessorBody, New SymbolKind() {SymbolKind.Local, SymbolKind.TypeParameter}))
+        End Function
+
+        <Extension()>
+        Private Function GetCsSymbolsPerScope(_semanticModel As SemanticModel, symbol As ISymbol) As IEnumerable(Of IEnumerable(Of ISymbol))
+            Return GetCsLocalSymbolsPerScope(_semanticModel, symbol).Select(Function(y) y.Union(symbol.Yield()))
         End Function
 
         Private Function GetDeepestBlocks(_body As CS.CSharpSyntaxNode) As IEnumerable(Of CSS.BlockSyntax)
@@ -91,19 +104,6 @@ Namespace CSharpToVBConverter
             Dim symbolsWithNewNames As IEnumerable(Of (Original As ISymbol, NewName As String)) = membersByCaseInsensitiveName.Where(Function(ms) ms.Count() > 1) _
                 .SelectMany(Function(symbolGroup) SymbolRenamer.GetSymbolsWithNewNames(symbolGroup.ToArray(), names, False))
             Return symbolsWithNewNames
-        End Function
-
-        Public Function GetCsSymbolsDeclaredByMethod(Of TNode)(_semanticModel As SemanticModel, methodSymbol As IMethodSymbol, selectWhereNotNull As Func(Of TNode, CS.CSharpSyntaxNode), kinds As SymbolKind()) As IEnumerable(Of IEnumerable(Of ISymbol))
-            If methodSymbol Is Nothing Then
-                Return Enumerable.Empty(Of IEnumerable(Of ISymbol))()
-            End If
-            Dim bodies As IEnumerable(Of CS.CSharpSyntaxNode) = DeclarationWhereNotNull(methodSymbol, selectWhereNotNull).Where(Function(x) x.SyntaxTree Is _semanticModel.SyntaxTree)
-            Return bodies.SelectMany(AddressOf GetDeepestBlocks).Select(Function(block) _semanticModel.LookupSymbols(block.SpanStart).Where(Function(x As ISymbol) x.MatchesKind(kinds)))
-        End Function
-
-        <Extension()>
-        Public Function GetCsSymbolsPerScope(_semanticModel As SemanticModel, symbol As ISymbol) As IEnumerable(Of IEnumerable(Of ISymbol))
-            Return GetCsLocalSymbolsPerScope(_semanticModel, symbol).Select(Function(y) y.Union(symbol.Yield()))
         End Function
 
         ''' <summary>

@@ -8,7 +8,7 @@ Namespace CSharpToVBConverter
     Public Module ICollectionExtensions
 
         <Extension>
-        Public Sub RemoveRange(Of T)(collection As ICollection(Of T), items As IEnumerable(Of T))
+        Friend Sub RemoveRange(Of T)(collection As ICollection(Of T), items As IEnumerable(Of T))
             If collection Is Nothing Then
                 Throw New ArgumentNullException(NameOf(collection))
             End If

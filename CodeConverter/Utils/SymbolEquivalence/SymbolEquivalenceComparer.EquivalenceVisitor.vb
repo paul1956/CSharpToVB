@@ -16,7 +16,7 @@ Namespace CSharpToVBConverter
             Private ReadOnly _objectAndDynamicCompareEqually As Boolean
             Private ReadOnly _symbolEquivalenceComparer As SymbolEquivalenceComparer
 
-            Public Sub New(symbolEquivalenceComparer As SymbolEquivalenceComparer, compareMethodTypeParametersByIndex As Boolean, objectAndDynamicCompareEqually As Boolean)
+            Friend Sub New(symbolEquivalenceComparer As SymbolEquivalenceComparer, compareMethodTypeParametersByIndex As Boolean, objectAndDynamicCompareEqually As Boolean)
                 _symbolEquivalenceComparer = symbolEquivalenceComparer
                 _compareMethodTypeParametersByIndex = compareMethodTypeParametersByIndex
                 _objectAndDynamicCompareEqually = objectAndDynamicCompareEqually
@@ -377,6 +377,10 @@ Namespace CSharpToVBConverter
                 Return Me.AreEquivalent(x.ContainingSymbol, y.ContainingSymbol, equivalentTypesWithDifferingAssemblies)
             End Function
 
+            Friend Shared Function IsPropertyAccessor(kind As MethodKind) As Boolean
+                Return kind = MethodKind.PropertyGet OrElse kind = MethodKind.PropertySet
+            End Function
+
             Friend Function AreEquivalent(x As CustomModifier, y As CustomModifier, equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol)) As Boolean
                 Return x.IsOptional = y.IsOptional AndAlso Me.AreEquivalent(x.Modifier, y.Modifier, equivalentTypesWithDifferingAssemblies)
             End Function
@@ -396,15 +400,7 @@ Namespace CSharpToVBConverter
                 Return True
             End Function
 
-            Friend Function ReturnTypesAreEquivalent(x As IMethodSymbol, y As IMethodSymbol, Optional equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol) = Nothing) As Boolean
-                Return _symbolEquivalenceComparer.SignatureTypeEquivalenceComparer.Equals(x.ReturnType, y.ReturnType, equivalentTypesWithDifferingAssemblies) AndAlso Me.AreEquivalent(x.ReturnTypeCustomModifiers, y.ReturnTypeCustomModifiers, equivalentTypesWithDifferingAssemblies)
-            End Function
-
-            Public Shared Function IsPropertyAccessor(kind As MethodKind) As Boolean
-                Return kind = MethodKind.PropertyGet OrElse kind = MethodKind.PropertySet
-            End Function
-
-            Public Function AreEquivalent(x As ISymbol, y As ISymbol, equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol)) As Boolean
+            Friend Function AreEquivalent(x As ISymbol, y As ISymbol, equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol)) As Boolean
                 If ReferenceEquals(x, y) Then
                     Return True
                 End If
@@ -426,6 +422,10 @@ Namespace CSharpToVBConverter
 
                 Return Me.AreEquivalentWorker(x, y, xKind, equivalentTypesWithDifferingAssemblies)
 
+            End Function
+
+            Friend Function ReturnTypesAreEquivalent(x As IMethodSymbol, y As IMethodSymbol, Optional equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol) = Nothing) As Boolean
+                Return _symbolEquivalenceComparer.SignatureTypeEquivalenceComparer.Equals(x.ReturnType, y.ReturnType, equivalentTypesWithDifferingAssemblies) AndAlso Me.AreEquivalent(x.ReturnTypeCustomModifiers, y.ReturnTypeCustomModifiers, equivalentTypesWithDifferingAssemblies)
             End Function
 
         End Class

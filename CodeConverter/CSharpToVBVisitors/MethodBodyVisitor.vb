@@ -34,7 +34,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
             ' currently only works with switch blocks
             Private _switchCount As Integer
 
-            Public Sub New(semanticModel As SemanticModel, nodesVisitor As NodesVisitor)
+            Friend Sub New(semanticModel As SemanticModel, nodesVisitor As NodesVisitor)
                 _semanticModel = semanticModel
                 _nodesVisitor = nodesVisitor
             End Sub

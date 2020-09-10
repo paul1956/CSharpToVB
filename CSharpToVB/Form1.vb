@@ -1443,7 +1443,6 @@ Partial Public Class Form1
         End If
     End Sub
 
-
     Private Sub UpdateProgressLabels(progressStr As String, Value As Boolean)
         If InvokeRequired Then
             Me.Invoke(Sub()

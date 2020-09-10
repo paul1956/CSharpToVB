@@ -244,11 +244,11 @@ Namespace CSharpToVBConverter
         Public ReadOnly RuntimeInteropServicesOut As TypeSyntax = Factory.ParseTypeName("Out")
         Public ReadOnly ValueModifiedIdentifier As ModifiedIdentifierSyntax = Factory.ModifiedIdentifier("Value")
 
-        Public Function FactoryDimStatement(name As String, asClause As AsClauseSyntax, initializer As EqualsValueSyntax) As LocalDeclarationStatementSyntax
+        Friend Function FactoryDimStatement(name As String, asClause As AsClauseSyntax, initializer As EqualsValueSyntax) As LocalDeclarationStatementSyntax
             Return FactoryDimStatement(Factory.Identifier(name), asClause, initializer)
         End Function
 
-        Public Function FactoryDimStatement(name As SyntaxToken, asClause As AsClauseSyntax, initializer As EqualsValueSyntax) As LocalDeclarationStatementSyntax
+        Friend Function FactoryDimStatement(name As SyntaxToken, asClause As AsClauseSyntax, initializer As EqualsValueSyntax) As LocalDeclarationStatementSyntax
             Dim modifiedIdentifier As ModifiedIdentifierSyntax = Factory.ModifiedIdentifier(name).WithTrailingTrivia(VBSpaceTrivia)
             Dim names As SeparatedSyntaxList(Of ModifiedIdentifierSyntax) = Factory.SingletonSeparatedList(modifiedIdentifier)
             Dim declarator As VariableDeclaratorSyntax = Factory.VariableDeclarator(names, asClause, initializer)
@@ -256,11 +256,12 @@ Namespace CSharpToVBConverter
             Return Factory.LocalDeclarationStatement(DimModifier, declarators)
         End Function
 
-        Public Function FactoryEndBlockStatement(EndBlockKind As SyntaxKind, BlockKeyword As SyntaxToken, finaltrivia As SyntaxTriviaList) As EndBlockStatementSyntax
+        Friend Function FactoryEndBlockStatement(EndBlockKind As SyntaxKind, BlockKeyword As SyntaxToken, finaltrivia As SyntaxTriviaList) As EndBlockStatementSyntax
             Return Factory.EndBlockStatement(EndBlockKind, EndKeyword, BlockKeyword) _
                           .WithTrailingEOL(RemoveLastLineContinuation:=True) _
                           .WithAppendedTrailingTrivia(finaltrivia)
         End Function
+
 #End If
 
     End Module

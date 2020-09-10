@@ -22,7 +22,7 @@ Namespace CSharpToVBConverter
             Private ReadOnly _symbolAggregator As Func(Of Integer, ISymbol, Integer)
             Private ReadOnly _symbolEquivalenceComparer As SymbolEquivalenceComparer
 
-            Public Sub New(symbolEquivalenceComparer As SymbolEquivalenceComparer, compareMethodTypeParametersByIndex As Boolean, objectAndDynamicCompareEqually As Boolean)
+            Friend Sub New(symbolEquivalenceComparer As SymbolEquivalenceComparer, compareMethodTypeParametersByIndex As Boolean, objectAndDynamicCompareEqually As Boolean)
                 _symbolEquivalenceComparer = symbolEquivalenceComparer
                 _compareMethodTypeParametersByIndex = compareMethodTypeParametersByIndex
                 _objectAndDynamicCompareEqually = objectAndDynamicCompareEqually
@@ -194,7 +194,7 @@ Namespace CSharpToVBConverter
                 End Select
             End Function
 
-            Public Function CombineHashCodes(x As ITypeParameterSymbol, currentHash As Integer) As Integer
+            Friend Function CombineHashCodes(x As ITypeParameterSymbol, currentHash As Integer) As Integer
                 currentHash = CodeRefactoringHash.Combine(x.Ordinal, CodeRefactoringHash.Combine(CInt(Math.Truncate(x.TypeParameterKind)), currentHash))
 
                 If x.TypeParameterKind = TypeParameterKind.Method AndAlso _compareMethodTypeParametersByIndex Then

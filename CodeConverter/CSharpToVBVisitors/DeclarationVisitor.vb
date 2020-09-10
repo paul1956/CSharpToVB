@@ -321,11 +321,6 @@ Namespace CSharpToVBConverter.ToVisualBasic
             ''' Creates a new object initialized to a meaningful value.
             ''' </summary>
             ''' <param name="value"></param>
-            'INSTANT VB TODO TASK: Generic operators are not available in VB:
-            'ORIGINAL LINE: public static implicit operator @Optional<T>(T value)
-            'Public Shared Widening Operator DirectCast(value As T) As [Optional]
-            '    Return New [Optional](Of T)(value)
-            'End Operator
             Public Overrides Function VisitConversionOperatorDeclaration(node As CSS.ConversionOperatorDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim AttributeLists As New List(Of VBS.AttributeListSyntax)
                 Dim ReturnAttributes As SyntaxList(Of VBS.AttributeListSyntax) = Nothing

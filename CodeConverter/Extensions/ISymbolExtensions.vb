@@ -5,8 +5,6 @@
 Imports System.Collections.Immutable
 Imports System.Runtime.CompilerServices
 Imports Microsoft.CodeAnalysis
-Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
-Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace CSharpToVBConverter
 
@@ -18,80 +16,7 @@ Namespace CSharpToVBConverter
         End Function
 
         <Extension>
-        Friend Function GetImplementsClauseForProperty(csProperty As IPropertySymbol, Node As CSharp.CSharpSyntaxNode, Model As SemanticModel, ListOfRequiredInterfaces As ImmutableArray(Of (InterfaceName As INamedTypeSymbol, MethodList As ImmutableArray(Of ISymbol)))) As VBS.ImplementsClauseSyntax
-            If Not ListOfRequiredInterfaces.Any Then
-                Return Nothing
-            End If
-            Dim SeparatedList As New List(Of VBS.QualifiedNameSyntax)
-            For Each entry As (InterfaceName As INamedTypeSymbol, MethodList As ImmutableArray(Of ISymbol)) In ListOfRequiredInterfaces
-                Dim InterfaceName As VBS.NameSyntax = Factory.IdentifierName(entry.InterfaceName.ToString)
-                For Each InterfaceProperty As ISymbol In entry.MethodList
-                    Dim _Right As VBS.SimpleNameSyntax = Nothing
-                    If TypeOf InterfaceProperty Is IPropertySymbol Then
-                        If ImplementsMethodOrProperty(csProperty, CType(InterfaceProperty, IPropertySymbol), _Right) Then
-                            Dim name As VBS.NameSyntax = ConvertISymbolToNameSyntaxInterfaceName(Node, InterfaceProperty, Model)
-                            If TypeOf name Is VBS.QualifiedNameSyntax Then
-                                Dim qualifiedName As VBS.QualifiedNameSyntax = CType(name, VBS.QualifiedNameSyntax)
-                                SeparatedList.Add(Factory.QualifiedName(qualifiedName, _Right))
-                            ElseIf TypeOf name Is VBS.SimpleNameSyntax Then
-                                Dim simpleName As VBS.SimpleNameSyntax = CType(name, VBS.SimpleNameSyntax)
-                                SeparatedList.Add(Factory.QualifiedName(simpleName, _Right))
-                            ElseIf TypeOf name Is VBS.IdentifierNameSyntax Then
-                                Dim identifier As VBS.IdentifierNameSyntax = CType(name, VBS.IdentifierNameSyntax)
-                                SeparatedList.Add(Factory.QualifiedName(identifier, _Right))
-                            Else
-                                Stop
-                            End If
-                            Exit For
-                        End If
-                    End If
-                Next
-            Next
-            If SeparatedList.Count = 0 Then
-                Return Nothing
-            End If
-            Return Factory.ImplementsClause(Factory.SeparatedList(SeparatedList))
-        End Function
-
-        <Extension()>
-        Friend Function GetOverriddenMember(symbol As ISymbol) As ISymbol
-            Select Case True
-                Case TypeOf symbol Is IMethodSymbol
-                    Dim method As IMethodSymbol = CType(symbol, IMethodSymbol)
-                    Return method.OverriddenMethod
-                Case TypeOf symbol Is IPropertySymbol
-                    Dim [property] As IPropertySymbol = CType(symbol, IPropertySymbol)
-                    Return [property].OverriddenProperty
-                Case TypeOf symbol Is IEventSymbol
-                    Dim [event] As IEventSymbol = CType(symbol, IEventSymbol)
-                    Return [event].OverriddenEvent
-            End Select
-
-            Return Nothing
-        End Function
-
-        ''' <summary>
-        ''' Checks if 'symbol' is accessible from within 'within'.
-        ''' </summary>
-        <Extension>
-        Friend Function IsAccessibleWithin(symbol As ISymbol, within As ISymbol, Optional throughTypeOpt As ITypeSymbol = Nothing) As Boolean
-            Dim tempVar As Boolean = TypeOf within Is IAssemblySymbol
-            Dim assembly As IAssemblySymbol = If(tempVar, CType(within, IAssemblySymbol), Nothing)
-            If tempVar Then
-                Return symbol.IsAccessibleWithin(assembly, throughTypeOpt)
-            Else
-                Dim tempVar2 As Boolean = TypeOf within Is INamedTypeSymbol
-                Dim namedType As INamedTypeSymbol = If(tempVar2, CType(within, INamedTypeSymbol), Nothing)
-                If tempVar2 Then
-                    Return symbol.IsAccessibleWithin(namedType, throughTypeOpt)
-                Else
-                    Throw New ArgumentException($"TypeOf {NameOf(within)} is not {NameOf(INamedTypeSymbol)}")
-                End If
-            End If
-        End Function
-
-        <Extension>
-        Public Function ConvertISymbolToType(symbol As ISymbol, compilation As Compilation, Optional extensionUsedAsInstance As Boolean = False) As ITypeSymbol
+        Friend Function ConvertISymbolToType(symbol As ISymbol, compilation As Compilation, Optional extensionUsedAsInstance As Boolean = False) As ITypeSymbol
             If compilation Is Nothing Then
                 Throw New ArgumentNullException(NameOf(compilation))
             End If
@@ -155,7 +80,7 @@ Namespace CSharpToVBConverter
         End Function
 
         <Extension()>
-        Public Function ExplicitInterfaceImplementations(symbol As ISymbol) As ImmutableArray(Of ISymbol)
+        Friend Function ExplicitInterfaceImplementations(symbol As ISymbol) As ImmutableArray(Of ISymbol)
             If symbol Is Nothing Then
                 Throw New ArgumentNullException(NameOf(symbol))
             End If
@@ -167,41 +92,25 @@ Namespace CSharpToVBConverter
         Function(__) ImmutableArray.Create(Of ISymbol)())
         End Function
 
-        <Extension>
-        Public Function ExtractBestMatch(Of TSymbol As {Class, ISymbol})(info As SymbolInfo, Optional isMatch As Func(Of TSymbol, Boolean) = Nothing) As TSymbol
-            isMatch = If(isMatch, Function(_1) True)
-            If info.Symbol Is Nothing AndAlso info.CandidateSymbols.IsEmpty Then
-                Return Nothing
-            End If
-            If info.Symbol IsNot Nothing Then
-                Return TryCast(info.Symbol, TSymbol)
-            End If
-            Dim matches As List(Of TSymbol) = info.CandidateSymbols.OfType(Of TSymbol)().Where(isMatch).ToList()
-            If matches.Count = 1 Then
-                Return matches.Single()
-            End If
+        <Extension()>
+        Friend Function GetOverriddenMember(symbol As ISymbol) As ISymbol
+            Select Case True
+                Case TypeOf symbol Is IMethodSymbol
+                    Dim method As IMethodSymbol = CType(symbol, IMethodSymbol)
+                    Return method.OverriddenMethod
+                Case TypeOf symbol Is IPropertySymbol
+                    Dim [property] As IPropertySymbol = CType(symbol, IPropertySymbol)
+                    Return [property].OverriddenProperty
+                Case TypeOf symbol Is IEventSymbol
+                    Dim [event] As IEventSymbol = CType(symbol, IEventSymbol)
+                    Return [event].OverriddenEvent
+            End Select
 
             Return Nothing
         End Function
 
-        <Extension()>
-        Public Function GetArity(symbol As ISymbol) As Integer
-            If symbol Is Nothing Then
-                Throw New ArgumentNullException(NameOf(symbol))
-            End If
-
-            Select Case symbol.Kind
-                Case SymbolKind.NamedType
-                    Return CType(symbol, INamedTypeSymbol).Arity
-                Case SymbolKind.Method
-                    Return CType(symbol, IMethodSymbol).Arity
-                Case Else
-                    Return 0
-            End Select
-        End Function
-
         <Extension>
-        Public Function GetReturnType(symbol As ISymbol) As ITypeSymbol
+        Friend Function GetReturnType(symbol As ISymbol) As ITypeSymbol
             If symbol Is Nothing Then
                 Throw New ArgumentNullException(NameOf(symbol))
             End If
@@ -231,8 +140,28 @@ Namespace CSharpToVBConverter
             Return Nothing
         End Function
 
+        ''' <summary>
+        ''' Checks if 'symbol' is accessible from within 'within'.
+        ''' </summary>
+        <Extension>
+        Friend Function IsAccessibleWithin(symbol As ISymbol, within As ISymbol, Optional throughTypeOpt As ITypeSymbol = Nothing) As Boolean
+            Dim tempVar As Boolean = TypeOf within Is IAssemblySymbol
+            Dim assembly As IAssemblySymbol = If(tempVar, CType(within, IAssemblySymbol), Nothing)
+            If tempVar Then
+                Return symbol.IsAccessibleWithin(assembly, throughTypeOpt)
+            Else
+                Dim tempVar2 As Boolean = TypeOf within Is INamedTypeSymbol
+                Dim namedType As INamedTypeSymbol = If(tempVar2, CType(within, INamedTypeSymbol), Nothing)
+                If tempVar2 Then
+                    Return symbol.IsAccessibleWithin(namedType, throughTypeOpt)
+                Else
+                    Throw New ArgumentException($"TypeOf {NameOf(within)} is not {NameOf(INamedTypeSymbol)}")
+                End If
+            End If
+        End Function
+
         <Extension()>
-        Public Function IsDefinedInSource(symbol As ISymbol) As Boolean
+        Friend Function IsDefinedInSource(symbol As ISymbol) As Boolean
             If symbol Is Nothing Then
                 Throw New ArgumentNullException(NameOf(symbol))
             End If
@@ -241,7 +170,7 @@ Namespace CSharpToVBConverter
         End Function
 
         <Extension()>
-        Public Function IsInterfaceType(symbol As ISymbol) As Boolean
+        Friend Function IsInterfaceType(symbol As ISymbol) As Boolean
             If symbol Is Nothing OrElse TryCast(symbol, ITypeSymbol) Is Nothing Then
                 Return False
             End If
@@ -249,7 +178,7 @@ Namespace CSharpToVBConverter
         End Function
 
         <Extension>
-        Public Function IsKind(symbol As ISymbol, kind As SymbolKind) As Boolean
+        Friend Function IsKind(symbol As ISymbol, kind As SymbolKind) As Boolean
             If symbol Is Nothing Then
                 Return False
             End If
@@ -257,7 +186,7 @@ Namespace CSharpToVBConverter
         End Function
 
         <Extension>
-        Public Function MatchesKind(symbol As ISymbol, ParamArray kinds() As SymbolKind) As Boolean
+        Friend Function MatchesKind(symbol As ISymbol, ParamArray kinds() As SymbolKind) As Boolean
             If symbol Is Nothing Then
                 Return False
             End If

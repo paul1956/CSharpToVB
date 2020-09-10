@@ -13,7 +13,7 @@ Namespace CSharpToVBConverter
     Public Module SyntaxExtensions
 
         <Extension()>
-        Public Function IsParentKind(node As SyntaxNode, kind As CS.SyntaxKind) As Boolean
+        Friend Function IsParentKind(node As SyntaxNode, kind As CS.SyntaxKind) As Boolean
             Return node IsNot Nothing AndAlso node.Parent.IsKind(kind)
         End Function
 

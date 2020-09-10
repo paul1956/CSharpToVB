@@ -152,6 +152,10 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     (context = TokenContext.VariableOrConst AndAlso token.IsKind(CS.SyntaxKind.ConstKeyword))
         End Function
 
+        Friend Function ConvertModifiers(CSModifiers As SyntaxTokenList, IsModule As Boolean, Optional Context As TokenContext = TokenContext.Global) As List(Of SyntaxToken)
+            Return ConvertModifiersCore(CSModifiers, IsModule, Context).ToList
+        End Function
+
         Friend Function RestructureAttributeList(vbAttributeLists As SyntaxList(Of VBS.AttributeListSyntax), AttributeLists As List(Of VBS.AttributeListSyntax), ByRef NewAttributeLeadingTrivia As SyntaxTriviaList, ByRef StatementLeadingTrivia As SyntaxTriviaList, ByRef StatementTrailingTrivia As SyntaxTriviaList) As Boolean
             Dim foundDirective As Boolean = False
             Dim foundTheory As Boolean = False
@@ -177,10 +181,6 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 AttributeLists.Add(attributeList.With(NewAttributeLeadingTrivia, newAttributeTrailingTrivia))
             Next
             Return foundTheory
-        End Function
-
-        Public Function ConvertModifiers(CSModifiers As SyntaxTokenList, IsModule As Boolean, Optional Context As TokenContext = TokenContext.Global) As List(Of SyntaxToken)
-            Return ConvertModifiersCore(CSModifiers, IsModule, Context).ToList
         End Function
 
     End Module

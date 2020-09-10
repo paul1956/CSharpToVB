@@ -16,7 +16,7 @@ Namespace CSharpToVBConverter
         Public Property IsLast As Boolean
         Public Property Enumerator As IEnumerator(Of T)
 
-        Public Sub MoveNext()
+        Friend Sub MoveNext()
             Value = Enumerator.Current
             IsLast = Not Enumerator.MoveNext()
             ' may be called with .AsParallel

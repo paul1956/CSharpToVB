@@ -6,7 +6,7 @@ Namespace CSharpToVBConverter
 
     Public Class SymbolTableEntry
 
-        Public Sub New(Name As String, IsType As Boolean, IsProperty As Boolean)
+        Friend Sub New(Name As String, IsType As Boolean, IsProperty As Boolean)
             Me.Name = Name
             Me.IsType = IsType
             Me.isProperty = IsProperty

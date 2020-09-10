@@ -16,7 +16,7 @@ Namespace CSharpToVBConverter
 
             Private ReadOnly _symbolEquivalenceComparer As SymbolEquivalenceComparer
 
-            Public Sub New(symbolEquivalenceComparer As SymbolEquivalenceComparer)
+            Friend Sub New(symbolEquivalenceComparer As SymbolEquivalenceComparer)
                 _symbolEquivalenceComparer = symbolEquivalenceComparer
             End Sub
 

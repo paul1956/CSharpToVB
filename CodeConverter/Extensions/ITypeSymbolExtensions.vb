@@ -273,6 +273,33 @@ Namespace CSharpToVBConverter
             Return type.GetBaseTypesAndThis.Contains(Function(t As ITypeSymbol) SymbolEquivalenceComparer.s_instance.Equals(t.OriginalDefinition, originalBaseType))
         End Function
 
+        <Extension>
+        Friend Function IsAbstractClass(symbol As ITypeSymbol) As Boolean
+            Return CBool(symbol?.TypeKind = Microsoft.CodeAnalysis.TypeKind.Class AndAlso symbol.IsAbstract)
+        End Function
+
+        <Extension()>
+        Friend Function IsDelegateType(symbol As ITypeSymbol) As Boolean
+            If symbol Is Nothing Then
+                Return False
+            End If
+            Return symbol.TypeKind = TypeKind.Delegate
+        End Function
+
+        <Extension()>
+        Friend Function IsErrorType(symbol As ITypeSymbol) As Boolean
+            Return CBool(symbol?.TypeKind = TypeKind.Error)
+        End Function
+
+        <Extension()>
+        Friend Function IsInterfaceType(symbol As ITypeSymbol) As Boolean
+            If symbol Is Nothing Then
+                Return False
+            End If
+
+            Return symbol.TypeKind = TypeKind.Interface
+        End Function
+
         ' Is a member with declared accessibility "declaredAccessiblity" accessible from within
         ' "within", which must be a named type or an assembly.
         Friend Function IsMemberAccessible(containingType As INamedTypeSymbol, declaredAccessibility As Accessibility, within As ISymbol, throughTypeOpt As ITypeSymbol, ByRef failedThroughTypeCheck As Boolean) As Boolean
@@ -357,33 +384,6 @@ Namespace CSharpToVBConverter
                 Yield current
                 current = current.BaseType
             End While
-        End Function
-
-        <Extension>
-        Public Function IsAbstractClass(symbol As ITypeSymbol) As Boolean
-            Return CBool(symbol?.TypeKind = Microsoft.CodeAnalysis.TypeKind.Class AndAlso symbol.IsAbstract)
-        End Function
-
-        <Extension()>
-        Public Function IsDelegateType(symbol As ITypeSymbol) As Boolean
-            If symbol Is Nothing Then
-                Return False
-            End If
-            Return symbol.TypeKind = TypeKind.Delegate
-        End Function
-
-        <Extension()>
-        Public Function IsErrorType(symbol As ITypeSymbol) As Boolean
-            Return CBool(symbol?.TypeKind = TypeKind.Error)
-        End Function
-
-        <Extension()>
-        Public Function IsInterfaceType(symbol As ITypeSymbol) As Boolean
-            If symbol Is Nothing Then
-                Return False
-            End If
-
-            Return symbol.TypeKind = TypeKind.Interface
         End Function
 
     End Module

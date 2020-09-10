@@ -10,7 +10,7 @@ Namespace CSharpToVBConverter
 
     Public Class CodeWithOptions
 
-        Public Sub New(RequestToConvert As ConvertRequest)
+        Friend Sub New(RequestToConvert As ConvertRequest)
             If RequestToConvert Is Nothing Then
                 Throw New ArgumentNullException(NameOf(RequestToConvert))
             End If
@@ -22,19 +22,19 @@ Namespace CSharpToVBConverter
             Request = RequestToConvert
         End Sub
 
-        Public Property FromLanguage As String
-        Public Property FromLanguageVersion As Integer
-        Public Property Request As ConvertRequest
-        Public Property Text As String
-        Public Property ToLanguage() As String
-        Public Property ToLanguageVersion() As Integer
+        Friend Property FromLanguage As String
+        Friend Property FromLanguageVersion As Integer
+        Friend Property Request As ConvertRequest
+        Friend Property Text As String
+        Friend Property ToLanguage() As String
+        Friend Property ToLanguageVersion() As Integer
 
-        Public Function SetFromLanguageVersion(Optional version As Integer = CS.LanguageVersion.Latest) As CodeWithOptions
+        Friend Function SetFromLanguageVersion(Optional version As Integer = CS.LanguageVersion.Latest) As CodeWithOptions
             FromLanguageVersion = version
             Return Me
         End Function
 
-        Public Function SetToLanguageVersion(Optional version As Integer = VisualBasic.LanguageVersion.Latest) As CodeWithOptions
+        Friend Function SetToLanguageVersion(Optional version As Integer = VisualBasic.LanguageVersion.Latest) As CodeWithOptions
             ToLanguageVersion = version
             Return Me
         End Function

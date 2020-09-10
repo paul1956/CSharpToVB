@@ -37,7 +37,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
             'Public ReadOnly ByRefHelperMarkers As New List(Of CSS.BaseTypeDeclarationSyntax)()
             Public VBHeaderLeadingTrivia As SyntaxTriviaList
 
-            Public Sub New(lSemanticModel As SemanticModel, DefaultVBOptions As DefaultVBOptions, ReportException As Action(Of Exception))
+            Friend Sub New(lSemanticModel As SemanticModel, DefaultVBOptions As DefaultVBOptions, ReportException As Action(Of Exception))
                 _mSemanticModel = lSemanticModel
                 _reportException = ReportException
                 _defaultVBOptions = DefaultVBOptions

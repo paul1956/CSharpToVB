@@ -38,7 +38,7 @@ Namespace CSharpToVBConverter
                 For Each TupleElement As ITypeSymbol In DirectCast(PossibleTupleType, INamedTypeSymbol).TypeArguments
                     TupleElementList.Add(TupleElement.ConvertToType())
                 Next
-                Return Factory.GenericName("Tuple", Factory.TypeArgumentList(Factory.SeparatedList(TupleElementList)))
+                Return Factory.GenericName("Tuple", Factory.TypeArgumentList(OpenParenToken, OfKeyword.WithTrailingTrivia(VBSpaceTrivia), Factory.SeparatedList(TupleElementList), CloseParenToken))
             End If
             Dim PossibleName As String = PossibleTupleType.ToString.Trim
             Dim StartIndex As Integer = PossibleName.IndexOf("<", StringComparison.Ordinal)
@@ -237,44 +237,13 @@ Namespace CSharpToVBConverter
             Return Factory.ParseTypeName($"{typeString}{arrayRank}")
         End Function
 
-        Public Function GenerateSafeVBIdentifier(csIdentifier As SyntaxToken, Node As CSharpSyntaxNode, Model As SemanticModel) As VBS.NameSyntax
-            If Node Is Nothing Then
-                Throw New ArgumentNullException(NameOf(Node))
-            End If
-
-            Dim keywordKind As VB.SyntaxKind = VB.SyntaxFacts.GetKeywordKind(csIdentifier.ValueText)
-            Dim BaseVBIdent As String = csIdentifier.ValueText
-            If BaseVBIdent = "_" Then
-                BaseVBIdent = "__"
-            End If
-            Dim isBracketNeeded As Boolean = False
-            If VB.SyntaxFacts.IsKeywordKind(keywordKind) Then
-                isBracketNeeded = False
-                If keywordKind.MatchesKind(VB.SyntaxKind.REMKeyword, VB.SyntaxKind.DelegateKeyword) OrElse csIdentifier.Text.Chars(0) = "@" Then
-                    isBracketNeeded = True
-                ElseIf TypeOf csIdentifier.Parent?.Parent Is CSS.MemberAccessExpressionSyntax Then
-                    isBracketNeeded = CType(csIdentifier.Parent?.Parent, CSS.MemberAccessExpressionSyntax).Expression.ToString.Equals(csIdentifier.ToString, StringComparison.Ordinal)
-                ElseIf csIdentifier.Parent.AncestorsAndSelf().OfType(Of CSS.UsingDirectiveSyntax)().FirstOrDefault().IsKind(SyntaxKind.UsingDirective) Then
-                    csIdentifier = Factory.Token(keywordKind).WithTriviaFrom(csIdentifier)
-                    isBracketNeeded = False
-                End If
-            End If
-            BaseVBIdent = If(isBracketNeeded, $"[{BaseVBIdent}]", BaseVBIdent)
-            Dim isField As Boolean = Node.AncestorsAndSelf().OfType(Of CSS.FieldDeclarationSyntax).Any
-            Dim symbolEntry As (SyntaxToken, Boolean) = GetSymbolTableEntry(csIdentifier, BaseVBIdent, Node, Model, IsQualifiedNameOrTypeName:=False, isField)
-            If isField Then
-                Factory.QualifiedName(Factory.IdentifierName(MeKeyword), Factory.IdentifierName(BaseVBIdent))
-            End If
-            Return Factory.IdentifierName(BaseVBIdent)
-        End Function
-
         ''' <summary>
         ''' Returns Safe VB Name with QualifiedName and TypeName both false
         ''' </summary>
         ''' <param name="id"></param>
         ''' <returns></returns>
         ''' <param name="Node"></param><param name="Model"></param>
-        Public Function GenerateSafeVBToken(id As SyntaxToken, Node As CSharpSyntaxNode, Model As SemanticModel) As SyntaxToken
+        Friend Function GenerateSafeVBToken(id As SyntaxToken, Node As CSharpSyntaxNode, Model As SemanticModel) As SyntaxToken
             Return GenerateSafeVBToken(id, Node, Model, IsQualifiedName:=False, IsTypeName:=False)
         End Function
 
@@ -287,7 +256,7 @@ Namespace CSharpToVBConverter
         ''' <param name="IsQualifiedName">True if name is part of a Qualified Name and should not be renamed</param>
         ''' <param name="IsTypeName"></param>
         ''' <returns></returns>
-        Public Function GenerateSafeVBToken(id As SyntaxToken, Node As CSharpSyntaxNode, Model As SemanticModel, IsQualifiedName As Boolean, IsTypeName As Boolean) As SyntaxToken
+        Friend Function GenerateSafeVBToken(id As SyntaxToken, Node As CSharpSyntaxNode, Model As SemanticModel, IsQualifiedName As Boolean, IsTypeName As Boolean) As SyntaxToken
             If Node Is Nothing Then
                 Throw New ArgumentNullException(NameOf(Node))
             End If

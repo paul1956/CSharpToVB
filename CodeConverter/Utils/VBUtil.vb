@@ -14,7 +14,7 @@ Namespace CSharpToVBConverter
 
     Public Module VBUtil
 
-        Public Function ConvertCSExpressionsKindToVBKind(t As CS.SyntaxKind) As VB.SyntaxKind
+        Friend Function ConvertCSExpressionsKindToVBKind(t As CS.SyntaxKind) As VB.SyntaxKind
             Select Case t
                 Case CS.SyntaxKind.None
                     Return VB.SyntaxKind.None
@@ -113,7 +113,7 @@ Namespace CSharpToVBConverter
             Throw New NotSupportedException($"Expression.Kind {t} is not supported!")
         End Function
 
-        Public Function ConvertKindToTypesToken(t As VB.SyntaxKind) As SyntaxToken
+        Friend Function ConvertKindToTypesToken(t As VB.SyntaxKind) As SyntaxToken
 
             Select Case t
                 ' built-in types
@@ -150,7 +150,7 @@ Namespace CSharpToVBConverter
             Throw New NotSupportedException($"Type.Kind {t} is not supported!")
         End Function
 
-        Public Function ConvertKindToTypesToken(t As CS.SyntaxKind, Optional context As TokenContext = TokenContext.Global) As SyntaxToken
+        Friend Function ConvertKindToTypesToken(t As CS.SyntaxKind, Optional context As TokenContext = TokenContext.Global) As SyntaxToken
 
             Select Case t
                 Case CS.SyntaxKind.None
@@ -203,7 +203,7 @@ Namespace CSharpToVBConverter
         ''' <param name="op"></param>
         ''' <returns></returns>
         ''' <param name="IsReferenceType"></param>
-        Public Function ExpressionKindToOperatorToken(op As VB.SyntaxKind, IsReferenceType As Boolean) As SyntaxToken
+        Friend Function ExpressionKindToOperatorToken(op As VB.SyntaxKind, IsReferenceType As Boolean) As SyntaxToken
             Select Case op
                 Case VB.SyntaxKind.EqualsExpression
                     If IsReferenceType Then
@@ -277,7 +277,7 @@ Namespace CSharpToVBConverter
         End Function
 
         <Extension()>
-        Public Function IsKind(node As SyntaxNode, kind1 As VB.SyntaxKind, kind2 As VB.SyntaxKind) As Boolean
+        Friend Function IsKind(node As SyntaxNode, kind1 As VB.SyntaxKind, kind2 As VB.SyntaxKind) As Boolean
             If node Is Nothing Then
                 Return False
             End If

@@ -64,6 +64,11 @@ Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpec
 Any changes to CSharpToVB application needs to change the version information in the project file **AND** in MyProject/AssemblyInfo.vb until Visual Studion is able to general file automatically for a WinForms application.
 
 ## Major New Release
+  New in 4.6.0.4/4.0.0.5
+  - Fix more corner cases for Implements
+  - Remove old Implements Code
+  - Make Public Function Friend where possible
+
   New in 4.6.0.4/4.0.0.4
   - Improve Menu placement and internal naming
   - Improve Char integer math
@@ -107,14 +112,14 @@ Any changes to CSharpToVB application needs to change the version information in
 +------------------+--------+--------+--------+
 | Module           | Line   | Branch | Method |
 +------------------+--------+--------+--------+
-| VB.CodeConverter | 79.21% | 73%    | 88.01% |
+| VB.CodeConverter | 79.89% | 73.69% | 90.61% |
 +------------------+--------+--------+--------+
 
 +---------+--------+--------+--------+
 |         | Line   | Branch | Method |
 +---------+--------+--------+--------+
-| Total   | 79.21% | 73%    | 88.01% |
+| Total   | 79.89% | 73.69% | 90.61% |
 +---------+--------+--------+--------+
-| Average | 79.2%  | 73%    | 88.01% |
+| Average | 79.89% | 73.69% | 90.61% |
 +---------+--------+--------+--------+
 ```

@@ -11,7 +11,7 @@ Namespace CSharpToVBConverter
 
     Public Module ParseUtilities
 
-        Public Function GetCSharpParseOptions(CSPreprocessorSymbols As List(Of String)) As CS.CSharpParseOptions
+        Friend Function GetCSharpParseOptions(CSPreprocessorSymbols As List(Of String)) As CS.CSharpParseOptions
             Return New CS.CSharpParseOptions(
                                         CS.LanguageVersion.Latest,
                                         DocumentationMode.Parse,
@@ -19,7 +19,7 @@ Namespace CSharpToVBConverter
                                         CSPreprocessorSymbols)
         End Function
 
-        Public Function GetVBParseOptions(VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object))) As VB.VisualBasicParseOptions
+        Friend Function GetVBParseOptions(VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object))) As VB.VisualBasicParseOptions
             Return New VB.VisualBasicParseOptions(
                                     VB.LanguageVersion.Latest,
                                     DocumentationMode.Diagnose,

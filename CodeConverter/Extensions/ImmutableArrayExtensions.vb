@@ -18,7 +18,7 @@ Namespace CSharpToVBConverter
         ''' <param name="map">The mapping delegate</param>
         ''' <returns>If the items's length is 0, this will return an empty immutable array</returns>
         <Extension>
-        Public Function SelectAsArray(Of TItem, TResult)(items As ImmutableArray(Of TItem), map As Func(Of TItem, TResult)) As ImmutableArray(Of TResult)
+        Friend Function SelectAsArray(Of TItem, TResult)(items As ImmutableArray(Of TItem), map As Func(Of TItem, TResult)) As ImmutableArray(Of TResult)
             Return ImmutableArray.CreateRange(items, map)
         End Function
 

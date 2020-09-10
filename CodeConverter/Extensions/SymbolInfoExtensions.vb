@@ -11,7 +11,7 @@ Namespace CSharpToVBConverter
     Public Module SymbolInfoExtensions
 
         <Extension>
-        Public Function GetAnySymbol(info As SymbolInfo) As ISymbol
+        Friend Function GetAnySymbol(info As SymbolInfo) As ISymbol
             Return If(info.Symbol, info.CandidateSymbols.FirstOrDefault())
         End Function
 

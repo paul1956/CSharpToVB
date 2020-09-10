@@ -280,6 +280,14 @@ Namespace CSharpToVBConverter
                                             CancelToken)
         End Function
 
+        <Extension>
+        Friend Function GetValidAnonymousTypeProperties(symbol As INamedTypeSymbol) As IEnumerable(Of IPropertySymbol)
+            If symbol Is Nothing Then
+                Throw New ArgumentNullException(NameOf(symbol))
+            End If
+            Return symbol.GetMembers().OfType(Of IPropertySymbol)().Where(Function(p As IPropertySymbol) p.CanBeReferencedByName)
+        End Function
+
         Friend Function ImplementsMethodOrProperty(Of T As ISymbol)(csMethodOrProperty As T, interfaceMethodOrProperty As T, ByRef SimpleName As VBS.SimpleNameSyntax) As Boolean
             If csMethodOrProperty.Name <> interfaceMethodOrProperty.Name Then
                 Return False
@@ -300,27 +308,10 @@ Namespace CSharpToVBConverter
             Return True
         End Function
 
-        <Extension>
-        Public Iterator Function GetBaseTypesAndThis(namedType As INamedTypeSymbol) As IEnumerable(Of INamedTypeSymbol)
-            Dim current As INamedTypeSymbol = namedType
-            Do While current IsNot Nothing
-                Yield current
-                current = current.BaseType
-            Loop
-        End Function
-
-        <Extension>
-        Public Function GetValidAnonymousTypeProperties(symbol As INamedTypeSymbol) As IEnumerable(Of IPropertySymbol)
-            If symbol Is Nothing Then
-                Throw New ArgumentNullException(NameOf(symbol))
-            End If
-            Return symbol.GetMembers().OfType(Of IPropertySymbol)().Where(Function(p As IPropertySymbol) p.CanBeReferencedByName)
-        End Function
-
         ' Is the named type "type" accessible from within "within", which must be a named type or
         ' an assembly.
         <Extension()>
-        Public Function IsNamedTypeAccessible(type As INamedTypeSymbol, within As ISymbol) As Boolean
+        Friend Function IsNamedTypeAccessible(type As INamedTypeSymbol, within As ISymbol) As Boolean
             Debug.Assert(TypeOf within Is INamedTypeSymbol OrElse TypeOf within Is IAssemblySymbol)
             If type Is Nothing Then
                 Throw New ArgumentNullException(NameOf(type))
@@ -351,6 +342,15 @@ Namespace CSharpToVBConverter
             Return If(containingType Is Nothing,
                           IsNonNestedTypeAccessible(assembly:=type.ContainingAssembly, declaredAccessibility:=type.DeclaredAccessibility, within:=within),
                           IsMemberAccessible(containingType:=type.ContainingType, declaredAccessibility:=type.DeclaredAccessibility, within:=within, throughTypeOpt:=Nothing, failedThroughTypeCheck:=Nothing))
+        End Function
+
+        <Extension>
+        Public Iterator Function GetBaseTypesAndThis(namedType As INamedTypeSymbol) As IEnumerable(Of INamedTypeSymbol)
+            Dim current As INamedTypeSymbol = namedType
+            Do While current IsNot Nothing
+                Yield current
+                current = current.BaseType
+            Loop
         End Function
 
     End Module

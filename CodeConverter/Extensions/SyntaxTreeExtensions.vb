@@ -91,7 +91,7 @@ Namespace CSharpToVBConverter
         End Function
 
         <Extension>
-        Public Function HasUsingDirective(tree As CS.CSharpSyntaxTree, FullName As String) As Boolean
+        Friend Function HasUsingDirective(tree As CS.CSharpSyntaxTree, FullName As String) As Boolean
             If tree Is Nothing Then
                 Throw New ArgumentNullException(NameOf(tree))
             End If
@@ -101,6 +101,7 @@ Namespace CSharpToVBConverter
             FullName = FullName.Trim()
             Return tree.GetRoot().DescendantNodes(AddressOf MatchesNamespaceOrRoot).OfType(Of CSS.UsingDirectiveSyntax)().Any(Function(u As CSS.UsingDirectiveSyntax) u.Name.ToString().Equals(FullName, StringComparison.OrdinalIgnoreCase))
         End Function
+
         <Extension>
         Public Function IsGeneratedCode(tree As SyntaxTree, isComment As Func(Of SyntaxTrivia, Boolean), CancelToken As CancellationToken) As Boolean
             If isComment Is Nothing Then

@@ -46,7 +46,7 @@ Namespace CSharpToVBConverter
         Private ReadOnly _equivalenceVisitors As ImmutableArray(Of EquivalenceVisitor)
         Private ReadOnly _getHashCodeVisitors As ImmutableArray(Of GetHashCodeVisitor)
 
-        Public Shared ReadOnly s_instance As New SymbolEquivalenceComparer(SimpleNameAssemblyComparer.Instance, distinguishRefFromOut:=False)
+        Friend Shared ReadOnly s_instance As New SymbolEquivalenceComparer(SimpleNameAssemblyComparer.Instance, distinguishRefFromOut:=False)
 
         Friend Sub New(assemblyComparerOpt As IEqualityComparer(Of IAssemblySymbol), distinguishRefFromOut As Boolean)
             _assemblyComparerOpt = assemblyComparerOpt

@@ -139,6 +139,15 @@ Namespace CSharpToVBConverter
         End Function
 
         <Extension()>
+        Friend Function GetAncestor(Of TNode As SyntaxNode)(node As SyntaxNode) As TNode
+            If node Is Nothing Then
+                Return Nothing
+            End If
+
+            Return node.GetAncestors(Of TNode)().FirstOrDefault()
+        End Function
+
+        <Extension()>
         Friend Iterator Function GetAncestors(Of TNode As SyntaxNode)(node As SyntaxNode) As IEnumerable(Of TNode)
             Dim current As SyntaxNode = node.Parent
             While current IsNot Nothing
@@ -151,6 +160,46 @@ Namespace CSharpToVBConverter
         End Function
 
         <Extension()>
+        Friend Function GetBraces(node As SyntaxNode) As ValueTuple(Of SyntaxToken, SyntaxToken)
+            Dim namespaceNode As CSS.NamespaceDeclarationSyntax = TryCast(node, CSS.NamespaceDeclarationSyntax)
+            If namespaceNode IsNot Nothing Then
+                Return ValueTuple.Create(namespaceNode.OpenBraceToken, namespaceNode.CloseBraceToken)
+            End If
+
+            Dim baseTypeNode As CSS.BaseTypeDeclarationSyntax = TryCast(node, CSS.BaseTypeDeclarationSyntax)
+            If baseTypeNode IsNot Nothing Then
+                Return ValueTuple.Create(baseTypeNode.OpenBraceToken, baseTypeNode.CloseBraceToken)
+            End If
+
+            Dim accessorListNode As CSS.AccessorListSyntax = TryCast(node, CSS.AccessorListSyntax)
+            If accessorListNode IsNot Nothing Then
+                Return ValueTuple.Create(accessorListNode.OpenBraceToken, accessorListNode.CloseBraceToken)
+            End If
+
+            Dim blockNode As CSS.BlockSyntax = TryCast(node, CSS.BlockSyntax)
+            If blockNode IsNot Nothing Then
+                Return ValueTuple.Create(blockNode.OpenBraceToken, blockNode.CloseBraceToken)
+            End If
+
+            Dim switchStatementNode As CSS.SwitchStatementSyntax = TryCast(node, CSS.SwitchStatementSyntax)
+            If switchStatementNode IsNot Nothing Then
+                Return ValueTuple.Create(switchStatementNode.OpenBraceToken, switchStatementNode.CloseBraceToken)
+            End If
+
+            Dim anonymousObjectCreationExpression As CSS.AnonymousObjectCreationExpressionSyntax = TryCast(node, CSS.AnonymousObjectCreationExpressionSyntax)
+            If anonymousObjectCreationExpression IsNot Nothing Then
+                Return ValueTuple.Create(anonymousObjectCreationExpression.OpenBraceToken, anonymousObjectCreationExpression.CloseBraceToken)
+            End If
+
+            Dim initializeExpressionNode As CSS.InitializerExpressionSyntax = TryCast(node, CSS.InitializerExpressionSyntax)
+            If initializeExpressionNode IsNot Nothing Then
+                Return ValueTuple.Create(initializeExpressionNode.OpenBraceToken, initializeExpressionNode.CloseBraceToken)
+            End If
+
+            Return New ValueTuple(Of SyntaxToken, SyntaxToken)()
+        End Function
+
+        <Extension()>
         Friend Function IsKind(node As SyntaxNode, ParamArray kind1() As CS.SyntaxKind) As Boolean
             If node Is Nothing Then
                 Return False
@@ -158,6 +207,20 @@ Namespace CSharpToVBConverter
 
             For Each k As CS.SyntaxKind In kind1
                 If node.IsKind(k) Then
+                    Return True
+                End If
+            Next
+            Return False
+        End Function
+
+        <Extension()>
+        Friend Function IsKind(node As SyntaxNode, ParamArray kind1() As VB.SyntaxKind) As Boolean
+            If node Is Nothing Then
+                Return False
+            End If
+
+            For Each k As VB.SyntaxKind In kind1
+                If CType(node.RawKind(), VB.SyntaxKind) = k Then
                     Return True
                 End If
             Next
@@ -259,6 +322,22 @@ Namespace CSharpToVBConverter
             Dim TrailingTrivia As SyntaxTriviaList = node.GetTrailingTrivia()
             TrailingTrivia = TrailingTrivia.Add(VBEOLTrivia)
             Return node.WithTrailingTrivia(TrailingTrivia)
+        End Function
+
+        <Extension()>
+        Friend Function WithAppendedTrailingTrivia(Of T As SyntaxNode)(node As T, trivia As SyntaxTriviaList) As T
+            If trivia.Count = 0 Then
+                Return node
+            End If
+            If node Is Nothing Then
+                Return Nothing
+            End If
+
+            Dim trailingtrivia As SyntaxTriviaList = node.GetTrailingTrivia().Concat(trivia).ToSyntaxTriviaList
+            If trailingtrivia.ContainsEOLTrivia Then
+                Return node.WithTrailingTrivia(trailingtrivia).WithTrailingEOL(RemoveLastLineContinuation:=True)
+            End If
+            Return node.WithTrailingTrivia(trailingtrivia)
         End Function
 
         <Extension>
@@ -568,85 +647,6 @@ Namespace CSharpToVBConverter
             Return Node.WithLeadingTrivia(newLeadingTrivia)
         End Function
 
-        <Extension()>
-        Public Function GetAncestor(Of TNode As SyntaxNode)(node As SyntaxNode) As TNode
-            If node Is Nothing Then
-                Return Nothing
-            End If
-
-            Return node.GetAncestors(Of TNode)().FirstOrDefault()
-        End Function
-
-        <Extension()>
-        Public Function GetBraces(node As SyntaxNode) As ValueTuple(Of SyntaxToken, SyntaxToken)
-            Dim namespaceNode As CSS.NamespaceDeclarationSyntax = TryCast(node, CSS.NamespaceDeclarationSyntax)
-            If namespaceNode IsNot Nothing Then
-                Return ValueTuple.Create(namespaceNode.OpenBraceToken, namespaceNode.CloseBraceToken)
-            End If
-
-            Dim baseTypeNode As CSS.BaseTypeDeclarationSyntax = TryCast(node, CSS.BaseTypeDeclarationSyntax)
-            If baseTypeNode IsNot Nothing Then
-                Return ValueTuple.Create(baseTypeNode.OpenBraceToken, baseTypeNode.CloseBraceToken)
-            End If
-
-            Dim accessorListNode As CSS.AccessorListSyntax = TryCast(node, CSS.AccessorListSyntax)
-            If accessorListNode IsNot Nothing Then
-                Return ValueTuple.Create(accessorListNode.OpenBraceToken, accessorListNode.CloseBraceToken)
-            End If
-
-            Dim blockNode As CSS.BlockSyntax = TryCast(node, CSS.BlockSyntax)
-            If blockNode IsNot Nothing Then
-                Return ValueTuple.Create(blockNode.OpenBraceToken, blockNode.CloseBraceToken)
-            End If
-
-            Dim switchStatementNode As CSS.SwitchStatementSyntax = TryCast(node, CSS.SwitchStatementSyntax)
-            If switchStatementNode IsNot Nothing Then
-                Return ValueTuple.Create(switchStatementNode.OpenBraceToken, switchStatementNode.CloseBraceToken)
-            End If
-
-            Dim anonymousObjectCreationExpression As CSS.AnonymousObjectCreationExpressionSyntax = TryCast(node, CSS.AnonymousObjectCreationExpressionSyntax)
-            If anonymousObjectCreationExpression IsNot Nothing Then
-                Return ValueTuple.Create(anonymousObjectCreationExpression.OpenBraceToken, anonymousObjectCreationExpression.CloseBraceToken)
-            End If
-
-            Dim initializeExpressionNode As CSS.InitializerExpressionSyntax = TryCast(node, CSS.InitializerExpressionSyntax)
-            If initializeExpressionNode IsNot Nothing Then
-                Return ValueTuple.Create(initializeExpressionNode.OpenBraceToken, initializeExpressionNode.CloseBraceToken)
-            End If
-
-            Return New ValueTuple(Of SyntaxToken, SyntaxToken)()
-        End Function
-
-        <Extension()>
-        Public Function IsKind(node As SyntaxNode, ParamArray kind1() As VB.SyntaxKind) As Boolean
-            If node Is Nothing Then
-                Return False
-            End If
-
-            For Each k As VB.SyntaxKind In kind1
-                If CType(node.RawKind(), VB.SyntaxKind) = k Then
-                    Return True
-                End If
-            Next
-            Return False
-        End Function
-
-        <Extension()>
-        Public Function WithAppendedTrailingTrivia(Of T As SyntaxNode)(node As T, trivia As SyntaxTriviaList) As T
-            If trivia.Count = 0 Then
-                Return node
-            End If
-            If node Is Nothing Then
-                Return Nothing
-            End If
-
-            Dim trailingtrivia As SyntaxTriviaList = node.GetTrailingTrivia().Concat(trivia).ToSyntaxTriviaList
-            If trailingtrivia.ContainsEOLTrivia Then
-                Return node.WithTrailingTrivia(trailingtrivia).WithTrailingEOL(RemoveLastLineContinuation:=True)
-            End If
-            Return node.WithTrailingTrivia(trailingtrivia)
-        End Function
-
 #Region "WithConvertedTriviaFrom"
 
         <Extension>
@@ -668,7 +668,7 @@ Namespace CSharpToVBConverter
         End Function
 
         <Extension>
-        Public Function WithConvertedTriviaFrom(Of T As SyntaxNode)(node As T, otherToken As SyntaxToken) As T
+        Friend Function WithConvertedTriviaFrom(Of T As SyntaxNode)(node As T, otherToken As SyntaxToken) As T
             If node Is Nothing Then
                 Throw New ArgumentException($"Parameter {NameOf(node)} Is Nothing")
             End If
@@ -706,7 +706,7 @@ Namespace CSharpToVBConverter
         End Function
 
         <Extension>
-        Public Function WithConvertedLeadingTriviaFrom(node As SyntaxToken, otherToken As SyntaxToken) As SyntaxToken
+        Friend Function WithConvertedLeadingTriviaFrom(node As SyntaxToken, otherToken As SyntaxToken) As SyntaxToken
             If Not otherToken.HasLeadingTrivia Then
                 Return node
             End If

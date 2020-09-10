@@ -60,7 +60,7 @@ Namespace CSharpToVBConverter
         ''' that are the same, and both are fixed that you will end up with non-unique names at the
         ''' end.
         ''' </summary>
-        Public Function EnsureUniqueness(names As IList(Of String), isFixed As IList(Of Boolean), Optional canUse As Func(Of String, Boolean) = Nothing) As IList(Of String)
+        Friend Function EnsureUniqueness(names As IList(Of String), isFixed As IList(Of Boolean), Optional canUse As Func(Of String, Boolean) = Nothing) As IList(Of String)
             Dim copy As List(Of String) = names.ToList()
             EnsureUniquenessInPlace(copy, isFixed, canUse)
             Return copy
@@ -69,7 +69,7 @@ Namespace CSharpToVBConverter
         ''' <summary>
         ''' Transforms baseName into a name that does not conflict with any name in 'reservedNames'
         ''' </summary>
-        Public Function EnsureUniqueness(baseName As String, reservedNames As IEnumerable(Of String)) As String
+        Friend Function EnsureUniqueness(baseName As String, reservedNames As IEnumerable(Of String)) As String
             Dim names As List(Of String) = New List(Of String) From {baseName}
             Dim isFixed As List(Of Boolean) = New List(Of Boolean) From {False}
             For Each s As SymbolTableEntry In s_usedIdentifiers.Values
@@ -85,11 +85,11 @@ Namespace CSharpToVBConverter
             Return result.First()
         End Function
 
-        Public Function GenerateUniqueName(baseName As String, canUse As Func(Of String, Boolean)) As String
+        Friend Function GenerateUniqueName(baseName As String, canUse As Func(Of String, Boolean)) As String
             Return GenerateUniqueName(baseName, String.Empty, canUse)
         End Function
 
-        Public Function GenerateUniqueName(baseName As String, extension As String, canUse As Func(Of String, Boolean)) As String
+        Friend Function GenerateUniqueName(baseName As String, extension As String, canUse As Func(Of String, Boolean)) As String
             If Not String.IsNullOrEmpty(extension) AndAlso Not extension.StartsWith(".", StringComparison.OrdinalIgnoreCase) Then
                 extension = "." & extension
             End If

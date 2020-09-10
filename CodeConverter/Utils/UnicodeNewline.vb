@@ -97,26 +97,6 @@ Namespace CSharpToVBConverter
         ''' </summary>
         ''' <returns>0 == no new line, otherwise it returns either 1 or 2 depending of the length of the delimiter.</returns>
         ''' <param name="curChar">The current character.</param>
-        ''' <param name="nextChar">A callback getting the next character (may be null).</param>
-        Public Function GetDelimiterLength(curChar As Char, Optional nextChar As Func(Of Char) = Nothing) As Integer
-            If curChar = CR Then
-                If nextChar IsNot Nothing AndAlso nextChar() = LF Then
-                    Return 2
-                End If
-                Return 1
-            End If
-
-            If curChar = LF OrElse curChar = NEL OrElse curChar = VT OrElse curChar = FF OrElse curChar = LS OrElse curChar = PS Then
-                Return 1
-            End If
-            Return 0
-        End Function
-
-        ''' <summary>
-        ''' Determines if a char is a new line delimiter.
-        ''' </summary>
-        ''' <returns>0 == no new line, otherwise it returns either 1 or 2 depending of the length of the delimiter.</returns>
-        ''' <param name="curChar">The current character.</param>
         ''' <param name="nextChar">The next character (if != LF then length will always be 0 or 1).</param>
         Public Function GetDelimiterLength(curChar As Char, nextChar As Char) As Integer
             If curChar = CR Then
@@ -140,7 +120,7 @@ Namespace CSharpToVBConverter
         ''' <param name = "length">The length of the delimiter</param>
         ''' <param name = "type">The type of the delimiter</param>
         ''' <param name="nextChar">A callback getting the next character (may be null).</param>
-        Public Function TryGetDelimiterLengthAndType(curChar As Char, <Out()> ByRef length As Integer, <Out()> ByRef type As UnicodeNewline, Optional nextChar As Func(Of Char) = Nothing) As Boolean
+        Friend Function TryGetDelimiterLengthAndType(curChar As Char, <Out()> ByRef length As Integer, <Out()> ByRef type As UnicodeNewline, Optional nextChar As Func(Of Char) = Nothing) As Boolean
             If curChar = CR Then
                 If nextChar IsNot Nothing AndAlso nextChar() = LF Then
                     length = 2
@@ -192,7 +172,7 @@ Namespace CSharpToVBConverter
         ''' <param name = "length">The length of the delimiter</param>
         ''' <param name = "type">The type of the delimiter</param>
         ''' <param name="nextChar">The next character (if != LF then length will always be 0 or 1).</param>
-        Public Function TryGetDelimiterLengthAndType(curChar As Char, <Out()> ByRef length As Integer, <Out()> ByRef type As UnicodeNewline, nextChar As Char) As Boolean
+        Friend Function TryGetDelimiterLengthAndType(curChar As Char, <Out()> ByRef length As Integer, <Out()> ByRef type As UnicodeNewline, nextChar As Char) As Boolean
             If curChar = CR Then
                 If nextChar = LF Then
                     length = 2
@@ -242,7 +222,7 @@ Namespace CSharpToVBConverter
         ''' <returns>0 == no new line, otherwise it returns either 1 or 2 depending of the length of the delimiter.</returns>
         ''' <param name="curChar">The current character.</param>
         ''' <param name="nextChar">A callback getting the next character (may be null).</param>
-        Public Function GetDelimiterType(curChar As Char, Optional nextChar As Func(Of Char) = Nothing) As UnicodeNewline
+        Friend Function GetDelimiterType(curChar As Char, Optional nextChar As Func(Of Char) = Nothing) As UnicodeNewline
             Select Case curChar
                 Case CR
                     If nextChar IsNot Nothing AndAlso nextChar() = LF Then
@@ -271,7 +251,7 @@ Namespace CSharpToVBConverter
         ''' <returns>0 == no new line, otherwise it returns either 1 or 2 depending of the length of the delimiter.</returns>
         ''' <param name="curChar">The current character.</param>
         ''' <param name="nextChar">The next character (if != LF then length will always be 0 or 1).</param>
-        Public Function GetDelimiterType(curChar As Char, nextChar As Char) As UnicodeNewline
+        Friend Function GetDelimiterType(curChar As Char, nextChar As Char) As UnicodeNewline
             Select Case curChar
                 Case CR
                     If nextChar = LF Then
@@ -295,23 +275,12 @@ Namespace CSharpToVBConverter
         End Function
 
         ''' <summary>
-        ''' Determines if a char is a new line delimiter.
-        '''
-        ''' Note that the only 2 char wide new line is CR LF and both chars are new line
-        ''' chars on their own. For most cases <see cref="GetDelimiterLength"/> is the better choice.
-        ''' </summary>
-        <Extension>
-        Public Function IsNewLine(ch As Char) As Boolean
-            Return ch = CR OrElse ch = LF OrElse ch = NEL OrElse ch = VT OrElse ch = FF OrElse ch = LS OrElse ch = PS
-        End Function
-
-        ''' <summary>
         ''' Determines if a string is a new line delimiter.
         '''
         ''' Note that the only 2 char wide new line is CR LF
         ''' </summary>
         <Extension>
-        Public Function IsNewLine(str As String) As Boolean
+        Friend Function IsNewLine(str As String) As Boolean
             If String.IsNullOrEmpty(str) Then
                 Return False
             End If
@@ -329,7 +298,7 @@ Namespace CSharpToVBConverter
         ''' <summary>
         ''' Gets the new line as a string.
         ''' </summary>
-        Public Function GetString(newLine As UnicodeNewline) As String
+        Friend Function GetString(newLine As UnicodeNewline) As String
             Select Case newLine
                 Case UnicodeNewline.Unknown
                     Return ""
@@ -385,7 +354,7 @@ Namespace CSharpToVBConverter
         End Function
 
         <Extension>
-        Public Function JoinLines(Lines As String(), Delimiter As String) As String
+        Friend Function JoinLines(Lines As String(), Delimiter As String) As String
             Return String.Join(separator:=Delimiter, values:=Lines)
         End Function
 

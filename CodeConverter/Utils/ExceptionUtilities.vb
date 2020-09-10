@@ -19,7 +19,7 @@ Namespace CSharpToVBConverter
         End Property
 
         <ExcludeFromCodeCoverage>
-        Public Function UnexpectedValue(o As Object, <CallerMemberName> Optional memberName As String = Nothing,
+        Friend Function UnexpectedValue(o As Object, <CallerMemberName> Optional memberName As String = Nothing,
                 <CallerLineNumber()> Optional sourceLineNumber As Integer = 0) As Exception
 
             ' We do not throw from here because we don't want all Watson reports to be bucketed to this call.

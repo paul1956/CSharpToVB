@@ -33,29 +33,6 @@ Namespace CSharpToVBConverter
         End Function
 
         Public Function ConvertInputRequest(RequestToConvert As ConvertRequest, DefaultVBOptions As DefaultVBOptions, CSPreprocessorSymbols As List(Of String), VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)), OptionalReferences() As MetadataReference, ReportException As Action(Of Exception), mProgress As IProgress(Of ProgressReport), CancelToken As CancellationToken) As ConversionResult
-            'If mProgress Is Nothing Then
-            '    Throw New ArgumentNullException(NameOf(mProgress))
-            'End If
-
-            'If ReportException Is Nothing Then
-            '    Throw New ArgumentNullException(NameOf(ReportException))
-            'End If
-
-            'If VBPreprocessorSymbols Is Nothing Then
-            '    Throw New ArgumentNullException(NameOf(VBPreprocessorSymbols))
-            'End If
-
-            'If CSPreprocessorSymbols Is Nothing Then
-            '    Throw New ArgumentNullException(NameOf(CSPreprocessorSymbols))
-            'End If
-
-            'If DefaultVBOptions Is Nothing Then
-            '    Throw New ArgumentNullException(NameOf(DefaultVBOptions))
-            'End If
-
-            'If RequestToConvert Is Nothing Then
-            '    Throw New ArgumentNullException(NameOf(RequestToConvert))
-            'End If
             Dim fromLanguage As String = LanguageNames.CSharp
             Dim toLanguage As String = LanguageNames.VisualBasic
             Dim codeWithOptions As CodeWithOptions = New CodeWithOptions(RequestToConvert).SetFromLanguageVersion(GetDefaultVersionForLanguage("cs")).SetToLanguageVersion(GetDefaultVersionForLanguage("vb"))

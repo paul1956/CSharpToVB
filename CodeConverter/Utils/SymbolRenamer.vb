@@ -12,18 +12,6 @@ Namespace CSharpToVBConverter
     <ExcludeFromCodeCoverage>
     Friend Module SymbolRenamer
 
-        <Extension()>
-        Private Function GetParameterSignature(methodSymbol As IMethodSymbol) As String
-            Return String.Join(" ", methodSymbol.Parameters.Select(Function(p) p.Type))
-        End Function
-
-        <Extension()>
-        Private Function GetUnqualifiedMethodSignature(methodSymbol As IMethodSymbol, caseSensitiveName As Boolean) As (Name As String, TypeParameterCount As Integer, ParameterTypes As String)
-#Disable Warning CA1308 ' Normalize strings to uppercase
-            Return (If(caseSensitiveName, methodSymbol.Name, methodSymbol.Name.ToLowerInvariant()), methodSymbol.TypeParameters.Length, GetParameterSignature(methodSymbol))
-#Enable Warning CA1308 ' Normalize strings to uppercase
-        End Function
-
         Private Iterator Function FollowProperty(Of TIn As TOut, TOut As Class)(start As TIn, getProperty As Func(Of TOut, TOut)) As IEnumerable(Of TOut)
             Dim current As TOut = start
             While current IsNot Nothing
@@ -81,7 +69,19 @@ Namespace CSharpToVBConverter
             Return methodsBySignature
         End Function
 
-        Public Function GetName(m As ISymbol) As String
+        <Extension()>
+        Private Function GetParameterSignature(methodSymbol As IMethodSymbol) As String
+            Return String.Join(" ", methodSymbol.Parameters.Select(Function(p) p.Type))
+        End Function
+
+        <Extension()>
+        Private Function GetUnqualifiedMethodSignature(methodSymbol As IMethodSymbol, caseSensitiveName As Boolean) As (Name As String, TypeParameterCount As Integer, ParameterTypes As String)
+#Disable Warning CA1308 ' Normalize strings to uppercase
+            Return (If(caseSensitiveName, methodSymbol.Name, methodSymbol.Name.ToLowerInvariant()), methodSymbol.TypeParameters.Length, GetParameterSignature(methodSymbol))
+#Enable Warning CA1308 ' Normalize strings to uppercase
+        End Function
+
+        Friend Function GetName(m As ISymbol) As String
             If m.CanBeReferencedByName Then
                 Return m.Name
             End If
@@ -92,12 +92,12 @@ Namespace CSharpToVBConverter
             Return m.Name
         End Function
 
-        Public Function GetNamespacesAndTypesInAssembly(_project As Project, _compilation As Compilation) As IEnumerable(Of INamespaceOrTypeSymbol)
+        Friend Function GetNamespacesAndTypesInAssembly(_project As Project, _compilation As Compilation) As IEnumerable(Of INamespaceOrTypeSymbol)
             Return _compilation.GlobalNamespace.FollowProperty(Function(n As INamespaceOrTypeSymbol) CType(n.GetMembers.OfType(Of INamespaceOrTypeSymbol)() _
                                                                                                                    .Where(Function(s) s.IsDefinedInSource() AndAlso s?.ContainingAssembly?.Name = _project.AssemblyName), INamespaceSymbol))
         End Function
 
-        Public Function GetSymbolsWithNewNames(toRename As IEnumerable(Of ISymbol),
+        Friend Function GetSymbolsWithNewNames(toRename As IEnumerable(Of ISymbol),
                                                                canUse As Func(Of String, Boolean),
                                            canKeepOne As Boolean) As IEnumerable(Of (Original As ISymbol, NewName As String))
             Dim symbolsWithNewNames As IEnumerable(Of (Original As ISymbol, NewName As String)) =
@@ -112,7 +112,7 @@ Namespace CSharpToVBConverter
             Return symbolsWithNewNames
         End Function
 
-        Public Function GetSymbolsWithNewNames(symbolGroup As IReadOnlyCollection(Of ISymbol), names As HashSet(Of String), caseSensitive As Boolean) As IEnumerable(Of (Original As ISymbol, NewName As String))
+        Friend Function GetSymbolsWithNewNames(symbolGroup As IReadOnlyCollection(Of ISymbol), names As HashSet(Of String), caseSensitive As Boolean) As IEnumerable(Of (Original As ISymbol, NewName As String))
             Dim canRename As IReadOnlyCollection(Of ISymbol) = symbolGroup.Where(Function(s) s.IsDefinedInSource() AndAlso s.CanBeReferencedByName).ToArray()
             Dim specialSymbolUsingName As Boolean = canRename.Count < symbolGroup.Count
             Dim methodSymbols As IMethodSymbol() = canRename.OfType(Of IMethodSymbol)().ToArray()
@@ -122,7 +122,7 @@ Namespace CSharpToVBConverter
             Return GetSymbolsWithNewNames(symbolGroup, AddressOf names.Add, canKeepOneNormalMemberName).Concat(methodsWithNewNames)
         End Function
 
-        Public Async Function PerformRenamesAsync(_project As Project, symbolsWithNewNames As IReadOnlyCollection(Of (Original As ISymbol, NewName As String))) As Task(Of Project)
+        Friend Async Function PerformRenamesAsync(_project As Project, symbolsWithNewNames As IReadOnlyCollection(Of (Original As ISymbol, NewName As String))) As Task(Of Project)
             Dim _solution As Solution = _project.Solution
             Dim v As (Original As ISymbol, NewName As String)
             For Each v In symbolsWithNewNames

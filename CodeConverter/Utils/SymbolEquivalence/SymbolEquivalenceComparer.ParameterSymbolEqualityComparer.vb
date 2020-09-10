@@ -11,7 +11,7 @@ Namespace CSharpToVBConverter
     Partial Friend Class SymbolEquivalenceComparer
 
         <ExcludeFromCodeCoverage>
-        Public Shared Function AreRefKindsEquivalent(rk1 As RefKind, rk2 As RefKind, distinguishRefFromOut As Boolean) As Boolean
+        Friend Shared Function AreRefKindsEquivalent(rk1 As RefKind, rk2 As RefKind, distinguishRefFromOut As Boolean) As Boolean
             Return If(distinguishRefFromOut, rk1 = rk2, rk1 = RefKind.None = (rk2 = RefKind.None))
         End Function
 
@@ -22,7 +22,7 @@ Namespace CSharpToVBConverter
             Private ReadOnly _distinguishRefFromOut As Boolean
             Private ReadOnly _symbolEqualityComparer As SymbolEquivalenceComparer
 
-            Public Sub New(symbolEqualityComparer As SymbolEquivalenceComparer, distinguishRefFromOut As Boolean)
+            Friend Sub New(symbolEqualityComparer As SymbolEquivalenceComparer, distinguishRefFromOut As Boolean)
                 _symbolEqualityComparer = symbolEqualityComparer
                 _distinguishRefFromOut = distinguishRefFromOut
             End Sub
