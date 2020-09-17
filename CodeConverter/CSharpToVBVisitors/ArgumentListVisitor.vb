@@ -125,7 +125,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Throw
                 Catch ex As Exception
                     Stop
-                    '  Throw
+                    Throw
                 End Try
                 argumentWithTrivia = argumentWithTrivia.WithLeadingTrivia(newLeadingTrivia).WithTrailingTrivia(VBSpaceTrivia)
                 If name IsNot Nothing Then
