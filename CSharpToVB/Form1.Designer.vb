@@ -58,8 +58,8 @@ Partial Class Form1
         Me.mnuConvert = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuConvertConvertFolder = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuConvertConvertSnippet = New System.Windows.Forms.ToolStripMenuItem()
-        Me.mnuConvertStartFolderConvertFromLastFile = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuConvertSep1 = New System.Windows.Forms.ToolStripSeparator()
+        Me.mnuConvertStartFolderConvertFromLastFile = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuOptions = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuOptionsColorizeResult = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuOptionsColorizeSource = New System.Windows.Forms.ToolStripMenuItem()
@@ -88,11 +88,11 @@ Partial Class Form1
         Me.mnuHelpAboutMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.TSFindToolStrip = New System.Windows.Forms.ToolStrip()
         Me.TSFindFindWhatComboBox = New System.Windows.Forms.ToolStripComboBox()
-        Me.TSFindFindPreviousButton = New System.Windows.Forms.ToolStripButton()
-        Me.TSFindFindNextButton = New System.Windows.Forms.ToolStripButton()
+        Me.TSFindSeparator1 = New System.Windows.Forms.ToolStripSeparator()
         Me.TSFindLookInLabel = New System.Windows.Forms.ToolStripLabel()
         Me.TSFindLookInComboBox = New System.Windows.Forms.ToolStripComboBox()
-        Me.TSFindSeparator1 = New System.Windows.Forms.ToolStripSeparator()
+        Me.TSFindFindPreviousButton = New System.Windows.Forms.ToolStripButton()
+        Me.TSFindFindNextButton = New System.Windows.Forms.ToolStripButton()
         Me.TSFindMatchCaseCheckBox = New ToolStripCheckBox()
         Me.TSFindMatchWholeWordCheckBox = New ToolStripCheckBox()
         Me.TSFindSeparator2 = New System.Windows.Forms.ToolStripSeparator()
@@ -127,8 +127,10 @@ Partial Class Form1
         Me.LabelProgress = New System.Windows.Forms.Label()
         Me.ToolTipFileList = New System.Windows.Forms.ToolTip(Me.components)
         Me.ToolTipErrorList = New System.Windows.Forms.ToolTip(Me.components)
-        Me.TSFindToolStrip.SuspendLayout()
+        Me.TSFindSeparator4 = New System.Windows.Forms.ToolStripSeparator()
+        Me.TSFindSeparator5 = New System.Windows.Forms.ToolStripSeparator()
         Me.MenuStrip1.SuspendLayout()
+        Me.TSFindToolStrip.SuspendLayout()
         Me.ContextMenuStrip1.SuspendLayout()
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SplitContainer1.Panel1.SuspendLayout()
@@ -139,6 +141,7 @@ Partial Class Form1
         '
         'MenuStrip1
         '
+        Me.MenuStrip1.BackColor = System.Drawing.SystemColors.ActiveCaption
         Me.MenuStrip1.ImageScalingSize = New System.Drawing.Size(36, 36)
         Me.MenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuFile, Me.mnuEdit, Me.mnuCompile, Me.mnuConvert, Me.mnuOptions, Me.mnuView, Me.mnuHelp})
         Me.MenuStrip1.Location = New System.Drawing.Point(0, 0)
@@ -344,7 +347,7 @@ Partial Class Form1
         Me.mnuConvertConvertFolder.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
         Me.mnuConvertConvertFolder.Name = "mnuConvertConvertFolder"
         Me.mnuConvertConvertFolder.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.F), System.Windows.Forms.Keys)
-        Me.mnuConvertConvertFolder.Size = New System.Drawing.Size(199, 22)
+        Me.mnuConvertConvertFolder.Size = New System.Drawing.Size(237, 22)
         Me.mnuConvertConvertFolder.Text = "Convert Folder"
         '
         'mnuConvertConvertSnippet
@@ -354,13 +357,13 @@ Partial Class Form1
         Me.mnuConvertConvertSnippet.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
         Me.mnuConvertConvertSnippet.Name = "mnuConvertConvertSnippet"
         Me.mnuConvertConvertSnippet.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.S), System.Windows.Forms.Keys)
-        Me.mnuConvertConvertSnippet.Size = New System.Drawing.Size(199, 22)
+        Me.mnuConvertConvertSnippet.Size = New System.Drawing.Size(237, 22)
         Me.mnuConvertConvertSnippet.Text = "Convert Snippet"
         '
         'mnuConvertSep1
         '
         Me.mnuConvertSep1.Name = "mnuConvertSep1"
-        Me.mnuConvertSep1.Size = New System.Drawing.Size(357, 6)
+        Me.mnuConvertSep1.Size = New System.Drawing.Size(234, 6)
         '
         'mnuConvertStartFolderConvertFromLastFile
         '
@@ -369,7 +372,7 @@ Partial Class Form1
         Me.mnuConvertStartFolderConvertFromLastFile.CheckState = System.Windows.Forms.CheckState.Checked
         Me.mnuConvertStartFolderConvertFromLastFile.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
         Me.mnuConvertStartFolderConvertFromLastFile.Name = "mnuConvertStartFolderConvertFromLastFile"
-        Me.mnuConvertStartFolderConvertFromLastFile.Size = New System.Drawing.Size(360, 22)
+        Me.mnuConvertStartFolderConvertFromLastFile.Size = New System.Drawing.Size(237, 22)
         Me.mnuConvertStartFolderConvertFromLastFile.Text = "Start Conversion From Last File"
         '
         'mnuOptions
@@ -578,10 +581,11 @@ Partial Class Form1
         '
         'TSFindToolStrip
         '
-        Me.TSFindToolStrip.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.TSFindFindWhatComboBox, Me.TSFindSeparator1, Me.TSFindLookInLabel, Me.TSFindLookInComboBox, Me.TSFindFindPreviousButton, Me.TSFindFindNextButton, Me.TSFindMatchCaseCheckBox, Me.TSFindMatchWholeWordCheckBox, Me.TSFindSeparator2, Me.TSFindClearHighlightsButton, Me.TSFindSeparator3})
+        Me.TSFindToolStrip.BackColor = System.Drawing.SystemColors.ActiveCaption
+        Me.TSFindToolStrip.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.TSFindFindWhatComboBox, Me.TSFindSeparator1, Me.TSFindLookInLabel, Me.TSFindLookInComboBox, Me.TSFindSeparator2, Me.TSFindFindPreviousButton, Me.TSFindFindNextButton, Me.TSFindSeparator3, Me.TSFindMatchCaseCheckBox, Me.TSFindMatchWholeWordCheckBox, Me.TSFindSeparator4, Me.TSFindClearHighlightsButton, Me.TSFindSeparator5})
         Me.TSFindToolStrip.Location = New System.Drawing.Point(0, 24)
         Me.TSFindToolStrip.Name = "TSFindToolStrip"
-        Me.TSFindToolStrip.Size = New System.Drawing.Size(1812, 25)
+        Me.TSFindToolStrip.Size = New System.Drawing.Size(1923, 25)
         Me.TSFindToolStrip.TabIndex = 2
         Me.TSFindToolStrip.Text = "ToolStrip1"
         '
@@ -591,10 +595,17 @@ Partial Class Form1
         Me.TSFindFindWhatComboBox.Name = "TSFindFindWhatComboBox"
         Me.TSFindFindWhatComboBox.Size = New System.Drawing.Size(400, 23)
         '
+        'TSFindSeparator1
+        '
+        Me.TSFindSeparator1.Margin = New System.Windows.Forms.Padding(5, 0, 5, 0)
+        Me.TSFindSeparator1.Name = "TSFindSeparator1"
+        Me.TSFindSeparator1.Size = New System.Drawing.Size(6, 25)
+        '
         'TSFindLookInLabel
         '
+        Me.TSFindLookInLabel.Margin = New System.Windows.Forms.Padding(0)
         Me.TSFindLookInLabel.Name = "TSFindLookInLabel"
-        Me.TSFindLookInLabel.Size = New System.Drawing.Size(49, 22)
+        Me.TSFindLookInLabel.Size = New System.Drawing.Size(49, 25)
         Me.TSFindLookInLabel.Text = "Look In:"
         '
         'TSFindLookInComboBox
@@ -602,63 +613,75 @@ Partial Class Form1
         Me.TSFindLookInComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems
         Me.TSFindLookInComboBox.AutoSize = False
         Me.TSFindLookInComboBox.Items.AddRange(New Object() {"C# Source", "Visual Basic Output", "Both"})
-        Me.TSFindLookInComboBox.Margin() = New System.Windows.Forms.Padding(0, 0, right:=5, 0)
         Me.TSFindLookInComboBox.Name = "TSFindLookInComboBox"
         Me.TSFindLookInComboBox.Size = New System.Drawing.Size(130, 23)
+        '
+        'TSFindSeparator2
+        '
+        Me.TSFindSeparator2.Margin = New System.Windows.Forms.Padding(5, 0, 5, 0)
+        Me.TSFindSeparator2.Name = "TSFindSeparator2"
+        Me.TSFindSeparator2.Size = New System.Drawing.Size(6, 25)
         '
         'TSFindFindPreviousButton
         '
         Me.TSFindFindPreviousButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text
         Me.TSFindFindPreviousButton.ImageTransparentColor = System.Drawing.Color.Magenta
+        Me.TSFindFindPreviousButton.Margin = New System.Windows.Forms.Padding(0)
         Me.TSFindFindPreviousButton.Name = "TSFindFindPreviousButton"
-        Me.TSFindFindPreviousButton.Size = New System.Drawing.Size(82, 22)
+        Me.TSFindFindPreviousButton.Size = New System.Drawing.Size(82, 25)
         Me.TSFindFindPreviousButton.Text = "Find Previous"
         '
         'TSFindFindNextButton
         '
         Me.TSFindFindNextButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text
         Me.TSFindFindNextButton.ImageTransparentColor = System.Drawing.Color.Magenta
+        Me.TSFindFindNextButton.Margin = New System.Windows.Forms.Padding(0)
         Me.TSFindFindNextButton.Name = "TSFindFindNextButton"
-        Me.TSFindFindNextButton.Size = New System.Drawing.Size(62, 22)
+        Me.TSFindFindNextButton.Size = New System.Drawing.Size(62, 25)
         Me.TSFindFindNextButton.Text = "Find Next"
         '
-        'TSFindSeparator1
+        'TSFindSeparator3
         '
-        Me.TSFindSeparator1.Name = "TSFindSeparator1"
-        Me.TSFindSeparator1.Margin = New System.Windows.Forms.Padding(left:=0, 0, 5, 0)
-        Me.TSFindSeparator1.Size = New System.Drawing.Size(6, 25)
+        Me.TSFindSeparator3.Margin = New System.Windows.Forms.Padding(5, 0, 5, 0)
+        Me.TSFindSeparator3.Name = "TSFindSeparator3"
+        Me.TSFindSeparator3.Size = New System.Drawing.Size(6, 25)
         '
         'TSFindMatchCaseCheckBox
         '
         Me.TSFindMatchCaseCheckBox.Checked = False
+        Me.TSFindMatchCaseCheckBox.Margin = New System.Windows.Forms.Padding(0)
         Me.TSFindMatchCaseCheckBox.Name = "TSFindMatchCaseCheckBox"
-        Me.TSFindMatchCaseCheckBox.Size = New System.Drawing.Size(88, 22)
+        Me.TSFindMatchCaseCheckBox.Size = New System.Drawing.Size(88, 25)
         Me.TSFindMatchCaseCheckBox.Text = "Match Case"
         '
         'TSFindMatchWholeWordCheckBox
         '
         Me.TSFindMatchWholeWordCheckBox.Checked = False
+        Me.TSFindMatchWholeWordCheckBox.Margin = New System.Windows.Forms.Padding(0)
         Me.TSFindMatchWholeWordCheckBox.Name = "TSFindMatchWholeWordCheckBox"
-        Me.TSFindMatchWholeWordCheckBox.Size = New System.Drawing.Size(129, 22)
+        Me.TSFindMatchWholeWordCheckBox.Size = New System.Drawing.Size(129, 25)
         Me.TSFindMatchWholeWordCheckBox.Text = "Match Whole Word"
         '
-        'TSFindSeparator2
+        'TSFindSeparator4
         '
-        Me.TSFindSeparator2.Name = "TSFindSeparator2"
-        Me.TSFindSeparator2.Size = New System.Drawing.Size(6, 25)
+        Me.TSFindSeparator4.Margin = New System.Windows.Forms.Padding(5, 0, 5, 0)
+        Me.TSFindSeparator4.Name = "TSFindSeparator4"
+        Me.TSFindSeparator4.Size = New System.Drawing.Size(6, 25)
         '
         'TSFindClearHighlightsButton
         '
         Me.TSFindClearHighlightsButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text
         Me.TSFindClearHighlightsButton.ImageTransparentColor = System.Drawing.Color.Magenta
+        Me.TSFindClearHighlightsButton.Margin = New System.Windows.Forms.Padding(0)
         Me.TSFindClearHighlightsButton.Name = "TSFindClearHighlightsButton"
-        Me.TSFindClearHighlightsButton.Size = New System.Drawing.Size(96, 22)
+        Me.TSFindClearHighlightsButton.Size = New System.Drawing.Size(96, 25)
         Me.TSFindClearHighlightsButton.Text = "Clear Highlights"
         '
-        'TSFindSeparator3
+        'TSFindSeparator5
         '
-        Me.TSFindSeparator3.Name = "TSFindSeparator3"
-        Me.TSFindSeparator3.Size = New System.Drawing.Size(6, 25)
+        Me.TSFindSeparator5.Margin = New System.Windows.Forms.Padding(5, 0, 0, 0)
+        Me.TSFindSeparator5.Name = "TSFindSeparator5"
+        Me.TSFindSeparator5.Size = New System.Drawing.Size(6, 25)
         '
         'ContextMenuStrip1
         '
@@ -749,7 +772,7 @@ Partial Class Form1
         Me.SplitContainer1.BackColor = System.Drawing.SystemColors.Control
         Me.SplitContainer1.Dock = System.Windows.Forms.DockStyle.Fill
         Me.SplitContainer1.FixedPanel = System.Windows.Forms.FixedPanel.Panel2
-        Me.SplitContainer1.Location = New System.Drawing.Point(0, 24)
+        Me.SplitContainer1.Location = New System.Drawing.Point(0, 49)
         Me.SplitContainer1.Name = "SplitContainer1"
         Me.SplitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal
         '
@@ -764,8 +787,8 @@ Partial Class Form1
         '
         Me.SplitContainer1.Panel2.Controls.Add(Me.ListBoxFileList)
         Me.SplitContainer1.Panel2.Controls.Add(Me.ListBoxErrorList)
-        Me.SplitContainer1.Size = New System.Drawing.Size(1923, 591)
-        Me.SplitContainer1.SplitterDistance = 512
+        Me.SplitContainer1.Size = New System.Drawing.Size(1923, 566)
+        Me.SplitContainer1.SplitterDistance = 489
         Me.SplitContainer1.SplitterWidth = 2
         Me.SplitContainer1.TabIndex = 22
         '
@@ -777,49 +800,10 @@ Partial Class Form1
         Me.ConversionInput.Font = New System.Drawing.Font("Segoe UI", 11.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point)
         Me.ConversionInput.Location = New System.Drawing.Point(23, 0)
         Me.ConversionInput.Name = "ConversionInput"
-        Me.ConversionInput.Size = New System.Drawing.Size(950, 512)
+        Me.ConversionInput.Size = New System.Drawing.Size(950, 489)
         Me.ConversionInput.TabIndex = 0
         Me.ConversionInput.Text = ""
         Me.ConversionInput.WordWrap = False
-        '
-        'LineNumbersForConversionInput
-        '
-        Me.LineNumbersForConversionInput.AutoSizing = True
-        Me.LineNumbersForConversionInput.BackgroundGradientAlphaColor = System.Drawing.Color.FromArgb(CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer))
-        Me.LineNumbersForConversionInput.BackgroundGradientBetaColor = System.Drawing.Color.LightSteelBlue
-        Me.LineNumbersForConversionInput.BackgroundGradientDirection = System.Drawing.Drawing2D.LinearGradientMode.Horizontal
-        Me.LineNumbersForConversionInput.BorderLinesColor = System.Drawing.Color.SlateGray
-        Me.LineNumbersForConversionInput.BorderLinesStyle = System.Drawing.Drawing2D.DashStyle.Dot
-        Me.LineNumbersForConversionInput.BorderLinesThickness = 1.0!
-        Me.LineNumbersForConversionInput.Dock = System.Windows.Forms.DockStyle.Left
-        Me.LineNumbersForConversionInput.DockSide = LineNumbersForRichTextBox.LineNumberDockSides.Left
-        Me.LineNumbersForConversionInput.GridLinesColor = System.Drawing.Color.SlateGray
-        Me.LineNumbersForConversionInput.GridLinesStyle = System.Drawing.Drawing2D.DashStyle.Dot
-        Me.LineNumbersForConversionInput.GridLinesThickness = 1.0!
-        Me.LineNumbersForConversionInput.LineNrsAlignment = System.Drawing.ContentAlignment.TopRight
-        Me.LineNumbersForConversionInput.LineNrsAntiAlias = True
-        Me.LineNumbersForConversionInput.LineNrsAsHexadecimal = False
-        Me.LineNumbersForConversionInput.LineNrsClippedByItemRectangle = True
-        Me.LineNumbersForConversionInput.LineNrsLeadingZeroes = True
-        Me.LineNumbersForConversionInput.LineNrsOffset = New System.Drawing.Size(0, 0)
-        Me.LineNumbersForConversionInput.Location = New System.Drawing.Point(0, 0)
-        Me.LineNumbersForConversionInput.Margin = New System.Windows.Forms.Padding(0)
-        Me.LineNumbersForConversionInput.MarginLinesColor = System.Drawing.Color.SlateGray
-        Me.LineNumbersForConversionInput.MarginLinesSide = LineNumbersForRichTextBox.LineNumberDockSides.Right
-        Me.LineNumbersForConversionInput.MarginLinesStyle = System.Drawing.Drawing2D.DashStyle.Solid
-        Me.LineNumbersForConversionInput.MarginLinesThickness = 1.0!
-        Me.LineNumbersForConversionInput.Name = "LineNumbersForConversionInput"
-        Me.LineNumbersForConversionInput.Padding = New System.Windows.Forms.Padding(0, 0, 2, 0)
-        Me.LineNumbersForConversionInput.ParentRichTextBox = Me.ConversionInput
-        Me.LineNumbersForConversionInput.SeeThroughMode = False
-        Me.LineNumbersForConversionInput.ShowBackgroundGradient = True
-        Me.LineNumbersForConversionInput.ShowBorderLines = True
-        Me.LineNumbersForConversionInput.ShowGridLines = True
-        Me.LineNumbersForConversionInput.ShowLineNrs = True
-        Me.LineNumbersForConversionInput.ShowMarginLines = True
-        Me.LineNumbersForConversionInput.Size = New System.Drawing.Size(23, 510)
-        Me.LineNumbersForConversionInput.TabIndex = 23
-        Me.LineNumbersForConversionInput.Visible = False
         '
         'ConversionOutput
         '
@@ -829,48 +813,10 @@ Partial Class Form1
         Me.ConversionOutput.Font = New System.Drawing.Font("Segoe UI", 11.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point)
         Me.ConversionOutput.Location = New System.Drawing.Point(999, 0)
         Me.ConversionOutput.Name = "ConversionOutput"
-        Me.ConversionOutput.Size = New System.Drawing.Size(924, 512)
+        Me.ConversionOutput.Size = New System.Drawing.Size(924, 489)
         Me.ConversionOutput.TabIndex = 1
         Me.ConversionOutput.Text = ""
         Me.ConversionOutput.WordWrap = False
-        '
-        'LineNumbersForConversionOutput
-        '
-        Me.LineNumbersForConversionOutput.AutoSizing = True
-        Me.LineNumbersForConversionOutput.BackgroundGradientAlphaColor = System.Drawing.Color.FromArgb(CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer))
-        Me.LineNumbersForConversionOutput.BackgroundGradientBetaColor = System.Drawing.Color.LightSteelBlue
-        Me.LineNumbersForConversionOutput.BackgroundGradientDirection = System.Drawing.Drawing2D.LinearGradientMode.Horizontal
-        Me.LineNumbersForConversionOutput.BorderLinesColor = System.Drawing.Color.SlateGray
-        Me.LineNumbersForConversionOutput.BorderLinesStyle = System.Drawing.Drawing2D.DashStyle.Dot
-        Me.LineNumbersForConversionOutput.BorderLinesThickness = 1.0!
-        Me.LineNumbersForConversionOutput.DockSide = LineNumbersForRichTextBox.LineNumberDockSides.Left
-        Me.LineNumbersForConversionOutput.GridLinesColor = System.Drawing.Color.SlateGray
-        Me.LineNumbersForConversionOutput.GridLinesStyle = System.Drawing.Drawing2D.DashStyle.Dot
-        Me.LineNumbersForConversionOutput.GridLinesThickness = 1.0!
-        Me.LineNumbersForConversionOutput.LineNrsAlignment = System.Drawing.ContentAlignment.TopRight
-        Me.LineNumbersForConversionOutput.LineNrsAntiAlias = True
-        Me.LineNumbersForConversionOutput.LineNrsAsHexadecimal = False
-        Me.LineNumbersForConversionOutput.LineNrsClippedByItemRectangle = True
-        Me.LineNumbersForConversionOutput.LineNrsLeadingZeroes = True
-        Me.LineNumbersForConversionOutput.LineNrsOffset = New System.Drawing.Size(0, 0)
-        Me.LineNumbersForConversionOutput.Location = New System.Drawing.Point(977, 0)
-        Me.LineNumbersForConversionOutput.Margin = New System.Windows.Forms.Padding(0)
-        Me.LineNumbersForConversionOutput.MarginLinesColor = System.Drawing.Color.SlateGray
-        Me.LineNumbersForConversionOutput.MarginLinesSide = LineNumbersForRichTextBox.LineNumberDockSides.Right
-        Me.LineNumbersForConversionOutput.MarginLinesStyle = System.Drawing.Drawing2D.DashStyle.Solid
-        Me.LineNumbersForConversionOutput.MarginLinesThickness = 1.0!
-        Me.LineNumbersForConversionOutput.Name = "LineNumbersForConversionOutput"
-        Me.LineNumbersForConversionOutput.Padding = New System.Windows.Forms.Padding(0, 0, 2, 0)
-        Me.LineNumbersForConversionOutput.ParentRichTextBox = Me.ConversionOutput
-        Me.LineNumbersForConversionOutput.SeeThroughMode = False
-        Me.LineNumbersForConversionOutput.ShowBackgroundGradient = True
-        Me.LineNumbersForConversionOutput.ShowBorderLines = True
-        Me.LineNumbersForConversionOutput.ShowGridLines = True
-        Me.LineNumbersForConversionOutput.ShowLineNrs = True
-        Me.LineNumbersForConversionOutput.ShowMarginLines = True
-        Me.LineNumbersForConversionOutput.Size = New System.Drawing.Size(21, 510)
-        Me.LineNumbersForConversionOutput.TabIndex = 22
-        Me.LineNumbersForConversionOutput.Visible = False
         '
         'ListBoxFileList
         '
@@ -1103,4 +1049,6 @@ Partial Class Form1
     Friend WithEvents ContextMenuUndo As ToolStripMenuItem
     Friend WithEvents ContextMenuRedo As ToolStripMenuItem
     Friend WithEvents ContextMenuSeparator1 As ToolStripSeparator
+    Friend WithEvents TSFindSeparator4 As ToolStripSeparator
+    Friend WithEvents TSFindSeparator5 As ToolStripSeparator
 End Class
