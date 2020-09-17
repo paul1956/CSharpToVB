@@ -34,7 +34,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                              CS.SyntaxKind.WhitespaceTrivia
                             ' ignore
                         Case Else
-                            Debug.WriteLine($"Unknown TriviaKind {CType(t.RawKind, CS.SyntaxKind)} in ContainsConditionalDirective")
+                            Debug.WriteLine($"Unknown TriviaKind {CS.CSharpExtensions.Kind(t)} in ContainsConditionalDirective")
                             Stop
                     End Select
                 Next

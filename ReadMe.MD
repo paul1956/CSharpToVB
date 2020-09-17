@@ -27,7 +27,7 @@ description: "C# to VB Converter"
 - Code Converter
 
 ## Updated
-- 09/03/2020
+- 09/14/2020
 
 ## Description
 This application will convert C# to VB while trying to preserve comments, formatting and as many Directives
@@ -64,10 +64,16 @@ Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpec
 Any changes to CSharpToVB application needs to change the version information in the project file **AND** in MyProject/AssemblyInfo.vb until Visual Studion is able to general file automatically for a WinForms application.
 
 ## Major New Release
-  New in 4.6.0.4/4.0.0.5
+  New in 4.6.0.5/4.0.0.5
+  - While feature wise this is a very minor update a lot of code has been changed to clean up duplication
+      - Remove old Implements translation Code
+  - Adjust Find Toolbar item positions for easier use
+  - Better organize main Form1 code
   - Fix more corner cases for Implements
-  - Remove old Implements Code
   - Make Public Function Friend where possible
+  - Complete redo of "As Type" support for var, it is a lot of text processing and needs a lot of cleanup and performance work and removal of duplicate code.
+      - Add support for NullableTypes
+      - Better Array support
 
   New in 4.6.0.4/4.0.0.4
   - Improve Menu placement and internal naming
@@ -112,14 +118,14 @@ Any changes to CSharpToVB application needs to change the version information in
 +------------------+--------+--------+--------+
 | Module           | Line   | Branch | Method |
 +------------------+--------+--------+--------+
-| VB.CodeConverter | 79.89% | 73.69% | 90.61% |
+| VB.CodeConverter | 79.72% | 73.69% | 90.15% |
 +------------------+--------+--------+--------+
 
 +---------+--------+--------+--------+
 |         | Line   | Branch | Method |
 +---------+--------+--------+--------+
-| Total   | 79.89% | 73.69% | 90.61% |
+| Total   | 79.72% | 73.69% | 90.15% |
 +---------+--------+--------+--------+
-| Average | 79.89% | 73.69% | 90.61% |
+| Average | 79.72% | 73.69% | 90.15% |
 +---------+--------+--------+--------+
 ```

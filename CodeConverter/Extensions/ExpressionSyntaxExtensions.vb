@@ -22,7 +22,6 @@ Namespace CSharpToVBConverter
                 Throw New ArgumentNullException(NameOf(Expression))
             End If
 
-            'Debug.WriteLine($"Exp In          :{Expression.ToFullString}")
             Dim initialTriviaList As SyntaxTriviaList = Expression.GetLeadingTrivia
             Dim newLeadingTrivia As New SyntaxTriviaList
 
@@ -46,8 +45,9 @@ Namespace CSharpToVBConverter
                                         newLeadingTrivia = newLeadingTrivia.Add(If(Trivia.Span.Length > nextTrivia.Span.Length, Trivia, nextTrivia))
                                         e.MoveNext()
                                     End If
-                                Case VB.SyntaxKind.None,
-                                 VB.SyntaxKind.EndOfLineTrivia
+                                Case VB.SyntaxKind.None
+                                    newLeadingTrivia = newLeadingTrivia.Add(e.Value)
+                                Case VB.SyntaxKind.EndOfLineTrivia
                                 Case VB.SyntaxKind.CommentTrivia,
                              VB.SyntaxKind.DocumentationCommentTrivia
                                     newLeadingTrivia = newLeadingTrivia.Add(VBSpaceTrivia)
@@ -75,13 +75,19 @@ Namespace CSharpToVBConverter
                                     newLeadingTrivia = newLeadingTrivia.Add(VBEOLTrivia)
                                 Case VB.SyntaxKind.EndOfLineTrivia
                                     newLeadingTrivia = newLeadingTrivia.Add(Trivia)
+                                Case VB.SyntaxKind.EndOfLineTrivia
+                                    newLeadingTrivia = newLeadingTrivia.Add(Trivia)
                                 Case Else
                                     Stop
                             End Select
                         Case VB.SyntaxKind.LineContinuationTrivia
                             newLeadingTrivia = newLeadingTrivia.Add(Trivia)
                         Case Else
-                            Stop
+                            If Trivia.IsDirective Then
+                                newLeadingTrivia = newLeadingTrivia.Add(Trivia)
+                            Else
+                                Stop
+                            End If
                     End Select
                 Next
                 Expression = Expression.WithLeadingTrivia(newLeadingTrivia)
@@ -226,10 +232,12 @@ Namespace CSharpToVBConverter
                                 Return (_Error:=True, PredefinedTypeObject)
                             End If
                             If _type.ToString.StartsWith("(", StringComparison.Ordinal) Then
-                                Return (_Error:=False, _type.ConvertCSTupleToVBType)
+                                Return (_Error:=False, _type.ToString.ConvertCSStringToName)
                             End If
                         End If
-                        Return (_Error:=False, symbol.ConvertISymbolToType(Model.Compilation).ConvertToType())
+
+                        Dim typeSymbol As ITypeSymbol = symbol.ConvertISymbolToType(Model.Compilation)
+                        Return (_Error:=False, typeSymbol.ConvertToType)
                     End If
 
                 End If
@@ -302,17 +310,12 @@ Namespace CSharpToVBConverter
         End Function
 
         <Extension>
-        Friend Function RemoveLeadingSystemDot(Expression As VBS.ExpressionSyntax) As VBS.ExpressionSyntax
+        Friend Function WithoutLeadingSystemDot(Expression As VBS.ExpressionSyntax) As VBS.ExpressionSyntax
 
             If Expression.StartsWithSystemDot Then
                 Return Factory.ParseExpression(Expression.ToString.Substring("System.".Length)).WithTriviaFrom(Expression)
             End If
             Return Expression
-        End Function
-
-        <Extension>
-        Friend Function StartsWithSystemDot(Expression As VBS.ExpressionSyntax) As Boolean
-            Return Expression.ToString.StartsWith("System.", StringComparison.Ordinal)
         End Function
 
     End Module

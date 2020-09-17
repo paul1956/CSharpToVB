@@ -262,6 +262,10 @@ Namespace CSharpToVBConverter
                           .WithAppendedTrailingTrivia(finaltrivia)
         End Function
 
+        Friend Function FactoryTypeArgumentList(DictionaryTypeElement As List(Of TypeSyntax)) As TypeArgumentListSyntax
+            Return Factory.TypeArgumentList(OpenParenToken, OfKeyword.WithTrailingTrivia(VBSpaceTrivia), Factory.SeparatedList(DictionaryTypeElement), CloseParenToken)
+        End Function
+
 #End If
 
     End Module

@@ -102,7 +102,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim TypeIdentifier As VBS.TypeSyntax = DirectCast(a.Accept(Me), VBS.TypeSyntax)
                 TypeList.Add(TypeIdentifier)
             Next
-            Return Factory.GenericName(Identifier, Factory.TypeArgumentList(OpenParenToken, OfKeyword.WithTrailingTrivia(VBSpaceTrivia), Factory.SeparatedList(TypeList), CloseParenToken).NormalizeWhitespace)
+            Return Factory.GenericName(Identifier, FactoryTypeArgumentList(TypeList))
         End Function
 
         Public Overrides Function VisitIdentifierName(node As CSS.IdentifierNameSyntax) As VB.VisualBasicSyntaxNode
@@ -130,7 +130,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
         End Function
 
         Public Overrides Function VisitPredefinedType(node As CSS.PredefinedTypeSyntax) As VB.VisualBasicSyntaxNode
-            Dim Token As SyntaxToken = ConvertKindToTypesToken(CS.CSharpExtensions.Kind(node.Keyword), context:=TokenContext.XMLComment)
+            Dim Token As SyntaxToken = CS.CSharpExtensions.Kind(node.Keyword).GetTypeToken(context:=TokenContext.XMLComment)
             Select Case Token.RawKind
                 Case VB.SyntaxKind.EmptyToken
                     Return Factory.ParseTypeName(node.ToString)

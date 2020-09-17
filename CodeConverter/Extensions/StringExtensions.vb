@@ -8,7 +8,7 @@ Namespace CSharpToVBConverter
 
     Public Module StringExtensions
 
-        <Extension()>
+        <Extension>
         Friend Function ContainsAny(s As String, comparisonType As StringComparison, ParamArray StringArray() As String) As Boolean
             If String.IsNullOrWhiteSpace(s) Then
                 Return False
@@ -36,14 +36,6 @@ Namespace CSharpToVBConverter
                     Replace("true", "True", StringComparison.Ordinal).
                     Replace("  ", " ", StringComparison.Ordinal).
                     Replace("//", " ' ", StringComparison.Ordinal)
-        End Function
-
-        <Extension>
-        Friend Function ConvertTypeArgumentList(TypeString As String) As String
-            Return TypeString.
-            Replace("<", "(Of ", StringComparison.Ordinal).
-            Replace(">", ")", StringComparison.Ordinal)
-
         End Function
 
         ' String isn't IEnumerable<char> in the current Portable profile.
@@ -75,14 +67,6 @@ Namespace CSharpToVBConverter
         End Function
 
         <Extension>
-        Friend Function RemoveLeadingSystemDot(input As String) As String
-            If Not input.StartsWith("System.", StringComparison.Ordinal) Then
-                Return input
-            End If
-            Return input.Substring("System.".Length)
-        End Function
-
-        <Extension>
         Friend Function TrimStart(input As String, TrimString As String) As String
             If Not input.StartsWith(TrimString, StringComparison.OrdinalIgnoreCase) Then
                 Return input
@@ -90,32 +74,40 @@ Namespace CSharpToVBConverter
             Return input.Substring(TrimString.Length)
         End Function
 
+        <Extension>
+        Friend Function WithoutLeadingSystemDot(input As String) As String
+            If Not input.StartsWith("System.", StringComparison.Ordinal) Then
+                Return input
+            End If
+            Return input.Substring("System.".Length)
+        End Function
+
 #If NET48 Then
 
         #Region "Workarounds so that CA1307 is enabled until https://github.com/dotnet/roslyn-analyzers/issues/2581 is fixed"
 
-            <Extension>
-            Friend Function Contains(str As String, value As String, comparisonType As StringComparison) As Boolean
-                If str Is Nothing Then Throw New ArgumentNullException(NameOf(str))
+                <Extension>
+                Friend Function Contains(str As String, value As String, comparisonType As StringComparison) As Boolean
+                    If str Is Nothing Then Throw New ArgumentNullException(NameOf(str))
 
-                Return str.IndexOf(value, comparisonType) <> -1
-            End Function
+                    Return str.IndexOf(value, comparisonType) <> -1
+                End Function
 
-            <Extension>
-            Friend Function Replace(str As String, oldValue As String, newValue As String, comparisonType As StringComparison) As String
-                If str Is Nothing Then Throw New ArgumentNullException(NameOf(str))
-                If comparisonType <> StringComparison.Ordinal Then Throw New PlatformNotSupportedException("String.Replace on .NET Framework only supports StringComparison.Ordinal.")
+                <Extension>
+                Friend Function Replace(str As String, oldValue As String, newValue As String, comparisonType As StringComparison) As String
+                    If str Is Nothing Then Throw New ArgumentNullException(NameOf(str))
+                    If comparisonType <> StringComparison.Ordinal Then Throw New PlatformNotSupportedException("String.Replace on .NET Framework only supports StringComparison.Ordinal.")
 
-                Return str.Replace(oldValue, newValue)
-            End Function
+                    Return str.Replace(oldValue, newValue)
+                End Function
 
-            <Extension>
-            Friend Function Split(str As String, separator As Char, comparisonType As StringComparison) As String()
-                If str Is Nothing Then Throw New ArgumentNullException(NameOf(str))
-                If comparisonType <> StringComparison.Ordinal Then Throw New PlatformNotSupportedException("String.Split on .NET Framework only supports StringComparison.Ordinal.")
+                <Extension>
+                Friend Function Split(str As String, separator As Char, comparisonType As StringComparison) As String()
+                    If str Is Nothing Then Throw New ArgumentNullException(NameOf(str))
+                    If comparisonType <> StringComparison.Ordinal Then Throw New PlatformNotSupportedException("String.Split on .NET Framework only supports StringComparison.Ordinal.")
 
-                Return str.Split(separator)
-            End Function
+                    Return str.Split(separator)
+                End Function
 
         #End Region
 

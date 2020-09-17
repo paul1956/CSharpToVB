@@ -26,22 +26,6 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 For Each e As IndexClass(Of CSS.ArgumentSyntax) In csArguments.WithIndex
                     Dim argument As VBS.ArgumentSyntax = DirectCast(e.Value.Accept(Me), VBS.ArgumentSyntax)
                     Dim csOperation As Operations.IArgumentOperation = CType(_mSemanticModel.GetOperation(e.Value), Operations.IArgumentOperation)
-                    If csOperation?.Value.Kind = OperationKind.DelegateCreation Then
-                        Dim getExpression As VBS.ExpressionSyntax = argument.GetExpression
-                        Select Case getExpression.Kind
-                            Case VB.SyntaxKind.MultiLineFunctionLambdaExpression,
-                                 VB.SyntaxKind.MultiLineSubLambdaExpression,
-                                 VB.SyntaxKind.SingleLineFunctionLambdaExpression,
-                                 VB.SyntaxKind.SingleLineSubLambdaExpression
-                            Case Else
-                                Dim newleadingTrivia As SyntaxTriviaList = getExpression.GetLeadingTrivia
-                                If newleadingTrivia.Count >= 2 AndAlso newleadingTrivia(1).IsKind(VB.SyntaxKind.LineContinuationTrivia) Then
-                                    argument = Factory.SimpleArgument(Factory.AddressOfExpression(AddressOfKeyword.WithTrailingTrivia(newleadingTrivia.GetRange(0, 1)), getExpression))
-                                Else
-                                    argument = Factory.SimpleArgument(Factory.AddressOfExpression(getExpression))
-                                End If
-                        End Select
-                    End If
                     vbNodeList.Add(argument.AdjustNodeTrivia(SeparatorFollows:=Not e.IsLast))
                     If Not e.IsLast Then
                         separators.Add(CommaToken.WithConvertedTrailingTriviaFrom(csArguments.GetSeparators()(e.Index)))
@@ -59,7 +43,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
             Public Overrides Function VisitArgument(node As CSS.ArgumentSyntax) As VB.VisualBasicSyntaxNode
                 Dim name As VBS.NameColonEqualsSyntax = Nothing
                 Dim csExpression As CSS.ExpressionSyntax = node?.Expression
-                Dim argumentWithTrivia As VBS.ExpressionSyntax = Nothing
+                Dim argumentWithTrivia As VBS.ExpressionSyntax
                 Dim newLeadingTrivia As New SyntaxTriviaList
                 Dim newTrailingTrivia As New SyntaxTriviaList
                 Try
@@ -94,6 +78,9 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         End Try
                     Else
                         argumentWithTrivia = DirectCast(csExpression.Accept(Me).AdjustNodeTrivia(SeparatorFollows:=True), VBS.ExpressionSyntax)
+                        If argumentWithTrivia.IsKind(VB.SyntaxKind.AddressOfExpression) Then
+                            argumentWithTrivia = CType(argumentWithTrivia, VBS.UnaryExpressionSyntax).Operand.WithTriviaFrom(argumentWithTrivia)
+                        End If
                     End If
 
                     If TypeOf node.Parent Is CSS.BracketedArgumentListSyntax Then
@@ -107,11 +94,6 @@ Namespace CSharpToVBConverter.ToVisualBasic
 
                     If node.NameColon IsNot Nothing Then
                         name = Factory.NameColonEquals(DirectCast(node.NameColon.Name.Accept(Me), VBS.IdentifierNameSyntax))
-                        Dim NameWithOutColon As String = name.Name.ToString.RemoveAll(":=")
-                        ' TODO Remove comment
-                        'If NameWithOutColon.EndsWith("_Renamed", StringComparison.Ordinal) Then
-                        '    name = Factory.NameColonEquals(Factory.IdentifierName(NameWithOutColon.Replace("_Renamed", "", StringComparison.Ordinal)))
-                        'End If
                     End If
 
                     If argumentWithTrivia.HasLeadingTrivia Then
@@ -143,6 +125,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Throw
                 Catch ex As Exception
                     Stop
+                    '  Throw
                 End Try
                 argumentWithTrivia = argumentWithTrivia.WithLeadingTrivia(newLeadingTrivia).WithTrailingTrivia(VBSpaceTrivia)
                 If name IsNot Nothing Then

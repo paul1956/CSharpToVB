@@ -22,31 +22,18 @@ Namespace CSharpToVBConverter.ToVisualBasic
 
             Private Shared Function CreateImplementsClauseSyntax(implementors As IEnumerable(Of ISymbol), id As SyntaxToken) As VBS.ImplementsClauseSyntax
                 Return Factory.ImplementsClause(implementors.Select(Function(x)
-                                                                        Dim nameSyntax1 As VBS.NameSyntax = GetFullyQualifiedNameSyntax(TryCast(x.ContainingSymbol, INamedTypeSymbol))
-                                                                        Return Factory.QualifiedName(nameSyntax1, Factory.IdentifierName(id))
+                                                                        Dim FullyQualifiedName As VBS.NameSyntax = GetFullyQualifiedNameSyntax(TryCast(x.ContainingSymbol, INamedTypeSymbol))
+                                                                        If TypeOf FullyQualifiedName Is VBS.QualifiedNameSyntax Then
+                                                                            Dim left As String = CType(FullyQualifiedName, VBS.QualifiedNameSyntax).Left.ToString
+                                                                            If left.StartsWith("", StringComparison.Ordinal) Then
+                                                                                left = left.WithoutLeadingSystemDot
+                                                                                If left.Any Then
+                                                                                    FullyQualifiedName = Factory.QualifiedName(Factory.IdentifierName(left), CType(FullyQualifiedName, VBS.QualifiedNameSyntax).Right)
+                                                                                End If
+                                                                            End If
+                                                                        End If
+                                                                        Return Factory.QualifiedName(FullyQualifiedName, Factory.IdentifierName(id))
                                                                     End Function).ToArray())
-            End Function
-
-            Private Shared Function GetFullyQualifiedNameSyntax(symbol As INamespaceOrTypeSymbol, Optional allowGlobalPrefix As Boolean = True) As VBS.NameSyntax
-                Select Case True
-                    Case TypeOf symbol Is ITypeSymbol
-                        Dim ts As ITypeSymbol = CType(symbol, ITypeSymbol)
-                        Dim nameSyntax1 As VBS.NameSyntax = CType(Factory.ParseTypeName(ts.ConvertToType.ToString), VBS.NameSyntax)
-                        If allowGlobalPrefix Then
-                            Return nameSyntax1
-                        End If
-                        Dim globalNameNode As VBS.GlobalNameSyntax = nameSyntax1.DescendantNodes().OfType(Of VBS.GlobalNameSyntax)().FirstOrDefault()
-                        If globalNameNode IsNot Nothing Then
-                            nameSyntax1 = nameSyntax1.ReplaceNodes(TryCast(globalNameNode.Parent, VBS.QualifiedNameSyntax).Yield(), Function(orig, rewrite) orig.Right)
-                        End If
-
-                        Return nameSyntax1
-                    Case TypeOf symbol Is INamespaceSymbol
-                        Dim ns As INamespaceSymbol = CType(symbol, INamespaceSymbol)
-                        Return Factory.ParseName(ns.GetFullMetadataName())
-                    Case Else
-                        Throw New NotImplementedException($"Fully qualified name for {symbol.[GetType]().FullName} not implemented")
-                End Select
             End Function
 
             Private Shared Function UndottedMemberName(n As String) As String
@@ -66,7 +53,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     body = node.ExpressionBody.GetExpressionBodyStatements(Me)
                 End If
                 Dim Attributes As SyntaxList(Of VBS.AttributeListSyntax) = Factory.List(node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))
-                Dim Modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, IsModule, TokenContext.Local)
+                Dim Modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, IsModule, TokenContext.Local).ToList
                 Dim Parent As CSS.BasePropertyDeclarationSyntax = DirectCast(node.Parent.Parent, CSS.BasePropertyDeclarationSyntax)
                 Dim ValueParam As VBS.ParameterSyntax
                 Dim endStmt As VBS.EndBlockStatementSyntax
@@ -228,6 +215,34 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Return If(Not explicitImplementors.Any(), Nothing, CreateImplementsClauseSyntax(explicitImplementors, originalId))
             End Function
 
+            Friend Shared Function GetFullyQualifiedNameSyntax(symbol As INamespaceOrTypeSymbol, Optional allowGlobalPrefix As Boolean = True) As VBS.NameSyntax
+                Select Case True
+                    Case TypeOf symbol Is ITypeSymbol
+                        Dim typeSyntax As VBS.TypeSyntax = CType(symbol, ITypeSymbol).ConvertToType.GetElementType
+                        If TypeOf typeSyntax Is VBS.PredefinedTypeSyntax Then
+                            typeSyntax = Factory.IdentifierName($"[{symbol}]")
+                        End If
+                        If TypeOf typeSyntax Is VBS.NullableTypeSyntax Then
+                            typeSyntax = CType(typeSyntax, VBS.NullableTypeSyntax).ElementType
+                        End If
+                        Dim nameSyntax1 As VBS.NameSyntax = CType(typeSyntax, VBS.NameSyntax)
+                        If allowGlobalPrefix Then
+                            Return nameSyntax1
+                        End If
+                        Dim globalNameNode As VBS.GlobalNameSyntax = nameSyntax1.DescendantNodes().OfType(Of VBS.GlobalNameSyntax)().FirstOrDefault()
+                        If globalNameNode IsNot Nothing Then
+                            nameSyntax1 = nameSyntax1.ReplaceNodes(TryCast(globalNameNode.Parent, VBS.QualifiedNameSyntax).Yield(), Function(orig, rewrite) orig.Right)
+                        End If
+
+                        Return nameSyntax1
+                    Case TypeOf symbol Is INamespaceSymbol
+                        Dim ns As INamespaceSymbol = CType(symbol, INamespaceSymbol)
+                        Return Factory.ParseName(ns.GetFullMetadataName())
+                    Case Else
+                        Throw New NotImplementedException($"Fully qualified name for {symbol.[GetType]().FullName} not implemented")
+                End Select
+            End Function
+
             Public Overrides Function VisitAnonymousObjectMemberDeclarator(node As CSS.AnonymousObjectMemberDeclaratorSyntax) As VB.VisualBasicSyntaxNode
                 If node?.NameEquals Is Nothing Then
                     Return Factory.InferredFieldInitializer(DirectCast(node.Expression.Accept(Me), VBS.ExpressionSyntax)).WithConvertedTriviaFrom(node)
@@ -260,7 +275,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         vbStatements.Add(localFunction, replacementStatement)
                     End If
                 Next
-                Dim Modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, IsModule, TokenContext.New)
+                Dim Modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, IsModule, TokenContext.New).ToList
 
                 Dim parameterList As VBS.ParameterListSyntax = DirectCast(node.ParameterList?.Accept(Me), VBS.ParameterListSyntax)
                 Dim SubNewStatement As VBS.StatementSyntax =
@@ -328,7 +343,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Me.ConvertAndSplitAttributes(node.AttributeLists, AttributeLists, ReturnAttributes, FinalTrailingDirective)
                 Dim parameterList As VBS.ParameterListSyntax = DirectCast(node.ParameterList?.Accept(Me), VBS.ParameterListSyntax).
                                                                     WithRestructuredingEOLTrivia
-                Dim Modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, IsModule, TokenContext.Member)
+                Dim Modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, IsModule, TokenContext.Member).ToList
                 Dim visitor As New MethodBodyVisitor(_mSemanticModel, Me)
                 Modifiers.Add(If(node.ImplicitOrExplicitKeyword.ValueText = "explicit", NarrowingKeyword, WideningKeyword))
                 Dim Type As VBS.TypeSyntax = DirectCast(node.Type.Accept(Me), VBS.TypeSyntax).With({VBSpaceTrivia}, {VBSpaceTrivia})
@@ -378,7 +393,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim ReturnAttributes As SyntaxList(Of VBS.AttributeListSyntax) = Nothing
                 Dim FinalTrailingDirective As New SyntaxTriviaList
                 Me.ConvertAndSplitAttributes(node.AttributeLists, Attributes, ReturnAttributes, FinalTrailingDirective)
-                Dim Modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, IsModule, TokenContext.Member)
+                Dim Modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, IsModule, TokenContext.Member).ToList
                 Dim eventNameToken As SyntaxToken = GenerateSafeVBToken(node.Identifier, node, _mSemanticModel).WithTrailingTrivia(VBSpaceTrivia)
                 Dim AsClause As VBS.SimpleAsClauseSyntax = Factory.SimpleAsClause(attributeLists:=ReturnAttributes, DirectCast(node.Type.Accept(Me), VBS.TypeSyntax))
                 Modifiers.Add(CustomKeyword)
@@ -495,7 +510,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Next
                 End If
 
-                Dim modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, IsModule, TokenContext.Member)
+                Dim modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, IsModule, TokenContext.Member).ToList
                 If modifiers.Any Then
                     modifiers.Insert(0, DefaultKeyword.WithLeadingTrivia(modifiers(0).LeadingTrivia))
                     modifiers(1) = modifiers(1).WithLeadingTrivia(VBSpaceTrivia)
@@ -653,7 +668,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     node.Modifiers(0).ValueText = "static" Then
                     Modifiers = PublicModifier.ToList
                 Else
-                    Modifiers = ConvertModifiers(node.Modifiers, IsModule, If(containingType?.IsInterfaceType() = True, TokenContext.Local, TokenContext.Member))
+                    Modifiers = ConvertModifiers(node.Modifiers, IsModule, If(containingType?.IsInterfaceType() = True, TokenContext.Local, TokenContext.Member)).ToList
                 End If
                 If visitor.IsInterator And Not returnVoid Then
                     Modifiers.Add(IteratorKeyword)
@@ -936,7 +951,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Stop
                 End If
                 Dim parameterList As VBS.ParameterListSyntax = DirectCast(node.ParameterList?.Accept(Me), VBS.ParameterListSyntax).WithRestructuredingEOLTrivia
-                Dim Modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, IsModule, TokenContext.Member)
+                Dim Modifiers As SyntaxTokenList = Factory.TokenList(ConvertModifiers(node.Modifiers, IsModule, TokenContext.Member))
                 Dim lSyntaxKind As CS.SyntaxKind = CS.CSharpExtensions.Kind(node.OperatorToken)
 
                 If node.ParameterList?.Parameters.FirstOrDefault() Is Nothing Then
@@ -948,12 +963,12 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Case CS.SyntaxKind.MinusMinusToken
                         Return Factory.EmptyStatement.WithLeadingTrivia(node.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=False, "C# -- operator not available in VB")).WithPrependedLeadingTrivia(node.GetLeadingTrivia.ConvertTriviaList()).WithConvertedTrailingTriviaFrom(node)
                     Case CS.SyntaxKind.PercentToken
-                        Dim stmt As VBS.OperatorStatementSyntax = Factory.OperatorStatement(Factory.List(Attributes), Factory.TokenList(Modifiers), ModKeyword, parameterList, Factory.SimpleAsClause(ReturnAttributes, DirectCast(node.ReturnType.Accept(Me), VBS.TypeSyntax)))
+                        Dim stmt As VBS.OperatorStatementSyntax = Factory.OperatorStatement(Factory.List(Attributes), Modifiers, ModKeyword, parameterList, Factory.SimpleAsClause(ReturnAttributes, DirectCast(node.ReturnType.Accept(Me), VBS.TypeSyntax)))
                         Return Factory.OperatorBlock(stmt, body).WithConvertedTriviaFrom(node)
                     Case CS.SyntaxKind.PlusPlusToken
                         Return Factory.EmptyStatement.WithLeadingTrivia(node.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=False, "C# ++ operator not available in VB")).WithPrependedLeadingTrivia(node.GetLeadingTrivia.ConvertTriviaList()).WithConvertedTrailingTriviaFrom(node)
                     Case Else
-                        Dim OperatorToken As SyntaxToken = lSyntaxKind.ConvertOperatorDeclarationToken(firstParameterIsString)
+                        Dim OperatorToken As SyntaxToken = lSyntaxKind.GetComparisonOperatorToken(firstParameterIsString)
                         Dim stmt As VBS.OperatorStatementSyntax = Factory.OperatorStatement(Factory.List(Attributes), Factory.TokenList(Modifiers), OperatorToken, parameterList, Factory.SimpleAsClause(ReturnAttributes, DirectCast(node.ReturnType.Accept(Me), VBS.TypeSyntax)))
                         If FinalTrailingDirective.Any Then
                             stmt = stmt.WithAppendedTrailingTrivia(FinalTrailingDirective)
@@ -1088,8 +1103,8 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         If (Not node.Modifiers.Contains(CS.SyntaxKind.AbstractKeyword)) AndAlso csAccessors.Count = 2 AndAlso
                             csAccessors(0).Body Is Nothing AndAlso csAccessors(0).ExpressionBody Is Nothing AndAlso
                             csAccessors(1).Body Is Nothing AndAlso csAccessors(1).ExpressionBody Is Nothing Then
-                            Dim GetModifiers As List(Of SyntaxToken) = ConvertModifiers(csAccessors(0).Modifiers, LocalIsModule, Context)
-                            Dim SetModifiers As List(Of SyntaxToken) = ConvertModifiers(csAccessors(1).Modifiers, LocalIsModule, Context)
+                            Dim GetModifiers As List(Of SyntaxToken) = ConvertModifiers(csAccessors(0).Modifiers, LocalIsModule, Context).ToList
+                            Dim SetModifiers As List(Of SyntaxToken) = ConvertModifiers(csAccessors(1).Modifiers, LocalIsModule, Context).ToList
                             Dim propertyStatementLeadingTrivia As New SyntaxTriviaList
                             Dim GetModifier0 As String = If(GetModifiers.Any, GetModifiers(0).ValueText, "")
                             Dim SetModifier0 As String = If(SetModifiers.Any, SetModifiers(0).ValueText, "")
@@ -1166,7 +1181,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 If node.IsParentKind(CS.SyntaxKind.InterfaceDeclaration) Then
                     Context = TokenContext.InterfaceOrModule
                 End If
-                Dim Modifiers As List(Of SyntaxToken) = ConvertModifiers(CSModifiers, LocalIsModule, Context)
+                Dim Modifiers As List(Of SyntaxToken) = ConvertModifiers(CSModifiers, LocalIsModule, Context).ToList
                 If isIterator Then
                     Modifiers.Add(IteratorKeyword)
                 End If

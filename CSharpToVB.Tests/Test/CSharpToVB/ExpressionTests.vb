@@ -396,7 +396,7 @@ class TestClass
 Class TestClass
 
     Private Shared Function [Do]() As Boolean
-        Dim d As System.Collections.Generic.Dictionary(Of String, String) = New Dictionary(Of String, String)
+        Dim d As Collections.Generic.Dictionary(Of String, String) = New Dictionary(Of String, String)
         Dim output As String = Nothing
         Return d.TryGetValue("""", output)
     End Function
@@ -446,9 +446,9 @@ End Class")
                                                     End Sub
 
     Private Sub TestMethod()
-        Dim test As System.Func(Of Integer, Integer) = Function(a As Integer) As Integer
-                                                           Return a * 2
-                                                       End Function
+        Dim test As Func(Of Integer, Integer) = Function(a As Integer) As Integer
+                                                    Return a * 2
+                                                End Function
 
         test(3)
     End Sub
@@ -468,9 +468,9 @@ End Class")
 }", "Class TestClass
 
     Private Sub TestMethod()
-        Dim test As System.Func(Of Integer, Integer) = Function(a As Integer) As Integer
-                                                           Return a * 2
-                                                       End Function
+        Dim test As Func(Of Integer, Integer) = Function(a As Integer) As Integer
+                                                    Return a * 2
+                                                End Function
 
         test(3)
     End Sub
@@ -667,8 +667,8 @@ End Class")
 "Public Class WhyWeNeedToCastNothing
 
     Public Sub Example(vbInitValue As Integer?)
-        Dim withDefault As int? = If(vbInitValue IsNot Nothing, 7, CType(Nothing, Integer?))
-        Dim withNull As int? = If(vbInitValue IsNot Nothing, CType(8, Integer?), Nothing)
+        Dim withDefault As Integer? = If(vbInitValue IsNot Nothing, 7, CType(Nothing, Integer?))
+        Dim withNull As Integer? = If(vbInitValue IsNot Nothing, CType(8, Integer?), Nothing)
     End Sub
 End Class")
         End Sub
@@ -688,17 +688,15 @@ End Class")
 }", "Class TestClass
 
     Private Sub TestMethod()
-        Dim test As System.Func(Of Object, Object) = Function(a)
-                                                         Return a * 2
-                                                     End Function
-        Dim test2 As System.Func(Of Object, Object, Integer) = Function(a, b) As Integer
-                                                                   If b > 0 Then
-                                                                       Return a / b
-                                                                   End If
+        Dim test As Func(Of Object, Object) = Function(a) a * 2
+        Dim test2 As Func(Of Object, Object, Integer) = Function(a, b) As Integer
+                                                            If b > 0 Then
+                                                                Return a / b
+                                                            End If
 
-                                                                   Return 0
-                                                               End Function
-        Dim test3 As System.Func(Of Object, Object, Object) = Function(a, b) a Mod b
+                                                            Return 0
+                                                        End Function
+        Dim test3 As Func(Of Object, Object, Object) = Function(a, b) a Mod b
 
         test(3)
     End Sub
@@ -1281,7 +1279,7 @@ Friend Class Converter
 
     Public Shared ReadOnly Settings As New SomeSettings With
         { _
-        .Converters = New System.Collections.Generic.IList(Of Object) From {}}
+        .Converters = New Collections.Generic.IList(Of Object) From {}}
 End Class")
         End Sub
 
@@ -1473,7 +1471,7 @@ Namespace PreHOPL
     Module Program
 
         Private ReadOnly dict As New Dictionary(Of String, ValueTuple(Of Integer, [Delegate])) From { _
-            {""SAY"", (1, CType(AddressOf Console.WriteLine, Action(Of String)))}
+            {""SAY"", (1, CType(AddressOf System.Console.WriteLine, Action(Of String)))}
         }
         Private Sub Main(args As String())
             dict(""SAY"").Item2.DynamicInvoke(""Hello World!"")

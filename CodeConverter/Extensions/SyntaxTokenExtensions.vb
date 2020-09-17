@@ -12,7 +12,7 @@ Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
 Namespace CSharpToVBConverter
-    Public Module TokenExtensions
+    Public Module SyntaxTokenExtensions
 
         <Extension>
         Private Function RestructureModifierLeadingTrivia(Modifier As SyntaxToken, i As Integer, ByRef LeadingTriviaNotHandled As Boolean, ByRef StatementLeadingTrivia As SyntaxTriviaList, ByRef StatementTrailingTrivia As SyntaxTriviaList) As SyntaxTriviaList
@@ -36,11 +36,6 @@ Namespace CSharpToVBConverter
             End If
             LeadingTriviaNotHandled = StatementLeadingTrivia.Count = 0
             Return NewModifierLeadingTrivia
-        End Function
-
-        <Extension>
-        Friend Function [With](token As SyntaxToken, leading As SyntaxTriviaList, trailing As SyntaxTriviaList) As SyntaxToken
-            Return token.WithLeadingTrivia(leading).WithTrailingTrivia(trailing)
         End Function
 
         <Extension>
@@ -269,7 +264,7 @@ Namespace CSharpToVBConverter
             If CSToken.Language <> "C#" Then
                 Throw New ArgumentException($"Invalid language {CSToken.Language}, for parameter,", NameOf(CSToken))
             End If
-            Dim Token As SyntaxToken = CS.CSharpExtensions.Kind(CSToken).ConvertModifierKindToVBKeyword(IsModule, context, FoundVisibility)
+            Dim Token As SyntaxToken = CS.CSharpExtensions.Kind(CSToken).GetVisibilityKeyword(IsModule, context, FoundVisibility)
             If Token.IsKind(VB.SyntaxKind.EmptyToken) Then
                 Return EmptyToken.WithConvertedLeadingTriviaFrom(CSToken)
             End If
@@ -411,7 +406,7 @@ Namespace CSharpToVBConverter
             Return Token.With(newLeadingTrivia, NewTrailingTrivia)
         End Function
 
-        <Extension()>
+        <Extension>
         Friend Function RemoveExtraEOL(Token As SyntaxToken) As SyntaxToken
             Dim initialTriviaList As SyntaxTriviaList = Token.LeadingTrivia
             Select Case initialTriviaList.Count
@@ -480,9 +475,29 @@ Namespace CSharpToVBConverter
             Return NodeModifier.WithTrailingTrivia(RelocateDirectiveDisabledTrivia(NodeModifier.TrailingTrivia, StatementTrailingTrivia, RemoveEOL:=True))
         End Function
 
+#Region "With Extensions"
+
+        <Extension>
+        Friend Function [With](token As SyntaxToken, leading As SyntaxTrivia, trailing As SyntaxTrivia) As SyntaxToken
+            Return token.WithLeadingTrivia(leading).WithTrailingTrivia(trailing)
+        End Function
+
+        <Extension>
+        Friend Function [With](token As SyntaxToken, leading As SyntaxTriviaList, trailing As SyntaxTriviaList) As SyntaxToken
+            Return token.WithLeadingTrivia(leading).WithTrailingTrivia(trailing)
+        End Function
+
         <Extension>
         Friend Function WithAppendedTrailingTrivia(Token As SyntaxToken, TriviaList As IEnumerable(Of SyntaxTrivia)) As SyntaxToken
             Return Token.WithTrailingTrivia(Token.TrailingTrivia.Concat(TriviaList))
+        End Function
+
+        <Extension>
+        Friend Function WithConvertedLeadingTriviaFrom(node As SyntaxToken, otherToken As SyntaxToken) As SyntaxToken
+            If Not otherToken.HasLeadingTrivia Then
+                Return node
+            End If
+            Return node.WithLeadingTrivia(otherToken.LeadingTrivia.ConvertTriviaList())
         End Function
 
         <Extension>
@@ -697,6 +712,9 @@ Namespace CSharpToVBConverter
                 finalTrailingTrivia = finalTrailingTrivia.AddRange(Token.TrailingTrivia)
             End If
             Return Token.With(finalLeadingTrivia, finalTrailingTrivia)
+
+#End Region
+
         End Function
 
         <Extension>

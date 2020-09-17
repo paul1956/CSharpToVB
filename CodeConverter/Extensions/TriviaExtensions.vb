@@ -123,12 +123,7 @@ Namespace CSharpToVBConverter
 
         <Extension>
         Friend Function IsKind(Trivia As SyntaxTrivia, ParamArray kinds() As VB.SyntaxKind) As Boolean
-            For Each kind As VB.SyntaxKind In kinds
-                If Trivia.IsKind(kind) Then
-                    Return True
-                End If
-            Next
-            Return False
+            Return kinds.Contains(CType(Trivia.RawKind, VB.SyntaxKind))
         End Function
 
         <Extension>

@@ -133,12 +133,7 @@ Namespace CSharpToVBConverter
             Return newLeadingTrivia
         End Function
 
-        <Extension()>
-        Friend Function [With](Of T As SyntaxNode)(node As T, leadingTrivia As IEnumerable(Of SyntaxTrivia), trailingTrivia As IEnumerable(Of SyntaxTrivia)) As T
-            Return node.WithLeadingTrivia(leadingTrivia).WithTrailingTrivia(trailingTrivia)
-        End Function
-
-        <Extension()>
+        <Extension>
         Friend Function GetAncestor(Of TNode As SyntaxNode)(node As SyntaxNode) As TNode
             If node Is Nothing Then
                 Return Nothing
@@ -147,7 +142,7 @@ Namespace CSharpToVBConverter
             Return node.GetAncestors(Of TNode)().FirstOrDefault()
         End Function
 
-        <Extension()>
+        <Extension>
         Friend Iterator Function GetAncestors(Of TNode As SyntaxNode)(node As SyntaxNode) As IEnumerable(Of TNode)
             Dim current As SyntaxNode = node.Parent
             While current IsNot Nothing
@@ -159,7 +154,7 @@ Namespace CSharpToVBConverter
             End While
         End Function
 
-        <Extension()>
+        <Extension>
         Friend Function GetBraces(node As SyntaxNode) As ValueTuple(Of SyntaxToken, SyntaxToken)
             Dim namespaceNode As CSS.NamespaceDeclarationSyntax = TryCast(node, CSS.NamespaceDeclarationSyntax)
             If namespaceNode IsNot Nothing Then
@@ -199,7 +194,7 @@ Namespace CSharpToVBConverter
             Return New ValueTuple(Of SyntaxToken, SyntaxToken)()
         End Function
 
-        <Extension()>
+        <Extension>
         Friend Function IsKind(node As SyntaxNode, ParamArray kind1() As CS.SyntaxKind) As Boolean
             If node Is Nothing Then
                 Return False
@@ -213,7 +208,7 @@ Namespace CSharpToVBConverter
             Return False
         End Function
 
-        <Extension()>
+        <Extension>
         Friend Function IsKind(node As SyntaxNode, ParamArray kind1() As VB.SyntaxKind) As Boolean
             If node Is Nothing Then
                 Return False
@@ -242,7 +237,7 @@ Namespace CSharpToVBConverter
         ''' <typeparam name="T"></typeparam>
         ''' <param name="node"></param>
         ''' <returns>Node with extra EOL trivia removed</returns>
-        <Extension()>
+        <Extension>
         Friend Function RemoveExtraLeadingEOL(Of T As SyntaxNode)(node As T) As T
             Dim intialLeadingTrivia As SyntaxTriviaList = node.GetLeadingTrivia
             Select Case intialLeadingTrivia.Count
@@ -317,14 +312,14 @@ Namespace CSharpToVBConverter
             Return False
         End Function
 
-        <Extension()>
+        <Extension>
         Friend Function WithAppendedEOL(Of T As SyntaxNode)(node As T) As T
             Dim TrailingTrivia As SyntaxTriviaList = node.GetTrailingTrivia()
             TrailingTrivia = TrailingTrivia.Add(VBEOLTrivia)
             Return node.WithTrailingTrivia(TrailingTrivia)
         End Function
 
-        <Extension()>
+        <Extension>
         Friend Function WithAppendedTrailingTrivia(Of T As SyntaxNode)(node As T, trivia As SyntaxTriviaList) As T
             If trivia.Count = 0 Then
                 Return node
@@ -360,7 +355,7 @@ Namespace CSharpToVBConverter
         ''' <param name="node"></param>
         ''' <param name="TriviaListToMerge"></param>
         ''' <returns></returns>
-        <Extension()>
+        <Extension>
         Friend Function WithMergedLeadingTrivia(Of T As SyntaxNode)(node As T, TriviaListToMerge As SyntaxTriviaList) As T
             If node Is Nothing Then
                 Return Nothing
@@ -383,7 +378,7 @@ Namespace CSharpToVBConverter
         ''' <param name="node"></param>
         ''' <param name="TriviaListToMerge"></param>
         ''' <returns></returns>
-        <Extension()>
+        <Extension>
         Friend Function WithMergedTrailingTrivia(Of T As SyntaxNode)(node As T, TriviaListToMerge As SyntaxTriviaList) As T
             If node Is Nothing Then
                 Return Nothing
@@ -399,7 +394,7 @@ Namespace CSharpToVBConverter
             Return node.WithTrailingTrivia(AdjustMergedStatementTrailingTrivia(NodeTrailingTrivia, TriviaListToMerge))
         End Function
 
-        <Extension()>
+        <Extension>
         Friend Function WithPrependedLeadingTrivia(Of T As SyntaxNode)(node As T, ParamArray triviaArray As SyntaxTrivia()) As T
             If triviaArray.Length = 0 Then
                 Return node
@@ -411,7 +406,7 @@ Namespace CSharpToVBConverter
             Return node.WithPrependedLeadingTrivia(newTriviaList)
         End Function
 
-        <Extension()>
+        <Extension>
         Friend Function WithPrependedLeadingTrivia(Of T As SyntaxNode)(node As T, trivia As SyntaxTriviaList) As T
             If Not trivia.Any Then
                 Return node
@@ -450,7 +445,7 @@ Namespace CSharpToVBConverter
         ''' <param name="node"></param>
         ''' <returns></returns>
         ''' <param name="RemoveLastLineContinuation"></param>
-        <Extension()>
+        <Extension>
         Friend Function WithTrailingEOL(Of T As SyntaxNode)(node As T, RemoveLastLineContinuation As Boolean) As T
             If node Is Nothing Then
                 Return Nothing
@@ -612,41 +607,6 @@ Namespace CSharpToVBConverter
             End Select
         End Function
 
-        <Extension>
-        Friend Function WithUniqueLeadingTrivia(Of T As VB.VisualBasicSyntaxNode)(Node As T, HeaderLeadingTrivia As SyntaxTriviaList) As T
-            Dim NodeLeadingTrivia As SyntaxTriviaList = Node.GetLeadingTrivia
-            If NodeLeadingTrivia.Count = 0 Then
-                Return Node
-            End If
-            If NodeLeadingTrivia.First.Language = "C#" Then
-                NodeLeadingTrivia = NodeLeadingTrivia.ConvertTriviaList
-            End If
-            If HeaderLeadingTrivia.Count = 0 Then
-                Return Node
-            End If
-
-            If Not NodeLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
-                Return Node
-            End If
-            Dim index As Integer
-            For index = 0 To HeaderLeadingTrivia.Count - 1
-                If HeaderLeadingTrivia(index).RawKind <> NodeLeadingTrivia(index).RawKind Then
-                    Exit For
-                End If
-                If HeaderLeadingTrivia(index).ToString <> NodeLeadingTrivia(index).ToString Then
-                    Exit For
-                End If
-            Next
-            Dim newLeadingTrivia As New SyntaxTriviaList
-            For i As Integer = index To NodeLeadingTrivia.Count - 1
-                If i <> 0 AndAlso i = index AndAlso NodeLeadingTrivia(i).IsKind(CS.SyntaxKind.EndOfLineTrivia) Then
-                    Continue For
-                End If
-                newLeadingTrivia = newLeadingTrivia.Add(NodeLeadingTrivia(i))
-            Next
-            Return Node.WithLeadingTrivia(newLeadingTrivia)
-        End Function
-
 #Region "WithConvertedTriviaFrom"
 
         <Extension>
@@ -699,14 +659,6 @@ Namespace CSharpToVBConverter
 
         <Extension>
         Friend Function WithConvertedLeadingTriviaFrom(Of T As SyntaxNode)(node As T, otherToken As SyntaxToken) As T
-            If Not otherToken.HasLeadingTrivia Then
-                Return node
-            End If
-            Return node.WithLeadingTrivia(otherToken.LeadingTrivia.ConvertTriviaList())
-        End Function
-
-        <Extension>
-        Friend Function WithConvertedLeadingTriviaFrom(node As SyntaxToken, otherToken As SyntaxToken) As SyntaxToken
             If Not otherToken.HasLeadingTrivia Then
                 Return node
             End If

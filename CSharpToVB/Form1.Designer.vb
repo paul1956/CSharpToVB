@@ -578,12 +578,24 @@ Partial Class Form1
         '
         'TSFindToolStrip
         '
-        Me.TSFindToolStrip.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.TSFindFindWhatComboBox, Me.TSFindFindPreviousButton, Me.TSFindFindNextButton, Me.TSFindLookInLabel, Me.TSFindLookInComboBox, Me.TSFindSeparator1, Me.TSFindMatchCaseCheckBox, Me.TSFindMatchWholeWordCheckBox, Me.TSFindSeparator2, Me.TSFindClearHighlightsButton, Me.TSFindSeparator3})
+        Me.TSFindToolStrip.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.TSFindFindWhatComboBox, Me.TSFindSeparator1, Me.TSFindLookInLabel, Me.TSFindLookInComboBox, Me.TSFindFindPreviousButton, Me.TSFindFindNextButton, Me.TSFindMatchCaseCheckBox, Me.TSFindMatchWholeWordCheckBox, Me.TSFindSeparator2, Me.TSFindClearHighlightsButton, Me.TSFindSeparator3})
         Me.TSFindToolStrip.Location = New System.Drawing.Point(0, 24)
         Me.TSFindToolStrip.Name = "TSFindToolStrip"
         Me.TSFindToolStrip.Size = New System.Drawing.Size(1812, 25)
         Me.TSFindToolStrip.TabIndex = 2
         Me.TSFindToolStrip.Text = "ToolStrip1"
+        '
+        'TSFindFindWhatComboBox
+        '
+        Me.TSFindFindWhatComboBox.AutoSize = False
+        Me.TSFindFindWhatComboBox.Name = "TSFindFindWhatComboBox"
+        Me.TSFindFindWhatComboBox.Size = New System.Drawing.Size(400, 23)
+        '
+        'TSFindLookInLabel
+        '
+        Me.TSFindLookInLabel.Name = "TSFindLookInLabel"
+        Me.TSFindLookInLabel.Size = New System.Drawing.Size(49, 22)
+        Me.TSFindLookInLabel.Text = "Look In:"
         '
         'TSFindLookInComboBox
         '
@@ -593,12 +605,6 @@ Partial Class Form1
         Me.TSFindLookInComboBox.Margin() = New System.Windows.Forms.Padding(0, 0, right:=5, 0)
         Me.TSFindLookInComboBox.Name = "TSFindLookInComboBox"
         Me.TSFindLookInComboBox.Size = New System.Drawing.Size(130, 23)
-        '
-        'TSFindFindWhatComboBox
-        '
-        Me.TSFindFindWhatComboBox.AutoSize = False
-        Me.TSFindFindWhatComboBox.Name = "TSFindFindWhatComboBox"
-        Me.TSFindFindWhatComboBox.Size = New System.Drawing.Size(400, 23)
         '
         'TSFindFindPreviousButton
         '
@@ -615,12 +621,6 @@ Partial Class Form1
         Me.TSFindFindNextButton.Name = "TSFindFindNextButton"
         Me.TSFindFindNextButton.Size = New System.Drawing.Size(62, 22)
         Me.TSFindFindNextButton.Text = "Find Next"
-        '
-        'TSFindLookInLabel
-        '
-        Me.TSFindLookInLabel.Name = "TSFindLookInLabel"
-        Me.TSFindLookInLabel.Size = New System.Drawing.Size(49, 22)
-        Me.TSFindLookInLabel.Text = "Look In:"
         '
         'TSFindSeparator1
         '

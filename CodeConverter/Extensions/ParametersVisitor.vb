@@ -84,7 +84,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 End If
 
                 Dim newAttributes As VBS.AttributeListSyntax()
-                Dim modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, IsModule, TokenContext.Local)
+                Dim modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, IsModule, TokenContext.Local).ToList
                 If (modifiers.Count = 0 AndAlso returnType IsNot Nothing) OrElse node.Modifiers.Contains(CS.SyntaxKind.ThisKeyword) Then
                     modifiers = Factory.TokenList(ByValKeyword).ToList
                     newAttributes = Array.Empty(Of VBS.AttributeListSyntax)

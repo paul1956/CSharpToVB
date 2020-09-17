@@ -12,9 +12,14 @@ Namespace CSharpToVBConverter
 
     Public Module SyntaxExtensions
 
-        <Extension()>
+        <Extension>
         Friend Function IsParentKind(node As SyntaxNode, kind As CS.SyntaxKind) As Boolean
             Return node IsNot Nothing AndAlso node.Parent.IsKind(kind)
+        End Function
+
+        <Extension>
+        Friend Function StartsWithSystemDot(Expression As SyntaxNode) As Boolean
+            Return Expression.ToString.StartsWith("System.", StringComparison.Ordinal)
         End Function
 
         ''' <summary>
@@ -27,7 +32,7 @@ Namespace CSharpToVBConverter
         ''' <param name="elasticTrivia"></param>
         ''' <param name="PreserveCRLF"></param>
         ''' <returns></returns>
-        <Extension()>
+        <Extension>
         Public Function NormalizeWhitespaceEx(Of TNode As SyntaxNode)(node As TNode,
                                                                   useDefaultCasing As Boolean,
                                                                   Optional indentation As String = "    ",

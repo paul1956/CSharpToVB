@@ -601,7 +601,7 @@ Class TestClass
     Implements IList
 
     Default Public Property Item(index As Integer) As Object
-    Implements System.Collections.IList.Item
+    Implements Collections.IList.Item
     Get
     Return index
     End Get
@@ -914,17 +914,6 @@ End Class")
 }", "MustInherit Class TestClass
 
     Public MustOverride Sub TestMethod()
-End Class")
-        End Sub
-
-        <Fact>
-        Public Shared Sub CSharpToVBTestClassWithGlobalAttribute()
-            TestConversionCSharpToVisualBasic(
-                "[global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-internal class Resources
-{
-}", "<Global.System.Runtime.CompilerServices.CompilerGeneratedAttribute()>
-Friend Class Resources
 End Class")
         End Sub
 

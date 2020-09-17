@@ -323,7 +323,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
         End Function
 
         <Extension>
-        Friend Function DedupLeadingTrivia(node As CS.CSharpSyntaxNode, Keyword As SyntaxToken, Attributes As List(Of VBS.AttributeListSyntax), Modifiers As List(Of SyntaxToken)) As SyntaxTriviaList
+        Friend Function DedupLeadingTrivia(node As CS.CSharpSyntaxNode, Keyword As SyntaxToken, Attributes As List(Of VBS.AttributeListSyntax), Modifiers As IEnumerable(Of SyntaxToken)) As SyntaxTriviaList
             Dim NodeLeadingTrivia As SyntaxTriviaList = node.GetLeadingTrivia.ConvertTriviaList()
             If Attributes.Any Then
                 If EndsWithSimilarTrivia(NodeLeadingTrivia, Attributes(0).GetLeadingTrivia) Then

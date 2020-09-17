@@ -213,7 +213,7 @@ End Enum")
     Implements ComponentModel.INotifyPropertyChanged
 
     Public Event PropertyChanged As ComponentModel.PropertyChangedEventHandler
-    Implements System.ComponentModel.INotifyPropertyChanged.PropertyChanged
+    Implements ComponentModel.INotifyPropertyChanged.PropertyChanged
 End Class")
         End Sub
 
@@ -250,7 +250,7 @@ Public Class TestClass
     Implements INotifyPropertyChanged
 
     Public Event PropertyChanged As PropertyChangedEventHandler
-    Implements System.ComponentModel.INotifyPropertyChanged.PropertyChanged
+    Implements ComponentModel.INotifyPropertyChanged.PropertyChanged
 End Class")
         End Sub
 

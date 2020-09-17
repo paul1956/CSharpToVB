@@ -179,7 +179,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     End If
                 ElseIf Options.Any Then
                     If ListOfAttributes.Any AndAlso ListOfAttributes(0).GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
-                        Options = Options.Replace(Options(0), Options(0).WithLeadingTrivia(ListOfAttributes(0).GetLeadingTrivia))
+                        Options = Options.Replace(Options(0), Options(0).WithLeadingTrivia(VBHeaderLeadingTrivia.Add(VBEOLTrivia)))
                         ListOfAttributes(0) = ListOfAttributes(0).WithUniqueLeadingTrivia(VBHeaderLeadingTrivia)
                         If Not ListOfAttributes.First.GetLeadingTrivia.FirstOrDefault.IsKind(SyntaxKind.EndOfLineTrivia) Then
                             Options = Options.Replace(Options.Last, Options.Last.WithAppendedEOL)
@@ -328,7 +328,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                         expression1 = CType(Invocation.Expression, CSS.MemberAccessExpressionSyntax).Expression
                                         Dim _Typeinfo As TypeInfo = _mSemanticModel.GetTypeInfo(expression1)
                                         If _Typeinfo.Type IsNot Nothing AndAlso Not _Typeinfo.Type.IsErrorType Then
-                                            TypeName = _Typeinfo.Type.ConvertToType()
+                                            TypeName = _Typeinfo.Type.ConvertToType
                                             If TypeOf TypeName Is VBS.GenericNameSyntax Then
                                                 Dim _arguments As SeparatedSyntaxList(Of VBS.TypeSyntax) = CType(TypeName, VBS.GenericNameSyntax).TypeArgumentList.Arguments
                                                 If _arguments.Count = 2 Then
@@ -379,9 +379,9 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim AsClause As VBS.AsClauseSyntax = Nothing
                 If _Typeinfo.Type IsNot Nothing AndAlso Not _Typeinfo.Type.IsErrorType Then
                     If TypeOf _Typeinfo.Type Is INamedTypeSymbol AndAlso _Typeinfo.Type.IsTupleType Then
-                        AsClause = Factory.SimpleAsClause(_Typeinfo.Type.ConvertCSTupleToVBType.WithLeadingTrivia(VBSpaceTrivia))
+                        AsClause = Factory.SimpleAsClause(_Typeinfo.Type.ToString.ConvertCSStringToName.WithLeadingTrivia(VBSpaceTrivia))
                     Else
-                        AsClause = Factory.SimpleAsClause(_Typeinfo.Type.ConvertToType().WithLeadingTrivia(VBSpaceTrivia))
+                        AsClause = Factory.SimpleAsClause(_Typeinfo.Type.ConvertToType.WithLeadingTrivia(VBSpaceTrivia))
                     End If
                 End If
 

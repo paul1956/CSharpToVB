@@ -310,7 +310,7 @@ Namespace CSharpToVBConverter
 
         ' Is the named type "type" accessible from within "within", which must be a named type or
         ' an assembly.
-        <Extension()>
+        <Extension>
         Friend Function IsNamedTypeAccessible(type As INamedTypeSymbol, within As ISymbol) As Boolean
             Debug.Assert(TypeOf within Is INamedTypeSymbol OrElse TypeOf within Is IAssemblySymbol)
             If type Is Nothing Then

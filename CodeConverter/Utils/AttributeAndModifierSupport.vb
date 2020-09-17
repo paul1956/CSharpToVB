@@ -27,7 +27,36 @@ Namespace CSharpToVBConverter.ToVisualBasic
             LocalFunction
         End Enum
 
-        Private Iterator Function ConvertModifiersCore(csModifiers As IEnumerable(Of SyntaxToken), IsModule As Boolean, Context As TokenContext) As IEnumerable(Of SyntaxToken)
+        Private Function CSharpDefaultVisibility(context As TokenContext) As SyntaxToken
+            Select Case context
+                Case TokenContext.Global
+                    Return FriendKeyword
+                Case TokenContext.Local, TokenContext.Member, TokenContext.VariableOrConst
+                    Return PrivateKeyword
+                Case TokenContext.New, TokenContext.Property
+                    Return EmptyToken
+            End Select
+
+            Throw New ArgumentOutOfRangeException(NameOf(context))
+        End Function
+
+        Private Function IgnoreInContext(m As SyntaxToken, context As TokenContext) As Boolean
+            Select Case context
+                Case TokenContext.InterfaceOrModule
+                    Return m.IsKind(CS.SyntaxKind.PublicKeyword) OrElse m.IsKind(CS.SyntaxKind.StaticKeyword)
+                Case TokenContext.Class
+                    Return m.IsKind(CS.SyntaxKind.StaticKeyword)
+            End Select
+
+            Return False
+        End Function
+
+        Private Function IsVisibility(token As SyntaxToken, context As TokenContext) As Boolean
+            Return token.IsKind(CS.SyntaxKind.PublicKeyword, CS.SyntaxKind.InternalKeyword, CS.SyntaxKind.ProtectedKeyword, CS.SyntaxKind.PrivateKeyword) OrElse
+                    (context = TokenContext.VariableOrConst AndAlso token.IsKind(CS.SyntaxKind.ConstKeyword))
+        End Function
+
+        Friend Iterator Function ConvertModifiers(csModifiers As IEnumerable(Of SyntaxToken), IsModule As Boolean, Context As TokenContext) As IEnumerable(Of SyntaxToken)
             Dim FoundVisibility As Boolean = False
             Dim newLeadingTrivia As New SyntaxTriviaList
             Dim FirstModifier As Boolean = True
@@ -121,39 +150,6 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 End If
             Next
 
-        End Function
-
-        Private Function CSharpDefaultVisibility(context As TokenContext) As SyntaxToken
-            Select Case context
-                Case TokenContext.Global
-                    Return FriendKeyword
-                Case TokenContext.Local, TokenContext.Member, TokenContext.VariableOrConst
-                    Return PrivateKeyword
-                Case TokenContext.New, TokenContext.Property
-                    Return EmptyToken
-            End Select
-
-            Throw New ArgumentOutOfRangeException(NameOf(context))
-        End Function
-
-        Private Function IgnoreInContext(m As SyntaxToken, context As TokenContext) As Boolean
-            Select Case context
-                Case TokenContext.InterfaceOrModule
-                    Return m.IsKind(CS.SyntaxKind.PublicKeyword) OrElse m.IsKind(CS.SyntaxKind.StaticKeyword)
-                Case TokenContext.Class
-                    Return m.IsKind(CS.SyntaxKind.StaticKeyword)
-            End Select
-
-            Return False
-        End Function
-
-        Private Function IsVisibility(token As SyntaxToken, context As TokenContext) As Boolean
-            Return token.IsKind(CS.SyntaxKind.PublicKeyword, CS.SyntaxKind.InternalKeyword, CS.SyntaxKind.ProtectedKeyword, CS.SyntaxKind.PrivateKeyword) OrElse
-                    (context = TokenContext.VariableOrConst AndAlso token.IsKind(CS.SyntaxKind.ConstKeyword))
-        End Function
-
-        Friend Function ConvertModifiers(CSModifiers As SyntaxTokenList, IsModule As Boolean, Optional Context As TokenContext = TokenContext.Global) As List(Of SyntaxToken)
-            Return ConvertModifiersCore(CSModifiers, IsModule, Context).ToList
         End Function
 
         Friend Function RestructureAttributeList(vbAttributeLists As SyntaxList(Of VBS.AttributeListSyntax), AttributeLists As List(Of VBS.AttributeListSyntax), ByRef NewAttributeLeadingTrivia As SyntaxTriviaList, ByRef StatementLeadingTrivia As SyntaxTriviaList, ByRef StatementTrailingTrivia As SyntaxTriviaList) As Boolean

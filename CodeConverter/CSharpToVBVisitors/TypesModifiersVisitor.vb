@@ -110,7 +110,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     If node.Keyword.ToString = "void" Then
                         Return Factory.IdentifierName("void")
                     End If
-                    PredefinedType = Factory.PredefinedType(ConvertKindToTypesToken(CS.CSharpExtensions.Kind(node.Keyword)))
+                    PredefinedType = Factory.PredefinedType(CS.CSharpExtensions.Kind(node.Keyword).GetTypeToken())
                 Catch ex As OperationCanceledException
                     Throw
                 Catch ex As Exception

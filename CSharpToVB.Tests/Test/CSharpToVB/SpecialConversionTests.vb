@@ -16,7 +16,7 @@ Namespace CSharpToVB.Tests
         ''' If there are any overloads (including the extension method version of a method vs its non extension method version), VB needs an exact match (with no narrowing conversions).
         ''' This means Funcs/Actions need to be wrapped in a typed constructor such as New Action(Of String)
         ''' </summary>
-        <Fact(Skip:="Should use Func")>
+        <Fact> ' (Skip:="Should use Func")>
         Public Shared Sub CSharpToVBAddressOfWhereVbTypeInferenceIsWeaker()
             TestConversionCSharpToVisualBasic("using System; //Not required in VB due to global imports
 
@@ -56,8 +56,8 @@ Module TestClass
         Return node
     End Function
     Public Function Convert(node As Object) As Object
-        Return node.TypeSwitch(New Func(Of String, Object)(AddressOf ConvertString), New Func(Of Integer, Object)(AddressOf ConvertInt), Function(__)
-                                                                                                                                             Throw New NotImplementedException($""Conversion for '{node.GetType()}' not implemented"")
+        Return node.TypeSwitch(New Func(Of String, Object)(AddressOf ConvertString), New Func(Of Integer, Object)(AddressOf ConvertInt), Function(__) As Object
+                                                                                                                                             Throw New NotImplementedException($""Conversion for '{node.[GetType]()}' not implemented"")
                                                                                                                                          End Function)
     End Function
 
@@ -282,12 +282,12 @@ Public Class AdditionalLocals
     Private ReadOnly _additionalLocals As New Stack(Of Dictionary(Of String, Integer))
 
     Public Function GetEnumerator() As IEnumerator(Of KeyValuePair(Of String, Integer))
-        Implements System.Collections.Generic.IEnumerable(Of System.Collections.Generic.KeyValuePair(Of String, Integer)).GetEnumerator
+        Implements Collections.Generic.IEnumerable(Of Collections.Generic.KeyValuePair(Of String, Integer)).GetEnumerator
         Return _additionalLocals.Peek().GetEnumerator()
     End Function
 
     Private Function GetEnumerator1() As IEnumerator
-        Implements System.Collections.IEnumerable.GetEnumerator
+        Implements Collections.IEnumerable.GetEnumerator
         Return _additionalLocals.Peek().GetEnumerator()
     End Function
 End Class")

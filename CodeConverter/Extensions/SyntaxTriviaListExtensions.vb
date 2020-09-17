@@ -246,8 +246,11 @@ Namespace CSharpToVBConverter
 
         <Extension>
         Friend Function GetForwardTriviaOrDefault(TriviaList As SyntaxTriviaList, Index As Integer, LookaheadCount As Integer) As SyntaxTrivia
-            Dim charIndex As Integer = Index + LookaheadCount
-            Return If(charIndex < TriviaList.Count, TriviaList(charIndex), New SyntaxTrivia)
+            Dim triviaIndex As Integer = Index + LookaheadCount
+            If triviaIndex < 0 Then
+                Return New SyntaxTrivia
+            End If
+            Return If(triviaIndex < TriviaList.Count, TriviaList(triviaIndex), New SyntaxTrivia)
         End Function
 
         <Extension>

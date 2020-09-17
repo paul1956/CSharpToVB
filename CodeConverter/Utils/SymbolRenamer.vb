@@ -20,31 +20,30 @@ Namespace CSharpToVBConverter
             End While
         End Function
 
-        <Extension()>
+        <Extension>
         Private Function FollowProperty(Of TOut As Class)(start As TOut, getProperty As Func(Of TOut, TOut)) As IEnumerable(Of TOut)
             Return FollowProperty(Of TOut, TOut)(start, getProperty)
         End Function
 
         Private Function GetBaseForNewName(declaration As ISymbol) As String
             Dim _name As String = GetName(declaration)
-            Dim tempVar As String
-
+            Dim baseForNewName As String
             Select Case declaration.Kind
                 Case = SymbolKind.Method
-                    tempVar = _name & "Method"
+                    baseForNewName = _name & "Method"
                 Case = SymbolKind.Property
-                    tempVar = _name & "Prop"
+                    baseForNewName = _name & "Prop"
                 Case = SymbolKind.NamedType
-                    tempVar = _name & "Type"
+                    baseForNewName = _name & "Type"
                 Case = SymbolKind.Field
-                    tempVar = _name & "Field"
+                    baseForNewName = _name & "Field"
                 Case Else
 #Disable Warning CA1308 ' Normalize strings to uppercase
-                    tempVar = $"{declaration.Kind.ToString().ToLowerInvariant()(0)}{Char.ToUpperInvariant(_name.Chars(index:=0))}{_name.Substring(startIndex:=1)}"
+                    baseForNewName = $"{declaration.Kind.ToString().ToLowerInvariant()(0)}{Char.ToUpperInvariant(_name.Chars(index:=0))}{_name.Substring(startIndex:=1)}"
 #Enable Warning CA1308 ' Normalize strings to uppercase
             End Select
 
-            Return tempVar
+            Return baseForNewName
         End Function
 
         Private Function GetMethodSymbolsWithNewNames(methodSymbols As IMethodSymbol(),
@@ -69,12 +68,12 @@ Namespace CSharpToVBConverter
             Return methodsBySignature
         End Function
 
-        <Extension()>
+        <Extension>
         Private Function GetParameterSignature(methodSymbol As IMethodSymbol) As String
             Return String.Join(" ", methodSymbol.Parameters.Select(Function(p) p.Type))
         End Function
 
-        <Extension()>
+        <Extension>
         Private Function GetUnqualifiedMethodSignature(methodSymbol As IMethodSymbol, caseSensitiveName As Boolean) As (Name As String, TypeParameterCount As Integer, ParameterTypes As String)
 #Disable Warning CA1308 ' Normalize strings to uppercase
             Return (If(caseSensitiveName, methodSymbol.Name, methodSymbol.Name.ToLowerInvariant()), methodSymbol.TypeParameters.Length, GetParameterSignature(methodSymbol))

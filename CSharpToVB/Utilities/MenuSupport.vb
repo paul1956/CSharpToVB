@@ -40,7 +40,7 @@ Public Module MenuSupport
         ' create a temporary collection containing every MRU menu item
         ' (identified by the tag text when added to the list)...
         For Each FileMenuItem As ToolStripItem In dropDownItems
-            If Not FileMenuItem.Tag Is Nothing Then
+            If FileMenuItem.Tag IsNot Nothing Then
                 If FileMenuItem.Tag.ToString().StartsWith("MRU:", StringComparison.Ordinal) Then
                     MRUToolStripItems.Add(FileMenuItem)
                 End If

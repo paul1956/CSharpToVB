@@ -27,6 +27,16 @@ Namespace CSharpToVBConverter
         End Function
 
         <Extension>
+        Friend Function IsSimpleStatement(statement As CSS.StatementSyntax) As Boolean
+            Return TypeOf statement Is CSS.ExpressionStatementSyntax OrElse
+                    TypeOf statement Is CSS.BreakStatementSyntax OrElse
+                    TypeOf statement Is CSS.ContinueStatementSyntax OrElse
+                    TypeOf statement Is CSS.ReturnStatementSyntax OrElse
+                    TypeOf statement Is CSS.YieldStatementSyntax OrElse
+                    TypeOf statement Is CSS.ThrowStatementSyntax
+        End Function
+
+        <Extension>
         Friend Function RestructureArguments(VB_Node As VBS.StatementSyntax, csArgumentList As CSS.ArgumentListSyntax) As VBS.StatementSyntax
             If Not csArgumentList.ContainsConditionalDirective Then
                 Return VB_Node
