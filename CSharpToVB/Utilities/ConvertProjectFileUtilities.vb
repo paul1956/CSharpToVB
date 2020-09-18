@@ -5,7 +5,7 @@
 Imports System.IO
 Imports System.Xml
 
-#If Not NET5_0 Then
+#If NETCOREAPP3_1 Then
 
 Imports VBMsgBox
 

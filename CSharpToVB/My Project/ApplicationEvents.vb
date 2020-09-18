@@ -4,8 +4,10 @@
 
 Imports Microsoft.VisualBasic.ApplicationServices
 
-#If NET5_0 Then
+#If Not NETCOREAPP3_1 Then
+
 Imports Microsoft.VisualBasic.Devices
+
 #End If
 
 Namespace My
@@ -16,9 +18,10 @@ Namespace My
     ' UnhandledException: Raised if the application encounters an unhandled exception.
     ' StartupNextInstance: Raised when launching a single-instance application and the application is already active.
     ' NetworkAvailabilityChanged: Raised when the network connection is connected or disconnected.
+
     Partial Friend Class MyApplication
 
-#If NET5_0 Then
+#If Not NETCOREAPP3_1 Then
         Private Sub MyApplication_NetworkAvailabilityChanged(sender As Object, e As NetworkAvailableEventArgs) Handles Me.NetworkAvailabilityChanged
             ' My.Forms.Form1.SetConnectionStatus(e.IsNetworkAvailable)
         End Sub
@@ -29,7 +32,7 @@ Namespace My
         End Sub
 
         Private Sub MyApplication_Startup(sender As Object, e As StartupEventArgs) Handles Me.Startup
-#If NET5_0 Then
+#If Not NETCOREAPP3_1 Then
             ' Get the splash screen.
             CType(SplashScreen, SplashScreen1).UserName.Text = "Current user: " & MyApplication.User.Name
 #End If

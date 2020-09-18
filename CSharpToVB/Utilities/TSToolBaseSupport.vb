@@ -5,7 +5,7 @@
 Imports System.Runtime.CompilerServices
 Imports CSharpToVBConverter
 
-#If Not NET Then
+#If NETCOREAPP3_1 Then
 
 Imports VBMsgBox
 

@@ -10,13 +10,14 @@ Imports CSharpToVBConverter.ConversionResult
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Emit
 
-#If Not NET Then
+#If NETCOREAPP3_1 Then
 
 Imports VBMsgBox
 
 #End If
 
 Public Module ColorizeSupport
+
     Friend Sub Colorize(MainForm As Form1, FragmentRange As IEnumerable(Of Range), ConversionBuffer As RichTextBox, Lines As Integer, Optional failures As IEnumerable(Of Diagnostic) = Nothing)
         If MainForm._inColorize Then
             Exit Sub

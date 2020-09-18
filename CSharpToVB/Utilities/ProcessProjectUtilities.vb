@@ -10,7 +10,7 @@ Imports Buildalyzer.Workspaces
 Imports CSharpToVBConverter
 Imports Microsoft.CodeAnalysis
 
-#If Not NET Then
+#If NETCOREAPP3_1 Then
 
 Imports VBMsgBox
 

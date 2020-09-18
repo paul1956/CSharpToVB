@@ -11,7 +11,7 @@ Imports CSharpToVBConverter
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.VisualBasic.FileIO
 
-#If Not NET Then
+#If NETCOREAPP3_1 Then
 
 Imports VBMsgBox
 
@@ -905,7 +905,6 @@ Partial Public Class Form1
     Private Sub TSFindLookInComboBox_Click(sender As Object, e As EventArgs) Handles TSFindLookInComboBox.Click
         Me.SetSearchControls()
     End Sub
-
 
     Private Sub TSFindLookInComboBox_SelectedIndexChanged(sender As Object, e As EventArgs) Handles TSFindLookInComboBox.SelectedIndexChanged
         Select Case TSFindLookInComboBox.SelectedIndex
