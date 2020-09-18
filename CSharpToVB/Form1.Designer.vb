@@ -141,7 +141,7 @@ Partial Class Form1
         '
         'MenuStrip1
         '
-        Me.MenuStrip1.BackColor = System.Drawing.SystemColors.ActiveCaption
+        Me.MenuStrip1.BackColor = Color.FromArgb(204, 213, 240)
         Me.MenuStrip1.ImageScalingSize = New System.Drawing.Size(36, 36)
         Me.MenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuFile, Me.mnuEdit, Me.mnuCompile, Me.mnuConvert, Me.mnuOptions, Me.mnuView, Me.mnuHelp})
         Me.MenuStrip1.Location = New System.Drawing.Point(0, 0)
@@ -581,7 +581,7 @@ Partial Class Form1
         '
         'TSFindToolStrip
         '
-        Me.TSFindToolStrip.BackColor = System.Drawing.SystemColors.ActiveCaption
+        Me.TSFindToolStrip.BackColor = Color.FromArgb(204, 213, 240)
         Me.TSFindToolStrip.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.TSFindFindWhatComboBox, Me.TSFindSeparator1, Me.TSFindLookInLabel, Me.TSFindLookInComboBox, Me.TSFindSeparator2, Me.TSFindFindPreviousButton, Me.TSFindFindNextButton, Me.TSFindSeparator3, Me.TSFindMatchCaseCheckBox, Me.TSFindMatchWholeWordCheckBox, Me.TSFindSeparator4, Me.TSFindClearHighlightsButton, Me.TSFindSeparator5})
         Me.TSFindToolStrip.Location = New System.Drawing.Point(0, 24)
         Me.TSFindToolStrip.Name = "TSFindToolStrip"
