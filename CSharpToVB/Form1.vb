@@ -3,13 +3,9 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.ComponentModel
-Imports System.Globalization
 Imports System.IO
 Imports System.Reflection
 Imports System.Threading
-
-Imports Buildalyzer
-
 Imports CSharpToVBApp
 Imports CSharpToVBConverter
 Imports Microsoft.CodeAnalysis
@@ -49,8 +45,6 @@ Partial Public Class Form1
             End If
         End Set
     End Property
-
-#Region "Form Events"
 
     Private Sub ButtonStop_Click(sender As Object, e As EventArgs) Handles ButtonStopConversion.Click
         ButtonStopConversion.Visible = False
@@ -110,16 +104,16 @@ Partial Public Class Form1
 
         If TypeOf CurrentBuffer Is RichTextBox Then
             Dim sourceBuffer As RichTextBox = CType(CurrentBuffer, RichTextBox)
-            ContextMenu.Items(IndexOf(ContextMenu, NameOf(ContextMenuCopy))).Enabled = sourceBuffer.TextLength > 0 And sourceBuffer.SelectedText.Any
-            ContextMenu.Items(IndexOf(ContextMenu, NameOf(ContextMenuCut))).Enabled = sourceBuffer.TextLength > 0 And sourceBuffer.SelectedText.Any
-            ContextMenu.Items(IndexOf(ContextMenu, NameOf(ContextMenuPaste))).Enabled = sourceBuffer.CanPaste(DataFormats.GetFormat(DataFormats.Rtf)) OrElse sourceBuffer.CanPaste(DataFormats.GetFormat(DataFormats.Text))
-            ContextMenu.Items(IndexOf(ContextMenu, NameOf(ContextMenuRedo))).Enabled = sourceBuffer.CanRedo
-            ContextMenu.Items(IndexOf(ContextMenu, NameOf(ContextMenuUndo))).Enabled = sourceBuffer.CanUndo
+            ContextMenu.Items(ContextMenu.IndexOf(NameOf(ContextMenuCopy))).Enabled = sourceBuffer.TextLength > 0 And sourceBuffer.SelectedText.Any
+            ContextMenu.Items(ContextMenu.IndexOf(NameOf(ContextMenuCut))).Enabled = sourceBuffer.TextLength > 0 And sourceBuffer.SelectedText.Any
+            ContextMenu.Items(ContextMenu.IndexOf(NameOf(ContextMenuPaste))).Enabled = sourceBuffer.CanPaste(DataFormats.GetFormat(DataFormats.Rtf)) OrElse sourceBuffer.CanPaste(DataFormats.GetFormat(DataFormats.Text))
+            ContextMenu.Items(ContextMenu.IndexOf(NameOf(ContextMenuRedo))).Enabled = sourceBuffer.CanRedo
+            ContextMenu.Items(ContextMenu.IndexOf(NameOf(ContextMenuUndo))).Enabled = sourceBuffer.CanUndo
         Else
-            ContextMenu.Items(IndexOf(ContextMenu, NameOf(ContextMenuCut))).Enabled = False
-            ContextMenu.Items(IndexOf(ContextMenu, NameOf(ContextMenuPaste))).Enabled = False
-            ContextMenu.Items(IndexOf(ContextMenu, NameOf(ContextMenuRedo))).Enabled = False
-            ContextMenu.Items(IndexOf(ContextMenu, NameOf(ContextMenuUndo))).Enabled = False
+            ContextMenu.Items(ContextMenu.IndexOf(NameOf(ContextMenuCut))).Enabled = False
+            ContextMenu.Items(ContextMenu.IndexOf(NameOf(ContextMenuPaste))).Enabled = False
+            ContextMenu.Items(ContextMenu.IndexOf(NameOf(ContextMenuRedo))).Enabled = False
+            ContextMenu.Items(ContextMenu.IndexOf(NameOf(ContextMenuUndo))).Enabled = False
         End If
     End Sub
 
@@ -139,7 +133,7 @@ Partial Public Class Form1
     End Sub
 
     Private Sub ConversionInput_TextChanged(sender As Object, e As EventArgs) Handles ConversionInput.TextChanged
-        Dim inputBufferInUse As Boolean = SetSearchControls(Me, True)
+        Dim inputBufferInUse As Boolean = Me.SetSearchControls(True)
         mnuViewShowSourceLineNumbers.Checked = inputBufferInUse And My.Settings.ShowSourceLineNumbers
         mnuFileSaveSnippet.Enabled = inputBufferInUse
         If mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
@@ -155,6 +149,7 @@ Partial Public Class Form1
         Dim OutputBufferInUse As Boolean = CType(sender, RichTextBox).TextLength > 0
         mnuViewShowDestinationLineNumbers.Checked = OutputBufferInUse And My.Settings.ShowDestinationLineNumbers
         mnuCompile.Enabled = OutputBufferInUse
+        Me.SetSearchControls()
     End Sub
 
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles Me.Load
@@ -204,11 +199,11 @@ Partial Public Class Form1
         For Each FrameworkType As ToolStripMenuItem In mnuOptionsDefaultFramework.DropDownItems
             If FrameworkType.Text = ".Net Full Framework" Then
                 For Each f As String In GetAllFrameworkVersions()
-                    AddDropDownMenuItem(FrameworkType.DropDownItems, f)
+                    FrameworkType.DropDownItems.AddDropDownMenuItem(f)
                 Next
             Else
                 For Each f As String In GetAllCoreVersions()
-                    AddDropDownMenuItem(FrameworkType.DropDownItems, f)
+                    FrameworkType.DropDownItems.AddDropDownMenuItem(f)
                 Next
             End If
         Next
@@ -333,7 +328,7 @@ Partial Public Class Form1
             Exit Sub
         End If
 
-        LoadOutputBufferFromStream(ConvertedFileNameWithPath, Me)
+        LoadOutputBufferFromStream(Me, ConvertedFileNameWithPath)
     End Sub
 
     Private Sub ListBoxFileList_Enter(sender As Object, e As EventArgs) Handles ListBoxFileList.Enter
@@ -427,7 +422,7 @@ Partial Public Class Form1
                     Exit Sub
                 End If
                 SourceFolderName = .SelectedPath
-                Dim fullFolderPath As (SolutionRoot As String, ProjectRelativePath As String) = GetSavePath(Me, .SelectedPath, PromptIfDirExsits:=True)
+                Dim fullFolderPath As (SolutionRoot As String, ProjectRelativePath As String) = Me.GetSavePath(.SelectedPath, PromptIfDirExsits:=True)
                 solutionSavePath = Path.Combine(fullFolderPath.SolutionRoot, fullFolderPath.ProjectRelativePath)
             End With
         End Using
@@ -454,7 +449,7 @@ Partial Public Class Form1
         ' Begin timing
         stopwatch.Start()
         Dim prompt As String
-        If Await Me.ProcessFilesAsync(Me, SourceFolderName,
+        If Await ProcessFilesAsync(Me, SourceFolderName,
             solutionSavePath,
             SourceLanguageExtension:="cs",
             Stats:=Stats,
@@ -562,7 +557,7 @@ Partial Public Class Form1
         Dim FolderName As String = CType(sender, ToolStripMenuItem).Text
         If Directory.Exists(FolderName) Then
             Dim SourceLanguageExtension As String = "cs"
-            Dim fullFolderPath As (SolutionRoot As String, ProjectRelativePath As String) = GetSavePath(Me, FolderName, PromptIfDirExsits:=True)
+            Dim fullFolderPath As (SolutionRoot As String, ProjectRelativePath As String) = Me.GetSavePath(FolderName, PromptIfDirExsits:=True)
             Dim targetSavePath As String = Path.Combine(fullFolderPath.SolutionRoot, fullFolderPath.ProjectRelativePath)
             If String.IsNullOrWhiteSpace(targetSavePath) Then
                 Exit Sub
@@ -575,7 +570,7 @@ Partial Public Class Form1
                 _cancellationTokenSource.Dispose()
             End If
             _cancellationTokenSource = New CancellationTokenSource
-            If Await Me.ProcessFilesAsync(Me, FolderName, targetSavePath, SourceLanguageExtension, Stats, _cancellationTokenSource.Token).ConfigureAwait(True) Then
+            If Await ProcessFilesAsync(Me, FolderName, targetSavePath, SourceLanguageExtension, Stats, _cancellationTokenSource.Token).ConfigureAwait(True) Then
                 MsgBox($"Conversion completed.",
                        MsgBoxStyle.OkOnly Or MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground)
             End If
@@ -587,12 +582,12 @@ Partial Public Class Form1
 
     Private Sub mnuFileLastProject_Click(sender As Object, e As EventArgs) Handles mnuFileLastProject.Click
         Dim projectFileName As String = My.Settings.LastProject
-        Me.ProcessProjectOrSolutionAsync(projectFileName)
+        ProcessProjectOrSolutionAsync(Me, projectFileName)
     End Sub
 
     Private Sub mnuFileLastSolution_Click(sender As Object, e As EventArgs) Handles mnuFileLastSolution.Click
         Dim solutionFileName As String = My.Settings.LastSolution
-        Me.ProcessProjectOrSolutionAsync(solutionFileName)
+        ProcessProjectOrSolutionAsync(Me, solutionFileName)
     End Sub
 
     Private Sub mnuFileOpen_Click(sender As Object, e As EventArgs) Handles mnuFileOpen.Click
@@ -629,7 +624,7 @@ Partial Public Class Form1
             If .ShowDialog <> DialogResult.OK Then
                 Exit Sub
             End If
-            Me.ProcessProjectOrSolutionAsync(.FileName)
+            ProcessProjectOrSolutionAsync(Me, .FileName)
         End With
     End Sub
 
@@ -836,16 +831,16 @@ Partial Public Class Form1
         If My.Settings.MRU_Data Is Nothing Then
             My.Settings.MRU_Data = New Specialized.StringCollection
         End If
-        Me.UpdateLastFileMeus()
+        Me.UpdateLastFileMenu()
 
         If My.Settings.TSFindMRU_Data Is Nothing Then
             My.Settings.TSFindMRU_Data = New Specialized.StringCollection
             My.Settings.Save()
         End If
-        TSFindWhatMRUUpdateUI(TSFindFindWhatComboBox)
+        TSFindFindWhatComboBox.TSFindWhatMRUUpdateUI()
 
         ' display MRU if there are any items to display...
-        FileMenuMRUUpdateUI(mnuFile.DropDownItems, AddressOf Me.mnu_MRUList_Click)
+        mnuFile.DropDownItems.FileMenuMRUUpdateUI(AddressOf Me.mnu_MRUList_Click)
     End Sub
 
     ''' <summary>
@@ -887,17 +882,30 @@ Partial Public Class Form1
         Me.DoFind(SearchForward:=False)
     End Sub
 
+    Private Sub TSFindFindWhatComboBox_Click(sender As Object, e As EventArgs) Handles TSFindFindWhatComboBox.Click
+        If TSFindFindWhatComboBox.Text = "Search..." Then
+            TSFindFindWhatComboBox.Text = ""
+        End If
+    End Sub
+
+    Private Sub TSFindFindWhatComboBox_Leave(sender As Object, e As EventArgs) Handles TSFindFindWhatComboBox.Leave
+        If Not TSFindFindWhatComboBox.Text.Any Then
+            TSFindFindWhatComboBox.Text = "Search..."
+        End If
+    End Sub
+
     Private Sub TSFindFindWhatComboBox_SelectedIndexChanged(sender As Object, e As EventArgs) Handles TSFindFindWhatComboBox.SelectedIndexChanged
-        SetSearchControls(Me)
+        Me.SetSearchControls()
     End Sub
 
     Private Sub TSFindFindWhatComboBox_TextChanged(sender As Object, e As EventArgs) Handles TSFindFindWhatComboBox.TextChanged
-        SetSearchControls(Me)
+        Me.SetSearchControls()
     End Sub
 
     Private Sub TSFindLookInComboBox_Click(sender As Object, e As EventArgs) Handles TSFindLookInComboBox.Click
-        SetSearchControls(Me)
+        Me.SetSearchControls()
     End Sub
+
 
     Private Sub TSFindLookInComboBox_SelectedIndexChanged(sender As Object, e As EventArgs) Handles TSFindLookInComboBox.SelectedIndexChanged
         Select Case TSFindLookInComboBox.SelectedIndex
@@ -908,7 +916,7 @@ Partial Public Class Form1
             Case 2
                 _searchBuffer = SearchBuffers.Both
         End Select
-        SetSearchControls(Me)
+        Me.SetSearchControls()
     End Sub
 
     Private Sub TSFindMatchCaseCheckBox_Click(sender As Object, e As EventArgs) Handles TSFindMatchCaseCheckBox.Click
@@ -923,179 +931,7 @@ Partial Public Class Form1
 
 #End Region
 
-#End Region
-
 #Region "Form Support Routines"
-
-    ''' <summary>
-    ''' Process all files in the directory passed in, recurse on any directories
-    ''' that are found, and process the files they contain.
-    ''' </summary>
-    ''' <param name="SourceDirectory">Start location of where to process directories</param>
-    ''' <param name="TargetDirectory">Start location of where to process directories</param>
-    ''' <param name="LastFileNameWithPath">Pass Last File Name to Start Conversion where you left off</param>
-    ''' <param name="SourceLanguageExtension">vb or cs</param>
-    ''' <param name="FilesProcessed">Count of the number of tiles processed</param>
-    ''' <returns>
-    ''' False if error and user wants to stop, True if success or user wants to ignore error
-    ''' </returns>
-    Private Async Function ProcessFilesAsync(MainForm As Form1, SourceDirectory As String, TargetDirectory As String, SourceLanguageExtension As String, Stats As ProcessingStats, CancelToken As CancellationToken) As Task(Of Boolean)
-        Try
-            ListBoxErrorList.Items.Clear()
-            ListBoxFileList.Items.Clear()
-            SetButtonStopAndCursor(Me,
-                                   ButtonStopConversion,
-                                   StopButtonVisible:=True)
-            Stats.TotalFilesToProcess = GetFileCount(SourceDirectory,
-                                                     SourceLanguageExtension,
-                                                     My.Settings.SkipBinAndObjFolders,
-                                                     My.Settings.SkipTestResourceFiles)
-            ' Process the list of files found in the directory.
-            Return Await ProcessDirectoryAsync(MainForm,
-                                               SourceDirectory,
-                                               TargetDirectory,
-                                               ButtonStopConversion,
-                                               ListBoxFileList,
-                                               SourceLanguageExtension,
-                                               Stats,
-                                               AddressOf ProcessFileAsync,
-                                               CancelToken).ConfigureAwait(True)
-        Catch ex As OperationCanceledException
-            ConversionProgressBar.Value = 0
-        Catch ex As Exception
-            ' don't crash on exit
-            End
-        Finally
-            SetButtonStopAndCursor(Me,
-                                   ButtonStopConversion,
-                                   StopButtonVisible:=False)
-        End Try
-        Return False
-    End Function
-
-    Private Async Sub ProcessProjectOrSolutionAsync(fileName As String)
-        _cancellationTokenSource = New CancellationTokenSource
-        Dim saveSolutionRoot As String = GetSavePath(Me, fileName, PromptIfDirExsits:=True).SolutionRoot
-        If String.IsNullOrWhiteSpace(saveSolutionRoot) Then
-            LabelProgress.Visible = False
-            ProgressBar1.Visible = False
-            MsgBox($"Can't find {saveSolutionRoot}, exiting solution conversion")
-            Exit Sub
-        End If
-        SetButtonStopAndCursor(MeForm:=Me, StopButton:=ButtonStopConversion, StopButtonVisible:=True)
-        ListBoxErrorList.Items.Clear()
-        ListBoxFileList.Items.Clear()
-        ConversionInput.Clear()
-        ConversionOutput.Clear()
-        Me.UpdateProgressLabels($"Getting Analyzer Manger for {fileName}", True)
-        Try
-            Dim TaskAnalyzerManager As Task(Of AnalyzerManager) = GetManagerAsync(fileName)
-            While Not TaskAnalyzerManager.IsCompleted
-                If _cancellationTokenSource.IsCancellationRequested Then
-                    Exit Try
-                End If
-                Await Task.Delay(100).ConfigureAwait(True)
-            End While
-            Dim solutionAnalyzerManager As AnalyzerManager = TaskAnalyzerManager.Result
-            LabelProgress.Visible = False
-            ProgressBar1.Visible = False
-
-            Dim prompt As String = "Conversion stopped."
-            If fileName.EndsWith(".sln", StringComparison.OrdinalIgnoreCase) Then
-                mnuFileLastSolution.Enabled = True
-                My.Settings.LastSolution = fileName
-                mnuFileLastSolution.Text = $"Last Solution - {fileName}"
-                My.Settings.Save()
-                Dim totalProjects As Integer = solutionAnalyzerManager.Projects.Count
-                Dim processedProjects As Integer = 0
-                Dim skipProjects As Boolean = My.Settings.StartFolderConvertFromLastFile
-                Dim results As (resultsString As String, projectsToBeAdded As List(Of String)) = ("", New List(Of String))
-                For Each proj As KeyValuePair(Of String, IProjectAnalyzer) In solutionAnalyzerManager.Projects
-                    Dim projectFile As String = proj.Key
-                    If Not projectFile.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase) Then
-                        totalProjects -= 1
-                        Continue For
-                    End If
-                    processedProjects += 1
-
-                    If skipProjects AndAlso My.Settings.LastProject.Length > 0 Then
-                        If projectFile <> My.Settings.LastProject Then
-                            Continue For
-                        Else
-                            skipProjects = False
-                        End If
-                    End If
-                    mnuFileLastProject.Text = $"Last Project - {projectFile}"
-                    mnuFileLastProject.Enabled = True
-                    My.Settings.LastProject = projectFile
-                    My.Settings.Save()
-                    Application.DoEvents()
-                    results = Await ProcessProjectAsync(
-Me, TaskProjectAnalyzer:=proj.Value,
-                        SolutionRoot:=saveSolutionRoot,
-                        processedProjects:=processedProjects,
-                        totalProjects:=totalProjects,
-                        cancelToken:=_cancellationTokenSource).ConfigureAwait(True)
-                    If results.resultsString.Length = 0 Then
-                        If _cancellationTokenSource.Token.IsCancellationRequested Then
-                            prompt = $"Conversion canceled, {processedProjects} of {totalProjects} projects completed successfully."
-                            Exit For
-                        Else
-                            prompt = $"Conversion completed, {totalProjects} projects completed successfully."
-                        End If
-                    Else
-                        prompt = $"Conversion canceled because {results}, {processedProjects} of {totalProjects} projects completed successfully."
-                        Exit For
-                    End If
-                Next
-                ConvertSolutionFile(fileName, saveSolutionRoot, results.projectsToBeAdded)
-                If prompt.Length > 0 Then
-                    MsgBox(prompt,
-                           MsgBoxStyle.OkOnly Or If(prompt.Contains("terminated", StringComparison.OrdinalIgnoreCase), MsgBoxStyle.Critical, MsgBoxStyle.Information) Or MsgBoxStyle.MsgBoxSetForeground,
-                           Title:="Convert C# to Visual Basic")
-                End If
-            Else
-                ' Single project
-                Me.UpdateProgressLabels($"Getting Project Analyzer for {fileName}", True)
-                Dim TaskProjectAnalyzer As Task(Of IProjectAnalyzer) = GetProjectAnalyzerAsync(fileName, solutionAnalyzerManager)
-                While Not TaskProjectAnalyzer.IsCompleted
-                    If _cancellationTokenSource.IsCancellationRequested Then
-                        Exit Sub
-                    End If
-                    Await Task.Delay(100).ConfigureAwait(True)
-                End While
-                Me.UpdateProgressLabels("", False)
-                mnuFileLastProject.Text = $"Last Project - {fileName}"
-                mnuFileLastProject.Enabled = True
-                My.Settings.LastProject = fileName
-                My.Settings.Save()
-                prompt = (Await ProcessProjectAsync(Me, TaskProjectAnalyzer.Result,
-                    saveSolutionRoot,
-                    processedProjects:=1,
-                    totalProjects:=1,
-                    cancelToken:=_cancellationTokenSource).ConfigureAwait(True)).ErrorPrompt
-
-                If prompt.Length = 0 Then
-#Disable Warning CA1308 ' Normalize strings to uppercase
-                    prompt = $"{If(_cancellationTokenSource.Token.IsCancellationRequested, "Conversion canceled", "Conversion completed")}, {FilesConversionProgress.Text.ToLower(CultureInfo.InvariantCulture)} completed successfully."
-#Enable Warning CA1308 ' Normalize strings to uppercase
-                End If
-                MsgBox(prompt,
-                       MsgBoxStyle.OkOnly Or If(prompt.Contains("terminated", StringComparison.OrdinalIgnoreCase), MsgBoxStyle.Critical, MsgBoxStyle.Information) Or MsgBoxStyle.MsgBoxSetForeground,
-                       Title:="Convert C# to Visual Basic")
-
-                Dim projectSavePath As String = DestinationFilePath(fileName, saveSolutionRoot)
-                If Directory.Exists(projectSavePath) AndAlso Not _cancellationTokenSource.IsCancellationRequested Then
-                    Process.Start("explorer.exe", $"/root,{projectSavePath}")
-                End If
-            End If
-        Catch ex As ObjectDisposedException
-        Finally
-            LabelProgress.Visible = False
-            ProgressBar1.Visible = False
-            SetButtonStopAndCursor(Me, ButtonStopConversion, StopButtonVisible:=False)
-        End Try
-    End Sub
 
     Private Sub ResizeRichTextBuffers()
         Dim LineNumberInputWidth As Integer = If(LineNumbersForConversionInput.Visible AndAlso ConversionInput.TextLength > 0, LineNumbersForConversionInput.Width, 0)
@@ -1141,21 +977,6 @@ Me, TaskProjectAnalyzer:=proj.Value,
                           End If
                           Application.DoEvents()
                       End Sub)
-        End If
-    End Sub
-
-    Friend Sub UpdateLastFileMeus()
-        My.Settings.Save()
-        ' show separator...
-        If My.Settings.MRU_Data.Count > 0 Then
-            mnuFileLastFolder.Text = Path.GetDirectoryName(My.Settings.MRU_Data.Last)
-            mnuFileLastFolder.Visible = True
-            mnuFileSep1.Visible = True
-            mnuFileSep2.Visible = True
-        Else
-            mnuFileLastFolder.Visible = False
-            mnuFileSep1.Visible = False
-            mnuFileSep2.Visible = False
         End If
     End Sub
 

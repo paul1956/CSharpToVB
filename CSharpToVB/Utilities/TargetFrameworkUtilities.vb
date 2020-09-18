@@ -2,6 +2,7 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
+Imports System.Runtime.CompilerServices
 Imports CSharpToVBConverter
 Imports Microsoft.Win32
 
@@ -41,6 +42,17 @@ Module TargetFrameworkUtilities
         Return $"{If(CInt(NameSplit(0)) >= 5, "NET", Base) }{NameSplit(0)}{Separator}{Minor}"
     End Function
 
+    <Extension>
+    Friend Sub AddDropDownMenuItem(DropDownItems As ToolStripItemCollection, ItemName As String)
+        DropDownItems.Add(New ToolStripMenuItem With {
+            .AutoSize = True,
+            .CheckOnClick = True,
+            .ImageScaling = ToolStripItemImageScaling.None,
+            .Name = $"{ItemName}ToolStripMenuItem",
+            .Text = ItemName
+        })
+    End Sub
+
     ''' <summary>
     ''' Converts a framework name from Project File format to Compile time variable
     ''' </summary>
@@ -53,7 +65,7 @@ Module TargetFrameworkUtilities
         Return Framework.ToUpperInvariant.Replace(".", "_", StringComparison.OrdinalIgnoreCase)
     End Function
 
-    Public Function GetAllCoreVersions() As List(Of String)
+    Friend Function GetAllCoreVersions() As List(Of String)
         Dim versions As New List(Of String)
         Dim dotnetVersions As String() = RunCommand("Dotnet", "--list-sdks", ShowWindow:=False)
         For Each e As String In dotnetVersions
@@ -66,7 +78,7 @@ Module TargetFrameworkUtilities
         Return versions
     End Function
 
-    Public Function GetAllFrameworkVersions() As List(Of String)
+    Friend Function GetAllFrameworkVersions() As List(Of String)
         Dim Versions As New List(Of String)
         ' Opens the registry key for the .NET Framework entry.
         Using baseKey As RegistryKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32)
@@ -124,7 +136,7 @@ Module TargetFrameworkUtilities
     ''' <param name="Args"></param>
     ''' <param name="ShowWindow"></param>
     ''' <returns>Array of text lines returned by Command</returns>
-    Public Function RunCommand(Command As String, Args As String, Optional ShowWindow As Boolean = True) As String()
+    Friend Function RunCommand(Command As String, Args As String, Optional ShowWindow As Boolean = True) As String()
         Dim oProcess As New Process()
         Dim oStartInfo As New ProcessStartInfo(Command, Args) With {
             .CreateNoWindow = Not ShowWindow,

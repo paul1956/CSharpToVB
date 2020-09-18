@@ -3,6 +3,7 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.IO
+Imports System.Runtime.CompilerServices
 Imports System.Threading
 Imports CSharpToVBConverter
 Imports Microsoft.CodeAnalysis
@@ -13,8 +14,9 @@ Imports VBMsgBox
 
 #End If
 
-Public Module FileUtilities
+Public Module FilePathExtensions
 
+    <Extension>
     Friend Function GetFileCount(DirPath As String, SourceLanguageExtension As String, SkipBinAndObjFolders As Boolean, SkipTestResourceFiles As Boolean, Optional Depth As Integer = 0) As Long
         Dim TotalFilesToProcess As Long = 0L
 
@@ -31,7 +33,7 @@ Public Module FileUtilities
                     SubdirectoryName = "g") Then
                     Continue For
                 End If
-                TotalFilesToProcess += GetFileCount(Subdirectory, SourceLanguageExtension, SkipBinAndObjFolders, SkipTestResourceFiles, Depth + 1)
+                TotalFilesToProcess += Subdirectory.GetFileCount(SourceLanguageExtension, SkipBinAndObjFolders, SkipTestResourceFiles, Depth + 1)
             Next
             For Each File As String In Directory.GetFiles(path:=DirPath, searchPattern:=$"*.{SourceLanguageExtension}")
                 If Not ParseCSharpSource(File, New List(Of String)).
@@ -60,6 +62,7 @@ Public Module FileUtilities
     ''' <param name="DirOrFileToBeTranslated"></param>
     ''' <returns></returns>
     ''' <param name="PromptIfDirExsits"></param>
+    <Extension>
     Friend Function GetSavePath(MyForm As Form1, DirOrFileToBeTranslated As String, PromptIfDirExsits As Boolean) As (SolutionRoot As String, ProjectRelativePath As String)
         Debug.Assert(Directory.GetDirectoryRoot(DirOrFileToBeTranslated) <> DirOrFileToBeTranslated, $"{DirOrFileToBeTranslated} does Not exist")
         Dim sourceRoot As String = DirOrFileToBeTranslated
@@ -119,6 +122,7 @@ Public Module FileUtilities
         Return (solutionRoot, relativePath)
     End Function
 
+    <Extension>
     Public Function GetFileTextFromStream(fileStream As Stream) As String
         Using sw As New StreamReader(fileStream)
             Dim SourceText As String = sw.ReadToEnd()

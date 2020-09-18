@@ -91,13 +91,15 @@ Partial Class Form1
         Me.TSFindSeparator1 = New System.Windows.Forms.ToolStripSeparator()
         Me.TSFindLookInLabel = New System.Windows.Forms.ToolStripLabel()
         Me.TSFindLookInComboBox = New System.Windows.Forms.ToolStripComboBox()
+        Me.TSFindSeparator2 = New System.Windows.Forms.ToolStripSeparator()
         Me.TSFindFindPreviousButton = New System.Windows.Forms.ToolStripButton()
         Me.TSFindFindNextButton = New System.Windows.Forms.ToolStripButton()
+        Me.TSFindSeparator3 = New System.Windows.Forms.ToolStripSeparator()
         Me.TSFindMatchCaseCheckBox = New ToolStripCheckBox()
         Me.TSFindMatchWholeWordCheckBox = New ToolStripCheckBox()
-        Me.TSFindSeparator2 = New System.Windows.Forms.ToolStripSeparator()
+        Me.TSFindSeparator4 = New System.Windows.Forms.ToolStripSeparator()
         Me.TSFindClearHighlightsButton = New System.Windows.Forms.ToolStripButton()
-        Me.TSFindSeparator3 = New System.Windows.Forms.ToolStripSeparator()
+        Me.TSFindSeparator5 = New System.Windows.Forms.ToolStripSeparator()
         Me.SaveFileDialog1 = New System.Windows.Forms.SaveFileDialog()
         Me.ContextMenuStrip1 = New System.Windows.Forms.ContextMenuStrip(Me.components)
         Me.ContextMenuUndo = New System.Windows.Forms.ToolStripMenuItem()
@@ -127,8 +129,6 @@ Partial Class Form1
         Me.LabelProgress = New System.Windows.Forms.Label()
         Me.ToolTipFileList = New System.Windows.Forms.ToolTip(Me.components)
         Me.ToolTipErrorList = New System.Windows.Forms.ToolTip(Me.components)
-        Me.TSFindSeparator4 = New System.Windows.Forms.ToolStripSeparator()
-        Me.TSFindSeparator5 = New System.Windows.Forms.ToolStripSeparator()
         Me.MenuStrip1.SuspendLayout()
         Me.TSFindToolStrip.SuspendLayout()
         Me.ContextMenuStrip1.SuspendLayout()
@@ -592,8 +592,10 @@ Partial Class Form1
         'TSFindFindWhatComboBox
         '
         Me.TSFindFindWhatComboBox.AutoSize = False
+        Me.TSFindFindWhatComboBox.ForeColor = System.Drawing.SystemColors.GrayText
         Me.TSFindFindWhatComboBox.Name = "TSFindFindWhatComboBox"
         Me.TSFindFindWhatComboBox.Size = New System.Drawing.Size(400, 23)
+        Me.TSFindFindWhatComboBox.Text = "Search..."
         '
         'TSFindSeparator1
         '
@@ -603,7 +605,7 @@ Partial Class Form1
         '
         'TSFindLookInLabel
         '
-        Me.TSFindLookInLabel.Margin = New System.Windows.Forms.Padding(0)
+        Me.TSFindLookInLabel.Margin = New System.Windows.Forms.Padding(1, 0, 1, 0)
         Me.TSFindLookInLabel.Name = "TSFindLookInLabel"
         Me.TSFindLookInLabel.Size = New System.Drawing.Size(49, 25)
         Me.TSFindLookInLabel.Text = "Look In:"
@@ -611,8 +613,10 @@ Partial Class Form1
         'TSFindLookInComboBox
         '
         Me.TSFindLookInComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems
-        Me.TSFindLookInComboBox.AutoSize = False
+        Me.TSFindLookInComboBox.AutoSize = True
         Me.TSFindLookInComboBox.Items.AddRange(New Object() {"C# Source", "Visual Basic Output", "Both"})
+        Me.TSFindLookInComboBox.Margin = New System.Windows.Forms.Padding(1, 0, 1, 0)
+        Me.TSFindLookInComboBox.MaxDropDownItems = 3
         Me.TSFindLookInComboBox.Name = "TSFindLookInComboBox"
         Me.TSFindLookInComboBox.Size = New System.Drawing.Size(130, 23)
         '
@@ -626,7 +630,7 @@ Partial Class Form1
         '
         Me.TSFindFindPreviousButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text
         Me.TSFindFindPreviousButton.ImageTransparentColor = System.Drawing.Color.Magenta
-        Me.TSFindFindPreviousButton.Margin = New System.Windows.Forms.Padding(0)
+        Me.TSFindFindPreviousButton.Margin = New System.Windows.Forms.Padding(1, 0, 1, 0)
         Me.TSFindFindPreviousButton.Name = "TSFindFindPreviousButton"
         Me.TSFindFindPreviousButton.Size = New System.Drawing.Size(82, 25)
         Me.TSFindFindPreviousButton.Text = "Find Previous"
@@ -635,7 +639,7 @@ Partial Class Form1
         '
         Me.TSFindFindNextButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text
         Me.TSFindFindNextButton.ImageTransparentColor = System.Drawing.Color.Magenta
-        Me.TSFindFindNextButton.Margin = New System.Windows.Forms.Padding(0)
+        Me.TSFindFindNextButton.Margin = New System.Windows.Forms.Padding(1, 0, 1, 0)
         Me.TSFindFindNextButton.Name = "TSFindFindNextButton"
         Me.TSFindFindNextButton.Size = New System.Drawing.Size(62, 25)
         Me.TSFindFindNextButton.Text = "Find Next"
@@ -649,7 +653,7 @@ Partial Class Form1
         'TSFindMatchCaseCheckBox
         '
         Me.TSFindMatchCaseCheckBox.Checked = False
-        Me.TSFindMatchCaseCheckBox.Margin = New System.Windows.Forms.Padding(0)
+        Me.TSFindMatchCaseCheckBox.Margin = New System.Windows.Forms.Padding(1, 0, 1, 0)
         Me.TSFindMatchCaseCheckBox.Name = "TSFindMatchCaseCheckBox"
         Me.TSFindMatchCaseCheckBox.Size = New System.Drawing.Size(88, 25)
         Me.TSFindMatchCaseCheckBox.Text = "Match Case"
@@ -657,7 +661,7 @@ Partial Class Form1
         'TSFindMatchWholeWordCheckBox
         '
         Me.TSFindMatchWholeWordCheckBox.Checked = False
-        Me.TSFindMatchWholeWordCheckBox.Margin = New System.Windows.Forms.Padding(0)
+        Me.TSFindMatchWholeWordCheckBox.Margin = New System.Windows.Forms.Padding(1, 0, 1, 0)
         Me.TSFindMatchWholeWordCheckBox.Name = "TSFindMatchWholeWordCheckBox"
         Me.TSFindMatchWholeWordCheckBox.Size = New System.Drawing.Size(129, 25)
         Me.TSFindMatchWholeWordCheckBox.Text = "Match Whole Word"
@@ -672,14 +676,14 @@ Partial Class Form1
         '
         Me.TSFindClearHighlightsButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text
         Me.TSFindClearHighlightsButton.ImageTransparentColor = System.Drawing.Color.Magenta
-        Me.TSFindClearHighlightsButton.Margin = New System.Windows.Forms.Padding(0)
+        Me.TSFindClearHighlightsButton.Margin = New System.Windows.Forms.Padding(1, 0, 1, 0)
         Me.TSFindClearHighlightsButton.Name = "TSFindClearHighlightsButton"
         Me.TSFindClearHighlightsButton.Size = New System.Drawing.Size(96, 25)
         Me.TSFindClearHighlightsButton.Text = "Clear Highlights"
         '
         'TSFindSeparator5
         '
-        Me.TSFindSeparator5.Margin = New System.Windows.Forms.Padding(5, 0, 0, 0)
+        Me.TSFindSeparator5.Margin = New System.Windows.Forms.Padding(5, 0, 5, 0)
         Me.TSFindSeparator5.Name = "TSFindSeparator5"
         Me.TSFindSeparator5.Size = New System.Drawing.Size(6, 25)
         '
@@ -788,7 +792,7 @@ Partial Class Form1
         Me.SplitContainer1.Panel2.Controls.Add(Me.ListBoxFileList)
         Me.SplitContainer1.Panel2.Controls.Add(Me.ListBoxErrorList)
         Me.SplitContainer1.Size = New System.Drawing.Size(1923, 566)
-        Me.SplitContainer1.SplitterDistance = 489
+        Me.SplitContainer1.SplitterDistance = 491
         Me.SplitContainer1.SplitterWidth = 2
         Me.SplitContainer1.TabIndex = 22
         '
@@ -798,9 +802,9 @@ Partial Class Form1
         Me.ConversionInput.DetectUrls = False
         Me.ConversionInput.Dock = System.Windows.Forms.DockStyle.Left
         Me.ConversionInput.Font = New System.Drawing.Font("Segoe UI", 11.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point)
-        Me.ConversionInput.Location = New System.Drawing.Point(23, 0)
+        Me.ConversionInput.Location = New System.Drawing.Point(0, 0)
         Me.ConversionInput.Name = "ConversionInput"
-        Me.ConversionInput.Size = New System.Drawing.Size(950, 489)
+        Me.ConversionInput.Size = New System.Drawing.Size(950, 491)
         Me.ConversionInput.TabIndex = 0
         Me.ConversionInput.Text = ""
         Me.ConversionInput.WordWrap = False
@@ -813,7 +817,7 @@ Partial Class Form1
         Me.ConversionOutput.Font = New System.Drawing.Font("Segoe UI", 11.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point)
         Me.ConversionOutput.Location = New System.Drawing.Point(999, 0)
         Me.ConversionOutput.Name = "ConversionOutput"
-        Me.ConversionOutput.Size = New System.Drawing.Size(924, 489)
+        Me.ConversionOutput.Size = New System.Drawing.Size(924, 491)
         Me.ConversionOutput.TabIndex = 1
         Me.ConversionOutput.Text = ""
         Me.ConversionOutput.WordWrap = False

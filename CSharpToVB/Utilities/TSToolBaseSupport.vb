@@ -22,6 +22,9 @@ Public Module TSToolBaseSupport
 
     <Extension>
     Friend Sub DoFind(MainForm As Form1, SearchForward As Boolean)
+        If MainForm.TSFindFindWhatComboBox.Text = "Search..." Then
+            Exit Sub
+        End If
         mnuAddToMRU(My.Settings.TSFindMRU_Data, MainForm.TSFindFindWhatComboBox.Text)
         My.Settings.Save()
         TSFindWhatMRUUpdateUI(MainForm.TSFindFindWhatComboBox)
@@ -89,25 +92,34 @@ Public Module TSToolBaseSupport
         Return True
     End Function
 
-    Friend Function SetSearchControls(MainForm As Form1, Optional InputBuffer As Boolean = False) As Boolean
-        Dim inputBufferInUse As Boolean = MainForm.ConversionInput.Text.Any
-        MainForm.mnuConvertConvertSnippet.Enabled = inputBufferInUse
-        Dim outputBufferInUse As Boolean = MainForm.ConversionOutput.Text.Any
-        Dim EnableFind As Boolean = (inputBufferInUse Or outputBufferInUse) And MainForm.TSFindFindWhatComboBox.Text.Any
-        MainForm.TSFindClearHighlightsButton.Enabled = EnableFind
-        MainForm.TSFindFindNextButton.Enabled = EnableFind
-        MainForm.TSFindFindPreviousButton.Enabled = EnableFind
-        MainForm.TSFindMatchCaseCheckBox.Enabled = EnableFind
-        MainForm.TSFindMatchWholeWordCheckBox.Enabled = EnableFind
-        Dim selectedIndex As Integer = MainForm.TSFindLookInComboBox.SelectedIndex
-        If inputBufferInUse AndAlso outputBufferInUse Then
-            MainForm.TSFindLookInComboBox.DropDownStyle = ComboBoxStyle.DropDown
-            MainForm.TSFindLookInComboBox.SelectedIndex = selectedIndex
-        Else
-            MainForm.TSFindLookInComboBox.DropDownStyle = ComboBoxStyle.Simple
-            MainForm.TSFindLookInComboBox.SelectedIndex = If(inputBufferInUse, 0, If(outputBufferInUse, 1, 0))
-        End If
-        Return If(InputBuffer, inputBufferInUse, outputBufferInUse)
+    <Extension>
+    Friend Function SetSearchControls(MainForm As Form1, Optional ReturnInputInUse As Boolean = False) As Boolean
+        Dim inputBufferInUse As Boolean
+        Dim outputBufferInUse As Boolean
+        With MainForm
+            inputBufferInUse = .ConversionInput.Text.Any
+            .mnuConvertConvertSnippet.Enabled = inputBufferInUse
+            outputBufferInUse = .ConversionOutput.Text.Any
+            Dim EnableFind As Boolean = (inputBufferInUse Or outputBufferInUse) And .TSFindFindWhatComboBox.Text.Any
+            .TSFindClearHighlightsButton.Enabled = EnableFind
+            .TSFindFindNextButton.Enabled = EnableFind
+            .TSFindFindPreviousButton.Enabled = EnableFind
+            .TSFindMatchCaseCheckBox.Enabled = EnableFind
+            .TSFindMatchWholeWordCheckBox.Enabled = EnableFind
+            Dim selectedIndex As Integer = .TSFindLookInComboBox.SelectedIndex
+            If inputBufferInUse AndAlso outputBufferInUse Then
+                .TSFindLookInComboBox.DropDownStyle = ComboBoxStyle.DropDown
+                .TSFindLookInComboBox.SelectedIndex = selectedIndex
+            Else
+                If .TSFindFindWhatComboBox.Items.Count > 0 Then
+                    .TSFindLookInComboBox.DropDownStyle = ComboBoxStyle.Simple
+                    .TSFindLookInComboBox.SelectedIndex = If(inputBufferInUse, 0, If(outputBufferInUse, 1, 0))
+                End If
+            End If
+            .TSFindMatchCaseCheckBox.Enabled = EnableFind
+            .TSFindMatchWholeWordCheckBox.Enabled = EnableFind
+        End With
+        Return If(ReturnInputInUse, inputBufferInUse, outputBufferInUse)
     End Function
 
 End Module

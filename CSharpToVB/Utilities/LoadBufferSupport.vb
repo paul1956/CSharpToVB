@@ -13,7 +13,7 @@ Module LoadBufferSupport
         LocalUseWaitCursor(MainForm, WaitCursorEnable:=True)
         Dim SourceText As String
         Using myFileStream As FileStream = File.OpenRead(Path)
-            SourceText = GetFileTextFromStream(myFileStream)
+            SourceText = myFileStream.GetFileTextFromStream()
         End Using
 
         Dim Lines() As String = SourceText.SplitLines
@@ -33,11 +33,11 @@ Module LoadBufferSupport
         Return Lines.Length
     End Function
 
-    Friend Sub LoadOutputBufferFromStream(Path As String, MainForm As Form1)
+    Friend Sub LoadOutputBufferFromStream(MainForm As Form1, Path As String)
         LocalUseWaitCursor(MainForm, WaitCursorEnable:=True)
         Dim SourceText As String
         Using myFileStream As FileStream = File.OpenRead(Path)
-            SourceText = GetFileTextFromStream(myFileStream)
+            SourceText = myFileStream.GetFileTextFromStream()
         End Using
 
         Dim Lines() As String = SourceText.SplitLines
@@ -51,9 +51,9 @@ Module LoadBufferSupport
 
     Friend Sub OpenSourceFile(MainForm As Form1, Path As String)
         MainForm.mnuConvertConvertSnippet.Enabled = LoadInputBufferFromStream(MainForm, Path) <> 0
-        mnuAddToMRU(My.Settings.MRU_Data, Path)
-        FileMenuMRUUpdateUI(MainForm.mnuFile.DropDownItems, AddressOf MainForm.mnu_MRUList_Click)
-        MainForm.UpdateLastFileMeus()
+        My.Settings.MRU_Data.mnuAddToMRU(Path)
+        MainForm.mnuFile.DropDownItems.FileMenuMRUUpdateUI(AddressOf MainForm.mnu_MRUList_Click)
+        MainForm.UpdateLastFileMenu()
     End Sub
 
 End Module
