@@ -191,6 +191,7 @@ Public Module ConvertProjectFileUtilities
             File.Copy(Path.Combine(New FileInfo(SourceFilePath).Directory.FullName, PartialPathWithFileName), destFileNameWithPath, overwrite:=True)
         Catch ex As Exception
             Stop
+            Throw
         End Try
     End Sub
 

@@ -676,6 +676,7 @@ Partial Public Class Form1
             launchBrowser(webAddress)
         Catch ex As Exception
             Stop
+            Throw
         Finally
             Cursor = Cursors.AppStarting
             'Devices.Mouse.OverrideCursor = Nothing
