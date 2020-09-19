@@ -186,7 +186,7 @@ Public Module ProcessProjectUtilities
             FilesProcessed += 1
             MainForm.ListBoxFileList.Items.Add(New NumberedListItem($"{FilesProcessed.ToString(CultureInfo.InvariantCulture),-5} {currentDocument.FilePath}", $"{targetFileWithPath}{Path.DirectorySeparatorChar}{Path.GetFileNameWithoutExtension(currentDocument.Name)}.vb"))
             MainForm.ListBoxFileList.SelectedIndex = MainForm.ListBoxFileList.Items.Count - 1
-            MainForm.FilesConversionProgress.Text = $"Processed {FilesProcessed:N0} of {TotalFilesToProcess:N0} Files"
+            MainForm.StatusStripConversionFileProgressLabel.Text = $"Processed {FilesProcessed:N0} of {TotalFilesToProcess:N0} Files"
             Application.DoEvents()
             If Not Await ProcessFileAsync(MainForm,
                                           currentDocument.FilePath,
@@ -208,8 +208,8 @@ Public Module ProcessProjectUtilities
         MainForm._cancellationTokenSource = New CancellationTokenSource
         Dim saveSolutionRoot As String = MainForm.GetSavePath(fileName, PromptIfDirExsits:=True).SolutionRoot
         If String.IsNullOrWhiteSpace(saveSolutionRoot) Then
-            MainForm.LabelProgress.Visible = False
-            MainForm.ProgressBar1.Visible = False
+            MainForm.ProjectConversionInitProgressLabel.Visible = False
+            MainForm.ProjectConversionInitProgressBar.Visible = False
             MsgBox($"Can't find {saveSolutionRoot}, exiting solution conversion")
             Exit Sub
         End If
@@ -228,8 +228,8 @@ Public Module ProcessProjectUtilities
                 Await Task.Delay(100).ConfigureAwait(True)
             End While
             Dim solutionAnalyzerManager As AnalyzerManager = TaskAnalyzerManager.Result
-            MainForm.LabelProgress.Visible = False
-            MainForm.ProgressBar1.Visible = False
+            MainForm.ProjectConversionInitProgressLabel.Visible = False
+            MainForm.ProjectConversionInitProgressBar.Visible = False
 
             Dim prompt As String = "Conversion stopped."
             If fileName.EndsWith(".sln", StringComparison.OrdinalIgnoreCase) Then
@@ -309,7 +309,7 @@ Public Module ProcessProjectUtilities
 
                 If prompt.Length = 0 Then
 #Disable Warning CA1308 ' Normalize strings to uppercase
-                    prompt = $"{If(MainForm._cancellationTokenSource.Token.IsCancellationRequested, "Conversion canceled", "Conversion completed")}, {MainForm.FilesConversionProgress.Text.ToLower(CultureInfo.InvariantCulture)} completed successfully."
+                    prompt = $"{If(MainForm._cancellationTokenSource.Token.IsCancellationRequested, "Conversion canceled", "Conversion completed")}, {MainForm.StatusStripConversionFileProgressLabel.Text.ToLower(CultureInfo.InvariantCulture)} completed successfully."
 #Enable Warning CA1308 ' Normalize strings to uppercase
                 End If
                 MsgBox(prompt,
@@ -323,8 +323,8 @@ Public Module ProcessProjectUtilities
             End If
         Catch ex As ObjectDisposedException
         Finally
-            MainForm.LabelProgress.Visible = False
-            MainForm.ProgressBar1.Visible = False
+            MainForm.ProjectConversionInitProgressLabel.Visible = False
+            MainForm.ProjectConversionInitProgressBar.Visible = False
             SetButtonStopAndCursor(MainForm, MainForm.ButtonStopConversion, StopButtonVisible:=False)
         End Try
     End Sub

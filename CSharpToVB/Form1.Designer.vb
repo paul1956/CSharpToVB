@@ -122,11 +122,11 @@ Partial Class Form1
         Me.StatusStripElapasedTimeLabel = New System.Windows.Forms.ToolStripStatusLabel()
         Me.StatusStripCurrentFileName = New System.Windows.Forms.ToolStripStatusLabel()
         Me.StatusStripSpacer = New System.Windows.Forms.ToolStripStatusLabel()
-        Me.ConversionProgressBar = New System.Windows.Forms.ToolStripProgressBar()
-        Me.FilesConversionProgress = New System.Windows.Forms.ToolStripStatusLabel()
+        Me.StatusStripConversionProgressBar = New System.Windows.Forms.ToolStripProgressBar()
+        Me.StatusStripConversionFileProgressLabel = New System.Windows.Forms.ToolStripStatusLabel()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
-        Me.ProgressBar1 = New System.Windows.Forms.ProgressBar()
-        Me.LabelProgress = New System.Windows.Forms.Label()
+        Me.ProjectConversionInitProgressBar = New System.Windows.Forms.ProgressBar()
+        Me.ProjectConversionInitProgressLabel = New System.Windows.Forms.Label()
         Me.ToolTipFileList = New System.Windows.Forms.ToolTip(Me.components)
         Me.ToolTipErrorList = New System.Windows.Forms.ToolTip(Me.components)
         Me.MenuStrip1.SuspendLayout()
@@ -141,7 +141,7 @@ Partial Class Form1
         '
         'MenuStrip1
         '
-        Me.MenuStrip1.BackColor = Color.FromArgb(204, 213, 240)
+        Me.MenuStrip1.BackColor = System.Drawing.Color.FromArgb(CType(CType(204, Byte), Integer), CType(CType(213, Byte), Integer), CType(CType(240, Byte), Integer))
         Me.MenuStrip1.ImageScalingSize = New System.Drawing.Size(36, 36)
         Me.MenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuFile, Me.mnuEdit, Me.mnuCompile, Me.mnuConvert, Me.mnuOptions, Me.mnuView, Me.mnuHelp})
         Me.MenuStrip1.Location = New System.Drawing.Point(0, 0)
@@ -581,7 +581,7 @@ Partial Class Form1
         '
         'TSFindToolStrip
         '
-        Me.TSFindToolStrip.BackColor = Color.FromArgb(204, 213, 240)
+        Me.TSFindToolStrip.BackColor = System.Drawing.Color.FromArgb(CType(CType(204, Byte), Integer), CType(CType(213, Byte), Integer), CType(CType(240, Byte), Integer))
         Me.TSFindToolStrip.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.TSFindFindWhatComboBox, Me.TSFindSeparator1, Me.TSFindLookInLabel, Me.TSFindLookInComboBox, Me.TSFindSeparator2, Me.TSFindFindPreviousButton, Me.TSFindFindNextButton, Me.TSFindSeparator3, Me.TSFindMatchCaseCheckBox, Me.TSFindMatchWholeWordCheckBox, Me.TSFindSeparator4, Me.TSFindClearHighlightsButton, Me.TSFindSeparator5})
         Me.TSFindToolStrip.Location = New System.Drawing.Point(0, 24)
         Me.TSFindToolStrip.Name = "TSFindToolStrip"
@@ -613,12 +613,10 @@ Partial Class Form1
         'TSFindLookInComboBox
         '
         Me.TSFindLookInComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems
-        Me.TSFindLookInComboBox.AutoSize = True
         Me.TSFindLookInComboBox.Items.AddRange(New Object() {"C# Source", "Visual Basic Output", "Both"})
-        Me.TSFindLookInComboBox.Margin = New System.Windows.Forms.Padding(1, 0, 1, 0)
         Me.TSFindLookInComboBox.MaxDropDownItems = 3
         Me.TSFindLookInComboBox.Name = "TSFindLookInComboBox"
-        Me.TSFindLookInComboBox.Size = New System.Drawing.Size(130, 23)
+        Me.TSFindLookInComboBox.Size = New System.Drawing.Size(130, 25)
         '
         'TSFindSeparator2
         '
@@ -765,6 +763,7 @@ Partial Class Form1
         'LabelErrorCount
         '
         Me.LabelErrorCount.AutoSize = True
+        Me.LabelErrorCount.BackColor = System.Drawing.Color.FromArgb(CType(CType(204, Byte), Integer), CType(CType(213, Byte), Integer), CType(CType(240, Byte), Integer))
         Me.LabelErrorCount.Location = New System.Drawing.Point(1463, 4)
         Me.LabelErrorCount.Name = "LabelErrorCount"
         Me.LabelErrorCount.Size = New System.Drawing.Size(110, 15)
@@ -792,7 +791,7 @@ Partial Class Form1
         Me.SplitContainer1.Panel2.Controls.Add(Me.ListBoxFileList)
         Me.SplitContainer1.Panel2.Controls.Add(Me.ListBoxErrorList)
         Me.SplitContainer1.Size = New System.Drawing.Size(1923, 566)
-        Me.SplitContainer1.SplitterDistance = 491
+        Me.SplitContainer1.SplitterDistance = 503
         Me.SplitContainer1.SplitterWidth = 2
         Me.SplitContainer1.TabIndex = 22
         '
@@ -804,7 +803,7 @@ Partial Class Form1
         Me.ConversionInput.Font = New System.Drawing.Font("Segoe UI", 11.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point)
         Me.ConversionInput.Location = New System.Drawing.Point(0, 0)
         Me.ConversionInput.Name = "ConversionInput"
-        Me.ConversionInput.Size = New System.Drawing.Size(950, 491)
+        Me.ConversionInput.Size = New System.Drawing.Size(950, 503)
         Me.ConversionInput.TabIndex = 0
         Me.ConversionInput.Text = ""
         Me.ConversionInput.WordWrap = False
@@ -817,7 +816,7 @@ Partial Class Form1
         Me.ConversionOutput.Font = New System.Drawing.Font("Segoe UI", 11.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point)
         Me.ConversionOutput.Location = New System.Drawing.Point(999, 0)
         Me.ConversionOutput.Name = "ConversionOutput"
-        Me.ConversionOutput.Size = New System.Drawing.Size(924, 491)
+        Me.ConversionOutput.Size = New System.Drawing.Size(924, 503)
         Me.ConversionOutput.TabIndex = 1
         Me.ConversionOutput.Text = ""
         Me.ConversionOutput.WordWrap = False
@@ -829,7 +828,7 @@ Partial Class Form1
         Me.ListBoxFileList.ItemHeight = 15
         Me.ListBoxFileList.Location = New System.Drawing.Point(0, 5)
         Me.ListBoxFileList.Name = "ListBoxFileList"
-        Me.ListBoxFileList.Size = New System.Drawing.Size(973, 109)
+        Me.ListBoxFileList.Size = New System.Drawing.Size(971, 64)
         Me.ListBoxFileList.TabIndex = 0
         '
         'ListBoxErrorList
@@ -840,12 +839,13 @@ Partial Class Form1
         Me.ListBoxErrorList.ItemHeight = 15
         Me.ListBoxErrorList.Location = New System.Drawing.Point(977, 5)
         Me.ListBoxErrorList.Name = "ListBoxErrorList"
-        Me.ListBoxErrorList.Size = New System.Drawing.Size(958, 109)
+        Me.ListBoxErrorList.Size = New System.Drawing.Size(958, 64)
         Me.ListBoxErrorList.TabIndex = 1
         '
         'StatusStrip1
         '
-        Me.StatusStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.StatusStripElapasedTimeLabel, Me.StatusStripCurrentFileName, Me.StatusStripSpacer, Me.ConversionProgressBar, Me.FilesConversionProgress})
+        Me.StatusStrip1.BackColor = System.Drawing.Color.FromArgb(CType(CType(204, Byte), Integer), CType(CType(213, Byte), Integer), CType(CType(240, Byte), Integer))
+        Me.StatusStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.StatusStripElapasedTimeLabel, Me.StatusStripCurrentFileName, Me.StatusStripSpacer, Me.StatusStripConversionProgressBar, Me.StatusStripConversionFileProgressLabel})
         Me.StatusStrip1.Location = New System.Drawing.Point(0, 615)
         Me.StatusStrip1.Name = "StatusStrip1"
         Me.StatusStrip1.Size = New System.Drawing.Size(1923, 22)
@@ -854,63 +854,69 @@ Partial Class Form1
         '
         'StatusStripElapasedTimeLabel
         '
+        Me.StatusStripElapasedTimeLabel.AutoSize = False
+        Me.StatusStripElapasedTimeLabel.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right
         Me.StatusStripElapasedTimeLabel.Name = "StatusStripElapasedTimeLabel"
-        Me.StatusStripElapasedTimeLabel.Size = New System.Drawing.Size(0, 17)
+        Me.StatusStripElapasedTimeLabel.Size = New System.Drawing.Size(150, 17)
         '
         'StatusStripCurrentFileName
         '
-        Me.StatusStripCurrentFileName.BackColor = System.Drawing.SystemColors.Menu
+        Me.StatusStripCurrentFileName.AutoSize = False
+        Me.StatusStripCurrentFileName.BackColor = System.Drawing.Color.FromArgb(CType(CType(204, Byte), Integer), CType(CType(213, Byte), Integer), CType(CType(240, Byte), Integer))
+        Me.StatusStripCurrentFileName.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right
         Me.StatusStripCurrentFileName.Name = "StatusStripCurrentFileName"
-        Me.StatusStripCurrentFileName.Size = New System.Drawing.Size(0, 17)
+        Me.StatusStripCurrentFileName.Size = New System.Drawing.Size(500, 17)
         Me.StatusStripCurrentFileName.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         '
         'StatusStripSpacer
         '
-        Me.StatusStripSpacer.BackColor = System.Drawing.SystemColors.MenuBar
-        Me.StatusStripSpacer.Enabled = False
+        Me.StatusStripSpacer.BackColor = System.Drawing.Color.FromArgb(CType(CType(204, Byte), Integer), CType(CType(213, Byte), Integer), CType(CType(240, Byte), Integer))
+        Me.StatusStripSpacer.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right
         Me.StatusStripSpacer.Name = "StatusStripSpacer"
-        Me.StatusStripSpacer.Size = New System.Drawing.Size(1658, 17)
+        Me.StatusStripSpacer.Size = New System.Drawing.Size(1058, 17)
         Me.StatusStripSpacer.Spring = True
         '
-        'ConversionProgressBar
+        'StatusStripConversionProgressBar
         '
-        Me.ConversionProgressBar.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right
-        Me.ConversionProgressBar.AutoSize = False
-        Me.ConversionProgressBar.ForeColor = System.Drawing.Color.LightCyan
-        Me.ConversionProgressBar.Name = "ConversionProgressBar"
-        Me.ConversionProgressBar.Size = New System.Drawing.Size(257, 16)
-        Me.ConversionProgressBar.Step = 1
-        Me.ConversionProgressBar.Style = System.Windows.Forms.ProgressBarStyle.Continuous
-        Me.ConversionProgressBar.Visible = False
+        Me.StatusStripConversionProgressBar.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right
+        Me.StatusStripConversionProgressBar.AutoSize = False
+        Me.StatusStripConversionProgressBar.BackColor = System.Drawing.Color.FromArgb(CType(CType(204, Byte), Integer), CType(CType(213, Byte), Integer), CType(CType(240, Byte), Integer))
+        Me.StatusStripConversionProgressBar.ForeColor = System.Drawing.Color.FromArgb(CType(CType(52, Byte), Integer), CType(CType(47, Byte), Integer), CType(CType(16, Byte), Integer))
+        Me.StatusStripConversionProgressBar.Name = "StatusStripConversionProgressBar"
+        Me.StatusStripConversionProgressBar.Size = New System.Drawing.Size(200, 16)
+        Me.StatusStripConversionProgressBar.Step = 1
+        Me.StatusStripConversionProgressBar.Style = System.Windows.Forms.ProgressBarStyle.Continuous
+        Me.StatusStripConversionProgressBar.Visible = True
         '
-        'FilesConversionProgress
+        'StatusStripConversionFileProgressLabel
         '
-        Me.FilesConversionProgress.AutoSize = False
-        Me.FilesConversionProgress.BackColor = System.Drawing.SystemColors.Control
-        Me.FilesConversionProgress.Name = "FilesConversionProgress"
-        Me.FilesConversionProgress.Size = New System.Drawing.Size(250, 17)
+        Me.StatusStripConversionFileProgressLabel.AutoSize = False
+        Me.StatusStripConversionFileProgressLabel.BackColor = System.Drawing.Color.FromArgb(CType(CType(204, Byte), Integer), CType(CType(213, Byte), Integer), CType(CType(240, Byte), Integer))
+        Me.StatusStripConversionFileProgressLabel.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Left
+        Me.StatusStripConversionFileProgressLabel.Name = "StatusStripConversionFileProgressLabel"
+        Me.StatusStripConversionFileProgressLabel.Size = New System.Drawing.Size(200, 17)
         '
         'OpenFileDialog1
         '
         Me.OpenFileDialog1.FileName = "OpenFileDialog1"
         '
-        'ProgressBar1
+        'ProjectConversionInitProgressBar
         '
-        Me.ProgressBar1.Location = New System.Drawing.Point(385, 206)
-        Me.ProgressBar1.Name = "ProgressBar1"
-        Me.ProgressBar1.Size = New System.Drawing.Size(100, 23)
-        Me.ProgressBar1.Style = System.Windows.Forms.ProgressBarStyle.Marquee
-        Me.ProgressBar1.TabIndex = 1
+        Me.ProjectConversionInitProgressBar.Location = New System.Drawing.Point(385, 206)
+        Me.ProjectConversionInitProgressBar.Name = "ProjectConversionInitProgressBar"
+        Me.ProjectConversionInitProgressBar.Size = New System.Drawing.Size(100, 23)
+        Me.ProjectConversionInitProgressBar.Style = System.Windows.Forms.ProgressBarStyle.Marquee
+        Me.ProjectConversionInitProgressBar.TabIndex = 1
         '
-        'LabelProgress
+        'ProjectConversionInitProgressLabel
         '
-        Me.LabelProgress.AutoSize = True
-        Me.LabelProgress.Location = New System.Drawing.Point(385, 196)
-        Me.LabelProgress.Name = "LabelProgress"
-        Me.LabelProgress.Size = New System.Drawing.Size(30, 15)
-        Me.LabelProgress.TabIndex = 1
-        Me.LabelProgress.Text = "Step"
-        Me.LabelProgress.Visible = False
+        Me.ProjectConversionInitProgressLabel.AutoSize = True
+        Me.ProjectConversionInitProgressLabel.Location = New System.Drawing.Point(385, 196)
+        Me.ProjectConversionInitProgressLabel.Name = "ProjectConversionInitProgressLabel"
+        Me.ProjectConversionInitProgressLabel.Size = New System.Drawing.Size(30, 15)
+        Me.ProjectConversionInitProgressLabel.TabIndex = 1
+        Me.ProjectConversionInitProgressLabel.Text = "Step"
+        Me.ProjectConversionInitProgressLabel.Visible = False
         '
         'ToolTipFileList
         '
@@ -925,8 +931,8 @@ Partial Class Form1
         Me.AutoScaleDimensions = New System.Drawing.SizeF(7.0!, 15.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(1923, 637)
-        Me.Controls.Add(Me.ProgressBar1)
-        Me.Controls.Add(Me.LabelProgress)
+        Me.Controls.Add(Me.ProjectConversionInitProgressBar)
+        Me.Controls.Add(Me.ProjectConversionInitProgressLabel)
         Me.Controls.Add(Me.LabelErrorCount)
         Me.Controls.Add(Me.ButtonStopConversion)
         Me.Controls.Add(Me.SplitContainer1)
@@ -955,6 +961,7 @@ Partial Class Form1
         Me.PerformLayout()
 
     End Sub
+
     Friend WithEvents MenuStrip1 As MenuStrip
     Friend WithEvents mnuEdit As ToolStripMenuItem
     Friend WithEvents mnuEditCopy As ToolStripMenuItem
@@ -1030,10 +1037,10 @@ Partial Class Form1
     Friend WithEvents StatusStripElapasedTimeLabel As ToolStripStatusLabel
     Friend WithEvents StatusStripSpacer As ToolStripStatusLabel
     Friend WithEvents StatusStripCurrentFileName As ToolStripStatusLabel
-    Friend WithEvents FilesConversionProgress As ToolStripStatusLabel
-    Friend WithEvents ConversionProgressBar As ToolStripProgressBar
-    Friend WithEvents ProgressBar1 As ProgressBar
-    Friend WithEvents LabelProgress As Label
+    Friend WithEvents StatusStripConversionFileProgressLabel As ToolStripStatusLabel
+    Friend WithEvents StatusStripConversionProgressBar As ToolStripProgressBar
+    Friend WithEvents ProjectConversionInitProgressBar As ProgressBar
+    Friend WithEvents ProjectConversionInitProgressLabel As Label
     Friend WithEvents ToolTipFileList As ToolTip
     Friend WithEvents ToolTipErrorList As ToolTip
     Friend WithEvents mnuFileLastProject As ToolStripMenuItem

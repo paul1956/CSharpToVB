@@ -36,13 +36,11 @@ Public Class TextProgressBar
     Public Sub Clear()
         With _progressBar
             .Value = 0
-            .Visible = False
         End With
     End Sub
 
     Public Sub Maximum(Value As Integer)
         With _progressBar
-            .Visible = True
             .Maximum = Value
         End With
     End Sub
@@ -56,17 +54,20 @@ Public Class TextProgressBar
             .Increment(Value)
             Me.pbPrecentage(_progressBar, $"{ .Value:N0} of { .Maximum:N0}")
             Thread.Sleep(1)
-            If .Value >= .Maximum Then
-                .Visible = False
+            If .Value = .Maximum Then
+                .Value = 0
             End If
         End With
     End Sub
 
     Public Sub Update(value As ProgressReport)
         With _progressBar
-            .Visible = value.Maximum = 0 OrElse value.Current < value.Maximum
+            '.Visible = value.Maximum = 0 OrElse value.Current < value.Maximum
             .Maximum = value.Maximum
             .Value = value.Current
+            If .Value = 0 OrElse .Value >= .Maximum Then
+                Exit Sub
+            End If
         End With
 
         Me.pbPrecentage(_progressBar, $"{value.Current:N0} of {value.Maximum:N0}")

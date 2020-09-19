@@ -82,7 +82,7 @@ Public Module ProcessDirectoriesUtilities
                         Return False
                     End If
                     If MainForm IsNot Nothing Then
-                        MainForm.FilesConversionProgress.Text = $"Processed {Stats.FilesProcessed:N0} of {Stats.TotalFilesToProcess:N0} Files"
+                        MainForm.StatusStripConversionFileProgressLabel.Text = $"Processed {Stats.FilesProcessed:N0} of {Stats.TotalFilesToProcess:N0} Files"
                         Application.DoEvents()
                     End If
                 End If

@@ -96,29 +96,32 @@ Public Module TSToolBaseSupport
     Friend Function SetSearchControls(MainForm As Form1, Optional ReturnInputInUse As Boolean = False) As Boolean
         Dim inputBufferInUse As Boolean
         Dim outputBufferInUse As Boolean
-        With MainForm
-            inputBufferInUse = .ConversionInput.Text.Any
-            .mnuConvertConvertSnippet.Enabled = inputBufferInUse
-            outputBufferInUse = .ConversionOutput.Text.Any
-            Dim EnableFind As Boolean = (inputBufferInUse Or outputBufferInUse) And .TSFindFindWhatComboBox.Text.Any
-            .TSFindClearHighlightsButton.Enabled = EnableFind
-            .TSFindFindNextButton.Enabled = EnableFind
-            .TSFindFindPreviousButton.Enabled = EnableFind
-            .TSFindMatchCaseCheckBox.Enabled = EnableFind
-            .TSFindMatchWholeWordCheckBox.Enabled = EnableFind
-            Dim selectedIndex As Integer = .TSFindLookInComboBox.SelectedIndex
+        inputBufferInUse = MainForm.ConversionInput.Text.Any
+        MainForm.mnuConvertConvertSnippet.Enabled = inputBufferInUse
+        outputBufferInUse = MainForm.ConversionOutput.Text.Any
+        Dim EnableFind As Boolean = (inputBufferInUse Or outputBufferInUse) And MainForm.TSFindFindWhatComboBox.Text.Any
+        MainForm.TSFindClearHighlightsButton.Enabled = EnableFind
+            MainForm.TSFindFindNextButton.Enabled = EnableFind
+            MainForm.TSFindFindPreviousButton.Enabled = EnableFind
+            MainForm.TSFindMatchCaseCheckBox.Enabled = EnableFind
+            MainForm.TSFindMatchWholeWordCheckBox.Enabled = EnableFind
+        Dim selectedIndex As Integer = MainForm.TSFindLookInComboBox.SelectedIndex
+        If MainForm.TSFindLookInComboBox.Items.Count > 0 AndAlso MainForm.mnuConvert.Enabled Then
             If inputBufferInUse AndAlso outputBufferInUse Then
-                .TSFindLookInComboBox.DropDownStyle = ComboBoxStyle.DropDown
-                .TSFindLookInComboBox.SelectedIndex = selectedIndex
+                MainForm.TSFindLookInComboBox.DropDownStyle = ComboBoxStyle.DropDown
+                MainForm.TSFindLookInComboBox.SelectedIndex = selectedIndex
+            ElseIf inputBufferInUse Then
+                MainForm.TSFindLookInComboBox.DropDownStyle = ComboBoxStyle.Simple
+            ElseIf outputBufferInUse Then
+                MainForm.TSFindLookInComboBox.DropDownStyle = ComboBoxStyle.Simple
+                MainForm.TSFindLookInComboBox.SelectedIndex = 1
             Else
-                If .TSFindFindWhatComboBox.Items.Count > 0 Then
-                    .TSFindLookInComboBox.DropDownStyle = ComboBoxStyle.Simple
-                    .TSFindLookInComboBox.SelectedIndex = If(inputBufferInUse, 0, If(outputBufferInUse, 1, 0))
-                End If
+                MainForm.TSFindLookInComboBox.DropDownStyle = ComboBoxStyle.Simple
+                MainForm.TSFindLookInComboBox.SelectedIndex = 0
             End If
-            .TSFindMatchCaseCheckBox.Enabled = EnableFind
-            .TSFindMatchWholeWordCheckBox.Enabled = EnableFind
-        End With
+            MainForm.TSFindMatchCaseCheckBox.Enabled = EnableFind
+            MainForm.TSFindMatchWholeWordCheckBox.Enabled = EnableFind
+        End If
         Return If(ReturnInputInUse, inputBufferInUse, outputBufferInUse)
     End Function
 
