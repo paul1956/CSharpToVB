@@ -31,10 +31,6 @@ Namespace CSharpToVBConverter
                 Dim _SyntaxTree As SyntaxTree = _Document.GetSyntaxTreeAsync().Result
 
                 Dim Root As SyntaxNode = _SyntaxTree.GetRootAsync().GetAwaiter.GetResult
-                'Dim NodesAndTokenWithIssues As IEnumerable(Of SyntaxNodeOrToken) = Root.DescendantNodesAndTokensAndSelf().Where(Function(nodeOrToken) nodeOrToken.Language <> LanguageNames.VisualBasic)
-                'If NodesAndTokenWithIssues.Any Then
-                '    Stop
-                'End If
                 Try
                     ConvertedCode = WorkspaceFormat(Workspace, Root, spans:=Nothing, Workspace.Options, _Document.GetTextAsync().GetAwaiter.GetResult)
                     Me.ConvertedTree = DirectCast(Root, VB.VisualBasicSyntaxNode)

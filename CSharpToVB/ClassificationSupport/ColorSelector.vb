@@ -5,7 +5,6 @@
 Imports System.IO
 
 Public Class ColorSelector
-    Private Shared ReadOnly s_fullPath As String = Path.Combine(FileIO.SpecialDirectories.MyDocuments, "ColorDictionary.csv")
 
     Private Shared ReadOnly s_colorMappingDictionary As New Dictionary(Of String, Color)(StringComparer.OrdinalIgnoreCase) From {
          {"class name", Color.FromArgb(0, 128, 128)},
@@ -67,17 +66,14 @@ Public Class ColorSelector
          {"xml literal - text", Color.FromArgb(85, 85, 85)}
      }
 
+    Private Shared ReadOnly s_fullPath As String = Path.Combine(FileIO.SpecialDirectories.MyDocuments, "ColorDictionary.csv")
+
     Public Sub New()
         UpdateColorDictionaryFromFile(s_fullPath)
     End Sub
 
     Public Sub New(filePath As String)
         UpdateColorDictionaryFromFile(filePath)
-    End Sub
-
-    Public Shared Sub SetColor(name As String, value As Color)
-        s_colorMappingDictionary(name) = value
-        WriteColorDictionaryToFile(s_fullPath)
     End Sub
 
     Friend Shared Function GetColorFromName(Name As String) As Color
@@ -96,20 +92,9 @@ Public Class ColorSelector
         Return s_colorMappingDictionary.Keys
     End Function
 
-    Public Shared Sub WriteColorDictionaryToFile()
+    Public Shared Sub SetColor(name As String, value As Color)
+        s_colorMappingDictionary(name) = value
         WriteColorDictionaryToFile(s_fullPath)
-    End Sub
-
-    Public Shared Sub WriteColorDictionaryToFile(FPath As String)
-        Dim FileStream As FileStream = File.OpenWrite(FPath)
-        Dim sw As New StreamWriter(FileStream)
-        sw.WriteLine($"Key,R,G,B")
-        For Each kvp As KeyValuePair(Of String, Color) In s_colorMappingDictionary
-            sw.WriteLine($"{kvp.Key},{kvp.Value.R},{kvp.Value.G},{kvp.Value.B}")
-        Next
-        sw.Flush()
-        sw.Close()
-        FileStream.Close()
     End Sub
 
     Public Shared Sub UpdateColorDictionaryFromFile(FPath As String)
@@ -130,6 +115,22 @@ Public Class ColorSelector
             s_colorMappingDictionary(key) = Color.FromArgb(R, G, B)
         End While
         sr.Close()
+        FileStream.Close()
+    End Sub
+
+    Public Shared Sub WriteColorDictionaryToFile()
+        WriteColorDictionaryToFile(s_fullPath)
+    End Sub
+
+    Public Shared Sub WriteColorDictionaryToFile(FPath As String)
+        Dim FileStream As FileStream = File.OpenWrite(FPath)
+        Dim sw As New StreamWriter(FileStream)
+        sw.WriteLine($"Key,R,G,B")
+        For Each kvp As KeyValuePair(Of String, Color) In s_colorMappingDictionary
+            sw.WriteLine($"{kvp.Key},{kvp.Value.R},{kvp.Value.G},{kvp.Value.B}")
+        Next
+        sw.Flush()
+        sw.Close()
         FileStream.Close()
     End Sub
 
