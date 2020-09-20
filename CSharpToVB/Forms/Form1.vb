@@ -28,7 +28,6 @@ Partial Public Class Form1
     Friend _inColorize As Boolean
     Friend _requestToConvert As ConvertRequest
     Friend _resultOfConversion As ConversionResult
-    Friend _searchBuffer As SearchBuffers = SearchBuffers.CS
 
     Public Sub New()
         Me.InitializeComponent()
@@ -45,6 +44,8 @@ Partial Public Class Form1
             End If
         End Set
     End Property
+
+    Friend Property BufferToSearch As SearchBuffers = SearchBuffers.CS
 
     Private Sub ButtonStop_Click(sender As Object, e As EventArgs) Handles ButtonStopConversion.Click
         ButtonStopConversion.Visible = False
@@ -877,14 +878,14 @@ Partial Public Class Form1
 
     Private Sub TSFindClearHighlightsButton_Click(sender As Object, e As EventArgs) Handles TSFindClearHighlightsButton.Click
         Dim selectionstart As Integer
-        If _searchBuffer.IsFlagSet(SearchBuffers.CS) Then
+        If BufferToSearch.IsFlagSet(SearchBuffers.CS) Then
             selectionstart = ConversionInput.SelectionStart
             ConversionInput.SelectAll()
             ConversionInput.SelectionBackColor = Color.White
             ConversionInput.Select(selectionstart, 0)
             ConversionInput.ScrollToCaret()
         End If
-        If _searchBuffer.IsFlagSet(SearchBuffers.VB) Then
+        If BufferToSearch.IsFlagSet(SearchBuffers.VB) Then
             selectionstart = ConversionOutput.SelectionStart
             ConversionOutput.SelectAll()
             ConversionOutput.SelectionBackColor = Color.White
@@ -929,11 +930,11 @@ Partial Public Class Form1
     Private Sub TSFindLookInComboBox_SelectedIndexChanged(sender As Object, e As EventArgs) Handles TSFindLookInComboBox.SelectedIndexChanged
         Select Case TSFindLookInComboBox.SelectedIndex
             Case 0
-                _searchBuffer = SearchBuffers.CS
+                BufferToSearch = SearchBuffers.CS
             Case 1
-                _searchBuffer = SearchBuffers.VB
+                BufferToSearch = SearchBuffers.VB
             Case 2
-                _searchBuffer = SearchBuffers.Both
+                BufferToSearch = SearchBuffers.Both
         End Select
         Me.SetSearchControls()
     End Sub

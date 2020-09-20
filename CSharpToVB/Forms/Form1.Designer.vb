@@ -54,6 +54,7 @@ Partial Class Form1
         Me.mnuEditCut = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuEditCopy = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuEditPaste = New System.Windows.Forms.ToolStripMenuItem()
+        Me.mnuEditSelectAll = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuCompile = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuConvert = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuConvertConvertFolder = New System.Windows.Forms.ToolStripMenuItem()
@@ -108,6 +109,7 @@ Partial Class Form1
         Me.ContextMenuCut = New System.Windows.Forms.ToolStripMenuItem()
         Me.ContextMenuCopy = New System.Windows.Forms.ToolStripMenuItem()
         Me.ContextMenuPaste = New System.Windows.Forms.ToolStripMenuItem()
+        Me.ContextMenuSelectAll = New System.Windows.Forms.ToolStripMenuItem()
         Me.InputFolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
         Me.ButtonStopConversion = New System.Windows.Forms.Button()
         Me.LabelErrorCount = New System.Windows.Forms.Label()
@@ -129,8 +131,6 @@ Partial Class Form1
         Me.ProjectConversionInitProgressLabel = New System.Windows.Forms.Label()
         Me.ToolTipFileList = New System.Windows.Forms.ToolTip(Me.components)
         Me.ToolTipErrorList = New System.Windows.Forms.ToolTip(Me.components)
-        Me.ContextMenuSelectAll = New System.Windows.Forms.ToolStripMenuItem()
-        Me.mnuEditSelectAll = New System.Windows.Forms.ToolStripMenuItem()
         Me.MenuStrip1.SuspendLayout()
         Me.TSFindToolStrip.SuspendLayout()
         Me.ContextMenuStrip1.SuspendLayout()
@@ -328,6 +328,14 @@ Partial Class Form1
         Me.mnuEditPaste.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.V), System.Windows.Forms.Keys)
         Me.mnuEditPaste.Size = New System.Drawing.Size(164, 22)
         Me.mnuEditPaste.Text = "Paste"
+        '
+        'mnuEditSelectAll
+        '
+        Me.mnuEditSelectAll.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.mnuEditSelectAll.Name = "mnuEditSelectAll"
+        Me.mnuEditSelectAll.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.A), System.Windows.Forms.Keys)
+        Me.mnuEditSelectAll.Size = New System.Drawing.Size(164, 22)
+        Me.mnuEditSelectAll.Text = "Select All"
         '
         'mnuCompile
         '
@@ -692,7 +700,7 @@ Partial Class Form1
         Me.ContextMenuStrip1.ImageScalingSize = New System.Drawing.Size(36, 36)
         Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ContextMenuUndo, Me.ContextMenuRedo, Me.ContextMenuSeparator1, Me.ContextMenuCut, Me.ContextMenuCopy, Me.ContextMenuPaste, Me.ContextMenuSelectAll})
         Me.ContextMenuStrip1.Name = "ContextMenuStrip1"
-        Me.ContextMenuStrip1.Size = New System.Drawing.Size(235, 142)
+        Me.ContextMenuStrip1.Size = New System.Drawing.Size(165, 142)
         '
         'ContextMenuUndo
         '
@@ -700,7 +708,7 @@ Partial Class Form1
         Me.ContextMenuUndo.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
         Me.ContextMenuUndo.Name = "ContextMenuUndo"
         Me.ContextMenuUndo.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.Z), System.Windows.Forms.Keys)
-        Me.ContextMenuUndo.Size = New System.Drawing.Size(234, 22)
+        Me.ContextMenuUndo.Size = New System.Drawing.Size(164, 22)
         Me.ContextMenuUndo.Text = "Undo"
         '
         'ContextMenuRedo
@@ -709,13 +717,13 @@ Partial Class Form1
         Me.ContextMenuRedo.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
         Me.ContextMenuRedo.Name = "ContextMenuRedo"
         Me.ContextMenuRedo.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.Y), System.Windows.Forms.Keys)
-        Me.ContextMenuRedo.Size = New System.Drawing.Size(234, 22)
+        Me.ContextMenuRedo.Size = New System.Drawing.Size(164, 22)
         Me.ContextMenuRedo.Text = "Redo"
         '
         'ContextMenuSeparator1
         '
         Me.ContextMenuSeparator1.Name = "ContextMenuSeparator1"
-        Me.ContextMenuSeparator1.Size = New System.Drawing.Size(231, 6)
+        Me.ContextMenuSeparator1.Size = New System.Drawing.Size(161, 6)
         '
         'ContextMenuCut
         '
@@ -724,7 +732,7 @@ Partial Class Form1
         Me.ContextMenuCut.Name = "ContextMenuCut"
         Me.ContextMenuCut.ShortcutKeyDisplayString = "Ctrl+X"
         Me.ContextMenuCut.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.X), System.Windows.Forms.Keys)
-        Me.ContextMenuCut.Size = New System.Drawing.Size(234, 22)
+        Me.ContextMenuCut.Size = New System.Drawing.Size(164, 22)
         Me.ContextMenuCut.Text = "Cut"
         '
         'ContextMenuCopy
@@ -734,7 +742,7 @@ Partial Class Form1
         Me.ContextMenuCopy.Name = "ContextMenuCopy"
         Me.ContextMenuCopy.ShortcutKeyDisplayString = "Ctrl+C"
         Me.ContextMenuCopy.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.C), System.Windows.Forms.Keys)
-        Me.ContextMenuCopy.Size = New System.Drawing.Size(234, 22)
+        Me.ContextMenuCopy.Size = New System.Drawing.Size(164, 22)
         Me.ContextMenuCopy.Text = "Copy"
         '
         'ContextMenuPaste
@@ -744,8 +752,16 @@ Partial Class Form1
         Me.ContextMenuPaste.Name = "ContextMenuPaste"
         Me.ContextMenuPaste.ShortcutKeyDisplayString = "Ctrl+V"
         Me.ContextMenuPaste.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.V), System.Windows.Forms.Keys)
-        Me.ContextMenuPaste.Size = New System.Drawing.Size(234, 22)
+        Me.ContextMenuPaste.Size = New System.Drawing.Size(164, 22)
         Me.ContextMenuPaste.Text = "Paste"
+        '
+        'ContextMenuSelectAll
+        '
+        Me.ContextMenuSelectAll.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.ContextMenuSelectAll.Name = "ContextMenuSelectAll"
+        Me.ContextMenuSelectAll.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.A), System.Windows.Forms.Keys)
+        Me.ContextMenuSelectAll.Size = New System.Drawing.Size(164, 22)
+        Me.ContextMenuSelectAll.Text = "Select All"
         '
         'InputFolderBrowserDialog1
         '
@@ -793,7 +809,7 @@ Partial Class Form1
         Me.SplitContainer1.Panel2.Controls.Add(Me.ListBoxFileList)
         Me.SplitContainer1.Panel2.Controls.Add(Me.ListBoxErrorList)
         Me.SplitContainer1.Size = New System.Drawing.Size(1923, 566)
-        Me.SplitContainer1.SplitterDistance = 505
+        Me.SplitContainer1.SplitterDistance = 507
         Me.SplitContainer1.SplitterWidth = 2
         Me.SplitContainer1.TabIndex = 22
         '
@@ -805,7 +821,7 @@ Partial Class Form1
         Me.ConversionInput.Font = New System.Drawing.Font("Segoe UI", 11.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point)
         Me.ConversionInput.Location = New System.Drawing.Point(0, 0)
         Me.ConversionInput.Name = "ConversionInput"
-        Me.ConversionInput.Size = New System.Drawing.Size(950, 505)
+        Me.ConversionInput.Size = New System.Drawing.Size(950, 507)
         Me.ConversionInput.TabIndex = 0
         Me.ConversionInput.Text = ""
         Me.ConversionInput.WordWrap = False
@@ -818,7 +834,7 @@ Partial Class Form1
         Me.ConversionOutput.Font = New System.Drawing.Font("Segoe UI", 11.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point)
         Me.ConversionOutput.Location = New System.Drawing.Point(999, 0)
         Me.ConversionOutput.Name = "ConversionOutput"
-        Me.ConversionOutput.Size = New System.Drawing.Size(924, 505)
+        Me.ConversionOutput.Size = New System.Drawing.Size(924, 507)
         Me.ConversionOutput.TabIndex = 1
         Me.ConversionOutput.Text = ""
         Me.ConversionOutput.WordWrap = False
@@ -926,24 +942,6 @@ Partial Class Form1
         'ToolTipErrorList
         '
         Me.ToolTipErrorList.ToolTipIcon = System.Windows.Forms.ToolTipIcon.Info
-        '
-        'ContextMenuSelectAll
-        '
-        Me.ContextMenuSelectAll.Image = CType(resources.GetObject("ContextMenuSelectAll.Image"), System.Drawing.Image)
-        Me.ContextMenuSelectAll.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
-        Me.ContextMenuSelectAll.Name = "ContextMenuSelectAll"
-        Me.ContextMenuSelectAll.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.A), System.Windows.Forms.Keys)
-        Me.ContextMenuSelectAll.Size = New System.Drawing.Size(234, 22)
-        Me.ContextMenuSelectAll.Text = "Select All"
-        '
-        'mnuEditSelectAll
-        '
-        Me.mnuEditSelectAll.Image = CType(resources.GetObject("mnuEditSelectAll.Image"), System.Drawing.Image)
-        Me.mnuEditSelectAll.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
-        Me.mnuEditSelectAll.Name = "mnuEditSelectAll"
-        Me.mnuEditSelectAll.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.A), System.Windows.Forms.Keys)
-        Me.mnuEditSelectAll.Size = New System.Drawing.Size(164, 22)
-        Me.mnuEditSelectAll.Text = "Select All"
         '
         'Form1
         '

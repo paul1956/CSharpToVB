@@ -29,11 +29,11 @@ Public Module TSToolBaseSupport
         My.Settings.Save()
         TSFindWhatMRUUpdateUI(MainForm.TSFindFindWhatComboBox)
         Dim prompt As String = ""
-        If MainForm._searchBuffer.IsFlagSet(SearchBuffers.CS) AndAlso Not FindTextInBuffer(MainForm, MainForm.ConversionInput, SearchForward) Then
+        If MainForm.BufferToSearch.IsFlagSet(SearchBuffers.CS) AndAlso Not FindTextInBuffer(MainForm, MainForm.ConversionInput, SearchForward) Then
             prompt = $"'{MainForm.TSFindFindWhatComboBox.Text}' not found in C# code!"
         End If
 
-        If MainForm._searchBuffer.IsFlagSet(SearchBuffers.VB) AndAlso Not FindTextInBuffer(MainForm, MainForm.ConversionOutput, SearchForward) Then
+        If MainForm.BufferToSearch.IsFlagSet(SearchBuffers.VB) AndAlso Not FindTextInBuffer(MainForm, MainForm.ConversionOutput, SearchForward) Then
             If prompt.Any Then
                 prompt = $"'{MainForm.TSFindFindWhatComboBox.Text}' not found in C# or Visual Basic code!"
             Else
