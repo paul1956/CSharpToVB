@@ -27,7 +27,7 @@ description: "C# to VB Converter"
 - Code Converter
 
 ## Updated
-- 09/14/2020
+- 09/20/2020
 
 ## Description
 This application will convert C# to VB while trying to preserve comments, formatting and as many Directives
@@ -125,14 +125,14 @@ Any changes to CSharpToVB application needs to change the version information in
 +------------------+--------+--------+--------+
 | Module           | Line   | Branch | Method |
 +------------------+--------+--------+--------+
-| VB.CodeConverter | 79.73% | 73.7%  | 90.13% |
+| VB.CodeConverter | 79.71% | 73.68% | 90.13% |
 +------------------+--------+--------+--------+
 
 +---------+--------+--------+--------+
 |         | Line   | Branch | Method |
 +---------+--------+--------+--------+
-| Total   | 79.73% | 73.7%  | 90.13% |
+| Total   | 79.71% | 73.68% | 90.13% |
 +---------+--------+--------+--------+
-| Average | 79.73% | 73.7%  | 90.13% |
+| Average | 79.7%  | 73.68% | 90.13% |
 +---------+--------+--------+--------+
 ```
