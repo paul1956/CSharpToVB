@@ -99,6 +99,13 @@ Partial Public Class Form1
         End If
     End Sub
 
+    Private Sub ContextMenuSelectAll_Click(sender As Object, e As EventArgs) Handles ContextMenuSelectAll.Click
+        Dim sourceControl As RichTextBox = CType(ContextMenuStrip1.SourceControl, RichTextBox)
+        If sourceControl IsNot Nothing Then
+            sourceControl.SelectAll()
+        End If
+    End Sub
+
     Private Sub ContextMenuStrip1_Opening(sender As Object, e As CancelEventArgs) Handles ContextMenuStrip1.Opening
         Dim ContextMenu As ContextMenuStrip = CType(sender, ContextMenuStrip)
 
@@ -537,6 +544,14 @@ Partial Public Class Form1
         Dim sourceControl As RichTextBox = TryCast(CurrentBuffer, RichTextBox)
         If sourceControl IsNot Nothing AndAlso sourceControl.CanRedo Then
             sourceControl.Redo()
+        End If
+
+    End Sub
+
+    Private Sub mnuEditSelectAll_Click(sender As Object, e As EventArgs) Handles mnuEditSelectAll.Click
+        Dim sourceControl As RichTextBox = TryCast(CurrentBuffer, RichTextBox)
+        If sourceControl IsNot Nothing Then
+            sourceControl.SelectAll()
         End If
 
     End Sub
