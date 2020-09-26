@@ -3,6 +3,9 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Runtime.CompilerServices
+Imports System.Text
+
+Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
 Namespace CSharpToVBConverter
 
@@ -36,6 +39,30 @@ Namespace CSharpToVBConverter
                     Replace("true", "True", StringComparison.Ordinal).
                     Replace("  ", " ", StringComparison.Ordinal).
                     Replace("//", " ' ", StringComparison.Ordinal)
+        End Function
+
+        <Extension>
+        Friend Function GetSafeVBName(exprsssionString As String) As String
+            Dim ExpressionBuilder As New StringBuilder
+            For Each e As IndexClass(Of Char) In exprsssionString.
+                                                    Replace(".", "Dot_", StringComparison.Ordinal).
+                                                    Replace(",", "Comma_", StringComparison.Ordinal).
+                                                    Replace("""", "Quote", StringComparison.Ordinal).
+                                                    Replace("[", "OpenBracket_", StringComparison.Ordinal).
+                                                    Replace("]", "CloseBracket", StringComparison.Ordinal).
+                                                    Replace("(", "OpenParen_", StringComparison.Ordinal).
+                                                    Replace(")", "CloseParen", StringComparison.Ordinal).
+                                                    Replace(" ", "_", StringComparison.Ordinal).WithIndex
+                If e.IsFirst AndAlso Not VB.SyntaxFacts.IsIdentifierStartCharacter(e.Value) Then
+                    ExpressionBuilder.Append($"_")
+                End If
+                If VB.SyntaxFacts.IsIdentifierPartCharacter(e.Value) Then
+                    ExpressionBuilder.Append(e.Value)
+                Else
+                    ExpressionBuilder.Append("_"c)
+                End If
+            Next
+            Return ExpressionBuilder.ToString.TrimEnd("_"c)
         End Function
 
         ' String isn't IEnumerable<char> in the current Portable profile.

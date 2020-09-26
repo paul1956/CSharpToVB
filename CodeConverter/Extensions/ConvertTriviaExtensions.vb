@@ -134,7 +134,7 @@ Namespace CSharpToVBConverter
                 Case CS.SyntaxKind.ElseDirectiveTrivia
                     Return Factory.Trivia(Factory.ElseDirectiveTrivia.
                                                         NormalizeWhitespace.
-                                                        WithConvertedTrailingTriviaFrom(DirectCast(StructuredTrivia, CSS.ElseDirectiveTriviaSyntax).ElseKeyword).WithTrailingEOL(RemoveLastLineContinuation:=True))
+                                                        WithConvertedTrailingTriviaFrom(DirectCast(StructuredTrivia, CSS.ElseDirectiveTriviaSyntax).ElseKeyword).WithTrailingEOL)
                 Case CS.SyntaxKind.EndRegionDirectiveTrivia
                     Dim EndRegionDirective As CSS.EndRegionDirectiveTriviaSyntax = DirectCast(StructuredTrivia, CSS.EndRegionDirectiveTriviaSyntax)
                     Return Factory.Trivia(Factory.EndRegionDirectiveTrivia(HashToken, EndKeyword, RegionKeyword).
@@ -151,7 +151,7 @@ Namespace CSharpToVBConverter
                                                 RegionKeyword,
                                                 Factory.StringLiteralToken(NameString, NameString)
                                                                         ).WithConvertedTrailingTriviaFrom(EndOfDirectiveToken)
-                    Return Factory.Trivia(RegionDirectiveTriviaNode.WithTrailingEOL(RemoveLastLineContinuation:=True))
+                    Return Factory.Trivia(RegionDirectiveTriviaNode.WithTrailingEOL)
                 Case CS.SyntaxKind.SingleLineDocumentationCommentTrivia
                     Dim SingleLineDocumentationComment As CSS.DocumentationCommentTriviaSyntax = CType(StructuredTrivia, CSS.DocumentationCommentTriviaSyntax)
                     Dim walker As New XMLVisitor()

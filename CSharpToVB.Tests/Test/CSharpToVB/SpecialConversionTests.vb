@@ -426,38 +426,6 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVBNonConflictingArgumentProperty()
-            TestConversionCSharpToVisualBasic(
-"public class TestClass {
-    public int Value {
-        get { return GetValue(); }
-        set { SetValue(value) }
-    }
-    int GetValue() { return 0; }
-    void SetValue(int value) { }
-}",
-"Public Class TestClass
-
-    Public Property Value As Integer
-        Get
-            Return GetValue()
-        End Get
-
-        Set(Value As Integer)
-            SetValue(value)
-        End Set
-    End Property
-
-    Private Function GetValue() As Integer
-        Return 0
-    End Function
-
-    Private Sub SetValue(value As Integer)
-    End Sub
-End Class")
-        End Sub
-
-        <Fact>
         Public Shared Sub CSharpToVBRaiseEvent()
             TestConversionCSharpToVisualBasic("class TestClass
 {

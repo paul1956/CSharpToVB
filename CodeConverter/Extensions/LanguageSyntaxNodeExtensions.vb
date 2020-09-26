@@ -424,15 +424,15 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         Stop
                 End Select
             Next
-            Return Statement.With(newLeadingTrivia, NewTrailingTrivia).WithTrailingEOL(RemoveLastLineContinuation:=True)
+            Return Statement.With(newLeadingTrivia, NewTrailingTrivia).WithTrailingEOL
         End Function
 
         Friend Sub RestructureNodesAndSeparators(Of T As VB.VisualBasicSyntaxNode)(ByRef _OpenToken As SyntaxToken, ByRef Items As List(Of T), ByRef Separators As List(Of SyntaxToken), ByRef _CloseToken As SyntaxToken)
-            _OpenToken = _OpenToken.WithModifiedTokenTrivia(LeadingToken:=True, AfterEOL:=False)
+            _OpenToken = _OpenToken.WithModifiedTokenTrivia(LeadingToken:=True, AfterEOL:=False, RequireTrailingSpace:=False)
             For index As Integer = 0 To Items.Count - 2
                 Dim NewItem As T = Items(index).AdjustNodeTrivia(SeparatorFollows:=True)
                 Items(index) = NewItem
-                Dim newSeparators As SyntaxToken = Separators(index).WithModifiedTokenTrivia(LeadingToken:=False, AfterEOL:=False)
+                Dim newSeparators As SyntaxToken = Separators(index).WithModifiedTokenTrivia(LeadingToken:=False, AfterEOL:=False, RequireTrailingSpace:=False)
                 Separators(index) = newSeparators
             Next
             Dim LastItemEndsWithEOL As Boolean = False
@@ -441,7 +441,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Items(Items.Count - 1) = NewItem
                 LastItemEndsWithEOL = Items.Last.HasTrailingTrivia AndAlso Items.Last.GetTrailingTrivia.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia)
             End If
-            Dim newCloseToken As SyntaxToken = _CloseToken.WithModifiedTokenTrivia(LeadingToken:=False, LastItemEndsWithEOL)
+            Dim newCloseToken As SyntaxToken = _CloseToken.WithModifiedTokenTrivia(LeadingToken:=False, AfterEOL:=LastItemEndsWithEOL, RequireTrailingSpace:=False)
             _CloseToken = newCloseToken.RemoveExtraEOL
         End Sub
 

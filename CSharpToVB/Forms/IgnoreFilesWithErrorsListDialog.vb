@@ -33,6 +33,7 @@ Public Class IgnoreFilesWithErrorsList
                 Me.UpdateGrid()
             Case dgvIgnoredFilesList.Columns("Load").Index
                 _fileToLoad = My.Settings.IgnoreFileList(e.RowIndex)
+                OK_Button.PerformClick()
             Case Else
                 Exit Sub
         End Select

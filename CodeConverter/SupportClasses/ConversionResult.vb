@@ -36,9 +36,10 @@ Namespace CSharpToVBConverter
                     Me.ConvertedTree = DirectCast(Root, VB.VisualBasicSyntaxNode)
                     Exit Sub
                 Catch ex As Exception
+                    Stop
                 End Try
 
-                Dim tree As SyntaxTree = VB.VisualBasicSyntaxTree.ParseText(Root.ToFullString)
+                Dim tree As SyntaxTree = VB.VisualBasicSyntaxTree.ParseText(Root.NormalizeWhitespaceEx(useDefaultCasing:=True).ToFullString)
                 Dim Root1 As SyntaxNode = tree.GetRootAsync().GetAwaiter.GetResult
                 Try
                     Dim ConvertedCode1 As String = WorkspaceFormat(Workspace, Root1, spans:=Nothing, Workspace.Options, _Document.GetTextAsync().GetAwaiter.GetResult)

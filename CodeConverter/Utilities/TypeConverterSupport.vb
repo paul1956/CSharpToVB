@@ -357,13 +357,31 @@ Namespace CSharpToVBConverter
                     End If
                     Dim Name As String = typeString.Substring(0, length:=IndexOf)
                     typeString = typeString.Substring(IndexOf + 3)
-                    Dim IndexOfLastCloseParen As Integer = typeString.LastIndexOf(")", StringComparison.OrdinalIgnoreCase)
-                    typeString = typeString.Substring(0, IndexOfLastCloseParen)
+                    Dim OpenParenCount As Integer
+                    Dim IndexOfTypeEnd As Integer
+                    OpenParenCount = 1
+                    For IndexOfTypeEnd = 0 To typeString.Length - 1
+                        Select Case typeString.Chars(IndexOfTypeEnd)
+                            Case "("c
+                                OpenParenCount += 1
+                            Case ")"c
+                                OpenParenCount -= 1
+                                If OpenParenCount = 0 Then
+                                    Exit For
+                                End If
+                            Case Else
+                        End Select
+                    Next
+                    Dim PossibleTypes As String = typeString.Substring(0, IndexOfTypeEnd).Trim
+                    If IndexOfTypeEnd < typeString.Length - 2 Then
+                        If typeString.Chars(IndexOfTypeEnd + 1) = "." Then
+                            typeString = typeString.Substring(IndexOfTypeEnd + 2)
+                        End If
+                    End If
                     Dim TypeList As New List(Of VBS.TypeSyntax)
-                    Dim PossibleTypes As String = typeString.Trim
                     While PossibleTypes.Any
                         Dim EndIndex As Integer = 0
-                        Dim OpenParenCount As Integer = 0
+                        OpenParenCount = 0
                         If PossibleTypes.Chars(0) = "(" Then
                             For currentIndex As Integer = 0 To PossibleTypes.Length - 1
                                 Select Case PossibleTypes.Chars(currentIndex)
@@ -421,6 +439,7 @@ Namespace CSharpToVBConverter
                             Next
                         End If
                         Dim argument As String = PossibleTypes.Substring(0, EndIndex)
+
                         TypeList.Add(ConvertToType(argument))
                         If EndIndex + 1 < PossibleTypes.Length Then
                             PossibleTypes = PossibleTypes.Substring(EndIndex + 1).Trim
@@ -431,7 +450,9 @@ Namespace CSharpToVBConverter
                     Dim TypeArguemntList As VBS.TypeArgumentListSyntax = FactoryTypeArgumentList(TypeList)
 
                     Dim genericNameSyntax As VBS.GenericNameSyntax = Factory.GenericName(Name, TypeArguemntList)
+                    If typeString.Any Then
 
+                    End If
                     If isNullable Then
                         Return Factory.NullableType(genericNameSyntax)
                     End If

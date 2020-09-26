@@ -906,11 +906,13 @@ Partial Public Class Form1
     Private Sub TSFindFindWhatComboBox_Click(sender As Object, e As EventArgs) Handles TSFindFindWhatComboBox.Click
         If TSFindFindWhatComboBox.Text = "Search..." Then
             TSFindFindWhatComboBox.Text = ""
+            TSFindFindWhatComboBox.ForeColor = SystemColors.ControlText
         End If
     End Sub
 
     Private Sub TSFindFindWhatComboBox_Leave(sender As Object, e As EventArgs) Handles TSFindFindWhatComboBox.Leave
         If Not TSFindFindWhatComboBox.Text.Any Then
+            TSFindFindWhatComboBox.ForeColor = SystemColors.GrayText
             TSFindFindWhatComboBox.Text = "Search..."
         End If
     End Sub

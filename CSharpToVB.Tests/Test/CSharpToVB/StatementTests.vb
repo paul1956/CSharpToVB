@@ -135,6 +135,7 @@ class TestClass
     End Sub
 
     Private Sub MyHandler(sender As Object, e As EventArgs)
+
     End Sub
 End Class")
         End Sub
@@ -1210,9 +1211,9 @@ End Class")
         Select Case number
             Case 3
                 Console.Write(""section 3"")
-                GoTo _5Dot5
+                GoTo _5Dot_5
             Case 5.5
-_5Dot5:
+_5Dot_5:
                 Console.Write(""section 5"")
         End Select
     End Sub

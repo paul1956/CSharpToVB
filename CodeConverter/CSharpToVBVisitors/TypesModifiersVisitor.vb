@@ -59,6 +59,14 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Return Factory.NewConstraint(NewKeyword).WithConvertedTriviaFrom(node)
             End Function
 
+            Public Overrides Function VisitDefaultConstraint(node As CSS.DefaultConstraintSyntax) As VB.VisualBasicSyntaxNode
+                Dim commentTrivia As SyntaxTriviaList = New SyntaxTriviaList
+                commentTrivia = commentTrivia.Add(VBSpaceTrivia)
+                commentTrivia = commentTrivia.Add(LineContinuation)
+                commentTrivia = commentTrivia.Add(Factory.CommentTrivia(" ' TODO Visual Basic does not support 'Default Constraint'"))
+                Return Factory.TypeConstraint(Factory.ParseTypeName("[default]").WithTrailingTrivia(commentTrivia))
+            End Function
+
             Public Overrides Function VisitNullableType(node As CSS.NullableTypeSyntax) As VB.VisualBasicSyntaxNode
                 Dim TypeSyntax As VB.VisualBasicSyntaxNode = node.ElementType.Accept(Me)
                 If TypeOf TypeSyntax Is VBS.ArrayTypeSyntax Then
@@ -157,9 +165,9 @@ Namespace CSharpToVBConverter.ToVisualBasic
             Public Overrides Function VisitTypeParameterConstraintClause(node As CSS.TypeParameterConstraintClauseSyntax) As VB.VisualBasicSyntaxNode
                 Dim Braces As (OpenBrace As SyntaxToken, CloseBrace As SyntaxToken) = node.GetBraces
                 If node.Constraints.Count = 1 Then
-                    Return Factory.TypeParameterSingleConstraintClause(AsKeyword, DirectCast(node.Constraints(0).Accept(Me), VBS.ConstraintSyntax))
+                    Return Factory.TypeParameterSingleConstraintClause(AsKeyword.WithTrailingTrivia(VBSpaceTrivia), DirectCast(node.Constraints(0).Accept(Me), VBS.ConstraintSyntax))
                 End If
-                Dim Constraints As SeparatedSyntaxList(Of VBS.ConstraintSyntax) = Factory.SeparatedList(node.Constraints.Select(Function(c As CSS.TypeParameterConstraintSyntax) DirectCast(c.Accept(Me), VBS.ConstraintSyntax)))
+                    Dim Constraints As SeparatedSyntaxList(Of VBS.ConstraintSyntax) = Factory.SeparatedList(node.Constraints.Select(Function(c As CSS.TypeParameterConstraintSyntax) DirectCast(c.Accept(Me), VBS.ConstraintSyntax)))
                 Return Factory.TypeParameterMultipleConstraintClause(AsKeyword, OpenBraceToken.WithConvertedTriviaFrom(Braces.OpenBrace), Constraints, CloseBraceToken.WithConvertedTriviaFrom(Braces.CloseBrace))
             End Function
 

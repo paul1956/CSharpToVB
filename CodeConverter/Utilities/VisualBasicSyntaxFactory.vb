@@ -164,6 +164,7 @@ Namespace CSharpToVBConverter
         Public ReadOnly StringKeyword As SyntaxToken = Factory.Token(SyntaxKind.StringKeyword)
         Public ReadOnly StructureKeyword As SyntaxToken = Factory.Token(SyntaxKind.StructureKeyword)
         Public ReadOnly SubKeyword As SyntaxToken = Factory.Token(SyntaxKind.SubKeyword)
+        Public ReadOnly SyncLockKeyword As SyntaxToken = Factory.Token(SyntaxKind.SyncLockKeyword)
         Public ReadOnly ThenKeyword As SyntaxToken = Factory.Token(SyntaxKind.ThenKeyword)
         Public ReadOnly ToKeyword As SyntaxToken = Factory.Token(SyntaxKind.ToKeyword)
         Public ReadOnly TrueKeyword As SyntaxToken = Factory.Token(SyntaxKind.TrueKeyword)
@@ -173,6 +174,7 @@ Namespace CSharpToVBConverter
         Public ReadOnly UIntegerKeyword As SyntaxToken = Factory.Token(SyntaxKind.UIntegerKeyword)
         Public ReadOnly ULongKeyword As SyntaxToken = Factory.Token(SyntaxKind.ULongKeyword)
         Public ReadOnly UShortKeyword As SyntaxToken = Factory.Token(SyntaxKind.UShortKeyword)
+        Public ReadOnly UsingKeyword As SyntaxToken = Factory.Token(SyntaxKind.UsingKeyword)
         Public ReadOnly WhileKeyword As SyntaxToken = Factory.Token(SyntaxKind.WhileKeyword)
         Public ReadOnly WideningKeyword As SyntaxToken = Factory.Token(SyntaxKind.WideningKeyword)
         Public ReadOnly WithKeyword As SyntaxToken = Factory.Token(SyntaxKind.WithKeyword)
@@ -235,7 +237,7 @@ Namespace CSharpToVBConverter
 #End Region
 
         Public ReadOnly CompilerServices As String = "System.Runtime.CompilerServices"
-        Public ReadOnly DimModifier As SyntaxTokenList = Factory.TokenList(DimKeyword)
+        Public ReadOnly DimModifier As SyntaxTokenList = Factory.TokenList(DimKeyword.WithTrailingTrivia(VBSpaceTrivia))
         Public ReadOnly InteropServices As String = "System.Runtime.InteropServices"
         Public ReadOnly ExtensionAttribute As AttributeSyntax = Factory.Attribute(Nothing, Factory.ParseTypeName("Extension"), Factory.ArgumentList())
         Public ReadOnly ImportComilierServices As ImportsStatementSyntax = Factory.ImportsStatement(Factory.SingletonSeparatedList(Of ImportsClauseSyntax)(Factory.SimpleImportsClause(Factory.IdentifierName(CompilerServices)))).WithAppendedEOL
@@ -244,22 +246,30 @@ Namespace CSharpToVBConverter
         Public ReadOnly RuntimeInteropServicesOut As TypeSyntax = Factory.ParseTypeName("Out")
         Public ReadOnly ValueModifiedIdentifier As ModifiedIdentifierSyntax = Factory.ModifiedIdentifier("Value")
 
-        Friend Function FactoryDimStatement(name As String, asClause As AsClauseSyntax, initializer As EqualsValueSyntax) As LocalDeclarationStatementSyntax
-            Return FactoryDimStatement(Factory.Identifier(name), asClause, initializer)
+        Friend Function FactoryDimStatement(Declarator As VariableDeclaratorSyntax) As LocalDeclarationStatementSyntax
+            Dim declarators As SeparatedSyntaxList(Of VariableDeclaratorSyntax) = Factory.SingletonSeparatedList(Declarator)
+            Return FactoryDimStatement(declarators)
         End Function
 
-        Friend Function FactoryDimStatement(name As SyntaxToken, asClause As AsClauseSyntax, initializer As EqualsValueSyntax) As LocalDeclarationStatementSyntax
-            Dim modifiedIdentifier As ModifiedIdentifierSyntax = Factory.ModifiedIdentifier(name).WithTrailingTrivia(VBSpaceTrivia)
+        Friend Function FactoryDimStatement(Declarators As SeparatedSyntaxList(Of VariableDeclaratorSyntax)) As LocalDeclarationStatementSyntax
+            Return Factory.LocalDeclarationStatement(DimModifier, Declarators).WithTrailingEOL
+        End Function
+
+        Friend Function FactoryDimStatement(Name As String, asClause As AsClauseSyntax, initializer As EqualsValueSyntax) As LocalDeclarationStatementSyntax
+            Return FactoryDimStatement(Factory.Identifier(Name), asClause, initializer)
+        End Function
+
+        Friend Function FactoryDimStatement(Name As SyntaxToken, asClause As AsClauseSyntax, initializer As EqualsValueSyntax) As LocalDeclarationStatementSyntax
+            Dim modifiedIdentifier As ModifiedIdentifierSyntax = Factory.ModifiedIdentifier(Name).WithTrailingTrivia(VBSpaceTrivia)
             Dim names As SeparatedSyntaxList(Of ModifiedIdentifierSyntax) = Factory.SingletonSeparatedList(modifiedIdentifier)
             Dim declarator As VariableDeclaratorSyntax = Factory.VariableDeclarator(names, asClause, initializer)
-            Dim declarators As SeparatedSyntaxList(Of VariableDeclaratorSyntax) = Factory.SingletonSeparatedList(declarator)
-            Return Factory.LocalDeclarationStatement(DimModifier, declarators)
+            Return FactoryDimStatement(declarator)
         End Function
 
         Friend Function FactoryEndBlockStatement(EndBlockKind As SyntaxKind, BlockKeyword As SyntaxToken, finaltrivia As SyntaxTriviaList) As EndBlockStatementSyntax
-            Return Factory.EndBlockStatement(EndBlockKind, EndKeyword, BlockKeyword) _
-                          .WithTrailingEOL(RemoveLastLineContinuation:=True) _
-                          .WithAppendedTrailingTrivia(finaltrivia)
+            Return Factory.EndBlockStatement(EndBlockKind, EndKeyword.WithTrailingTrivia(VBSpaceTrivia), BlockKeyword).
+                                                              WithAppendedTrailingTrivia(finaltrivia).
+                                                              WithTrailingEOL
         End Function
 
         Friend Function FactoryTypeArgumentList(DictionaryTypeElement As List(Of TypeSyntax)) As TypeArgumentListSyntax

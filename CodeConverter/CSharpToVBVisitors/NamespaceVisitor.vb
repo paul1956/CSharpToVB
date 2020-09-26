@@ -121,10 +121,10 @@ End Function
                         End If
                 End Select
                 If [implements].Any Then
-                    [implements]([implements].Count - 1) = [implements].Last.WithTrailingEOL(RemoveLastLineContinuation:=True)
+                    [implements]([implements].Count - 1) = [implements].Last.WithTrailingEOL
                 End If
                 If [inherits].Any Then
-                    [inherits]([inherits].Count - 1) = [inherits].Last.WithTrailingEOL(RemoveLastLineContinuation:=True)
+                    [inherits]([inherits].Count - 1) = [inherits].Last.WithTrailingEOL
                 End If
             End Sub
 
@@ -175,7 +175,7 @@ End Function
                         Statement.IsKind(VB.SyntaxKind.ModuleBlock) OrElse
                         Statement.IsKind(VB.SyntaxKind.StructureBlock) OrElse
                         Statement.IsKind(VB.SyntaxKind.SubStatement) Then
-                        members.Add(Statement.WithTrailingEOL(RemoveLastLineContinuation:=True))
+                        members.Add(Statement.WithTrailingEOL)
                     ElseIf Statement.IsKind(VB.SyntaxKind.FunctionStatement) OrElse
                         Statement.IsKind(VB.SyntaxKind.SubBlock) Then
                         Dim modifiers As List(Of SyntaxToken)
@@ -193,16 +193,16 @@ End Function
                         If modifiers.Contains(VB.SyntaxKind.SharedKeyword) Then
                             staticMethodCount += 1
                         End If
-                        members.Add(Statement.WithTrailingEOL(RemoveLastLineContinuation:=True))
+                        members.Add(Statement.WithTrailingEOL)
                     ElseIf Statement.IsKind(VB.SyntaxKind.PropertyBlock) Then
                         If TypeOf m Is CSS.PropertyDeclarationSyntax Then
                             If CType(m, CSS.PropertyDeclarationSyntax).ExpressionBody Is Nothing Then
-                                members.AddRange(ReplaceOneStatementWithMarkedStatements(m, Statement.WithTrailingEOL(RemoveLastLineContinuation:=True)))
+                                members.AddRange(ReplaceOneStatementWithMarkedStatements(m, Statement.WithTrailingEOL))
                             Else
-                                members.AddRange(ReplaceOneStatementWithMarkedStatements(CType(m, CSS.PropertyDeclarationSyntax).ExpressionBody, Statement.WithTrailingEOL(RemoveLastLineContinuation:=True)))
+                                members.AddRange(ReplaceOneStatementWithMarkedStatements(CType(m, CSS.PropertyDeclarationSyntax).ExpressionBody, Statement.WithTrailingEOL))
                             End If
                         Else
-                            members.AddRange(ReplaceOneStatementWithMarkedStatements(m, Statement.WithTrailingEOL(RemoveLastLineContinuation:=True)))
+                            members.AddRange(ReplaceOneStatementWithMarkedStatements(m, Statement.WithTrailingEOL))
                         End If
 
                         ' Cases below are handled in-line
@@ -213,9 +213,9 @@ End Function
                         Statement.IsKind(VB.SyntaxKind.EventStatement) OrElse
                         Statement.IsKind(VB.SyntaxKind.OperatorBlock) OrElse
                         Statement.IsKind(VB.SyntaxKind.PropertyStatement) Then
-                        members.Add(Statement.WithConvertedTriviaFrom(m).WithTrailingEOL(RemoveLastLineContinuation:=True))
+                        members.Add(Statement.WithConvertedTriviaFrom(m).WithTrailingEOL)
                     Else
-                        members.Add(Statement.WithConvertedTriviaFrom(m).WithTrailingEOL(RemoveLastLineContinuation:=True))
+                        members.Add(Statement.WithConvertedTriviaFrom(m).WithTrailingEOL)
                     End If
                     If e.IsFirst Then
                         If members.Any Then
@@ -251,7 +251,7 @@ End Function
                                                                             id,
                                                                             typeParameterList
                                                                             ).WithPrependedLeadingTrivia(PrependedTrivia).
-                                                                            RestructureAttributesAndModifiers(ListOfAttributes.Any, ModuleModifiers.Any), VBS.ModuleStatementSyntax).WithTrailingEOL(RemoveLastLineContinuation:=True)
+                                                                            RestructureAttributesAndModifiers(ListOfAttributes.Any, ModuleModifiers.Any), VBS.ModuleStatementSyntax).WithTrailingEOL
 
                     ModuleStatement = DirectCast(PrependStatementWithMarkedStatementTrivia(node, ModuleStatement), VBS.ModuleStatementSyntax)
                     Dim EndModule As VBS.EndBlockStatementSyntax = FactoryEndBlockStatement(VB.SyntaxKind.EndModuleStatement, ModuleKeyword, CollectConvertedTokenTrivia(node.CloseBraceToken, GetLeading:=True, GetTrailing:=True))
@@ -302,7 +302,7 @@ End Function
                                                                             RestructureAttributesAndModifiers(ListOfAttributes.Any, ClassModifiers.Any), VBS.ClassStatementSyntax)
                     ClassStatement = DirectCast(PrependStatementWithMarkedStatementTrivia(node, ClassStatement), VBS.ClassStatementSyntax)
                     If [inherits].Count = 0 AndAlso [implements].Count = 0 Then
-                        ClassStatement = ClassStatement.WithTrailingEOL(RemoveLastLineContinuation:=True)
+                        ClassStatement = ClassStatement.WithTrailingEOL
                     Else
                         If ClassStatement.GetTrailingTrivia.ContainsCommentOrDirectiveTrivia Then
                             Dim initialTriviaList As SyntaxTriviaList = ClassStatement.GetTrailingTrivia
@@ -469,7 +469,7 @@ End Function
                                                                                        RestructureAttributesAndModifiers(ListOfAttributes.Any, Modifiers.Any), VBS.EnumStatementSyntax)
 
                 Dim EndBlockStatement As VBS.EndBlockStatementSyntax = FactoryEndBlockStatement(VB.SyntaxKind.EndEnumStatement, EnumKeyword, CollectConvertedTokenTrivia(node.CloseBraceToken, GetLeading:=True, GetTrailing:=True))
-                Dim EnumBlock As VBS.EnumBlockSyntax = Factory.EnumBlock(EnumStatement.WithTrailingEOL(RemoveLastLineContinuation:=True),
+                Dim EnumBlock As VBS.EnumBlockSyntax = Factory.EnumBlock(EnumStatement.WithTrailingEOL,
                                                                            Factory.List(members),
                                                                            EndBlockStatement
                                                                            )
@@ -525,7 +525,7 @@ End Function
                                                                     Identifier,
                                                                     TypeParameterList).RestructureAttributesAndModifiers(ListOfAttributes.Any, Modifiers.Any),
                                                                             VBS.InterfaceStatementSyntax
-                                                                            ).WithTrailingEOL(RemoveLastLineContinuation:=True)
+                                                                            ).WithTrailingEOL
                 Dim [inherits] As List(Of VBS.InheritsStatementSyntax) = New List(Of VBS.InheritsStatementSyntax)()
                 Dim [implements] As List(Of VBS.ImplementsStatementSyntax) = New List(Of VBS.ImplementsStatementSyntax)()
                 Me.ConvertBaseList(node, [inherits], [implements])
@@ -576,9 +576,9 @@ End Function
                     End If
                 Next
 
-                Dim NamespaceStatement As VBS.NamespaceStatementSyntax = Factory.NamespaceStatement(NamespaceKeyword, DirectCast(node.Name.Accept(Me), VBS.NameSyntax)).WithTrailingEOL(RemoveLastLineContinuation:=True)
+                Dim NamespaceStatement As VBS.NamespaceStatementSyntax = Factory.NamespaceStatement(NamespaceKeyword, DirectCast(node.Name.Accept(Me), VBS.NameSyntax)).WithTrailingEOL
                 Dim members1 As SyntaxList(Of VBS.StatementSyntax) = Factory.List(members)
-                Dim namespaceBlock As VBS.NamespaceBlockSyntax = Factory.NamespaceBlock(NamespaceStatement, members1, Factory.EndNamespaceStatement) _
+                Dim namespaceBlock As VBS.NamespaceBlockSyntax = Factory.NamespaceBlock(NamespaceStatement, members1, Factory.EndNamespaceStatement(EndKeyword.WithTrailingTrivia(VBSpaceTrivia), NamespaceKeyword)) _
                                                                         .WithConvertedLeadingTriviaFrom(node.NamespaceKeyword) _
                                                                         .WithUniqueLeadingTrivia(VBHeaderLeadingTrivia) _
                                                                         .WithTrailingTrivia(node.GetTrailingTrivia.ConvertTriviaList)
@@ -619,14 +619,14 @@ End Function
                                                                             StructureKeyword.WithConvertedTriviaFrom(node.Keyword),
                                                                             GenerateSafeVBToken(node.Identifier, node, _mSemanticModel),
                                                                             TypeParameterList
-                                                                            ).RestructureAttributesAndModifiers(ListOfAttributes.Any, Modifiers.Any), VBS.StructureStatementSyntax).WithTrailingEOL(RemoveLastLineContinuation:=True)
+                                                                            ).RestructureAttributesAndModifiers(ListOfAttributes.Any, Modifiers.Any), VBS.StructureStatementSyntax).WithTrailingEOL
 
                 Dim StructureBlock As VBS.StructureBlockSyntax = Factory.StructureBlock(
                                                     StructureStatement,
                                                     Factory.List([inherits]),
                                                     Factory.List([implements]),
                                                     Factory.List(Members),
-                                                    Factory.EndStructureStatement.WithConvertedTriviaFrom(node.CloseBraceToken)
+                                                    Factory.EndStructureStatement(EndKeyword.WithTrailingTrivia(VBSpaceTrivia), StructureKeyword).WithConvertedTriviaFrom(node.CloseBraceToken)
                                                     )
                 Dim ErrorModifiers As New List(Of String)
                 For Each t As SyntaxToken In node.Modifiers

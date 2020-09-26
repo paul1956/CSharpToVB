@@ -24,7 +24,7 @@ Namespace CSharpToVBConverter
         ''' <param name="InitialTriviaList"></param>
         ''' <param name="TriviaListToMerge"></param>
         ''' <returns></returns>
-        Private Function AdjustMergedStatementTrailingTrivia(InitialTriviaList As SyntaxTriviaList, TriviaListToMerge As SyntaxTriviaList) As SyntaxTriviaList
+        Friend Function AdjustMergedStatementTrailingTrivia(InitialTriviaList As SyntaxTriviaList, TriviaListToMerge As SyntaxTriviaList) As SyntaxTriviaList
             Dim inputTrivia As SyntaxTriviaList = InitialTriviaList
             inputTrivia = inputTrivia.AddRange(TriviaListToMerge)
             Dim FoundEOL As Boolean = False
@@ -330,7 +330,7 @@ Namespace CSharpToVBConverter
 
             Dim trailingtrivia As SyntaxTriviaList = node.GetTrailingTrivia().Concat(trivia).ToSyntaxTriviaList
             If trailingtrivia.ContainsEOLTrivia Then
-                Return node.WithTrailingTrivia(trailingtrivia).WithTrailingEOL(RemoveLastLineContinuation:=True)
+                Return node.WithTrailingTrivia(trailingtrivia).WithTrailingEOL
             End If
             Return node.WithTrailingTrivia(trailingtrivia)
         End Function
@@ -345,7 +345,7 @@ Namespace CSharpToVBConverter
                 NewTrailingTrivia = NewTrailingTrivia.AddRange(Token.TrailingTrivia.ConvertTriviaList())
             End If
 
-            Return node.WithAppendedTrailingTrivia(NewTrailingTrivia).WithTrailingEOL(RemoveLastLineContinuation:=True)
+            Return node.WithAppendedTrailingTrivia(NewTrailingTrivia).WithTrailingEOL
         End Function
 
         ''' <summary>
@@ -446,7 +446,7 @@ Namespace CSharpToVBConverter
         ''' <returns></returns>
         ''' <param name="RemoveLastLineContinuation"></param>
         <Extension>
-        Friend Function WithTrailingEOL(Of T As SyntaxNode)(node As T, RemoveLastLineContinuation As Boolean) As T
+        Friend Function WithTrailingEOL(Of T As SyntaxNode)(node As T, Optional RemoveLastLineContinuation As Boolean = True) As T
             If node Is Nothing Then
                 Return Nothing
             End If
@@ -531,9 +531,13 @@ Namespace CSharpToVBConverter
                                     Case VB.SyntaxKind.CommentTrivia
                                         newTrailingTrivia = newTrailingTrivia.Add(e.Value)
                                     Case VB.SyntaxKind.None
-                                        newTrailingTrivia = newTrailingTrivia.Add(e.Value)
+                                        ' Skip don't end with whitespace
                                     Case VB.SyntaxKind.RegionDirectiveTrivia,
-                                         VB.SyntaxKind.EndRegionDirectiveTrivia
+                                         VB.SyntaxKind.EndRegionDirectiveTrivia,
+                                         VB.SyntaxKind.ElseIfDirectiveTrivia,
+                                         VB.SyntaxKind.ElseDirectiveTrivia,
+                                         VB.SyntaxKind.EndIfDirectiveTrivia,
+                                         VB.SyntaxKind.IfDirectiveTrivia
                                         newTrailingTrivia = newTrailingTrivia.Add(e.Value)
                                     Case Else
                                         Stop
@@ -622,7 +626,7 @@ Namespace CSharpToVBConverter
             End If
             Dim trailingTrivia As SyntaxTriviaList = otherNode.GetTrailingTrivia.ConvertTriviaList()
             If trailingTrivia.ContainsEOLTrivia Then
-                Return node.WithTrailingTrivia(trailingTrivia).WithTrailingEOL(RemoveLastLineContinuation:=True)
+                Return node.WithTrailingTrivia(trailingTrivia).WithTrailingEOL
             End If
             Return node.WithTrailingTrivia(trailingTrivia)
         End Function
@@ -640,7 +644,7 @@ Namespace CSharpToVBConverter
             End If
             Dim trailingTrivia As SyntaxTriviaList = otherToken.TrailingTrivia.ConvertTriviaList()
             If trailingTrivia.ContainsEOLTrivia Then
-                Return node.WithTrailingTrivia(trailingTrivia).WithTrailingEOL(RemoveLastLineContinuation:=True)
+                Return node.WithTrailingTrivia(trailingTrivia).WithTrailingEOL
             End If
             Return node.WithTrailingTrivia(trailingTrivia)
         End Function
@@ -679,7 +683,7 @@ Namespace CSharpToVBConverter
             End If
             Dim trailingTrivia As SyntaxTriviaList = otherNode.GetTrailingTrivia.ConvertTriviaList().ToSyntaxTriviaList
             If trailingTrivia.ContainsEOLTrivia Then
-                Return node.WithTrailingTrivia(trailingTrivia).WithTrailingEOL(RemoveLastLineContinuation:=True)
+                Return node.WithTrailingTrivia(trailingTrivia).WithTrailingEOL
             End If
             Return node.WithTrailingTrivia(trailingTrivia)
         End Function
@@ -691,7 +695,7 @@ Namespace CSharpToVBConverter
             End If
             Dim Trailingtrivia As SyntaxTriviaList = otherToken.TrailingTrivia.ConvertTriviaList()
             If Trailingtrivia.ContainsEOLTrivia Then
-                Return node.WithTrailingTrivia(Trailingtrivia).WithTrailingEOL(RemoveLastLineContinuation:=True)
+                Return node.WithTrailingTrivia(Trailingtrivia).WithTrailingEOL
             End If
             Return node.WithTrailingTrivia(Trailingtrivia)
         End Function

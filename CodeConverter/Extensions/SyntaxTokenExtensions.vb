@@ -345,7 +345,7 @@ Namespace CSharpToVBConverter
                 If Not s_usedIdentifiers.ContainsKey(BaseVBIdent) Then
                     s_usedIdentifiers.Add(BaseVBIdent, New SymbolTableEntry(BaseVBIdent, IsType:=True, isField))
                 End If
-                Return Factory.Identifier(s_usedIdentifiers(BaseVBIdent).Name).WithConvertedTriviaFrom(csIdentifier)
+                Return Factory.Identifier(BaseVBIdent).WithConvertedTriviaFrom(csIdentifier)
             End If
 
             Return GetSymbolTableEntry(csIdentifier, BaseVBIdent, Node, Model, IsQualifiedNameOrTypeName, isField).IdentToken
@@ -538,8 +538,9 @@ Namespace CSharpToVBConverter
         ''' <param name="LeadingToken"></param>
         ''' <param name="AfterEOL"></param>
         ''' <returns></returns>
+        ''' <param name="RequireTrailingSpace"></param>
         <Extension>
-        Friend Function WithModifiedTokenTrivia(Token As SyntaxToken, LeadingToken As Boolean, AfterEOL As Boolean) As SyntaxToken
+        Friend Function WithModifiedTokenTrivia(Token As SyntaxToken, LeadingToken As Boolean, AfterEOL As Boolean, RequireTrailingSpace As Boolean) As SyntaxToken
             Dim afterWhiteSpace As Boolean = False
             Dim afterLineContinuation As Boolean = LeadingToken
             Dim initialTriviaList As SyntaxTriviaList
@@ -710,6 +711,9 @@ Namespace CSharpToVBConverter
                 Next
             Else
                 finalTrailingTrivia = finalTrailingTrivia.AddRange(Token.TrailingTrivia)
+            End If
+            If RequireTrailingSpace AndAlso Not finalTrailingTrivia.FirstOrDefault.IsWhitespaceOrEndOfLine Then
+                finalTrailingTrivia = finalTrailingTrivia.Insert(0, VBSpaceTrivia)
             End If
             Return Token.With(finalLeadingTrivia, finalTrailingTrivia)
 

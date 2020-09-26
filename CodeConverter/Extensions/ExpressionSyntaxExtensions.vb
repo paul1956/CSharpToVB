@@ -264,14 +264,14 @@ Namespace CSharpToVBConverter
                         TypeOf ExpressionBody Is VBS.AddRemoveHandlerStatementSyntax OrElse
                         TypeOf ExpressionBody Is VBS.RaiseEventStatementSyntax OrElse
                         TypeOf ExpressionBody Is VBS.ThrowStatementSyntax Then
-                Statement = DirectCast(ExpressionBody, VBS.StatementSyntax).WithTrailingEOL(RemoveLastLineContinuation:=True)
+                Statement = DirectCast(ExpressionBody, VBS.StatementSyntax).WithTrailingEOL
             ElseIf ArrowExpressionClause.Parent.IsKind(CS.SyntaxKind.SetAccessorDeclaration) Then
                 Statement = Factory.ExpressionStatement(CType(ExpressionBody, VBS.ExpressionSyntax))
             Else
                 Statement = Factory.ReturnStatement(DirectCast(ExpressionBody.WithLeadingTrivia(VBSpaceTrivia), VBS.ExpressionSyntax)) _
                                         .WithLeadingTrivia(ExpressionBody.GetLeadingTrivia)
             End If
-            Return ReplaceOneStatementWithMarkedStatements(ArrowExpressionClause, Statement.WithTrailingEOL(RemoveLastLineContinuation:=True))
+            Return ReplaceOneStatementWithMarkedStatements(ArrowExpressionClause, Statement.WithTrailingEOL)
         End Function
 
         <Extension>

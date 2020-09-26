@@ -313,6 +313,10 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Return VB.SyntaxKind.IsExpression
                 Case CS.SyntaxKind.AddressOfExpression
                     Return VB.SyntaxKind.AddressOfExpression
+                Case CS.SyntaxKind.OrPattern
+                    Return VB.SyntaxKind.OrExpression
+                Case CS.SyntaxKind.AndPattern
+                    Return VB.SyntaxKind.AndExpression
 ' Remainder of list are so caller don't crash but are not directly supported by VB
                 Case CS.SyntaxKind.PointerIndirectionExpression
                     Return CType(CS.SyntaxKind.PointerIndirectionExpression, VB.SyntaxKind)

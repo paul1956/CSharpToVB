@@ -135,6 +135,11 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         If VB.SyntaxFacts.IsKeywordKind(VB.SyntaxFacts.GetKeywordKind(node.Identifier.ValueText)) Then
                             Return Factory.ParseName(MakeVBSafeName(node.Identifier.ValueText))
                         End If
+                        If TypeOf CType(OriginalNameParent, CSS.ArgumentSyntax).Expression Is CSS.IdentifierNameSyntax Then
+                            If CType(CType(OriginalNameParent, CSS.ArgumentSyntax).Expression, CSS.IdentifierNameSyntax).Identifier.Span.Equals(node.Identifier.Span) Then
+                                Return Me.WrapTypedNameIfNecessary(Factory.IdentifierName(GenerateSafeVBToken(node.Identifier, node, _mSemanticModel, IsQualifiedName:=False, IsTypeName:=False)), node)
+                            End If
+                        End If
                     End If
                     Return Me.WrapTypedNameIfNecessary(Factory.IdentifierName(GenerateSafeVBToken(node.Identifier, node, _mSemanticModel, IsQualifiedName:=True, IsTypeName:=False)), node)
                 End If
