@@ -35,45 +35,43 @@ Public Module ColorizeSupport
                     MainForm.ListBoxErrorList.Items.Add($"{dia.Id} Line = {dia.Location.GetLineSpan.StartLinePosition.Line + 1} {dia.GetMessage}")
                 Next
             End If
-            Using Progress As New TextProgressBar(MainForm.StatusStripConversionProgressBar)
 
-                Progress.Maximum(Lines)
+            MainForm.StatusStripConversionProgressBar.Maximum = Lines
 
-                With ConversionBuffer
-                    .Clear()
+            With ConversionBuffer
+                .Clear()
+                .Select(.TextLength, 0)
+                For Each range As Range In FragmentRange
                     .Select(.TextLength, 0)
-                    For Each range As Range In FragmentRange
-                        .Select(.TextLength, 0)
-                        .SelectionColor = ColorSelector.GetColorFromName(range.ClassificationType)
-                        .AppendText(range.Text)
-                        If range.Text.Contains(vbLf, StringComparison.OrdinalIgnoreCase) Then
-                            Progress.Increment(range.Text.Count(CType(vbLf, Char)))
-                            Application.DoEvents()
-                        End If
-                        If MainForm._requestToConvert?.CancelToken.IsCancellationRequested Then
-                            Exit Sub
-                        End If
-                    Next range
-                    Application.DoEvents()
-                    If failures?.Count > 0 Then
-                        For Each dia As Diagnostic In failures
-                            Dim ErrorLine As Integer = dia.Location.GetLineSpan.StartLinePosition.Line
-                            Dim ErrorCharactorPosition As Integer = dia.Location.GetLineSpan.StartLinePosition.Character
-                            Dim Length As Integer = dia.Location.GetLineSpan.EndLinePosition.Character - ErrorCharactorPosition
-                            .Select(.GetFirstCharIndexFromLine(ErrorLine) + ErrorCharactorPosition, Length)
-                            .SelectionColor = Color.Red
-                            .Select(.TextLength, 0)
-                        Next
-                        .Select(.GetFirstCharIndexFromLine(failures(0).Location.GetLineSpan.StartLinePosition.Line), 0)
-                        .ScrollToCaret()
+                    .SelectionColor = ColorSelector.GetColorFromName(range.ClassificationType)
+                    .AppendText(range.Text)
+                    If range.Text.Contains(vbLf, StringComparison.OrdinalIgnoreCase) Then
+                        MainForm.StatusStripConversionProgressBar.Increment(range.Text.Count(CType(vbLf, Char)))
+                        Application.DoEvents()
                     End If
-                End With
+                    If MainForm._requestToConvert?.CancelToken.IsCancellationRequested Then
+                        Exit Sub
+                    End If
+                Next range
+                Application.DoEvents()
                 If failures?.Count > 0 Then
-                    MainForm.LineNumbersForConversionInput.Visible = True
-                    MainForm.LineNumbersForConversionOutput.Visible = True
+                    For Each dia As Diagnostic In failures
+                        Dim ErrorLine As Integer = dia.Location.GetLineSpan.StartLinePosition.Line
+                        Dim ErrorCharactorPosition As Integer = dia.Location.GetLineSpan.StartLinePosition.Character
+                        Dim Length As Integer = dia.Location.GetLineSpan.EndLinePosition.Character - ErrorCharactorPosition
+                        .Select(.GetFirstCharIndexFromLine(ErrorLine) + ErrorCharactorPosition, Length)
+                        .SelectionColor = Color.Red
+                        .Select(.TextLength, 0)
+                    Next
+                    .Select(.GetFirstCharIndexFromLine(failures(0).Location.GetLineSpan.StartLinePosition.Line), 0)
+                    .ScrollToCaret()
                 End If
-                Progress.Clear()
-            End Using
+            End With
+            If failures?.Count > 0 Then
+                MainForm.LineNumbersForConversionInput.Visible = True
+                MainForm.LineNumbersForConversionOutput.Visible = True
+            End If
+            MainForm.StatusStripConversionProgressBar.Clear()
         Catch ex As Exception
             Stop
             Throw
@@ -127,7 +125,7 @@ Public Module ColorizeSupport
                                                       "Stack Overflow"), state:=Nothing)
             End Sub
 
-        Using ProgressBar As TextProgressBar = New TextProgressBar(MainForm.StatusStripConversionProgressBar)
+        Using ProgressBar As ToolStripTextProgressBar = New ToolStripTextProgressBar()
             Dim defaultVBOptions As New DefaultVBOptions
             With My.Settings
                 defaultVBOptions = New DefaultVBOptions(.OptionCompare, .OptionCompareIncludeInCode, .OptionExplicit, .OptionExplicitIncludeInCode, .OptionInfer, .OptionInferIncludeInCode, .OptionStrict, .OptionStrictIncludeInCode)

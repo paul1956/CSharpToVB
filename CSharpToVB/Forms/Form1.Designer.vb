@@ -124,7 +124,7 @@ Partial Class Form1
         Me.StatusStripElapasedTimeLabel = New System.Windows.Forms.ToolStripStatusLabel()
         Me.StatusStripCurrentFileName = New System.Windows.Forms.ToolStripStatusLabel()
         Me.StatusStripSpacer = New System.Windows.Forms.ToolStripStatusLabel()
-        Me.StatusStripConversionProgressBar = New System.Windows.Forms.ToolStripProgressBar()
+        Me.StatusStripConversionProgressBar = New ToolStripTextProgressBar()
         Me.StatusStripConversionFileProgressLabel = New System.Windows.Forms.ToolStripStatusLabel()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
         Me.ProjectConversionInitProgressBar = New System.Windows.Forms.ProgressBar()
@@ -1098,7 +1098,7 @@ Partial Class Form1
     Friend WithEvents StatusStripSpacer As ToolStripStatusLabel
     Friend WithEvents StatusStripCurrentFileName As ToolStripStatusLabel
     Friend WithEvents StatusStripConversionFileProgressLabel As ToolStripStatusLabel
-    Friend WithEvents StatusStripConversionProgressBar As ToolStripProgressBar
+    Friend WithEvents StatusStripConversionProgressBar As ToolStripTextProgressBar
     Friend WithEvents ProjectConversionInitProgressBar As ProgressBar
     Friend WithEvents ProjectConversionInitProgressLabel As Label
     Friend WithEvents ToolTipFileList As ToolTip
