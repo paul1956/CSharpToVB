@@ -16,10 +16,10 @@ Namespace CSharpToVBConverter
         Private _filteredListOfFailures As List(Of Diagnostic)
 
         Friend Sub New(ConvertedTree As SyntaxNode, InputLanguage As String, OutputLanguage As String, VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)))
-            Exceptions = New List(Of Exception)
-            SourceLanguage = InputLanguage
-            ResultStatus = ResultTriState.Success
-            TargetLanguage = OutputLanguage
+            Me.Exceptions = New List(Of Exception)
+            Me.SourceLanguage = InputLanguage
+            Me.ResultStatus = ResultTriState.Success
+            Me.TargetLanguage = OutputLanguage
             Using Workspace As New AdhocWorkspace()
                 Dim project As Project = Workspace.CurrentSolution.AddProject("Project", "Project.dll", OutputLanguage)
 
@@ -32,7 +32,7 @@ Namespace CSharpToVBConverter
 
                 Dim Root As SyntaxNode = _SyntaxTree.GetRootAsync().GetAwaiter.GetResult
                 Try
-                    ConvertedCode = WorkspaceFormat(Workspace, Root, spans:=Nothing, Workspace.Options, _Document.GetTextAsync().GetAwaiter.GetResult)
+                    Me.ConvertedCode = WorkspaceFormat(Workspace, Root, spans:=Nothing, Workspace.Options, _Document.GetTextAsync().GetAwaiter.GetResult)
                     Me.ConvertedTree = DirectCast(Root, VB.VisualBasicSyntaxNode)
                     Exit Sub
                 Catch ex As Exception
@@ -43,17 +43,17 @@ Namespace CSharpToVBConverter
                 Dim Root1 As SyntaxNode = tree.GetRootAsync().GetAwaiter.GetResult
                 Try
                     Dim ConvertedCode1 As String = WorkspaceFormat(Workspace, Root1, spans:=Nothing, Workspace.Options, _Document.GetTextAsync().GetAwaiter.GetResult)
-                    ConvertedCode = ConvertedCode1
+                    Me.ConvertedCode = ConvertedCode1
                     Me.ConvertedTree = DirectCast(Root1, VB.VisualBasicSyntaxNode)
                 Catch ex As Exception
-                    ConvertedCode = DirectCast(Root, VB.VisualBasicSyntaxNode).ToFullString
+                    Me.ConvertedCode = DirectCast(Root, VB.VisualBasicSyntaxNode).ToFullString
                 End Try
                 Me.ConvertedTree = DirectCast(Root1, VB.VisualBasicSyntaxNode)
             End Using
         End Sub
 
         Friend Sub New(ParamArray exceptions() As Exception)
-            ResultStatus = If(exceptions.Any, ResultTriState.Failure, ResultTriState.Ignore)
+            Me.ResultStatus = If(exceptions.Any, ResultTriState.Failure, ResultTriState.Ignore)
             Me.Exceptions = exceptions
         End Sub
 

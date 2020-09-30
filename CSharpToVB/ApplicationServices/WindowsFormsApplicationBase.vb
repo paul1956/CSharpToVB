@@ -95,7 +95,7 @@ Namespace Global.Microsoft.VisualBasic.ApplicationServices
                 args = New ReadOnlyCollection(Of String)(Nothing)
             End If
 
-            CommandLine = args
+            Me.CommandLine = args
         End Sub
 
         ''' <summary>
@@ -119,8 +119,8 @@ Namespace Global.Microsoft.VisualBasic.ApplicationServices
                 args = New ReadOnlyCollection(Of String)(Nothing)
             End If
 
-            CommandLine = args
-            BringToForeground = bringToForegroundFlag
+            Me.CommandLine = args
+            Me.BringToForeground = bringToForegroundFlag
         End Sub
 
         ''' <summary>
@@ -453,14 +453,14 @@ Namespace Global.Microsoft.VisualBasic.ApplicationServices
         ''' </summary>
         Private Sub DoApplicationModel()
 
-            Dim EventArgs As New StartupEventArgs(CommandLineArgs)
+            Dim EventArgs As New StartupEventArgs(Me.CommandLineArgs)
 
             'Only do the try/catch if we aren't running under the debugger.  If we do try/catch under the debugger the debugger never gets a crack at exceptions which breaks the exception helper
             If Not Debugger.IsAttached Then
                 'NO DEBUGGER ATTACHED - we use a catch so that we can run our UnhandledException code
                 'Note - Sadly, code changes within this IF (that don't pertain to exception handling) need to be mirrored in the ELSE debugger attached clause below
                 Try
-                    If Me.OnInitialize(CommandLineArgs) Then
+                    If Me.OnInitialize(Me.CommandLineArgs) Then
                         If Me.OnStartup(EventArgs) = True Then
                             Me.OnRun()
                             Me.OnShutdown()
@@ -479,7 +479,7 @@ Namespace Global.Microsoft.VisualBasic.ApplicationServices
                 End Try
             Else 'DEBUGGER ATTACHED - we don't have an uber catch when debugging so the exception will bubble out to the exception helper
                 'We also don't hook up the Application.ThreadException event because WinForms ignores it when we are running under the debugger
-                If Me.OnInitialize(CommandLineArgs) Then
+                If Me.OnInitialize(Me.CommandLineArgs) Then
                     If Me.OnStartup(EventArgs) = True Then
                         Me.OnRun()
                         Me.OnShutdown()
@@ -499,7 +499,7 @@ Namespace Global.Microsoft.VisualBasic.ApplicationServices
         ''' <param name="sender"></param>
         ''' <param name="e"></param>
         Private Sub MainFormLoadingDone(sender As Object, e As EventArgs)
-            RemoveHandler MainForm.Load, AddressOf Me.MainFormLoadingDone 'We don't want this event to call us again.
+            RemoveHandler Me.MainForm.Load, AddressOf Me.MainFormLoadingDone 'We don't want this event to call us again.
 
             'block until the splash screen time is up.  See MinimumSplashExposureTimeIsUp() which releases us
             While Not _ok2CloseSplashScreen
@@ -524,12 +524,12 @@ Namespace Global.Microsoft.VisualBasic.ApplicationServices
         End Sub
 
         Private Sub OnStartupNextInstanceMarshallingAdaptor(args As String())
-            If MainForm Is Nothing Then
+            If Me.MainForm Is Nothing Then
                 Exit Sub
             End If
             Dim invoked As Boolean = False
             Try
-                MainForm.Invoke(
+                Me.MainForm.Invoke(
                     Sub()
                         invoked = True
                         Me.OnStartupNextInstance(New StartupNextInstanceEventArgs(New ReadOnlyCollection(Of String)(args), True)) 'by default, we set BringToFront as True since that's the behavior most people will want
@@ -590,9 +590,9 @@ Namespace Global.Microsoft.VisualBasic.ApplicationServices
                 'Dev10 590587 - we now activate the main form before calling Dispose on the Splash screen. (we're just
                 '       swapping the order of the two If blocks). This is to fix the issue where the main form
                 '       doesn't come to the front after the Splash screen disappears
-                If MainForm IsNot Nothing Then
+                If Me.MainForm IsNot Nothing Then
                     Call New UIPermission(UIPermissionWindow.AllWindows).Assert()
-                    MainForm.Activate()
+                    Me.MainForm.Activate()
                     PermissionSet.RevertAssert() 'CLR also reverts if we throw or when we return from this function
                 End If
                 If _splashScreen IsNot Nothing AndAlso Not _splashScreen.IsDisposed Then
@@ -653,9 +653,9 @@ Namespace Global.Microsoft.VisualBasic.ApplicationServices
         <SecuritySafeCritical()>
         <EditorBrowsable(EditorBrowsableState.Advanced)>
         Protected Overridable Sub OnRun()
-            If MainForm Is Nothing Then
+            If Me.MainForm Is Nothing Then
                 Me.OnCreateMainForm() 'A designer overrides OnCreateMainForm() to set the main form we are supposed to use
-                If MainForm Is Nothing Then
+                If Me.MainForm Is Nothing Then
                     Throw New NoStartupFormException
                 End If
 
@@ -663,7 +663,7 @@ Namespace Global.Microsoft.VisualBasic.ApplicationServices
                 'block the main form from painting.  To do that I let the form get past the Load() event and hold it until
                 'the splash screen goes down. Then I let the main form continue it's startup sequence.  The ordering of
                 'Form startup events for reference is: Ctor(), Load Event, Layout event, Shown event, Activated event, Paint event
-                AddHandler MainForm.Load, AddressOf Me.MainFormLoadingDone
+                AddHandler Me.MainForm.Load, AddressOf Me.MainFormLoadingDone
             End If
 
             'Run() eats all exceptions (unless running under the debugger) If the user wrote an UnhandledException handler we will hook
@@ -726,11 +726,11 @@ Namespace Global.Microsoft.VisualBasic.ApplicationServices
             RaiseEvent StartupNextInstance(Me, eventArgs)
 
             Call New UIPermission(UIPermissionWindow.SafeSubWindows Or UIPermissionWindow.SafeTopLevelWindows).Assert()
-            If eventArgs.BringToForeground = True AndAlso MainForm IsNot Nothing Then
-                If MainForm.WindowState = Windows.Forms.FormWindowState.Minimized Then
-                    MainForm.WindowState = FormWindowState.Normal
+            If eventArgs.BringToForeground = True AndAlso Me.MainForm IsNot Nothing Then
+                If Me.MainForm.WindowState = Windows.Forms.FormWindowState.Minimized Then
+                    Me.MainForm.WindowState = FormWindowState.Normal
                 End If
-                MainForm.Activate()
+                Me.MainForm.Activate()
             End If
         End Sub
 
@@ -826,7 +826,7 @@ Namespace Global.Microsoft.VisualBasic.ApplicationServices
             'Prime the command line args with what we receive from Main() so that Click-Once windows apps don't have to do a System.Environment call which would require permissions.
             Me.SetInternalCommandLine(New ReadOnlyCollection(Of String)(commandLine)
 )
-            If Not IsSingleInstance Then
+            If Not Me.IsSingleInstance Then
                 Me.DoApplicationModel()
             Else 'This is a Single-Instance application
                 Dim ApplicationInstanceID As String = GetApplicationInstanceID(Assembly.GetCallingAssembly) 'Note: Must pass the calling assembly from here so we can get the running app.  Otherwise, can break single instance.
@@ -879,7 +879,7 @@ Namespace Global.Microsoft.VisualBasic.ApplicationServices
                         '2 - It returns the first window it hits from enum thread windows, which is not necessarily a windows forms form, so that doesn't help us even if it did work
                         'all the time.  So I'll use one of our open forms.  We may not necessarily get a visible form here but that's OK.  Some apps may run on an invisible window
                         'and we need to keep them going until all windows close.
-                        MainForm = forms(0)
+                        Me.MainForm = forms(0)
                     Else
                         MyBase.OnMainFormClosed(sender, e)
                     End If

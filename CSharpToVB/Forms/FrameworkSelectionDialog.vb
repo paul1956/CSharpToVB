@@ -7,7 +7,7 @@ Public Class FrameworkSelectionDialog
     Public ReadOnly Property CurrentFramework As String
 
     Private Sub Cancel_Button_Click(sender As Object, e As EventArgs) Handles Cancel_Button.Click
-        DialogResult = DialogResult.Cancel
+        Me.DialogResult = DialogResult.Cancel
         Me.Close()
     End Sub
 
@@ -23,18 +23,18 @@ Public Class FrameworkSelectionDialog
 
     Private Sub FrameworkSelectionDialog_Load(sender As Object, e As EventArgs) Handles Me.Load
         Debug.Assert(_frameworkList IsNot Nothing)
-        Dim items As CheckedListBox.ObjectCollection = CheckedListBox1.Items
+        Dim items As CheckedListBox.ObjectCollection = Me.CheckedListBox1.Items
         For Each framework As String In _frameworkList
             items.Add(framework, False)
         Next
     End Sub
 
     Private Sub OK_Button_Click(sender As Object, e As EventArgs) Handles OK_Button.Click
-        Dim CheckedItems As CheckedListBox.CheckedItemCollection = CheckedListBox1.CheckedItems
+        Dim CheckedItems As CheckedListBox.CheckedItemCollection = Me.CheckedListBox1.CheckedItems
         If CheckedItems.Count = 1 Then
             'Return OK to the calling form
             _CurrentFramework = CheckedItems(0).ToString
-            DialogResult = DialogResult.OK
+            Me.DialogResult = DialogResult.OK
             Me.Close()
         Else
             'Show an error message, but keep the form open

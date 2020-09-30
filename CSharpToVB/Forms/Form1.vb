@@ -48,7 +48,7 @@ Partial Public Class Form1
     Friend Property BufferToSearch As SearchBuffers = SearchBuffers.CS
 
     Private Sub ButtonStop_Click(sender As Object, e As EventArgs) Handles ButtonStopConversion.Click
-        ButtonStopConversion.Visible = False
+        Me.ButtonStopConversion.Visible = False
         _cancellationTokenSource.Cancel()
         Application.DoEvents()
     End Sub
@@ -58,32 +58,32 @@ Partial Public Class Form1
     End Sub
 
     Private Sub ButtonStop_MouseLeave(sender As Object, e As EventArgs) Handles ButtonStopConversion.MouseLeave
-        ButtonStopConversion.BackColor = SystemColors.Control
-        LocalUseWaitCursor(MeForm:=Me, WaitCursorEnable:=ButtonStopConversion.Visible)
+        Me.ButtonStopConversion.BackColor = SystemColors.Control
+        LocalUseWaitCursor(MeForm:=Me, WaitCursorEnable:=Me.ButtonStopConversion.Visible)
     End Sub
 
     Private Sub ButtonStop_VisibleChanged(sender As Object, e As EventArgs) Handles ButtonStopConversion.VisibleChanged
-        LocalUseWaitCursor(MeForm:=Me, WaitCursorEnable:=ButtonStopConversion.Visible)
+        LocalUseWaitCursor(MeForm:=Me, WaitCursorEnable:=Me.ButtonStopConversion.Visible)
     End Sub
 
     Private Sub ContextMenuCopy_Click(sender As Object, e As EventArgs) Handles ContextMenuCopy.Click
-        If TypeOf ContextMenuStrip1.SourceControl Is RichTextBox Then
-            CType(ContextMenuStrip1.SourceControl, RichTextBox).Copy()
+        If TypeOf Me.ContextMenuStrip1.SourceControl Is RichTextBox Then
+            CType(Me.ContextMenuStrip1.SourceControl, RichTextBox).Copy()
         Else
-            If ContextMenuStrip1.SourceControl IsNot Nothing Then
-                Clipboard.SetText(CType(ContextMenuStrip1.SourceControl, ListBox).SelectedItem.ToString)
+            If Me.ContextMenuStrip1.SourceControl IsNot Nothing Then
+                Clipboard.SetText(CType(Me.ContextMenuStrip1.SourceControl, ListBox).SelectedItem.ToString)
             End If
         End If
     End Sub
 
     Private Sub ContextMenuCut_Click(sender As Object, e As EventArgs) Handles ContextMenuCut.Click
-        If TypeOf ContextMenuStrip1.SourceControl Is RichTextBox Then
-            CType(ContextMenuStrip1.SourceControl, RichTextBox).Cut()
+        If TypeOf Me.ContextMenuStrip1.SourceControl Is RichTextBox Then
+            CType(Me.ContextMenuStrip1.SourceControl, RichTextBox).Cut()
         End If
     End Sub
 
     Private Sub ContextMenuPaste_Click(sender As Object, e As EventArgs) Handles ContextMenuPaste.Click
-        Dim sourceControl As RichTextBox = CType(ContextMenuStrip1.SourceControl, RichTextBox)
+        Dim sourceControl As RichTextBox = CType(Me.ContextMenuStrip1.SourceControl, RichTextBox)
         If sourceControl Is Nothing Then
             Exit Sub
         End If
@@ -94,14 +94,14 @@ Partial Public Class Form1
     End Sub
 
     Private Sub ContextMenuRedo_Click(sender As Object, e As EventArgs) Handles ContextMenuRedo.Click
-        Dim sourceControl As RichTextBox = CType(ContextMenuStrip1.SourceControl, RichTextBox)
+        Dim sourceControl As RichTextBox = CType(Me.ContextMenuStrip1.SourceControl, RichTextBox)
         If sourceControl IsNot Nothing AndAlso sourceControl.CanRedo Then
             sourceControl.Redo()
         End If
     End Sub
 
     Private Sub ContextMenuSelectAll_Click(sender As Object, e As EventArgs) Handles ContextMenuSelectAll.Click
-        Dim sourceControl As RichTextBox = CType(ContextMenuStrip1.SourceControl, RichTextBox)
+        Dim sourceControl As RichTextBox = CType(Me.ContextMenuStrip1.SourceControl, RichTextBox)
         If sourceControl IsNot Nothing Then
             sourceControl.SelectAll()
         End If
@@ -110,8 +110,8 @@ Partial Public Class Form1
     Private Sub ContextMenuStrip1_Opening(sender As Object, e As CancelEventArgs) Handles ContextMenuStrip1.Opening
         Dim ContextMenu As ContextMenuStrip = CType(sender, ContextMenuStrip)
 
-        If TypeOf CurrentBuffer Is RichTextBox Then
-            Dim sourceBuffer As RichTextBox = CType(CurrentBuffer, RichTextBox)
+        If TypeOf Me.CurrentBuffer Is RichTextBox Then
+            Dim sourceBuffer As RichTextBox = CType(Me.CurrentBuffer, RichTextBox)
             ContextMenu.Items(ContextMenu.IndexOf(NameOf(ContextMenuCopy))).Enabled = sourceBuffer.TextLength > 0 And sourceBuffer.SelectedText.Any
             ContextMenu.Items(ContextMenu.IndexOf(NameOf(ContextMenuCut))).Enabled = sourceBuffer.TextLength > 0 And sourceBuffer.SelectedText.Any
             ContextMenu.Items(ContextMenu.IndexOf(NameOf(ContextMenuPaste))).Enabled = sourceBuffer.CanPaste(DataFormats.GetFormat(DataFormats.Rtf)) OrElse sourceBuffer.CanPaste(DataFormats.GetFormat(DataFormats.Text))
@@ -126,42 +126,42 @@ Partial Public Class Form1
     End Sub
 
     Private Sub ContextMenuUndo_Click(sender As Object, e As EventArgs) Handles ContextMenuUndo.Click
-        Dim sourceControl As RichTextBox = CType(ContextMenuStrip1.SourceControl, RichTextBox)
+        Dim sourceControl As RichTextBox = CType(Me.ContextMenuStrip1.SourceControl, RichTextBox)
         If sourceControl IsNot Nothing AndAlso sourceControl.CanUndo Then
             sourceControl.Undo()
         End If
     End Sub
 
     Private Sub ConversionInput_Enter(sender As Object, e As EventArgs) Handles ConversionInput.Enter
-        CurrentBuffer = CType(sender, RichTextBox)
+        Me.CurrentBuffer = CType(sender, RichTextBox)
     End Sub
 
     Private Sub ConversionInput_MouseEnter(sender As Object, e As EventArgs) Handles ConversionInput.MouseEnter
-        CurrentBuffer = CType(sender, RichTextBox)
+        Me.CurrentBuffer = CType(sender, RichTextBox)
     End Sub
 
     Private Sub ConversionInput_TextChanged(sender As Object, e As EventArgs) Handles ConversionInput.TextChanged
         Dim inputBufferInUse As Boolean = Me.SetSearchControls(True)
-        mnuViewShowSourceLineNumbers.Checked = inputBufferInUse And My.Settings.ShowSourceLineNumbers
-        mnuFileSaveSnippet.Enabled = inputBufferInUse
-        If mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
-            Colorize(Me, GetClassifiedRanges(SourceCode:=ConversionInput.Text, LanguageNames.CSharp), ConversionBuffer:=ConversionInput, Lines:=ConversionInput.Lines.Length)
+        Me.mnuViewShowSourceLineNumbers.Checked = inputBufferInUse And My.Settings.ShowSourceLineNumbers
+        Me.mnuFileSaveSnippet.Enabled = inputBufferInUse
+        If Me.mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
+            Colorize(Me, GetClassifiedRanges(SourceCode:=Me.ConversionInput.Text, LanguageNames.CSharp), ConversionBuffer:=Me.ConversionInput, Lines:=Me.ConversionInput.Lines.Length)
         End If
     End Sub
 
     Private Sub ConversionOutput_MouseEnter(sender As Object, e As EventArgs) Handles ConversionOutput.MouseEnter
-        CurrentBuffer = CType(sender, RichTextBox)
+        Me.CurrentBuffer = CType(sender, RichTextBox)
     End Sub
 
     Private Sub ConversionOutput_TextChanged(sender As Object, e As EventArgs) Handles ConversionOutput.TextChanged
         Dim OutputBufferInUse As Boolean = CType(sender, RichTextBox).TextLength > 0
-        mnuViewShowDestinationLineNumbers.Checked = OutputBufferInUse And My.Settings.ShowDestinationLineNumbers
-        mnuCompile.Enabled = OutputBufferInUse
+        Me.mnuViewShowDestinationLineNumbers.Checked = OutputBufferInUse And My.Settings.ShowDestinationLineNumbers
+        Me.mnuCompile.Enabled = OutputBufferInUse
         Me.SetSearchControls()
     End Sub
 
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles Me.Load
-        SplitContainer1.SplitterDistance = SplitContainer1.Height - (ListBoxErrorList.Height + 20)
+        Me.SplitContainer1.SplitterDistance = Me.SplitContainer1.Height - (Me.ListBoxErrorList.Height + 20)
 
         ' Load all settings
         If My.Settings.UpgradeRequired Then
@@ -170,27 +170,27 @@ Partial Public Class Form1
             My.Settings.Save()
         End If
 
-        mnuOptionsColorizeSource.Checked = My.Settings.ColorizeInput
-        mnuOptionsColorizeResult.Checked = My.Settings.ColorizeOutput
+        Me.mnuOptionsColorizeSource.Checked = My.Settings.ColorizeInput
+        Me.mnuOptionsColorizeResult.Checked = My.Settings.ColorizeOutput
 
         Select Case My.Settings.ConversionDelay
             Case 0
-                mnuOptionsDelayBetweenConversions.SelectedIndex = 0
+                Me.mnuOptionsDelayBetweenConversions.SelectedIndex = 0
             Case 5
-                mnuOptionsDelayBetweenConversions.SelectedIndex = 1
+                Me.mnuOptionsDelayBetweenConversions.SelectedIndex = 1
             Case 10
-                mnuOptionsDelayBetweenConversions.SelectedIndex = 2
+                Me.mnuOptionsDelayBetweenConversions.SelectedIndex = 2
             Case Else
-                mnuOptionsDelayBetweenConversions.SelectedIndex = 0
+                Me.mnuOptionsDelayBetweenConversions.SelectedIndex = 0
         End Select
 
-        mnuFileLoadLastSnippet.Enabled = File.Exists(s_snippetFileWithPath)
-        mnuOptionsPauseConvertOnSuccess.Checked = My.Settings.PauseConvertOnSuccess
-        mnuOptionsFolderConversionsOptionsSkipAutoGenerated.Checked = My.Settings.SkipAutoGenerated
-        mnuOptionsFolderConversionsOptionsSkipBinAndObjFolders.Checked = My.Settings.SkipBinAndObjFolders
-        mnuOptionsFolderConversionsOptionsSkipTestResourceFiles.Checked = My.Settings.SkipTestResourceFiles
+        Me.mnuFileLoadLastSnippet.Enabled = File.Exists(s_snippetFileWithPath)
+        Me.mnuOptionsPauseConvertOnSuccess.Checked = My.Settings.PauseConvertOnSuccess
+        Me.mnuOptionsFolderConversionsOptionsSkipAutoGenerated.Checked = My.Settings.SkipAutoGenerated
+        Me.mnuOptionsFolderConversionsOptionsSkipBinAndObjFolders.Checked = My.Settings.SkipBinAndObjFolders
+        Me.mnuOptionsFolderConversionsOptionsSkipTestResourceFiles.Checked = My.Settings.SkipTestResourceFiles
 
-        mnuConvertStartFolderConvertFromLastFile.Checked = My.Settings.StartFolderConvertFromLastFile
+        Me.mnuConvertStartFolderConvertFromLastFile.Checked = My.Settings.StartFolderConvertFromLastFile
 
         If String.IsNullOrWhiteSpace(My.Settings.DefaultProjectDirectory) Then
             My.Settings.DefaultProjectDirectory = GetLatestVisualStudioProjectPath()
@@ -198,13 +198,13 @@ Partial Public Class Form1
             Application.DoEvents()
         End If
 
-        Width = Screen.PrimaryScreen.Bounds.Width
-        Height = CInt(Screen.PrimaryScreen.Bounds.Height * 0.95)
+        Me.Width = Screen.PrimaryScreen.Bounds.Width
+        Me.Height = CInt(Screen.PrimaryScreen.Bounds.Height * 0.95)
 
-        ListBoxFileList.Height = SplitContainer1.Panel2.ClientSize.Height
-        ListBoxErrorList.Height = SplitContainer1.Panel2.ClientSize.Height
+        Me.ListBoxFileList.Height = Me.SplitContainer1.Panel2.ClientSize.Height
+        Me.ListBoxErrorList.Height = Me.SplitContainer1.Panel2.ClientSize.Height
 
-        For Each FrameworkType As ToolStripMenuItem In mnuOptionsDefaultFramework.DropDownItems
+        For Each FrameworkType As ToolStripMenuItem In Me.mnuOptionsDefaultFramework.DropDownItems
             If FrameworkType.Text = ".Net Full Framework" Then
                 For Each f As String In GetAllFrameworkVersions()
                     FrameworkType.DropDownItems.AddDropDownMenuItem(f)
@@ -215,7 +215,7 @@ Partial Public Class Form1
                 Next
             End If
         Next
-        For Each FrameworkType As ToolStripMenuItem In mnuOptionsDefaultFramework.DropDownItems
+        For Each FrameworkType As ToolStripMenuItem In Me.mnuOptionsDefaultFramework.DropDownItems
             _frameworkTypeList.Add(FrameworkType)
             For Each FrameworkVersion As ToolStripMenuItem In FrameworkType.DropDownItems
                 If FrameworkVersion.Text = My.Settings.Framework Then
@@ -232,25 +232,25 @@ Partial Public Class Form1
             Next
         Next
         If My.Settings.LastProject.Length > 0 Then
-            mnuFileLastProject.Text = $"Last Project - {My.Settings.LastProject}"
-            mnuFileLastProject.Enabled = True
+            Me.mnuFileLastProject.Text = $"Last Project - {My.Settings.LastProject}"
+            Me.mnuFileLastProject.Enabled = True
         End If
         If My.Settings.LastSolution.Length > 0 Then
-            mnuFileLastSolution.Text = $"Last Solution - {My.Settings.LastSolution}"
-            mnuFileLastSolution.Enabled = True
+            Me.mnuFileLastSolution.Text = $"Last Solution - {My.Settings.LastSolution}"
+            Me.mnuFileLastSolution.Enabled = True
         End If
-        ProjectConversionInitProgressBar.Visible = False
+        Me.ProjectConversionInitProgressBar.Visible = False
         Me.CenterToScreen()
-        ProjectConversionInitProgressBar.Location = New Point(ClientSize.Width \ 4, ClientSize.Height \ 2)
-        ProjectConversionInitProgressLabel.Left = ProjectConversionInitProgressBar.Left
-        ProjectConversionInitProgressLabel.Top = ProjectConversionInitProgressBar.Top - (ProjectConversionInitProgressLabel.Height * 2)
-        ToolTipErrorList.SetToolTip(ListBoxErrorList, "Double-Click to scroll to VB error")
-        ToolTipFileList.SetToolTip(ListBoxFileList, "Double-Click to open C# and corresponding VB file if available")
+        Me.ProjectConversionInitProgressBar.Location = New Point(Me.ClientSize.Width \ 4, Me.ClientSize.Height \ 2)
+        Me.ProjectConversionInitProgressLabel.Left = Me.ProjectConversionInitProgressBar.Left
+        Me.ProjectConversionInitProgressLabel.Top = Me.ProjectConversionInitProgressBar.Top - (Me.ProjectConversionInitProgressLabel.Height * 2)
+        Me.ToolTipErrorList.SetToolTip(Me.ListBoxErrorList, "Double-Click to scroll to VB error")
+        Me.ToolTipFileList.SetToolTip(Me.ListBoxFileList, "Double-Click to open C# and corresponding VB file if available")
         Application.DoEvents()
-        TSFindLookInComboBox.DropDownStyle = ComboBoxStyle.Simple
-        TSFindLookInComboBox.SelectedIndex = 0
-        TSFindMatchCaseCheckBox.Checked = My.Settings.TSFindMatchCase
-        TSFindMatchWholeWordCheckBox.Checked = My.Settings.TSFindMatchWholeWord
+        Me.TSFindLookInComboBox.DropDownStyle = ComboBoxStyle.Simple
+        Me.TSFindLookInComboBox.SelectedIndex = 0
+        Me.TSFindMatchCaseCheckBox.Checked = My.Settings.TSFindMatchCase
+        Me.TSFindMatchWholeWordCheckBox.Checked = My.Settings.TSFindMatchWholeWord
     End Sub
 
     Private Sub Form1_Resize(sender As Object, e As EventArgs) Handles Me.Resize
@@ -289,34 +289,34 @@ Partial Public Class Form1
             Exit Sub
         End If
         Dim count As Integer = LineText.Substring(startIndex).IndexOf(" ", StringComparison.OrdinalIgnoreCase)
-        Dim lineStartPosition As Integer = ConversionOutput.GetFirstCharIndexFromLine(CInt(LineText.Substring(startIndex, count)) - 1)
+        Dim lineStartPosition As Integer = Me.ConversionOutput.GetFirstCharIndexFromLine(CInt(LineText.Substring(startIndex, count)) - 1)
 
-        If lineStartPosition > 0 AndAlso ConversionOutput.SelectionStart <> lineStartPosition Then
-            ConversionOutput.Select(lineStartPosition, 0)
-            ConversionOutput.ScrollToCaret()
+        If lineStartPosition > 0 AndAlso Me.ConversionOutput.SelectionStart <> lineStartPosition Then
+            Me.ConversionOutput.Select(lineStartPosition, 0)
+            Me.ConversionOutput.ScrollToCaret()
         End If
     End Sub
 
     Private Sub ListBoxErrorList_Enter(sender As Object, e As EventArgs) Handles ListBoxErrorList.Enter
-        If ListBoxErrorList.Items.Count = 0 Then
-            ListBoxErrorList.Enabled = False
+        If Me.ListBoxErrorList.Items.Count = 0 Then
+            Me.ListBoxErrorList.Enabled = False
             Exit Sub
         End If
-        ListBoxErrorList.Enabled = True
-        CurrentBuffer = ListBoxErrorList
+        Me.ListBoxErrorList.Enabled = True
+        Me.CurrentBuffer = Me.ListBoxErrorList
     End Sub
 
     Private Sub ListBoxErrorList_MouseEnter(sender As Object, e As EventArgs) Handles ListBoxErrorList.MouseEnter
-        If ListBoxErrorList.Items.Count = 0 Then
-            ListBoxErrorList.Enabled = False
+        If Me.ListBoxErrorList.Items.Count = 0 Then
+            Me.ListBoxErrorList.Enabled = False
             Exit Sub
         End If
-        ListBoxErrorList.Enabled = True
-        CurrentBuffer = ListBoxErrorList
+        Me.ListBoxErrorList.Enabled = True
+        Me.CurrentBuffer = Me.ListBoxErrorList
     End Sub
 
     Private Sub ListBoxErrorList_SelectedValueChanged(sender As Object, e As EventArgs) Handles ListBoxErrorList.SelectedValueChanged
-        ListBoxErrorList.Enabled = ListBoxErrorList.Items.Count > 0
+        Me.ListBoxErrorList.Enabled = Me.ListBoxErrorList.Items.Count > 0
     End Sub
 
     Private Sub ListBoxFileList_DoubleClick(sender As Object, e As EventArgs) Handles ListBoxFileList.DoubleClick
@@ -340,40 +340,40 @@ Partial Public Class Form1
     End Sub
 
     Private Sub ListBoxFileList_Enter(sender As Object, e As EventArgs) Handles ListBoxFileList.Enter
-        If ListBoxFileList.Items.Count = 0 Then
+        If Me.ListBoxFileList.Items.Count = 0 Then
             Exit Sub
         End If
-        CurrentBuffer = ListBoxFileList
+        Me.CurrentBuffer = Me.ListBoxFileList
     End Sub
 
     Private Sub ListBoxFileList_MouseEnter(sender As Object, e As EventArgs) Handles ListBoxFileList.MouseEnter
-        If ListBoxFileList.Items.Count = 0 Then
+        If Me.ListBoxFileList.Items.Count = 0 Then
             Exit Sub
         End If
-        CurrentBuffer = ListBoxFileList
+        Me.CurrentBuffer = Me.ListBoxFileList
     End Sub
 
     Private Sub ListBoxFileList_SelectedValueChanged(sender As Object, e As EventArgs) Handles ListBoxFileList.SelectedValueChanged
-        ListBoxFileList.Enabled = ListBoxFileList.Items.Count > 0
+        Me.ListBoxFileList.Enabled = Me.ListBoxFileList.Items.Count > 0
     End Sub
 
     Private Sub mnuCompile_Click(sender As Object, e As EventArgs) Handles mnuCompile.Click
-        LineNumbersForConversionInput.Visible = False
-        LineNumbersForConversionOutput.Visible = False
-        ListBoxErrorList.Items.Clear()
+        Me.LineNumbersForConversionInput.Visible = False
+        Me.LineNumbersForConversionOutput.Visible = False
+        Me.ListBoxErrorList.Items.Clear()
 
-        If String.IsNullOrWhiteSpace(ConversionOutput.Text) Then
+        If String.IsNullOrWhiteSpace(Me.ConversionOutput.Text) Then
             Exit Sub
         End If
-        ListBoxErrorList.Text = ""
+        Me.ListBoxErrorList.Text = ""
         Dim VBPreprocessorSymbols As New List(Of KeyValuePair(Of String, Object)) From {
             New KeyValuePair(Of String, Object)(My.Settings.Framework, True)
         }
-        Compile_Colorize(Me, ConversionOutput.Text, VBPreprocessorSymbols)
+        Compile_Colorize(Me, Me.ConversionOutput.Text, VBPreprocessorSymbols)
     End Sub
 
     Private Sub mnuConvert_DropDownOpened(sender As Object, e As EventArgs) Handles mnuConvert.DropDownOpened
-        mnuConvertConvertSnippet.Enabled = ConversionInput.TextLength > 0
+        Me.mnuConvertConvertSnippet.Enabled = Me.ConversionInput.TextLength > 0
     End Sub
 
     Private Sub mnuConvert_EnabledChanged(sender As Object, e As EventArgs) Handles mnuConvert.EnabledChanged
@@ -381,20 +381,20 @@ Partial Public Class Form1
     End Sub
 
     Private Async Sub mnuConvertConvertSnippet_Click(sender As Object, e As EventArgs) Handles mnuConvertConvertSnippet.Click
-        SetButtonStopAndCursor(MeForm:=Me, StopButton:=ButtonStopConversion, StopButtonVisible:=True)
-        ListBoxErrorList.Items.Clear()
-        ListBoxFileList.Items.Clear()
-        LineNumbersForConversionOutput.Visible = False
-        StatusStripCurrentFileName.Text = ""
+        SetButtonStopAndCursor(MeForm:=Me, StopButton:=Me.ButtonStopConversion, StopButtonVisible:=True)
+        Me.ListBoxErrorList.Items.Clear()
+        Me.ListBoxFileList.Items.Clear()
+        Me.LineNumbersForConversionOutput.Visible = False
+        Me.StatusStripCurrentFileName.Text = ""
         Me.ResizeRichTextBuffers()
         If _cancellationTokenSource IsNot Nothing Then
             _cancellationTokenSource.Dispose()
         End If
         _cancellationTokenSource = New CancellationTokenSource
 
-        _requestToConvert = New ConvertRequest(My.Settings.SkipAutoGenerated, New Progress(Of ProgressReport)(AddressOf StatusStripConversionProgressBar.Update), _cancellationTokenSource.Token) With
+        _requestToConvert = New ConvertRequest(My.Settings.SkipAutoGenerated, New Progress(Of ProgressReport)(AddressOf Me.StatusStripConversionProgressBar.Update), _cancellationTokenSource.Token) With
                 {
-                .SourceCode = ConversionInput.Text
+                .SourceCode = Me.ConversionInput.Text
                 }
         Dim CSPreprocessorSymbols As New List(Of String) From {
             My.Settings.Framework
@@ -409,17 +409,17 @@ Partial Public Class Form1
             MsgBox($"Conversion canceled.",
                        MsgBoxStyle.OkOnly Or MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground,
                        Title:="C# to Visual Basic")
-            StatusStripConversionProgressBar.Clear()
+            Me.StatusStripConversionProgressBar.Clear()
         End If
-        SetButtonStopAndCursor(MeForm:=Me, StopButton:=ButtonStopConversion, StopButtonVisible:=False)
-        LineNumbersForConversionOutput.Visible = (Not DontDisplayLineNumbers) OrElse My.Settings.ShowDestinationLineNumbers
+        SetButtonStopAndCursor(MeForm:=Me, StopButton:=Me.ButtonStopConversion, StopButtonVisible:=False)
+        Me.LineNumbersForConversionOutput.Visible = (Not DontDisplayLineNumbers) OrElse My.Settings.ShowDestinationLineNumbers
     End Sub
 
     Private Async Sub mnuConvertFolder_Click(sender As Object, e As EventArgs) Handles mnuConvertConvertFolder.Click
-        mnuConvertConvertFolder.Enabled = False
-        LineNumbersForConversionInput.Visible = False
-        LineNumbersForConversionOutput.Visible = False
-        StatusStripCurrentFileName.Text = ""
+        Me.mnuConvertConvertFolder.Enabled = False
+        Me.LineNumbersForConversionInput.Visible = False
+        Me.LineNumbersForConversionOutput.Visible = False
+        Me.StatusStripCurrentFileName.Text = ""
         Dim SourceFolderName As String
         Dim solutionSavePath As String
         Using OFD As New FolderBrowserDialog
@@ -428,7 +428,7 @@ Partial Public Class Form1
                 .SelectedPath = My.Settings.DefaultProjectDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) & Path.DirectorySeparatorChar
                 .ShowNewFolderButton = False
                 If .ShowDialog(Me) <> DialogResult.OK Then
-                    mnuConvertConvertFolder.Enabled = True
+                    Me.mnuConvertConvertFolder.Enabled = True
                     Exit Sub
                 End If
                 SourceFolderName = .SelectedPath
@@ -440,20 +440,20 @@ Partial Public Class Form1
             MsgBox($"{SourceFolderName} is not a directory.",
                    MsgBoxStyle.OkOnly Or MsgBoxStyle.Exclamation Or MsgBoxStyle.MsgBoxSetForeground,
                    Title:="Convert C# to Visual Basic")
-            mnuConvertConvertFolder.Enabled = True
+            Me.mnuConvertConvertFolder.Enabled = True
             Exit Sub
         End If
         If String.IsNullOrWhiteSpace(solutionSavePath) Then
             MsgBox($"Conversion aborted.",
                    MsgBoxStyle.OkOnly Or MsgBoxStyle.Exclamation Or MsgBoxStyle.MsgBoxSetForeground,
                    Title:="Convert C# to Visual Basic")
-            mnuConvertConvertFolder.Enabled = True
+            Me.mnuConvertConvertFolder.Enabled = True
             Exit Sub
         End If
         Dim LastFileNameWithPath As String = If(My.Settings.StartFolderConvertFromLastFile, My.Settings.MRU_Data.Last, "")
         Dim Stats As New ProcessingStats(LastFileNameWithPath)
         _cancellationTokenSource = New CancellationTokenSource
-        StatusStripElapasedTimeLabel.Text = ""
+        Me.StatusStripElapasedTimeLabel.Text = ""
         ' Create new stopwatch
         Dim stopwatch As New Stopwatch()
         ' Begin timing
@@ -470,7 +470,7 @@ Partial Public Class Form1
                 prompt = $"Conversion canceled, {Stats.FilesProcessed} files completed successfully."
             Else
                 prompt = $"Conversion completed, {Stats.FilesProcessed} files completed, with {My.Settings.IgnoreFileList.Count} files ignored."
-                mnuConvertStartFolderConvertFromLastFile.Checked = False
+                Me.mnuConvertStartFolderConvertFromLastFile.Checked = False
                 My.Settings.StartFolderConvertFromLastFile = False
                 My.Settings.Save()
                 Application.DoEvents()
@@ -483,8 +483,8 @@ Partial Public Class Form1
                MsgBoxStyle.OkOnly Or MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground,
                Title:="Convert C# To Visual Basic")
         Dim elapsed As TimeSpan = stopwatch.Elapsed
-        StatusStripElapasedTimeLabel.Text = $"Elapsed Time - {elapsed.Hours}: {elapsed.Minutes}:{elapsed.Seconds}.{elapsed.Milliseconds}"
-        mnuConvertConvertFolder.Enabled = True
+        Me.StatusStripElapasedTimeLabel.Text = $"Elapsed Time - {elapsed.Hours}: {elapsed.Minutes}:{elapsed.Seconds}.{elapsed.Milliseconds}"
+        Me.mnuConvertConvertFolder.Enabled = True
 
     End Sub
 
@@ -495,52 +495,52 @@ Partial Public Class Form1
     End Sub
 
     Private Sub mnuEdit_DropDownOpening(sender As Object, e As EventArgs) Handles mnuEdit.DropDownOpening
-        If TSFindToolStrip.Visible Then
-            mnuEditFind.Text = "Hide &Find Toolbar"
+        If Me.TSFindToolStrip.Visible Then
+            Me.mnuEditFind.Text = "Hide &Find Toolbar"
         Else
-            mnuEditFind.Text = "Show &Find Toolbar"
+            Me.mnuEditFind.Text = "Show &Find Toolbar"
         End If
-        If TypeOf CurrentBuffer Is RichTextBox Then
-            Dim sourceBuffer As RichTextBox = CType(CurrentBuffer, RichTextBox)
-            mnuEditCopy.Enabled = sourceBuffer.TextLength > 0 AndAlso sourceBuffer.SelectedText.Length > 0
-            mnuEditCut.Enabled = sourceBuffer.TextLength > 0 AndAlso sourceBuffer.SelectedText.Length > 0
-            mnuEditPaste.Enabled = sourceBuffer.CanPaste(DataFormats.GetFormat(DataFormats.Rtf)) OrElse sourceBuffer.CanPaste(DataFormats.GetFormat(DataFormats.Text))
-            mnuEditUndo.Enabled = sourceBuffer.CanUndo
-            mnuEditRedo.Enabled = sourceBuffer.CanRedo
+        If TypeOf Me.CurrentBuffer Is RichTextBox Then
+            Dim sourceBuffer As RichTextBox = CType(Me.CurrentBuffer, RichTextBox)
+            Me.mnuEditCopy.Enabled = sourceBuffer.TextLength > 0 AndAlso sourceBuffer.SelectedText.Length > 0
+            Me.mnuEditCut.Enabled = sourceBuffer.TextLength > 0 AndAlso sourceBuffer.SelectedText.Length > 0
+            Me.mnuEditPaste.Enabled = sourceBuffer.CanPaste(DataFormats.GetFormat(DataFormats.Rtf)) OrElse sourceBuffer.CanPaste(DataFormats.GetFormat(DataFormats.Text))
+            Me.mnuEditUndo.Enabled = sourceBuffer.CanUndo
+            Me.mnuEditRedo.Enabled = sourceBuffer.CanRedo
         Else
-            mnuEditCut.Enabled = False
-            mnuEditPaste.Enabled = False
-            mnuEditUndo.Enabled = False
-            mnuEditRedo.Enabled = False
+            Me.mnuEditCut.Enabled = False
+            Me.mnuEditPaste.Enabled = False
+            Me.mnuEditUndo.Enabled = False
+            Me.mnuEditRedo.Enabled = False
         End If
     End Sub
 
     Private Sub mnuEditCopy_Click(sender As Object, e As EventArgs) Handles mnuEditCopy.Click
-        If TypeOf CurrentBuffer Is RichTextBox Then
-            CType(CurrentBuffer, RichTextBox).Copy()
+        If TypeOf Me.CurrentBuffer Is RichTextBox Then
+            CType(Me.CurrentBuffer, RichTextBox).Copy()
         Else
-            Clipboard.SetText(CType(CurrentBuffer, ListBox).Text)
+            Clipboard.SetText(CType(Me.CurrentBuffer, ListBox).Text)
         End If
     End Sub
 
     Private Sub mnuEditCut_Click(sender As Object, e As EventArgs) Handles mnuEditCut.Click
-        If TypeOf CurrentBuffer Is RichTextBox Then
-            CType(CurrentBuffer, RichTextBox).Cut()
+        If TypeOf Me.CurrentBuffer Is RichTextBox Then
+            CType(Me.CurrentBuffer, RichTextBox).Cut()
         End If
     End Sub
 
     Private Sub mnuEditFind_Click(sender As Object, e As EventArgs) Handles mnuEditFind.Click
-        TSFindToolStrip.Visible = Not TSFindToolStrip.Visible
+        Me.TSFindToolStrip.Visible = Not Me.TSFindToolStrip.Visible
     End Sub
 
     Private Sub mnuEditPaste_Click(sender As Object, e As EventArgs) Handles mnuEditPaste.Click
-        If TypeOf CurrentBuffer Is RichTextBox Then
-            CType(CurrentBuffer, RichTextBox).SelectedText = Clipboard.GetText(TextDataFormat.Text)
+        If TypeOf Me.CurrentBuffer Is RichTextBox Then
+            CType(Me.CurrentBuffer, RichTextBox).SelectedText = Clipboard.GetText(TextDataFormat.Text)
         End If
     End Sub
 
     Private Sub mnuEditRedo_Click(sender As Object, e As EventArgs) Handles mnuEditRedo.Click
-        Dim sourceControl As RichTextBox = TryCast(CurrentBuffer, RichTextBox)
+        Dim sourceControl As RichTextBox = TryCast(Me.CurrentBuffer, RichTextBox)
         If sourceControl IsNot Nothing AndAlso sourceControl.CanRedo Then
             sourceControl.Redo()
         End If
@@ -548,7 +548,7 @@ Partial Public Class Form1
     End Sub
 
     Private Sub mnuEditSelectAll_Click(sender As Object, e As EventArgs) Handles mnuEditSelectAll.Click
-        Dim sourceControl As RichTextBox = TryCast(CurrentBuffer, RichTextBox)
+        Dim sourceControl As RichTextBox = TryCast(Me.CurrentBuffer, RichTextBox)
         If sourceControl IsNot Nothing Then
             sourceControl.SelectAll()
         End If
@@ -556,14 +556,14 @@ Partial Public Class Form1
     End Sub
 
     Private Sub mnuEditUndo_Click(sender As Object, e As EventArgs) Handles mnuEditUndo.Click
-        Dim sourceControl As RichTextBox = TryCast(CurrentBuffer, RichTextBox)
+        Dim sourceControl As RichTextBox = TryCast(Me.CurrentBuffer, RichTextBox)
         If sourceControl IsNot Nothing AndAlso sourceControl.CanUndo Then
             sourceControl.Undo()
         End If
     End Sub
 
     Private Sub mnuFile_DropDownOpening(sender As Object, e As EventArgs) Handles mnuFile.DropDownOpening
-        mnuFileLoadLastSnippet.Enabled = File.Exists(s_snippetFileWithPath)
+        Me.mnuFileLoadLastSnippet.Enabled = File.Exists(s_snippetFileWithPath)
     End Sub
 
     Private Sub mnuFileExit_Click(sender As Object, e As EventArgs) Handles mnuFileExit.Click
@@ -610,7 +610,7 @@ Partial Public Class Form1
 
     Private Sub mnuFileOpen_Click(sender As Object, e As EventArgs) Handles mnuFileOpen.Click
         Dim LanguageExtension As String = "cs"
-        With OpenFileDialog1
+        With Me.OpenFileDialog1
             .AddExtension = True
             .DefaultExt = LanguageExtension
             .InitialDirectory = My.Settings.DefaultProjectDirectory
@@ -622,13 +622,13 @@ Partial Public Class Form1
             .Title = $"Open C# Source file"
             .ValidateNames = True
             If .ShowDialog = DialogResult.OK Then
-                OpenSourceFile(Me, OpenFileDialog1.FileName)
+                OpenSourceFile(Me, Me.OpenFileDialog1.FileName)
             End If
         End With
     End Sub
 
     Private Sub mnuFileOpenProject_Click(sender As Object, e As EventArgs) Handles mnuFileConvertProject.Click
-        With OpenFileDialog1
+        With Me.OpenFileDialog1
             .AddExtension = True
             .CheckFileExists = True
             .CheckPathExists = True
@@ -648,36 +648,36 @@ Partial Public Class Form1
 
     Private Sub mnuFileSaveAs_Click(sender As Object, e As EventArgs) Handles mnuFileSaveAs.Click
 
-        SaveFileDialog1.AddExtension = True
-        SaveFileDialog1.CreatePrompt = False
-        SaveFileDialog1.DefaultExt = "vb"
-        SaveFileDialog1.FileName = Path.ChangeExtension(OpenFileDialog1.SafeFileName, "vb")
-        SaveFileDialog1.Filter = "VB Code Files (*.vb)|*.vb"
-        SaveFileDialog1.FilterIndex = 0
-        SaveFileDialog1.OverwritePrompt = True
-        SaveFileDialog1.SupportMultiDottedExtensions = False
-        SaveFileDialog1.Title = $"Save {SaveFileDialog1.DefaultExt} Output..."
-        SaveFileDialog1.ValidateNames = True
-        Dim FileSaveResult As DialogResult = SaveFileDialog1.ShowDialog
+        Me.SaveFileDialog1.AddExtension = True
+        Me.SaveFileDialog1.CreatePrompt = False
+        Me.SaveFileDialog1.DefaultExt = "vb"
+        Me.SaveFileDialog1.FileName = Path.ChangeExtension(Me.OpenFileDialog1.SafeFileName, "vb")
+        Me.SaveFileDialog1.Filter = "VB Code Files (*.vb)|*.vb"
+        Me.SaveFileDialog1.FilterIndex = 0
+        Me.SaveFileDialog1.OverwritePrompt = True
+        Me.SaveFileDialog1.SupportMultiDottedExtensions = False
+        Me.SaveFileDialog1.Title = $"Save {Me.SaveFileDialog1.DefaultExt} Output..."
+        Me.SaveFileDialog1.ValidateNames = True
+        Dim FileSaveResult As DialogResult = Me.SaveFileDialog1.ShowDialog
         If FileSaveResult = DialogResult.OK Then
-            ConversionOutput.SaveFile(SaveFileDialog1.FileName, RichTextBoxStreamType.PlainText)
+            Me.ConversionOutput.SaveFile(Me.SaveFileDialog1.FileName, RichTextBoxStreamType.PlainText)
         End If
     End Sub
 
     Private Sub mnuFileSnippetLoadLast_Click(sender As Object, e As EventArgs) Handles mnuFileLoadLastSnippet.Click
         If My.Settings.ColorizeInput Then
-            mnuConvertConvertSnippet.Enabled = 0 <> LoadInputBufferFromStream(Me, s_snippetFileWithPath)
+            Me.mnuConvertConvertSnippet.Enabled = 0 <> LoadInputBufferFromStream(Me, s_snippetFileWithPath)
         Else
-            ConversionInput.LoadFile(s_snippetFileWithPath, RichTextBoxStreamType.PlainText)
+            Me.ConversionInput.LoadFile(s_snippetFileWithPath, RichTextBoxStreamType.PlainText)
         End If
-        mnuCompile.Enabled = True
+        Me.mnuCompile.Enabled = True
     End Sub
 
     Private Sub mnuFileSnippetSave_Click(sender As Object, e As EventArgs) Handles mnuFileSaveSnippet.Click
-        If ConversionInput.TextLength = 0 Then
+        If Me.ConversionInput.TextLength = 0 Then
             Exit Sub
         End If
-        ConversionInput.SaveFile(s_snippetFileWithPath, RichTextBoxStreamType.PlainText)
+        Me.ConversionInput.SaveFile(s_snippetFileWithPath, RichTextBoxStreamType.PlainText)
     End Sub
 
     Private Sub mnuHelpAboutMenuItem_Click(sender As Object, e As EventArgs) Handles mnuHelpAboutMenuItem.Click
@@ -690,13 +690,13 @@ Partial Public Class Form1
         Dim webAddress As String = "http://github.com/paul1956/CSharpToVB/issues"
         Try
             'Devices.Mouse.OverrideCursor = Cursors.AppStarting
-            Cursor = Cursors.AppStarting
+            Me.Cursor = Cursors.AppStarting
             launchBrowser(webAddress)
         Catch ex As Exception
             Stop
             Throw
         Finally
-            Cursor = Cursors.AppStarting
+            Me.Cursor = Cursors.AppStarting
             'Devices.Mouse.OverrideCursor = Nothing
         End Try
     End Sub
@@ -739,19 +739,19 @@ Partial Public Class Form1
     End Sub
 
     Private Sub mnuOptionsColorizeResult_Click(sender As Object, e As EventArgs) Handles mnuOptionsColorizeResult.Click
-        My.Settings.ColorizeOutput = mnuOptionsColorizeResult.Checked
+        My.Settings.ColorizeOutput = Me.mnuOptionsColorizeResult.Checked
         My.Settings.Save()
         Application.DoEvents()
     End Sub
 
     Private Sub mnuOptionsColorizeSource_Click(sender As Object, e As EventArgs) Handles mnuOptionsColorizeSource.Click
-        My.Settings.ColorizeInput = mnuOptionsColorizeSource.Checked
+        My.Settings.ColorizeInput = Me.mnuOptionsColorizeSource.Checked
         My.Settings.Save()
         Application.DoEvents()
     End Sub
 
     Private Sub mnuOptionsDelayBetweenConversions_SelectedIndexChanged(sender As Object, e As EventArgs) Handles mnuOptionsDelayBetweenConversions.SelectedIndexChanged
-        Select Case mnuOptionsDelayBetweenConversions.Text.Substring("Delay Between Conversions = ".Length)
+        Select Case Me.mnuOptionsDelayBetweenConversions.Text.Substring("Delay Between Conversions = ".Length)
             Case "None"
                 If My.Settings.ConversionDelay <> 0 Then
                     My.Settings.ConversionDelay = 0
@@ -799,26 +799,26 @@ Partial Public Class Form1
     End Sub
 
     Private Sub mnuOptionsPauseConvertOnSuccess_Click(sender As Object, e As EventArgs) Handles mnuOptionsPauseConvertOnSuccess.Click
-        My.Settings.PauseConvertOnSuccess = mnuOptionsPauseConvertOnSuccess.Checked
+        My.Settings.PauseConvertOnSuccess = Me.mnuOptionsPauseConvertOnSuccess.Checked
         My.Settings.Save()
         Application.DoEvents()
     End Sub
 
     Private Sub mnuView_DropDownOpening(sender As Object, e As EventArgs) Handles mnuView.DropDownOpening
-        mnuViewShowDestinationLineNumbers.Enabled = ConversionOutput.TextLength > 0
-        mnuViewShowSourceLineNumbers.Enabled = ConversionInput.TextLength > 0
+        Me.mnuViewShowDestinationLineNumbers.Enabled = Me.ConversionOutput.TextLength > 0
+        Me.mnuViewShowSourceLineNumbers.Enabled = Me.ConversionInput.TextLength > 0
     End Sub
 
     Private Sub mnuViewShowDestinationLineNumbers_Click(sender As Object, e As EventArgs) Handles mnuViewShowDestinationLineNumbers.Click
         Dim checked As Boolean = CType(sender, ToolStripMenuItem).Checked
-        LineNumbersForConversionOutput.Visible = checked
+        Me.LineNumbersForConversionOutput.Visible = checked
         My.Settings.ShowDestinationLineNumbers = checked
         My.Settings.Save()
     End Sub
 
     Private Sub mnuViewShowSourceLineNumbers_CheckStateChanged(sender As Object, e As EventArgs) Handles mnuViewShowSourceLineNumbers.CheckStateChanged
         Dim checked As Boolean = CType(sender, ToolStripMenuItem).Checked
-        LineNumbersForConversionInput.Visible = checked
+        Me.LineNumbersForConversionInput.Visible = checked
     End Sub
 
     Private Sub mnuViewShowSourceLineNumbers_Click(sender As Object, e As EventArgs) Handles mnuViewShowSourceLineNumbers.Click
@@ -828,8 +828,8 @@ Partial Public Class Form1
     End Sub
 
     Private Sub SplitContainer1_SplitterMoved(sender As Object, e As SplitterEventArgs) Handles SplitContainer1.SplitterMoved
-        ListBoxFileList.Height = SplitContainer1.Panel2.ClientSize.Height
-        ListBoxErrorList.Height = SplitContainer1.Panel2.ClientSize.Height
+        Me.ListBoxFileList.Height = Me.SplitContainer1.Panel2.ClientSize.Height
+        Me.ListBoxErrorList.Height = Me.SplitContainer1.Panel2.ClientSize.Height
     End Sub
 
     Private Sub StatusStripCurrentFileName_MouseDown(sender As Object, e As MouseEventArgs) Handles StatusStripCurrentFileName.MouseDown
@@ -856,10 +856,10 @@ Partial Public Class Form1
             My.Settings.TSFindMRU_Data = New Specialized.StringCollection
             My.Settings.Save()
         End If
-        TSFindFindWhatComboBox.TSFindWhatMRUUpdateUI()
+        Me.TSFindFindWhatComboBox.TSFindWhatMRUUpdateUI()
 
         ' display MRU if there are any items to display...
-        mnuFile.DropDownItems.FileMenuMRUUpdateUI(AddressOf Me.mnu_MRUList_Click)
+        Me.mnuFile.DropDownItems.FileMenuMRUUpdateUI(AddressOf Me.mnu_MRUList_Click)
     End Sub
 
     ''' <summary>
@@ -876,19 +876,19 @@ Partial Public Class Form1
 
     Private Sub TSFindClearHighlightsButton_Click(sender As Object, e As EventArgs) Handles TSFindClearHighlightsButton.Click
         Dim selectionstart As Integer
-        If BufferToSearch.IsFlagSet(SearchBuffers.CS) Then
-            selectionstart = ConversionInput.SelectionStart
-            ConversionInput.SelectAll()
-            ConversionInput.SelectionBackColor = Color.White
-            ConversionInput.Select(selectionstart, 0)
-            ConversionInput.ScrollToCaret()
+        If Me.BufferToSearch.IsFlagSet(SearchBuffers.CS) Then
+            selectionstart = Me.ConversionInput.SelectionStart
+            Me.ConversionInput.SelectAll()
+            Me.ConversionInput.SelectionBackColor = Color.White
+            Me.ConversionInput.Select(selectionstart, 0)
+            Me.ConversionInput.ScrollToCaret()
         End If
-        If BufferToSearch.IsFlagSet(SearchBuffers.VB) Then
-            selectionstart = ConversionOutput.SelectionStart
-            ConversionOutput.SelectAll()
-            ConversionOutput.SelectionBackColor = Color.White
-            ConversionOutput.Select(selectionstart, 0)
-            ConversionOutput.ScrollToCaret()
+        If Me.BufferToSearch.IsFlagSet(SearchBuffers.VB) Then
+            selectionstart = Me.ConversionOutput.SelectionStart
+            Me.ConversionOutput.SelectAll()
+            Me.ConversionOutput.SelectionBackColor = Color.White
+            Me.ConversionOutput.Select(selectionstart, 0)
+            Me.ConversionOutput.ScrollToCaret()
         End If
         Application.DoEvents()
     End Sub
@@ -902,16 +902,16 @@ Partial Public Class Form1
     End Sub
 
     Private Sub TSFindFindWhatComboBox_Click(sender As Object, e As EventArgs) Handles TSFindFindWhatComboBox.Click
-        If TSFindFindWhatComboBox.Text = "Search..." Then
-            TSFindFindWhatComboBox.Text = ""
-            TSFindFindWhatComboBox.ForeColor = SystemColors.ControlText
+        If Me.TSFindFindWhatComboBox.Text = "Search..." Then
+            Me.TSFindFindWhatComboBox.Text = ""
+            Me.TSFindFindWhatComboBox.ForeColor = SystemColors.ControlText
         End If
     End Sub
 
     Private Sub TSFindFindWhatComboBox_Leave(sender As Object, e As EventArgs) Handles TSFindFindWhatComboBox.Leave
-        If Not TSFindFindWhatComboBox.Text.Any Then
-            TSFindFindWhatComboBox.ForeColor = SystemColors.GrayText
-            TSFindFindWhatComboBox.Text = "Search..."
+        If Not Me.TSFindFindWhatComboBox.Text.Any Then
+            Me.TSFindFindWhatComboBox.ForeColor = SystemColors.GrayText
+            Me.TSFindFindWhatComboBox.Text = "Search..."
         End If
     End Sub
 
@@ -928,24 +928,24 @@ Partial Public Class Form1
     End Sub
 
     Private Sub TSFindLookInComboBox_SelectedIndexChanged(sender As Object, e As EventArgs) Handles TSFindLookInComboBox.SelectedIndexChanged
-        Select Case TSFindLookInComboBox.SelectedIndex
+        Select Case Me.TSFindLookInComboBox.SelectedIndex
             Case 0
-                BufferToSearch = SearchBuffers.CS
+                Me.BufferToSearch = SearchBuffers.CS
             Case 1
-                BufferToSearch = SearchBuffers.VB
+                Me.BufferToSearch = SearchBuffers.VB
             Case 2
-                BufferToSearch = SearchBuffers.Both
+                Me.BufferToSearch = SearchBuffers.Both
         End Select
         Me.SetSearchControls()
     End Sub
 
     Private Sub TSFindMatchCaseCheckBox_Click(sender As Object, e As EventArgs) Handles TSFindMatchCaseCheckBox.Click
-        My.Settings.TSFindMatchCase = TSFindMatchCaseCheckBox.Checked
+        My.Settings.TSFindMatchCase = Me.TSFindMatchCaseCheckBox.Checked
         My.Settings.Save()
     End Sub
 
     Private Sub TSFindMatchWholeWordCheckBox_Click(sender As Object, e As EventArgs) Handles TSFindMatchWholeWordCheckBox.Click
-        My.Settings.TSFindMatchWholeWord = TSFindMatchWholeWordCheckBox.Checked
+        My.Settings.TSFindMatchWholeWord = Me.TSFindMatchWholeWordCheckBox.Checked
         My.Settings.Save()
     End Sub
 
@@ -954,41 +954,41 @@ Partial Public Class Form1
 #Region "Form Support Routines"
 
     Private Sub ResizeRichTextBuffers()
-        Dim LineNumberInputWidth As Integer = If(LineNumbersForConversionInput.Visible AndAlso ConversionInput.TextLength > 0, LineNumbersForConversionInput.Width, 0)
-        Dim LineNumberOutputWidth As Integer = If(LineNumbersForConversionOutput.Visible AndAlso ConversionOutput.TextLength > 0, LineNumbersForConversionOutput.Width, 0)
-        Dim HalfClientWidth As Integer = ClientSize.Width \ 2
-        ConversionInput.Width = HalfClientWidth - LineNumberInputWidth
-        ListBoxFileList.Width = HalfClientWidth
+        Dim LineNumberInputWidth As Integer = If(Me.LineNumbersForConversionInput.Visible AndAlso Me.ConversionInput.TextLength > 0, Me.LineNumbersForConversionInput.Width, 0)
+        Dim LineNumberOutputWidth As Integer = If(Me.LineNumbersForConversionOutput.Visible AndAlso Me.ConversionOutput.TextLength > 0, Me.LineNumbersForConversionOutput.Width, 0)
+        Dim HalfClientWidth As Integer = Me.ClientSize.Width \ 2
+        Me.ConversionInput.Width = HalfClientWidth - LineNumberInputWidth
+        Me.ListBoxFileList.Width = HalfClientWidth
 
-        ConversionOutput.Width = ClientSize.Width - (ConversionInput.Width + LineNumberInputWidth + LineNumberOutputWidth)
-        ConversionOutput.Left = ConversionInput.Width + LineNumberInputWidth + LineNumberOutputWidth
+        Me.ConversionOutput.Width = Me.ClientSize.Width - (Me.ConversionInput.Width + LineNumberInputWidth + LineNumberOutputWidth)
+        Me.ConversionOutput.Left = Me.ConversionInput.Width + LineNumberInputWidth + LineNumberOutputWidth
 
-        ListBoxErrorList.Left = HalfClientWidth
-        ListBoxErrorList.Width = HalfClientWidth
-        StatusStripCurrentFileName.Width = HalfClientWidth
+        Me.ListBoxErrorList.Left = HalfClientWidth
+        Me.ListBoxErrorList.Width = HalfClientWidth
+        Me.StatusStripCurrentFileName.Width = HalfClientWidth
     End Sub
 
     Friend Sub UpdateProgressLabels(progressStr As String, Value As Boolean)
-        If InvokeRequired Then
+        If Me.InvokeRequired Then
             Me.Invoke(Sub()
-                          ProjectConversionInitProgressLabel.Text = progressStr
+                          Me.ProjectConversionInitProgressLabel.Text = progressStr
                           If Value Then
-                              ConversionInput.Text = ""
-                              ConversionOutput.Text = ""
-                              ProjectConversionInitProgressLabel.Visible = True
-                              ProjectConversionInitProgressBar.Visible = True
+                              Me.ConversionInput.Text = ""
+                              Me.ConversionOutput.Text = ""
+                              Me.ProjectConversionInitProgressLabel.Visible = True
+                              Me.ProjectConversionInitProgressBar.Visible = True
                           Else
-                              ProjectConversionInitProgressLabel.Visible = False
-                              ProjectConversionInitProgressBar.Visible = False
+                              Me.ProjectConversionInitProgressLabel.Visible = False
+                              Me.ProjectConversionInitProgressBar.Visible = False
                           End If
                           Application.DoEvents()
                       End Sub)
         Else
             Me.Invoke(Sub()
-                          ProjectConversionInitProgressLabel.Text = progressStr
+                          Me.ProjectConversionInitProgressLabel.Text = progressStr
                           If Value Then
-                              ConversionInput.Text = ""
-                              ConversionOutput.Text = ""
+                              Me.ConversionInput.Text = ""
+                              Me.ConversionOutput.Text = ""
                           End If
                           Application.DoEvents()
                       End Sub)

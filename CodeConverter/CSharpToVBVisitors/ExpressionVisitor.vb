@@ -102,7 +102,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 End Try
                 Dim isFunction As Boolean = Not (returnsVoid OrElse TypeOf node.Body Is CSS.AssignmentExpressionSyntax)
                 Dim modifiersList As SyntaxTokenList
-                modifiersList = modifiersList.AddRange(ConvertModifiers(Modifiers, IsModule, TokenContext.Local))
+                modifiersList = modifiersList.AddRange(ConvertModifiers(Modifiers, Me.IsModule, TokenContext.Local))
                 Dim endSubOrFunctionStatement As EndBlockStatementSyntax
                 Dim parameterList As ParameterListSyntax = Factory.ParameterList(Factory.SeparatedList(vbNodes, vbSeparators))
                 Dim csBraces As (LeftBrace As SyntaxToken, RightBrace As SyntaxToken) = node.Body.GetBraces

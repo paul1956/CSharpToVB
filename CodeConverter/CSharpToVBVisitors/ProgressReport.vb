@@ -19,7 +19,7 @@ Namespace CSharpToVBConverter
         End Function
 
         Public Overloads Function Equals(other As ProgressReport) As Boolean Implements IEquatable(Of ProgressReport).Equals
-            Return Current = other.Current AndAlso Maximum = other.Maximum
+            Return Me.Current = other.Current AndAlso Me.Maximum = other.Maximum
         End Function
 
 #If NET48 Then
@@ -29,7 +29,7 @@ Namespace CSharpToVBConverter
 #Else
 
         Public Overrides Function GetHashCode() As Integer
-            Return HashCode.Combine(Current, Maximum)
+            Return HashCode.Combine(Me.Current, Me.Maximum)
         End Function
 
 #End If

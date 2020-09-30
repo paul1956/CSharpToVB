@@ -7,7 +7,7 @@ Public Class OptionsDialog
     Private _selectedColorName As String = "default"
 
     Private Sub Cancel_Button_Click(sender As Object, e As EventArgs) Handles Cancel_Button.Click
-        DialogResult = DialogResult.Cancel
+        Me.DialogResult = DialogResult.Cancel
         Me.Close()
     End Sub
 
@@ -27,59 +27,59 @@ Public Class OptionsDialog
     End Sub
 
     Private Sub ItemColor_ComboBox_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ItemColor_ComboBox.SelectedIndexChanged
-        _selectedColorName = CStr(ItemColor_ComboBox.SelectedItem)
+        _selectedColorName = CStr(Me.ItemColor_ComboBox.SelectedItem)
         _selectedColor = ColorSelector.GetColorFromName(_selectedColorName)
     End Sub
 
     Private Sub OK_Button_Click(sender As Object, e As EventArgs) Handles OK_Button.Click
-        My.Settings.DefaultProjectDirectory = CType(ProjectDirectoryList.SelectedItem, MyListItem).Value
+        My.Settings.DefaultProjectDirectory = CType(Me.ProjectDirectoryList.SelectedItem, MyListItem).Value
         My.Settings.Save()
-        DialogResult = DialogResult.OK
-        Cursor = Cursors.WaitCursor
+        Me.DialogResult = DialogResult.OK
+        Me.Cursor = Cursors.WaitCursor
         Application.DoEvents()
         ColorSelector.WriteColorDictionaryToFile()
-        Cursor = Cursors.Default
-        My.Settings.OptionCompare = ComboBoxCompare.SelectedItem.ToString
-        My.Settings.OptionCompareIncludeInCode = CheckBoxCompare.Checked
-        My.Settings.OptionExplicit = ComboBoxExplicit.SelectedItem.ToString
-        My.Settings.OptionExplicitIncludeInCode = CheckBoxExplicit.Checked
-        My.Settings.OptionInfer = ComboBoxInfer.SelectedItem.ToString
-        My.Settings.OptionInferIncludeInCode = CheckBoxInfer.Checked
-        My.Settings.OptionStrict = ComboBoxStrict.SelectedItem.ToString
-        My.Settings.OptionStrictIncludeInCode = CheckBoxStrict.Checked
+        Me.Cursor = Cursors.Default
+        My.Settings.OptionCompare = Me.ComboBoxCompare.SelectedItem.ToString
+        My.Settings.OptionCompareIncludeInCode = Me.CheckBoxCompare.Checked
+        My.Settings.OptionExplicit = Me.ComboBoxExplicit.SelectedItem.ToString
+        My.Settings.OptionExplicitIncludeInCode = Me.CheckBoxExplicit.Checked
+        My.Settings.OptionInfer = Me.ComboBoxInfer.SelectedItem.ToString
+        My.Settings.OptionInferIncludeInCode = Me.CheckBoxInfer.Checked
+        My.Settings.OptionStrict = Me.ComboBoxStrict.SelectedItem.ToString
+        My.Settings.OptionStrictIncludeInCode = Me.CheckBoxStrict.Checked
         My.Settings.Save()
         Application.DoEvents()
         Me.Close()
     End Sub
 
     Private Sub OptionsDialog_Load(sender As Object, e As EventArgs) Handles Me.Load
-        ProjectDirectoryList.Items.Add(New MyListItem("Projects", GetLatestVisualStudioProjectPath))
-        ProjectDirectoryList.Items.Add(New MyListItem("Repos", GetAlternetVisualStudioProjectsPath))
-        ProjectDirectoryList.SelectedIndex = 0
-        For index As Integer = 0 To ProjectDirectoryList.Items.Count - 1
-            If CType(ProjectDirectoryList.Items(index), MyListItem).Value = My.Settings.DefaultProjectDirectory Then
-                ProjectDirectoryList.SelectedIndex = index
+        Me.ProjectDirectoryList.Items.Add(New MyListItem("Projects", GetLatestVisualStudioProjectPath))
+        Me.ProjectDirectoryList.Items.Add(New MyListItem("Repos", GetAlternetVisualStudioProjectsPath))
+        Me.ProjectDirectoryList.SelectedIndex = 0
+        For index As Integer = 0 To Me.ProjectDirectoryList.Items.Count - 1
+            If CType(Me.ProjectDirectoryList.Items(index), MyListItem).Value = My.Settings.DefaultProjectDirectory Then
+                Me.ProjectDirectoryList.SelectedIndex = index
                 Exit For
             End If
         Next
         For Each Name As String In ColorSelector.GetColorNameList()
-            ItemColor_ComboBox.Items.Add(Name)
+            Me.ItemColor_ComboBox.Items.Add(Name)
         Next Name
-        ItemColor_ComboBox.SelectedIndex = ItemColor_ComboBox.FindStringExact("default")
-        ComboBoxCompare.SelectedItem = My.Settings.OptionCompare
-        ComboBoxExplicit.SelectedItem = My.Settings.OptionExplicit
-        ComboBoxInfer.SelectedItem = My.Settings.OptionInfer
-        ComboBoxStrict.SelectedItem = My.Settings.OptionStrict
-        CheckBoxCompare.Checked = My.Settings.OptionCompareIncludeInCode
-        CheckBoxExplicit.Checked = My.Settings.OptionExplicitIncludeInCode
-        CheckBoxInfer.Checked = My.Settings.OptionInferIncludeInCode
-        CheckBoxStrict.Checked = My.Settings.OptionStrictIncludeInCode
+        Me.ItemColor_ComboBox.SelectedIndex = Me.ItemColor_ComboBox.FindStringExact("default")
+        Me.ComboBoxCompare.SelectedItem = My.Settings.OptionCompare
+        Me.ComboBoxExplicit.SelectedItem = My.Settings.OptionExplicit
+        Me.ComboBoxInfer.SelectedItem = My.Settings.OptionInfer
+        Me.ComboBoxStrict.SelectedItem = My.Settings.OptionStrict
+        Me.CheckBoxCompare.Checked = My.Settings.OptionCompareIncludeInCode
+        Me.CheckBoxExplicit.Checked = My.Settings.OptionExplicitIncludeInCode
+        Me.CheckBoxInfer.Checked = My.Settings.OptionInferIncludeInCode
+        Me.CheckBoxStrict.Checked = My.Settings.OptionStrictIncludeInCode
     End Sub
 
     Private Sub UpdateColor_Button_Click(sender As Object, e As EventArgs) Handles UpdateColor_Button.Click
-        ColorDialog1.Color = _selectedColor
-        If ColorDialog1.ShowDialog <> DialogResult.Cancel Then
-            ColorSelector.SetColor(ItemColor_ComboBox.Items(ItemColor_ComboBox.SelectedIndex).ToString, ColorDialog1.Color)
+        Me.ColorDialog1.Color = _selectedColor
+        If Me.ColorDialog1.ShowDialog <> DialogResult.Cancel Then
+            ColorSelector.SetColor(Me.ItemColor_ComboBox.Items(Me.ItemColor_ComboBox.SelectedIndex).ToString, Me.ColorDialog1.Color)
             Application.DoEvents()
         End If
     End Sub
@@ -96,7 +96,7 @@ Public Class OptionsDialog
         Public ReadOnly Property Value() As String
 
         Public Overrides Function ToString() As String
-            Return Text
+            Return Me.Text
         End Function
 
     End Class

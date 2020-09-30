@@ -275,7 +275,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         vbStatements.Add(localFunction, replacementStatement)
                     End If
                 Next
-                Dim Modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, IsModule, TokenContext.New).ToList
+                Dim Modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, Me.IsModule, TokenContext.New).ToList
 
                 Dim parameterList As VBS.ParameterListSyntax = DirectCast(node.ParameterList?.Accept(Me), VBS.ParameterListSyntax)
                 Dim SubNewStatement As VBS.StatementSyntax =
@@ -343,7 +343,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Me.ConvertAndSplitAttributes(node.AttributeLists, AttributeLists, ReturnAttributes, FinalTrailingDirective)
                 Dim parameterList As VBS.ParameterListSyntax = DirectCast(node.ParameterList?.Accept(Me), VBS.ParameterListSyntax).
                                                                     WithRestructuredingEOLTrivia
-                Dim Modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, IsModule, TokenContext.Member).ToList
+                Dim Modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, Me.IsModule, TokenContext.Member).ToList
                 Dim visitor As New MethodBodyVisitor(_mSemanticModel, Me)
                 Modifiers.Add(If(node.ImplicitOrExplicitKeyword.ValueText = "explicit", NarrowingKeyword, WideningKeyword))
                 Dim Type As VBS.TypeSyntax = DirectCast(node.Type.Accept(Me), VBS.TypeSyntax).With({VBSpaceTrivia}, {VBSpaceTrivia})
@@ -393,7 +393,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim ReturnAttributes As SyntaxList(Of VBS.AttributeListSyntax) = Nothing
                 Dim FinalTrailingDirective As New SyntaxTriviaList
                 Me.ConvertAndSplitAttributes(node.AttributeLists, Attributes, ReturnAttributes, FinalTrailingDirective)
-                Dim Modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, IsModule, TokenContext.Member).ToList
+                Dim Modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, Me.IsModule, TokenContext.Member).ToList
                 Dim eventNameToken As SyntaxToken = GenerateSafeVBToken(node.Identifier, node, _mSemanticModel).WithTrailingTrivia(VBSpaceTrivia)
                 Dim AsClause As VBS.SimpleAsClauseSyntax = Factory.SimpleAsClause(attributeLists:=ReturnAttributes, DirectCast(node.Type.Accept(Me), VBS.TypeSyntax))
                 Modifiers.Add(CustomKeyword)
@@ -410,7 +410,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim accessors As New List(Of VBS.AccessorBlockSyntax)
                 For Each e As IndexClass(Of CSS.AccessorDeclarationSyntax) In node.AccessorList.Accessors.WithIndex
                     If e.Value.Body IsNot Nothing OrElse e.Value.ExpressionBody IsNot Nothing Then
-                        accessors.Add(Me.ConvertAccessor(e.Value, IsModule, isIterator:=False))
+                        accessors.Add(Me.ConvertAccessor(e.Value, Me.IsModule, isIterator:=False))
                     End If
                 Next
                 If accessors.Any Then
@@ -432,7 +432,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Stop
                 End If
                 Return Factory.EventStatement(Factory.List(AttributeList),
-                                     Factory.TokenList(ConvertModifiers(node.Modifiers, IsModule, TokenContext.Member)),
+                                     Factory.TokenList(ConvertModifiers(node.Modifiers, Me.IsModule, TokenContext.Member)),
                                                     id,
                                                     parameterList:=Nothing,
                                                     Factory.SimpleAsClause(attributeLists:=Nothing, DirectCast(node.Declaration.Type.Accept(Me), VBS.TypeSyntax)).WithTrailingEOL,
@@ -450,7 +450,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Next
                 End If
                 Dim modifierList As New List(Of SyntaxToken)
-                modifierList.AddRange(ConvertModifiers(node.Modifiers, IsModule, variableOrConstOrReadonly))
+                modifierList.AddRange(ConvertModifiers(node.Modifiers, Me.IsModule, variableOrConstOrReadonly))
                 If modifierList.Count = 0 Then
                     modifierList.Add(PrivateKeyword.WithLeadingTrivia(node.Declaration.Type.GetLeadingTrivia.ConvertTriviaList()))
                 End If
@@ -505,12 +505,12 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 If node.AccessorList IsNot Nothing Then
                     For Each a As CSS.AccessorDeclarationSyntax In node.AccessorList.Accessors
                         Dim _isIterator As Boolean
-                        accessors.Add(Me.ConvertAccessor(a, IsModule, _isIterator))
+                        accessors.Add(Me.ConvertAccessor(a, Me.IsModule, _isIterator))
                         isIterator = isIterator Or _isIterator
                     Next
                 End If
 
-                Dim modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, IsModule, TokenContext.Member).ToList
+                Dim modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, Me.IsModule, TokenContext.Member).ToList
                 If modifiers.Any Then
                     modifiers.Insert(0, DefaultKeyword.WithLeadingTrivia(modifiers(0).LeadingTrivia))
                     modifiers(1) = modifiers(1).WithLeadingTrivia(VBSpaceTrivia)
@@ -674,13 +674,13 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     body = Factory.List(Of VBS.StatementSyntax)()
                 End If
                 Dim Modifiers As List(Of SyntaxToken)
-                If IsModule AndAlso
+                If Me.IsModule AndAlso
                     methodNameToken.ValueText = "Main" AndAlso
                     node.Modifiers.Count = 1 AndAlso
                     node.Modifiers(0).ValueText = "static" Then
                     Modifiers = PublicModifier.ToList
                 Else
-                    Modifiers = ConvertModifiers(node.Modifiers, IsModule, If(containingType?.IsInterfaceType() = True, TokenContext.Local, TokenContext.Member)).ToList
+                    Modifiers = ConvertModifiers(node.Modifiers, Me.IsModule, If(containingType?.IsInterfaceType() = True, TokenContext.Local, TokenContext.Member)).ToList
                 End If
                 If visitor.IsInterator And Not returnVoid Then
                     Modifiers.Add(IteratorKeyword)
@@ -964,7 +964,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Stop
                 End If
                 Dim parameterList As VBS.ParameterListSyntax = DirectCast(node.ParameterList?.Accept(Me), VBS.ParameterListSyntax).WithRestructuredingEOLTrivia
-                Dim Modifiers As SyntaxTokenList = Factory.TokenList(ConvertModifiers(node.Modifiers, IsModule, TokenContext.Member))
+                Dim Modifiers As SyntaxTokenList = Factory.TokenList(ConvertModifiers(node.Modifiers, Me.IsModule, TokenContext.Member))
                 Dim lSyntaxKind As CS.SyntaxKind = CS.CSharpExtensions.Kind(node.OperatorToken)
 
                 If node.ParameterList?.Parameters.FirstOrDefault() Is Nothing Then
@@ -1060,7 +1060,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim CSModifiers As SyntaxTokenList = node.Modifiers
                 Dim AsClause As VBS.SimpleAsClauseSyntax = Factory.SimpleAsClause(ReturnAttributes, TypeNode.WithoutTrivia)
                 Dim Context As TokenContext = TokenContext.Property
-                Dim LocalIsModule As Boolean = IsModule OrElse node.Parent.IsKind(CS.SyntaxKind.CompilationUnit)
+                Dim LocalIsModule As Boolean = Me.IsModule OrElse node.Parent.IsKind(CS.SyntaxKind.CompilationUnit)
                 If node.ExpressionBody IsNot Nothing Then
                     Dim ExpressionSyntaxNode As VB.VisualBasicSyntaxNode = node.ExpressionBody.Expression.Accept(Me).WithConvertedLeadingTriviaFrom(node.ExpressionBody.Expression)
                     If TypeOf ExpressionSyntaxNode Is VBS.ThrowStatementSyntax Then

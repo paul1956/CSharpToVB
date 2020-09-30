@@ -5,8 +5,8 @@
 Public Class NumberedListItem
 
     Sub New(display As String, value As String)
-        _displayItem = display
-        _valueItem = value
+        Me._displayItem = display
+        Me._valueItem = value
     End Sub
 
     Private Property _displayItem As String
@@ -15,22 +15,22 @@ Public Class NumberedListItem
 
     Public Property ValueItem As String
         Get
-            Return _valueItem
+            Return Me._valueItem
         End Get
         Set(value As String)
-            _valueItem = value
+            Me._valueItem = value
         End Set
     End Property
 
     Public Function SourceFileWithPath() As String
-        If String.IsNullOrEmpty(_displayItem) Then
+        If String.IsNullOrEmpty(Me._displayItem) Then
             Return String.Empty
         End If
-        Return _displayItem.Split(" ", StringSplitOptions.RemoveEmptyEntries)(1)
+        Return Me._displayItem.Split(" ", StringSplitOptions.RemoveEmptyEntries)(1)
     End Function
 
     Public Overrides Function ToString() As String
-        Return _displayItem.ToString(Globalization.CultureInfo.CurrentCulture)
+        Return Me._displayItem.ToString(Globalization.CultureInfo.CurrentCulture)
     End Function
 
 End Class

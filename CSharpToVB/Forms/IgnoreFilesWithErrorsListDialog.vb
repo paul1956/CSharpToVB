@@ -18,7 +18,7 @@ Public Class IgnoreFilesWithErrorsList
     End Sub
 
     Private Sub Cancel_Button_Click(sender As Object, e As EventArgs) Handles Cancel_Button.Click
-        DialogResult = DialogResult.Cancel
+        Me.DialogResult = DialogResult.Cancel
         Me.Close()
     End Sub
 
@@ -28,12 +28,12 @@ Public Class IgnoreFilesWithErrorsList
             Exit Sub
         End If
         Select Case e.ColumnIndex
-            Case dgvIgnoredFilesList.Columns("Delete").Index
+            Case Me.dgvIgnoredFilesList.Columns("Delete").Index
                 My.Settings.IgnoreFileList.RemoveAt(e.RowIndex)
                 Me.UpdateGrid()
-            Case dgvIgnoredFilesList.Columns("Load").Index
+            Case Me.dgvIgnoredFilesList.Columns("Load").Index
                 _fileToLoad = My.Settings.IgnoreFileList(e.RowIndex)
-                OK_Button.PerformClick()
+                Me.OK_Button.PerformClick()
             Case Else
                 Exit Sub
         End Select
@@ -41,7 +41,7 @@ Public Class IgnoreFilesWithErrorsList
 
     Private Sub IgnoreFilesWithErrorsListDialog_Load(sender As Object, e As EventArgs) Handles Me.Load
         Me.UpdateGrid()
-        If dgvIgnoredFilesList.Columns.Count > 1 Then
+        If Me.dgvIgnoredFilesList.Columns.Count > 1 Then
             Exit Sub
         End If
         ' Initialize the button column.
@@ -49,7 +49,7 @@ Public Class IgnoreFilesWithErrorsList
     End Sub
 
     Private Sub OK_Button_Click(sender As Object, e As EventArgs) Handles OK_Button.Click
-        DialogResult = DialogResult.OK
+        Me.DialogResult = DialogResult.OK
         My.Settings.Save()
         Me.Close()
     End Sub
@@ -59,7 +59,7 @@ Public Class IgnoreFilesWithErrorsList
         For Each s As String In My.Settings.IgnoreFileList
             _list_string.Add(s)
         Next
-        dgvIgnoredFilesList.DataSource = _list_string.Select(Function(x As String) New With {Key .Value = x}).ToList()
+        Me.dgvIgnoredFilesList.DataSource = _list_string.Select(Function(x As String) New With {Key .Value = x}).ToList()
     End Sub
 
 End Class

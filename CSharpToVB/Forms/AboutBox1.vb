@@ -9,16 +9,16 @@ Public NotInheritable Class AboutBox1
     Private Sub AboutBox1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         ' Set the title of the form.
         Dim ApplicationTitle As String = If(My.Application.Info.Title, IO.Path.GetFileNameWithoutExtension(My.Application.Info.AssemblyName))
-        Text = $"About {ApplicationTitle}"
+        Me.Text = $"About {ApplicationTitle}"
         ' Initialize all of the text displayed on the About Box.
 
-        LabelProductName.Text = $"{My.Application.Info.ProductName}"
-        LabelVersion.Text = $"Version {My.Application.Info.Version}"
+        Me.LabelProductName.Text = $"{My.Application.Info.ProductName}"
+        Me.LabelVersion.Text = $"Version {My.Application.Info.Version}"
 
-        LabelCopyright.Text = My.Application.Info.Copyright
-        LabelCompanyName.Text = $"Developer {My.Application.Info.CompanyName}"
+        Me.LabelCopyright.Text = My.Application.Info.Copyright
+        Me.LabelCompanyName.Text = $"Developer {My.Application.Info.CompanyName}"
         Dim coreinfo As New AssemblyInfo(GetType(CSharpToVBConverter.CodeWithOptions).Assembly)
-        TextBoxDescription.Text = $"{My.Application.Info.Description}{vbCrLf}{vbCrLf}{coreinfo.ProductName} {coreinfo.Version}"
+        Me.TextBoxDescription.Text = $"{My.Application.Info.Description}{vbCrLf}{vbCrLf}{coreinfo.ProductName} {coreinfo.Version}"
     End Sub
 
     Private Sub OKButton_Click(sender As Object, e As EventArgs) Handles OKButton.Click

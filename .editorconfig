@@ -166,6 +166,7 @@ csharp_space_between_square_brackets = false
 # Modifier preferences
 visual_basic_preferred_modifier_order = Partial,Default,Private,Protected,Public,Friend,NotOverridable,Overridable,MustOverride,Overloads,Overrides,MustInherit,NotInheritable,Static,Shared,Shadows,ReadOnly,WriteOnly,Dim,Const,WithEvents,Widening,Narrowing,Custom,Async:suggestion
 dotnet_style_qualification_for_method = true:warning
+dotnet_style_qualification_for_property = true:warning
 
 # CA1031: Do not catch general exception types
 dotnet_diagnostic.CA1031.severity = silent

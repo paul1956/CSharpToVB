@@ -22,7 +22,7 @@ Public Class Range
 
     Public ReadOnly Property ClassificationType As String
         Get
-            Return ClassifiedSpan.ClassificationType
+            Return Me.ClassifiedSpan.ClassificationType
         End Get
     End Property
 
@@ -32,7 +32,7 @@ Public Class Range
 
     Public ReadOnly Property TextSpan As TextSpan
         Get
-            Return ClassifiedSpan.TextSpan
+            Return Me.ClassifiedSpan.TextSpan
         End Get
     End Property
 

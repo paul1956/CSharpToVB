@@ -10,8 +10,8 @@ Public Class ToolStripTextProgressBar
     Inherits ToolStripProgressBar
 
     Public Sub New()
-        TextImageRelation = TextImageRelation.Overlay
-        Value = 0
+        Me.TextImageRelation = TextImageRelation.Overlay
+        Me.Value = 0
     End Sub
 
     Public Overloads Property Maximum() As Integer
@@ -26,17 +26,17 @@ Public Class ToolStripTextProgressBar
 
     Private Sub pbPrecentage(Text As String)
         Me.Invalidate()
-        Using g As Graphics = ProgressBar.CreateGraphics()
+        Using g As Graphics = Me.ProgressBar.CreateGraphics()
             g.PixelOffsetMode = PixelOffsetMode.HighSpeed
             'Switch to Anti-aliased drawing for better (smoother) graphic results
             g.SmoothingMode = SmoothingMode.AntiAlias
-            Dim sizeF As SizeF = g.MeasureString(Text, Font)
-            g.DrawString(Text, Font, Brushes.Black, New PointF((Width \ 2) - (sizeF.Width / 2.0F), (Height \ 2) - (sizeF.Height / 2.0F)))
+            Dim sizeF As SizeF = g.MeasureString(Text, Me.Font)
+            g.DrawString(Text, Me.Font, Brushes.Black, New PointF((Me.Width \ 2) - (sizeF.Width / 2.0F), (Me.Height \ 2) - (sizeF.Height / 2.0F)))
         End Using
     End Sub
 
     Public Sub Clear()
-        Value = 0
+        Me.Value = 0
     End Sub
 
     ''' <summary>
@@ -45,18 +45,18 @@ Public Class ToolStripTextProgressBar
     ''' <param name="Value">The amount by which to increment the underlying progress bar's current position.</param>
     Public Overloads Sub Increment(Value As Integer)
         MyBase.Increment(Value)
-        Me.pbPrecentage($"{ MyBase.Value:N0} of { Maximum:N0}")
+        Me.pbPrecentage($"{ MyBase.Value:N0} of { Me.Maximum:N0}")
         Thread.Sleep(2)
-        If MyBase.Value = Maximum Then
+        If MyBase.Value = Me.Maximum Then
             MyBase.Value = 0
         End If
     End Sub
 
     Public Sub Update(value As ProgressReport)
         '.Visible = value.Maximum = 0 OrElse value.Current < value.Maximum
-        Maximum = value.Maximum
+        Me.Maximum = value.Maximum
         MyBase.Value = value.Current
-        If MyBase.Value = 0 OrElse MyBase.Value >= Maximum Then
+        If MyBase.Value = 0 OrElse MyBase.Value >= Me.Maximum Then
             Exit Sub
         End If
 

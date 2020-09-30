@@ -189,8 +189,8 @@ Namespace CSharpToVBConverter
                             newTriviaList.AddRange(NullableDirective.TargetToken.TrailingTrivia.ConvertTriviaList())
                             newTriviaList.AddRange(NullableDirective.EndOfDirectiveToken.TrailingTrivia.ConvertTriviaList())
                         Case CS.SyntaxKind.MultiLineDocumentationCommentTrivia
-                            Dim sld As CSS.StructuredTriviaSyntax = DirectCast(Trivia.GetStructure, CSS.StructuredTriviaSyntax)
-                            For Each t1 As SyntaxNode In sld.ChildNodes
+                            Dim StructuredTrivia As CSS.StructuredTriviaSyntax = DirectCast(Trivia.GetStructure, CSS.StructuredTriviaSyntax)
+                            For Each t1 As SyntaxNode In StructuredTrivia.ChildNodes
                                 Dim Lines() As String = t1.ToFullString.Split(CType(vbLf, Char))
                                 For Each line As String In Lines
                                     If line.StartsWith("/*", StringComparison.Ordinal) Then

@@ -14,12 +14,12 @@ Namespace CSharpToVBConverter
             If RequestToConvert Is Nothing Then
                 Throw New ArgumentNullException(NameOf(RequestToConvert))
             End If
-            Text = RequestToConvert.SourceCode
-            FromLanguage = LanguageNames.CSharp
-            ToLanguage = LanguageNames.VisualBasic
-            FromLanguageVersion = CS.LanguageVersion.Latest
-            ToLanguageVersion = VisualBasic.LanguageVersion.Latest
-            Request = RequestToConvert
+            Me.Text = RequestToConvert.SourceCode
+            Me.FromLanguage = LanguageNames.CSharp
+            Me.ToLanguage = LanguageNames.VisualBasic
+            Me.FromLanguageVersion = CS.LanguageVersion.Latest
+            Me.ToLanguageVersion = VisualBasic.LanguageVersion.Latest
+            Me.Request = RequestToConvert
         End Sub
 
         Friend Property FromLanguage As String
@@ -30,12 +30,12 @@ Namespace CSharpToVBConverter
         Friend Property ToLanguageVersion() As Integer
 
         Friend Function SetFromLanguageVersion(Optional version As Integer = CS.LanguageVersion.Latest) As CodeWithOptions
-            FromLanguageVersion = version
+            Me.FromLanguageVersion = version
             Return Me
         End Function
 
         Friend Function SetToLanguageVersion(Optional version As Integer = VisualBasic.LanguageVersion.Latest) As CodeWithOptions
-            ToLanguageVersion = version
+            Me.ToLanguageVersion = version
             Return Me
         End Function
 

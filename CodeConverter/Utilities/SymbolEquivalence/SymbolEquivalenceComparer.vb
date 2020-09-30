@@ -51,8 +51,8 @@ Namespace CSharpToVBConverter
         Friend Sub New(assemblyComparerOpt As IEqualityComparer(Of IAssemblySymbol), distinguishRefFromOut As Boolean)
             _assemblyComparerOpt = assemblyComparerOpt
 
-            ParameterEquivalenceComparer = New ParameterSymbolEqualityComparer(Me, distinguishRefFromOut)
-            SignatureTypeEquivalenceComparer = New SignatureTypeSymbolEquivalenceComparer(Me)
+            Me.ParameterEquivalenceComparer = New ParameterSymbolEqualityComparer(Me, distinguishRefFromOut)
+            Me.SignatureTypeEquivalenceComparer = New SignatureTypeSymbolEquivalenceComparer(Me)
 
             ' There are only so many EquivalenceVisitors and GetHashCodeVisitors we can have.
             ' Create them all up front.

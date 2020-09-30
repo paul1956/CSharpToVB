@@ -15,13 +15,13 @@ Namespace CSharpToVBConverter
             Private _moveNextCalled As Boolean
 
             Friend Sub New(value As T)
-                Current = value
+                Me.Current = value
                 _moveNextCalled = False
             End Sub
 
             Private ReadOnly Property IEnumerator_Current() As Object Implements IEnumerator.Current
                 Get
-                    Return Current
+                    Return Me.Current
                 End Get
             End Property
 

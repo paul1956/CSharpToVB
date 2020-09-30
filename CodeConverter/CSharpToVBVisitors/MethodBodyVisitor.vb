@@ -1709,7 +1709,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
             End Function
 
             Public Overrides Function VisitYieldStatement(node As CSS.YieldStatementSyntax) As SyntaxList(Of StatementSyntax)
-                IsInterator = True
+                Me.IsInterator = True
                 Dim stmt As StatementSyntax
                 If node.Expression Is Nothing Then
                     stmt = Factory.ReturnStatement.WithTrailingEOL

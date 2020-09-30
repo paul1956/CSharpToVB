@@ -146,11 +146,10 @@ Namespace CSharpToVBConverter
                     Dim EndOfDirectiveToken As SyntaxToken = RegionDirective.EndOfDirectiveToken
                     Dim NameString As String = $"""{EndOfDirectiveToken.LeadingTrivia.ToString.RemoveAll("""")}"""
                     Dim RegionDirectiveTriviaNode As VBS.RegionDirectiveTriviaSyntax =
-                        Factory.RegionDirectiveTrivia(
-                                                HashToken,
-                                                RegionKeyword,
-                                                Factory.StringLiteralToken(NameString, NameString)
-                                                                        ).WithConvertedTrailingTriviaFrom(EndOfDirectiveToken)
+                        Factory.RegionDirectiveTrivia(HashToken,
+                                                      RegionKeyword,
+                                                      Factory.StringLiteralToken(NameString, NameString)
+                                                     ).WithConvertedTrailingTriviaFrom(EndOfDirectiveToken)
                     Return Factory.Trivia(RegionDirectiveTriviaNode.WithTrailingEOL)
                 Case CS.SyntaxKind.SingleLineDocumentationCommentTrivia
                     Dim SingleLineDocumentationComment As CSS.DocumentationCommentTriviaSyntax = CType(StructuredTrivia, CSS.DocumentationCommentTriviaSyntax)

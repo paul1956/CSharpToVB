@@ -9,7 +9,7 @@ Namespace CSharpToVBConverter
 
         Public ReadOnly Property IsFirst As Boolean
             Get
-                Return Index = 0
+                Return Me.Index = 0
             End Get
         End Property
 
@@ -17,10 +17,10 @@ Namespace CSharpToVBConverter
         Public Property Enumerator As IEnumerator(Of T)
 
         Friend Sub MoveNext()
-            Value = Enumerator.Current
-            IsLast = Not Enumerator.MoveNext()
+            Me.Value = Me.Enumerator.Current
+            Me.IsLast = Not Me.Enumerator.MoveNext()
             ' may be called with .AsParallel
-            Threading.Interlocked.Increment(Index)
+            Threading.Interlocked.Increment(Me.Index)
         End Sub
 
     End Class

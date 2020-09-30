@@ -12,17 +12,17 @@ Public Class ToolStripCheckBox
 
     Private ReadOnly Property CheckBoxControl() As CheckBox
         Get
-            Return CType(Control, CheckBox)
+            Return CType(Me.Control, CheckBox)
         End Get
     End Property
 
     'Expose the CheckBoxControl's Checked Property
     Public Property Checked() As Boolean
         Get
-            Return CheckBoxControl.Checked
+            Return Me.CheckBoxControl.Checked
         End Get
         Set(value As Boolean)
-            CheckBoxControl.Checked = value
+            Me.CheckBoxControl.Checked = value
         End Set
     End Property
 
