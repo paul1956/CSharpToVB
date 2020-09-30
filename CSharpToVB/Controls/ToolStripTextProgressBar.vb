@@ -53,10 +53,11 @@ Public Class ToolStripTextProgressBar
     End Sub
 
     Public Sub Update(value As ProgressReport)
-        '.Visible = value.Maximum = 0 OrElse value.Current < value.Maximum
-        Me.Maximum = value.Maximum
+        If Me.Maximum <> value.Maximum Then
+            Me.Maximum = value.Maximum
+        End If
         MyBase.Value = value.Current
-        If MyBase.Value = 0 OrElse MyBase.Value >= Me.Maximum Then
+        If value.Current = 0 OrElse value.Current > Me.Maximum Then
             Exit Sub
         End If
 
