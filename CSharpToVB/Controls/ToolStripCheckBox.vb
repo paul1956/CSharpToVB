@@ -3,9 +3,10 @@
 ' See the LICENSE file in the project root for more information.
 
 Public Class ToolStripCheckBox
+    Private Shared ReadOnly localCheckBox As CheckBox = New CheckBox
 
     Public Sub New()
-        MyBase.New(New CheckBox)
+        MyBase.New(localCheckBox)
     End Sub
 
     'Declare the event
