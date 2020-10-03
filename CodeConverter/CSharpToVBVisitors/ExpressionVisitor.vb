@@ -30,8 +30,8 @@ Namespace CSharpToVBConverter.ToVisualBasic
             End Function
 
             Private Shared Function GetTypeSyntaxFromPossibleAddressOf(vbSyntaxNode As VB.VisualBasicSyntaxNode) As TypeSyntax
-                If TypeOf vbSyntaxNode Is UnaryExpressionSyntax Then
-                    Dim addressOfExpr As UnaryExpressionSyntax = CType(vbSyntaxNode, UnaryExpressionSyntax)
+                Dim addressOfExpr As UnaryExpressionSyntax = TryCast(vbSyntaxNode, UnaryExpressionSyntax)
+                If addressOfExpr IsNot Nothing Then
                     vbSyntaxNode = addressOfExpr.Operand
                 End If
                 Return CType(vbSyntaxNode, TypeSyntax)

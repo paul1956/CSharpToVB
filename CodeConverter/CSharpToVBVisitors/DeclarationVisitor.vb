@@ -25,7 +25,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                                                         Dim FullyQualifiedName As VBS.NameSyntax = GetFullyQualifiedNameSyntax(TryCast(x.ContainingSymbol, INamedTypeSymbol))
                                                                         If TypeOf FullyQualifiedName Is VBS.QualifiedNameSyntax Then
                                                                             Dim left As String = CType(FullyQualifiedName, VBS.QualifiedNameSyntax).Left.ToString
-                                                                            If left.StartsWith("", StringComparison.Ordinal) Then
+                                                                            If left.StartsWith("System.", StringComparison.Ordinal) Then
                                                                                 left = left.WithoutLeadingSystemDot
                                                                                 If left.Any Then
                                                                                     FullyQualifiedName = Factory.QualifiedName(Factory.IdentifierName(left), CType(FullyQualifiedName, VBS.QualifiedNameSyntax).Right)
@@ -222,9 +222,11 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         If TypeOf typeSyntax Is VBS.PredefinedTypeSyntax Then
                             typeSyntax = Factory.IdentifierName($"[{symbol}]")
                         End If
-                        If TypeOf typeSyntax Is VBS.NullableTypeSyntax Then
-                            typeSyntax = CType(typeSyntax, VBS.NullableTypeSyntax).ElementType
+                        Dim nullableType As VBS.NullableTypeSyntax = TryCast(typeSyntax, VBS.NullableTypeSyntax)
+                        If nullableType IsNot Nothing Then
+                            typeSyntax = nullableType.ElementType
                         End If
+
                         Dim nameSyntax1 As VBS.NameSyntax = CType(typeSyntax, VBS.NameSyntax)
                         If allowGlobalPrefix Then
                             Return nameSyntax1
@@ -772,7 +774,8 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Dim ParentClass As CSS.ClassDeclarationSyntax = DirectCast(node.Parent, CSS.ClassDeclarationSyntax)
                     If ParentClass.BaseList IsNot Nothing Then
                         For Each t As CSS.SimpleBaseTypeSyntax In ParentClass.BaseList.Types
-                            If TypeOf t.Type Is CSS.IdentifierNameSyntax AndAlso DirectCast(t.Type, CSS.IdentifierNameSyntax).Identifier.ValueText = "IDisposable" Then
+                            Dim identifierName As CSS.IdentifierNameSyntax = TryCast(t.Type, CSS.IdentifierNameSyntax)
+                            If identifierName IsNot Nothing AndAlso identifierName.Identifier.ValueText = "IDisposable" Then
                                 Dim InterfaceMembers As VBS.QualifiedNameSyntax = Factory.QualifiedName(
                                                                                 Factory.IdentifierName("IDisposable"),
                                                                                 Factory.IdentifierName("Dispose")
@@ -1063,50 +1066,50 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim LocalIsModule As Boolean = Me.IsModule OrElse node.Parent.IsKind(CS.SyntaxKind.CompilationUnit)
                 If node.ExpressionBody IsNot Nothing Then
                     Dim ExpressionSyntaxNode As VB.VisualBasicSyntaxNode = node.ExpressionBody.Expression.Accept(Me).WithConvertedLeadingTriviaFrom(node.ExpressionBody.Expression)
-                    If TypeOf ExpressionSyntaxNode Is VBS.ThrowStatementSyntax Then
-                        Statements = Factory.SingletonList(Of VBS.StatementSyntax)(DirectCast(ExpressionSyntaxNode, VBS.ThrowStatementSyntax).WithConvertedTriviaFrom(node.ExpressionBody))
-                    ElseIf TypeOf ExpressionSyntaxNode Is VBS.SingleLineIfStatementSyntax Then
-                        Dim IfStatement As VBS.SingleLineIfStatementSyntax = DirectCast(ExpressionSyntaxNode, VBS.SingleLineIfStatementSyntax).WithTrailingEOL
-                        Dim ReturnStatement As VBS.ReturnStatementSyntax = Factory.ReturnStatement(DirectCast(IfStatement.Condition, VBS.BinaryExpressionSyntax).Left).
+                    Dim StatementList As New List(Of VBS.StatementSyntax)
+                    Select Case True
+                        Case TypeOf ExpressionSyntaxNode Is VBS.ThrowStatementSyntax
+                            Statements = Factory.SingletonList(Of VBS.StatementSyntax)(DirectCast(ExpressionSyntaxNode, VBS.ThrowStatementSyntax).WithConvertedTriviaFrom(node.ExpressionBody))
+                        Case TypeOf ExpressionSyntaxNode Is VBS.SingleLineIfStatementSyntax
+                            Dim IfStatement As VBS.SingleLineIfStatementSyntax = DirectCast(ExpressionSyntaxNode, VBS.SingleLineIfStatementSyntax).WithTrailingEOL
+                            Dim ReturnStatement As VBS.ReturnStatementSyntax = Factory.ReturnStatement(DirectCast(IfStatement.Condition, VBS.BinaryExpressionSyntax).Left).
                                                 WithLeadingTrivia(IfStatement.Condition.GetLeadingTrivia)
-                        ReturnStatement = ReturnStatement.RelocateDirectivesInLeadingTrivia
-                        Dim StatementList As New List(Of VBS.StatementSyntax) From {
-                            IfStatement,
-                            ReturnStatement
-                        }
-                        Statements = ReplaceStatementsWithMarkedStatements(node, StatementList)
-                    ElseIf TypeOf ExpressionSyntaxNode Is VBS.AssignmentStatementSyntax Then
-                        Dim AssignmentStatement As VBS.AssignmentStatementSyntax = DirectCast(ExpressionSyntaxNode, VBS.AssignmentStatementSyntax).WithTrailingEOL
-                        Dim ReturnStatement As VBS.ReturnStatementSyntax = Factory.ReturnStatement(AssignmentStatement.Left.WithoutLeadingTrivia).
+                            ReturnStatement = ReturnStatement.RelocateDirectivesInLeadingTrivia
+                            StatementList.AddRange({IfStatement,
+                                                    ReturnStatement
+                                                   })
+                            Statements = ReplaceStatementsWithMarkedStatements(node, StatementList)
+                        Case TypeOf ExpressionSyntaxNode Is VBS.AssignmentStatementSyntax
+                            Dim AssignmentStatement As VBS.AssignmentStatementSyntax = DirectCast(ExpressionSyntaxNode, VBS.AssignmentStatementSyntax).WithTrailingEOL
+                            Dim ReturnStatement As VBS.ReturnStatementSyntax = Factory.ReturnStatement(AssignmentStatement.Left.WithoutLeadingTrivia).
                                                 WithLeadingTrivia(AssignmentStatement.GetLeadingTrivia)
-                        ReturnStatement = ReturnStatement.RelocateDirectivesInLeadingTrivia
-                        Dim StatementList As New List(Of VBS.StatementSyntax) From {
-                            AssignmentStatement,
-                            ReturnStatement
-                        }
-                        Statements = ReplaceStatementsWithMarkedStatements(node, StatementList)
-                    ElseIf TypeOf ExpressionSyntaxNode Is VBS.ExpressionSyntax Then
-                        Dim ReturnedExpression As VBS.ExpressionSyntax = DirectCast(ExpressionSyntaxNode, VBS.ExpressionSyntax)
-                        If ReturnedExpression Is Nothing Then
-                            ' ref expression
-                            Dim RefExpression As CSS.ExpressionSyntax = node.ExpressionBody.Expression
-                            If RefExpression Is Nothing Then
-                                Stop
+                            ReturnStatement = ReturnStatement.RelocateDirectivesInLeadingTrivia
+                            StatementList.AddRange({AssignmentStatement,
+                                                    ReturnStatement
+                                                   })
+                            Statements = ReplaceStatementsWithMarkedStatements(node, StatementList)
+                        Case TypeOf ExpressionSyntaxNode Is VBS.ExpressionSyntax
+                            Dim ReturnedExpression As VBS.ExpressionSyntax = DirectCast(ExpressionSyntaxNode, VBS.ExpressionSyntax)
+                            If ReturnedExpression Is Nothing Then
+                                ' ref expression
+                                Dim RefExpression As CSS.ExpressionSyntax = node.ExpressionBody.Expression
+                                If RefExpression Is Nothing Then
+                                    Stop
+                                Else
+                                    ReturnedExpression = DirectCast(DirectCast(RefExpression, CSS.RefExpressionSyntax).Expression.Accept(Me), VBS.ExpressionSyntax)
+                                End If
                             Else
-                                ReturnedExpression = DirectCast(DirectCast(RefExpression, CSS.RefExpressionSyntax).Expression.Accept(Me), VBS.ExpressionSyntax)
+                                ReturnedExpression = ReturnedExpression.WithConvertedTriviaFrom(node.ExpressionBody)
                             End If
-                        Else
-                            ReturnedExpression = ReturnedExpression.WithConvertedTriviaFrom(node.ExpressionBody)
-                        End If
 
-                        Dim ReturnStatement As VBS.ReturnStatementSyntax = Factory.ReturnStatement(ReturnedExpression.WithLeadingTrivia(VBSpaceTrivia)).
+                            Dim ReturnStatement As VBS.ReturnStatementSyntax = Factory.ReturnStatement(ReturnedExpression.WithLeadingTrivia(VBSpaceTrivia)).
                                                 WithLeadingTrivia(ReturnedExpression.GetLeadingTrivia)
-                        ReturnStatement = ReturnStatement.RelocateDirectivesInLeadingTrivia
-                        Statements = ReplaceOneStatementWithMarkedStatements(node.ExpressionBody, ReturnStatement)
-                    Else
-                        Stop
-                        Throw UnreachableException
-                    End If
+                            ReturnStatement = ReturnStatement.RelocateDirectivesInLeadingTrivia
+                            Statements = ReplaceOneStatementWithMarkedStatements(node.ExpressionBody, ReturnStatement)
+                        Case Else
+                            Stop
+                            Throw UnreachableException
+                    End Select
                     accessors.Add(Factory.AccessorBlock(VB.SyntaxKind.GetAccessorBlock,
                                                         Factory.GetAccessorStatement.WithTrailingEOL,
                                                         Statements,

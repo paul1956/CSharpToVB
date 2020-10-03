@@ -20,11 +20,10 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim discardNameToken As SyntaxToken = GenerateSafeVBToken(node.UnderscoreToken, node, _mSemanticModel)
                 Dim IdentifierExpression As VBS.IdentifierNameSyntax = Factory.IdentifierName(discardNameToken)
                 Dim ModifiedIdentifier As VBS.ModifiedIdentifierSyntax = Factory.ModifiedIdentifier(discardNameToken)
-                Dim Parent As CSS.DeclarationExpressionSyntax
                 Dim TypeName As VB.VisualBasicSyntaxNode
-                If TypeOf node.Parent Is CSS.DeclarationExpressionSyntax Then
-                    Parent = DirectCast(node.Parent, CSS.DeclarationExpressionSyntax)
-                    TypeName = Parent.Type.Accept(Me)
+                Dim parentExpression As CSS.DeclarationExpressionSyntax = DirectCast(node.Parent, CSS.DeclarationExpressionSyntax)
+                If parentExpression IsNot Nothing Then
+                    TypeName = parentExpression.Type.Accept(Me)
                     If TypeName.ToString = "var" Then
                         TypeName = PredefinedTypeObject
                     End If
@@ -72,14 +71,14 @@ Namespace CSharpToVBConverter.ToVisualBasic
                             If Invocation IsNot Nothing Then
                                 Dim Expression As CSS.MemberAccessExpressionSyntax = TryCast(Invocation.Expression, CSS.MemberAccessExpressionSyntax)
                                 If Expression IsNot Nothing AndAlso Expression.Name.Identifier.ValueText = "TryGetValue" Then
-                                    Dim expression1 As CSS.ExpressionSyntax
-                                    If TypeOf Invocation.Expression Is CSS.MemberAccessExpressionSyntax Then
-                                        expression1 = CType(Invocation.Expression, CSS.MemberAccessExpressionSyntax).Expression
-                                        Dim _Typeinfo As TypeInfo = _mSemanticModel.GetTypeInfo(expression1)
+                                    Dim memberExpression As CSS.MemberAccessExpressionSyntax = CType(Invocation.Expression, CSS.MemberAccessExpressionSyntax)
+                                    If memberExpression IsNot Nothing Then
+                                        Dim _Typeinfo As TypeInfo = _mSemanticModel.GetTypeInfo(memberExpression.Expression)
                                         If _Typeinfo.Type IsNot Nothing AndAlso Not _Typeinfo.Type.IsErrorType Then
                                             TypeName = _Typeinfo.Type.ConvertToType
-                                            If TypeOf TypeName Is VBS.GenericNameSyntax Then
-                                                Dim _arguments As SeparatedSyntaxList(Of VBS.TypeSyntax) = CType(TypeName, VBS.GenericNameSyntax).TypeArgumentList.Arguments
+                                            Dim GenericName As VBS.GenericNameSyntax = TryCast(TypeName, VBS.GenericNameSyntax)
+                                            If GenericName IsNot Nothing Then
+                                                Dim _arguments As SeparatedSyntaxList(Of VBS.TypeSyntax) = GenericName.TypeArgumentList.Arguments
                                                 If _arguments.Count = 2 Then
                                                     TypeName = _arguments(1)
                                                 End If
@@ -101,8 +100,8 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     GetStatementwithIssues(Node).AddMarker(declarationToBeAdded, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
                 ElseIf Node.Parent.IsKind(CS.SyntaxKind.DeclarationPattern) Then
                     Dim DeclarationPattern As CSS.DeclarationPatternSyntax = DirectCast(Node.Parent, CSS.DeclarationPatternSyntax)
-                    If TypeOf DeclarationPattern.Parent Is CSS.SwitchLabelSyntax Then
-                        Dim CasePatternSwitchLabel As CSS.SwitchLabelSyntax = DirectCast(DeclarationPattern.Parent, CSS.SwitchLabelSyntax)
+                    Dim CasePatternSwitchLabel As CSS.SwitchLabelSyntax = TryCast(DeclarationPattern.Parent, CSS.SwitchLabelSyntax)
+                    If CasePatternSwitchLabel IsNot Nothing Then
                         Dim SwitchSection As CSS.SwitchSectionSyntax = DirectCast(CasePatternSwitchLabel.Parent, CSS.SwitchSectionSyntax)
                         Dim SwitchStatement As CSS.SwitchStatementSyntax = DirectCast(SwitchSection.Parent, CSS.SwitchStatementSyntax)
                         Dim SwitchExpression As VBS.ExpressionSyntax = DirectCast(SwitchStatement.Expression.Accept(Me), VBS.ExpressionSyntax)
