@@ -70,8 +70,10 @@ Namespace CSharpToVBConverter
             .Concat(GetCsSymbolsDeclaredByMethod(_semanticModel, propertySymbol.SetMethod, getAccessorBody, New SymbolKind() {SymbolKind.Local, SymbolKind.TypeParameter}))
         End Function
 
+#Disable Warning IDE0051 ' Remove unused private members
         <Extension>
         Private Function GetCsSymbolsPerScope(_semanticModel As SemanticModel, symbol As ISymbol) As IEnumerable(Of IEnumerable(Of ISymbol))
+#Enable Warning IDE0051 ' Remove unused private members
             Return GetCsLocalSymbolsPerScope(_semanticModel, symbol).Select(Function(y) y.Union(symbol.Yield()))
         End Function
 
