@@ -23,21 +23,21 @@ Namespace My
         Inherits ApplicationServices.WindowsFormsApplicationBase
 #End If
 
-        <Global.System.Diagnostics.DebuggerStepThroughAttribute()>
+        <Global.System.Diagnostics.DebuggerStepThroughAttribute()>  _
         Public Sub New()
 #If NETCOREAPP3_1 Then
             MyBase.New()
 #Else
             MyBase.New(Global.Microsoft.VisualBasic.ApplicationServices.AuthenticationMode.Windows)
 #End If
-            Me.EnableVisualStyles = True
             Me.IsSingleInstance = True
-            Me.MinimumSplashScreenDisplayTime = 5000
+            Me.EnableVisualStyles = True
             Me.SaveMySettingsOnExit = True
+            Me.MinimumSplashScreenDisplayTime = 5000
             Me.ShutdownStyle = Global.Microsoft.VisualBasic.ApplicationServices.ShutdownMode.AfterMainFormCloses
         End Sub
 
-        <Global.System.Diagnostics.DebuggerStepThroughAttribute()>
+        <Global.System.Diagnostics.DebuggerStepThroughAttribute()>  _
         Protected Overrides Sub OnCreateMainForm()
 #If NETCOREAPP3_1 Then
             Me.MainForm = New Form1
@@ -46,7 +46,7 @@ Namespace My
 #End If
         End Sub
 
-        <Global.System.Diagnostics.DebuggerStepThroughAttribute()>
+        <Global.System.Diagnostics.DebuggerStepThroughAttribute()>  _
         Protected Overrides Sub OnCreateSplashScreen()
 #If NETCOREAPP3_1 Then
             Me.SplashScreen = New SplashScreen1

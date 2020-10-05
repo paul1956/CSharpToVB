@@ -12,7 +12,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
     Private ReadOnly _zLNIs As New List(Of LineNumberItem)
 
     Private _zAutoSizing As Boolean = True
-    Private _zAutoSizing_Size As New Size(23, 1)
+    Private _zAutoSizing_Size As New Size(0, 0)
     Private _zBorderLines_Color As Color = Color.SlateGray
     Private _zBorderLines_Show As Boolean = True
     Private _zBorderLines_Style As Drawing2D.DashStyle = Drawing2D.DashStyle.Dot
