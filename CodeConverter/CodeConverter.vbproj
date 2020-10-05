@@ -18,6 +18,8 @@
     <RepositoryType>git</RepositoryType>
     <AssemblyVersion>4.0.0.7</AssemblyVersion>
     <FileVersion>4.0.0.7</FileVersion>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>preview</AnalysisLevel>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis" Version="3.8.0-3.final" />

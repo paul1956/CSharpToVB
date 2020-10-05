@@ -28,6 +28,8 @@
     <PackageId>CSharp To VB Converter</PackageId>
     <AssemblyVersion>4.6.0.9</AssemblyVersion>
     <FileVersion>4.6.0.9</FileVersion>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>preview</AnalysisLevel>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <NoWarn />
