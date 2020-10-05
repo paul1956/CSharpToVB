@@ -22,7 +22,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim right As VBS.ExpressionSyntax = CType(node.Right.Accept(Me), VBS.ExpressionSyntax)
                 Dim kind As VB.SyntaxKind = CS.CSharpExtensions.Kind(node).GetExpressionKind()
                 Dim OperatorToken As SyntaxToken = GetOperatorToken(kind, IsReferenceType:=False)
-                Return Factory.BinaryExpression(kind, left, OperatorToken.With(VBSpaceTrivia, VBSpaceTrivia), right).WithConvertedTriviaFrom(node)
+                Return Factory.BinaryExpression(kind, left, OperatorToken.With(Factory.Space, Factory.Space), right).WithConvertedTriviaFrom(node)
             End Function
 
             Public Overrides Function VisitConstantPattern(node As CSS.ConstantPatternSyntax) As VB.VisualBasicSyntaxNode

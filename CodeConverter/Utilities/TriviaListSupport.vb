@@ -65,7 +65,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
             For Each t As SyntaxTrivia In TriviaList
                 If Not (FoundDirective OrElse t.IsDirective OrElse t.IsSkippedOrDisabledTrivia) Then
                     If t.IsEndOfLine AndAlso RemoveEOL Then
-                        NewTrivia = NewTrivia.Add(VBSpaceTrivia)
+                        NewTrivia = NewTrivia.Add(Factory.Space)
                     Else
                         NewTrivia = NewTrivia.Add(t)
                     End If
@@ -88,7 +88,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
             For Each t As SyntaxTrivia In TriviaList
                 If Not (FoundComment OrElse t.IsComment) Then
                     If t.IsEndOfLine Then
-                        newLeadingTrivia = newLeadingTrivia.Add(VBSpaceTrivia)
+                        newLeadingTrivia = newLeadingTrivia.Add(Factory.Space)
                     Else
                         newLeadingTrivia = newLeadingTrivia.Add(t)
                     End If

@@ -36,7 +36,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 If typeLeadingTrivia.Last.RawKind = VB.SyntaxKind.WhitespaceTrivia Then
                     typeOrAddressOf = typeOrAddressOf.WithLeadingTrivia(typeLeadingTrivia.Last)
                 Else
-                    typeOrAddressOf = typeOrAddressOf.WithLeadingTrivia(VBSpaceTrivia)
+                    typeOrAddressOf = typeOrAddressOf.WithLeadingTrivia(Factory.Space)
                 End If
             End If
             If IsFieldDeclaration AndAlso typeLeadingTrivia.Count > 1 Then
@@ -92,7 +92,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 End If
                 Dim initializer As VBS.EqualsValueSyntax = Nothing
                 If Not asClause.IsKind(VB.SyntaxKind.AsNewClause) Then
-                    initializer = Factory.EqualsValue(initializerValue.WithLeadingTrivia(VBSpaceTrivia))
+                    initializer = Factory.EqualsValue(initializerValue.WithLeadingTrivia(Factory.Space))
                     If initializer.Value.IsKind(VB.SyntaxKind.ObjectCreationExpression) Then
                         If asClause IsNot Nothing AndAlso CType(asClause, VBS.SimpleAsClauseSyntax).Type.ToString = CType(initializerValue, VBS.ObjectCreationExpressionSyntax).Type.ToString Then
                             asClause = Factory.AsNewClause(CType(initializerValue, VBS.ObjectCreationExpressionSyntax))
@@ -116,7 +116,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     If csVarDeclaration.HasTrailingTrivia And dTrailingTrivia.ContainsCommentOrDirectiveTrivia Then
                         csCollectedCommentTrivia = csCollectedCommentTrivia.AddRange(dTrailingTrivia)
                     End If
-                    ModifiedIdentifierList.Add(DirectCast(csVarDeclaration.Accept(Visitor), VBS.ModifiedIdentifierSyntax).WithTrailingTrivia(VBSpaceTrivia))
+                    ModifiedIdentifierList.Add(DirectCast(csVarDeclaration.Accept(Visitor), VBS.ModifiedIdentifierSyntax).WithTrailingTrivia(Factory.Space))
                 Next
                 Dim varDeclarator As VBS.VariableDeclaratorSyntax = Factory.VariableDeclarator(Factory.SeparatedList(ModifiedIdentifierList), asClause:=Factory.SimpleAsClause(vbType), initializer:=Nothing)
                 vbDeclarators.Insert(0, varDeclarator.WithTrailingTrivia(csCollectedCommentTrivia.ConvertTriviaList()))

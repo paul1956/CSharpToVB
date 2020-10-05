@@ -56,7 +56,7 @@ End Function
                             If TypeNode.HasLeadingTrivia Then
                                 Dim TypeNodeLeadingTrivia As SyntaxTriviaList = TypeNode.GetLeadingTrivia
                                 If TypeNodeLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
-                                    [inherits].Add(Factory.InheritsStatement(DirectCast(TypeNode.WithLeadingTrivia(VBSpaceTrivia), VBS.TypeSyntax)).WithLeadingTrivia(TypeNodeLeadingTrivia))
+                                    [inherits].Add(Factory.InheritsStatement(DirectCast(TypeNode.WithLeadingTrivia(Factory.Space), VBS.TypeSyntax)).WithLeadingTrivia(TypeNodeLeadingTrivia))
                                 Else
                                     [inherits].Add(Factory.InheritsStatement(DirectCast(TypeNode, VBS.TypeSyntax)))
                                 End If
@@ -64,7 +64,7 @@ End Function
                                 [inherits].Add(Factory.InheritsStatement(DirectCast(TypeNode, VBS.TypeSyntax)))
                             End If
                             StartImplementsIndex = 1
-                            TypeSyntaxArray = _Type.BaseList?.Types.Skip(StartImplementsIndex).Select(Function(t As CSS.BaseTypeSyntax) DirectCast(t.Type.Accept(Me).WithTrailingTrivia(VBSpaceTrivia), VBS.TypeSyntax)).ToArray()
+                            TypeSyntaxArray = _Type.BaseList?.Types.Skip(StartImplementsIndex).Select(Function(t As CSS.BaseTypeSyntax) DirectCast(t.Type.Accept(Me).WithTrailingTrivia(Factory.Space), VBS.TypeSyntax)).ToArray()
                         End If
                         If TypeSyntaxArray.Any Then
                             [implements].Add(Factory.ImplementsStatement(TypeSyntaxArray))
@@ -96,7 +96,7 @@ End Function
                                 Dim item As VBS.TypeSyntax = DirectCast(e.Value.Type.Accept(Me), VBS.TypeSyntax)
                                 If item.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
                                     newLeadingTrivia = newLeadingTrivia.AddRange(item.GetLeadingTrivia)
-                                    item = item.WithLeadingTrivia(VBSpaceTrivia)
+                                    item = item.WithLeadingTrivia(Factory.Space)
                                 End If
                                 If Not e.IsLast Then
                                     If csSeparators(e.Index).LeadingTrivia.ContainsDirectiveTrivia Then
@@ -109,7 +109,7 @@ End Function
                                     If item.GetTrailingTrivia.ContainsCommentTrivia Then
                                         baseList.Add(item)
                                     Else
-                                        baseList.Add(item.WithTrailingTrivia(VBSpaceTrivia))
+                                        baseList.Add(item.WithTrailingTrivia(Factory.Space))
                                     End If
                                 Else
                                     baseList.Add(item)
@@ -236,13 +236,13 @@ End Function
                     If id.TrailingTrivia.ContainsCommentTrivia Then
                         Stop
                     End If
-                    id = id.WithTrailingTrivia(VBSpaceTrivia)
+                    id = id.WithTrailingTrivia(Factory.Space)
                 End If
                 Dim NotInsideClassOrStruct As Boolean = _isModuleStack.Count < 2 AndAlso node.IsNotInStructure
 
                 If Me.IsModule AndAlso NotInsideClassOrStruct Then
                     Dim ModuleModifiers As SyntaxTokenList = Factory.TokenList(ConvertModifiers(node.Modifiers, Me.IsModule, TokenContext.InterfaceOrModule))
-                    Dim ModuleKeywordWithTrivia As SyntaxToken = ModuleKeyword.WithConvertedLeadingTriviaFrom(node.Keyword).WithTrailingTrivia(VBSpaceTrivia)
+                    Dim ModuleKeywordWithTrivia As SyntaxToken = ModuleKeyword.WithConvertedLeadingTriviaFrom(node.Keyword).WithTrailingTrivia(Factory.Space)
                     Dim PrependedTrivia As SyntaxTriviaList = DedupLeadingTrivia(node, ModuleKeyword, ListOfAttributes.ToList, ModuleModifiers)
                     Dim ModuleStatement As VBS.ModuleStatementSyntax = DirectCast(Factory.ModuleStatement(
                                                                             ListOfAttributes,
@@ -280,7 +280,7 @@ End Function
                         Not ClassModifiers.Contains(VB.SyntaxKind.StaticKeyword, VB.SyntaxKind.NotInheritableKeyword) Then
                         If ClassModifiers.Count = 0 Then
                             ClassModifiers.Add(NotInheritableKeyword.WithLeadingTrivia(ClassKeywordWithTrivia.LeadingTrivia))
-                            ClassKeywordWithTrivia = ClassKeywordWithTrivia.WithLeadingTrivia(VBSpaceTrivia)
+                            ClassKeywordWithTrivia = ClassKeywordWithTrivia.WithLeadingTrivia(Factory.Space)
                         Else
                             Dim sharedIndex As Integer = ClassModifiers.IndexOf(VB.SyntaxKind.SharedKeyword)
 
@@ -316,7 +316,7 @@ End Function
                                         If nextTrivia.IsKind(VB.SyntaxKind.None) OrElse nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
                                             Continue For
                                         End If
-                                        NewTrailingTrivia = NewTrailingTrivia.Add(VBSpaceTrivia)
+                                        NewTrailingTrivia = NewTrailingTrivia.Add(Factory.Space)
                                         FoundSpace = True
                                     Case VB.SyntaxKind.EndOfLineTrivia
                                         FoundSpace = False
@@ -329,17 +329,17 @@ End Function
                                         End If
                                     Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
                                         If Not FoundSpace Then
-                                            NewTrailingTrivia = NewTrailingTrivia.Add(VBSpaceTrivia)
+                                            NewTrailingTrivia = NewTrailingTrivia.Add(Factory.Space)
                                         End If
                                         NewTrailingTrivia = NewTrailingTrivia.AddRange({LineContinuation,
-                                                                                        VBSpaceTrivia,
+                                                                                        Factory.Space,
                                                                                         Trivia})
                                     Case Else
                                 End Select
                             Next
                             ClassStatement = ClassStatement.WithTrailingTrivia(NewTrailingTrivia)
                         Else
-                            ClassStatement = ClassStatement.WithTrailingTrivia(VBSpaceTrivia)
+                            ClassStatement = ClassStatement.WithTrailingTrivia(Factory.Space)
                         End If
                     End If
                     Dim EndClass As VBS.EndBlockStatementSyntax = FactoryEndBlockStatement(VB.SyntaxKind.EndClassStatement, ClassKeyWord, CollectConvertedTokenTrivia(node.CloseBraceToken, GetLeading:=True, GetTrailing:=True))
@@ -376,7 +376,7 @@ End Function
                 Else
                     Dim VBNode As VB.VisualBasicSyntaxNode = node.ReturnType.Accept(Me)
                     Dim ReturnType As VBS.TypeSyntax = DirectCast(VBNode, VBS.TypeSyntax)
-                    Dim AsClause As VBS.SimpleAsClauseSyntax = Factory.SimpleAsClause(ReturnType.WithLeadingTrivia(VBSpaceTrivia))
+                    Dim AsClause As VBS.SimpleAsClauseSyntax = Factory.SimpleAsClause(ReturnType.WithLeadingTrivia(Factory.Space))
                     Return Factory.DelegateFunctionStatement(AttributeLists, Factory.TokenList(Modifiers), Identifier, TypeParameterList, ParameterList, AsClause).WithConvertedTriviaFrom(node)
                 End If
             End Function
@@ -400,9 +400,9 @@ End Function
                         End If
                         csIdentifierTrailingTrivia = e.Value.Identifier.TrailingTrivia
                         If csIdentifierTrailingTrivia.Count = 1 AndAlso csIdentifierTrailingTrivia(0).IsWhitespace Then
-                            csMovedTrailingSpace = csMovedTrailingSpace.AddRange({csIdentifierTrailingTrivia(0), CSSpaceTrivia})
+                            csMovedTrailingSpace = csMovedTrailingSpace.AddRange({csIdentifierTrailingTrivia(0), CS.SyntaxFactory.Space})
                         ElseIf csIdentifierTrailingTrivia.Count = 0 Then
-                            csMovedTrailingSpace = csMovedTrailingSpace.Add(CSSpaceTrivia)
+                            csMovedTrailingSpace = csMovedTrailingSpace.Add(CS.SyntaxFactory.Space)
                         End If
                         vbEnumSatement = DirectCast(e.Value.Accept(Me), VBS.StatementSyntax)
                         csSeparatorTrailingTrivia = csSeparators(e.Index).TrailingTrivia
@@ -420,7 +420,7 @@ End Function
                             members.Add(vbEnumSatement.WithTrailingTrivia(csSeparatorTrailingTrivia.ConvertTriviaList()))
                         End If
                         csMovedTrailingSpace = New SyntaxTriviaList
-                        csMovedTrailingSpace = csMovedTrailingSpace.Add(CSSpaceTrivia)
+                        csMovedTrailingSpace = csMovedTrailingSpace.Add(CS.SyntaxFactory.Space)
                     Next
                     If csSeparators.Count = 0 OrElse csSeparators.Count <> csMembers.Count Then
                         csSeparatorTrailingTrivia = New SyntaxTriviaList
@@ -516,7 +516,7 @@ End Function
                     StatementLeadingTrivia = StatementLeadingTrivia.AddRange(node.Modifiers(0).LeadingTrivia.ConvertTriviaList())
                     Return FlagUnsupportedStatements(node, "Directive within Statement", CommentOutOriginalStatements:=True)
                 Else
-                    StatementLeadingTrivia = StatementLeadingTrivia.Add(VBSpaceTrivia)
+                    StatementLeadingTrivia = StatementLeadingTrivia.Add(Factory.Space)
                 End If
                 Dim InterfaceStatement As VBS.InterfaceStatementSyntax = DirectCast(
                                     Factory.InterfaceStatement(ListOfAttributes,
@@ -578,7 +578,7 @@ End Function
 
                 Dim NamespaceStatement As VBS.NamespaceStatementSyntax = Factory.NamespaceStatement(NamespaceKeyword, DirectCast(node.Name.Accept(Me), VBS.NameSyntax)).WithTrailingEOL
                 Dim members1 As SyntaxList(Of VBS.StatementSyntax) = Factory.List(members)
-                Dim namespaceBlock As VBS.NamespaceBlockSyntax = Factory.NamespaceBlock(NamespaceStatement, members1, Factory.EndNamespaceStatement(EndKeyword.WithTrailingTrivia(VBSpaceTrivia), NamespaceKeyword)) _
+                Dim namespaceBlock As VBS.NamespaceBlockSyntax = Factory.NamespaceBlock(NamespaceStatement, members1, Factory.EndNamespaceStatement(EndKeyword.WithTrailingTrivia(Factory.Space), NamespaceKeyword)) _
                                                                         .WithConvertedLeadingTriviaFrom(node.NamespaceKeyword) _
                                                                         .WithUniqueLeadingTrivia(VBHeaderLeadingTrivia) _
                                                                         .WithTrailingTrivia(node.GetTrailingTrivia.ConvertTriviaList)
@@ -626,7 +626,7 @@ End Function
                                                     Factory.List([inherits]),
                                                     Factory.List([implements]),
                                                     Factory.List(Members),
-                                                    Factory.EndStructureStatement(EndKeyword.WithTrailingTrivia(VBSpaceTrivia), StructureKeyword).WithConvertedTriviaFrom(node.CloseBraceToken)
+                                                    Factory.EndStructureStatement(EndKeyword.WithTrailingTrivia(Factory.Space), StructureKeyword).WithConvertedTriviaFrom(node.CloseBraceToken)
                                                     )
                 Dim ErrorModifiers As New List(Of String)
                 For Each t As SyntaxToken In node.Modifiers

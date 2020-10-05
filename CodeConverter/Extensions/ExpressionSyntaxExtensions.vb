@@ -37,7 +37,7 @@ Namespace CSharpToVBConverter
                                     newLeadingTrivia = newLeadingTrivia.Add(If(Trivia.Span.Length > nextTrivia.Span.Length, Trivia, nextTrivia))
                                     e.MoveNext()
                                 Case VB.SyntaxKind.LineContinuationTrivia
-                                    newLeadingTrivia = newLeadingTrivia.Add(VBSpaceTrivia)
+                                    newLeadingTrivia = newLeadingTrivia.Add(Factory.Space)
                                     newLeadingTrivia = newLeadingTrivia.Add(LineContinuation)
                                     e.MoveNext()
                                     nextTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.Index, LookaheadCount:=1)
@@ -50,7 +50,7 @@ Namespace CSharpToVBConverter
                                 Case VB.SyntaxKind.EndOfLineTrivia
                                 Case VB.SyntaxKind.CommentTrivia,
                              VB.SyntaxKind.DocumentationCommentTrivia
-                                    newLeadingTrivia = newLeadingTrivia.Add(VBSpaceTrivia)
+                                    newLeadingTrivia = newLeadingTrivia.Add(Factory.Space)
                                     newLeadingTrivia = newLeadingTrivia.Add(LineContinuation)
                                     newLeadingTrivia = newLeadingTrivia.Add(e.Value)
                                 Case Else
@@ -104,7 +104,7 @@ Namespace CSharpToVBConverter
                             Case VB.SyntaxKind.None
                                 NewTrailingTrivia = NewTrailingTrivia.Add(e.Value)
                             Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
-                                NewTrailingTrivia = NewTrailingTrivia.Add(VBSpaceTrivia)
+                                NewTrailingTrivia = NewTrailingTrivia.Add(Factory.Space)
                                 NewTrailingTrivia = NewTrailingTrivia.Add(LineContinuation)
                                 NewTrailingTrivia = NewTrailingTrivia.Add(e.Value)
                             Case VB.SyntaxKind.WhitespaceTrivia,
@@ -121,12 +121,12 @@ Namespace CSharpToVBConverter
                                 ' skip it
                             Case VB.SyntaxKind.None
                                 If Not NewTrailingTrivia.Any Then
-                                    NewTrailingTrivia = NewTrailingTrivia.Add(VBSpaceTrivia)
+                                    NewTrailingTrivia = NewTrailingTrivia.Add(Factory.Space)
                                     NewTrailingTrivia = NewTrailingTrivia.Add(LineContinuation)
                                     NewTrailingTrivia = NewTrailingTrivia.Add(e.Value)
                                 End If
                             Case VB.SyntaxKind.WhitespaceTrivia
-                                NewTrailingTrivia = NewTrailingTrivia.Add(VBSpaceTrivia)
+                                NewTrailingTrivia = NewTrailingTrivia.Add(Factory.Space)
                                 NewTrailingTrivia = NewTrailingTrivia.Add(LineContinuation)
                                 NewTrailingTrivia = NewTrailingTrivia.Add(e.Value)
                                 e.MoveNext()
@@ -268,7 +268,7 @@ Namespace CSharpToVBConverter
             ElseIf ArrowExpressionClause.Parent.IsKind(CS.SyntaxKind.SetAccessorDeclaration) Then
                 Statement = Factory.ExpressionStatement(CType(ExpressionBody, VBS.ExpressionSyntax))
             Else
-                Statement = Factory.ReturnStatement(DirectCast(ExpressionBody.WithLeadingTrivia(VBSpaceTrivia), VBS.ExpressionSyntax)) _
+                Statement = Factory.ReturnStatement(DirectCast(ExpressionBody.WithLeadingTrivia(Factory.Space), VBS.ExpressionSyntax)) _
                                         .WithLeadingTrivia(ExpressionBody.GetLeadingTrivia)
             End If
             Return ReplaceOneStatementWithMarkedStatements(ArrowExpressionClause, Statement.WithTrailingEOL)

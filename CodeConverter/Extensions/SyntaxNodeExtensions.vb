@@ -11,6 +11,7 @@ Imports Microsoft.CodeAnalysis
 
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
+Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
 Namespace CSharpToVBConverter
@@ -496,7 +497,7 @@ Namespace CSharpToVBConverter
                             Throw UnexpectedValue($"{TrailingTrivia(1).RawKind}")
                         Case VB.SyntaxKind.CommentTrivia
                             If TrailingTrivia(1).IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
-                                newTrailingTrivia = newTrailingTrivia.Add(VBSpaceTrivia)
+                                newTrailingTrivia = newTrailingTrivia.Add(Factory.Space)
                             End If
                             newTrailingTrivia = newTrailingTrivia.Add(TrailingTrivia(0))
                             ' EOL added below

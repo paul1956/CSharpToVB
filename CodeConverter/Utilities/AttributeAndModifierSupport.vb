@@ -5,6 +5,7 @@
 Imports Microsoft.CodeAnalysis
 
 Imports CS = Microsoft.CodeAnalysis.CSharp
+Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
@@ -78,7 +79,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     If FirstModifier Then
                         Yield DefaultVisibility.WithLeadingTrivia(newLeadingTrivia)
                         newLeadingTrivia = New SyntaxTriviaList
-                        newLeadingTrivia = newLeadingTrivia.Add(VBSpaceTrivia)
+                        newLeadingTrivia = newLeadingTrivia.Add(Factory.Space)
                         FirstModifier = False
                     Else
                         Yield DefaultVisibility
@@ -89,7 +90,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
             For Each e As IndexClass(Of SyntaxToken) In csModifiers.WithIndex
                 Dim csModifier As SyntaxToken = e.Value
                 If e.IsFirst AndAlso Not FirstModifier Then
-                    csModifier = csModifier.WithLeadingTrivia(CSSpaceTrivia)
+                    csModifier = csModifier.WithLeadingTrivia(CS.SyntaxFactory.Space)
                 End If
                 Dim VB_Modifier As SyntaxToken = csModifier.ConvertModifier(IsModule, Context, FoundVisibility)
                 Dim newTrailingTrivia As New SyntaxTriviaList
@@ -143,7 +144,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 VB_Modifier = VB_Modifier.WithPrependedLeadingTrivia(newLeadingTrivia)
                 If Not (VB_Modifier.IsKind(VB.SyntaxKind.None) OrElse VB_Modifier.IsKind(VB.SyntaxKind.EmptyToken)) Then
                     newLeadingTrivia = New SyntaxTriviaList
-                    newLeadingTrivia = newLeadingTrivia.Add(VBSpaceTrivia)
+                    newLeadingTrivia = newLeadingTrivia.Add(Factory.Space)
                     ModifyTrailingTrivia(VB_Modifier.LeadingTrivia, newTrailingTrivia)
                     ModifyTrailingTrivia(VB_Modifier.TrailingTrivia, newTrailingTrivia)
                     Yield VB_Modifier.With(newLeadingTrivia, newTrailingTrivia)
@@ -168,7 +169,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     If StatementLeadingTrivia.Any AndAlso StatementLeadingTrivia.Last.IsWhitespaceOrEndOfLine Then
                         NewAttributeLeadingTrivia = NewAttributeLeadingTrivia.Add(attributeList.GetLeadingTrivia.Last)
                     Else
-                        NewAttributeLeadingTrivia = NewAttributeLeadingTrivia.Add(VBSpaceTrivia)
+                        NewAttributeLeadingTrivia = NewAttributeLeadingTrivia.Add(Factory.Space)
                     End If
                 Else
                     RelocateAttributeDirectiveDisabledTrivia(e.Value.GetLeadingTrivia, foundDirective, isTheoryOrInlineData, StatementLeadingTrivia, StatementTrailingTrivia)

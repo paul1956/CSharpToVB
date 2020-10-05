@@ -61,7 +61,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
 
             Public Overrides Function VisitDefaultConstraint(node As CSS.DefaultConstraintSyntax) As VB.VisualBasicSyntaxNode
                 Dim commentTrivia As SyntaxTriviaList = New SyntaxTriviaList
-                commentTrivia = commentTrivia.Add(VBSpaceTrivia)
+                commentTrivia = commentTrivia.Add(Factory.Space)
                 commentTrivia = commentTrivia.Add(LineContinuation)
                 commentTrivia = commentTrivia.Add(Factory.CommentTrivia(" ' TODO Visual Basic does not support 'Default Constraint'"))
                 Return Factory.TypeConstraint(Factory.ParseTypeName("[default]").WithTrailingTrivia(commentTrivia))
@@ -165,9 +165,9 @@ Namespace CSharpToVBConverter.ToVisualBasic
             Public Overrides Function VisitTypeParameterConstraintClause(node As CSS.TypeParameterConstraintClauseSyntax) As VB.VisualBasicSyntaxNode
                 Dim Braces As (OpenBrace As SyntaxToken, CloseBrace As SyntaxToken) = node.GetBraces
                 If node.Constraints.Count = 1 Then
-                    Return Factory.TypeParameterSingleConstraintClause(AsKeyword.WithTrailingTrivia(VBSpaceTrivia), DirectCast(node.Constraints(0).Accept(Me), VBS.ConstraintSyntax))
+                    Return Factory.TypeParameterSingleConstraintClause(AsKeyword.WithTrailingTrivia(Factory.Space), DirectCast(node.Constraints(0).Accept(Me), VBS.ConstraintSyntax))
                 End If
-                    Dim Constraints As SeparatedSyntaxList(Of VBS.ConstraintSyntax) = Factory.SeparatedList(node.Constraints.Select(Function(c As CSS.TypeParameterConstraintSyntax) DirectCast(c.Accept(Me), VBS.ConstraintSyntax)))
+                Dim Constraints As SeparatedSyntaxList(Of VBS.ConstraintSyntax) = Factory.SeparatedList(node.Constraints.Select(Function(c As CSS.TypeParameterConstraintSyntax) DirectCast(c.Accept(Me), VBS.ConstraintSyntax)))
                 Return Factory.TypeParameterMultipleConstraintClause(AsKeyword, OpenBraceToken.WithConvertedTriviaFrom(Braces.OpenBrace), Constraints, CloseBraceToken.WithConvertedTriviaFrom(Braces.CloseBrace))
             End Function
 
@@ -184,14 +184,14 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         FinalTrailingTrivia = FinalTrailingTrivia.AddRange(ItemWithTrivia.GetLeadingTrivia)
                     End If
                     FinalTrailingTrivia = FinalTrailingTrivia.AddRange(ItemWithTrivia.GetTrailingTrivia)
-                    Nodes.Add(ItemWithTrivia.WithLeadingTrivia(VBSpaceTrivia).WithTrailingTrivia(VBSpaceTrivia))
+                    Nodes.Add(ItemWithTrivia.WithLeadingTrivia(Factory.Space).WithTrailingTrivia(Factory.Space))
                     Separators.Add(CommaToken.WithConvertedTriviaFrom(csSeparators(index)))
                 Next
                 Nodes.Add(DirectCast(node.Parameters.Last.Accept(Me).WithConvertedTrailingTriviaFrom(node.Parameters.Last), VBS.TypeParameterSyntax))
                 Dim SeparatedList As SeparatedSyntaxList(Of VBS.TypeParameterSyntax) = Factory.SeparatedList(Nodes, Separators)
                 Dim TypeParameterListSyntax As VBS.TypeParameterListSyntax =
                     Factory.TypeParameterList(OpenParenToken,
-                                                OfKeyword.WithTrailingTrivia(VBSpaceTrivia),
+                                                OfKeyword.WithTrailingTrivia(Factory.Space),
                                                 parameters:=SeparatedList,
                                                 CloseParenToken.WithConvertedTriviaFrom(node.GreaterThanToken).WithAppendedTrailingTrivia(FinalTrailingTrivia))
                 Return TypeParameterListSyntax

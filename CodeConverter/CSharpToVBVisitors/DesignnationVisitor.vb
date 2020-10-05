@@ -34,7 +34,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     TypeName = PredefinedTypeObject
                 End If
 
-                Dim asClause As VBS.SimpleAsClauseSyntax = Factory.SimpleAsClause(AsKeyword.With(VBSpaceTrivia, VBSpaceTrivia), New SyntaxList(Of VBS.AttributeListSyntax), ConvertToType(TypeName.NormalizeWhitespace.ToString))
+                Dim asClause As VBS.SimpleAsClauseSyntax = Factory.SimpleAsClause(AsKeyword.With(Factory.Space, Factory.Space), New SyntaxList(Of VBS.AttributeListSyntax), ConvertToType(TypeName.NormalizeWhitespace.ToString))
 
                 Dim DeclarationStatement As VBS.LocalDeclarationStatementSyntax =
                             FactoryDimStatement(discardNameToken, asClause, Factory.EqualsValue(NothingExpression))

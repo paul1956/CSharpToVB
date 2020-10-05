@@ -8,6 +8,8 @@ Imports Microsoft.CodeAnalysis.Text
 Imports Microsoft.CodeAnalysis.VisualBasic
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
+Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
+
 Namespace CSharpToVBConverter
 
     Friend Class SyntaxNormalizer
@@ -488,7 +490,7 @@ Namespace CSharpToVBConverter
         End Function
 
         Private Function GetSpace() As SyntaxTrivia
-            Return If(_useElasticTrivia, VBSpaceTrivia, VBSpaceTrivia)
+            Return If(_useElasticTrivia, Factory.ElasticSpace(), Factory.Space)
         End Function
 
         Private Function LineBreaksBetween(currentToken As SyntaxToken, nextToken As SyntaxToken) As Integer
@@ -589,7 +591,7 @@ Namespace CSharpToVBConverter
                         If isTrailing Then
                             _afterIndentation = False
                         Else
-                            currentTriviaList = currentTriviaList.Add(VBSpaceTrivia)
+                            currentTriviaList = currentTriviaList.Add(Factory.Space)
                             _afterIndentation = True
                         End If
                         _afterLineBreak = False

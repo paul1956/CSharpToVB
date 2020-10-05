@@ -283,9 +283,9 @@ Namespace CSharpToVBConverter
                 Select Case t.RawKind
                     Case VB.SyntaxKind.None
                     Case VB.SyntaxKind.WhitespaceTrivia
-                        NewTrailingTrivia = NewTrailingTrivia.Add(VBSpaceTrivia)
+                        NewTrailingTrivia = NewTrailingTrivia.Add(Factory.Space)
                     Case VB.SyntaxKind.EndOfLineTrivia
-                        NewTrailingTrivia = NewTrailingTrivia.Add(VBSpaceTrivia)
+                        NewTrailingTrivia = NewTrailingTrivia.Add(Factory.Space)
                     Case VB.SyntaxKind.IfDirectiveTrivia, VB.SyntaxKind.ElseDirectiveTrivia, VB.SyntaxKind.ElseIfDirectiveTrivia,
                      VB.SyntaxKind.DisabledTextTrivia, VB.SyntaxKind.EndIfDirectiveTrivia
                         NewTrailingTrivia = NewTrailingTrivia.Add(t)

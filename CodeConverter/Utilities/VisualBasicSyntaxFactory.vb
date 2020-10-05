@@ -222,7 +222,6 @@ Namespace CSharpToVBConverter
 #Region "Trivia"
 
         Public ReadOnly LineContinuation As SyntaxTrivia = Factory.LineContinuationTrivia("_")
-        Public ReadOnly VBSpaceTrivia As SyntaxTrivia = Factory.Space
         Public ReadOnly VBEOLTrivia As SyntaxTrivia = Factory.EndOfLineTrivia(vbCrLf)
 
 #End Region
@@ -237,7 +236,7 @@ Namespace CSharpToVBConverter
 #End Region
 
         Public ReadOnly CompilerServices As String = "System.Runtime.CompilerServices"
-        Public ReadOnly DimModifier As SyntaxTokenList = Factory.TokenList(DimKeyword.WithTrailingTrivia(VBSpaceTrivia))
+        Public ReadOnly DimModifier As SyntaxTokenList = Factory.TokenList(DimKeyword.WithTrailingTrivia(Factory.Space))
         Public ReadOnly InteropServices As String = "System.Runtime.InteropServices"
         Public ReadOnly ExtensionAttribute As AttributeSyntax = Factory.Attribute(Nothing, Factory.ParseTypeName("Extension"), Factory.ArgumentList())
         Public ReadOnly ImportComilierServices As ImportsStatementSyntax = Factory.ImportsStatement(Factory.SingletonSeparatedList(Of ImportsClauseSyntax)(Factory.SimpleImportsClause(Factory.IdentifierName(CompilerServices)))).WithAppendedEOL
@@ -260,20 +259,20 @@ Namespace CSharpToVBConverter
         End Function
 
         Friend Function FactoryDimStatement(Name As SyntaxToken, asClause As AsClauseSyntax, initializer As EqualsValueSyntax) As LocalDeclarationStatementSyntax
-            Dim modifiedIdentifier As ModifiedIdentifierSyntax = Factory.ModifiedIdentifier(Name).WithTrailingTrivia(VBSpaceTrivia)
+            Dim modifiedIdentifier As ModifiedIdentifierSyntax = Factory.ModifiedIdentifier(Name).WithTrailingTrivia(Factory.Space)
             Dim names As SeparatedSyntaxList(Of ModifiedIdentifierSyntax) = Factory.SingletonSeparatedList(modifiedIdentifier)
             Dim declarator As VariableDeclaratorSyntax = Factory.VariableDeclarator(names, asClause, initializer)
             Return FactoryDimStatement(declarator)
         End Function
 
         Friend Function FactoryEndBlockStatement(EndBlockKind As SyntaxKind, BlockKeyword As SyntaxToken, finaltrivia As SyntaxTriviaList) As EndBlockStatementSyntax
-            Return Factory.EndBlockStatement(EndBlockKind, EndKeyword.WithTrailingTrivia(VBSpaceTrivia), BlockKeyword).
+            Return Factory.EndBlockStatement(EndBlockKind, EndKeyword.WithTrailingTrivia(Factory.Space), BlockKeyword).
                                                               WithAppendedTrailingTrivia(finaltrivia).
                                                               WithTrailingEOL
         End Function
 
         Friend Function FactoryTypeArgumentList(DictionaryTypeElement As List(Of TypeSyntax)) As TypeArgumentListSyntax
-            Return Factory.TypeArgumentList(OpenParenToken, OfKeyword.WithTrailingTrivia(VBSpaceTrivia), Factory.SeparatedList(DictionaryTypeElement), CloseParenToken)
+            Return Factory.TypeArgumentList(OpenParenToken, OfKeyword.WithTrailingTrivia(Factory.Space), Factory.SeparatedList(DictionaryTypeElement), CloseParenToken)
         End Function
 
 #End If

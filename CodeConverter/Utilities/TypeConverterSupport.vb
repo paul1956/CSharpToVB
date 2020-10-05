@@ -242,7 +242,7 @@ Namespace CSharpToVBConverter
                                 End If
                         End Select
                     Next
-                    TypeList.Add(ConvertToType(PossibleTypes.Substring(0, commaIndex)).WithLeadingTrivia(VBSpaceTrivia))
+                    TypeList.Add(ConvertToType(PossibleTypes.Substring(0, commaIndex)).WithLeadingTrivia(Factory.Space))
                     If commaIndex + 1 < PossibleTypes.Length Then
                         PossibleTypes = PossibleTypes.Substring(commaIndex + 1).Trim
                     Else
@@ -272,7 +272,7 @@ Namespace CSharpToVBConverter
                                 End Select
                             Next
                         End If
-                        TypeList.Add(ConvertToType(PossibleTypes.Substring(0, commaIndex)).WithLeadingTrivia(VBSpaceTrivia))
+                        TypeList.Add(ConvertToType(PossibleTypes.Substring(0, commaIndex)).WithLeadingTrivia(Factory.Space))
                         If commaIndex + 1 < PossibleTypes.Length Then
                             PossibleTypes = PossibleTypes.Substring(commaIndex + 1).Trim
                         Else
@@ -494,7 +494,7 @@ Namespace CSharpToVBConverter
             builder.Append(ElementList.Last & ")")
             Dim TupleType As String = builder.ToString & If(IsArray, "()", "") & If(Nullable, "?", "")
 
-            Return Factory.ParseTypeName(TupleType).WithLeadingTrivia(VBSpaceTrivia)
+            Return Factory.ParseTypeName(TupleType).WithLeadingTrivia(Factory.Space)
         End Function
 
         <Extension>
@@ -536,7 +536,7 @@ Namespace CSharpToVBConverter
             If TupleElement.Type Is Nothing Then
                 Return Factory.NamedTupleElement(TupleElement.Name.ToString(Globalization.CultureInfo.InvariantCulture))
             End If
-            Dim AsClause As VBS.SimpleAsClauseSyntax = Factory.SimpleAsClause(AsKeyword.With(VBSpaceTrivia, VBSpaceTrivia), New SyntaxList(Of VBS.AttributeListSyntax), TupleElement.Type.ConvertToType)
+            Dim AsClause As VBS.SimpleAsClauseSyntax = Factory.SimpleAsClause(AsKeyword.With(Factory.Space, Factory.Space), New SyntaxList(Of VBS.AttributeListSyntax), TupleElement.Type.ConvertToType)
             Return Factory.NamedTupleElement(Factory.Identifier(MakeVBSafeName(TupleElement.Name)), AsClause)
         End Function
 
