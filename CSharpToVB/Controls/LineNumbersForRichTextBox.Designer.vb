@@ -23,6 +23,7 @@ Partial Class LineNumbersForRichTextBox
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
         components = New System.ComponentModel.Container()
+        Me.ClientSize = New System.Drawing.Size(23, 450)
     End Sub
 
 End Class

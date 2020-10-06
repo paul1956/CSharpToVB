@@ -32,6 +32,8 @@ Namespace My
         End Sub
 
         Private Sub MyApplication_Startup(sender As Object, e As StartupEventArgs) Handles Me.Startup
+            Windows.Forms.Application.SetHighDpiMode(HighDpiMode.SystemAware)
+
 #If Not NETCOREAPP3_1 Then
             ' Get the splash screen.
             CType(SplashScreen, SplashScreen1).UserName.Text = "Current user: " & User.Name
