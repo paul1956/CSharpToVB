@@ -71,6 +71,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CodeConverter\CodeConverter.vbproj" />
+    <ProjectReference Include="..\ProgressReportLibrary\ProgressReportLibrary.vbproj" />
   </ItemGroup>
 
   <ItemGroup>

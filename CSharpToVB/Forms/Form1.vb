@@ -10,6 +10,7 @@ Imports CSharpToVBApp
 Imports CSharpToVBConverter
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.VisualBasic.FileIO
+Imports ProgressReportLibrary
 
 #If NETCOREAPP3_1 Then
 

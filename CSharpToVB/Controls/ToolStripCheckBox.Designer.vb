@@ -22,9 +22,6 @@ Partial Public Class ToolStripCheckBox
         Try
             If disposing AndAlso components IsNot Nothing Then
                 components.Dispose()
-                If localCheckBox IsNot Nothing Then
-                    localCheckBox.Dispose()
-                End If
             End If
         Finally
             MyBase.Dispose(disposing)

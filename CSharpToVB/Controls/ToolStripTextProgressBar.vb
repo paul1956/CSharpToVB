@@ -4,7 +4,7 @@
 
 Imports System.Drawing.Drawing2D
 Imports System.Threading
-Imports CSharpToVBConverter
+Imports ProgressReportLibrary
 
 Public Class ToolStripTextProgressBar
     Inherits ToolStripProgressBar

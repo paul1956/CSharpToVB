@@ -7,7 +7,7 @@ Imports System.Diagnostics.CodeAnalysis
 Imports System.Threading
 Imports CSharpToVBConverter.ToVisualBasic
 Imports Microsoft.CodeAnalysis
-
+Imports ProgressReportLibrary
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 

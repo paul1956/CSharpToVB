@@ -3,10 +3,10 @@
 ' See the LICENSE file in the project root for more information.
 
 Public Class ToolStripCheckBox
-    Private Shared ReadOnly localCheckBox As CheckBox = New CheckBox
-
     Public Sub New()
-        MyBase.New(localCheckBox)
+#Disable Warning CA2000 ' Dispose objects before losing scope
+        MyBase.New(New CheckBox)
+#Enable Warning CA2000 ' Dispose objects before losing scope
     End Sub
 
     'Declare the event

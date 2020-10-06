@@ -9,6 +9,7 @@ Imports CSharpToVBConverter
 Imports CSharpToVBConverter.ConversionResult
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Emit
+Imports ProgressReportLibrary
 
 #If NETCOREAPP3_1 Then
 

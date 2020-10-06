@@ -6,6 +6,7 @@ Imports System.IO
 Imports System.Threading
 Imports CSharpToVBConverter
 Imports Microsoft.CodeAnalysis
+Imports ProgressReportLibrary
 
 #If NETCOREAPP3_1 Then
 
@@ -45,52 +46,52 @@ Module ProcessFileUtilities
                         .SourceCode = MainForm.ConversionInput.Text
                     }
                 If Not Await Convert_Compile_ColorizeAsync(MainForm, ._requestToConvert, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences, CancelToken).ConfigureAwait(True) Then
-                        If ._requestToConvert.CancelToken.IsCancellationRequested Then
+                    If ._requestToConvert.CancelToken.IsCancellationRequested Then
                         .StatusStripConversionProgressBar.Clear()
                         Return False
-                        End If
-                        Dim msgBoxResult As MsgBoxResult
-                        If ._doNotFailOnError Then
-                            msgBoxResult = MsgBoxResult.Yes
-                        Else
-                            msgBoxResult = MsgBox($"Conversion failed, do you want to stop processing this file automatically in the future? Yes and No will continue processing files, Cancel will stop conversions!",
-                                                 MsgBoxStyle.YesNoCancel Or MsgBoxStyle.Exclamation Or MsgBoxStyle.MsgBoxSetForeground)
-                        End If
-                        Select Case msgBoxResult
-                            Case MsgBoxResult.Cancel
-                                ._cancellationTokenSource.Cancel()
-                                Return False
-                            Case MsgBoxResult.No
-                                Return True
-                            Case MsgBoxResult.Yes
-                                If Not My.Settings.IgnoreFileList.Contains(SourceFileNameWithPath) Then
-                                    My.Settings.IgnoreFileList.Add(SourceFileNameWithPath)
-                                    My.Settings.Save()
-                                End If
-                                .ListBoxErrorList.Items.Clear()
-                                .LineNumbersForConversionInput.Visible = My.Settings.ShowSourceLineNumbers
-                                .LineNumbersForConversionOutput.Visible = My.Settings.ShowDestinationLineNumbers
-                                ._doNotFailOnError = True
-                                Return True
-                        End Select
+                    End If
+                    Dim msgBoxResult As MsgBoxResult
+                    If ._doNotFailOnError Then
+                        msgBoxResult = MsgBoxResult.Yes
                     Else
-                        If Not String.IsNullOrWhiteSpace(TargetDirectory) Then
-                            If ._requestToConvert.CancelToken.IsCancellationRequested Then
-                                Return False
+                        msgBoxResult = MsgBox($"Conversion failed, do you want to stop processing this file automatically in the future? Yes and No will continue processing files, Cancel will stop conversions!",
+                                             MsgBoxStyle.YesNoCancel Or MsgBoxStyle.Exclamation Or MsgBoxStyle.MsgBoxSetForeground)
+                    End If
+                    Select Case msgBoxResult
+                        Case MsgBoxResult.Cancel
+                            ._cancellationTokenSource.Cancel()
+                            Return False
+                        Case MsgBoxResult.No
+                            Return True
+                        Case MsgBoxResult.Yes
+                            If Not My.Settings.IgnoreFileList.Contains(SourceFileNameWithPath) Then
+                                My.Settings.IgnoreFileList.Add(SourceFileNameWithPath)
+                                My.Settings.Save()
                             End If
-                            If .LabelErrorCount.Text = "File Skipped" Then
-                                Return True
-                            End If
-                            Dim NewFileName As String = Path.ChangeExtension(New FileInfo(SourceFileNameWithPath).Name, If(SourceLanguageExtension = "vb", "cs", "vb"))
-                            WriteTextToStream(TargetDirectory, NewFileName, .ConversionOutput.Text)
+                            .ListBoxErrorList.Items.Clear()
+                            .LineNumbersForConversionInput.Visible = My.Settings.ShowSourceLineNumbers
+                            .LineNumbersForConversionOutput.Visible = My.Settings.ShowDestinationLineNumbers
+                            ._doNotFailOnError = True
+                            Return True
+                    End Select
+                Else
+                    If Not String.IsNullOrWhiteSpace(TargetDirectory) Then
+                        If ._requestToConvert.CancelToken.IsCancellationRequested Then
+                            Return False
                         End If
-                        If My.Settings.PauseConvertOnSuccess Then
-                            If MsgBox($"{SourceFileNameWithPath} successfully converted, Continue?",
-                                      MsgBoxStyle.YesNo Or MsgBoxStyle.Question Or MsgBoxStyle.MsgBoxSetForeground) = MsgBoxResult.No Then
-                                Return False
-                            End If
+                        If .LabelErrorCount.Text = "File Skipped" Then
+                            Return True
+                        End If
+                        Dim NewFileName As String = Path.ChangeExtension(New FileInfo(SourceFileNameWithPath).Name, If(SourceLanguageExtension = "vb", "cs", "vb"))
+                        WriteTextToStream(TargetDirectory, NewFileName, .ConversionOutput.Text)
+                    End If
+                    If My.Settings.PauseConvertOnSuccess Then
+                        If MsgBox($"{SourceFileNameWithPath} successfully converted, Continue?",
+                                  MsgBoxStyle.YesNo Or MsgBoxStyle.Question Or MsgBoxStyle.MsgBoxSetForeground) = MsgBoxResult.No Then
+                            Return False
                         End If
                     End If
+                End If
 
                 ' 5 second delay
                 Const LoopSleep As Integer = 25
