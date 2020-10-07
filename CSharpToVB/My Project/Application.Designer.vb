@@ -19,17 +19,10 @@ Namespace My
     ' Solution Explorer), and make changes on the Application tab.
     '
     Partial Friend Class MyApplication
-#If NETCOREAPP3_1 Then
-        Inherits ApplicationServices.WindowsFormsApplicationBase
-#End If
 
         <Global.System.Diagnostics.DebuggerStepThroughAttribute()>  _
         Public Sub New()
-#If NETCOREAPP3_1 Then
-            MyBase.New()
-#Else
             MyBase.New(Global.Microsoft.VisualBasic.ApplicationServices.AuthenticationMode.Windows)
-#End If
             Me.IsSingleInstance = True
             Me.EnableVisualStyles = True
             Me.SaveMySettingsOnExit = True

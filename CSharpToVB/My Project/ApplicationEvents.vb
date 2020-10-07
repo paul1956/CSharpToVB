@@ -36,7 +36,7 @@ Namespace My
 
 #If Not NETCOREAPP3_1 Then
             ' Get the splash screen.
-            CType(SplashScreen, SplashScreen1).UserName.Text = "Current user: " & User.Name
+            CType(Me.SplashScreen, SplashScreen1).UserName.Text = "Current user: " & User.Name
 #End If
         End Sub
 
