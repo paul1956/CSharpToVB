@@ -307,7 +307,9 @@ Public Module ProcessProjectUtilities
                     totalProjects:=1,
                     MainForm._cancellationTokenSource).ConfigureAwait(True)).ErrorPrompt
 
-                If prompt.Length = 0 Then
+                Dim ConversionComplete As Boolean = prompt.Length = 0
+
+                If ConversionComplete Then
 #Disable Warning CA1308 ' Normalize strings to uppercase
                     prompt = $"{If(MainForm._cancellationTokenSource.Token.IsCancellationRequested, "Conversion canceled", "Conversion completed")}, {MainForm.StatusStripConversionFileProgressLabel.Text.ToLower(CultureInfo.InvariantCulture)} completed successfully."
 #Enable Warning CA1308 ' Normalize strings to uppercase
@@ -315,10 +317,11 @@ Public Module ProcessProjectUtilities
                 MsgBox(prompt,
                        MsgBoxStyle.OkOnly Or If(prompt.Contains("terminated", StringComparison.OrdinalIgnoreCase), MsgBoxStyle.Critical, MsgBoxStyle.Information) Or MsgBoxStyle.MsgBoxSetForeground,
                        Title:="Convert C# to Visual Basic")
-
-                Dim projectSavePath As String = DestinationFilePath(fileName, saveSolutionRoot)
-                If Directory.Exists(projectSavePath) AndAlso Not MainForm._cancellationTokenSource.IsCancellationRequested Then
-                    Process.Start("explorer.exe", $"/root,{projectSavePath}")
+                If ConversionComplete Then
+                    Dim projectSavePath As String = DestinationFilePath(fileName, saveSolutionRoot)
+                    If Directory.Exists(projectSavePath) Then
+                        Process.Start("explorer.exe", $"/root,{projectSavePath}")
+                    End If
                 End If
             End If
         Catch ex As ObjectDisposedException
