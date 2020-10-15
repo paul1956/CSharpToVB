@@ -43,10 +43,21 @@ Namespace CSharpToVBConverter.ToVisualBasic
             Public Overrides Function VisitAttributeArgumentList(node As CSS.AttributeArgumentListSyntax) As VB.VisualBasicSyntaxNode
                 Dim vbArguments As New List(Of VBS.ArgumentSyntax)
                 Dim newTrailingTrivia As New SyntaxTriviaList
+                Dim nameRequiredIndex As Integer = 0
                 For Each e As IndexClass(Of CSS.AttributeArgumentSyntax) In node.Arguments.WithIndex
                     Dim localLeadingTrivia As New SyntaxTriviaList
                     Dim localTrailingTrivia As New SyntaxTriviaList
                     Dim Item As VBS.ArgumentSyntax = DirectCast(e.Value.Accept(Me), VBS.ArgumentSyntax)
+                    If Item.IsNamed Then
+                        nameRequiredIndex = 1
+                    End If
+                    If nameRequiredIndex > 0 AndAlso Not Item.IsNamed Then
+                        'Dim x As SymbolInfo = _mSemanticModel.GetSymbolInfo(CType(node.Parent, CSS.AttributeSyntax))
+                        Dim name As VBS.IdentifierNameSyntax = Factory.IdentifierName($"TODO_VBRequiresNameHere{nameRequiredIndex}")
+                        nameRequiredIndex += 1
+                        Dim nameColonEquals As VBS.NameColonEqualsSyntax = Factory.NameColonEquals(name)
+                        Item = Factory.SimpleArgument(nameColonEquals, Item.GetExpression)
+                    End If
                     If Item.HasLeadingTrivia Then
                         Dim initialTriviaList As SyntaxTriviaList = Item.GetLeadingTrivia
                         For i1 As Integer = 0 To initialTriviaList.Count - 1

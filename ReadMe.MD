@@ -64,6 +64,13 @@ Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpec
 Any changes to CSharpToVB application needs to change the version information in the project file **AND** in MyProject/AssemblyInfo.vb until Visual Studio is able to general file automatically for a WinForms application.
 
 ## What's New in this release
+  New in 4.6.0.9/4.0.0.8
+  - Fix issue where + was incorrectly translated to &
+  - Fix Issue with Where clause defined variable
+  - Map C# Record to VB Structure
+  - Add a temporary name to trailing attribute, following a named attribute
+  - Added workaround for StackAlloc using Object
+
   New in 4.6.0.9/4.0.0.7
   - Use new ToolStripTextProgressBar
 

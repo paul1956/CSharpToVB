@@ -126,41 +126,21 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                 End If
                             Case TypeOf UnaryPattern.Pattern Is CSS.DeclarationPatternSyntax
                                 Return Factory.IsNotExpression(left:=VBExpression, right:=DirectCast(UnaryPattern.Pattern.Accept(Me), VBS.ExpressionSyntax))
+                            Case TypeOf UnaryPattern.Pattern Is CSS.RecursivePatternSyntax
+                                Dim EmptyStatementWithError As VBS.EmptyStatementSyntax = FlagUnsupportedStatements(StatementWithIssue,
+                                                                                        "Recursive Pattern Syntax",
+                                                                                        CommentOutOriginalStatements:=True)
+                                StatementWithIssue.AddMarker(Statement:=EmptyStatementWithError,
+                                                 StatementHandlingOption.ReplaceStatement,
+                                                 AllowDuplicates:=True)
+                                Return Factory.IdentifierName("DoNotCare")
                             Case Else
                                 Stop
                         End Select
                     End If
                     Throw UnreachableException(NameOf(Pattern))
                 ElseIf TypeOf Pattern Is CSS.VarPatternSyntax Then
-                    'Dim Name As VBS.IdentifierNameSyntax
-                    'Dim VarPattern As CSS.VarPatternSyntax = DirectCast(Pattern, CSS.VarPatternSyntax)
                     Dim DesignationIdentifier As VBS.IdentifierNameSyntax = CType(Pattern.Accept(Me), VBS.IdentifierNameSyntax)
-
-                    'If TypeOf VarPattern.Designation Is CSS.SingleVariableDesignationSyntax Then
-                    '    DesignationIdentifier = DirectCast(VarPattern.Designation, CSS.SingleVariableDesignationSyntax).Identifier.ToString
-                    'ElseIf TypeOf VarPattern.Designation Is CSS.ParenthesizedVariableDesignationSyntax Then
-                    '    Dim Designation As CSS.ParenthesizedVariableDesignationSyntax = DirectCast(VarPattern.Designation, CSS.ParenthesizedVariableDesignationSyntax)
-                    '    Dim VariableNames As New List(Of String)
-                    '    For Each e As IndexClass(Of CSS.VariableDesignationSyntax) In Designation.Variables.WithIndex
-                    '        If e.Value.RawKind = CS.SyntaxKind.ParenthesizedVariableDesignation Then
-                    '            Dim sBuilder As New StringBuilder
-                    '            CreateDesignationName(ProcessVariableDesignation(CType(e.Value, CSS.ParenthesizedVariableDesignationSyntax)), sBuilder)
-                    '            VariableNames.Add(sBuilder.ToString)
-                    '        Else
-                    '            If e.Value.IsKind(CS.SyntaxKind.DiscardDesignation) Then
-                    '                VariableNames.Add("__DiscardDesignation__")
-                    '            Else
-                    '                VariableNames.Add(e.Value.Accept(Me).ToString)
-                    '            End If
-                    '        End If
-                    '    Next
-                    '    DesignationIdentifier = node.GetUniqueVariableNameInScope("TempVar", _mSemanticModel)
-                    'Else
-                    '    Stop
-                    '    Throw UnreachableException
-                    'End If
-                    'Dim DesignationNameToken As SyntaxToken = GenerateSafeVBToken(CS.SyntaxFactory.Identifier(DesignationIdentifier), node, _mSemanticModel)
-                    'Name = Factory.IdentifierName(DesignationNameToken)
 
                     Dim initializer As VBS.EqualsValueSyntax = Factory.EqualsValue(VBExpression)
                     Dim LeadingTrivia As SyntaxTriviaList = StatementWithIssue.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=True, "VB has no direct equivalent To C# var pattern expressions")

@@ -833,13 +833,13 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         If Modifiers.Contains(Function(t As SyntaxToken) t.IsKind(VB.SyntaxKind.PartialKeyword)) Then
                             Return Factory.SubBlock(subOrFunctionStatement,
                                                     statements:=Nothing,
-                                                    EndSubOrFunction.With(FunctionStatementLeadingTrivia, FunctionStatementTrailingTrivia).WithPrependedLeadingTrivia(finalLeadingTrivia))
+                                                    EndSubOrFunction.With(FunctionStatementLeadingTrivia, FunctionStatementTrailingTrivia).WithPrependedLeadingTrivia(finalLeadingTrivia).WithTrailingEOL)
                         End If
                         Return subOrFunctionStatement
                     End If
                     Return Factory.SubBlock(subOrFunctionStatement,
                                             body.Value,
-                                            EndSubOrFunction.WithPrependedLeadingTrivia(finalLeadingTrivia))
+                                            EndSubOrFunction.WithPrependedLeadingTrivia(finalLeadingTrivia).WithTrailingEOL)
                 End If
                 If node.Body IsNot Nothing Then
                     EndSubOrFunction = FactoryEndBlockStatement(VB.SyntaxKind.EndFunctionStatement, FunctionKeyword, finalTrailingTrivia).WithPrependedLeadingTrivia(finalLeadingTrivia)
@@ -949,7 +949,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 blockStatements = blockStatements.AddRange(blockvalue)
                 Return Factory.FunctionBlock(subOrFunctionStatement,
                                              blockStatements,
-                                             EndSubOrFunction.RemoveExtraLeadingEOL)
+                                             EndSubOrFunction.RemoveExtraLeadingEOL.WithTrailingEOL)
             End Function
 
             Public Overrides Function VisitOperatorDeclaration(node As CSS.OperatorDeclarationSyntax) As VB.VisualBasicSyntaxNode

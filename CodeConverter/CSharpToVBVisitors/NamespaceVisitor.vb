@@ -162,7 +162,7 @@ End Function
                         Throw New OperationCanceledException
                     End If
                     Dim m As CSS.MemberDeclarationSyntax = e.Value
-                    Dim Statement As VBS.StatementSyntax = DirectCast(m.Accept(Me), VBS.StatementSyntax).RemoveExtraLeadingEOL
+                    Dim Statement As VBS.StatementSyntax = DirectCast(m.Accept(Me), VBS.StatementSyntax).RemoveExtraLeadingEOL.WithTrailingEOL
                     ' Cases below are handled by RestructureAttributesAndModifiers
                     If Statement.IsKind(VB.SyntaxKind.FieldDeclaration) Then
                         members.Add(Statement)

@@ -1577,7 +1577,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                                                 FinallyBlock,
                                                                 EndTryStatement
                                                                 )
-                Return Factory.SingletonList(Of StatementSyntax)(block.WithConvertedTriviaFrom(node))
+                Return ReplaceOneStatementWithMarkedStatements(node, block.WithConvertedTriviaFrom(node))
             End Function
 
             Public Overrides Function VisitUnsafeStatement(node As CSS.UnsafeStatementSyntax) As SyntaxList(Of StatementSyntax)

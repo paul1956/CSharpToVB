@@ -231,7 +231,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 If Not node.IsKind(CS.SyntaxKind.AddExpression) Then
                     Return False
                 End If
-                If Me.IsStringExpression(node.Left) OrElse Me.IsStringExpression(node.Right) Then
+                If Me.IsStringExpression(node.Left) AndAlso Me.IsStringExpression(node.Right) Then
                     Return True
                 End If
                 Dim LeftNodeTypeInfo As TypeInfo

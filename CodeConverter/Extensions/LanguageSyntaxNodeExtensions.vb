@@ -421,6 +421,8 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         NewTrailingTrivia = NewTrailingTrivia.Add(Trivia)
                     Case VB.SyntaxKind.IfDirectiveTrivia
                         newLeadingTrivia = newLeadingTrivia.Add(Trivia)
+                    Case VB.SyntaxKind.LineContinuationTrivia
+
                     Case Else
                         Stop
                 End Select
