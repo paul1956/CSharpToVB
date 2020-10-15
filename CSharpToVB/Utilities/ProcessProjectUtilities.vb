@@ -47,6 +47,7 @@ Public Module ProcessProjectUtilities
             Case 1
                 Return New List(Of String)({TargetFrameworks(0)})
             Case Else
+#If NETCOREAPP3_1 Then
                 Using F As New FrameworkSelectionDialog
                     If Debugger.IsAttached Then
                         Return TargetFrameworks.ToList
@@ -57,6 +58,26 @@ Public Module ProcessProjectUtilities
                     End If
                     Return New List(Of String)({F.CurrentFramework})
                 End Using
+#Else
+                Dim page As TaskDialogPage = New TaskDialogPage
+                For Each s As IndexClass(Of String) In TargetFrameworks.WithIndex
+                    page.RadioButtons.Add(New TaskDialogRadioButton(s.Value) With
+                                          {.Checked = s.IsFirst}
+                                         )
+                Next
+                page.Caption = "Select Framework"
+                page.Text = "Selected Framework is use to set 'Framework' #const used for conversion. Only one Framework per project can be converted at a time. Merging multiple Frameworks is not automatically supported"
+                page.Buttons.Add(New TaskDialogButton("OK"))
+                page.Buttons.Add(New TaskDialogButton("Cancel"))
+                page.DefaultButton = page.Buttons(0)
+                Dim taskDialogResult As TaskDialogButton = TaskDialog.ShowDialog(Form1.Handle, page, TaskDialogStartupLocation.CenterOwner)
+
+                If taskDialogResult.Text = TaskDialogButton.OK.Text Then
+                    Return {page.RadioButtons.Where(Function(b As TaskDialogRadioButton) b.Checked = True).First.Text}.ToList
+                Else
+                    Return New List(Of String)
+                End If
+#End If
         End Select
     End Function
 
