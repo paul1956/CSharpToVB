@@ -65,7 +65,7 @@ Any changes to CSharpToVB application needs to change the version information in
 
 ## What's New in this release
   New in 4.6.0.10/4.0.0.10
-  - Improve handling of C# non-trailing named Attributable parameters
+  - Fix handling of C# non-trailing named Attributable parameters
 
   New in 4.6.0.10/4.0.0.10
   - Fix progress display in convert project and solution

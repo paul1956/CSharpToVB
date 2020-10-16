@@ -60,7 +60,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                             Dim possibleMethodInfo As SymbolInfo = _mSemanticModel.GetSymbolInfo(CType(node.Parent, CSS.AttributeSyntax))
                             If possibleMethodInfo.CandidateSymbols.Length = 1 Then
                                 Dim method As IMethodSymbol = CType(possibleMethodInfo.CandidateSymbols(0), IMethodSymbol)
-                                'Stop
+                                name = Factory.IdentifierName(method.Parameters(e.Index).Name)
                             End If
                         End If
                         If name Is Nothing Then
