@@ -9,6 +9,7 @@
     <RepositoryUrl>https://github.com/paul1956/CSharpToVB</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
     <NeutralLanguage>en-US</NeutralLanguage>
+    <Description>Class used to pass around progress information</Description>
   </PropertyGroup>
 
 </Project>
