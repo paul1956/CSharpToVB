@@ -48,11 +48,14 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Dim localLeadingTrivia As New SyntaxTriviaList
                     Dim localTrailingTrivia As New SyntaxTriviaList
                     Dim Item As VBS.ArgumentSyntax = DirectCast(e.Value.Accept(Me), VBS.ArgumentSyntax)
+                    Dim name As VBS.IdentifierNameSyntax = Nothing
                     If Item.IsNamed Then
-                        nameRequiredIndex = 1
+                        If nameRequiredIndex = 0 Then
+                            nameRequiredIndex = 1
+                        End If
+                        name = CType(Item, VBS.SimpleArgumentSyntax).NameColonEquals.Name
                     End If
                     If nameRequiredIndex > 0 AndAlso Not Item.IsNamed Then
-                        Dim name As VBS.IdentifierNameSyntax = Nothing
                         If TypeOf node.Parent Is CSS.AttributeSyntax Then
                             Dim possibleMethodInfo As SymbolInfo = _mSemanticModel.GetSymbolInfo(CType(node.Parent, CSS.AttributeSyntax))
                             If possibleMethodInfo.CandidateSymbols.Length = 1 Then
