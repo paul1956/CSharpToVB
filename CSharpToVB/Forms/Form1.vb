@@ -34,6 +34,8 @@ Partial Public Class Form1
         Me.InitializeComponent()
     End Sub
 
+    Friend Property BufferToSearch As SearchBuffers = SearchBuffers.CS
+
     Private Property CurrentBuffer As Control
         Get
             Return _currentBuffer
@@ -45,8 +47,6 @@ Partial Public Class Form1
             End If
         End Set
     End Property
-
-    Friend Property BufferToSearch As SearchBuffers = SearchBuffers.CS
 
     Private Sub ButtonStop_Click(sender As Object, e As EventArgs) Handles ButtonStopConversion.Click
         Me.ButtonStopConversion.Visible = False
@@ -954,6 +954,25 @@ Partial Public Class Form1
 
 #Region "Form Support Routines"
 
+    Private Sub DoUpdate(progressStr As String)
+        Me.ProjectConversionInitProgressLabel.Text = progressStr
+        If progressStr.Any Then
+            Me.ConversionInput.Text = ""
+            Me.ConversionOutput.Text = ""
+            Me.ProjectConversionInitProgressLabel.Visible = True
+            Me.ProjectConversionInitProgressLabel.Left = Math.Max((Me.ConversionInput.Width \ 2) - (Me.ProjectConversionInitProgressLabel.Width \ 2), 0)
+            Me.ProjectConversionInitProgressLabel.Top = (Me.ConversionInput.Height \ 2) - (Me.ProjectConversionInitProgressLabel.Height \ 2)
+
+            Me.ProjectConversionInitProgressBar.Visible = True
+            Me.ProjectConversionInitProgressBar.Left = Math.Max((Me.ConversionInput.Width \ 2) - (Me.ProjectConversionInitProgressBar.Width \ 2), 0)
+            Me.ProjectConversionInitProgressBar.Top = Me.ProjectConversionInitProgressLabel.Bottom + 5
+        Else
+            Me.ProjectConversionInitProgressLabel.Visible = False
+            Me.ProjectConversionInitProgressBar.Visible = False
+        End If
+        Application.DoEvents()
+    End Sub
+
     Private Sub ResizeRichTextBuffers()
         Dim LineNumberInputWidth As Integer = If(Me.LineNumbersForConversionInput.Visible AndAlso Me.ConversionInput.TextLength > 0, Me.LineNumbersForConversionInput.Width, 0)
         Dim LineNumberOutputWidth As Integer = If(Me.LineNumbersForConversionOutput.Visible AndAlso Me.ConversionOutput.TextLength > 0, Me.LineNumbersForConversionOutput.Width, 0)
@@ -969,30 +988,13 @@ Partial Public Class Form1
         Me.StatusStripCurrentFileName.Width = HalfClientWidth
     End Sub
 
-    Friend Sub UpdateProgressLabels(progressStr As String, Value As Boolean)
+    Friend Sub UpdateProgressLabels(progressStr As String)
         If Me.InvokeRequired Then
             Me.Invoke(Sub()
-                          Me.ProjectConversionInitProgressLabel.Text = progressStr
-                          If Value Then
-                              Me.ConversionInput.Text = ""
-                              Me.ConversionOutput.Text = ""
-                              Me.ProjectConversionInitProgressLabel.Visible = True
-                              Me.ProjectConversionInitProgressBar.Visible = True
-                          Else
-                              Me.ProjectConversionInitProgressLabel.Visible = False
-                              Me.ProjectConversionInitProgressBar.Visible = False
-                          End If
-                          Application.DoEvents()
+                          Me.DoUpdate(progressStr)
                       End Sub)
         Else
-            Me.Invoke(Sub()
-                          Me.ProjectConversionInitProgressLabel.Text = progressStr
-                          If Value Then
-                              Me.ConversionInput.Text = ""
-                              Me.ConversionOutput.Text = ""
-                          End If
-                          Application.DoEvents()
-                      End Sub)
+            Me.DoUpdate(progressStr)
         End If
     End Sub
 

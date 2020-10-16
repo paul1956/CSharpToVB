@@ -52,9 +52,18 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         nameRequiredIndex = 1
                     End If
                     If nameRequiredIndex > 0 AndAlso Not Item.IsNamed Then
-                        'Dim x As SymbolInfo = _mSemanticModel.GetSymbolInfo(CType(node.Parent, CSS.AttributeSyntax))
-                        Dim name As VBS.IdentifierNameSyntax = Factory.IdentifierName($"TODO_VBRequiresNameHere{nameRequiredIndex}")
-                        nameRequiredIndex += 1
+                        Dim name As VBS.IdentifierNameSyntax = Nothing
+                        If TypeOf node.Parent Is CSS.AttributeSyntax Then
+                            Dim possibleMethodInfo As SymbolInfo = _mSemanticModel.GetSymbolInfo(CType(node.Parent, CSS.AttributeSyntax))
+                            If possibleMethodInfo.CandidateSymbols.Length = 1 Then
+                                Dim method As IMethodSymbol = CType(possibleMethodInfo.CandidateSymbols(0), IMethodSymbol)
+                                'Stop
+                            End If
+                        End If
+                        If name Is Nothing Then
+                            name = Factory.IdentifierName($"TODO_VBRequiresNameHere{nameRequiredIndex}")
+                            nameRequiredIndex += 1
+                        End If
                         Dim nameColonEquals As VBS.NameColonEqualsSyntax = Factory.NameColonEquals(name)
                         Item = Factory.SimpleArgument(nameColonEquals, Item.GetExpression)
                     End If

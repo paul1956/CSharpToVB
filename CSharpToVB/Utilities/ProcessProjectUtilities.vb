@@ -109,7 +109,7 @@ Public Module ProcessProjectUtilities
     ''' <returns>Error String to be Displayed and list of products processed</returns>
     Friend Async Function ProcessProjectAsync(MainForm As Form1, TaskProjectAnalyzer As IProjectAnalyzer, SolutionRoot As String, processedProjects As Integer, totalProjects As Integer, cancelToken As CancellationTokenSource) As Task(Of (ErrorPrompt As String, ProjectsToBeAdded As List(Of String)))
         Application.DoEvents()
-        MainForm.UpdateProgressLabels("Getting Analyzer Results", True)
+        MainForm.UpdateProgressLabels("Getting Analyzer Results")
         Dim TaskResults As Task(Of IAnalyzerResults) = GetResultsAsync(CType(TaskProjectAnalyzer, ProjectAnalyzer))
         While Not TaskResults.IsCompleted
             If cancelToken.IsCancellationRequested Then
@@ -118,7 +118,7 @@ Public Module ProcessProjectUtilities
             Await Task.Delay(100).ConfigureAwait(True)
         End While
         Dim results As IAnalyzerResults = TaskResults.Result
-        MainForm.UpdateProgressLabels("Loading Workspace", True)
+        MainForm.UpdateProgressLabels("Loading Workspace")
         Dim TaskWorkspace As Task(Of AdhocWorkspace) = GetWorkspaceAsync(TaskProjectAnalyzer)
         Dim frameworkList As List(Of String) = GetFrameworks(results.TargetFrameworks.ToList)
         ' Under debugger each framework will be processed
@@ -134,7 +134,7 @@ Public Module ProcessProjectUtilities
         End If
         Dim projectsToBeAdd As New List(Of String)
         Using workspace As AdhocWorkspace = TaskWorkspace.Result
-            MainForm.UpdateProgressLabels("", False)
+            MainForm.UpdateProgressLabels("")
 
             If workspace.CurrentSolution.Projects.Count <> 1 Then
                 Return ($"of an unexpected number of projects {workspace.CurrentSolution.Projects.Count}, processing project will terminate!", New List(Of String))
@@ -239,14 +239,16 @@ Public Module ProcessProjectUtilities
         MainForm.ListBoxFileList.Items.Clear()
         MainForm.ConversionInput.Clear()
         MainForm.ConversionOutput.Clear()
-        MainForm.UpdateProgressLabels($"Getting Analyzer Manger for {fileName}", True)
+        MainForm.UpdateProgressLabels($"Getting Analyzer Manger for {fileName}")
+        ' Allow user to read
+        Await Task.Delay(5000, MainForm._cancellationTokenSource.Token).ConfigureAwait(True)
         Try
             Dim TaskAnalyzerManager As Task(Of AnalyzerManager) = GetManagerAsync(fileName)
             While Not TaskAnalyzerManager.IsCompleted
                 If MainForm._cancellationTokenSource.IsCancellationRequested Then
                     Exit Try
                 End If
-                Await Task.Delay(100).ConfigureAwait(True)
+                Await Task.Delay(100, MainForm._cancellationTokenSource.Token).ConfigureAwait(True)
             End While
             Dim solutionAnalyzerManager As AnalyzerManager = TaskAnalyzerManager.Result
             MainForm.ProjectConversionInitProgressLabel.Visible = False
@@ -309,7 +311,7 @@ Public Module ProcessProjectUtilities
                 End If
             Else
                 ' Single project
-                MainForm.UpdateProgressLabels($"Getting Project Analyzer for {fileName}", True)
+                MainForm.UpdateProgressLabels($"Getting Project Analyzer for {fileName}")
                 Dim TaskProjectAnalyzer As Task(Of IProjectAnalyzer) = GetProjectAnalyzerAsync(fileName, solutionAnalyzerManager)
                 While Not TaskProjectAnalyzer.IsCompleted
                     If MainForm._cancellationTokenSource.IsCancellationRequested Then
@@ -317,7 +319,7 @@ Public Module ProcessProjectUtilities
                     End If
                     Await Task.Delay(100).ConfigureAwait(True)
                 End While
-                MainForm.UpdateProgressLabels("", False)
+                MainForm.UpdateProgressLabels("")
                 MainForm.mnuFileLastProject.Text = $"Last Project - {fileName}"
                 MainForm.mnuFileLastProject.Enabled = True
                 My.Settings.LastProject = fileName
