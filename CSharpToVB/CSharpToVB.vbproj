@@ -68,8 +68,9 @@
     <PackageReference Include="System.Collections.Immutable" Version="5.0.0-rc.2.20475.5" />
     <PackageReference Include="System.Reflection.Metadata" Version="5.0.0-rc.2.20475.5" />
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' != 'net5.0'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net5.0'">
     <Compile Remove="Forms\FrameworkSelectionDialog.Designer.vb" />
+    <Compile Remove="Forms\FrameworkSelectionDialog.resx" />
     <Compile Remove="Forms\FrameworkSelectionDialog.vb" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
