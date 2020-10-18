@@ -5,7 +5,7 @@
 Imports System.ComponentModel
 
 <DefaultProperty("ParentRichTextBox")>
-Public Class LineNumbersForRichTextBox : Inherits Control
+Partial Public Class LineNumbersForRichTextBox
 
     Private WithEvents ZParent As RichTextBox = Nothing
     Private WithEvents ZTimer As New Timer
