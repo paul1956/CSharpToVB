@@ -6,7 +6,8 @@ Imports System.Drawing.Drawing2D
 Imports System.Threading
 Imports ProgressReportLibrary
 
-Partial Public Class ToolStripTextProgressBar
+Public Class ToolStripTextProgressBar
+    Inherits ToolStripProgressBar
 
     Public Sub New()
         Me.TextImageRelation = TextImageRelation.Overlay

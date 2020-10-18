@@ -977,6 +977,7 @@ Partial Public Class Form1
         Dim LineNumberInputWidth As Integer = If(Me.LineNumbersForConversionInput.Visible AndAlso Me.ConversionInput.TextLength > 0, Me.LineNumbersForConversionInput.Width, 0)
         Dim LineNumberOutputWidth As Integer = If(Me.LineNumbersForConversionOutput.Visible AndAlso Me.ConversionOutput.TextLength > 0, Me.LineNumbersForConversionOutput.Width, 0)
         Dim HalfClientWidth As Integer = Me.ClientSize.Width \ 2
+        Me.ConversionInput.Left = LineNumberInputWidth - 1
         Me.ConversionInput.Width = HalfClientWidth - LineNumberInputWidth
         Me.ListBoxFileList.Width = HalfClientWidth
 

@@ -2,7 +2,7 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
-Partial Public Class ToolStripCheckBox
+Public Class ToolStripCheckBox
     Public Sub New()
 #Disable Warning CA2000 ' Dispose objects before losing scope
         MyBase.New(New CheckBox)

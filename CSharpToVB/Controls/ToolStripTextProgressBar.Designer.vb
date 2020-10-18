@@ -3,8 +3,6 @@
 ' See the LICENSE file in the project root for more information.
 
 Partial Public Class ToolStripTextProgressBar
-    Inherits ToolStripProgressBar
-
     'Required by the Control Designer
     Private components As System.ComponentModel.IContainer
 
