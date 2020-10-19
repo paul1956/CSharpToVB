@@ -124,7 +124,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
     End Property
 
     <Category("Additional Appearance")>
-    <DefaultValue(0)>
+    <DefaultValue(Drawing2D.LinearGradientMode.Horizontal)>
     Public Property BackgroundGradientDirection() As Drawing2D.LinearGradientMode
         Get
             Return _zGradient_Direction
@@ -148,7 +148,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
     End Property
 
     <Category("Additional Appearance")>
-    <DefaultValue(2)>
+    <DefaultValue(Drawing2D.DashStyle.Dot)>
     Public Property BorderLinesStyle() As Drawing2D.DashStyle
         Get
             Return _zBorderLines_Style
@@ -176,7 +176,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
 
     <Description("Use this property to dock the LineNumbers to a chosen side of the chosen RichTextBox.")>
     <Category("Additional Behavior")>
-    <DefaultValue(1)>
+    <DefaultValue(LineNumberDockSides.Left)>
     Public Property DockSide() As LineNumberDockSides
         Get
             Return _zDockSide
@@ -213,7 +213,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
     End Property
 
     <Category("Additional Appearance")>
-    <DefaultValue(2)>
+    <DefaultValue(Drawing2D.DashStyle.Dot)>
     Public Property GridLinesStyle() As Drawing2D.DashStyle
         Get
             Return _zGridLines_Style
@@ -241,7 +241,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
 
     <Description("Use this to align the LineNumbers to a chosen corner (or center) within their item-area.")>
     <Category("Additional Behavior")>
-    <DefaultValue(4)>
+    <DefaultValue(ContentAlignment.TopRight)>
     Public Property LineNrsAlignment() As ContentAlignment
         Get
             Return _zLineNumbers_Alignment
@@ -332,7 +332,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
     End Property
 
     <Category("Additional Appearance")>
-    <DefaultValue(2)>
+    <DefaultValue(LineNumberDockSides.Left)>
     Public Property MarginLinesSide() As LineNumberDockSides
         Get
             Return _zMarginLines_Side
@@ -344,7 +344,7 @@ Public Class LineNumbersForRichTextBox : Inherits Control
     End Property
 
     <Category("Additional Appearance")>
-    <DefaultValue(0)>
+    <DefaultValue(Drawing2D.DashStyle.Solid)>
     Public Property MarginLinesStyle() As Drawing2D.DashStyle
         Get
             Return _zMarginLines_Style
