@@ -5,7 +5,7 @@
 Imports System.ComponentModel
 
 <DefaultProperty("ParentRichTextBox")>
-Public Class LineNumbersForRichTextBox : Inherits Control
+Partial Public Class LineNumbersForRichTextBox : Inherits Control
 
     Private WithEvents ZParent As RichTextBox = Nothing
     Private WithEvents ZTimer As New Timer
@@ -66,14 +66,6 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         Me.Update_SizeAndPosition()
         Me.Invalidate()
     End Sub
-
-    <Flags>
-    Public Enum LineNumberDockSides
-        None = 0
-        Left = 1
-        Right = 2
-        Height = 4
-    End Enum
 
     <Browsable(False)>
     Public Overrides Property AutoSize() As Boolean
@@ -1012,16 +1004,5 @@ Public Class LineNumbersForRichTextBox : Inherits Control
         MyBase.Refresh()
         Me.Update_SizeAndPosition()
     End Sub
-
-    Private Class LineNumberItem
-        Friend _lineNumber As Integer
-        Friend _rectangle As Rectangle
-
-        Friend Sub New(zLineNumber As Integer, zRectangle As Rectangle)
-            _lineNumber = zLineNumber
-            _rectangle = zRectangle
-        End Sub
-
-    End Class
 
 End Class
