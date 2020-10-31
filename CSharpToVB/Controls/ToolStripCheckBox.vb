@@ -4,9 +4,7 @@
 
 Public Class ToolStripCheckBox
     Public Sub New()
-#Disable Warning CA2000 ' Dispose objects before losing scope
         MyBase.New(New CheckBox)
-#Enable Warning CA2000 ' Dispose objects before losing scope
     End Sub
 
     'Declare the event
