@@ -38,11 +38,9 @@ Module MenuExtensions
             ' create new ToolStripItem, displaying the name of the file...
             ' set the tag - identifies the ToolStripItem as an MRU item and
             ' contains the full path so it can be opened later...
-#Disable Warning CA2000 ' Dispose objects before losing scope
             Dim clsItem As New ToolStripMenuItem(sPath) With {
                 .Tag = "MRU:" & sPath
             }
-#Enable Warning CA2000 ' Dispose objects before losing scope
             ' hook into the click event handler so we can open the file later...
             AddHandler clsItem.Click, ClickEvent
             AddHandler clsItem.MouseDown, AddressOf mnuMRUList_MouseDown

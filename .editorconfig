@@ -168,6 +168,13 @@ visual_basic_preferred_modifier_order = Partial,Default,Private,Protected,Public
 dotnet_style_qualification_for_method = true:warning
 dotnet_style_qualification_for_property = true:warning
 
+# See https://docs.microsoft.com/en-us/visualstudio/ide/editorconfig-naming-conventions?view=vs-2019
+dotnet_naming_symbols.async_methods.applicable_kinds = method
+dotnet_naming_symbols.async_methods.required_modifiers = async
+dotnet_naming_style.async_suffix.required_suffix = Async
+dotnet_naming_rule.async_methods_must_have_async_suffix.symbols = async_method
+dotnet_naming_rule.async_methods_must_have_async_suffix.severity = warning
+
 # CA1031: Do not catch general exception types
 dotnet_diagnostic.CA1031.severity = silent
 
