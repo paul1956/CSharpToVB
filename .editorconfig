@@ -169,11 +169,20 @@ dotnet_style_qualification_for_method = true:warning
 dotnet_style_qualification_for_property = true:warning
 
 # See https://docs.microsoft.com/en-us/visualstudio/ide/editorconfig-naming-conventions?view=vs-2019
-dotnet_naming_symbols.async_methods.applicable_kinds = method
-dotnet_naming_symbols.async_methods.required_modifiers = async
-dotnet_naming_style.async_suffix.required_suffix = Async
-dotnet_naming_rule.async_methods_must_have_async_suffix.symbols = async_method
-dotnet_naming_rule.async_methods_must_have_async_suffix.severity = warning
+# Also see https://github.com/canton7/RestEase/blob/f7efb7684b96ce9da4f55d52f7abfa94eb7c0340/src/.editorconfig#L215
+
+# Symbols: async and method
+#dotnet_naming_symbols.async_methods.applicable_kinds = method
+#dotnet_naming_symbols.async_methods.required_modifiers = async
+
+# Style: must be Pascal case and end in Async
+#dotnet_naming_style.async_suffix.required_suffix = Async
+#dotnet_naming_style.async_suffix.capitalization = pascal_case
+
+# Rule: async methods must be pascal case and end with "Async"
+#dotnet_naming_rule.async_methods_must_have_async_suffix.symbols = async_methods
+#dotnet_naming_rule.async_methods_must_have_async_suffix.style = async_suffix
+#dotnet_naming_rule.async_methods_must_have_async_suffix.severity = warning
 
 # CA1031: Do not catch general exception types
 dotnet_diagnostic.CA1031.severity = silent
