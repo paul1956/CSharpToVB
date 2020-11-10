@@ -5,12 +5,6 @@
 Imports System.IO
 Imports System.Xml
 
-#If NETCOREAPP3_1 Then
-
-Imports VBMsgBox
-
-#End If
-
 Public Module ConvertProjectFileUtilities
 
     Private ProjectsToBeAdded As String = ""

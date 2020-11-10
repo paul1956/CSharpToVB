@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <RootNamespace>ProgressReportLibrary</RootNamespace>
-    <TargetFrameworks>netcoreapp3.1;net48</TargetFrameworks>
+    <TargetFramework>net5.0</TargetFramework>
     <Authors>Paul M Cohen</Authors>
     <Company>Travel by Paul</Company>
     <Copyright>Copyright (c) .NET Foundation and Contributors</Copyright>
@@ -10,6 +10,8 @@
     <RepositoryType>Git</RepositoryType>
     <NeutralLanguage>en-US</NeutralLanguage>
     <Description>Class used to pass around progress information</Description>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
   </PropertyGroup>
 
 </Project>

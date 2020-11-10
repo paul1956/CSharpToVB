@@ -8,12 +8,6 @@ Imports CSharpToVBConverter
 Imports Microsoft.CodeAnalysis
 Imports ProgressReportLibrary
 
-#If NETCOREAPP3_1 Then
-
-Imports VBMsgBox
-
-#End If
-
 Module ProcessFileUtilities
 
     ''' <summary>

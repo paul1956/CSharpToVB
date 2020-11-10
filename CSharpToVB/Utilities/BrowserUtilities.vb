@@ -4,12 +4,6 @@
 
 Imports Microsoft.Win32
 
-#If NETCOREAPP3_1 Then
-
-Imports VBMsgBox
-
-#End If
-
 Module BrowserUtilities
 
     Friend Sub launchBrowser(url As String)

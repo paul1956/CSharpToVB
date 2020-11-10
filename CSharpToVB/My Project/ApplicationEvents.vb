@@ -4,11 +4,7 @@
 
 Imports Microsoft.VisualBasic.ApplicationServices
 
-#If Not NETCOREAPP3_1 Then
-
 Imports Microsoft.VisualBasic.Devices
-
-#End If
 
 Namespace My
 
@@ -21,23 +17,17 @@ Namespace My
 
     Partial Friend Class MyApplication
 
-#If Not NETCOREAPP3_1 Then
         Private Sub MyApplication_NetworkAvailabilityChanged(sender As Object, e As NetworkAvailableEventArgs) Handles Me.NetworkAvailabilityChanged
             ' My.Forms.Form1.SetConnectionStatus(e.IsNetworkAvailable)
         End Sub
-#End If
 
         Private Sub MyApplication_Shutdown(sender As Object, e As EventArgs) Handles Me.Shutdown
             ' My.Application.Log.WriteEntry("Application Shut Down.")
         End Sub
 
         Private Sub MyApplication_Startup(sender As Object, e As StartupEventArgs) Handles Me.Startup
-            Windows.Forms.Application.SetHighDpiMode(HighDpiMode.SystemAware)
-
-#If Not NETCOREAPP3_1 Then
             ' Get the splash screen.
-            CType(Me.SplashScreen, SplashScreen1).UserName.Text = "Current user: " & User.Name
-#End If
+            'CType(Me.SplashScreen, SplashScreen1).UserName.Text = "Current user: " & User.Name
         End Sub
 
         Private Sub MyApplication_StartupNextInstance(sender As Object, e As StartupNextInstanceEventArgs) Handles Me.StartupNextInstance

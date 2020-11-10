@@ -10,12 +10,6 @@ Imports Buildalyzer.Workspaces
 Imports CSharpToVBConverter
 Imports Microsoft.CodeAnalysis
 
-#If NETCOREAPP3_1 Then
-
-Imports VBMsgBox
-
-#End If
-
 Public Module ProcessProjectUtilities
 
     Friend Function CSharpReferences(fileReferences As IEnumerable(Of String), projectReferences As IEnumerable(Of String)) As List(Of MetadataReference)
@@ -47,18 +41,6 @@ Public Module ProcessProjectUtilities
             Case 1
                 Return New List(Of String)({TargetFrameworks(0)})
             Case Else
-#If NETCOREAPP3_1 Then
-                Using F As New FrameworkSelectionDialog
-                    If Debugger.IsAttached Then
-                        Return TargetFrameworks.ToList
-                    End If
-                    F.SetFrameworkList(TargetFrameworks)
-                    If F.ShowDialog <> DialogResult.OK Then
-                        Return New List(Of String)
-                    End If
-                    Return New List(Of String)({F.CurrentFramework})
-                End Using
-#Else
                 Dim page As TaskDialogPage = New TaskDialogPage
                 For Each s As IndexClass(Of String) In TargetFrameworks.WithIndex
                     page.RadioButtons.Add(New TaskDialogRadioButton(s.Value) With
@@ -77,7 +59,6 @@ Public Module ProcessProjectUtilities
                 Else
                     Return New List(Of String)
                 End If
-#End If
         End Select
     End Function
 

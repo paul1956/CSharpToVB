@@ -8,12 +8,6 @@ Imports System.Threading
 Imports CSharpToVBConverter
 Imports Microsoft.CodeAnalysis
 
-#If NETCOREAPP3_1 Then
-
-Imports VBMsgBox
-
-#End If
-
 Public Module FilePathExtensions
 
     <Extension>

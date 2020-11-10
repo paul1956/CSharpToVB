@@ -21,19 +21,11 @@ Public Structure ProgressReport
             Return Me.Current = other.Current AndAlso Me.Maximum = other.Maximum
         End Function
 
-#If NET48 Then
-        Public Overrides Function GetHashCode() As Integer
-            Return (Me.Current, Me.Maximum).GetHashCode()
-        End Function
-#Else
-
-        Public Overrides Function GetHashCode() As Integer
+    Public Overrides Function GetHashCode() As Integer
             Return HashCode.Combine(Me.Current, Me.Maximum)
         End Function
 
-#End If
-
-        Public Shared Operator =(left As ProgressReport, right As ProgressReport) As Boolean
+    Public Shared Operator =(left As ProgressReport, right As ProgressReport) As Boolean
             Return left.Equals(right)
         End Operator
 

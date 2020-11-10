@@ -109,36 +109,5 @@ Namespace CSharpToVBConverter
             Return input.Substring("System.".Length)
         End Function
 
-#If NET48 Then
-
-        #Region "Workarounds so that CA1307 is enabled until https://github.com/dotnet/roslyn-analyzers/issues/2581 is fixed"
-
-                <Extension>
-                Friend Function Contains(str As String, value As String, comparisonType As StringComparison) As Boolean
-                    If str Is Nothing Then Throw New ArgumentNullException(NameOf(str))
-
-                    Return str.IndexOf(value, comparisonType) <> -1
-                End Function
-
-                <Extension>
-                Friend Function Replace(str As String, oldValue As String, newValue As String, comparisonType As StringComparison) As String
-                    If str Is Nothing Then Throw New ArgumentNullException(NameOf(str))
-                    If comparisonType <> StringComparison.Ordinal Then Throw New PlatformNotSupportedException("String.Replace on .NET Framework only supports StringComparison.Ordinal.")
-
-                    Return str.Replace(oldValue, newValue)
-                End Function
-
-                <Extension>
-                Friend Function Split(str As String, separator As Char, comparisonType As StringComparison) As String()
-                    If str Is Nothing Then Throw New ArgumentNullException(NameOf(str))
-                    If comparisonType <> StringComparison.Ordinal Then Throw New PlatformNotSupportedException("String.Split on .NET Framework only supports StringComparison.Ordinal.")
-
-                    Return str.Split(separator)
-                End Function
-
-        #End Region
-
-#End If
-
     End Module
 End Namespace

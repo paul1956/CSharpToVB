@@ -1,16 +1,15 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0-windows</TargetFramework>
     <RootNamespace>CSharpToVBApp</RootNamespace>
+    <MyType>WindowsForms</MyType>
     <StartupObject>Sub Main</StartupObject>
     <UseWindowsForms>true</UseWindowsForms>
-    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
     <OptionCompare>Text</OptionCompare>
     <OptionExplicit>On</OptionExplicit>
     <OptionInfer>Off</OptionInfer>
     <OptionStrict>On</OptionStrict>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <PropertyGroup>
     <AssemblyName>CSharpToVBApp</AssemblyName>
@@ -26,10 +25,8 @@
     <Product>CSharp To VB Converter</Product>
     <Copyright>Copyright (c) .NET Foundation and Contributors</Copyright>
     <PackageId>CSharp To VB Converter</PackageId>
-    <AssemblyVersion>4.6.0.11</AssemblyVersion>
-    <FileVersion>4.6.0.11</FileVersion>
-    <EnableNETAnalyzers>true</EnableNETAnalyzers>
-    <AnalysisLevel>preview</AnalysisLevel>
+    <AssemblyVersion>5.0.0.11</AssemblyVersion>
+    <FileVersion>5.0.0.11</FileVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <NoWarn />
@@ -49,24 +46,26 @@
   <ItemGroup>
     <PackageReference Include="Buildalyzer" Version="3.1.0" />
     <PackageReference Include="Buildalyzer.Workspaces" Version="3.1.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis" Version="3.8.0-5.final" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.8.0-5.final" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="3.8.0-5.final" />
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="3.8.0-5.final" />
     <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="3.8.0-5.final" />
-    <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0-rc.2.20475.5" />
-    <PackageReference Include="NuGet.Frameworks" Version="5.8.0-preview.3.6823" />
+    <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
+    <PackageReference Include="NuGet.Frameworks" Version="5.8.0" />
     <PackageReference Include="PInvoke.Windows.Core" Version="0.7.78" />
-    <PackageReference Include="System.Collections.Immutable" Version="5.0.0-rc.2.20475.5" />
-    <PackageReference Include="System.Reflection.Metadata" Version="5.0.0-rc.2.20475.5" />
+    <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
+    <PackageReference Include="System.Reflection.Metadata" Version="5.0.0" />
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net5.0'">
+  <ItemGroup Condition="'$(TargetFramework)' != 'netcoreapp3.1'">
     <Compile Remove="Forms\FrameworkSelectionDialog.Designer.vb" />
-    <Compile Remove="Forms\FrameworkSelectionDialog.resx" />
     <Compile Remove="Forms\FrameworkSelectionDialog.vb" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
-    <PackageReference Include="VBMsgBox" Version="1.0.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CodeConverter\CodeConverter.vbproj" />
@@ -98,13 +97,6 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Update="My Project\Resources.resx">
-      <CustomToolNamespace>My.Resources</CustomToolNamespace>
-      <Generator>VbMyResourcesResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.vb</LastGenOutput>
-    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

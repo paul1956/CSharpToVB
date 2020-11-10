@@ -5,12 +5,6 @@
 Imports System.Runtime.CompilerServices
 Imports CSharpToVBConverter
 
-#If NETCOREAPP3_1 Then
-
-Imports VBMsgBox
-
-#End If
-
 Public Module TSToolBaseSupport
 
     <Flags>
@@ -101,10 +95,10 @@ Public Module TSToolBaseSupport
         outputBufferInUse = MainForm.ConversionOutput.Text.Any
         Dim EnableFind As Boolean = (inputBufferInUse Or outputBufferInUse) And MainForm.TSFindFindWhatComboBox.Text.Any
         MainForm.TSFindClearHighlightsButton.Enabled = EnableFind
-            MainForm.TSFindFindNextButton.Enabled = EnableFind
-            MainForm.TSFindFindPreviousButton.Enabled = EnableFind
-            MainForm.TSFindMatchCaseCheckBox.Enabled = EnableFind
-            MainForm.TSFindMatchWholeWordCheckBox.Enabled = EnableFind
+        MainForm.TSFindFindNextButton.Enabled = EnableFind
+        MainForm.TSFindFindPreviousButton.Enabled = EnableFind
+        MainForm.TSFindMatchCaseCheckBox.Enabled = EnableFind
+        MainForm.TSFindMatchWholeWordCheckBox.Enabled = EnableFind
         Dim selectedIndex As Integer = MainForm.TSFindLookInComboBox.SelectedIndex
         If MainForm.TSFindLookInComboBox.Items.Count > 0 AndAlso MainForm.mnuConvert.Enabled Then
             If inputBufferInUse AndAlso outputBufferInUse Then

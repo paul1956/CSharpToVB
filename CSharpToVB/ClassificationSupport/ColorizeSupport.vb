@@ -11,12 +11,6 @@ Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Emit
 Imports ProgressReportLibrary
 
-#If NETCOREAPP3_1 Then
-
-Imports VBMsgBox
-
-#End If
-
 Public Module ColorizeSupport
 
     Friend Sub Colorize(MainForm As Form1, FragmentRange As IEnumerable(Of Range), ConversionBuffer As RichTextBox, Lines As Integer, Optional failures As IEnumerable(Of Diagnostic) = Nothing)

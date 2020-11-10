@@ -12,12 +12,6 @@ Imports Microsoft.CodeAnalysis
 Imports Microsoft.VisualBasic.FileIO
 Imports ProgressReportLibrary
 
-#If NETCOREAPP3_1 Then
-
-Imports VBMsgBox
-
-#End If
-
 Partial Public Class Form1
 
     Private Shared ReadOnly s_snippetFileWithPath As String = Path.Combine(SpecialDirectories.MyDocuments, "CSharpToVBLastSnippet.RTF")
@@ -90,7 +84,7 @@ Partial Public Class Form1
         End If
         If sourceControl.CanPaste(DataFormats.GetFormat(DataFormats.Rtf)) OrElse
             sourceControl.CanPaste(DataFormats.GetFormat(DataFormats.Text)) Then
-            sourceControl.Paste()
+            sourceControl.Paste(DataFormats.GetFormat("Text"))
         End If
     End Sub
 
