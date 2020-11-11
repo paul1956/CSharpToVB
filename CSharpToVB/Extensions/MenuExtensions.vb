@@ -31,6 +31,7 @@ Module MenuExtensions
             RemoveHandler MRUToolStripItem.Click, ClickEvent
             RemoveHandler MRUToolStripItem.MouseDown, AddressOf mnuMRUList_MouseDown
             dropDownItems.Remove(MRUToolStripItem)
+            MRUToolStripItem.Dispose()
         Next
         ' display items (in reverse order so the most recent is on top)...
         For iCounter As Integer = My.Settings.MRU_Data.Count - 1 To 0 Step -1
