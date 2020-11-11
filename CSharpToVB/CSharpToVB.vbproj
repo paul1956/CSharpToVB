@@ -27,6 +27,7 @@
     <PackageId>CSharp To VB Converter</PackageId>
     <AssemblyVersion>5.0.0.11</AssemblyVersion>
     <FileVersion>5.0.0.11</FileVersion>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <NoWarn />
@@ -46,15 +47,7 @@
   <ItemGroup>
     <PackageReference Include="Buildalyzer" Version="3.1.0" />
     <PackageReference Include="Buildalyzer.Workspaces" Version="3.1.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.1">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.8.0-5.final" />
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.1">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="3.8.0-5.final" />
     <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="3.8.0-5.final" />
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />

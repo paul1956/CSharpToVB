@@ -396,7 +396,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim FinalTrailingDirective As New SyntaxTriviaList
                 Me.ConvertAndSplitAttributes(node.AttributeLists, Attributes, ReturnAttributes, FinalTrailingDirective)
                 Dim Modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, Me.IsModule, TokenContext.Member).ToList
-                Dim eventNameToken As SyntaxToken = GenerateSafeVBToken(node.Identifier, node, _mSemanticModel).WithTrailingTrivia(Factory.Space)
+                Dim eventNameToken As SyntaxToken = GenerateSafeVBToken(node.Identifier, node, _usedIdentifiers, _mSemanticModel).WithTrailingTrivia(Factory.Space)
                 Dim AsClause As VBS.SimpleAsClauseSyntax = Factory.SimpleAsClause(attributeLists:=ReturnAttributes, DirectCast(node.Type.Accept(Me), VBS.TypeSyntax))
                 Modifiers.Add(CustomKeyword)
                 Dim implementsClauseOrNothing As VBS.ImplementsClauseSyntax = If(declaredSymbol Is Nothing, Nothing, Me.CreateImplementsClauseSyntaxOrNull(declaredSymbol, eventNameToken))
@@ -601,11 +601,9 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 If node.ReturnType IsNot Nothing AndAlso TypeOf node.ReturnType Is CSS.RefTypeSyntax Then
                     Return FlagUnsupportedStatements(node, "ref return Functions", CommentOutOriginalStatements:=True)
                 End If
-                SyncLock s_usedStacks
-                    s_usedStacks.Push(s_usedIdentifiers)
-                End SyncLock
+                _originalRequest.UsedStacks.Push(_usedIdentifiers)
 
-                Dim methodNameToken As SyntaxToken = GenerateSafeVBToken(node.Identifier, node, _mSemanticModel)
+                Dim methodNameToken As SyntaxToken = GenerateSafeVBToken(node.Identifier, node, _usedIdentifiers, _mSemanticModel)
 
                 Dim methodInfo As ISymbol = ModelExtensions.GetDeclaredSymbol(_mSemanticModel, node)
                 Dim possibleReturnVoid As Boolean? = methodInfo?.GetReturnType()?.SpecialType = SpecialType.System_Void
@@ -823,9 +821,9 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                                     With(FunctionStatementLeadingTrivia, FunctionStatementTrailingTrivia).
                                                     WithTrailingEOL.
                                                     RestructureAttributesAndModifiers(Attributes.Any, Modifiers.Any), VBS.MethodStatementSyntax)
-                    SyncLock s_usedStacks
-                        If s_usedStacks.Count > 0 Then
-                            s_usedIdentifiers = DirectCast(s_usedStacks.Pop, Dictionary(Of String, SymbolTableEntry))
+                    SyncLock _originalRequest.UsedStacks
+                        If _originalRequest.UsedStacks.Count > 0 Then
+                            _usedIdentifiers = DirectCast(_originalRequest.UsedStacks.Pop, Dictionary(Of String, SymbolTableEntry))
                         End If
                     End SyncLock
                     subOrFunctionStatement = DirectCast(PrependStatementWithMarkedStatementTrivia(node, subOrFunctionStatement), VBS.MethodStatementSyntax)
@@ -933,8 +931,8 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     subOrFunctionStatement = subOrFunctionStatement.WithPrependedLeadingTrivia(node.GetLeadingTrivia.ConvertTriviaList())
                 End If
                 subOrFunctionStatement = DirectCast(PrependStatementWithMarkedStatementTrivia(node, subOrFunctionStatement), VBS.MethodStatementSyntax)
-                If s_usedStacks.Count > 0 Then
-                    s_usedIdentifiers = DirectCast(s_usedStacks.Pop, Dictionary(Of String, SymbolTableEntry))
+                If _originalRequest.UsedStacks.Count > 0 Then
+                    _usedIdentifiers = DirectCast(_originalRequest.UsedStacks.Pop, Dictionary(Of String, SymbolTableEntry))
                 End If
 
                 If body Is Nothing Then
@@ -1042,7 +1040,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim propertyNameToken As SyntaxToken
                 Dim propertyStatement As VBS.PropertyStatementSyntax
                 If node.ExplicitInterfaceSpecifier Is Nothing Then
-                    propertyNameToken = GenerateSafeVBToken(node.Identifier, node, _mSemanticModel)
+                    propertyNameToken = GenerateSafeVBToken(node.Identifier, node, _usedIdentifiers, _mSemanticModel)
                     Dim PropertySymbol As IPropertySymbol = CType(_mSemanticModel.GetDeclaredSymbol(node), IPropertySymbol)
                     implementsClauseOrNothing = If(PropertySymbol Is Nothing, Nothing, Me.CreateImplementsClauseSyntaxOrNull(PropertySymbol, propertyNameToken))
                 Else

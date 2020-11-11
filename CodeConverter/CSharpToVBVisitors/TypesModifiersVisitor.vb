@@ -154,10 +154,11 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 End If
                 Dim TypeParameterSyntax As VBS.TypeParameterSyntax = Factory.TypeParameter(variance,
                                                                                              GenerateSafeVBToken(node.Identifier,
-                                                                                                                 node,
-                                                                                                                 _mSemanticModel,
-                                                                                                                 IsQualifiedName:=False,
-                                                                                                                 IsTypeName:=True),
+                                                                                                 node,
+                                                                                                 _mSemanticModel,
+                                                                                                 _usedIdentifiers,
+                                                                                                 IsQualifiedName:=False,
+                                                                                                 IsTypeName:=True),
                                                                                              TypeParameterConstraintClause).WithConvertedTriviaFrom(node)
                 Return TypeParameterSyntax
             End Function

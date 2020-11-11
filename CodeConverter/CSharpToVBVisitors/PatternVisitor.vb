@@ -39,7 +39,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim VariableType As VBS.TypeSyntax = DirectCast(node.Type.Accept(Me), VBS.TypeSyntax)
 
                 Dim DeclarationToBeAdded As VBS.LocalDeclarationStatementSyntax =
-                    FactoryDimStatement(GenerateSafeVBToken(Designation.Identifier, node, _mSemanticModel),
+                    FactoryDimStatement(GenerateSafeVBToken(Designation.Identifier, node, _usedIdentifiers, _mSemanticModel),
                                    Factory.SimpleAsClause(VariableType),
                                    Factory.EqualsValue(NothingExpression)
                                   ).WithLeadingTrivia(LeadingTrivia)
@@ -62,14 +62,14 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Dim designationNameToken As SyntaxToken
                     If TypeOf DeclarationPattern.Designation Is CSS.SingleVariableDesignationSyntax Then
                         Dim Designation As CSS.SingleVariableDesignationSyntax = DirectCast(DeclarationPattern.Designation, CSS.SingleVariableDesignationSyntax)
-                        designationNameToken = GenerateSafeVBToken(Designation.Identifier, node, _mSemanticModel)
+                        designationNameToken = GenerateSafeVBToken(Designation.Identifier, node, _usedIdentifiers, _mSemanticModel)
                     ElseIf TypeOf DeclarationPattern.Designation Is CSS.DiscardDesignationSyntax Then
-                        designationNameToken = Factory.Identifier(node.GetUniqueVariableNameInScope("_1", _mSemanticModel))
+                        designationNameToken = Factory.Identifier(node.GetUniqueVariableNameInScope("_1", _usedIdentifiers, _mSemanticModel))
                     End If
 
                     Dim VariableType As VBS.TypeSyntax = CType(DeclarationPattern.Type.Accept(Me), VBS.TypeSyntax)
                     Dim value As VBS.ExpressionSyntax = Factory.TypeOfIsExpression(VBExpression, VariableType)
-                    Dim uniqueIdToken As SyntaxToken = Factory.Identifier(node.GetUniqueVariableNameInScope("TempVar", _mSemanticModel))
+                    Dim uniqueIdToken As SyntaxToken = Factory.Identifier(node.GetUniqueVariableNameInScope("TempVar", _usedIdentifiers, _mSemanticModel))
 
                     Dim DimToBeAdded As VBS.LocalDeclarationStatementSyntax =
                         FactoryDimStatement(uniqueIdToken,
@@ -185,7 +185,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
             End Function
 
             Public Overrides Function VisitRecursivePattern(node As CSS.RecursivePatternSyntax) As VB.VisualBasicSyntaxNode
-                Return Factory.IdentifierName(node.GetUniqueVariableNameInScope($"RecursivePattern_{node.ToString.GetSafeVBName}", _mSemanticModel))
+                Return Factory.IdentifierName(node.GetUniqueVariableNameInScope($"RecursivePattern_{node.ToString.GetSafeVBName}", _usedIdentifiers, _mSemanticModel))
             End Function
 
             Public Overrides Function VisitVarPattern(node As CSS.VarPatternSyntax) As VB.VisualBasicSyntaxNode
@@ -209,12 +209,12 @@ Namespace CSharpToVBConverter.ToVisualBasic
                             End If
                         End If
                     Next
-                    designationIdentifier = node.GetUniqueVariableNameInScope("TempVar", _mSemanticModel)
+                    designationIdentifier = node.GetUniqueVariableNameInScope("TempVar", _usedIdentifiers, _mSemanticModel)
                 Else
                     Stop
                     Throw UnreachableException
                 End If
-                Dim DesignationNameToken As SyntaxToken = GenerateSafeVBToken(CS.SyntaxFactory.Identifier(designationIdentifier), node, _mSemanticModel)
+                Dim DesignationNameToken As SyntaxToken = GenerateSafeVBToken(CS.SyntaxFactory.Identifier(designationIdentifier), node, _usedIdentifiers, _mSemanticModel)
                 Return Factory.IdentifierName(DesignationNameToken)
             End Function
         End Class

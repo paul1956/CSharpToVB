@@ -5,7 +5,6 @@
 Namespace CSharpToVBConverter
 
     Friend Module NameGenerator
-        Friend s_usedIdentifiers As New Dictionary(Of String, SymbolTableEntry)(StringComparer.Ordinal)
 
         Private Sub EnsureUniquenessInPlace(names As IList(Of String), isFixed As IList(Of Boolean), canUse As Func(Of String, Boolean))
             canUse = If(canUse, Function(s As String) True)
@@ -69,10 +68,10 @@ Namespace CSharpToVBConverter
         ''' <summary>
         ''' Transforms baseName into a name that does not conflict with any name in 'reservedNames'
         ''' </summary>
-        Friend Function EnsureUniqueness(baseName As String, reservedNames As IEnumerable(Of String)) As String
+        Friend Function EnsureUniqueness(baseName As String, _usedIdentifiers As Dictionary(Of String, SymbolTableEntry), reservedNames As IEnumerable(Of String)) As String
             Dim names As List(Of String) = New List(Of String) From {baseName}
             Dim isFixed As List(Of Boolean) = New List(Of Boolean) From {False}
-            For Each s As SymbolTableEntry In s_usedIdentifiers.Values
+            For Each s As SymbolTableEntry In _usedIdentifiers.Values
                 names.Add(s.Name)
             Next
             For Each s As String In reservedNames.Distinct

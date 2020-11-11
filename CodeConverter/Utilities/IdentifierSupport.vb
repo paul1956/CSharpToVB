@@ -29,14 +29,14 @@ Namespace CSharpToVBConverter
         End Sub
 
         <Extension>
-        Friend Function GetNewUniqueName(ConvertedIdentifier As String, IsType As Boolean, Node As CS.CSharpSyntaxNode, Model As SemanticModel) As String
+        Friend Function GetNewUniqueName(ConvertedIdentifier As String, _usedIdentifiers As Dictionary(Of String, SymbolTableEntry), IsType As Boolean, Node As CS.CSharpSyntaxNode, Model As SemanticModel) As String
             If IsType Then
                 Return ConvertedIdentifier
             End If
 
             ConvertedIdentifier = ConvertedIdentifier.RemoveBrackets
 
-            Dim uniqueID As String = GetUniqueVariableNameInScope(Node, ConvertedIdentifier, Model)
+            Dim uniqueID As String = GetUniqueVariableNameInScope(Node, ConvertedIdentifier, _usedIdentifiers, Model)
             If VB.SyntaxFacts.GetKeywordKind(uniqueID) = VB.SyntaxKind.None Then
                 Return uniqueID
             End If

@@ -4,14 +4,11 @@
 
 Imports System.Diagnostics.CodeAnalysis
 Imports System.Text
-
 Imports Microsoft.CodeAnalysis
-
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
-
-Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
+Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace CSharpToVBConverter.ToVisualBasic
@@ -30,18 +27,22 @@ Namespace CSharpToVBConverter.ToVisualBasic
             Private ReadOnly _mSemanticModel As SemanticModel
             Private ReadOnly _placeholder As Integer = 1
             Private ReadOnly _reportException As Action(Of Exception)
+            Private ReadOnly _originalRequest As ConvertRequest
             Private _membersList As SyntaxList(Of VBS.StatementSyntax)
+            Friend _usedIdentifiers As Dictionary(Of String, SymbolTableEntry)
             Public ReadOnly AllImports As New List(Of VBS.ImportsStatementSyntax)()
             Public ReadOnly InlineAssignHelperMarkers As New List(Of CSS.BaseTypeDeclarationSyntax)()
 
             'Public ReadOnly ByRefHelperMarkers As New List(Of CSS.BaseTypeDeclarationSyntax)()
             Public VBHeaderLeadingTrivia As SyntaxTriviaList
 
-            Friend Sub New(lSemanticModel As SemanticModel, DefaultVBOptions As DefaultVBOptions, ReportException As Action(Of Exception))
+            Friend Sub New(originalRequest As ConvertRequest, lSemanticModel As SemanticModel, DefaultVBOptions As DefaultVBOptions, ReportException As Action(Of Exception))
                 _mSemanticModel = lSemanticModel
                 _reportException = ReportException
                 _defaultVBOptions = DefaultVBOptions
                 _commonConversions = New CommonConversions(lSemanticModel)
+                _usedIdentifiers = New Dictionary(Of String, SymbolTableEntry)(StringComparer.Ordinal)
+                _originalRequest = originalRequest
             End Sub
 
             Public ReadOnly Property IsModule As Boolean
@@ -79,7 +80,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     VBHeaderLeadingTrivia = node.GetLeadingTrivia.GetDocumentBanner
                 End If
                 For Each [using] As CSS.UsingDirectiveSyntax In node.Usings
-                    If s_originalRequest.CancelToken.IsCancellationRequested Then
+                    If _originalRequest.CancelToken.IsCancellationRequested Then
                         Throw New OperationCanceledException
                     End If
                     [using].Accept(Me)
@@ -108,7 +109,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 End With
                 _membersList = New SyntaxList(Of VBS.StatementSyntax)
                 For Each m As CSS.MemberDeclarationSyntax In node.Members
-                    If s_originalRequest.CancelToken.IsCancellationRequested Then
+                    If _originalRequest.CancelToken.IsCancellationRequested Then
                         Throw New OperationCanceledException
                     End If
                     Dim Statement As VBS.StatementSyntax = DirectCast(m.Accept(Me), VBS.StatementSyntax)
@@ -312,7 +313,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 StructureStatement = DirectCast(Factory.StructureStatement(ListOfAttributes,
                                                                             Factory.TokenList(Modifiers),
                                                                             StructureKeyword.WithConvertedTriviaFrom(node.Keyword),
-                                                                            GenerateSafeVBToken(node.Identifier, node, _mSemanticModel),
+                                                                            GenerateSafeVBToken(node.Identifier, node, _usedIdentifiers, _mSemanticModel),
                                                                             TypeParameterList
                                                                             ).RestructureAttributesAndModifiers(ListOfAttributes.Any, Modifiers.Any), VBS.StructureStatementSyntax).WithTrailingEOL
 
@@ -369,7 +370,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim StatementWithIssue As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
                 Dim governingExpression As VBS.ExpressionSyntax = CType(node.GoverningExpression.Accept(Me), VBS.ExpressionSyntax)
                 Dim SelectCaseStatement As VBS.SelectStatementSyntax = Factory.SelectStatement(governingExpression.WithLeadingTrivia(Factory.Space)).WithLeadingTrivia(governingExpression.GetLeadingTrivia)
-                Dim ResultNameToken As SyntaxToken = Factory.Identifier(node.GetUniqueVariableNameInScope("tempVar", _mSemanticModel))
+                Dim ResultNameToken As SyntaxToken = Factory.Identifier(node.GetUniqueVariableNameInScope("tempVar", _usedIdentifiers, _mSemanticModel))
                 Dim ResultIdentifier As VBS.IdentifierNameSyntax = Factory.IdentifierName(ResultNameToken)
                 Dim _Typeinfo As TypeInfo = _mSemanticModel.GetTypeInfo(node.Arms(0).Expression)
                 Dim AsClause As VBS.AsClauseSyntax = Nothing
@@ -421,7 +422,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         Dim _tryCast As VBS.TryCastExpressionSyntax = Factory.TryCastExpression(governingExpression, VariableType.WithLeadingTrivia(Factory.Space))
                         If Pattern.Designation.IsKind(CS.SyntaxKind.SingleVariableDesignation) Then
                             Dim designation As CSS.SingleVariableDesignationSyntax = CType(Pattern.Designation, CSS.SingleVariableDesignationSyntax)
-                            Dim identifierToken As SyntaxToken = GenerateSafeVBToken(designation.Identifier, node, _mSemanticModel)
+                            Dim identifierToken As SyntaxToken = GenerateSafeVBToken(designation.Identifier, node, _usedIdentifiers, _mSemanticModel)
                             Dim initializer As VBS.EqualsValueSyntax = Factory.EqualsValue(Factory.DirectCastExpression(governingExpression, VariableType))
                             Statements = Statements.Insert(0, FactoryDimStatement(identifierToken,
                                                                                         Factory.SimpleAsClause(VariableType),
@@ -455,11 +456,11 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         Dim VarPattern As CSS.VarPatternSyntax = DirectCast(arm.Pattern, CSS.VarPatternSyntax)
                         Dim Identifier As SyntaxToken
                         If TypeOf VarPattern.Designation Is CSS.SingleVariableDesignationSyntax Then
-                            Identifier = GenerateSafeVBToken(id:=DirectCast(VarPattern.Designation, CSS.SingleVariableDesignationSyntax).Identifier, node, _mSemanticModel)
+                            Identifier = GenerateSafeVBToken(id:=DirectCast(VarPattern.Designation, CSS.SingleVariableDesignationSyntax).Identifier, Node:=node, usedIdentifiers:=_usedIdentifiers, Model:=_mSemanticModel)
                         ElseIf TypeOf VarPattern.Designation Is CSS.ParenthesizedVariableDesignationSyntax Then
                             Dim sBuilder As New StringBuilder
                             CreateDesignationName(ProcessVariableDesignation(CType(VarPattern.Designation, CSS.ParenthesizedVariableDesignationSyntax)), sBuilder)
-                            Identifier = GenerateSafeVBToken(id:=CS.SyntaxFactory.Identifier(sBuilder.ToString), node, _mSemanticModel)
+                            Identifier = GenerateSafeVBToken(id:=CS.SyntaxFactory.Identifier(sBuilder.ToString), Node:=node, usedIdentifiers:=_usedIdentifiers, Model:=_mSemanticModel)
                         Else
                             Stop
                             _reportException?.Invoke(UnreachableException)
@@ -520,7 +521,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
             End Function
 
             Public Overrides Function VisitVariableDeclarator(node As CSS.VariableDeclaratorSyntax) As VB.VisualBasicSyntaxNode
-                Dim Identifier As SyntaxToken = GenerateSafeVBToken(node.Identifier, node, _mSemanticModel)
+                Dim Identifier As SyntaxToken = GenerateSafeVBToken(node.Identifier, node, _usedIdentifiers, _mSemanticModel)
                 Dim ArgumentList As New List(Of VBS.ArgumentSyntax)
                 If node.ArgumentList Is Nothing Then
                     Return Factory.ModifiedIdentifier(Identifier).WithTrailingTrivia(Factory.Space)

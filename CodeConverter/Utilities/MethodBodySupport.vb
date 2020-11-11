@@ -38,14 +38,14 @@ Namespace CSharpToVBConverter.ToVisualBasic
         End Function
 
         <Extension>
-        Friend Function GetUniqueVariableNameInScope(node As CSharpSyntaxNode, variableNameBase As String, lSemanticModel As SemanticModel) As String
+        Friend Function GetUniqueVariableNameInScope(node As CSharpSyntaxNode, variableNameBase As String, _usedIdentifiers As Dictionary(Of String, SymbolTableEntry), lSemanticModel As SemanticModel) As String
             Dim isField As Boolean = node.AncestorsAndSelf().OfType(Of CSS.FieldDeclarationSyntax).Any
             Dim reservedNames As New List(Of String) From {
                     "_"
                 }
             reservedNames.AddRange(node.DescendantNodesAndSelf().SelectMany(Function(lSyntaxNode As SyntaxNode) lSemanticModel.LookupSymbols(lSyntaxNode.SpanStart).Select(Function(s As ISymbol) s.Name)).Distinct)
-            Dim UniqueVariableName As String = EnsureUniqueness(variableNameBase, reservedNames)
-            s_usedIdentifiers.Add(UniqueVariableName,
+            Dim UniqueVariableName As String = EnsureUniqueness(variableNameBase, _usedIdentifiers, reservedNames)
+            _usedIdentifiers.Add(UniqueVariableName,
                                   New SymbolTableEntry(UniqueVariableName,
                                                        IsType:=False,
                                                        isField

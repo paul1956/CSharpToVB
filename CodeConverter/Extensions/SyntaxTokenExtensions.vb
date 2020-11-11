@@ -296,30 +296,30 @@ Namespace CSharpToVBConverter
             Return SyntaxNavigator.s_instance.GetNextToken(Token, predicate, stepInto)
         End Function
 
-        Friend Function GetSymbolTableEntry(csIdentifier As SyntaxToken, BaseVBIdent As String, Node As CS.CSharpSyntaxNode, Model As SemanticModel, IsQualifiedNameOrTypeName As Boolean, isField As Boolean) As (IdentToken As SyntaxToken, MeNeeded As Boolean)
-            If s_usedIdentifiers.ContainsKey(BaseVBIdent) Then
-                Dim symbolTableEntry As SymbolTableEntry = s_usedIdentifiers(BaseVBIdent)
+        Friend Function GetSymbolTableEntry(csIdentifier As SyntaxToken, BaseVBIdent As String, _usedIdentifiers As Dictionary(Of String, SymbolTableEntry), Node As CS.CSharpSyntaxNode, Model As SemanticModel, IsQualifiedNameOrTypeName As Boolean, isField As Boolean) As (IdentToken As SyntaxToken, MeNeeded As Boolean)
+            If _usedIdentifiers.ContainsKey(BaseVBIdent) Then
+                Dim symbolTableEntry As SymbolTableEntry = _usedIdentifiers(BaseVBIdent)
                 Return (Factory.Identifier(symbolTableEntry.Name).WithConvertedTriviaFrom(csIdentifier), symbolTableEntry.isProperty)
             End If
-            For Each ident As KeyValuePair(Of String, SymbolTableEntry) In s_usedIdentifiers
+            For Each ident As KeyValuePair(Of String, SymbolTableEntry) In _usedIdentifiers
                 If String.Compare(ident.Key, BaseVBIdent, ignoreCase:=False, Globalization.CultureInfo.InvariantCulture) = 0 Then
                     ' We have an exact match keep looking
                     Return (Factory.Identifier(ident.Key), ident.Value.isProperty)
                 End If
                 If String.Compare(ident.Key, BaseVBIdent, ignoreCase:=True, Globalization.CultureInfo.InvariantCulture) = 0 Then
                     ' If we are here we have seen the variable in a different case so fix it
-                    Dim NewUniqueName As String = BaseVBIdent.GetNewUniqueName(IsQualifiedNameOrTypeName, Node.GetScopingBlock, Model)
-                    If s_usedIdentifiers(ident.Key).IsType Then
-                        s_usedIdentifiers.Add(BaseVBIdent, New SymbolTableEntry(Name:=NewUniqueName, IsType:=False, isField))
+                    Dim NewUniqueName As String = BaseVBIdent.GetNewUniqueName(_usedIdentifiers, IsQualifiedNameOrTypeName, Node.GetScopingBlock, Model)
+                    If _usedIdentifiers(ident.Key).IsType Then
+                        _usedIdentifiers.Add(BaseVBIdent, New SymbolTableEntry(Name:=NewUniqueName, IsType:=False, isField))
                     Else
-                        s_usedIdentifiers.Add(BaseVBIdent, New SymbolTableEntry(Name:=NewUniqueName, IsQualifiedNameOrTypeName, isField))
+                        _usedIdentifiers.Add(BaseVBIdent, New SymbolTableEntry(Name:=NewUniqueName, IsQualifiedNameOrTypeName, isField))
                     End If
-                    Dim symbolTableEntry As SymbolTableEntry = s_usedIdentifiers(BaseVBIdent)
+                    Dim symbolTableEntry As SymbolTableEntry = _usedIdentifiers(BaseVBIdent)
                     Return (Factory.Identifier(symbolTableEntry.Name).WithConvertedTriviaFrom(csIdentifier), symbolTableEntry.isProperty)
                 End If
             Next
             Dim newIdentifier As String = BaseVBIdent
-            s_usedIdentifiers.Add(BaseVBIdent, New SymbolTableEntry(newIdentifier, IsQualifiedNameOrTypeName, isField))
+            _usedIdentifiers.Add(BaseVBIdent, New SymbolTableEntry(newIdentifier, IsQualifiedNameOrTypeName, isField))
             Return (Factory.Identifier(newIdentifier), False)
         End Function
 
@@ -334,7 +334,7 @@ Namespace CSharpToVBConverter
         End Function
 
         <Extension>
-        Friend Function MakeIdentifierUnique(csIdentifier As SyntaxToken, Node As CS.CSharpSyntaxNode, Model As SemanticModel, IsBracketNeeded As Boolean, IsQualifiedNameOrTypeName As Boolean) As SyntaxToken
+        Friend Function MakeIdentifierUnique(csIdentifier As SyntaxToken, Node As CS.CSharpSyntaxNode, _usedIdentifiers As Dictionary(Of String, SymbolTableEntry), Model As SemanticModel, IsBracketNeeded As Boolean, IsQualifiedNameOrTypeName As Boolean) As SyntaxToken
             Dim isField As Boolean = Node.AncestorsAndSelf().OfType(Of CSS.FieldDeclarationSyntax).Any And Not IsQualifiedNameOrTypeName
             Dim BaseVBIdent As String = If(IsBracketNeeded, $"[{csIdentifier.ValueText}]", csIdentifier.ValueText)
             If BaseVBIdent = "_" Then
@@ -342,13 +342,13 @@ Namespace CSharpToVBConverter
             End If
             ' Don't Change Qualified Names
             If IsQualifiedNameOrTypeName Then
-                If Not s_usedIdentifiers.ContainsKey(BaseVBIdent) Then
-                    s_usedIdentifiers.Add(BaseVBIdent, New SymbolTableEntry(BaseVBIdent, IsType:=True, isField))
+                If Not _usedIdentifiers.ContainsKey(BaseVBIdent) Then
+                    _usedIdentifiers.Add(BaseVBIdent, New SymbolTableEntry(BaseVBIdent, IsType:=True, isField))
                 End If
                 Return Factory.Identifier(BaseVBIdent).WithConvertedTriviaFrom(csIdentifier)
             End If
 
-            Return GetSymbolTableEntry(csIdentifier, BaseVBIdent, Node, Model, IsQualifiedNameOrTypeName, isField).IdentToken
+            Return GetSymbolTableEntry(csIdentifier, BaseVBIdent, _usedIdentifiers, Node, Model, IsQualifiedNameOrTypeName, isField).IdentToken
         End Function
 
         ''' <summary>

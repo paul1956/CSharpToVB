@@ -102,13 +102,13 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim TypeArguments As VBS.TypeArgumentListSyntax = DirectCast(node.TypeArgumentList.Accept(Me), VBS.TypeArgumentListSyntax)
                 If node.Parent.IsKind(CS.SyntaxKind.MethodDeclaration) Then
                     If CType(node.Parent, CSS.MethodDeclarationSyntax).ReturnType.Equals(node) Then
-                        Return Me.WrapTypedNameIfNecessary(Factory.GenericName(GenerateSafeVBToken(node.Identifier, node, _mSemanticModel, IsQualifiedName:=False, IsTypeName:=True).WithTrailingTrivia, TypeArguments), node)
+                        Return Me.WrapTypedNameIfNecessary(Factory.GenericName(GenerateSafeVBToken(node.Identifier, node, _mSemanticModel, _usedIdentifiers, IsQualifiedName:=False, IsTypeName:=True).WithTrailingTrivia, TypeArguments), node)
                     End If
                 End If
                 If node.Parent.IsKind(CS.SyntaxKind.ObjectCreationExpression) Then
-                    Return Me.WrapTypedNameIfNecessary(Factory.GenericName(GenerateSafeVBToken(node.Identifier, node, _mSemanticModel, IsQualifiedName:=False, IsTypeName:=True).WithTrailingTrivia, TypeArguments), node)
+                    Return Me.WrapTypedNameIfNecessary(Factory.GenericName(GenerateSafeVBToken(node.Identifier, node, _mSemanticModel, _usedIdentifiers, IsQualifiedName:=False, IsTypeName:=True).WithTrailingTrivia, TypeArguments), node)
                 End If
-                Return Me.WrapTypedNameIfNecessary(Factory.GenericName(GenerateSafeVBToken(node.Identifier, node, _mSemanticModel).WithTrailingTrivia, TypeArguments), node)
+                Return Me.WrapTypedNameIfNecessary(Factory.GenericName(GenerateSafeVBToken(node.Identifier, node, _usedIdentifiers, _mSemanticModel).WithTrailingTrivia, TypeArguments), node)
             End Function
 
             Public Overrides Function VisitIdentifierName(node As CSS.IdentifierNameSyntax) As VB.VisualBasicSyntaxNode
@@ -127,7 +127,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         If ParentAsMemberAccessExpression.Expression.IsKind(CS.SyntaxKind.IdentifierName) Then
                             Dim IdentifierExpression As CSS.IdentifierNameSyntax = DirectCast(ParentAsMemberAccessExpression.Expression, CSS.IdentifierNameSyntax)
                             If IdentifierExpression.Identifier.ToString = node.Identifier.ToString Then
-                                Return Me.WrapTypedNameIfNecessary(Factory.IdentifierName(GenerateSafeVBToken(node.Identifier, node, _mSemanticModel)), node)
+                                Return Me.WrapTypedNameIfNecessary(Factory.IdentifierName(GenerateSafeVBToken(node.Identifier, node, _usedIdentifiers, _mSemanticModel)), node)
                             End If
                         End If
                     End If
@@ -137,21 +137,21 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         End If
                         If TypeOf CType(OriginalNameParent, CSS.ArgumentSyntax).Expression Is CSS.IdentifierNameSyntax Then
                             If CType(CType(OriginalNameParent, CSS.ArgumentSyntax).Expression, CSS.IdentifierNameSyntax).Identifier.Span.Equals(node.Identifier.Span) Then
-                                Return Me.WrapTypedNameIfNecessary(Factory.IdentifierName(GenerateSafeVBToken(node.Identifier, node, _mSemanticModel, IsQualifiedName:=False, IsTypeName:=False)), node)
+                                Return Me.WrapTypedNameIfNecessary(Factory.IdentifierName(GenerateSafeVBToken(node.Identifier, node, _mSemanticModel, _usedIdentifiers, IsQualifiedName:=False, IsTypeName:=False)), node)
                             End If
                         End If
                     End If
-                    Return Me.WrapTypedNameIfNecessary(Factory.IdentifierName(GenerateSafeVBToken(node.Identifier, node, _mSemanticModel, IsQualifiedName:=True, IsTypeName:=False)), node)
+                    Return Me.WrapTypedNameIfNecessary(Factory.IdentifierName(GenerateSafeVBToken(node.Identifier, node, _mSemanticModel, _usedIdentifiers, IsQualifiedName:=True, IsTypeName:=False)), node)
                 End If
                 If OriginalNameParent.IsKind(CS.SyntaxKind.SimpleAssignmentExpression) Then
                     Dim AssignmentStatement As CSS.AssignmentExpressionSyntax = CType(OriginalNameParent, CSS.AssignmentExpressionSyntax)
                     If node.ToString.Equals(AssignmentStatement.Left.ToString, StringComparison.Ordinal) AndAlso AssignmentStatement.Left.ToString.Equals(AssignmentStatement.Right.ToString, StringComparison.OrdinalIgnoreCase) Then
                         If OriginalNameParent.IsParentKind(CS.SyntaxKind.ObjectInitializerExpression) Then
-                            Dim name As VBS.IdentifierNameSyntax = Factory.IdentifierName(GenerateSafeVBToken(node.Identifier, node, _mSemanticModel, IsQualifiedName:=True, IsTypeName:=True))
+                            Dim name As VBS.IdentifierNameSyntax = Factory.IdentifierName(GenerateSafeVBToken(node.Identifier, node, _mSemanticModel, _usedIdentifiers, IsQualifiedName:=True, IsTypeName:=True))
                             Return name
                         End If
                         If node.Ancestors().OfType(Of CSS.ConstructorDeclarationSyntax).Any Then
-                            Dim name As VBS.IdentifierNameSyntax = Factory.IdentifierName(GenerateSafeVBToken(node.Identifier, node, _mSemanticModel, IsQualifiedName:=True, IsTypeName:=False))
+                            Dim name As VBS.IdentifierNameSyntax = Factory.IdentifierName(GenerateSafeVBToken(node.Identifier, node, _mSemanticModel, _usedIdentifiers, IsQualifiedName:=True, IsTypeName:=False))
                             If node.Parent.IsParentKind(CS.SyntaxKind.ObjectInitializerExpression) Then
                                 Return name
                             End If
@@ -174,10 +174,10 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 If node.AncestorsAndSelf().OfType(Of CSS.UsingDirectiveSyntax).FirstOrDefault.IsKind(CS.SyntaxKind.UsingDirective) OrElse
                     OriginalNameParent.IsKind(CS.SyntaxKind.TypeArgumentList, CS.SyntaxKind.SimpleBaseType) Then
                     'Return Me.WrapTypedNameIfNecessary(Factory.IdentifierName(GenerateSafeVBToken(node.Identifier, node, _mSemanticModel, IsQualifiedName:=True, IsTypeName:=True)), node)
-                    Return Factory.IdentifierName(GenerateSafeVBToken(node.Identifier, node, _mSemanticModel, IsQualifiedName:=True, IsTypeName:=True))
+                    Return Factory.IdentifierName(GenerateSafeVBToken(node.Identifier, node, _mSemanticModel, _usedIdentifiers, IsQualifiedName:=True, IsTypeName:=True))
                 End If
                 If TypeOf OriginalNameParent Is CSS.ArrayTypeSyntax Then
-                    Return Me.WrapTypedNameIfNecessary(Factory.IdentifierName(GenerateSafeVBToken(node.Identifier, node, _mSemanticModel, IsQualifiedName:=False, IsTypeName:=True)), node)
+                    Return Me.WrapTypedNameIfNecessary(Factory.IdentifierName(GenerateSafeVBToken(node.Identifier, node, _mSemanticModel, _usedIdentifiers, IsQualifiedName:=False, IsTypeName:=True)), node)
                 End If
                 ' The trivial on node reflects the wrong place on the file as order is switched so don't convert trivia here
                 If TypeOf OriginalNameParent Is CSS.AliasQualifiedNameSyntax Then
@@ -191,7 +191,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     End If
                 End If
                 If TypeOf OriginalNameParent Is CSS.NameColonSyntax Then
-                    Return Me.WrapTypedNameIfNecessary(Factory.IdentifierName(GenerateSafeVBToken(node.Identifier, node, _mSemanticModel, IsQualifiedName:=True, IsTypeName:=True)), node)
+                    Return Me.WrapTypedNameIfNecessary(Factory.IdentifierName(GenerateSafeVBToken(node.Identifier, node, _mSemanticModel, _usedIdentifiers, IsQualifiedName:=True, IsTypeName:=True)), node)
                 End If
                 If TypeOf OriginalNameParent IsNot CSS.ExpressionSyntax Then
                     Dim KeywordKind As VB.SyntaxKind = VB.SyntaxFacts.GetKeywordKind(node.Identifier.ValueText)
@@ -200,9 +200,9 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     End If
                 End If
                 If TypeOf OriginalNameParent Is CSS.QualifiedNameSyntax Then
-                    Return Factory.IdentifierName(GenerateSafeVBToken(node.Identifier, node, _mSemanticModel, OriginalNameParent.IsKind(CS.SyntaxKind.QualifiedName), IsTypeName:=TypeOf OriginalNameParent Is CSS.InvocationExpressionSyntax))
+                    Return Factory.IdentifierName(GenerateSafeVBToken(node.Identifier, node, _mSemanticModel, _usedIdentifiers, OriginalNameParent.IsKind(CS.SyntaxKind.QualifiedName), IsTypeName:=TypeOf OriginalNameParent Is CSS.InvocationExpressionSyntax))
                 End If
-                Return Me.WrapTypedNameIfNecessary(Factory.IdentifierName(GenerateSafeVBToken(node.Identifier, node, _mSemanticModel, OriginalNameParent.IsKind(CS.SyntaxKind.QualifiedName), IsTypeName:=TypeOf OriginalNameParent Is CSS.InvocationExpressionSyntax)), node)
+                Return Me.WrapTypedNameIfNecessary(Factory.IdentifierName(GenerateSafeVBToken(node.Identifier, node, _mSemanticModel, _usedIdentifiers, OriginalNameParent.IsKind(CS.SyntaxKind.QualifiedName), IsTypeName:=TypeOf OriginalNameParent Is CSS.InvocationExpressionSyntax)), node)
             End Function
 
             Public Overrides Function VisitQualifiedName(node As CSS.QualifiedNameSyntax) As VB.VisualBasicSyntaxNode

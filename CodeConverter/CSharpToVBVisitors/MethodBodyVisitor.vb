@@ -194,7 +194,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 simpleTypeName = If(TypeOf type Is QualifiedNameSyntax, DirectCast(type, QualifiedNameSyntax).Right.ToString(), type.ToString())
                 Dim identifier As SyntaxToken = If(catchClause.Declaration.Identifier.IsKind(CS.SyntaxKind.None),
                                                         Factory.Identifier($"__unused{simpleTypeName}{index + 1}__"),
-                                                        GenerateSafeVBToken(catchClause.Declaration.Identifier, catchClause, _semanticModel))
+                                                        GenerateSafeVBToken(catchClause.Declaration.Identifier, catchClause, _nodesVisitor._usedIdentifiers, _semanticModel))
                 Dim whenClause As CatchFilterClauseSyntax = If(catchClause.Filter Is Nothing, Nothing, Factory.CatchFilterClause(filter:=DirectCast(catchClause.Filter.FilterExpression.Accept(_nodesVisitor), ExpressionSyntax)))
                 Dim catchStatement As CatchStatementSyntax = Factory.CatchStatement(
                                                                     Factory.IdentifierName(identifier),
@@ -273,7 +273,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     If FromValue Is Nothing Then
                         Return False
                     End If
-                    Dim forVariableToken As SyntaxToken = GenerateSafeVBToken(v.Identifier, node, _semanticModel)
+                    Dim forVariableToken As SyntaxToken = GenerateSafeVBToken(v.Identifier, node, _nodesVisitor._usedIdentifiers, _semanticModel)
                     Dim names As SeparatedSyntaxList(Of ModifiedIdentifierSyntax) =
                         Factory.SingletonSeparatedList(Factory.ModifiedIdentifier(forVariableToken))
                     ControlVariable = Factory.VariableDeclarator(names,
@@ -374,7 +374,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 If Not (TypeOf exprNode Is StatementSyntax) Then
                     Select Case True
                         Case TypeOf exprNode Is ObjectCreationExpressionSyntax
-                            exprNode = FactoryDimStatement(GetUniqueVariableNameInScope(node, "tempVar", _semanticModel),
+                            exprNode = FactoryDimStatement(GetUniqueVariableNameInScope(node, "tempVar", _nodesVisitor._usedIdentifiers, _semanticModel),
                                                           Factory.AsNewClause(DirectCast(exprNode, NewExpressionSyntax)),
                                                           initializer:=Nothing)
                         Case TypeOf exprNode Is InvocationExpressionSyntax
@@ -418,7 +418,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                             If TypeOf csMemberAccessExpression.Expression Is CSS.ObjectCreationExpressionSyntax Then
                                 Dim csObjectCreationExpression As CSS.ObjectCreationExpressionSyntax = CType(csMemberAccessExpression.Expression, CSS.ObjectCreationExpressionSyntax)
                                 Dim newExpression As NewExpressionSyntax = DirectCast(csObjectCreationExpression.Accept(_nodesVisitor), NewExpressionSyntax)
-                                Dim nameToken As SyntaxToken = Factory.Identifier(GetUniqueVariableNameInScope(node, "tempVar", _semanticModel))
+                                Dim nameToken As SyntaxToken = Factory.Identifier(GetUniqueVariableNameInScope(node, "tempVar", _nodesVisitor._usedIdentifiers, _semanticModel))
                                 StatementList.Add(FactoryDimStatement(nameToken,
                                                                       Factory.AsNewClause(newExpression.WithLeadingTrivia(Factory.Space)),
                                                                       initializer:=Nothing
@@ -505,11 +505,11 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 If TypeOf OneStatement IsNot StatementSyntax Then
                     Select Case True
                         Case TypeOf OneStatement Is ObjectCreationExpressionSyntax
-                            OneStatement = FactoryDimStatement(GetUniqueVariableNameInScope(node, "tempVar", _semanticModel),
+                            OneStatement = FactoryDimStatement(GetUniqueVariableNameInScope(node, "tempVar", _nodesVisitor._usedIdentifiers, _semanticModel),
                                                               Factory.AsNewClause(DirectCast(OneStatement, NewExpressionSyntax)),
                                                               initializer:=Nothing)
                         Case TypeOf OneStatement Is AwaitExpressionSyntax
-                            OneStatement = FactoryDimStatement(GetUniqueVariableNameInScope(node, "tempVar", _semanticModel),
+                            OneStatement = FactoryDimStatement(GetUniqueVariableNameInScope(node, "tempVar", _nodesVisitor._usedIdentifiers, _semanticModel),
                                                                asClause:=Nothing,
                                                                Factory.EqualsValue(CType(OneStatement, AwaitExpressionSyntax)))
 
@@ -555,8 +555,8 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                 Dim Type As TypeSyntax = DirectCast(Pattern.Type.Accept(_nodesVisitor), TypeSyntax)
                                 If TypeOf Pattern.Designation Is CSS.SingleVariableDesignationSyntax Then
                                     variableNameToken = GenerateSafeVBToken(DirectCast(Pattern.Designation, CSS.SingleVariableDesignationSyntax).Identifier,
-                                                                     section,
-                                                                     _semanticModel)
+                                        section,
+                                        _nodesVisitor._usedIdentifiers, _semanticModel)
                                 ElseIf TypeOf Pattern.Designation Is CSS.DiscardDesignationSyntax Then
                                 Else
                                     Stop
@@ -585,8 +585,8 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                     End If
                                 ElseIf VarPattern.Designation.IsKind(CS.SyntaxKind.SingleVariableDesignation) Then
                                     variableNameToken = GenerateSafeVBToken(DirectCast(VarPattern.Designation, CSS.SingleVariableDesignationSyntax).Identifier,
-                                                                     section,
-                                                                     _semanticModel)
+                                        section,
+                                        _nodesVisitor._usedIdentifiers, _semanticModel)
                                     NewLeadingStatements.Add(FactoryDimStatement(variableNameToken,
                                                                                 Factory.SimpleAsClause(Factory.PredefinedType(ObjectKeyword)),
                                                                                 Factory.EqualsValue(SwitchExpression1)).WithTrailingEOL)
@@ -935,7 +935,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
             Public Overrides Function VisitForEachStatement(node As CSS.ForEachStatementSyntax) As SyntaxList(Of StatementSyntax)
                 Dim variableDeclarator As VariableDeclaratorSyntax
                 Dim asClause As SimpleAsClauseSyntax = Nothing
-                Dim forEachVariableToken As SyntaxToken = GenerateSafeVBToken(node.Identifier, node, _semanticModel)
+                Dim forEachVariableToken As SyntaxToken = GenerateSafeVBToken(node.Identifier, node, _nodesVisitor._usedIdentifiers, _semanticModel)
                 Dim variableIdentifier As IdentifierNameSyntax = Factory.IdentifierName(forEachVariableToken)
                 If node.Type.IsVar Then
                     Dim variableITypeSymbol As (_Error As Boolean, _ITypeSymbol As ITypeSymbol) = node.Expression.DetermineType(_semanticModel)
@@ -948,10 +948,10 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Dim VBType As TypeSyntax
                     If node.Type.IsKind(CS.SyntaxKind.IdentifierName) Then
                         VBType = Factory.IdentifierName(GenerateSafeVBToken(DirectCast(node.Type, CSS.IdentifierNameSyntax).Identifier,
-                                                                              node,
-                                                                              _semanticModel,
-                                                                              IsQualifiedName:=False,
-                                                                              IsTypeName:=True))
+                            node,
+                            _semanticModel,
+                            _nodesVisitor._usedIdentifiers, IsQualifiedName:=False,
+                            IsTypeName:=True))
                     Else
                         VBType = DirectCast(node.Type.Accept(_nodesVisitor), TypeSyntax)
                     End If
@@ -977,7 +977,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                                                              nextStatement)
                     Return ReplaceOneStatementWithMarkedStatements(node, block)
                 End If
-                Dim messageEnumerator As SyntaxToken = Factory.Identifier(GetUniqueVariableNameInScope(node, "messageEnumerator", _semanticModel))
+                Dim messageEnumerator As SyntaxToken = Factory.Identifier(GetUniqueVariableNameInScope(node, "messageEnumerator", _nodesVisitor._usedIdentifiers, _semanticModel))
                 Dim cancelExpression As ExpressionSyntax = Factory.ParseExpression("Threading.CancellationToken.None")
                 Dim methodStatement As CSS.MethodDeclarationSyntax = node.Parent.GetAncestor(Of CSS.MethodDeclarationSyntax)
                 If methodStatement IsNot Nothing Then
@@ -1130,7 +1130,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     _blockInfo.Peek().GotoCaseExpressions.Add(labelExpression)
                     labelNameToken = Factory.Label(VB.SyntaxKind.IdentifierLabel, Me.MakeGotoSwitchLabel(labelExpression))
                 Else
-                    labelNameToken = Factory.Label(VB.SyntaxKind.IdentifierLabel, GenerateSafeVBToken(DirectCast(node.Expression, CSS.IdentifierNameSyntax).Identifier, node, _semanticModel))
+                    labelNameToken = Factory.Label(VB.SyntaxKind.IdentifierLabel, GenerateSafeVBToken(DirectCast(node.Expression, CSS.IdentifierNameSyntax).Identifier, node, _nodesVisitor._usedIdentifiers, _semanticModel))
                 End If
 
                 Return Factory.SingletonList(Of StatementSyntax)(Factory.GoToStatement(labelNameToken).WithConvertedTriviaFrom(node).WithTrailingEOL)
@@ -1259,7 +1259,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 If OpenBraceLeadingTrivia.Any OrElse ClosingBraceTrailingTrivia.Any Then
                     Stop
                 End If
-                Return Factory.SingletonList(Of StatementSyntax)(Factory.LabelStatement(GenerateSafeVBToken(node.Identifier, node, _semanticModel))).AddRange(Statements)
+                Return Factory.SingletonList(Of StatementSyntax)(Factory.LabelStatement(GenerateSafeVBToken(node.Identifier, node, _nodesVisitor._usedIdentifiers, _semanticModel))).AddRange(Statements)
             End Function
 
             Public Overrides Function VisitLocalDeclarationStatement(node As CSS.LocalDeclarationStatementSyntax) As SyntaxList(Of StatementSyntax)
@@ -1374,7 +1374,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 If TypeOf node.Parent Is CSS.GlobalStatementSyntax Then
                     Return body
                 End If
-                Dim nameToken As SyntaxToken = GenerateSafeVBToken(node.Identifier, node, _semanticModel)
+                Dim nameToken As SyntaxToken = GenerateSafeVBToken(node.Identifier, node, _nodesVisitor._usedIdentifiers, _semanticModel)
                 Dim asClause As SimpleAsClauseSyntax = Nothing
                 If TypeList.Any Then
                     Dim typeArguments As TypeArgumentListSyntax = FactoryTypeArgumentList(TypeList)

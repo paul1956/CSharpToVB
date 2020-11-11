@@ -699,9 +699,10 @@ Namespace CSharpToVBConverter
         ''' </summary>
         ''' <param name="id"></param>
         ''' <returns></returns>
-        ''' <param name="Node"></param><param name="Model"></param>
-        Friend Function GenerateSafeVBToken(id As SyntaxToken, Node As CS.CSharpSyntaxNode, Model As SemanticModel) As SyntaxToken
-            Return GenerateSafeVBToken(id, Node, Model, IsQualifiedName:=False, IsTypeName:=False)
+        ''' <param name="Node"></param><param name="usedIdentifiers"></param>
+        ''' <param name="Model"></param>
+        Friend Function GenerateSafeVBToken(id As SyntaxToken, Node As CS.CSharpSyntaxNode, usedIdentifiers As Dictionary(Of String, SymbolTableEntry), Model As SemanticModel) As SyntaxToken
+            Return GenerateSafeVBToken(id, Node, Model, usedIdentifiers, IsQualifiedName:=False, IsTypeName:=False)
         End Function
 
         ''' <summary>
@@ -710,10 +711,11 @@ Namespace CSharpToVBConverter
         ''' <param name="id">Original Variable Name</param>
         ''' <param name="Node"></param>
         ''' <param name="Model"></param>
+        ''' <param name="usedIdentifiers"></param>
         ''' <param name="IsQualifiedName">True if name is part of a Qualified Name and should not be renamed</param>
-        ''' <param name="IsTypeName"></param>
         ''' <returns></returns>
-        Friend Function GenerateSafeVBToken(id As SyntaxToken, Node As CS.CSharpSyntaxNode, Model As SemanticModel, IsQualifiedName As Boolean, IsTypeName As Boolean) As SyntaxToken
+        ''' <param name="IsTypeName"></param>
+        Friend Function GenerateSafeVBToken(id As SyntaxToken, Node As CS.CSharpSyntaxNode, Model As SemanticModel, usedIdentifiers As Dictionary(Of String, SymbolTableEntry), IsQualifiedName As Boolean, IsTypeName As Boolean) As SyntaxToken
             If Node Is Nothing Then
                 Throw New ArgumentNullException(NameOf(Node))
             End If
@@ -723,7 +725,7 @@ Namespace CSharpToVBConverter
                 IsQualifiedName = True
             Else
                 If VB.SyntaxFacts.IsPredefinedType(keywordKind) Then
-                    Return id.MakeIdentifierUnique(Node, Model, IsBracketNeeded:=True, IsQualifiedName)
+                    Return id.MakeIdentifierUnique(Node, usedIdentifiers, Model, IsBracketNeeded:=True, IsQualifiedNameOrTypeName:=IsQualifiedName)
                 End If
             End If
 
@@ -739,7 +741,7 @@ Namespace CSharpToVBConverter
                     id = Factory.Token(keywordKind).WithTriviaFrom(id)
                     bracketNeeded = False
                 End If
-                Return id.MakeIdentifierUnique(Node, Model, bracketNeeded, IsQualifiedNameOrTypeName:=IsQualifiedName)
+                Return id.MakeIdentifierUnique(Node, usedIdentifiers, Model, bracketNeeded, IsQualifiedNameOrTypeName:=IsQualifiedName)
             End If
 
             If id.Parent?.IsParentKind(CS.SyntaxKind.Parameter) Then
@@ -748,7 +750,7 @@ Namespace CSharpToVBConverter
                 IsQualifiedName = MethodDeclaration Is Nothing OrElse String.Compare(MethodDeclaration.Identifier.ValueText, id.ValueText, ignoreCase:=True, Globalization.CultureInfo.InvariantCulture) = 0
                 IsQualifiedName = IsQualifiedName Or String.Compare(Param.Type.ToString, id.ValueText, ignoreCase:=False, Globalization.CultureInfo.InvariantCulture) = 0
             End If
-            Return id.MakeIdentifierUnique(Node, Model, IsBracketNeeded:=False, IsQualifiedName)
+            Return id.MakeIdentifierUnique(Node, usedIdentifiers, Model, IsBracketNeeded:=False, IsQualifiedNameOrTypeName:=IsQualifiedName)
         End Function
 
     End Module
