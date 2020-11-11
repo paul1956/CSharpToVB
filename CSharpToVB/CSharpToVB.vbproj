@@ -28,6 +28,7 @@
     <AssemblyVersion>5.0.0.11</AssemblyVersion>
     <FileVersion>5.0.0.11</FileVersion>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <NoWarn />
