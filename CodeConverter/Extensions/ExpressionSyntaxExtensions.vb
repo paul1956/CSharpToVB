@@ -17,7 +17,7 @@ Namespace CSharpToVBConverter
     Public Module ExpressionSyntaxExtensions
 
         <Extension>
-        Friend Function AdjustExpressionTrivia(Expression As VBS.ExpressionSyntax, AdjustLeading As Boolean) As VBS.ExpressionSyntax
+        Friend Function AdjustExpressionTrivia(Of T As VB.VisualBasicSyntaxNode)(Expression As T, AdjustLeading As Boolean) As T
             If Expression Is Nothing Then
                 Throw New ArgumentNullException(NameOf(Expression))
             End If

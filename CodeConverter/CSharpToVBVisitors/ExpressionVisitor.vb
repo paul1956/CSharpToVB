@@ -1871,7 +1871,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 If argumentList?.Arguments.Count = 0 Then
                     argumentList = Nothing
                 End If
-                Return Factory.ObjectCreationExpression(NewKeyword.WithConvertedTriviaFrom(node.NewKeyword), Factory.List(Of AttributeListSyntax)(), type1, argumentList, initializer)
+                Return Factory.ObjectCreationExpression(NewKeyword.WithConvertedTriviaFrom(node.NewKeyword).AdjustTokenTrailingTrivia(RemoveTrailingLineContinuation:=False), Factory.List(Of AttributeListSyntax)(), type1, argumentList, initializer)
             End Function
 
             Public Overrides Function VisitParenthesizedExpression(node As CSS.ParenthesizedExpressionSyntax) As VB.VisualBasicSyntaxNode

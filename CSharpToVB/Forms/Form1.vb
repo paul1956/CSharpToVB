@@ -450,17 +450,15 @@ Partial Public Class Form1
         _cancellationTokenSource = New CancellationTokenSource
         Me.StatusStripElapasedTimeLabel.Text = ""
         ' Create new stopwatch
-        Dim stopwatch As New Stopwatch()
-        ' Begin timing
-        stopwatch.Start()
         Dim prompt As String
-        If Await ProcessFilesAsync(Me, SourceFolderName,
-            solutionSavePath,
-            SourceLanguageExtension:="cs",
-            Stats:=Stats,
-            CancelToken:=_cancellationTokenSource.Token
-                                     ).ConfigureAwait(True) Then
-            stopwatch.Stop()
+        If Await ProcessFilesAsync(Me,
+                                   SourceFolderName,
+                                   solutionSavePath,
+                                   SourceLanguageExtension:="cs",
+                                   Stats,
+                                   CancelToken:=_cancellationTokenSource.Token
+                                  ).ConfigureAwait(True) Then
+            Stats.ElapasedTimer.Stop()
             If _cancellationTokenSource.Token.IsCancellationRequested Then
                 prompt = $"Conversion canceled, {Stats.FilesProcessed} files completed successfully."
             Else
@@ -471,13 +469,13 @@ Partial Public Class Form1
                 Application.DoEvents()
             End If
         Else
-            stopwatch.Stop()
+            Stats.ElapasedTimer.Stop()
             prompt = "Conversion stopped."
         End If
         MsgBox(prompt,
                MsgBoxStyle.OkOnly Or MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground,
                Title:="Convert C# To Visual Basic")
-        Dim elapsed As TimeSpan = stopwatch.Elapsed
+        Dim elapsed As TimeSpan = Stats.ElapasedTimer.Elapsed
         Me.StatusStripElapasedTimeLabel.Text = $"Elapsed Time - {elapsed.Hours}: {elapsed.Minutes}:{elapsed.Seconds}.{elapsed.Milliseconds}"
         Me.mnuConvertConvertFolder.Enabled = True
 

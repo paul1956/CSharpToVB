@@ -130,6 +130,7 @@ Module ProcessFileUtilities
                                                                          My.Settings.SkipTestResourceFiles
                                                                         )
                 ' Process the list of files found in the directory.
+
                 Return Await ProcessDirectoryAsync(MainForm,
                                                    SourceDirectory,
                                                    TargetDirectory,

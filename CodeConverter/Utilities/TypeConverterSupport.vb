@@ -729,14 +729,15 @@ Namespace CSharpToVBConverter
                 End If
             End If
 
-            If VB.SyntaxFacts.IsKeywordKind(keywordKind) Then
+            If VB.SyntaxFacts.IsKeywordKind(keywordKind) OrElse id.ValueText = "Yield" Then
                 Dim bracketNeeded As Boolean = True
                 If keywordKind.IsKind(VB.SyntaxKind.REMKeyword, VB.SyntaxKind.DelegateKeyword) OrElse id.Text.Chars(0) = "@" Then
-                    bracketNeeded = True
                 ElseIf id.Parent Is Nothing Then
-                    bracketNeeded = True
                 ElseIf TypeOf id.Parent.Parent Is CSS.MemberAccessExpressionSyntax Then
-                    bracketNeeded = CType(id.Parent?.Parent, CSS.MemberAccessExpressionSyntax).Expression.ToString.Equals(id.ToString, StringComparison.Ordinal)
+                    Dim memberAccessExpression As CSS.MemberAccessExpressionSyntax = CType(id.Parent?.Parent, CSS.MemberAccessExpressionSyntax)
+                    If TypeOf memberAccessExpression.Expression IsNot CSS.GenericNameSyntax Then
+                        bracketNeeded = memberAccessExpression.Expression.ToString.Equals(id.ToString, StringComparison.Ordinal)
+                    End If
                 ElseIf id.Parent.AncestorsAndSelf().OfType(Of CSS.UsingDirectiveSyntax).FirstOrDefault().IsKind(CS.SyntaxKind.UsingDirective) Then
                     id = Factory.Token(keywordKind).WithTriviaFrom(id)
                     bracketNeeded = False

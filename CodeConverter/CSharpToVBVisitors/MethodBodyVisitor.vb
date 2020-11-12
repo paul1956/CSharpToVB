@@ -17,6 +17,7 @@ Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
+Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace CSharpToVBConverter.ToVisualBasic
 
@@ -436,6 +437,23 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                 Stop
                             End If
                         End If
+                    ElseIf csAssignment.Left.IsKind(CS.SyntaxKind.SimpleMemberAccessExpression) AndAlso RightExpression.IsKind(VB.SyntaxKind.AddressOfExpression) Then
+                        Dim vbMemberAccessExpression As MemberAccessExpressionSyntax = CType(csAssignment.Left.Accept(_nodesVisitor), MemberAccessExpressionSyntax)
+                        Dim statementLeadingTrivia As New SyntaxTriviaList
+                        If vbMemberAccessExpression.ContainsCommentOrDirectiveTrivia Then
+                            statementLeadingTrivia = statementLeadingTrivia.AddRange(vbMemberAccessExpression.GetLeadingTrivia)
+                            vbMemberAccessExpression = vbMemberAccessExpression.WithLeadingTrivia(Factory.Space)
+                        Else
+                            vbMemberAccessExpression = vbMemberAccessExpression.AdjustExpressionTrivia(AdjustLeading:=True)
+                        End If
+                        Dim handlerStatement As VBS.AddRemoveHandlerStatementSyntax
+                        If node.IsKind(CS.SyntaxKind.AddAssignmentExpression) Then
+                            handlerStatement = Factory.AddHandlerStatement(vbMemberAccessExpression, RightExpression)
+                        Else
+                            handlerStatement = Factory.RemoveHandlerStatement(vbMemberAccessExpression, RightExpression)
+                        End If
+                        StatementList.Add(handlerStatement.WithLeadingTrivia(statementLeadingTrivia).WithTrailingEOL)
+                        Return StatementList
                     End If
                 ElseIf TypeOf node Is CSS.PostfixUnaryExpressionSyntax Then
                     Dim CSPostFixUnaryExpression As CSS.PostfixUnaryExpressionSyntax = DirectCast(node, CSS.PostfixUnaryExpressionSyntax)
@@ -509,9 +527,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                                               Factory.AsNewClause(DirectCast(OneStatement, NewExpressionSyntax)),
                                                               initializer:=Nothing)
                         Case TypeOf OneStatement Is AwaitExpressionSyntax
-                            OneStatement = FactoryDimStatement(GetUniqueVariableNameInScope(node, "tempVar", _nodesVisitor._usedIdentifiers, _semanticModel),
-                                                               asClause:=Nothing,
-                                                               Factory.EqualsValue(CType(OneStatement, AwaitExpressionSyntax)))
+                            OneStatement = Factory.ExpressionStatement(CType(OneStatement, AwaitExpressionSyntax))
 
                         Case TypeOf OneStatement Is InvocationExpressionSyntax
                             OneStatement = If(OneStatement.GetFirstToken.IsKind(VB.SyntaxKind.NewKeyword), Factory.CallStatement(DirectCast(OneStatement, ExpressionSyntax).WithLeadingTrivia(Factory.Space)), DirectCast(Factory.ExpressionStatement(DirectCast(OneStatement, ExpressionSyntax)), VisualBasicSyntaxNode))

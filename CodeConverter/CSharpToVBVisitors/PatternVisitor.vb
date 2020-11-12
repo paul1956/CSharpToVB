@@ -98,15 +98,14 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         Dim Statement As VBS.ExpressionStatementSyntax = Factory.ExpressionStatement(expression)
                         StatementWithIssue.AddMarker(Statement, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
                     Else
-                        DimToBeAdded =
-                            FactoryDimStatement(designationNameToken,
-                                           Factory.SimpleAsClause(VariableType),
-                                           Factory.EqualsValue(VBExpression)
-                                          ).WithTrailingTrivia(VBEOLTrivia)
+                        DimToBeAdded = FactoryDimStatement(designationNameToken,
+                                                           Factory.SimpleAsClause(VariableType.AdjustExpressionTrivia(AdjustLeading:=False)),
+                                                           Factory.EqualsValue(VBExpression)
+                                                          ).WithTrailingTrivia(VBEOLTrivia)
                         StatementWithIssue.AddMarker(DimToBeAdded, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
-                    End If
+                        End If
 
-                    Return Factory.IdentifierName(uniqueIdToken)
+                        Return Factory.IdentifierName(uniqueIdToken)
                 ElseIf TypeOf Pattern Is CSS.ConstantPatternSyntax Then
                     Return Factory.IsExpression(VBExpression, DirectCast(node.Pattern.Accept(Me), VBS.ExpressionSyntax))
                 ElseIf TypeOf Pattern Is CSS.UnaryPatternSyntax Then
