@@ -436,6 +436,13 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                 Stop
                             End If
                         End If
+                    ElseIf csAssignment.Left.IsKind(CS.SyntaxKind.SimpleMemberAccessExpression) AndAlso RightExpression.IsKind(VB.SyntaxKind.AddressOfExpression) Then
+                        If node.IsKind(CS.SyntaxKind.AddAssignmentExpression) Then
+                            StatementList.Add(Factory.AddHandlerStatement(CType(csAssignment.Left.Accept(_nodesVisitor), MemberAccessExpressionSyntax), RightExpression).WithTrailingEOL)
+                        Else
+                            StatementList.Add(Factory.RemoveHandlerStatement(CType(csAssignment.Left.Accept(_nodesVisitor), MemberAccessExpressionSyntax), RightExpression).WithTrailingEOL)
+                        End If
+                        Return StatementList
                     End If
                 ElseIf TypeOf node Is CSS.PostfixUnaryExpressionSyntax Then
                     Dim CSPostFixUnaryExpression As CSS.PostfixUnaryExpressionSyntax = DirectCast(node, CSS.PostfixUnaryExpressionSyntax)
@@ -509,9 +516,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                                               Factory.AsNewClause(DirectCast(OneStatement, NewExpressionSyntax)),
                                                               initializer:=Nothing)
                         Case TypeOf OneStatement Is AwaitExpressionSyntax
-                            OneStatement = FactoryDimStatement(GetUniqueVariableNameInScope(node, "tempVar", _nodesVisitor._usedIdentifiers, _semanticModel),
-                                                               asClause:=Nothing,
-                                                               Factory.EqualsValue(CType(OneStatement, AwaitExpressionSyntax)))
+                            OneStatement = Factory.ExpressionStatement(CType(OneStatement, AwaitExpressionSyntax))
 
                         Case TypeOf OneStatement Is InvocationExpressionSyntax
                             OneStatement = If(OneStatement.GetFirstToken.IsKind(VB.SyntaxKind.NewKeyword), Factory.CallStatement(DirectCast(OneStatement, ExpressionSyntax).WithLeadingTrivia(Factory.Space)), DirectCast(Factory.ExpressionStatement(DirectCast(OneStatement, ExpressionSyntax)), VisualBasicSyntaxNode))
