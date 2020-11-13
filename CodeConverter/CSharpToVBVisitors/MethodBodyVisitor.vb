@@ -697,7 +697,6 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Return GetSafeVBName(exprsssionString)
             End Function
 
-
             Private Function TryConvertIfNotNullRaiseEvent(node As CSS.IfStatementSyntax, ByRef raiseEventStatement As StatementSyntax) As Boolean
                 raiseEventStatement = Nothing
                 Dim comparisonExpression As CSS.BinaryExpressionSyntax = Nothing
