@@ -62,7 +62,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
             Dim newLeadingTrivia As New SyntaxTriviaList
             Dim FirstModifier As Boolean = True
             If csModifiers.Any Then
-                newLeadingTrivia = newLeadingTrivia.AddRange(csModifiers(0).LeadingTrivia.ConvertTriviaList())
+                newLeadingTrivia = newLeadingTrivia.AddRange(csModifiers(0).leadingTrivia.ConvertTriviaList())
             End If
 
             If Context <> TokenContext.Local AndAlso Context <> TokenContext.InterfaceOrModule AndAlso Context <> TokenContext.Class Then
@@ -102,7 +102,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                             Continue For
                         End If
 
-                        If VB_Modifier.LeadingTrivia.Count > 1 Then
+                        If VB_Modifier.leadingTrivia.Count > 1 Then
                             FirstModifier = False
                             newLeadingTrivia = New SyntaxTriviaList
                             Yield VB_Modifier.WithTrailingTrivia()
@@ -116,7 +116,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                             Continue For
                         End If
                     End If
-                    If VB_Modifier.LeadingTrivia.ContainsCommentOrDirectiveTrivia Then
+                    If VB_Modifier.leadingTrivia.ContainsCommentOrDirectiveTrivia Then
                         FirstModifier = False
                         newLeadingTrivia = New SyntaxTriviaList
                         Yield VB_Modifier
@@ -145,7 +145,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 If Not (VB_Modifier.IsKind(VB.SyntaxKind.None) OrElse VB_Modifier.IsKind(VB.SyntaxKind.EmptyToken)) Then
                     newLeadingTrivia = New SyntaxTriviaList
                     newLeadingTrivia = newLeadingTrivia.Add(Factory.Space)
-                    ModifyTrailingTrivia(VB_Modifier.LeadingTrivia, newTrailingTrivia)
+                    ModifyTrailingTrivia(VB_Modifier.leadingTrivia, newTrailingTrivia)
                     ModifyTrailingTrivia(VB_Modifier.TrailingTrivia, newTrailingTrivia)
                     Yield VB_Modifier.With(newLeadingTrivia, newTrailingTrivia)
                 End If
@@ -153,29 +153,29 @@ Namespace CSharpToVBConverter.ToVisualBasic
 
         End Function
 
-        Friend Function RestructureAttributeList(vbAttributeLists As SyntaxList(Of VBS.AttributeListSyntax), AttributeLists As List(Of VBS.AttributeListSyntax), ByRef NewAttributeLeadingTrivia As SyntaxTriviaList, ByRef StatementLeadingTrivia As SyntaxTriviaList, ByRef StatementTrailingTrivia As SyntaxTriviaList) As Boolean
+        Friend Function RestructureAttributeList(vbAttributeLists As SyntaxList(Of VBS.AttributeListSyntax), attributeLists As List(Of VBS.AttributeListSyntax), ByRef NewAttributeLeadingTrivia As SyntaxTriviaList, ByRef statementLeadingTrivia As SyntaxTriviaList, ByRef statementTrailingTrivia As SyntaxTriviaList) As Boolean
             Dim foundDirective As Boolean = False
             Dim foundTheory As Boolean = False
             Dim isTheoryOrInlineData As Boolean
             For Each e As IndexClass(Of VBS.AttributeListSyntax) In vbAttributeLists.WithIndex
                 Dim attributeList As VBS.AttributeListSyntax = e.Value.RemoveExtraLeadingEOL
-                isTheoryOrInlineData = attributeList.Attributes.FirstOrDefault.ToString.ContainsAny(StringComparison.OrdinalIgnoreCase, "Theory", "InlineData")
+                isTheoryOrInlineData = attributeList.attributes.FirstOrDefault.ToString.ContainsAny(StringComparison.OrdinalIgnoreCase, "Theory", "InlineData")
                 If isTheoryOrInlineData Then
                     foundTheory = True
                 End If
                 Dim NewAttributLeadingTrivia As New SyntaxTriviaList
                 If e.IsFirst Then
-                    StatementLeadingTrivia = StatementLeadingTrivia.AddRange(attributeList.GetLeadingTrivia)
-                    If StatementLeadingTrivia.Any AndAlso StatementLeadingTrivia.Last.IsWhitespaceOrEndOfLine Then
+                    statementLeadingTrivia = statementLeadingTrivia.AddRange(attributeList.GetLeadingTrivia)
+                    If statementLeadingTrivia.Any AndAlso statementLeadingTrivia.Last.IsWhitespaceOrEndOfLine Then
                         NewAttributeLeadingTrivia = NewAttributeLeadingTrivia.Add(attributeList.GetLeadingTrivia.Last)
                     Else
                         NewAttributeLeadingTrivia = NewAttributeLeadingTrivia.Add(Factory.Space)
                     End If
                 Else
-                    RelocateAttributeDirectiveDisabledTrivia(e.Value.GetLeadingTrivia, foundDirective, isTheoryOrInlineData, StatementLeadingTrivia, StatementTrailingTrivia)
+                    RelocateAttributeDirectiveDisabledTrivia(e.Value.GetLeadingTrivia, foundDirective, isTheoryOrInlineData, statementLeadingTrivia, statementTrailingTrivia)
                 End If
-                Dim newAttributeTrailingTrivia As SyntaxTriviaList = RelocateDirectiveDisabledTrivia(e.Value.GetTrailingTrivia, StatementTrailingTrivia, RemoveEOL:=False)
-                AttributeLists.Add(attributeList.With(NewAttributeLeadingTrivia, newAttributeTrailingTrivia))
+                Dim newAttributeTrailingTrivia As SyntaxTriviaList = RelocateDirectiveDisabledTrivia(e.Value.GetTrailingTrivia, statementTrailingTrivia, RemoveEOL:=False)
+                attributeLists.Add(attributeList.With(NewAttributeLeadingTrivia, newAttributeTrailingTrivia))
             Next
             Return foundTheory
         End Function

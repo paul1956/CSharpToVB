@@ -9,7 +9,7 @@ Partial Public Module SpecializedCollection
     <Extension>
     Public Function Last(StringCollection As Specialized.StringCollection) As String
 
-        Return If(StringCollection Is Nothing OrElse StringCollection.Count = 0, "", StringCollection.Item(StringCollection.Count - 1))
+        Return If(StringCollection Is Nothing OrElse StringCollection.Count = 0, "", StringCollection.item(StringCollection.Count - 1))
     End Function
 
 End Module

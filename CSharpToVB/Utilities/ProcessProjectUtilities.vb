@@ -186,8 +186,8 @@ Public Module ProcessProjectUtilities
             End If
             Dim targetFileWithPath As String = DestinationFilePath(currentDocument.FilePath, solutionRoot)
             FilesProcessed += 1
-            MainForm.ListBoxFileList.Items.Add(New NumberedListItem($"{FilesProcessed.ToString(CultureInfo.InvariantCulture),-5} {currentDocument.FilePath}", $"{targetFileWithPath}{Path.DirectorySeparatorChar}{Path.GetFileNameWithoutExtension(currentDocument.Name)}.vb"))
-            MainForm.ListBoxFileList.SelectedIndex = MainForm.ListBoxFileList.Items.Count - 1
+            MainForm.ListBoxFileList.items.Add(New NumberedListItem($"{FilesProcessed.ToString(CultureInfo.InvariantCulture),-5} {currentDocument.FilePath}", $"{targetFileWithPath}{Path.DirectorySeparatorChar}{Path.GetFileNameWithoutExtension(currentDocument.Name)}.vb"))
+            MainForm.ListBoxFileList.SelectedIndex = MainForm.ListBoxFileList.items.Count - 1
             MainForm.StatusStripConversionFileProgressLabel.Text = $"Processed {FilesProcessed:N0} of {TotalFilesToProcess:N0} Files"
             Application.DoEvents()
             If Not Await ProcessFileAsync(MainForm,
@@ -216,8 +216,8 @@ Public Module ProcessProjectUtilities
             Exit Sub
         End If
         SetButtonStopAndCursor(MainForm, MainForm.ButtonStopConversion, StopButtonVisible:=True)
-        MainForm.ListBoxErrorList.Items.Clear()
-        MainForm.ListBoxFileList.Items.Clear()
+        MainForm.ListBoxErrorList.items.Clear()
+        MainForm.ListBoxFileList.items.Clear()
         MainForm.ConversionInput.Clear()
         MainForm.ConversionOutput.Clear()
         MainForm.UpdateProgressLabels($"Getting Analyzer Manger for {fileName}")

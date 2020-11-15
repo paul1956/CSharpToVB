@@ -42,10 +42,10 @@ Namespace CSharpToVBConverter
         End Function
 
         ''' <summary>
-        ''' Syntax Trivia in any Language
+        ''' Syntax trivia in any Language
         ''' </summary>
         ''' <param name="TriviaList"></param>
-        ''' <returns>True if any Trivia is a Comment or a Directive</returns>
+        ''' <returns>True if any trivia is a Comment or a Directive</returns>
         <Extension>
         Friend Function ContainsCommentOrDirectiveTrivia(TriviaList As SyntaxTriviaList) As Boolean
             If Not TriviaList.Any Then
@@ -106,10 +106,10 @@ Namespace CSharpToVBConverter
         End Function
 
         ''' <summary>
-        ''' Syntax Trivia in any Language
+        ''' Syntax trivia in any Language
         ''' </summary>
         ''' <param name="TriviaList"></param>
-        ''' <returns>True if any Trivia is a Comment or a Directive</returns>
+        ''' <returns>True if any trivia is a Comment or a Directive</returns>
         <Extension>
         Friend Function ContainsDirectiveTrivia(TriviaList As SyntaxTriviaList, ParamArray Kinds() As VB.SyntaxKind) As Boolean
             If TriviaList.Count = 0 Then Return False
@@ -130,10 +130,10 @@ Namespace CSharpToVBConverter
         End Function
 
         ''' <summary>
-        ''' Syntax Trivia in any Language
+        ''' Syntax trivia in any Language
         ''' </summary>
         ''' <param name="TriviaList"></param>
-        ''' <returns>True if any Trivia is EndIf Directive</returns>
+        ''' <returns>True if any trivia is EndIf Directive</returns>
         <Extension>
         Friend Function ContainsEndIfTrivia(TriviaList As SyntaxTriviaList) As Boolean
             If TriviaList.Count = 0 Then Return False
@@ -163,33 +163,33 @@ Namespace CSharpToVBConverter
             End If
             Try
                 For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
-                    Dim Trivia As SyntaxTrivia = e.Value
-                    Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.Index, LookaheadCount:=1)
-                    Select Case Trivia.RawKind
+                    Dim trivia As SyntaxTrivia = e.Value
+                    Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.index, LookaheadCount:=1)
+                    Select Case trivia.RawKind
                         Case CS.SyntaxKind.MultiLineCommentTrivia
-                            Dim Lines() As String = Trivia.ToFullString.Substring(2).Split(CType(vbLf, Char))
+                            Dim Lines() As String = trivia.ToFullString.Substring(2).Split(CType(vbLf, Char))
                             For Each line As String In Lines
                                 If line.EndsWith("*/", StringComparison.Ordinal) Then
                                     newTriviaList.Add(Factory.CommentTrivia($"' {RemoveLeadingSpacesAndStar(line.Substring(0, line.Length - 2))}"))
-                                    If Trivia.ToFullString.EndsWith(vbLf, StringComparison.Ordinal) Then
+                                    If trivia.ToFullString.EndsWith(vbLf, StringComparison.Ordinal) Then
                                         newTriviaList.Add(VBEOLTrivia)
                                     End If
                                 Else
                                     newTriviaList.Add(Factory.CommentTrivia($"' {RemoveLeadingSpacesAndStar(line)}"))
                                     newTriviaList.Add(VBEOLTrivia)
                                 End If
-                                If Lines.Length = 1 AndAlso (e.IsLast OrElse Not initialTriviaList(e.Index + 1).IsEndOfLine) Then
+                                If Lines.Length = 1 AndAlso (e.IsLast OrElse Not initialTriviaList(e.index + 1).IsEndOfLine) Then
                                     newTriviaList.Add(VBEOLTrivia)
                                 End If
                             Next
                         Case CS.SyntaxKind.NullableDirectiveTrivia
-                            Dim StructuredTrivia As CSS.StructuredTriviaSyntax = DirectCast(Trivia.GetStructure, CSS.StructuredTriviaSyntax)
+                            Dim StructuredTrivia As CSS.StructuredTriviaSyntax = DirectCast(trivia.GetStructure, CSS.StructuredTriviaSyntax)
                             Dim NullableDirective As CSS.NullableDirectiveTriviaSyntax = CType(StructuredTrivia, CSS.NullableDirectiveTriviaSyntax)
                             newTriviaList.Add(Factory.CommentTrivia($"' TODO: Skipped Null-able Directive {NullableDirective.SettingToken.Text} {NullableDirective.TargetToken.Text}"))
                             newTriviaList.AddRange(NullableDirective.TargetToken.TrailingTrivia.ConvertTriviaList())
                             newTriviaList.AddRange(NullableDirective.EndOfDirectiveToken.TrailingTrivia.ConvertTriviaList())
                         Case CS.SyntaxKind.MultiLineDocumentationCommentTrivia
-                            Dim StructuredTrivia As CSS.StructuredTriviaSyntax = DirectCast(Trivia.GetStructure, CSS.StructuredTriviaSyntax)
+                            Dim StructuredTrivia As CSS.StructuredTriviaSyntax = DirectCast(trivia.GetStructure, CSS.StructuredTriviaSyntax)
                             For Each t1 As SyntaxNode In StructuredTrivia.ChildNodes
                                 Dim Lines() As String = t1.ToFullString.Split(CType(vbLf, Char))
                                 For Each line As String In Lines
@@ -203,12 +203,12 @@ Namespace CSharpToVBConverter
                                 Next
                             Next
                         Case Else
-                            Dim ConvertedTrivia As SyntaxTrivia = Trivia.ConvertTrivia
+                            Dim ConvertedTrivia As SyntaxTrivia = trivia.ConvertTrivia
                             If ConvertedTrivia = Nothing Then
                                 Continue For
                             End If
                             newTriviaList.Add(ConvertedTrivia)
-                            If Trivia.IsKind(CS.SyntaxKind.SingleLineCommentTrivia) Then
+                            If trivia.IsKind(CS.SyntaxKind.SingleLineCommentTrivia) Then
                                 If Not nextTrivia.IsKind(CS.SyntaxKind.EndOfLineTrivia) Then
                                     newTriviaList.Add(VBEOLTrivia)
                                 End If
@@ -229,7 +229,7 @@ Namespace CSharpToVBConverter
             Dim Banner As New SyntaxTriviaList
             For Each e As IndexClass(Of SyntaxTrivia) In TriviaList.WithIndex
                 Dim t As SyntaxTrivia = e.Value
-                Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(TriviaList, e.Index, LookaheadCount:=1)
+                Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(TriviaList, e.index, LookaheadCount:=1)
 
                 If t.IsKind(CS.SyntaxKind.SingleLineCommentTrivia) Then
                     If nextTrivia.IsKind(CS.SyntaxKind.EndOfLineTrivia) Then
@@ -245,8 +245,8 @@ Namespace CSharpToVBConverter
         End Function
 
         <Extension>
-        Friend Function GetForwardTriviaOrDefault(TriviaList As SyntaxTriviaList, Index As Integer, LookaheadCount As Integer) As SyntaxTrivia
-            Dim triviaIndex As Integer = Index + LookaheadCount
+        Friend Function GetForwardTriviaOrDefault(TriviaList As SyntaxTriviaList, index As Integer, LookaheadCount As Integer) As SyntaxTrivia
+            Dim triviaIndex As Integer = index + LookaheadCount
             If triviaIndex < 0 Then
                 Return New SyntaxTrivia
             End If
@@ -261,11 +261,11 @@ Namespace CSharpToVBConverter
             If [End] < start OrElse [End] > InitialTriviaList.Count - 1 Then
                 Throw New ArgumentException("Argument out of Range", NameOf([End]))
             End If
-            Dim NewTriviaList As New SyntaxTriviaList
+            Dim newTriviaList As New SyntaxTriviaList
             For i As Integer = start To [End]
-                NewTriviaList = NewTriviaList.Add(InitialTriviaList(i))
+                newTriviaList = newTriviaList.Add(InitialTriviaList(i))
             Next
-            Return NewTriviaList
+            Return newTriviaList
         End Function
 
         <Extension>
@@ -278,21 +278,21 @@ Namespace CSharpToVBConverter
             Return -1
         End Function
 
-        Friend Sub ModifyTrailingTrivia(ModifierTriviaList As SyntaxTriviaList, ByRef NewTrailingTrivia As SyntaxTriviaList)
+        Friend Sub ModifyTrailingTrivia(ModifierTriviaList As SyntaxTriviaList, ByRef newTrailingTrivia As SyntaxTriviaList)
             For Each t As SyntaxTrivia In ModifierTriviaList
                 Select Case t.RawKind
                     Case VB.SyntaxKind.None
                     Case VB.SyntaxKind.WhitespaceTrivia
-                        NewTrailingTrivia = NewTrailingTrivia.Add(Factory.Space)
+                        newTrailingTrivia = newTrailingTrivia.Add(Factory.Space)
                     Case VB.SyntaxKind.EndOfLineTrivia
-                        NewTrailingTrivia = NewTrailingTrivia.Add(Factory.Space)
+                        newTrailingTrivia = newTrailingTrivia.Add(Factory.Space)
                     Case VB.SyntaxKind.IfDirectiveTrivia, VB.SyntaxKind.ElseDirectiveTrivia, VB.SyntaxKind.ElseIfDirectiveTrivia,
                      VB.SyntaxKind.DisabledTextTrivia, VB.SyntaxKind.EndIfDirectiveTrivia
-                        NewTrailingTrivia = NewTrailingTrivia.Add(t)
+                        newTrailingTrivia = newTrailingTrivia.Add(t)
                     Case VB.SyntaxKind.CommentTrivia
-                        NewTrailingTrivia = NewTrailingTrivia.Add(t)
+                        newTrailingTrivia = newTrailingTrivia.Add(t)
                     Case VB.SyntaxKind.DocumentationCommentTrivia
-                        NewTrailingTrivia = NewTrailingTrivia.Add(t)
+                        newTrailingTrivia = newTrailingTrivia.Add(t)
                     Case Else
                         Stop
                 End Select

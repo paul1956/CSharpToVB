@@ -16,27 +16,27 @@ Namespace CSharpToVBConverter
 
         <Extension>
         Friend Function GetBodyStatements(block As BlockSyntax, visitor As MethodBodyVisitor) As SyntaxList(Of VBS.StatementSyntax)
-            Dim Statements As New List(Of VBS.StatementSyntax)
+            Dim statements As New List(Of VBS.StatementSyntax)
             For Each localFunction As LocalFunctionStatementSyntax In block.DescendantNodes().OfType(Of LocalFunctionStatementSyntax).ToList()
                 Dim EmptyStatement As VBS.StatementSyntax = localFunction.Accept(visitor)(0)
                 If EmptyStatement.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia OrElse
                 EmptyStatement.GetTrailingTrivia.ContainsCommentOrDirectiveTrivia Then
-                    Statements.Add(EmptyStatement)
+                    statements.Add(EmptyStatement)
                 End If
             Next
-            For Each s As StatementSyntax In block.Statements
+            For Each s As StatementSyntax In block.statements
                 If s.IsKind(CS.SyntaxKind.LocalFunctionStatement) Then
                     Continue For
                 End If
-                Statements.AddRange(s.Accept(visitor))
-                If Statements.Any Then
-                    If block.OpenBraceToken.LeadingTrivia.ContainsCommentOrDirectiveTrivia Then
-                        Statements(0) = Statements(0).WithPrependedLeadingTrivia(block.OpenBraceToken.LeadingTrivia.ConvertTriviaList())
+                statements.AddRange(s.Accept(visitor))
+                If statements.Any Then
+                    If block.OpenBraceToken.leadingTrivia.ContainsCommentOrDirectiveTrivia Then
+                        statements(0) = statements(0).WithPrependedLeadingTrivia(block.OpenBraceToken.leadingTrivia.ConvertTriviaList())
                     End If
                 End If
             Next
 
-            Return Factory.List(Statements)
+            Return Factory.List(statements)
         End Function
 
     End Module

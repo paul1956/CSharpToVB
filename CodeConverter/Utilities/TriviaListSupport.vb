@@ -12,28 +12,28 @@ Namespace CSharpToVBConverter.ToVisualBasic
     Public Module TriviaListSupport
 
         ''' <summary>
-        ''' Compare 2 Trivia Lists and see if they both end with the same SyntaxKinds
+        ''' Compare 2 trivia Lists and see if they both end with the same SyntaxKinds
         ''' </summary>
         ''' <param name="NodeLeadingTrivia"></param>
-        ''' <param name="LeadingTrivia"></param>
-        ''' <returns>True if LeadingTrivia ends with the same trivia kinds as NodeLeadingTrivia</returns>
-        Friend Function EndsWithSimilarTrivia(NodeLeadingTrivia As SyntaxTriviaList, LeadingTrivia As SyntaxTriviaList) As Boolean
-            If NodeLeadingTrivia.Count > LeadingTrivia.Count Then
+        ''' <param name="leadingTrivia"></param>
+        ''' <returns>True if leadingTrivia ends with the same trivia kinds as NodeLeadingTrivia</returns>
+        Friend Function EndsWithSimilarTrivia(NodeLeadingTrivia As SyntaxTriviaList, leadingTrivia As SyntaxTriviaList) As Boolean
+            If NodeLeadingTrivia.Count > leadingTrivia.Count Then
                 Return False
             End If
-            If (Not LeadingTrivia.ContainsCommentOrDirectiveTrivia) OrElse (Not NodeLeadingTrivia.ContainsCommentOrDirectiveTrivia) Then
+            If (Not leadingTrivia.ContainsCommentOrDirectiveTrivia) OrElse (Not NodeLeadingTrivia.ContainsCommentOrDirectiveTrivia) Then
                 Return False
             End If
 
             For index As Integer = 1 To NodeLeadingTrivia.Count
-                If LeadingTrivia(LeadingTrivia.Count - index).RawKind <> NodeLeadingTrivia(NodeLeadingTrivia.Count - index).RawKind Then
+                If leadingTrivia(leadingTrivia.Count - index).RawKind <> NodeLeadingTrivia(NodeLeadingTrivia.Count - index).RawKind Then
                     Return False
                 End If
             Next
             Return True
         End Function
 
-        Friend Sub RelocateAttributeDirectiveDisabledTrivia(TriviaList As SyntaxTriviaList, FoundDirective As Boolean, IsTheory As Boolean, ByRef StatementLeadingTrivia As SyntaxTriviaList, ByRef StatementTrailingTrivia As SyntaxTriviaList)
+        Friend Sub RelocateAttributeDirectiveDisabledTrivia(TriviaList As SyntaxTriviaList, FoundDirective As Boolean, IsTheory As Boolean, ByRef statementLeadingTrivia As SyntaxTriviaList, ByRef statementTrailingTrivia As SyntaxTriviaList)
             If IsTheory Then
                 Exit Sub
             End If
@@ -44,16 +44,16 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Continue For
                 End If
                 If FoundDirective Then
-                    If StatementTrailingTrivia.Count = 0 Then
-                        StatementTrailingTrivia.Add(VBEOLTrivia)
+                    If statementTrailingTrivia.Count = 0 Then
+                        statementTrailingTrivia.Add(VBEOLTrivia)
                     End If
-                    StatementTrailingTrivia.Add(t)
+                    statementTrailingTrivia.Add(t)
                 Else
                     If t.IsDirective Then
-                        StatementLeadingTrivia = StatementLeadingTrivia.Add(t)
+                        statementLeadingTrivia = statementLeadingTrivia.Add(t)
                         FoundDirective = True
                     Else
-                        StatementTrailingTrivia = StatementTrailingTrivia.Add(t)
+                        statementTrailingTrivia = statementTrailingTrivia.Add(t)
                     End If
                 End If
             Next
@@ -82,11 +82,11 @@ Namespace CSharpToVBConverter.ToVisualBasic
             Return NewTrivia
         End Function
 
-        Friend Function RelocateLeadingCommentTrivia(TriviaList As SyntaxTriviaList, ByRef StatementLeadingTrivia As SyntaxTriviaList) As SyntaxTriviaList
+        Friend Function RelocateLeadingCommentTrivia(TriviaList As SyntaxTriviaList, ByRef statementLeadingTrivia As SyntaxTriviaList) As SyntaxTriviaList
             Dim newLeadingTrivia As New SyntaxTriviaList
-            Dim FoundComment As Boolean = False
+            Dim foundComment As Boolean = False
             For Each t As SyntaxTrivia In TriviaList
-                If Not (FoundComment OrElse t.IsComment) Then
+                If Not (foundComment OrElse t.IsComment) Then
                     If t.IsEndOfLine Then
                         newLeadingTrivia = newLeadingTrivia.Add(Factory.Space)
                     Else
@@ -94,11 +94,11 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     End If
                 Else
                     If t.IsComment Then
-                        StatementLeadingTrivia = StatementLeadingTrivia.Add(VBEOLTrivia)
-                        StatementLeadingTrivia = StatementLeadingTrivia.Add(t)
-                        FoundComment = True
+                        statementLeadingTrivia = statementLeadingTrivia.Add(VBEOLTrivia)
+                        statementLeadingTrivia = statementLeadingTrivia.Add(t)
+                        foundComment = True
                     Else
-                        StatementLeadingTrivia = StatementLeadingTrivia.Add(t)
+                        statementLeadingTrivia = statementLeadingTrivia.Add(t)
                     End If
                 End If
             Next
@@ -114,9 +114,9 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim tokenText As String = token.Text
                 Dim valueText As String = token.ValueText
                 If token.HasLeadingTrivia Then
-                    For Each t As SyntaxTrivia In token.LeadingTrivia
+                    For Each t As SyntaxTrivia In token.leadingTrivia
                         If t.IsKind(CS.SyntaxKind.DocumentationCommentExteriorTrivia) Then
-                            newLeadingTriviaList = newLeadingTriviaList.Add(Factory.DocumentationCommentExteriorTrivia(token.LeadingTrivia(0).
+                            newLeadingTriviaList = newLeadingTriviaList.Add(Factory.DocumentationCommentExteriorTrivia(token.leadingTrivia(0).
                                                                                                                          ToString().
                                                                                                                          Replace("///", "'''", StringComparison.Ordinal)))
                             If Not tokenText.StartsWith(" ", StringComparison.Ordinal) Then

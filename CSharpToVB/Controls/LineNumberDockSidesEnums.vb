@@ -4,6 +4,7 @@
 
 <HideModuleName(), DebuggerNonUserCode()>
 Public Module LineNumberDockSidesEnums
+
     <Flags>
     Public Enum LineNumberDockSides
         None = 0

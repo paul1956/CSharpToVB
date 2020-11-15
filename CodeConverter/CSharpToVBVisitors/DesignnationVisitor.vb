@@ -18,29 +18,31 @@ Namespace CSharpToVBConverter.ToVisualBasic
 
             Public Overrides Function VisitDiscardDesignation(node As CSS.DiscardDesignationSyntax) As VB.VisualBasicSyntaxNode
                 Dim discardNameToken As SyntaxToken = GenerateSafeVBToken(node.UnderscoreToken, node, _usedIdentifiers, _mSemanticModel)
-                Dim IdentifierExpression As VBS.IdentifierNameSyntax = Factory.IdentifierName(discardNameToken)
-                Dim ModifiedIdentifier As VBS.ModifiedIdentifierSyntax = Factory.ModifiedIdentifier(discardNameToken)
-                Dim TypeName As VB.VisualBasicSyntaxNode
+                Dim identExpr As VBS.IdentifierNameSyntax = Factory.IdentifierName(discardNameToken)
+                Dim modifiedIdent As VBS.ModifiedIdentifierSyntax = Factory.ModifiedIdentifier(discardNameToken)
+                Dim typeName As VB.VisualBasicSyntaxNode
                 Dim parentExpression As CSS.DeclarationExpressionSyntax = DirectCast(node.Parent, CSS.DeclarationExpressionSyntax)
                 If parentExpression IsNot Nothing Then
-                    TypeName = parentExpression.Type.Accept(Me)
-                    If TypeName.ToString = "var" Then
-                        TypeName = PredefinedTypeObject
+                    typeName = parentExpression.Type.Accept(Me)
+                    If typeName.ToString = "var" Then
+                        typeName = PredefinedTypeObject
                     End If
                 ElseIf node.ToString = "_" Then
-                    TypeName = PredefinedTypeObject
+                    typeName = PredefinedTypeObject
                 Else
                     Stop
-                    TypeName = PredefinedTypeObject
+                    typeName = PredefinedTypeObject
                 End If
 
-                Dim asClause As VBS.SimpleAsClauseSyntax = Factory.SimpleAsClause(AsKeyword.With(Factory.Space, Factory.Space), New SyntaxList(Of VBS.AttributeListSyntax), ConvertToType(TypeName.NormalizeWhitespace.ToString))
+                Dim asClause As VBS.SimpleAsClauseSyntax = Factory.SimpleAsClause(AsKeyword.With(Factory.Space, Factory.Space), New SyntaxList(Of VBS.AttributeListSyntax), ConvertToType(typeName.NormalizeWhitespace.ToString))
 
-                Dim DeclarationStatement As VBS.LocalDeclarationStatementSyntax =
-                            FactoryDimStatement(discardNameToken, asClause, Factory.EqualsValue(NothingExpression))
 
-                GetStatementwithIssues(node).AddMarker(DeclarationStatement, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
-                Return IdentifierExpression
+                GetStatementwithIssues(node).AddMarker(FactoryDimStatement(discardNameToken,
+                                                                           asClause,
+                                                                           Factory.EqualsValue(NothingExpression)),
+                                                       StatementHandlingOption.PrependStatement,
+                                                       AllowDuplicates:=True)
+                Return identExpr
             End Function
 
             Public Overrides Function VisitParenthesizedVariableDesignation(node As CSS.ParenthesizedVariableDesignationSyntax) As VB.VisualBasicSyntaxNode
@@ -55,32 +57,32 @@ Namespace CSharpToVBConverter.ToVisualBasic
 
                 If Node.Parent.IsKind(CS.SyntaxKind.DeclarationExpression) Then
                     ' var quantity
-                    Dim Designation As CSS.DeclarationExpressionSyntax = CType(Node.Parent, CSS.DeclarationExpressionSyntax)
+                    Dim designation As CSS.DeclarationExpressionSyntax = CType(Node.Parent, CSS.DeclarationExpressionSyntax)
                     ' out var quantity
-                    Dim Declaration As CSS.ArgumentSyntax = CType(Designation.Parent, CSS.ArgumentSyntax)
+                    Dim declaration As CSS.ArgumentSyntax = CType(designation.Parent, CSS.ArgumentSyntax)
                     ' (item.tostring, out var quantity)
-                    Dim TypeName As VBS.TypeSyntax
-                    If Designation.Type.IsVar Then
-                        TypeName = Factory.PredefinedType(ObjectKeyword)
-                        Dim ArgumentList As CSS.ArgumentListSyntax = TryCast(Declaration.Parent, CSS.ArgumentListSyntax)
-                        If ArgumentList IsNot Nothing AndAlso
-                           ArgumentList.Arguments.Count = 2 AndAlso
-                           ArgumentList.Parent.IsKind(CS.SyntaxKind.InvocationExpression) AndAlso
-                           ArgumentList.Arguments(index:=1).Equals(Declaration) Then
-                            Dim Invocation As CSS.InvocationExpressionSyntax = TryCast(ArgumentList.Parent, CSS.InvocationExpressionSyntax)
-                            If Invocation IsNot Nothing Then
-                                Dim Expression As CSS.MemberAccessExpressionSyntax = TryCast(Invocation.Expression, CSS.MemberAccessExpressionSyntax)
-                                If Expression IsNot Nothing AndAlso Expression.Name.Identifier.ValueText = "TryGetValue" Then
-                                    Dim memberExpression As CSS.MemberAccessExpressionSyntax = CType(Invocation.Expression, CSS.MemberAccessExpressionSyntax)
+                    Dim typeName As VBS.TypeSyntax
+                    If designation.Type.IsVar Then
+                        typeName = Factory.PredefinedType(ObjectKeyword)
+                        Dim argList As CSS.ArgumentListSyntax = TryCast(declaration.Parent, CSS.ArgumentListSyntax)
+                        If argList IsNot Nothing AndAlso
+                           argList.Arguments.Count = 2 AndAlso
+                           argList.Parent.IsKind(CS.SyntaxKind.InvocationExpression) AndAlso
+                           argList.Arguments(index:=1).Equals(declaration) Then
+                            Dim csInvocation As CSS.InvocationExpressionSyntax = TryCast(argList.Parent, CSS.InvocationExpressionSyntax)
+                            If csInvocation IsNot Nothing Then
+                                Dim csExpr As CSS.MemberAccessExpressionSyntax = TryCast(csInvocation.Expression, CSS.MemberAccessExpressionSyntax)
+                                If csExpr IsNot Nothing AndAlso csExpr.Name.Identifier.ValueText = "TryGetValue" Then
+                                    Dim memberExpression As CSS.MemberAccessExpressionSyntax = CType(csInvocation.Expression, CSS.MemberAccessExpressionSyntax)
                                     If memberExpression IsNot Nothing Then
-                                        Dim _Typeinfo As TypeInfo = _mSemanticModel.GetTypeInfo(memberExpression.Expression)
-                                        If _Typeinfo.Type IsNot Nothing AndAlso Not _Typeinfo.Type.IsErrorType Then
-                                            TypeName = _Typeinfo.Type.ConvertToType
-                                            Dim GenericName As VBS.GenericNameSyntax = TryCast(TypeName, VBS.GenericNameSyntax)
-                                            If GenericName IsNot Nothing Then
-                                                Dim _arguments As SeparatedSyntaxList(Of VBS.TypeSyntax) = GenericName.TypeArgumentList.Arguments
-                                                If _arguments.Count = 2 Then
-                                                    TypeName = _arguments(1)
+                                        Dim typeinf As TypeInfo = _mSemanticModel.GetTypeInfo(memberExpression.Expression)
+                                        If typeinf.Type IsNot Nothing AndAlso Not typeinf.Type.IsErrorType Then
+                                            typeName = typeinf.Type.ConvertToType
+                                            Dim genericName As VBS.GenericNameSyntax = TryCast(typeName, VBS.GenericNameSyntax)
+                                            If genericName IsNot Nothing Then
+                                                Dim args As SeparatedSyntaxList(Of VBS.TypeSyntax) = genericName.TypeArgumentList.Arguments
+                                                If args.Count = 2 Then
+                                                    typeName = args(1)
                                                 End If
                                             End If
                                         End If
@@ -89,25 +91,25 @@ Namespace CSharpToVBConverter.ToVisualBasic
                             End If
                         End If
                     Else
-                        TypeName = CType(Designation.Type.Accept(Me), VBS.TypeSyntax)
+                        typeName = CType(designation.Type.Accept(Me), VBS.TypeSyntax)
                     End If
 
                     Dim declarationToBeAdded As VBS.LocalDeclarationStatementSyntax =
                                 FactoryDimStatement(identifier,
-                                                    Factory.SimpleAsClause(TypeName),
+                                                    Factory.SimpleAsClause(typeName),
                                                     Factory.EqualsValue(NothingExpression))
 
                     GetStatementwithIssues(Node).AddMarker(declarationToBeAdded, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
                 ElseIf Node.Parent.IsKind(CS.SyntaxKind.DeclarationPattern) Then
-                    Dim DeclarationPattern As CSS.DeclarationPatternSyntax = DirectCast(Node.Parent, CSS.DeclarationPatternSyntax)
-                    Dim CasePatternSwitchLabel As CSS.SwitchLabelSyntax = TryCast(DeclarationPattern.Parent, CSS.SwitchLabelSyntax)
-                    If CasePatternSwitchLabel IsNot Nothing Then
-                        Dim SwitchSection As CSS.SwitchSectionSyntax = DirectCast(CasePatternSwitchLabel.Parent, CSS.SwitchSectionSyntax)
-                        Dim SwitchStatement As CSS.SwitchStatementSyntax = DirectCast(SwitchSection.Parent, CSS.SwitchStatementSyntax)
-                        Dim SwitchExpression As VBS.ExpressionSyntax = DirectCast(SwitchStatement.Expression.Accept(Me), VBS.ExpressionSyntax)
+                    Dim declarationPattern As CSS.DeclarationPatternSyntax = DirectCast(Node.Parent, CSS.DeclarationPatternSyntax)
+                    Dim casePatternSwitchLabel As CSS.SwitchLabelSyntax = TryCast(declarationPattern.Parent, CSS.SwitchLabelSyntax)
+                    If casePatternSwitchLabel IsNot Nothing Then
+                        Dim switchSection As CSS.SwitchSectionSyntax = DirectCast(casePatternSwitchLabel.Parent, CSS.SwitchSectionSyntax)
+                        Dim switchStatement As CSS.SwitchStatementSyntax = DirectCast(switchSection.Parent, CSS.SwitchStatementSyntax)
+                        Dim switchExpression As VBS.ExpressionSyntax = DirectCast(switchStatement.Expression.Accept(Me), VBS.ExpressionSyntax)
 
-                        Dim TypeName As VBS.TypeSyntax = DirectCast(DeclarationPattern.Type.Accept(Me), VBS.TypeSyntax)
-                        Return Factory.TypeOfIsExpression(SwitchExpression, TypeName)
+                        Dim typeName As VBS.TypeSyntax = DirectCast(declarationPattern.Type.Accept(Me), VBS.TypeSyntax)
+                        Return Factory.TypeOfIsExpression(switchExpression, typeName)
                     End If
                 End If
 

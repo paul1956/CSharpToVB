@@ -20,7 +20,7 @@ class test : IComparable { }")
             Dim compilation As CSharpCompilation = CSharpCompilation.Create("MyCompilation", syntaxTrees:={tree}, CSharpReferences("", New List(Of MetadataReference)))
             Dim lSemanticModel As SemanticModel = compilation.GetSemanticModel(tree)
             Dim InputNode As Syntax.CompilationUnitSyntax = CType(compilation.SyntaxTrees(0).GetRoot, Syntax.CompilationUnitSyntax)
-            Dim node As Syntax.ClassDeclarationSyntax = CType(InputNode.Members(0), Syntax.ClassDeclarationSyntax)
+            Dim node As Syntax.ClassDeclarationSyntax = CType(InputNode.members(0), Syntax.ClassDeclarationSyntax)
 
             Assert.Equal(node.Kind(), SyntaxKind.ClassDeclaration)
             Dim classOrInterface As Syntax.TypeSyntax = node.BaseList?.Types.FirstOrDefault()?.Type

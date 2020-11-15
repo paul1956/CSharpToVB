@@ -62,7 +62,7 @@ Module ProcessFileUtilities
                                 My.Settings.IgnoreFileList.Add(SourceFileNameWithPath)
                                 My.Settings.Save()
                             End If
-                            .ListBoxErrorList.Items.Clear()
+                            .ListBoxErrorList.items.Clear()
                             .LineNumbersForConversionInput.Visible = My.Settings.ShowSourceLineNumbers
                             .LineNumbersForConversionOutput.Visible = My.Settings.ShowDestinationLineNumbers
                             ._doNotFailOnError = True
@@ -76,8 +76,8 @@ Module ProcessFileUtilities
                         If .LabelErrorCount.Text = "File Skipped" Then
                             Return True
                         End If
-                        Dim NewFileName As String = Path.ChangeExtension(New FileInfo(SourceFileNameWithPath).Name, If(SourceLanguageExtension = "vb", "cs", "vb"))
-                        WriteTextToStream(TargetDirectory, NewFileName, .ConversionOutput.Text)
+                        Dim newFileName As String = Path.ChangeExtension(New FileInfo(SourceFileNameWithPath).Name, If(SourceLanguageExtension = "vb", "cs", "vb"))
+                        WriteTextToStream(TargetDirectory, newFileName, .ConversionOutput.Text)
                     End If
                     If My.Settings.PauseConvertOnSuccess Then
                         If MsgBox($"{SourceFileNameWithPath} successfully converted, Continue?",
@@ -88,11 +88,11 @@ Module ProcessFileUtilities
                 End If
 
                 ' 5 second delay
-                Const LoopSleep As Integer = 25
-                Dim Delay As Integer = (1000 * My.Settings.ConversionDelay) \ LoopSleep
-                For index As Integer = 0 To Delay
+                Const loopSleep As Integer = 25
+                Dim delay As Integer = (1000 * My.Settings.ConversionDelay) \ loopSleep
+                For index As Integer = 0 To delay
                     Application.DoEvents()
-                    Thread.Sleep(LoopSleep)
+                    Thread.Sleep(loopSleep)
                     If CancelToken.IsCancellationRequested Then
                         Return False
                     End If
@@ -120,8 +120,8 @@ Module ProcessFileUtilities
     Friend Async Function ProcessFilesAsync(MainForm As Form1, SourceDirectory As String, TargetDirectory As String, SourceLanguageExtension As String, Stats As ProcessingStats, CancelToken As CancellationToken) As Task(Of Boolean)
         With MainForm
             Try
-                .ListBoxErrorList.Items.Clear()
-                .ListBoxFileList.Items.Clear()
+                .ListBoxErrorList.items.Clear()
+                .ListBoxFileList.items.Clear()
                 SetButtonStopAndCursor(MainForm,
                                        .ButtonStopConversion,
                                        StopButtonVisible:=True)

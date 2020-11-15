@@ -44,11 +44,11 @@ Public Module RangeSupport
                 Dim project As Project = solution.AddProject("projectName", "assemblyName", LanguageNames.CSharp)
                 document = project.AddDocument("name.cs", SourceCode)
 
-                Dim CSharpOptions As OptionSet = workspace.Options
-                CSharpOptions = CSharpOptions.WithChangedOption(CSharpFormattingOptions.NewLinesForBracesInMethods, value:=True)
-                CSharpOptions = CSharpOptions.WithChangedOption(CSharpFormattingOptions.NewLinesForBracesInProperties, value:=True)
+                Dim csOptions As OptionSet = workspace.Options
+                csOptions = csOptions.WithChangedOption(CSharpFormattingOptions.NewLinesForBracesInMethods, value:=True)
+                csOptions = csOptions.WithChangedOption(CSharpFormattingOptions.NewLinesForBracesInProperties, value:=True)
             Else
-                Dim VisualBasicOptions As OptionSet = workspace.Options
+                Dim vbOptions As OptionSet = workspace.Options
                 Dim project As Project = solution.AddProject("projectName", "assemblyName", LanguageNames.VisualBasic)
                 document = project.AddDocument("name.vb", SourceCode)
             End If

@@ -16,8 +16,8 @@ Namespace CSharpToVBConverter
         <Extension>
         Friend Function RemoveModifier(Parameter As VBS.ParameterSyntax, ModifierKind As SyntaxKind) As VBS.ParameterSyntax
             Dim ReturnTokenList As New SyntaxTokenList
-            If Parameter.Modifiers.Any Then
-                For Each token As SyntaxToken In Parameter.Modifiers
+            If Parameter.modifiers.Any Then
+                For Each token As SyntaxToken In Parameter.modifiers
                     If token.IsKind(ModifierKind) Then
                         Continue For
                     End If

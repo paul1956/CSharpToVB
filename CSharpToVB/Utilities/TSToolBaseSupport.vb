@@ -100,7 +100,7 @@ Public Module TSToolBaseSupport
         MainForm.TSFindMatchCaseCheckBox.Enabled = EnableFind
         MainForm.TSFindMatchWholeWordCheckBox.Enabled = EnableFind
         Dim selectedIndex As Integer = MainForm.TSFindLookInComboBox.SelectedIndex
-        If MainForm.TSFindLookInComboBox.Items.Count > 0 AndAlso MainForm.mnuConvert.Enabled Then
+        If MainForm.TSFindLookInComboBox.items.Count > 0 AndAlso MainForm.mnuConvert.Enabled Then
             If inputBufferInUse AndAlso outputBufferInUse Then
                 MainForm.TSFindLookInComboBox.DropDownStyle = ComboBoxStyle.DropDown
                 MainForm.TSFindLookInComboBox.SelectedIndex = selectedIndex

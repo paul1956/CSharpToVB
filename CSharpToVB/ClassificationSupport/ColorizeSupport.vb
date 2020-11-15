@@ -27,7 +27,7 @@ Public Module ColorizeSupport
             Else
                 MainForm.ListBoxErrorList.Enabled = True
                 For Each dia As Diagnostic In failures
-                    MainForm.ListBoxErrorList.Items.Add($"{dia.Id} Line = {dia.Location.GetLineSpan.StartLinePosition.Line + 1} {dia.GetMessage}")
+                    MainForm.ListBoxErrorList.items.Add($"{dia.Id} Line = {dia.Location.GetLineSpan.StartLinePosition.Line + 1} {dia.GetMessage}")
                 Next
             End If
 
@@ -51,10 +51,10 @@ Public Module ColorizeSupport
                 Application.DoEvents()
                 If failures?.Count > 0 Then
                     For Each dia As Diagnostic In failures
-                        Dim ErrorLine As Integer = dia.Location.GetLineSpan.StartLinePosition.Line
-                        Dim ErrorCharactorPosition As Integer = dia.Location.GetLineSpan.StartLinePosition.Character
-                        Dim Length As Integer = dia.Location.GetLineSpan.EndLinePosition.Character - ErrorCharactorPosition
-                        .Select(.GetFirstCharIndexFromLine(ErrorLine) + ErrorCharactorPosition, Length)
+                        Dim errorLine As Integer = dia.Location.GetLineSpan.StartLinePosition.Line
+                        Dim errorCharactorPosition As Integer = dia.Location.GetLineSpan.StartLinePosition.Character
+                        Dim length As Integer = dia.Location.GetLineSpan.EndLinePosition.Character - errorCharactorPosition
+                        .Select(.GetFirstCharIndexFromLine(errorLine) + errorCharactorPosition, length)
                         .SelectionColor = Color.Red
                         .Select(.TextLength, 0)
                     Next
@@ -77,14 +77,14 @@ Public Module ColorizeSupport
 
     Friend Sub Compile_Colorize(MainForm As Form1, TextToCompile As String, VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)))
         MainForm._inColorize = False
-        Dim CompileResult As (Success As Boolean, EmitResult As EmitResult) = CompileVisualBasicString(TextToCompile, VBPreprocessorSymbols, DiagnosticSeverity.Error, MainForm._resultOfConversion)
+        Dim compileResult As (Success As Boolean, EmitResult As EmitResult) = CompileVisualBasicString(TextToCompile, VBPreprocessorSymbols, DiagnosticSeverity.Error, MainForm._resultOfConversion)
 
         MainForm.LabelErrorCount.Text = $"Number Of Errors:  {MainForm._resultOfConversion.GetFilteredListOfFailures().Count}"
-        Dim FragmentRange As IEnumerable(Of Range) = GetClassifiedRanges(TextToCompile, LanguageNames.VisualBasic)
+        Dim fragmentRange As IEnumerable(Of Range) = GetClassifiedRanges(TextToCompile, LanguageNames.VisualBasic)
 
-        If CompileResult.Success AndAlso CompileResult.EmitResult.Success Then
+        If compileResult.Success AndAlso compileResult.EmitResult.Success Then
             If My.Settings.ColorizeOutput Then
-                Colorize(MainForm, FragmentRange, MainForm.ConversionOutput, TextToCompile.SplitLines.Length)
+                Colorize(MainForm, fragmentRange, MainForm.ConversionOutput, TextToCompile.SplitLines.Length)
             Else
                 MainForm.ConversionOutput.Text = TextToCompile
             End If
@@ -92,12 +92,12 @@ Public Module ColorizeSupport
             If Not MainForm._resultOfConversion.GetFilteredListOfFailures().Any Then
                 MainForm._resultOfConversion.ResultStatus = ResultTriState.Success
                 If My.Settings.ColorizeOutput Then
-                    Colorize(MainForm, FragmentRange, MainForm.ConversionOutput, TextToCompile.SplitLines.Length, MainForm._resultOfConversion.GetFilteredListOfFailures())
+                    Colorize(MainForm, fragmentRange, MainForm.ConversionOutput, TextToCompile.SplitLines.Length, MainForm._resultOfConversion.GetFilteredListOfFailures())
                 Else
                     MainForm.ConversionOutput.Text = TextToCompile
                 End If
             Else
-                Colorize(MainForm, FragmentRange, MainForm.ConversionOutput, TextToCompile.SplitLines.Length, MainForm._resultOfConversion.GetFilteredListOfFailures())
+                Colorize(MainForm, fragmentRange, MainForm.ConversionOutput, TextToCompile.SplitLines.Length, MainForm._resultOfConversion.GetFilteredListOfFailures())
             End If
         End If
         MainForm.ConversionOutput.Visible = True
@@ -110,17 +110,17 @@ Public Module ColorizeSupport
         CSPreprocessorSymbols As List(Of String),
         VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)),
         OptionalReferences() As MetadataReference, CancelToken As CancellationToken) As Task(Of Boolean)
-        Dim UIContext As SynchronizationContext = SynchronizationContext.Current
+        Dim uiContext As SynchronizationContext = SynchronizationContext.Current
 
-        Dim ReportException As Action(Of Exception) =
+        Dim reportException As Action(Of Exception) =
             Sub(ex As Exception)
                 ' Use the Windows Forms synchronization context in order to call MsgBox from the UI thread.
-                UIContext.Post(Function(state) MsgBox(ex.Message,
+                uiContext.Post(Function(state) MsgBox(ex.Message,
                                                       MsgBoxStyle.OkOnly Or MsgBoxStyle.Critical Or MsgBoxStyle.MsgBoxSetForeground,
                                                       "Stack Overflow"), state:=Nothing)
             End Sub
 
-        Using ProgressBar As ToolStripTextProgressBar = New ToolStripTextProgressBar()
+        Using progressBar As ToolStripTextProgressBar = New ToolStripTextProgressBar()
             Dim defaultVBOptions As New DefaultVBOptions
             With My.Settings
                 defaultVBOptions = New DefaultVBOptions(.OptionCompare, .OptionCompareIncludeInCode, .OptionExplicit, .OptionExplicitIncludeInCode, .OptionInfer, .OptionInferIncludeInCode, .OptionStrict, .OptionStrictIncludeInCode)
@@ -129,14 +129,14 @@ Public Module ColorizeSupport
             ' System.Progress object on the main thread. During creation, it reads SynchronizationContext.Current so
             ' that it knows how to get back to the main thread to invoke the callback there no matter what thread calls
             ' IProgress.Report.
-            Dim progress As New Progress(Of ProgressReport)(AddressOf ProgressBar.Update)
+            Dim progress As New Progress(Of ProgressReport)(AddressOf progressBar.Update)
             MainForm._resultOfConversion = Await Task.Run(Function() ConvertInputRequest(
                                                     RequestToConvert,
                                                     defaultVBOptions,
                                                     CSPreprocessorSymbols,
                                                     VBPreprocessorSymbols,
                                                     OptionalReferences,
-                                                    ReportException,
+                                                    reportException,
                                                     progress,
                                                     CancelToken)
                                                     ).ConfigureAwait(True)
@@ -152,9 +152,9 @@ Public Module ColorizeSupport
         Select Case MainForm._resultOfConversion.ResultStatus
             Case ResultTriState.Success
                 Compile_Colorize(MainForm, MainForm._resultOfConversion.ConvertedCode, VBPreprocessorSymbols)
-                Dim FilteredErrorCount As Integer = MainForm._resultOfConversion.GetFilteredListOfFailures().Count
-                MainForm.LabelErrorCount.Text = $"Number of Errors: {FilteredErrorCount}"
-                Return FilteredErrorCount = 0
+                Dim filteredErrorCount As Integer = MainForm._resultOfConversion.GetFilteredListOfFailures().Count
+                MainForm.LabelErrorCount.Text = $"Number of Errors: {filteredErrorCount}"
+                Return filteredErrorCount = 0
             Case ResultTriState.Failure
                 If TypeOf MainForm._resultOfConversion.Exceptions(0) IsNot OperationCanceledException Then
                     MainForm.ConversionOutput.SelectionColor = Color.Red

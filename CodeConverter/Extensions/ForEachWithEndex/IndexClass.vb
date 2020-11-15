@@ -5,11 +5,11 @@ Namespace CSharpToVBConverter
 
     Public Class IndexClass(Of T)
         Public Property Value As T
-        Public Property Index As Integer                                                           ' first element has index = 0
+        Public Property index As Integer                                                           ' first element has index = 0
 
         Public ReadOnly Property IsFirst As Boolean
             Get
-                Return Me.Index = 0
+                Return Me.index = 0
             End Get
         End Property
 
@@ -20,7 +20,7 @@ Namespace CSharpToVBConverter
             Me.Value = Me.Enumerator.Current
             Me.IsLast = Not Me.Enumerator.MoveNext()
             ' may be called with .AsParallel
-            Threading.Interlocked.Increment(Me.Index)
+            Threading.Interlocked.Increment(Me.index)
         End Sub
 
     End Class

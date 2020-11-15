@@ -166,9 +166,9 @@ End Class")
     }
 }", "Class TestClass
 
-    Default Public Property Item(index As Integer) As Integer
+    Default Public Property item(index As Integer) As Integer
 
-    Default Public ReadOnly Property Item(index As String) As Integer
+    Default Public ReadOnly Property item(index As String) As Integer
         Get
             Return 0
         End Get
@@ -176,7 +176,7 @@ End Class")
 
     Private m_test3 As Integer
 
-    Default Public Property Item(index As Double) As Integer
+    Default Public Property item(index As Double) As Integer
         Get
             Return Me.m_test3
         End Get
@@ -574,7 +574,7 @@ End Class")
     }
 }", "Class TestClass
 
-    Default Public Property Item(index As Integer) As Object
+    Default Public Property item(index As Integer) As Object
         Get
         End Get
 
@@ -600,8 +600,8 @@ class TestClass : IList {
 Class TestClass
     Implements IList
 
-    Default Public Property Item(index As Integer) As Object
-    Implements Collections.IList.Item
+    Default Public Property item(index As Integer) As Object
+    Implements Collections.IList.item
     Get
     Return index
     End Get
@@ -631,7 +631,7 @@ End Interface")
     object this[int i] { get; set; }
 }", "Public Interface iDisplay
 
-    Default Private Property Item(i As Integer) As Object
+    Default Private Property item(i As Integer) As Object
 
 End Interface")
         End Sub
@@ -1216,7 +1216,7 @@ End Class")
 
     Private _Items As Integer()
 
-    Default Public Property Item(index As Integer) As Integer
+    Default Public Property item(index As Integer) As Integer
         Get
             Return _Items(index)
         End Get
@@ -1226,7 +1226,7 @@ End Class")
         End Set
     End Property
 
-    Default Public ReadOnly Property Item(index As String) As Integer
+    Default Public ReadOnly Property item(index As String) As Integer
         Get
             Return 0
         End Get
@@ -1234,7 +1234,7 @@ End Class")
 
     Private m_test3 As Integer
 
-    Default Public Property Item(index As Double) As Integer
+    Default Public Property item(index As Double) As Integer
         Get
             Return Me.m_test3
         End Get
@@ -1371,7 +1371,7 @@ End Class")
         End Get
     End Property
 
-    Default Public ReadOnly Property Item(index As Integer) As String
+    Default Public ReadOnly Property item(index As Integer) As String
         Get
             Return favColor(index)
         End Get

@@ -65,7 +65,7 @@ Namespace CSharpToVBConverter
 
             ' NOTE: It is helpful to consider 'protected' as *increasing* the
             ' accessibility domain of a private member, rather than *decreasing* that of a public
-            ' member. Members are naturally private; the protected, internal and public access
+            ' member. members are naturally private; the protected, internal and public access
             ' modifiers all increase the accessibility domain. Since private members are accessible
             ' to nested types, so are protected members.
 

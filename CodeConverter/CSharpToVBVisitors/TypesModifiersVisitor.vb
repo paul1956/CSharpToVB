@@ -22,7 +22,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim parentBlock As SyntaxNode = node.Parent.Parent
                 If TypeOf parentBlock Is CSS.StructDeclarationSyntax Then
                     Dim s As CSS.StructDeclarationSyntax = DirectCast(parentBlock, CSS.StructDeclarationSyntax)
-                    Return CS.SyntaxFactory.TypeParameterConstraintClause(CS.SyntaxFactory.IdentifierName(s.TypeParameterList.Parameters(0).Identifier.Text), Nothing)
+                    Return CS.SyntaxFactory.TypeParameterConstraintClause(CS.SyntaxFactory.IdentifierName(s.typeParameterList.Parameters(0).identifier.Text), Nothing)
                 Else
                     clauses = parentBlock.TypeSwitch(
                     Function(m As CSS.MethodDeclarationSyntax) m.ConstraintClauses,
@@ -38,7 +38,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
             End Function
 
             Public Overrides Function VisitArrayRankSpecifier(node As CSS.ArrayRankSpecifierSyntax) As VB.VisualBasicSyntaxNode
-                Return Factory.ArrayRankSpecifier(OpenParenToken, Factory.TokenList(Enumerable.Repeat(CommaToken, node.Rank - 1)), CloseParenToken)
+                Return Factory.ArrayRankSpecifier(openParenToken, Factory.TokenList(Enumerable.Repeat(CommaToken, node.Rank - 1)), CloseParenToken)
             End Function
 
             Public Overrides Function VisitArrayType(node As CSS.ArrayTypeSyntax) As VB.VisualBasicSyntaxNode
@@ -68,18 +68,18 @@ Namespace CSharpToVBConverter.ToVisualBasic
             End Function
 
             Public Overrides Function VisitNullableType(node As CSS.NullableTypeSyntax) As VB.VisualBasicSyntaxNode
-                Dim TypeSyntax As VB.VisualBasicSyntaxNode = node.ElementType.Accept(Me)
-                If TypeOf TypeSyntax Is VBS.ArrayTypeSyntax Then
-                    Dim ArrayType As VBS.ArrayTypeSyntax = DirectCast(TypeSyntax, VBS.ArrayTypeSyntax)
-                    Dim elementType As VBS.TypeSyntax = ArrayType.ElementType
-                    Dim ElementTypeStr As String = elementType.ToString
-                    If ElementTypeStr.EndsWith("?"c, StringComparison.OrdinalIgnoreCase) Then
-                        elementType = Factory.ParseTypeName(ElementTypeStr.TrimEnd("?"c))
+                Dim elementType As VB.VisualBasicSyntaxNode = node.ElementType.Accept(Me)
+                If TypeOf elementType Is VBS.ArrayTypeSyntax Then
+                    Dim arrayType As VBS.ArrayTypeSyntax = DirectCast(elementType, VBS.ArrayTypeSyntax)
+                    Dim arrayElementType As VBS.TypeSyntax = arrayType.ElementType
+                    Dim elementTypeStr As String = arrayElementType.ToString
+                    If elementTypeStr.EndsWith("?"c, StringComparison.OrdinalIgnoreCase) Then
+                        arrayElementType = Factory.ParseTypeName(elementTypeStr.TrimEnd("?"c))
                     End If
-                    Dim NullableType As VBS.NullableTypeSyntax = Factory.NullableType(elementType)
-                    Return Factory.ArrayType(NullableType, ArrayType.RankSpecifiers).WithConvertedTriviaFrom(node)
+                    Return Factory.ArrayType(Factory.NullableType(arrayElementType),
+                                             arrayType.RankSpecifiers).WithConvertedTriviaFrom(node)
                 End If
-                Return Factory.NullableType(DirectCast(TypeSyntax, VBS.TypeSyntax)).WithConvertedTriviaFrom(node)
+                Return Factory.NullableType(DirectCast(elementType, VBS.TypeSyntax)).WithConvertedTriviaFrom(node)
             End Function
 
             Public Overrides Function VisitPointerType(node As CSS.PointerTypeSyntax) As VB.VisualBasicSyntaxNode
@@ -92,12 +92,12 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         Return Factory.AddressOfExpression(Factory.ParseExpression(m.Expression.ToString).WithConvertedTriviaFrom(m))
                     End Function,
                     Function(c As CSS.VariableDeclarationSyntax)
-                        Dim Operand As VBS.TypeSyntax = DirectCast(node.ElementType.Accept(Me), VBS.TypeSyntax)
-                        Return Factory.AddressOfExpression(Factory.ParseExpression(Operand.ToString).WithConvertedTriviaFrom(node.ElementType))
+                        Dim operand As VBS.TypeSyntax = DirectCast(node.ElementType.Accept(Me), VBS.TypeSyntax)
+                        Return Factory.AddressOfExpression(Factory.ParseExpression(operand.ToString).WithConvertedTriviaFrom(node.ElementType))
                     End Function,
                     Function(d As CSS.ParameterSyntax)
-                        Dim Operand As VBS.TypeSyntax = DirectCast(node.ElementType.Accept(Me), VBS.TypeSyntax)
-                        Return Operand.WithConvertedTriviaFrom(node.ElementType)
+                        Dim operand As VBS.TypeSyntax = DirectCast(node.ElementType.Accept(Me), VBS.TypeSyntax)
+                        Return operand.WithConvertedTriviaFrom(node.ElementType)
                     End Function,
                     Function(i As CSS.PointerTypeSyntax)
                         Return IntPtrType
@@ -113,24 +113,22 @@ Namespace CSharpToVBConverter.ToVisualBasic
             End Function
 
             Public Overrides Function VisitPredefinedType(node As CSS.PredefinedTypeSyntax) As VB.VisualBasicSyntaxNode
-                Dim PredefinedType As VBS.PredefinedTypeSyntax = Nothing
+                Dim predefinedType As VBS.PredefinedTypeSyntax = Nothing
                 Try
                     If node.Keyword.ToString = "void" Then
                         Return Factory.IdentifierName("void")
                     End If
-                    PredefinedType = Factory.PredefinedType(CS.CSharpExtensions.Kind(node.Keyword).GetTypeToken())
+                    predefinedType = Factory.PredefinedType(CS.CSharpExtensions.Kind(node.Keyword).GetTypeToken())
                 Catch ex As OperationCanceledException
                     Throw
                 Catch ex As Exception
                     Stop
                 End Try
-                Return PredefinedType
+                Return predefinedType
             End Function
 
             Public Overrides Function VisitSimpleBaseType(node As CSS.SimpleBaseTypeSyntax) As VB.VisualBasicSyntaxNode
-                Dim TypeString As String = node.NormalizeWhitespace.ToString
-
-                Return ConvertToType(TypeString).WithConvertedTriviaFrom(node)
+                Return ConvertToType(node.NormalizeWhitespace.ToString).WithConvertedTriviaFrom(node)
             End Function
 
             Public Overrides Function VisitTypeConstraint(node As CSS.TypeConstraintSyntax) As VB.VisualBasicSyntaxNode
@@ -145,57 +143,60 @@ Namespace CSharpToVBConverter.ToVisualBasic
 
                 ' copy generic constraints
                 Dim clause As CSS.TypeParameterConstraintClauseSyntax = FindClauseForParameter(node)
-                Dim TypeParameterConstraintClause As VBS.TypeParameterConstraintClauseSyntax = DirectCast(clause?.Accept(Me), VBS.TypeParameterConstraintClauseSyntax)
-                If TypeParameterConstraintClause IsNot Nothing AndAlso TypeParameterConstraintClause.IsKind(VB.SyntaxKind.TypeParameterMultipleConstraintClause) Then
-                    Dim TypeParameterMultipleConstraintClause As VBS.TypeParameterMultipleConstraintClauseSyntax = DirectCast(TypeParameterConstraintClause, VBS.TypeParameterMultipleConstraintClauseSyntax)
-                    If TypeParameterMultipleConstraintClause.Constraints.Count = 0 Then
-                        TypeParameterConstraintClause = Nothing
+                Dim typeParameterConstraintClause As VBS.TypeParameterConstraintClauseSyntax = DirectCast(clause?.Accept(Me), VBS.TypeParameterConstraintClauseSyntax)
+                If typeParameterConstraintClause IsNot Nothing AndAlso typeParameterConstraintClause.IsKind(VB.SyntaxKind.TypeParameterMultipleConstraintClause) Then
+                    Dim typeParameterMultipleConstraintClause As VBS.TypeParameterMultipleConstraintClauseSyntax = DirectCast(typeParameterConstraintClause, VBS.TypeParameterMultipleConstraintClauseSyntax)
+                    If typeParameterMultipleConstraintClause.Constraints.Count = 0 Then
+                        typeParameterConstraintClause = Nothing
                     End If
                 End If
-                Dim TypeParameterSyntax As VBS.TypeParameterSyntax = Factory.TypeParameter(variance,
-                                                                                             GenerateSafeVBToken(node.Identifier,
-                                                                                                 node,
-                                                                                                 _mSemanticModel,
-                                                                                                 _usedIdentifiers,
-                                                                                                 IsQualifiedName:=False,
-                                                                                                 IsTypeName:=True),
-                                                                                             TypeParameterConstraintClause).WithConvertedTriviaFrom(node)
-                Return TypeParameterSyntax
+                Return Factory.TypeParameter(variance,
+                                             GenerateSafeVBToken(node.Identifier,
+                                                                 node,
+                                                                 _mSemanticModel,
+                                                                 _usedIdentifiers,
+                                                                 IsQualifiedName:=False,
+                                                                 IsTypeName:=True),
+                                            typeParameterConstraintClause).WithConvertedTriviaFrom(node)
             End Function
 
             Public Overrides Function VisitTypeParameterConstraintClause(node As CSS.TypeParameterConstraintClauseSyntax) As VB.VisualBasicSyntaxNode
-                Dim Braces As (OpenBrace As SyntaxToken, CloseBrace As SyntaxToken) = node.GetBraces
+                Dim braces As (openBrace As SyntaxToken, closeBrace As SyntaxToken) = node.GetBraces
                 If node.Constraints.Count = 1 Then
-                    Return Factory.TypeParameterSingleConstraintClause(AsKeyword.WithTrailingTrivia(Factory.Space), DirectCast(node.Constraints(0).Accept(Me), VBS.ConstraintSyntax))
+                    Return Factory.TypeParameterSingleConstraintClause(AsKeyword.WithTrailingTrivia(Factory.Space),
+                                                                       DirectCast(node.Constraints(0).Accept(Me), VBS.ConstraintSyntax))
                 End If
-                Dim Constraints As SeparatedSyntaxList(Of VBS.ConstraintSyntax) = Factory.SeparatedList(node.Constraints.Select(Function(c As CSS.TypeParameterConstraintSyntax) DirectCast(c.Accept(Me), VBS.ConstraintSyntax)))
-                Return Factory.TypeParameterMultipleConstraintClause(AsKeyword, OpenBraceToken.WithConvertedTriviaFrom(Braces.OpenBrace), Constraints, CloseBraceToken.WithConvertedTriviaFrom(Braces.CloseBrace))
+                Return Factory.TypeParameterMultipleConstraintClause(AsKeyword,
+                                                                     OpenBraceToken.WithConvertedTriviaFrom(braces.openBrace),
+                                                                     Factory.SeparatedList(node.Constraints.Select(Function(c As CSS.TypeParameterConstraintSyntax)
+                                                                                                                       Return DirectCast(c.Accept(Me), VBS.ConstraintSyntax)
+                                                                                                                   End Function)),
+                                                                     CloseBraceToken.WithConvertedTriviaFrom(braces.closeBrace))
             End Function
 
             Public Overrides Function VisitTypeParameterList(node As CSS.TypeParameterListSyntax) As VB.VisualBasicSyntaxNode
-                Dim Nodes As New List(Of VBS.TypeParameterSyntax)
-                Dim Separators As New List(Of SyntaxToken)
-                Dim FinalTrailingTrivia As New SyntaxTriviaList
+                Dim nodes As New List(Of VBS.TypeParameterSyntax)
+                Dim separators As New List(Of SyntaxToken)
+                Dim finalTrailingTrivia As New SyntaxTriviaList
                 Dim csSeparators As New List(Of SyntaxToken)
                 csSeparators.AddRange(node.Parameters.GetSeparators)
                 For index As Integer = 0 To node.Parameters.Count - 2
                     Dim param As CSS.TypeParameterSyntax = node.Parameters(index)
-                    Dim ItemWithTrivia As VBS.TypeParameterSyntax = DirectCast(param.Accept(Me), VBS.TypeParameterSyntax)
-                    If ItemWithTrivia.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
-                        FinalTrailingTrivia = FinalTrailingTrivia.AddRange(ItemWithTrivia.GetLeadingTrivia)
+                    Dim itemWithTrivia As VBS.TypeParameterSyntax = DirectCast(param.Accept(Me), VBS.TypeParameterSyntax)
+                    If itemWithTrivia.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
+                        finalTrailingTrivia = finalTrailingTrivia.AddRange(itemWithTrivia.GetLeadingTrivia)
                     End If
-                    FinalTrailingTrivia = FinalTrailingTrivia.AddRange(ItemWithTrivia.GetTrailingTrivia)
-                    Nodes.Add(ItemWithTrivia.WithLeadingTrivia(Factory.Space).WithTrailingTrivia(Factory.Space))
-                    Separators.Add(CommaToken.WithConvertedTriviaFrom(csSeparators(index)))
+                    finalTrailingTrivia = finalTrailingTrivia.AddRange(itemWithTrivia.GetTrailingTrivia)
+                    nodes.Add(itemWithTrivia.WithLeadingTrivia(Factory.Space).WithTrailingTrivia(Factory.Space))
+                    separators.Add(CommaToken.WithConvertedTriviaFrom(csSeparators(index)))
                 Next
-                Nodes.Add(DirectCast(node.Parameters.Last.Accept(Me).WithConvertedTrailingTriviaFrom(node.Parameters.Last), VBS.TypeParameterSyntax))
-                Dim SeparatedList As SeparatedSyntaxList(Of VBS.TypeParameterSyntax) = Factory.SeparatedList(Nodes, Separators)
-                Dim TypeParameterListSyntax As VBS.TypeParameterListSyntax =
-                    Factory.TypeParameterList(OpenParenToken,
-                                                OfKeyword.WithTrailingTrivia(Factory.Space),
-                                                parameters:=SeparatedList,
-                                                CloseParenToken.WithConvertedTriviaFrom(node.GreaterThanToken).WithAppendedTrailingTrivia(FinalTrailingTrivia))
-                Return TypeParameterListSyntax
+                nodes.Add(DirectCast(node.Parameters.Last.Accept(Me).WithConvertedTrailingTriviaFrom(node.Parameters.Last), VBS.TypeParameterSyntax))
+                Dim parameters As SeparatedSyntaxList(Of VBS.TypeParameterSyntax) = Factory.SeparatedList(nodes, separators)
+                Return Factory.TypeParameterList(openParenToken,
+                                                 OfKeyword.WithTrailingTrivia(Factory.Space),
+                                                 parameters:=parameters,
+                                                 CloseParenToken.WithConvertedTriviaFrom(node.GreaterThanToken).WithAppendedTrailingTrivia(finalTrailingTrivia)
+                                                )
             End Function
 
         End Class

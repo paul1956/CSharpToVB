@@ -14,11 +14,11 @@ Namespace CSharpToVBConverter.ToVisualBasic
     Public Module ArgumentListExtensions
 
         <Extension>
-        Friend Function ContainsConditionalDirective(ArgumentList As CSS.ArgumentListSyntax) As Boolean
-            If ArgumentList.Arguments.Count = 0 Then
+        Friend Function ContainsConditionalDirective(argumentList As CSS.ArgumentListSyntax) As Boolean
+            If argumentList.Arguments.Count = 0 Then
                 Return False
             End If
-            For Each e As IndexClass(Of CSS.ArgumentSyntax) In ArgumentList.Arguments.WithIndex
+            For Each e As IndexClass(Of CSS.ArgumentSyntax) In argumentList.Arguments.WithIndex
                 For Each t As SyntaxTrivia In e.Value.GetLeadingTrivia
                     Select Case t.RawKind
                         Case CS.SyntaxKind.DisabledTextTrivia,

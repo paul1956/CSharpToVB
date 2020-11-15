@@ -132,7 +132,7 @@ Namespace CSharpToVBConverter
         Public ReadOnly ObjectKeyword As SyntaxToken = Factory.Token(SyntaxKind.ObjectKeyword)
         Public ReadOnly OfKeyword As SyntaxToken = Factory.Token(SyntaxKind.OfKeyword)
         Public ReadOnly OpenBraceToken As SyntaxToken = Factory.Token(SyntaxKind.OpenBraceToken)
-        Public ReadOnly OpenParenToken As SyntaxToken = Factory.Token(SyntaxKind.OpenParenToken)
+        Public ReadOnly openParenToken As SyntaxToken = Factory.Token(SyntaxKind.OpenParenToken)
         Public ReadOnly OptionalKeyword As SyntaxToken = Factory.Token(SyntaxKind.OptionalKeyword)
         Public ReadOnly OrElseKeyword As SyntaxToken = Factory.Token(SyntaxKind.OrElseKeyword)
         Public ReadOnly OrKeyword As SyntaxToken = Factory.Token(SyntaxKind.OrKeyword)
@@ -219,7 +219,7 @@ Namespace CSharpToVBConverter
 
 #End Region
 
-#Region "Trivia"
+#Region "trivia"
 
         Public ReadOnly LineContinuation As SyntaxTrivia = Factory.LineContinuationTrivia("_")
         Public ReadOnly VBEOLTrivia As SyntaxTrivia = Factory.EndOfLineTrivia(vbCrLf)
@@ -229,7 +229,7 @@ Namespace CSharpToVBConverter
 #Region "Expressions"
 
         Public ReadOnly IntPrtSizeExpression As ExpressionSyntax = Factory.ParseExpression("IntPrt.Size")
-        Public ReadOnly ExpressionD1 As ExpressionSyntax = Factory.LiteralExpression(SyntaxKind.NumericLiteralExpression, Factory.Literal(1))
+        Public ReadOnly rightExpr As ExpressionSyntax = Factory.LiteralExpression(SyntaxKind.NumericLiteralExpression, Factory.Literal(1))
         Public ReadOnly NothingExpression As LiteralExpressionSyntax = Factory.NothingLiteralExpression(NothingKeyword)
         Public ReadOnly DoubleQuoteExpression As LiteralExpressionSyntax = Factory.LiteralExpression(SyntaxKind.StringLiteralExpression, Factory.Literal(""))
 
@@ -255,7 +255,7 @@ Namespace CSharpToVBConverter
         End Function
 
         Friend Function FactoryDimStatement(Name As String, asClause As AsClauseSyntax, initializer As EqualsValueSyntax) As LocalDeclarationStatementSyntax
-            Return FactoryDimStatement(Factory.Identifier(Name), asClause, initializer)
+            Return FactoryDimStatement(Factory.identifier(Name), asClause, initializer)
         End Function
 
         Friend Function FactoryDimStatement(Name As SyntaxToken, asClause As AsClauseSyntax, initializer As EqualsValueSyntax) As LocalDeclarationStatementSyntax
@@ -272,7 +272,7 @@ Namespace CSharpToVBConverter
         End Function
 
         Friend Function FactoryTypeArgumentList(DictionaryTypeElement As List(Of TypeSyntax)) As TypeArgumentListSyntax
-            Return Factory.TypeArgumentList(OpenParenToken, OfKeyword.WithTrailingTrivia(Factory.Space), Factory.SeparatedList(DictionaryTypeElement), CloseParenToken)
+            Return Factory.TypeArgumentList(openParenToken, OfKeyword.WithTrailingTrivia(Factory.Space), Factory.SeparatedList(DictionaryTypeElement), CloseParenToken)
         End Function
 
 #End If

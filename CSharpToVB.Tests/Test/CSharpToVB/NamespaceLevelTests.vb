@@ -85,8 +85,8 @@ public interface iDisplay {
 }", "Public Class ToBeDisplayed
     Implements iDisplay
 
-    Default Private Property Item(i As Integer) As Object
-    Implements iDisplay.Item
+    Default Private Property item(i As Integer) As Object
+    Implements iDisplay.item
     Get
     Throw New NotImplementedException
     End Get
@@ -99,7 +99,7 @@ End Class
 
 Public Interface iDisplay
 
-    Default Private Property Item(i As Integer) As Object
+    Default Private Property item(i As Integer) As Object
 
 End Interface")
         End Sub

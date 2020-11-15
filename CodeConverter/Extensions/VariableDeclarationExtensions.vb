@@ -22,11 +22,11 @@ Namespace CSharpToVBConverter.ToVisualBasic
         ''' <param name="Visitor"></param>
         ''' <param name="Model"></param>
         ''' <param name="IsFieldDeclaration"></param>
-        ''' <param name="LeadingTrivia"></param>
+        ''' <param name="leadingTrivia"></param>
         ''' <returns></returns>
         ''' <remarks>Fix handling of AddressOf where is mistakenly added to DirectCast and C# Pointers</remarks>
         <Extension>
-        Friend Function RemodelVariableDeclaration(variableDeclaration As CSS.VariableDeclarationSyntax, Visitor As NodesVisitor, Model As SemanticModel, IsFieldDeclaration As Boolean, ByRef LeadingTrivia As SyntaxTriviaList) As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax)
+        Friend Function RemodelVariableDeclaration(variableDeclaration As CSS.VariableDeclarationSyntax, Visitor As NodesVisitor, Model As SemanticModel, IsFieldDeclaration As Boolean, ByRef leadingTrivia As SyntaxTriviaList) As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax)
             Dim vbType As VBS.TypeSyntax
             Dim declarationType As VB.VisualBasicSyntaxNode = variableDeclaration.Type.Accept(Visitor)
             Dim typeOrAddressOf As VB.VisualBasicSyntaxNode = declarationType.WithConvertedLeadingTriviaFrom(variableDeclaration.Type)
@@ -40,9 +40,9 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 End If
             End If
             If IsFieldDeclaration AndAlso typeLeadingTrivia.Count > 1 Then
-                Dim statementWithIssues As CS.CSharpSyntaxNode = GetStatementwithIssues(variableDeclaration)
-                If typeLeadingTrivia.ContainsCommentOrDirectiveTrivia AndAlso Not EndsWithSimilarTrivia(statementWithIssues.GetLeadingTrivia.ConvertTriviaList(), typeLeadingTrivia) Then
-                    statementWithIssues.AddMarker(Factory.EmptyStatement.WithLeadingTrivia(typeLeadingTrivia), StatementHandlingOption.AppendEmptyStatement, AllowDuplicates:=True)
+                Dim stmtWithIssues As CS.CSharpSyntaxNode = GetStatementwithIssues(variableDeclaration)
+                If typeLeadingTrivia.ContainsCommentOrDirectiveTrivia AndAlso Not EndsWithSimilarTrivia(stmtWithIssues.GetLeadingTrivia.ConvertTriviaList(), typeLeadingTrivia) Then
+                    stmtWithIssues.AddMarker(Factory.EmptyStatement.WithLeadingTrivia(typeLeadingTrivia), StatementHandlingOption.AppendEmptyStatement, AllowDuplicates:=True)
                 End If
             End If
             Dim csCollectedCommentTrivia As SyntaxTriviaList
@@ -88,7 +88,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     initializerValue = Factory.IdentifierName("HandleRefExpression").WithConvertedTriviaFrom(v.Initializer.Value)
                 End If
                 If initializerValue.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
-                    LeadingTrivia = LeadingTrivia.AddRange(initializerValue.GetLeadingTrivia)
+                    leadingTrivia = leadingTrivia.AddRange(initializerValue.GetLeadingTrivia)
                 End If
                 Dim initializer As VBS.EqualsValueSyntax = Nothing
                 If Not asClause.IsKind(VB.SyntaxKind.AsNewClause) Then
@@ -110,15 +110,15 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                 )
             Next
             If csDeclaratorsWithoutInitializers.Any Then
-                Dim ModifiedIdentifierList As New List(Of VBS.ModifiedIdentifierSyntax)
+                Dim modifiedIdentifierList As New List(Of VBS.ModifiedIdentifierSyntax)
                 For Each csVarDeclaration As CSS.VariableDeclaratorSyntax In csDeclaratorsWithoutInitializers
                     Dim dTrailingTrivia As SyntaxTriviaList = csVarDeclaration.GetTrailingTrivia
                     If csVarDeclaration.HasTrailingTrivia And dTrailingTrivia.ContainsCommentOrDirectiveTrivia Then
                         csCollectedCommentTrivia = csCollectedCommentTrivia.AddRange(dTrailingTrivia)
                     End If
-                    ModifiedIdentifierList.Add(DirectCast(csVarDeclaration.Accept(Visitor), VBS.ModifiedIdentifierSyntax).WithTrailingTrivia(Factory.Space))
+                    modifiedIdentifierList.Add(DirectCast(csVarDeclaration.Accept(Visitor), VBS.ModifiedIdentifierSyntax).WithTrailingTrivia(Factory.Space))
                 Next
-                Dim varDeclarator As VBS.VariableDeclaratorSyntax = Factory.VariableDeclarator(Factory.SeparatedList(ModifiedIdentifierList), asClause:=Factory.SimpleAsClause(vbType), initializer:=Nothing)
+                Dim varDeclarator As VBS.VariableDeclaratorSyntax = Factory.VariableDeclarator(Factory.SeparatedList(modifiedIdentifierList), asClause:=Factory.SimpleAsClause(vbType), initializer:=Nothing)
                 vbDeclarators.Insert(0, varDeclarator.WithTrailingTrivia(csCollectedCommentTrivia.ConvertTriviaList()))
                 csCollectedCommentTrivia = New SyntaxTriviaList
             End If

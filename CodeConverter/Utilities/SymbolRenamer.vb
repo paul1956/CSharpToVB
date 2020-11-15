@@ -26,20 +26,20 @@ Namespace CSharpToVBConverter
         End Function
 
         Private Function GetBaseForNewName(declaration As ISymbol) As String
-            Dim _name As String = GetName(declaration)
+            Dim name As String = GetName(declaration)
             Dim baseForNewName As String
             Select Case declaration.Kind
                 Case = SymbolKind.Method
-                    baseForNewName = _name & "Method"
+                    baseForNewName = name & "Method"
                 Case = SymbolKind.Property
-                    baseForNewName = _name & "Prop"
+                    baseForNewName = name & "Prop"
                 Case = SymbolKind.NamedType
-                    baseForNewName = _name & "Type"
+                    baseForNewName = name & "Type"
                 Case = SymbolKind.Field
-                    baseForNewName = _name & "Field"
+                    baseForNewName = name & "Field"
                 Case Else
 #Disable Warning CA1308 ' Normalize strings to uppercase
-                    baseForNewName = $"{declaration.Kind.ToString().ToLowerInvariant()(0)}{Char.ToUpperInvariant(_name.Chars(index:=0))}{_name.Substring(startIndex:=1)}"
+                    baseForNewName = $"{declaration.Kind.ToString().ToLowerInvariant()(0)}{Char.ToUpperInvariant(name.Chars(index:=0))}{name.Substring(startIndex:=1)}"
 #Enable Warning CA1308 ' Normalize strings to uppercase
             End Select
 
@@ -49,12 +49,12 @@ Namespace CSharpToVBConverter
         Private Function GetMethodSymbolsWithNewNames(methodSymbols As IMethodSymbol(),
         names As HashSet(Of String),
         specialSymbolUsingName As Boolean, caseSensitive As Boolean) As (Original As ISymbol, NewName As String)()
-            Dim _stringComparer As StringComparer = If(caseSensitive, StringComparer.Ordinal, StringComparer.OrdinalIgnoreCase)
+            Dim stringComparer As StringComparer = If(caseSensitive, StringComparer.Ordinal, StringComparer.OrdinalIgnoreCase)
             Dim methodsBySignature() As (original As ISymbol, NewName As String) = methodSymbols _
             .ToLookup(Function(m) m.GetUnqualifiedMethodSignature(caseSensitive)) _
             .Where(Function(g) g.Count() > 1) _
             .SelectMany(Function(clashingMethodGroup) As (Original As ISymbol, NewName As String)()
-                            Dim thisMethodGroupNames As HashSet(Of String) = New HashSet(Of String)(_stringComparer)
+                            Dim thisMethodGroupNames As HashSet(Of String) = New HashSet(Of String)(stringComparer)
                             Dim symbolsWithNewNames As (Original As ISymbol, NewNam As String)() = GetSymbolsWithNewNames(clashingMethodGroup,
                                 Function(n) Not names.Contains(n) AndAlso thisMethodGroupNames.Add(n),
                                 Not specialSymbolUsingName).ToArray()
@@ -121,18 +121,17 @@ Namespace CSharpToVBConverter
             Return GetSymbolsWithNewNames(symbolGroup, AddressOf names.Add, canKeepOneNormalMemberName).Concat(methodsWithNewNames)
         End Function
 
-        Friend Async Function PerformRenamesAsync(_project As Project, symbolsWithNewNames As IReadOnlyCollection(Of (Original As ISymbol, NewName As String))) As Task(Of Project)
-            Dim _solution As Solution = _project.Solution
-            Dim v As (Original As ISymbol, NewName As String)
-            For Each v In symbolsWithNewNames
-                _project = _solution.GetProject(_project.Id)
-                Dim Compilation As Compilation = Await _project.GetCompilationAsync().ConfigureAwait(False)
-                Dim currentDeclaration As ISymbol = SymbolFinder.FindSimilarSymbols(v.Original, Compilation).FirstOrDefault()
+        Friend Async Function PerformRenamesAsync(prgt As Project, symbolsWithNewNames As IReadOnlyCollection(Of (Original As ISymbol, NewName As String))) As Task(Of Project)
+            Dim projectSolution As Solution = prgt.Solution
+            For Each sym As (Original As ISymbol, NewName As String) In symbolsWithNewNames
+                prgt = projectSolution.GetProject(prgt.Id)
+                Dim comp As Compilation = Await prgt.GetCompilationAsync().ConfigureAwait(False)
+                Dim currentDeclaration As ISymbol = SymbolFinder.FindSimilarSymbols(sym.Original, comp).FirstOrDefault()
                 If currentDeclaration Is Nothing Then Continue For ' Must have already renamed this symbol for a different reason
-                _solution = Await Renamer.RenameSymbolAsync(_solution, currentDeclaration, v.NewName, _solution.Workspace.Options).ConfigureAwait(False)
+                projectSolution = Await Renamer.RenameSymbolAsync(projectSolution, currentDeclaration, sym.NewName, projectSolution.Workspace.Options).ConfigureAwait(False)
             Next
 
-            Return _solution.GetProject(_project.Id)
+            Return projectSolution.GetProject(prgt.Id)
         End Function
 
     End Module

@@ -451,8 +451,8 @@ Namespace CSharpToVBConverter
                 _indentations = New List(Of SyntaxTrivia)(capacity)
             End If
 
-            For Index As Integer = _indentations.Count To count
-                Dim text As String = If(Index = 0, "", _indentations(Index - 1).ToString() & _indentWhitespace)
+            For index As Integer = _indentations.Count To count
+                Dim text As String = If(index = 0, "", _indentations(index - 1).ToString() & _indentWhitespace)
                 _indentations.Add(If(_useElasticTrivia, SyntaxFactory.ElasticWhitespace(text), SyntaxFactory.Whitespace(text)))
             Next
 
@@ -503,7 +503,7 @@ Namespace CSharpToVBConverter
             If _lineBreaksAfterToken.TryGetValue(currentToken, numLineBreaks) Then
                 Return Math.Max(1, numLineBreaks)
             End If
-            'Structured Trivia may end in  NewLine so don't need to add another
+            'Structured trivia may end in  NewLine so don't need to add another
             If currentToken.ToFullString.IsNewLine Then
                 Return 0
             End If
@@ -520,7 +520,7 @@ Namespace CSharpToVBConverter
         '''
         ''' </summary>
         ''' <param name="CurrentToken">Original Token</param>
-        ''' <param name="triviaList">List of Trivia From Original Token</param>
+        ''' <param name="triviaList">List of trivia From Original Token</param>
         ''' <param name="depth">How many indents are required</param>
         ''' <param name="isTrailing">True if the triviaList leading</param>
         ''' <param name="mustBeIndented">True if indent is required</param>
@@ -548,20 +548,20 @@ Namespace CSharpToVBConverter
                     _afterIndentation = False
                 Next
 
-                Dim MinLeadingSpaces As Integer = 0
+                Dim minLeadingSpaces As Integer = 0
                 For Each e As IndexClass(Of SyntaxTrivia) In triviaList.WithIndex
-                    Dim Trivia As SyntaxTrivia = e.Value
+                    Dim trivia As SyntaxTrivia = e.Value
                     ' just keep non whitespace trivia
-                    If Trivia.IsKind(SyntaxKind.WhitespaceTrivia) Then
+                    If trivia.IsKind(SyntaxKind.WhitespaceTrivia) Then
                         If _usePreserveCRLF AndAlso Not _afterIndentation Then
-                            MinLeadingSpaces = Trivia.ToString.Length
+                            minLeadingSpaces = trivia.ToString.Length
                         End If
                         Continue For
-                    ElseIf Trivia.FullWidth = 0 OrElse
-                             (Trivia.IsKind(SyntaxKind.EndOfLineTrivia) And Not _usePreserveCRLF) Then
+                    ElseIf trivia.FullWidth = 0 OrElse
+                             (trivia.IsKind(SyntaxKind.EndOfLineTrivia) And Not _usePreserveCRLF) Then
                         Continue For
                     End If
-                    If Trivia.IsKind(SyntaxKind.EndOfLineTrivia) Then
+                    If trivia.IsKind(SyntaxKind.EndOfLineTrivia) Then
                         If isTrailing Then
                             If _eolTraiingTriviaCount = 0 Then
                                 currentTriviaList = currentTriviaList.Add(Me.GetEndOfLine())
@@ -583,9 +583,9 @@ Namespace CSharpToVBConverter
                         _afterIndentation = False
                         _afterLineBreak = True
                     End If
-                    If Trivia.IsKind(SyntaxKind.LineContinuationTrivia) Then
+                    If trivia.IsKind(SyntaxKind.LineContinuationTrivia) Then
                         If Not _afterIndentation Then
-                            currentTriviaList = currentTriviaList.Add(SyntaxFactory.WhitespaceTrivia(Space(MinLeadingSpaces)))
+                            currentTriviaList = currentTriviaList.Add(SyntaxFactory.WhitespaceTrivia(Space(minLeadingSpaces)))
                         End If
                         currentTriviaList = currentTriviaList.Add(LineContinuation)
                         If isTrailing Then
@@ -598,17 +598,17 @@ Namespace CSharpToVBConverter
                         Continue For
                     End If
                     ' check if there's a separator or a line break needed between the trivia itself
-                    Dim tokenParent As SyntaxNode = Trivia.Token.Parent
+                    Dim tokenParent As SyntaxNode = trivia.Token.Parent
                     Dim needsSeparator As Boolean =
-                            Not (Trivia.IsKind(SyntaxKind.ColonTrivia) AndAlso tokenParent IsNot Nothing AndAlso tokenParent.IsKind(SyntaxKind.LabelStatement)) AndAlso
+                            Not (trivia.IsKind(SyntaxKind.ColonTrivia) AndAlso tokenParent IsNot Nothing AndAlso tokenParent.IsKind(SyntaxKind.LabelStatement)) AndAlso
                             Not (tokenParent IsNot Nothing AndAlso tokenParent.Parent IsNot Nothing AndAlso tokenParent.Parent.IsKind(SyntaxKind.CrefReference)) AndAlso
                             (
                                 (currentTriviaList.Any AndAlso NeedsSeparatorBetween(currentTriviaList.Last()) AndAlso Not EndsInLineBreak(currentTriviaList.Last())) OrElse
                                 (currentTriviaList.Count = 0 AndAlso isTrailing)
                             )
 
-                    Dim needsLineBreak As Boolean = NeedsLineBreakBefore(Trivia) OrElse
-                            (currentTriviaList.Any AndAlso NeedsLineBreakBetween(currentTriviaList.Last(), Trivia, isTrailing))
+                    Dim needsLineBreak As Boolean = NeedsLineBreakBefore(trivia) OrElse
+                            (currentTriviaList.Any AndAlso NeedsLineBreakBetween(currentTriviaList.Last(), trivia, isTrailing))
 
                     If needsLineBreak AndAlso Not _afterLineBreak Then
                         If _eolTraiingTriviaCount = 0 Then
@@ -620,43 +620,43 @@ Namespace CSharpToVBConverter
                     End If
 
                     If _afterLineBreak And Not isTrailing Then
-                        If Not _afterIndentation AndAlso NeedsIndentAfterLineBreak(Trivia) Then
-                            currentTriviaList = currentTriviaList.Add(Me.GetIndentation(Me.GetIndentationDepth(Trivia), CurrentToken))
+                        If Not _afterIndentation AndAlso NeedsIndentAfterLineBreak(trivia) Then
+                            currentTriviaList = currentTriviaList.Add(Me.GetIndentation(Me.GetIndentationDepth(trivia), CurrentToken))
                             _afterIndentation = True
                         End If
 
                     ElseIf needsSeparator Then
                         currentTriviaList = currentTriviaList.Add(Me.GetSpace())
-                        If MinLeadingSpaces > 0 Then
-                            MinLeadingSpaces -= 1
+                        If minLeadingSpaces > 0 Then
+                            minLeadingSpaces -= 1
                         End If
                         _afterLineBreak = False
                         _afterIndentation = False
                     End If
-                    Dim NeedExtraSpace As Boolean = _isInStructuredTrivia AndAlso
-                                SyntaxFactory.DocumentationCommentExteriorTrivia(SyntaxFacts.GetText(SyntaxKind.DocumentationCommentExteriorTrivia)).ToString = Trivia.ToString
-                    If Trivia.HasStructure Then
-                        Dim structuredTrivia As SyntaxTrivia = Me.VisitStructuredTrivia(Trivia)
+                    Dim needExtraSpace As Boolean = _isInStructuredTrivia AndAlso
+                                SyntaxFactory.DocumentationCommentExteriorTrivia(SyntaxFacts.GetText(SyntaxKind.DocumentationCommentExteriorTrivia)).ToString = trivia.ToString
+                    If trivia.HasStructure Then
+                        Dim structuredTrivia As SyntaxTrivia = Me.VisitStructuredTrivia(trivia)
                         currentTriviaList = currentTriviaList.Add(structuredTrivia)
                     Else
                         ' in structured trivia, the XML doc ''' token contains leading whitespace as text
-                        If Trivia.IsKind(SyntaxKind.DocumentationCommentExteriorTrivia) OrElse NeedExtraSpace Then
-                            Trivia = SyntaxFactory.DocumentationCommentExteriorTrivia(SyntaxFacts.GetText(SyntaxKind.DocumentationCommentExteriorTrivia))
+                        If trivia.IsKind(SyntaxKind.DocumentationCommentExteriorTrivia) OrElse needExtraSpace Then
+                            trivia = SyntaxFactory.DocumentationCommentExteriorTrivia(SyntaxFacts.GetText(SyntaxKind.DocumentationCommentExteriorTrivia))
                         End If
-                        If Trivia.IsKind(SyntaxKind.EndOfLineTrivia) Then
+                        If trivia.IsKind(SyntaxKind.EndOfLineTrivia) Then
                             ' Skip it if was already handled
                         Else
                             If isTrailing Then
-                                currentTriviaList = currentTriviaList.Add(SyntaxFactory.WhitespaceTrivia(Space(MinLeadingSpaces)))
-                                MinLeadingSpaces = 0
+                                currentTriviaList = currentTriviaList.Add(SyntaxFactory.WhitespaceTrivia(Space(minLeadingSpaces)))
+                                minLeadingSpaces = 0
                             End If
-                            currentTriviaList = currentTriviaList.Add(Trivia)
+                            currentTriviaList = currentTriviaList.Add(trivia)
                             ' Allow one return after this trivia
                             _eolTraiingTriviaCount = 0
                         End If
                     End If
 
-                    If NeedsLineBreakAfter(Trivia) Then
+                    If NeedsLineBreakAfter(trivia) Then
                         If Not isTrailing Then
                             currentTriviaList = currentTriviaList.Add(Me.GetEndOfLine())
                             _eolLeadingTriviaCount += 1
@@ -664,7 +664,7 @@ Namespace CSharpToVBConverter
                         _afterLineBreak = True
                         _afterIndentation = False
                     Else
-                        _afterLineBreak = EndsInLineBreak(Trivia)
+                        _afterLineBreak = EndsInLineBreak(trivia)
                     End If
                 Next
 
@@ -768,7 +768,7 @@ Namespace CSharpToVBConverter
             Dim hasInherits As Boolean = node.Inherits.Any
 
             ' add a line break between begin statement and the ones from the statement list
-            If Not hasInherits AndAlso Not hasImplements AndAlso node.Members.Any Then
+            If Not hasInherits AndAlso Not hasImplements AndAlso node.members.Any Then
                 Me.AddLinebreaksAfterTokenIfNeeded(node.BlockStatement.GetLastToken(), 2)
             Else
                 Me.AddLinebreaksAfterTokenIfNeeded(node.BlockStatement.GetLastToken(), 1)
@@ -784,13 +784,13 @@ Namespace CSharpToVBConverter
 
             Select Case node.Kind
                 Case SyntaxKind.InterfaceBlock
-                    Me.AddLinebreaksAfterElementsIfNeeded(node.Members, 1, 2)
+                    Me.AddLinebreaksAfterElementsIfNeeded(node.members, 1, 2)
                 Case SyntaxKind.StructureBlock
-                    Me.AddLinebreaksAfterElementsIfNeeded(node.Members, 1, 2)
+                    Me.AddLinebreaksAfterElementsIfNeeded(node.members, 1, 2)
                 Case SyntaxKind.ModuleBlock
-                    Me.AddLinebreaksAfterElementsIfNeeded(node.Members, 1, 2)
+                    Me.AddLinebreaksAfterElementsIfNeeded(node.members, 1, 2)
                 Case Else
-                    Me.AddLinebreaksAfterElementsIfNeeded(node.Members, 2, 1)
+                    Me.AddLinebreaksAfterElementsIfNeeded(node.members, 2, 1)
             End Select
         End Sub
 
@@ -898,8 +898,8 @@ Namespace CSharpToVBConverter
         ''' </summary>
         Public Overrides Function VisitCompilationUnit(node As CompilationUnitSyntax) As SyntaxNode
             Dim hasImports As Boolean = node.Imports.Any
-            Dim hasMembers As Boolean = node.Members.Any
-            Dim hasAttributes As Boolean = node.Attributes.Any
+            Dim hasMembers As Boolean = node.members.Any
+            Dim hasAttributes As Boolean = node.attributes.Any
 
             If hasImports OrElse hasAttributes OrElse hasMembers Then
                 Me.AddLinebreaksAfterElementsIfNeeded(node.Options, 1, 2)
@@ -914,12 +914,12 @@ Namespace CSharpToVBConverter
             End If
 
             If hasMembers Then
-                Me.AddLinebreaksAfterElementsIfNeeded(node.Attributes, 1, 2)
+                Me.AddLinebreaksAfterElementsIfNeeded(node.attributes, 1, 2)
             Else
-                Me.AddLinebreaksAfterElementsIfNeeded(node.Attributes, 1, 1)
+                Me.AddLinebreaksAfterElementsIfNeeded(node.attributes, 1, 1)
             End If
 
-            Me.AddLinebreaksAfterElementsIfNeeded(node.Members, 2, 1)
+            Me.AddLinebreaksAfterElementsIfNeeded(node.members, 2, 1)
 
             Return MyBase.VisitCompilationUnit(node)
         End Function
@@ -1053,7 +1053,7 @@ Namespace CSharpToVBConverter
         ''' </summary>
         Public Overrides Function VisitEnumBlock(node As EnumBlockSyntax) As SyntaxNode
             Me.AddLinebreaksAfterTokenIfNeeded(node.EnumStatement.GetLastToken(), 1)
-            Me.AddLinebreaksAfterElementsIfNeeded(node.Members, 1, 1)
+            Me.AddLinebreaksAfterElementsIfNeeded(node.members, 1, 1)
 
             Return MyBase.VisitEnumBlock(node)
         End Function
@@ -1152,9 +1152,7 @@ Namespace CSharpToVBConverter
         End Function
 
         Public Overrides Function VisitInheritsStatement(node As InheritsStatementSyntax) As SyntaxNode
-            Dim Result As SyntaxNode = MyBase.VisitInheritsStatement(node)
-
-            Return Result
+            Return MyBase.VisitInheritsStatement(node)
         End Function
 
         Public Overrides Function VisitInterfaceBlock(node As InterfaceBlockSyntax) As SyntaxNode
@@ -1268,16 +1266,16 @@ Namespace CSharpToVBConverter
         ''' Separate each member of a namespace with an empty line.
         ''' </summary>
         Public Overrides Function VisitNamespaceBlock(node As NamespaceBlockSyntax) As SyntaxNode
-            If node.Members.Any Then
+            If node.members.Any Then
                 ' Add an empty line after the namespace begin if there
                 ' is not a namespace declaration as first member
-                If node.Members(0).Kind <> SyntaxKind.NamespaceBlock Then
+                If node.members(0).Kind <> SyntaxKind.NamespaceBlock Then
                     Me.AddLinebreaksAfterTokenIfNeeded(node.NamespaceStatement.GetLastToken(), 2)
                 Else
                     Me.AddLinebreaksAfterTokenIfNeeded(node.NamespaceStatement.GetLastToken(), 1)
                 End If
 
-                Me.AddLinebreaksAfterElementsIfNeeded(node.Members, 2, 1)
+                Me.AddLinebreaksAfterElementsIfNeeded(node.members, 2, 1)
             Else
                 Me.AddLinebreaksAfterTokenIfNeeded(node.NamespaceStatement.GetLastToken(), 1)
             End If
@@ -1442,17 +1440,16 @@ Namespace CSharpToVBConverter
                 End If
                 _eolLeadingTriviaCount = 0
 
-                Dim LeadingTrivia As SyntaxTriviaList = token.LeadingTrivia
-
+                Dim leadingTrivia As SyntaxTriviaList = token.leadingTrivia
                 If _previousToken.IsKind(SyntaxKind.GreaterThanToken) AndAlso token.IsKind(SyntaxKind.LessThanToken) Then
-                    Do While LeadingTrivia.Any AndAlso LeadingTrivia(0).IsKind(SyntaxKind.EndOfLineTrivia)
-                        LeadingTrivia = LeadingTrivia.RemoveAt(0)
+                    Do While leadingTrivia.Any AndAlso leadingTrivia(0).IsKind(SyntaxKind.EndOfLineTrivia)
+                        leadingTrivia = leadingTrivia.RemoveAt(0)
                     Loop
 
                 End If
                 newToken = newToken.WithLeadingTrivia(
                             Me.RewriteTrivia(token,
-                                LeadingTrivia,
+                                leadingTrivia,
                                 indentationDepth,
                                 isTrailing:=False,
                                 mustBeIndented:=needsIndentation,

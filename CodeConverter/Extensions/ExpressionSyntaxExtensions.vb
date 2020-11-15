@@ -27,22 +27,22 @@ Namespace CSharpToVBConverter
 
             If AdjustLeading Then
                 For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
-                    Dim Trivia As SyntaxTrivia = e.Value
-                    Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.Index, LookaheadCount:=1)
+                    Dim trivia As SyntaxTrivia = e.Value
+                    Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.index, LookaheadCount:=1)
 
-                    Select Case Trivia.RawKind
+                    Select Case trivia.RawKind
                         Case VB.SyntaxKind.WhitespaceTrivia
                             Select Case nextTrivia.RawKind
                                 Case VB.SyntaxKind.WhitespaceTrivia
-                                    newLeadingTrivia = newLeadingTrivia.Add(If(Trivia.Span.Length > nextTrivia.Span.Length, Trivia, nextTrivia))
+                                    newLeadingTrivia = newLeadingTrivia.Add(If(trivia.Span.Length > nextTrivia.Span.Length, trivia, nextTrivia))
                                     e.MoveNext()
                                 Case VB.SyntaxKind.LineContinuationTrivia
                                     newLeadingTrivia = newLeadingTrivia.Add(Factory.Space)
                                     newLeadingTrivia = newLeadingTrivia.Add(LineContinuation)
                                     e.MoveNext()
-                                    nextTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.Index, LookaheadCount:=1)
+                                    nextTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.index, LookaheadCount:=1)
                                     If nextTrivia.IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
-                                        newLeadingTrivia = newLeadingTrivia.Add(If(Trivia.Span.Length > nextTrivia.Span.Length, Trivia, nextTrivia))
+                                        newLeadingTrivia = newLeadingTrivia.Add(If(trivia.Span.Length > nextTrivia.Span.Length, trivia, nextTrivia))
                                         e.MoveNext()
                                     End If
                                 Case VB.SyntaxKind.None
@@ -64,27 +64,27 @@ Namespace CSharpToVBConverter
                             If e.IsFirst Then
                                 Continue For
                             End If
-                            newLeadingTrivia = newLeadingTrivia.Add(Trivia)
+                            newLeadingTrivia = newLeadingTrivia.Add(trivia)
                         Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
                             Select Case nextTrivia.RawKind
                                 Case VB.SyntaxKind.WhitespaceTrivia, VB.SyntaxKind.LineContinuationTrivia
-                                    newLeadingTrivia = newLeadingTrivia.Add(Trivia)
+                                    newLeadingTrivia = newLeadingTrivia.Add(trivia)
                                     e.MoveNext()
                                 Case VB.SyntaxKind.None
-                                    newLeadingTrivia = newLeadingTrivia.Add(Trivia)
+                                    newLeadingTrivia = newLeadingTrivia.Add(trivia)
                                     newLeadingTrivia = newLeadingTrivia.Add(VBEOLTrivia)
                                 Case VB.SyntaxKind.EndOfLineTrivia
-                                    newLeadingTrivia = newLeadingTrivia.Add(Trivia)
+                                    newLeadingTrivia = newLeadingTrivia.Add(trivia)
                                 Case VB.SyntaxKind.EndOfLineTrivia
-                                    newLeadingTrivia = newLeadingTrivia.Add(Trivia)
+                                    newLeadingTrivia = newLeadingTrivia.Add(trivia)
                                 Case Else
                                     Stop
                             End Select
                         Case VB.SyntaxKind.LineContinuationTrivia
-                            newLeadingTrivia = newLeadingTrivia.Add(Trivia)
+                            newLeadingTrivia = newLeadingTrivia.Add(trivia)
                         Case Else
-                            If Trivia.IsDirective Then
-                                newLeadingTrivia = newLeadingTrivia.Add(Trivia)
+                            If trivia.IsDirective Then
+                                newLeadingTrivia = newLeadingTrivia.Add(trivia)
                             Else
                                 Stop
                             End If
@@ -94,71 +94,71 @@ Namespace CSharpToVBConverter
             End If
 
             initialTriviaList = Expression.GetTrailingTrivia
-            Dim NewTrailingTrivia As New SyntaxTriviaList
+            Dim newTrailingTrivia As New SyntaxTriviaList
 
             For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
-                Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.Index, LookaheadCount:=1)
+                Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.index, LookaheadCount:=1)
                 Select Case e.Value.RawKind
                     Case VB.SyntaxKind.WhitespaceTrivia
                         Select Case nextTrivia.RawKind
                             Case VB.SyntaxKind.None
-                                NewTrailingTrivia = NewTrailingTrivia.Add(e.Value)
+                                newTrailingTrivia = newTrailingTrivia.Add(e.Value)
                             Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
-                                NewTrailingTrivia = NewTrailingTrivia.Add(Factory.Space)
-                                NewTrailingTrivia = NewTrailingTrivia.Add(LineContinuation)
-                                NewTrailingTrivia = NewTrailingTrivia.Add(e.Value)
+                                newTrailingTrivia = newTrailingTrivia.Add(Factory.Space)
+                                newTrailingTrivia = newTrailingTrivia.Add(LineContinuation)
+                                newTrailingTrivia = newTrailingTrivia.Add(e.Value)
                             Case VB.SyntaxKind.WhitespaceTrivia,
                              VB.SyntaxKind.EndOfLineTrivia
                             Case VB.SyntaxKind.LineContinuationTrivia
-                                NewTrailingTrivia = NewTrailingTrivia.Add(e.Value)
+                                newTrailingTrivia = newTrailingTrivia.Add(e.Value)
                             Case Else
                                 Stop
-                                NewTrailingTrivia = NewTrailingTrivia.Add(e.Value)
+                                newTrailingTrivia = newTrailingTrivia.Add(e.Value)
                         End Select
                     Case VB.SyntaxKind.EndOfLineTrivia
                         Select Case nextTrivia.RawKind
                             Case VB.SyntaxKind.EndOfLineTrivia
                                 ' skip it
                             Case VB.SyntaxKind.None
-                                If Not NewTrailingTrivia.Any Then
-                                    NewTrailingTrivia = NewTrailingTrivia.Add(Factory.Space)
-                                    NewTrailingTrivia = NewTrailingTrivia.Add(LineContinuation)
-                                    NewTrailingTrivia = NewTrailingTrivia.Add(e.Value)
+                                If Not newTrailingTrivia.Any Then
+                                    newTrailingTrivia = newTrailingTrivia.Add(Factory.Space)
+                                    newTrailingTrivia = newTrailingTrivia.Add(LineContinuation)
+                                    newTrailingTrivia = newTrailingTrivia.Add(e.Value)
                                 End If
                             Case VB.SyntaxKind.WhitespaceTrivia
-                                NewTrailingTrivia = NewTrailingTrivia.Add(Factory.Space)
-                                NewTrailingTrivia = NewTrailingTrivia.Add(LineContinuation)
-                                NewTrailingTrivia = NewTrailingTrivia.Add(e.Value)
+                                newTrailingTrivia = newTrailingTrivia.Add(Factory.Space)
+                                newTrailingTrivia = newTrailingTrivia.Add(LineContinuation)
+                                newTrailingTrivia = newTrailingTrivia.Add(e.Value)
                                 e.MoveNext()
                             Case Else
                                 Stop
-                                NewTrailingTrivia = NewTrailingTrivia.Add(e.Value)
+                                newTrailingTrivia = newTrailingTrivia.Add(e.Value)
                         End Select
                     Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
-                        NewTrailingTrivia = NewTrailingTrivia.Add(e.Value)
-                        NewTrailingTrivia = NewTrailingTrivia.Add(VBEOLTrivia)
+                        newTrailingTrivia = newTrailingTrivia.Add(e.Value)
+                        newTrailingTrivia = newTrailingTrivia.Add(VBEOLTrivia)
                         If nextTrivia.IsEndOfLine Then
                             e.MoveNext()
                         End If
                     Case VB.SyntaxKind.LineContinuationTrivia
-                        NewTrailingTrivia = NewTrailingTrivia.Add(e.Value) ' _
+                        newTrailingTrivia = newTrailingTrivia.Add(e.Value) ' _
                         If nextTrivia.IsKind(VB.SyntaxKind.WhitespaceTrivia) OrElse
                         nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
                             e.MoveNext()
-                            NewTrailingTrivia = NewTrailingTrivia.Add(e.Value)
+                            newTrailingTrivia = newTrailingTrivia.Add(e.Value)
                         End If
                     Case Else
                         Stop
                 End Select
             Next
-            Expression = Expression.WithTrailingTrivia(NewTrailingTrivia)
+            Expression = Expression.WithTrailingTrivia(newTrailingTrivia)
             'Debug.WriteLine($"Exp Out         :{Expression.ToFullString}")
             Return Expression
         End Function
 
         <Extension>
-        Friend Function ConvertDirectiveCondition(Condition As CSS.ExpressionSyntax) As String
-            Return Condition.ToString.ConvertCondition
+        Friend Function ConvertDirectiveCondition(condition As CSS.ExpressionSyntax) As String
+            Return condition.ToString.ConvertCondition
         End Function
 
         Friend Function CreateArgList(Of T As VBS.ExpressionSyntax)(ParamArray args() As T) As VBS.ArgumentListSyntax
@@ -167,7 +167,7 @@ Namespace CSharpToVBConverter
 
         <Extension>
         Friend Function CreateVbArgList(Of T As VBS.ExpressionSyntax)(argExpressions As IEnumerable(Of T)) As VBS.ArgumentListSyntax
-            Return Factory.ArgumentList(Factory.SeparatedList(argExpressions.Select(Function(e) CType(Factory.SimpleArgument(e), VBS.ArgumentSyntax))))
+            Return Factory.argumentList(Factory.SeparatedList(argExpressions.Select(Function(e) CType(Factory.SimpleArgument(e), VBS.ArgumentSyntax))))
         End Function
 
         <Extension>
@@ -186,16 +186,16 @@ Namespace CSharpToVBConverter
                     End If
                     Dim symbol As ISymbol = If(typeInfo.Type, symbolInfo.GetAnySymbol())
                     If symbol IsNot Nothing Then
-                        Dim _type As ITypeSymbol = TryCast(symbol, ITypeSymbol)
-                        If _type IsNot Nothing Then
+                        Dim type As ITypeSymbol = TryCast(symbol, ITypeSymbol)
+                        If type IsNot Nothing Then
                             If symbol.Kind = SymbolKind.PointerType Then
-                                Return (_Error:=True, _type)
+                                Return (_Error:=True, type)
                             End If
-                            If _type.ToString.Contains("<anonymous type", StringComparison.Ordinal) OrElse
-                            _type.ToString.StartsWith("(", StringComparison.Ordinal) Then
-                                Return (_Error:=True, _type)
+                            If type.ToString.Contains("<anonymous type", StringComparison.Ordinal) OrElse
+                            type.ToString.StartsWith("(", StringComparison.Ordinal) Then
+                                Return (_Error:=True, type)
                             End If
-                            Return (_Error:=False, _type)
+                            Return (_Error:=False, type)
                         End If
                         Return (_Error:=False, symbol.ConvertISymbolToType(Model.Compilation))
                     End If
@@ -223,16 +223,16 @@ Namespace CSharpToVBConverter
                     End If
                     Dim symbol As ISymbol = If(typeInfo.Type, symbolInfo.GetAnySymbol())
                     If symbol IsNot Nothing Then
-                        Dim _type As ITypeSymbol = TryCast(symbol, ITypeSymbol)
-                        If _type IsNot Nothing Then
+                        Dim type As ITypeSymbol = TryCast(symbol, ITypeSymbol)
+                        If type IsNot Nothing Then
                             If symbol.Kind = SymbolKind.PointerType Then
                                 Return (_Error:=True, IntPtrType)
                             End If
-                            If _type.ToString.Contains("<anonymous type", StringComparison.Ordinal) Then
+                            If type.ToString.Contains("<anonymous type", StringComparison.Ordinal) Then
                                 Return (_Error:=True, PredefinedTypeObject)
                             End If
-                            If _type.ToString.StartsWith("(", StringComparison.Ordinal) Then
-                                Return (_Error:=False, _type.ToString.ConvertCSStringToName)
+                            If type.ToString.StartsWith("(", StringComparison.Ordinal) Then
+                                Return (_Error:=False, type.ToString.ConvertCSStringToName)
                             End If
                         End If
 
@@ -251,43 +251,43 @@ Namespace CSharpToVBConverter
 
         <Extension>
         Friend Function GetExpressionBodyStatements(ArrowExpressionClause As CSS.ArrowExpressionClauseSyntax, visitor As NodesVisitor) As SyntaxList(Of VBS.StatementSyntax)
-            Dim Statement As VBS.StatementSyntax
-            Dim ExpressionBody As VB.VisualBasicSyntaxNode = ArrowExpressionClause.Accept(visitor)
-            If TypeOf ExpressionBody Is VBS.TryBlockSyntax Then
-                Dim TryBlock As VBS.TryBlockSyntax = CType(ExpressionBody, VBS.TryBlockSyntax)
-                Dim StatementList As SyntaxList(Of VBS.StatementSyntax) = ReplaceOneStatementWithMarkedStatements(ArrowExpressionClause, TryBlock.Statements(0))
-                For Each e As IndexClass(Of VBS.StatementSyntax) In TryBlock.Statements.WithIndex
-                    StatementList = StatementList.Add(e.Value)
+            Dim statement As VBS.StatementSyntax
+            Dim expressionBody As VB.VisualBasicSyntaxNode = ArrowExpressionClause.Accept(visitor)
+            If TypeOf expressionBody Is VBS.TryBlockSyntax Then
+                Dim tryBlock As VBS.TryBlockSyntax = CType(expressionBody, VBS.TryBlockSyntax)
+                Dim statementList As SyntaxList(Of VBS.StatementSyntax) = ReplaceOneStatementWithMarkedStatements(ArrowExpressionClause, tryBlock.Statements(0))
+                For Each e As IndexClass(Of VBS.StatementSyntax) In tryBlock.Statements.WithIndex
+                    statementList = statementList.Add(e.Value)
                 Next
-                Return StatementList
-            ElseIf TypeOf ExpressionBody Is VBS.AssignmentStatementSyntax OrElse
-                        TypeOf ExpressionBody Is VBS.AddRemoveHandlerStatementSyntax OrElse
-                        TypeOf ExpressionBody Is VBS.RaiseEventStatementSyntax OrElse
-                        TypeOf ExpressionBody Is VBS.ThrowStatementSyntax Then
-                Statement = DirectCast(ExpressionBody, VBS.StatementSyntax).WithTrailingEOL
+                Return statementList
+            ElseIf TypeOf expressionBody Is VBS.AssignmentStatementSyntax OrElse
+                        TypeOf expressionBody Is VBS.AddRemoveHandlerStatementSyntax OrElse
+                        TypeOf expressionBody Is VBS.RaiseEventStatementSyntax OrElse
+                        TypeOf expressionBody Is VBS.ThrowStatementSyntax Then
+                statement = DirectCast(expressionBody, VBS.StatementSyntax).WithTrailingEOL
             ElseIf ArrowExpressionClause.Parent.IsKind(CS.SyntaxKind.SetAccessorDeclaration) Then
-                Statement = Factory.ExpressionStatement(CType(ExpressionBody, VBS.ExpressionSyntax))
+                statement = Factory.ExpressionStatement(CType(expressionBody, VBS.ExpressionSyntax))
             Else
-                Statement = Factory.ReturnStatement(DirectCast(ExpressionBody.WithLeadingTrivia(Factory.Space), VBS.ExpressionSyntax)) _
-                                        .WithLeadingTrivia(ExpressionBody.GetLeadingTrivia)
+                statement = Factory.ReturnStatement(DirectCast(expressionBody.WithLeadingTrivia(Factory.Space), VBS.ExpressionSyntax)) _
+                                        .WithLeadingTrivia(expressionBody.GetLeadingTrivia)
             End If
-            Return ReplaceOneStatementWithMarkedStatements(ArrowExpressionClause, Statement.WithTrailingEOL)
+            Return ReplaceOneStatementWithMarkedStatements(ArrowExpressionClause, statement.WithTrailingEOL)
         End Function
 
         <Extension>
         Friend Function IsReferenceComparison(Expression1 As CSS.ExpressionSyntax, Expression2 As CSS.ExpressionSyntax, Model As SemanticModel) As Boolean
-            Dim TypeSymbol1 As (IsRefType As Boolean, IsString As Boolean) = IsReferenceTypeOrString(Expression1, Model)
-            Dim TypeSymbol2 As (IsRefType As Boolean, IsString As Boolean) = IsReferenceTypeOrString(Expression2, Model)
-            Return TypeSymbol1.IsRefType AndAlso TypeSymbol2.IsRefType AndAlso Not (TypeSymbol1.IsString AndAlso TypeSymbol2.IsString)
+            Dim typeSymbol1 As (IsRefType As Boolean, IsString As Boolean) = IsReferenceTypeOrString(Expression1, Model)
+            Dim typeSymbol2 As (IsRefType As Boolean, IsString As Boolean) = IsReferenceTypeOrString(Expression2, Model)
+            Return typeSymbol1.IsRefType AndAlso typeSymbol2.IsRefType AndAlso Not (typeSymbol1.IsString AndAlso typeSymbol2.IsString)
         End Function
 
         <Extension>
         Friend Function IsReferenceTypeOrString(Expression1 As CSS.ExpressionSyntax, Model As SemanticModel) As (IsRefType As Boolean, IsString As Boolean)
-            Dim TypeSymbol1 As (_Error As Boolean, _ITypeSymbol As ITypeSymbol) = DetermineType(Expression1, Model)
-            If TypeSymbol1._Error Then
+            Dim typeSymbol1 As (_Error As Boolean, _ITypeSymbol As ITypeSymbol) = DetermineType(Expression1, Model)
+            If typeSymbol1._Error Then
                 Return (False, False)
             End If
-            Return (TypeSymbol1._ITypeSymbol.IsReferenceType, TypeSymbol1._ITypeSymbol.Name = "String")
+            Return (typeSymbol1._ITypeSymbol.IsReferenceType, typeSymbol1._ITypeSymbol.Name = "String")
         End Function
 
         <Extension>
@@ -295,9 +295,9 @@ Namespace CSharpToVBConverter
             If TypeOf node.Parent Is CSS.ExpressionStatementSyntax Then
                 Dim csExpression As CSS.ExpressionStatementSyntax = CType(node.Parent, CSS.ExpressionStatementSyntax)
                 If TypeOf csExpression.Expression Is CSS.AssignmentExpressionSyntax Then
-                    Dim AssignmentExpression As CSS.AssignmentExpressionSyntax = CType(csExpression.Expression, CSS.AssignmentExpressionSyntax)
-                    If TypeOf AssignmentExpression.Left Is CSS.DeclarationExpressionSyntax OrElse
-                     TypeOf AssignmentExpression.Left Is CSS.TupleExpressionSyntax Then
+                    Dim assignmentExpression As CSS.AssignmentExpressionSyntax = CType(csExpression.Expression, CSS.AssignmentExpressionSyntax)
+                    If TypeOf assignmentExpression.Left Is CSS.DeclarationExpressionSyntax OrElse
+                     TypeOf assignmentExpression.Left Is CSS.TupleExpressionSyntax Then
                         Return False
                     End If
                 End If

@@ -299,7 +299,7 @@ Namespace CSharpToVBConverter
                     Return False
                 End If
                 For Each e As IndexClass(Of IParameterSymbol) In csMethod.Parameters.WithIndex
-                    If e.Value.Type.Name <> interfaceMethod.Parameters(e.Index).Type.Name Then
+                    If e.Value.Type.Name <> interfaceMethod.Parameters(e.index).Type.Name Then
                         Return False
                     End If
                 Next

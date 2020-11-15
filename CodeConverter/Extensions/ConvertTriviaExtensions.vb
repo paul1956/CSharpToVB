@@ -29,7 +29,7 @@ Namespace CSharpToVBConverter
         <Extension>
         Friend Function ConvertTrivia(t As SyntaxTrivia) As SyntaxTrivia
 
-#Region "Non-structured Trivia"
+#Region "Non-structured trivia"
 
             Select Case t.RawKind
                 Case CS.SyntaxKind.WhitespaceTrivia
@@ -66,7 +66,7 @@ Namespace CSharpToVBConverter
 
 #End Region
 
-#Region "Start of Structured Trivia"
+#Region "Start of Structured trivia"
 
             Dim StructuredTrivia As CSS.StructuredTriviaSyntax = DirectCast(t.GetStructure, CSS.StructuredTriviaSyntax)
             Debug.Assert(StructuredTrivia IsNot Nothing, $"Found new type of non structured trivia {t.RawKind}")
@@ -74,16 +74,16 @@ Namespace CSharpToVBConverter
             Select Case t.RawKind
                 Case CS.SyntaxKind.DefineDirectiveTrivia
                     Dim DefineDirective As CSS.DefineDirectiveTriviaSyntax = DirectCast(StructuredTrivia, CSS.DefineDirectiveTriviaSyntax)
-                    Dim Name As SyntaxToken = Factory.Identifier(DefineDirective.Name.ValueText)
+                    Dim Name As SyntaxToken = Factory.identifier(DefineDirective.Name.ValueText)
                     Dim value As VBS.ExpressionSyntax = Factory.TrueLiteralExpression(TrueKeyword)
-                    Return Factory.Trivia(Factory.ConstDirectiveTrivia(Name, value).WithConvertedTriviaFrom(DefineDirective).
+                    Return Factory.trivia(Factory.ConstDirectiveTrivia(Name, value).WithConvertedTriviaFrom(DefineDirective).
                                                 WithAppendedTriviaFromEndOfDirectiveToken(DefineDirective.EndOfDirectiveToken)
                                        )
                 Case CS.SyntaxKind.UndefDirectiveTrivia
                     Dim UndefineDirective As CSS.UndefDirectiveTriviaSyntax = DirectCast(StructuredTrivia, CSS.UndefDirectiveTriviaSyntax)
-                    Dim Name As SyntaxToken = Factory.Identifier(UndefineDirective.Name.ValueText)
+                    Dim Name As SyntaxToken = Factory.identifier(UndefineDirective.Name.ValueText)
                     Dim value As VBS.ExpressionSyntax = NothingExpression
-                    Return Factory.Trivia(Factory.ConstDirectiveTrivia(Name, value).WithConvertedTriviaFrom(UndefineDirective).
+                    Return Factory.trivia(Factory.ConstDirectiveTrivia(Name, value).WithConvertedTriviaFrom(UndefineDirective).
                                                 WithAppendedTriviaFromEndOfDirectiveToken(UndefineDirective.EndOfDirectiveToken)
                                         )
 
@@ -93,30 +93,30 @@ Namespace CSharpToVBConverter
                         Return Factory.CommentTrivia($"' TODO VB does not allow directives here, original statement {t.ToFullString.WithoutNewLines(" "c)}")
                     End If
                     Dim EndIfDirective As CSS.EndIfDirectiveTriviaSyntax = DirectCast(StructuredTrivia, CSS.EndIfDirectiveTriviaSyntax)
-                    Return Factory.Trivia(Factory.EndIfDirectiveTrivia.WithConvertedTrailingTriviaFrom(EndIfDirective.EndIfKeyword).
+                    Return Factory.trivia(Factory.EndIfDirectiveTrivia.WithConvertedTrailingTriviaFrom(EndIfDirective.EndIfKeyword).
                                                                 WithAppendedTriviaFromEndOfDirectiveToken(EndIfDirective.EndOfDirectiveToken)
                                         )
 
                 Case CS.SyntaxKind.ErrorDirectiveTrivia
                     Dim ErrorDirective As CSS.ErrorDirectiveTriviaSyntax = DirectCast(StructuredTrivia, CSS.ErrorDirectiveTriviaSyntax)
-                    Return Factory.CommentTrivia($"' TODO: Check VB does not support Error Directive Trivia, Original Directive {ErrorDirective.ToFullString.WithoutNewLines(" "c)}")
+                    Return Factory.CommentTrivia($"' TODO: Check VB does not support Error Directive trivia, Original Directive {ErrorDirective.ToFullString.WithoutNewLines(" "c)}")
                 Case CS.SyntaxKind.IfDirectiveTrivia
                     If t.Token.Parent?.AncestorsAndSelf.OfType(Of CSS.InitializerExpressionSyntax).Any Then
                         IgnoredIfDepth += 1
                     End If
                     Dim IfDirective As CSS.IfDirectiveTriviaSyntax = DirectCast(StructuredTrivia, CSS.IfDirectiveTriviaSyntax)
-                    Dim Expression1 As String = IfDirective.Condition.ConvertDirectiveCondition
+                    Dim Expression1 As String = IfDirective.condition.ConvertDirectiveCondition
 
-                    Return Factory.Trivia(Factory.IfDirectiveTrivia(IfKeyword, Factory.ParseExpression(Expression1)).
+                    Return Factory.trivia(Factory.IfDirectiveTrivia(IfKeyword, Factory.ParseExpression(Expression1)).
                                                                 With(IfDirective.GetLeadingTrivia.ConvertTriviaList(),
-                                                                     IfDirective.Condition.GetTrailingTrivia.ConvertTriviaList()).
+                                                                     IfDirective.condition.GetTrailingTrivia.ConvertTriviaList()).
                                                                      WithAppendedTriviaFromEndOfDirectiveToken(IfDirective.EndOfDirectiveToken))
                 Case CS.SyntaxKind.ElifDirectiveTrivia
                     If t.Token.Parent.AncestorsAndSelf.OfType(Of CSS.InitializerExpressionSyntax).Any Then
                         IgnoredIfDepth += 1
                     End If
                     Dim ELIfDirective As CSS.ElifDirectiveTriviaSyntax = DirectCast(StructuredTrivia, CSS.ElifDirectiveTriviaSyntax)
-                    Dim Expression1 As String = ELIfDirective.Condition.ConvertDirectiveCondition
+                    Dim Expression1 As String = ELIfDirective.condition.ConvertDirectiveCondition
 
                     Dim IfOrElseIfKeyword As SyntaxToken
                     If t.IsKind(CS.SyntaxKind.ElifDirectiveTrivia) Then
@@ -124,33 +124,33 @@ Namespace CSharpToVBConverter
                     Else
                         IfOrElseIfKeyword = IfKeyword
                     End If
-                    Return Factory.Trivia(Factory.ElseIfDirectiveTrivia(IfOrElseIfKeyword,
+                    Return Factory.trivia(Factory.ElseIfDirectiveTrivia(IfOrElseIfKeyword,
                                                                     Factory.ParseExpression(Expression1)
                                                                    ).With(ELIfDirective.GetLeadingTrivia.ConvertTriviaList(),
-                                                                     ELIfDirective.Condition.GetTrailingTrivia.ConvertTriviaList()).
+                                                                     ELIfDirective.condition.GetTrailingTrivia.ConvertTriviaList()).
                                                                      WithAppendedTriviaFromEndOfDirectiveToken(ELIfDirective.EndOfDirectiveToken))
                 Case CS.SyntaxKind.LineDirectiveTrivia
-                    Return Factory.CommentTrivia($"' TODO: Check VB does not support Line Directive Trivia, Original Directive {t}")
+                    Return Factory.CommentTrivia($"' TODO: Check VB does not support Line Directive trivia, Original Directive {t}")
                 Case CS.SyntaxKind.ElseDirectiveTrivia
-                    Return Factory.Trivia(Factory.ElseDirectiveTrivia.
+                    Return Factory.trivia(Factory.ElseDirectiveTrivia.
                                                         NormalizeWhitespace.
                                                         WithConvertedTrailingTriviaFrom(DirectCast(StructuredTrivia, CSS.ElseDirectiveTriviaSyntax).ElseKeyword).WithTrailingEOL)
                 Case CS.SyntaxKind.EndRegionDirectiveTrivia
                     Dim EndRegionDirective As CSS.EndRegionDirectiveTriviaSyntax = DirectCast(StructuredTrivia, CSS.EndRegionDirectiveTriviaSyntax)
-                    Return Factory.Trivia(Factory.EndRegionDirectiveTrivia(HashToken, EndKeyword, RegionKeyword).
+                    Return Factory.trivia(Factory.EndRegionDirectiveTrivia(HashToken, EndKeyword, RegionKeyword).
                                         WithAppendedTriviaFromEndOfDirectiveToken(EndRegionDirective.EndOfDirectiveToken))
                 Case CS.SyntaxKind.PragmaWarningDirectiveTrivia
                     Return Nothing
                 Case CS.SyntaxKind.RegionDirectiveTrivia
                     Dim RegionDirective As CSS.RegionDirectiveTriviaSyntax = CType(StructuredTrivia, CSS.RegionDirectiveTriviaSyntax)
                     Dim EndOfDirectiveToken As SyntaxToken = RegionDirective.EndOfDirectiveToken
-                    Dim NameString As String = $"""{EndOfDirectiveToken.LeadingTrivia.ToString.RemoveAll("""")}"""
+                    Dim NameString As String = $"""{EndOfDirectiveToken.leadingTrivia.ToString.RemoveAll("""")}"""
                     Dim RegionDirectiveTriviaNode As VBS.RegionDirectiveTriviaSyntax =
                         Factory.RegionDirectiveTrivia(HashToken,
                                                       RegionKeyword,
                                                       Factory.StringLiteralToken(NameString, NameString)
                                                      ).WithConvertedTrailingTriviaFrom(EndOfDirectiveToken)
-                    Return Factory.Trivia(RegionDirectiveTriviaNode.WithTrailingEOL)
+                    Return Factory.trivia(RegionDirectiveTriviaNode.WithTrailingEOL)
                 Case CS.SyntaxKind.SingleLineDocumentationCommentTrivia
                     Dim SingleLineDocumentationComment As CSS.DocumentationCommentTriviaSyntax = CType(StructuredTrivia, CSS.DocumentationCommentTriviaSyntax)
                     Dim walker As New XMLVisitor()
@@ -161,7 +161,7 @@ Namespace CSharpToVBConverter
                         Dim node As CSS.XmlNodeSyntax = e.Value
                         If (Not node.IsKind(CS.SyntaxKind.XmlText)) AndAlso node.GetLeadingTrivia.Any AndAlso node.GetLeadingTrivia.First.IsKind(CS.SyntaxKind.DocumentationCommentExteriorTrivia) Then
                             If Not e.IsLast Then
-                                Dim NextNode As CSS.XmlNodeSyntax = SingleLineDocumentationComment.Content(e.Index + 1)
+                                Dim NextNode As CSS.XmlNodeSyntax = SingleLineDocumentationComment.Content(e.index + 1)
                                 If (Not NextNode.IsKind(CS.SyntaxKind.XmlText)) OrElse
                                 NextNode.GetLeadingTrivia.Count = 0 OrElse
                                 Not NextNode.GetLeadingTrivia.First.IsKind(CS.SyntaxKind.DocumentationCommentExteriorTrivia) Then
@@ -171,8 +171,8 @@ Namespace CSharpToVBConverter
                             node = node.WithoutLeadingTrivia
                         End If
                         Try
-                            Dim Item As VBS.XmlNodeSyntax = DirectCast(node.Accept(walker), VBS.XmlNodeSyntax)
-                            xmlNodes.Add(Item)
+                            Dim item As VBS.XmlNodeSyntax = DirectCast(node.Accept(walker), VBS.XmlNodeSyntax)
+                            xmlNodes.Add(item)
                         Catch ex As OperationCanceledException
                             Throw
                         Catch ex As Exception
@@ -184,17 +184,17 @@ Namespace CSharpToVBConverter
                     If (Not DocumentationCommentTrivia.HasLeadingTrivia) OrElse (Not DocumentationCommentTrivia.GetLeadingTrivia(0).IsKind(VB.SyntaxKind.DocumentationCommentExteriorTrivia)) Then
                         DocumentationCommentTrivia = DocumentationCommentTrivia.WithLeadingTrivia(Factory.DocumentationCommentExteriorTrivia("''' "))
                     End If
-                    Dim _DocumentationComment As SyntaxTrivia = Factory.Trivia(DocumentationCommentTrivia.WithTrailingTrivia(Factory.EndOfLine("")))
+                    Dim _DocumentationComment As SyntaxTrivia = Factory.trivia(DocumentationCommentTrivia.WithTrailingTrivia(Factory.EndOfLine("")))
                     Return _DocumentationComment
                 Case CS.SyntaxKind.PragmaChecksumDirectiveTrivia
                     Dim PragmaChecksumDirective As CSS.PragmaChecksumDirectiveTriviaSyntax = DirectCast(StructuredTrivia, CSS.PragmaChecksumDirectiveTriviaSyntax)
                     Dim Guid1 As SyntaxToken = Factory.ParseToken(PragmaChecksumDirective.Guid.Text.ToUpperInvariant)
                     Dim Bytes As SyntaxToken = Factory.ParseToken(PragmaChecksumDirective.Bytes.Text)
                     Dim ExternalSource As SyntaxToken = Factory.ParseToken(PragmaChecksumDirective.File.Text)
-                    Return Factory.Trivia(
+                    Return Factory.trivia(
                             Factory.ExternalChecksumDirectiveTrivia(HashToken,
                                                                     ExternalChecksumKeyword,
-                                                                    OpenParenToken,
+                                                                    openParenToken,
                                                                     ExternalSource,
                                                                     CommaToken,
                                                                     Guid1,

@@ -122,7 +122,7 @@ Partial Class OptionsDialog
         Me.Label2.Name = "Label2"
         Me.Label2.Size = New System.Drawing.Size(104, 15)
         Me.Label2.TabIndex = 4
-        Me.Label2.Text = "Display Item Color"
+        Me.Label2.Text = "Display item Color"
         '
         'UpdateColor_Button
         '
@@ -171,7 +171,7 @@ Partial Class OptionsDialog
         '
         Me.ComboBoxCompare.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.ComboBoxCompare.FormattingEnabled = True
-        Me.ComboBoxCompare.Items.AddRange(New Object() {"Binary", "Text"})
+        Me.ComboBoxCompare.items.AddRange(New Object() {"Binary", "Text"})
         Me.ComboBoxCompare.Location = New System.Drawing.Point(98, 178)
         Me.ComboBoxCompare.Name = "ComboBoxCompare"
         Me.ComboBoxCompare.Size = New System.Drawing.Size(121, 23)
@@ -181,7 +181,7 @@ Partial Class OptionsDialog
         '
         Me.ComboBoxExplicit.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.ComboBoxExplicit.FormattingEnabled = True
-        Me.ComboBoxExplicit.Items.AddRange(New Object() {"Off", "On"})
+        Me.ComboBoxExplicit.items.AddRange(New Object() {"Off", "On"})
         Me.ComboBoxExplicit.Location = New System.Drawing.Point(98, 214)
         Me.ComboBoxExplicit.Name = "ComboBoxExplicit"
         Me.ComboBoxExplicit.Size = New System.Drawing.Size(121, 23)
@@ -203,7 +203,7 @@ Partial Class OptionsDialog
         '
         Me.ComboBoxStrict.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.ComboBoxStrict.FormattingEnabled = True
-        Me.ComboBoxStrict.Items.AddRange(New Object() {"Off", "On"})
+        Me.ComboBoxStrict.items.AddRange(New Object() {"Off", "On"})
         Me.ComboBoxStrict.Location = New System.Drawing.Point(352, 214)
         Me.ComboBoxStrict.Name = "ComboBoxStrict"
         Me.ComboBoxStrict.Size = New System.Drawing.Size(121, 23)
@@ -225,7 +225,7 @@ Partial Class OptionsDialog
         '
         Me.ComboBoxInfer.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.ComboBoxInfer.FormattingEnabled = True
-        Me.ComboBoxInfer.Items.AddRange(New Object() {"Off", "On"})
+        Me.ComboBoxInfer.items.AddRange(New Object() {"Off", "On"})
         Me.ComboBoxInfer.Location = New System.Drawing.Point(352, 178)
         Me.ComboBoxInfer.Name = "ComboBoxInfer"
         Me.ComboBoxInfer.Size = New System.Drawing.Size(121, 23)

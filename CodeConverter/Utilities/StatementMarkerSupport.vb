@@ -17,7 +17,7 @@ Namespace CSharpToVBConverter
 
     Public Module StatementMarker
         Private ReadOnly s_statementDictionary As New Dictionary(Of CS.CSharpSyntaxNode, Integer)
-        Private ReadOnly s_statementSupportTupleList As New List(Of (Index As Integer, Statement As VB.VisualBasicSyntaxNode, RemoveStatement As StatementHandlingOption))
+        Private ReadOnly s_statementSupportTupleList As New List(Of (index As Integer, statement As VB.VisualBasicSyntaxNode, RemoveStatement As StatementHandlingOption))
         Private s_nextIndex As Integer
 
         Public Enum StatementHandlingOption
@@ -38,49 +38,49 @@ Namespace CSharpToVBConverter
         End Function
 
         Private Function ConvertDirectiveTrivia(OriginalText As String) As SyntaxTriviaList
-            Dim Text As String = OriginalText.Trim(" "c)
-            Debug.Assert(Text.StartsWith("#", StringComparison.Ordinal), "All directives must start with #")
-            Dim ResultTrivia As New SyntaxTriviaList
-            If Text.StartsWith("#if", StringComparison.Ordinal) OrElse Text.StartsWith("#elif", StringComparison.Ordinal) Then
-                Dim Expression1 As String = Text.
+            Dim text As String = OriginalText.Trim(" "c)
+            Debug.Assert(text.StartsWith("#", StringComparison.Ordinal), "All directives must start with #")
+            Dim resultTrivia As New SyntaxTriviaList
+            If text.StartsWith("#if", StringComparison.Ordinal) OrElse text.StartsWith("#elif", StringComparison.Ordinal) Then
+                Dim expr1 As String = text.
                     RemoveAll("#if ", "#elif ").
                     ConvertCondition
 
-                Dim Kind As VB.SyntaxKind = If(Text.StartsWith("#if", StringComparison.Ordinal), VB.SyntaxKind.IfDirectiveTrivia, VB.SyntaxKind.ElseIfDirectiveTrivia)
-                Dim IfOrElseIfKeyword As SyntaxToken = If(Text.StartsWith("#if", StringComparison.Ordinal), IfKeyword, ElseIfKeyword)
-                Dim Expr As ExpressionSyntax = Factory.ParseExpression(Expression1)
-                Dim IfDirectiveTrivia As IfDirectiveTriviaSyntax = Factory.IfDirectiveTrivia(IfOrElseIfKeyword, Expr)
-                ResultTrivia = ResultTrivia.Add(Factory.Trivia(IfDirectiveTrivia))
-                Return ResultTrivia
+                Dim kind As VB.SyntaxKind = If(text.StartsWith("#if", StringComparison.Ordinal), VB.SyntaxKind.IfDirectiveTrivia, VB.SyntaxKind.ElseIfDirectiveTrivia)
+                Dim ifOrElseIfKeyword As SyntaxToken = If(text.StartsWith("#if", StringComparison.Ordinal), IfKeyword, ElseIfKeyword)
+                Dim expr As ExpressionSyntax = Factory.ParseExpression(expr1)
+                Dim ifDirectiveTrivia As IfDirectiveTriviaSyntax = Factory.IfDirectiveTrivia(ifOrElseIfKeyword, expr)
+                resultTrivia = resultTrivia.Add(Factory.Trivia(ifDirectiveTrivia))
+                Return resultTrivia
             End If
-            If Text.StartsWith("#region", StringComparison.Ordinal) OrElse Text.StartsWith("# region", StringComparison.Ordinal) Then
-                ResultTrivia = ResultTrivia.AddRange(CS.SyntaxFactory.ParseLeadingTrivia(Text).ConvertTriviaList())
-                Return ResultTrivia
+            If text.StartsWith("#region", StringComparison.Ordinal) OrElse text.StartsWith("# region", StringComparison.Ordinal) Then
+                resultTrivia = resultTrivia.AddRange(CS.SyntaxFactory.ParseLeadingTrivia(text).ConvertTriviaList())
+                Return resultTrivia
             End If
-            If Text.StartsWith("#endregion", StringComparison.Ordinal) Then
-                ResultTrivia = ResultTrivia.Add(Factory.Trivia(Factory.EndRegionDirectiveTrivia()))
-                Text = Text.RemoveAll("#endregion")
-                If Text.Any Then
+            If text.StartsWith("#endregion", StringComparison.Ordinal) Then
+                resultTrivia = resultTrivia.Add(Factory.Trivia(Factory.EndRegionDirectiveTrivia()))
+                text = text.RemoveAll("#endregion")
+                If text.Any Then
                     Stop
                 End If
-                Return ResultTrivia
+                Return resultTrivia
             End If
-            If Text.StartsWith("#else", StringComparison.Ordinal) Then
-                Dim ElseKeywordWithTrailingTrivia As SyntaxToken = ElseKeyword.WithTrailingTrivia(CS.SyntaxFactory.ParseTrailingTrivia(Text.RemoveAll("#else")).ConvertTriviaList())
-                ResultTrivia = ResultTrivia.Add(Factory.Trivia(Factory.ElseDirectiveTrivia(HashToken, ElseKeywordWithTrailingTrivia)))
-                Return ResultTrivia
+            If text.StartsWith("#else", StringComparison.Ordinal) Then
+                Dim elseKeywordWithTrailingTrivia As SyntaxToken = ElseKeyword.WithTrailingTrivia(CS.SyntaxFactory.ParseTrailingTrivia(text.RemoveAll("#else")).ConvertTriviaList())
+                resultTrivia = resultTrivia.Add(Factory.Trivia(Factory.ElseDirectiveTrivia(HashToken, elseKeywordWithTrailingTrivia)))
+                Return resultTrivia
             End If
-            If Text.StartsWith("#endif", StringComparison.Ordinal) Then
-                Text = Text.RemoveAll("#endif")
-                Dim IfKeywordWithTrailingTrivia As SyntaxToken = IfKeyword.WithTrailingTrivia(CS.SyntaxFactory.ParseTrailingTrivia(Text.RemoveAll("#endif")).ConvertTriviaList())
-                ResultTrivia = ResultTrivia.Add(Factory.Trivia(Factory.EndIfDirectiveTrivia(HashToken, EndKeyword, IfKeywordWithTrailingTrivia)))
-                Return ResultTrivia
+            If text.StartsWith("#endif", StringComparison.Ordinal) Then
+                text = text.RemoveAll("#endif")
+                Dim ifKeywordWithTrailingTrivia As SyntaxToken = IfKeyword.WithTrailingTrivia(CS.SyntaxFactory.ParseTrailingTrivia(text.RemoveAll("#endif")).ConvertTriviaList())
+                resultTrivia = resultTrivia.Add(Factory.Trivia(Factory.EndIfDirectiveTrivia(HashToken, EndKeyword, ifKeywordWithTrailingTrivia)))
+                Return resultTrivia
             End If
-            If Text.StartsWith("#pragma warning", StringComparison.Ordinal) Then
-                ResultTrivia = ResultTrivia.AddRange(CS.SyntaxFactory.ParseLeadingTrivia(Text).ConvertTriviaList())
-                Return ResultTrivia
+            If text.StartsWith("#pragma warning", StringComparison.Ordinal) Then
+                resultTrivia = resultTrivia.AddRange(CS.SyntaxFactory.ParseLeadingTrivia(text).ConvertTriviaList())
+                Return resultTrivia
             Else
-                Throw New NotImplementedException($"Directive ""{Text}"" Is unknown")
+                Throw New NotImplementedException($"Directive ""{text}"" Is unknown")
             End If
         End Function
 
@@ -91,20 +91,20 @@ Namespace CSharpToVBConverter
         ''' <returns></returns>
         ''' <remarks>Added by PC</remarks>
         Private Function ConvertSourceTextToTriviaList(FullString As String, Optional LeadingComment As String = "") As SyntaxTriviaList
-            Dim NewTrivia As New List(Of SyntaxTrivia)
+            Dim newTrivia As New List(Of SyntaxTrivia)
             If Not String.IsNullOrWhiteSpace(LeadingComment) Then
-                Dim LeadingCommentLines() As String = LeadingComment.SplitLines
-                For Each Line As String In LeadingCommentLines
-                    NewTrivia.Add(Factory.CommentTrivia($"' {Line.Trim}"))
-                    NewTrivia.Add(VBEOLTrivia)
+                Dim leadingCommentLines() As String = LeadingComment.SplitLines
+                For Each line As String In leadingCommentLines
+                    newTrivia.Add(Factory.CommentTrivia($"' {line.Trim}"))
+                    newTrivia.Add(VBEOLTrivia)
                 Next
             End If
             Dim strBuilder As New StringBuilder
             For Each chr As String In FullString
                 If chr.IsNewLine Then
                     If strBuilder.Length > 0 Then
-                        NewTrivia.Add(Factory.CommentTrivia($"' {strBuilder.ToString.Trim}"))
-                        NewTrivia.Add(VBEOLTrivia)
+                        newTrivia.Add(Factory.CommentTrivia($"' {strBuilder.ToString.Trim}"))
+                        newTrivia.Add(VBEOLTrivia)
                         strBuilder.Clear()
                     End If
                 ElseIf chr = vbTab Then
@@ -114,41 +114,41 @@ Namespace CSharpToVBConverter
                 End If
             Next
             If strBuilder.Length > 0 Then
-                NewTrivia.Add(Factory.CommentTrivia($"' {strBuilder}"))
-                NewTrivia.Add(VBEOLTrivia)
+                newTrivia.Add(Factory.CommentTrivia($"' {strBuilder}"))
+                newTrivia.Add(VBEOLTrivia)
             End If
 
-            Return NewTrivia.ToSyntaxTriviaList
+            Return newTrivia.ToSyntaxTriviaList
         End Function
 
         Friend Function AddFinalTriviaToField(node As CSS.FieldDeclarationSyntax) As List(Of StatementSyntax)
-            Dim StatementList As New List(Of StatementSyntax)
+            Dim statementList As New List(Of StatementSyntax)
             If Not s_statementDictionary.ContainsKey(node) Then
-                Return StatementList
+                Return statementList
             End If
-            Dim Index As Integer = s_statementDictionary(node)
-            For Each StatementTuple As (Index As Integer, Statement As StatementSyntax, StatementHandling As StatementHandlingOption) In s_statementSupportTupleList
-                If StatementTuple.Index = Index AndAlso StatementTuple.StatementHandling = StatementHandlingOption.AppendEmptyStatement Then
-                    StatementList.Add(StatementTuple.Statement)
+            Dim index As Integer = s_statementDictionary(node)
+            For Each stmtTuple As (index As Integer, statement As StatementSyntax, StatementHandling As StatementHandlingOption) In s_statementSupportTupleList
+                If stmtTuple.index = index AndAlso stmtTuple.StatementHandling = StatementHandlingOption.AppendEmptyStatement Then
+                    statementList.Add(stmtTuple.statement)
                     s_statementDictionary.Remove(node)
                 End If
             Next
             If StatementDictionaryEmpty() Then
                 s_statementSupportTupleList.Clear()
             End If
-            Return StatementList
+            Return statementList
         End Function
 
         ''' <summary>
         ''' Add a marker so we can add a statement higher up in the result tree
         ''' </summary>
         ''' <param name="Node">The C# statement above which we can add the statements we need</param>
-        ''' <param name="Statement">The Statement we want to add above the Node</param>
-        ''' <param name="StatementHandling">If True we will replace the Node Statement with the new statement(s)
+        ''' <param name="statement">The statement we want to add above the Node</param>
+        ''' <param name="StatementHandling">If True we will replace the Node statement with the new statement(s)
         ''' otherwise we just add the statement BEFORE the node</param>
         ''' <param name="AllowDuplicates">True if we can put do multiple replacements</param>
         <Extension>
-        Friend Sub AddMarker(Node As CS.CSharpSyntaxNode, Statement As VB.VisualBasicSyntaxNode, StatementHandling As StatementHandlingOption, AllowDuplicates As Boolean)
+        Friend Sub AddMarker(Node As CS.CSharpSyntaxNode, statement As VB.VisualBasicSyntaxNode, StatementHandling As StatementHandlingOption, AllowDuplicates As Boolean)
             If s_statementDictionary.ContainsKey(Node) Then
                 If Not AllowDuplicates Then
                     Exit Sub
@@ -158,31 +158,31 @@ Namespace CSharpToVBConverter
                 s_statementDictionary.Add(Node, s_nextIndex)
                 s_nextIndex += 1
             End If
-            Dim Index As Integer = s_statementDictionary(Node)
-            Dim IdenticalTrivia As Boolean = False
-            For Each t As (Index As Integer, Statement As VB.VisualBasicSyntaxNode, StatementHandlingOption As StatementHandlingOption) In s_statementSupportTupleList
-                If t.Index = Index AndAlso TypeOf Statement IsNot EmptyStatementSyntax AndAlso CompareWithoutTrivia(Statement, t.Statement) AndAlso t.StatementHandlingOption = StatementHandling Then
+            Dim index As Integer = s_statementDictionary(Node)
+            Dim identicalTrivia As Boolean = False
+            For Each t As (index As Integer, statement As VB.VisualBasicSyntaxNode, StatementHandlingOption As StatementHandlingOption) In s_statementSupportTupleList
+                If t.index = index AndAlso TypeOf statement IsNot EmptyStatementSyntax AndAlso CompareWithoutTrivia(statement, t.statement) AndAlso t.StatementHandlingOption = StatementHandling Then
                     Exit Sub
                 End If
-                If t.Index = Index AndAlso EndsWithSimilarTrivia(Statement.GetLeadingTrivia, t.Statement.GetLeadingTrivia) Then
-                    IdenticalTrivia = True
+                If t.index = index AndAlso EndsWithSimilarTrivia(statement.GetLeadingTrivia, t.statement.GetLeadingTrivia) Then
+                    identicalTrivia = True
                 End If
             Next
-            If IdenticalTrivia Then
-                Statement = Statement.WithoutLeadingTrivia()
+            If identicalTrivia Then
+                statement = statement.WithoutLeadingTrivia()
             End If
-            s_statementSupportTupleList.Add((Index, Statement, StatementHandling))
+            s_statementSupportTupleList.Add((index, statement, StatementHandling))
         End Sub
 
         Friend Function AddSpecialCommentToField(node As CSS.FieldDeclarationSyntax, FieldDeclaration As FieldDeclarationSyntax) As FieldDeclarationSyntax
             If Not s_statementDictionary.ContainsKey(node) Then
                 Return FieldDeclaration
             End If
-            Dim Index As Integer = s_statementDictionary(node)
+            Dim index As Integer = s_statementDictionary(node)
             Dim newLeadingTrivia As New List(Of SyntaxTrivia)
-            For Each StatementTuple As (Index As Integer, Statement As StatementSyntax, StatementHandling As StatementHandlingOption) In s_statementSupportTupleList
-                If StatementTuple.Index = Index AndAlso StatementTuple.StatementHandling <> StatementHandlingOption.AppendEmptyStatement Then
-                    newLeadingTrivia.AddRange(StatementTuple.Statement.GetLeadingTrivia)
+            For Each stmtTuple As (index As Integer, statement As StatementSyntax, StatementHandling As StatementHandlingOption) In s_statementSupportTupleList
+                If stmtTuple.index = index AndAlso stmtTuple.StatementHandling <> StatementHandlingOption.AppendEmptyStatement Then
+                    newLeadingTrivia.AddRange(stmtTuple.statement.GetLeadingTrivia)
                     s_statementDictionary.Remove(node)
                 End If
             Next
@@ -199,7 +199,7 @@ Namespace CSharpToVBConverter
                 Factory.CommentTrivia($"' TODO TASK: {MessageFragment}:")}
 
             If NodeWithIssue IsNot Nothing Then
-                newLeadingTrivia.Add(Factory.CommentTrivia($"' Original Statement:"))
+                newLeadingTrivia.Add(Factory.CommentTrivia($"' Original statement:"))
                 newLeadingTrivia.Add(VBEOLTrivia)
                 newLeadingTrivia.AddRange(ConvertSourceTextToTriviaList(NodeWithIssue.ToFullString))
             End If
@@ -238,7 +238,7 @@ Namespace CSharpToVBConverter
                 If leadingSpace.IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
                     newLeadingTrivia.Add(leadingSpace)
                 End If
-                newLeadingTrivia.Add(Factory.CommentTrivia($"' Original Statement:"))
+                newLeadingTrivia.Add(Factory.CommentTrivia($"' Original statement:"))
                 newLeadingTrivia.Add(VBEOLTrivia)
                 ' Match #
                 For Each e As IndexClass(Of String) In node.ToString.SplitLines().WithIndex
@@ -266,73 +266,73 @@ Namespace CSharpToVBConverter
         End Function
 
         Friend Function GetStatementwithIssues(node As CS.CSharpSyntaxNode, Optional ReportErrors As Boolean = True) As CS.CSharpSyntaxNode
-            Dim StatementWithIssues As CS.CSharpSyntaxNode = node
+            Dim stmtWithIssues As CS.CSharpSyntaxNode = node
 
-            While StatementWithIssues IsNot Nothing
-                If TypeOf StatementWithIssues Is CSS.FieldDeclarationSyntax Then
-                    Return StatementWithIssues
+            While stmtWithIssues IsNot Nothing
+                If TypeOf stmtWithIssues Is CSS.FieldDeclarationSyntax Then
+                    Return stmtWithIssues
                 End If
 
-                If TypeOf StatementWithIssues Is CSS.ExpressionStatementSyntax Then
-                    Return StatementWithIssues
+                If TypeOf stmtWithIssues Is CSS.ExpressionStatementSyntax Then
+                    Return stmtWithIssues
                 End If
 
-                If TypeOf StatementWithIssues Is CSS.ArrowExpressionClauseSyntax Then
-                    Return StatementWithIssues
+                If TypeOf stmtWithIssues Is CSS.ArrowExpressionClauseSyntax Then
+                    Return stmtWithIssues
                 End If
 
-                If TypeOf StatementWithIssues Is CSS.StatementSyntax Then
-                    Dim StatementWithIssueParent As SyntaxNode = StatementWithIssues.Parent
-                    While StatementWithIssueParent.IsKind(CS.SyntaxKind.ElseClause)
-                        StatementWithIssues = StatementWithIssues.Parent.FirstAncestorOrSelf(Of CSS.StatementSyntax)
-                        StatementWithIssueParent = StatementWithIssues.Parent
+                If TypeOf stmtWithIssues Is CSS.StatementSyntax Then
+                    Dim stmtWithIssueParent As SyntaxNode = stmtWithIssues.Parent
+                    While stmtWithIssueParent.IsKind(CS.SyntaxKind.ElseClause)
+                        stmtWithIssues = stmtWithIssues.Parent.FirstAncestorOrSelf(Of CSS.StatementSyntax)
+                        stmtWithIssueParent = stmtWithIssues.Parent
                     End While
-                    Return StatementWithIssues
+                    Return stmtWithIssues
                 End If
 
-                If TypeOf StatementWithIssues Is CSS.PropertyDeclarationSyntax Then
-                    Return StatementWithIssues
+                If TypeOf stmtWithIssues Is CSS.PropertyDeclarationSyntax Then
+                    Return stmtWithIssues
                 End If
 
-                If TypeOf StatementWithIssues Is CSS.MethodDeclarationSyntax Then
-                    Return StatementWithIssues
+                If TypeOf stmtWithIssues Is CSS.MethodDeclarationSyntax Then
+                    Return stmtWithIssues
                 End If
 
-                If TypeOf StatementWithIssues Is CSS.ClassDeclarationSyntax Then
-                    Return StatementWithIssues
+                If TypeOf stmtWithIssues Is CSS.ClassDeclarationSyntax Then
+                    Return stmtWithIssues
                 End If
 
-                If TypeOf StatementWithIssues Is CSS.ConversionOperatorDeclarationSyntax Then
-                    Return StatementWithIssues
+                If TypeOf stmtWithIssues Is CSS.ConversionOperatorDeclarationSyntax Then
+                    Return stmtWithIssues
                 End If
 
-                If TypeOf StatementWithIssues Is CSS.ConstructorDeclarationSyntax Then
-                    Return StatementWithIssues
+                If TypeOf stmtWithIssues Is CSS.ConstructorDeclarationSyntax Then
+                    Return stmtWithIssues
                 End If
 
-                If TypeOf StatementWithIssues Is CSS.EnumDeclarationSyntax Then
-                    Return StatementWithIssues
+                If TypeOf stmtWithIssues Is CSS.EnumDeclarationSyntax Then
+                    Return stmtWithIssues
                 End If
 
-                If TypeOf StatementWithIssues Is CSS.StructDeclarationSyntax Then
-                    Return StatementWithIssues
+                If TypeOf stmtWithIssues Is CSS.StructDeclarationSyntax Then
+                    Return stmtWithIssues
                 End If
 
-                If TypeOf StatementWithIssues Is CSS.UsingDirectiveSyntax Then
-                    Return StatementWithIssues
+                If TypeOf stmtWithIssues Is CSS.UsingDirectiveSyntax Then
+                    Return stmtWithIssues
                 End If
 
-                If TypeOf StatementWithIssues Is CSS.DelegateDeclarationSyntax Then
-                    Return StatementWithIssues
+                If TypeOf stmtWithIssues Is CSS.DelegateDeclarationSyntax Then
+                    Return stmtWithIssues
                 End If
 
-                StatementWithIssues = CType(StatementWithIssues.Parent, CS.CSharpSyntaxNode)
+                stmtWithIssues = CType(stmtWithIssues.Parent, CS.CSharpSyntaxNode)
             End While
-            If ReportErrors AndAlso StatementWithIssues Is Nothing Then
+            If ReportErrors AndAlso stmtWithIssues Is Nothing Then
                 Throw UnexpectedValue($"Can't find parent 'statement' of {node}")
             End If
 
-            Return StatementWithIssues
+            Return stmtWithIssues
         End Function
 
         ''' <summary>
@@ -347,109 +347,108 @@ Namespace CSharpToVBConverter
         End Function
 
         Friend Function IsDecedentOfAsyncMethod(node As CS.CSharpSyntaxNode) As Boolean
-            Dim StatementWithIssues As CS.CSharpSyntaxNode = node
-            While StatementWithIssues IsNot Nothing
-                If TypeOf StatementWithIssues Is CSS.MethodDeclarationSyntax Then
-                    Dim MethodStatement As CSS.MethodDeclarationSyntax = CType(StatementWithIssues, CSS.MethodDeclarationSyntax)
-                    For Each Modifier As SyntaxToken In MethodStatement.Modifiers
-                        If Modifier.IsKind(CS.SyntaxKind.AsyncKeyword) Then
+            Dim stmtWithIssues As CS.CSharpSyntaxNode = node
+            While stmtWithIssues IsNot Nothing
+                If TypeOf stmtWithIssues Is CSS.MethodDeclarationSyntax Then
+                    Dim methodStmt As CSS.MethodDeclarationSyntax = CType(stmtWithIssues, CSS.MethodDeclarationSyntax)
+                    For Each modifier As SyntaxToken In methodStmt.Modifiers
+                        If modifier.IsKind(CS.SyntaxKind.AsyncKeyword) Then
                             Return True
                         End If
                     Next
                     Return False
                 End If
 
-                If TypeOf StatementWithIssues Is CSS.FieldDeclarationSyntax Then
+                If TypeOf stmtWithIssues Is CSS.FieldDeclarationSyntax Then
                     Return False
                 End If
 
-                If TypeOf StatementWithIssues Is CSS.PropertyDeclarationSyntax Then
+                If TypeOf stmtWithIssues Is CSS.PropertyDeclarationSyntax Then
                     Return False
                 End If
 
-                If TypeOf StatementWithIssues Is CSS.ClassDeclarationSyntax Then
+                If TypeOf stmtWithIssues Is CSS.ClassDeclarationSyntax Then
                     Return False
                 End If
 
-                If TypeOf StatementWithIssues Is CSS.ConversionOperatorDeclarationSyntax Then
+                If TypeOf stmtWithIssues Is CSS.ConversionOperatorDeclarationSyntax Then
                     Return False
                 End If
 
-                If TypeOf StatementWithIssues Is CSS.ConstructorDeclarationSyntax Then
+                If TypeOf stmtWithIssues Is CSS.ConstructorDeclarationSyntax Then
                     Return False
                 End If
 
-                If TypeOf StatementWithIssues Is CSS.EnumDeclarationSyntax Then
+                If TypeOf stmtWithIssues Is CSS.EnumDeclarationSyntax Then
                     Exit While
                 End If
 
-                If TypeOf StatementWithIssues Is CSS.StructDeclarationSyntax Then
+                If TypeOf stmtWithIssues Is CSS.StructDeclarationSyntax Then
                     Return False
                 End If
 
-                If TypeOf StatementWithIssues Is CSS.UsingDirectiveSyntax Then
+                If TypeOf stmtWithIssues Is CSS.UsingDirectiveSyntax Then
                     Return False
                 End If
 
-                StatementWithIssues = CType(StatementWithIssues.Parent, CS.CSharpSyntaxNode)
+                stmtWithIssues = CType(stmtWithIssues.Parent, CS.CSharpSyntaxNode)
             End While
-            If StatementWithIssues Is Nothing Then
+            If stmtWithIssues Is Nothing Then
                 Throw UnexpectedValue($"Can't find parent 'statement' of {node}")
             End If
 
             Return False
         End Function
 
-        Friend Function PrependStatementWithMarkedStatementTrivia(node As CS.CSharpSyntaxNode, Statement As StatementSyntax) As StatementSyntax
-            Dim NewNodesList As New SyntaxList(Of StatementSyntax)
-            Dim RemoveStatement As Boolean = False
+        Friend Function PrependStatementWithMarkedStatementTrivia(node As CS.CSharpSyntaxNode, statement As StatementSyntax) As StatementSyntax
+            Dim newNodesList As New SyntaxList(Of StatementSyntax)
+            Dim removeStmt As Boolean = False
             If Not s_statementDictionary.ContainsKey(node) Then
-                Return Statement
+                Return statement
             End If
-            Dim Index As Integer = s_statementDictionary(node)
+            Dim index As Integer = s_statementDictionary(node)
 
-            For Each StatementTuple As (Index As Integer, Statement As StatementSyntax, RemoveStatement As Boolean) In s_statementSupportTupleList
-                If StatementTuple.Index = Index Then
-                    NewNodesList = NewNodesList.Add(StatementTuple.Statement)
-                    RemoveStatement = RemoveStatement Or StatementTuple.RemoveStatement
+            For Each stmtTuple As (index As Integer, statement As StatementSyntax, RemoveStatement As Boolean) In s_statementSupportTupleList
+                If stmtTuple.index = index Then
+                    newNodesList = newNodesList.Add(stmtTuple.statement)
+                    removeStmt = removeStmt Or stmtTuple.RemoveStatement
                 End If
             Next
             s_statementDictionary.Remove(node)
             If s_statementDictionary.Count = 0 Then
                 s_statementSupportTupleList.Clear()
             End If
-            Return Statement.WithPrependedLeadingTrivia(NewNodesList(0).GetLeadingTrivia)
+            Return statement.WithPrependedLeadingTrivia(newNodesList(0).GetLeadingTrivia)
         End Function
 
-        Friend Function ReplaceOneStatementWithMarkedStatements(node As CS.CSharpSyntaxNode, Statement As StatementSyntax, Optional RemoveStatement As Boolean = False) As SyntaxList(Of StatementSyntax)
-            Return ReplaceStatementsWithMarkedStatements(node, Factory.SingletonList(Statement), RemoveStatement)
+        Friend Function ReplaceOneStatementWithMarkedStatements(node As CS.CSharpSyntaxNode, statement As StatementSyntax, Optional RemoveStatement As Boolean = False) As SyntaxList(Of StatementSyntax)
+            Return ReplaceStatementsWithMarkedStatements(node, Factory.SingletonList(statement), RemoveStatement)
         End Function
 
-        Friend Function ReplaceStatementsWithMarkedStatements(node As CS.CSharpSyntaxNode, Statements As List(Of StatementSyntax), Optional RemoveStatement As Boolean = False) As SyntaxList(Of StatementSyntax)
-            Return ReplaceStatementsWithMarkedStatements(node, Factory.List(Statements), RemoveStatement)
+        Friend Function ReplaceStatementsWithMarkedStatements(node As CS.CSharpSyntaxNode, statements As List(Of StatementSyntax), Optional RemoveStatement As Boolean = False) As SyntaxList(Of StatementSyntax)
+            Return ReplaceStatementsWithMarkedStatements(node, Factory.List(statements), RemoveStatement)
         End Function
 
-        Friend Function ReplaceStatementsWithMarkedStatements(node As CS.CSharpSyntaxNode, Statements As SyntaxList(Of StatementSyntax), Optional RemoveStatement As Boolean = False) As SyntaxList(Of StatementSyntax)
+        Friend Function ReplaceStatementsWithMarkedStatements(node As CS.CSharpSyntaxNode, statements As SyntaxList(Of StatementSyntax), Optional RemoveStatement As Boolean = False) As SyntaxList(Of StatementSyntax)
             If node Is Nothing Then
-                Return Statements
+                Return statements
             End If
             If s_statementDictionary.Count = 0 Then
-                Return Statements
+                Return statements
             End If
-            Dim NewNodesList As New List(Of StatementSyntax)
-            Dim TrailingNodesList As New List(Of StatementSyntax)
+            Dim newNodesList As New List(Of StatementSyntax)
             If Not s_statementDictionary.ContainsKey(node) Then
-                Return Statements
+                Return statements
             End If
-            Dim Index As Integer = s_statementDictionary(node)
+            Dim index As Integer = s_statementDictionary(node)
 
-            For Each StatementTuple As (Index As Integer, Statement As StatementSyntax, StatementHandling As StatementHandlingOption) In s_statementSupportTupleList
-                If StatementTuple.Index = Index Then
-                    If StatementTuple.StatementHandling = StatementHandlingOption.AppendEmptyStatement Then
-                        TrailingNodesList.Add(StatementTuple.Statement)
+            For Each stmtTuple As (index As Integer, statement As StatementSyntax, StatementHandling As StatementHandlingOption) In s_statementSupportTupleList
+                If stmtTuple.index = index Then
+                    If stmtTuple.StatementHandling = StatementHandlingOption.AppendEmptyStatement Then
+                        Call New List(Of StatementSyntax)().Add(stmtTuple.statement)
                     Else
-                        NewNodesList.Add(StatementTuple.Statement)
-                        RemoveStatement = RemoveStatement Or StatementTuple.StatementHandling = StatementHandlingOption.ReplaceStatement
+                        newNodesList.Add(stmtTuple.statement)
+                        RemoveStatement = RemoveStatement Or stmtTuple.StatementHandling = StatementHandlingOption.ReplaceStatement
                     End If
                 End If
             Next
@@ -458,19 +457,19 @@ Namespace CSharpToVBConverter
                 s_statementSupportTupleList.Clear()
             End If
             If Not RemoveStatement Then
-                If NewNodesList.Any Then
-                    If NewNodesList(0).IsKind(VB.SyntaxKind.EmptyStatement) Then
-                        Dim TempStatement As StatementSyntax = NewNodesList(0)
-                        NewNodesList.RemoveAt(0)
-                        Statements = Statements.Replace(Statements(0), Statements(0).WithPrependedLeadingTrivia(TempStatement.GetLeadingTrivia))
+                If newNodesList.Any Then
+                    If newNodesList(0).IsKind(VB.SyntaxKind.EmptyStatement) Then
+                        Dim tempStmt As StatementSyntax = newNodesList(0)
+                        newNodesList.RemoveAt(0)
+                        statements = statements.Replace(statements(0), statements(0).WithPrependedLeadingTrivia(tempStmt.GetLeadingTrivia))
                     Else
-                        Statements = Statements.Replace(Statements(0), Statements(0).WithoutLeadingTrivia)
+                        statements = statements.Replace(statements(0), statements(0).WithoutLeadingTrivia)
                     End If
                 End If
-                NewNodesList.AddRange(Statements)
+                newNodesList.AddRange(statements)
             End If
-            NewNodesList.AddRange(TrailingNodesList)
-            Return Factory.List(NewNodesList)
+            newNodesList.AddRange(New List(Of StatementSyntax))
+            Return Factory.List(newNodesList)
         End Function
 
         Friend Function StatementDictionaryEmpty() As Boolean

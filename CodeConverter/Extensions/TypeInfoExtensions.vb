@@ -11,8 +11,8 @@ Namespace CSharpToVBConverter
     Public Module TypeInfoExtensions
 
         <Extension>
-        Friend Function IsString(_Typeinfo As TypeInfo) As Boolean
-            Dim typeSymbol As ITypeSymbol = _Typeinfo.Type
+        Friend Function IsString(typeinf As TypeInfo) As Boolean
+            Dim typeSymbol As ITypeSymbol = typeinf.Type
 
             If typeSymbol Is Nothing OrElse typeSymbol.IsErrorType Then
                 Return False

@@ -18,14 +18,14 @@ Namespace CSharpToVBConverter.ToVisualBasic
         Friend Function ContainsLocalFunctionReference(syntax As SyntaxNode, localFunctionSymbol As IMethodSymbol, _semanticModel As SemanticModel) As Boolean
             Return syntax.DescendantNodes().
                                 OfType(Of CSS.SimpleNameSyntax)().
-                                Any(Function(name As CSS.SimpleNameSyntax) name.Identifier.ValueText = localFunctionSymbol.Name AndAlso
+                                Any(Function(name As CSS.SimpleNameSyntax) name.identifier.ValueText = localFunctionSymbol.Name AndAlso
                                 SymbolEqualityComparer.Default.Equals(_semanticModel.GetSymbolInfo(name).Symbol, localFunctionSymbol))
         End Function
 
         <Extension>
         Friend Function GetPossibleEventName(expression As CSS.ExpressionSyntax) As String
             Dim ident As CSS.IdentifierNameSyntax = TryCast(expression, CSS.IdentifierNameSyntax)
-            If ident IsNot Nothing Then Return ident.Identifier.Text
+            If ident IsNot Nothing Then Return ident.identifier.Text
 
             If TypeOf expression Is CSS.ParenthesizedExpressionSyntax Then
                 expression = DirectCast(expression, CSS.ParenthesizedExpressionSyntax).Expression
@@ -33,7 +33,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Return Nothing
             End If
             Dim fre As CSS.MemberAccessExpressionSyntax = TryCast(expression, CSS.MemberAccessExpressionSyntax)
-            If fre IsNot Nothing AndAlso fre.Expression.IsKind(CS.SyntaxKind.ThisExpression) Then Return fre.Name.Identifier.Text
+            If fre IsNot Nothing AndAlso fre.Expression.IsKind(CS.SyntaxKind.ThisExpression) Then Return fre.Name.identifier.Text
             Return Nothing
         End Function
 
@@ -44,14 +44,14 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     "_"
                 }
             reservedNames.AddRange(node.DescendantNodesAndSelf().SelectMany(Function(lSyntaxNode As SyntaxNode) lSemanticModel.LookupSymbols(lSyntaxNode.SpanStart).Select(Function(s As ISymbol) s.Name)).Distinct)
-            Dim UniqueVariableName As String = EnsureUniqueness(variableNameBase, _usedIdentifiers, reservedNames)
-            _usedIdentifiers.Add(UniqueVariableName,
-                                  New SymbolTableEntry(UniqueVariableName,
+            Dim uniqueVariableName As String = EnsureUniqueness(variableNameBase, _usedIdentifiers, reservedNames)
+            _usedIdentifiers.Add(uniqueVariableName,
+                                  New SymbolTableEntry(uniqueVariableName,
                                                        IsType:=False,
                                                        isField
                                                        )
                                   )
-            Return UniqueVariableName
+            Return uniqueVariableName
         End Function
 
     End Module

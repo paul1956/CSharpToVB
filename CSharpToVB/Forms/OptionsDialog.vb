@@ -13,7 +13,7 @@ Public Class OptionsDialog
 
     Private Sub ItemColor_ComboBox_DrawItem(sender As Object, e As DrawItemEventArgs) Handles ItemColor_ComboBox.DrawItem
         If e.Index >= 0 Then
-            Dim n As String = CType(sender, ComboBox).Items(e.Index).ToString()
+            Dim n As String = CType(sender, ComboBox).items(e.Index).ToString()
             Using f As New Font("Segoe UI", 9, FontStyle.Regular)
                 Dim c As Color = ColorSelector.GetColorFromName(n)
                 Using b As Brush = New SolidBrush(c)
@@ -53,17 +53,17 @@ Public Class OptionsDialog
     End Sub
 
     Private Sub OptionsDialog_Load(sender As Object, e As EventArgs) Handles Me.Load
-        Me.ProjectDirectoryList.Items.Add(New MyListItem("Projects", GetLatestVisualStudioProjectPath))
-        Me.ProjectDirectoryList.Items.Add(New MyListItem("Repos", GetAlternetVisualStudioProjectsPath))
+        Me.ProjectDirectoryList.items.Add(New MyListItem("Projects", GetLatestVisualStudioProjectPath))
+        Me.ProjectDirectoryList.items.Add(New MyListItem("Repos", GetAlternetVisualStudioProjectsPath))
         Me.ProjectDirectoryList.SelectedIndex = 0
-        For index As Integer = 0 To Me.ProjectDirectoryList.Items.Count - 1
-            If CType(Me.ProjectDirectoryList.Items(index), MyListItem).Value = My.Settings.DefaultProjectDirectory Then
+        For index As Integer = 0 To Me.ProjectDirectoryList.items.Count - 1
+            If CType(Me.ProjectDirectoryList.items(index), MyListItem).Value = My.Settings.DefaultProjectDirectory Then
                 Me.ProjectDirectoryList.SelectedIndex = index
                 Exit For
             End If
         Next
         For Each Name As String In ColorSelector.GetColorNameList()
-            Me.ItemColor_ComboBox.Items.Add(Name)
+            Me.ItemColor_ComboBox.items.Add(Name)
         Next Name
         Me.ItemColor_ComboBox.SelectedIndex = Me.ItemColor_ComboBox.FindStringExact("default")
         Me.ComboBoxCompare.SelectedItem = My.Settings.OptionCompare
@@ -79,7 +79,7 @@ Public Class OptionsDialog
     Private Sub UpdateColor_Button_Click(sender As Object, e As EventArgs) Handles UpdateColor_Button.Click
         Me.ColorDialog1.Color = _selectedColor
         If Me.ColorDialog1.ShowDialog <> DialogResult.Cancel Then
-            ColorSelector.SetColor(Me.ItemColor_ComboBox.Items(Me.ItemColor_ComboBox.SelectedIndex).ToString, Me.ColorDialog1.Color)
+            ColorSelector.SetColor(Me.ItemColor_ComboBox.items(Me.ItemColor_ComboBox.SelectedIndex).ToString, Me.ColorDialog1.Color)
             Application.DoEvents()
         End If
     End Sub

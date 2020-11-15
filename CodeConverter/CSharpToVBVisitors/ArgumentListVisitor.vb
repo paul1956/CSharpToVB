@@ -19,7 +19,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
 
             Private Function VisitCSArguments(OpenToken As SyntaxToken, csArguments As SeparatedSyntaxList(Of CSS.ArgumentSyntax), CloseToken As SyntaxToken) As VB.VisualBasicSyntaxNode
                 If csArguments.Count = 0 Then
-                    Return Factory.ArgumentList(Factory.SeparatedList(csArguments.Select(Function(a As CSS.ArgumentSyntax) DirectCast(a.Accept(Me), VBS.ArgumentSyntax))))
+                    Return Factory.argumentList(Factory.SeparatedList(csArguments.Select(Function(a As CSS.ArgumentSyntax) DirectCast(a.Accept(Me), VBS.ArgumentSyntax))))
                 End If
                 Dim vbNodeList As New List(Of VBS.ArgumentSyntax)
                 Dim separators As New List(Of SyntaxToken)
@@ -28,13 +28,13 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Dim csOperation As Operations.IArgumentOperation = CType(_mSemanticModel.GetOperation(e.Value), Operations.IArgumentOperation)
                     vbNodeList.Add(argument.AdjustNodeTrivia(SeparatorFollows:=Not e.IsLast))
                     If Not e.IsLast Then
-                        separators.Add(CommaToken.WithConvertedTrailingTriviaFrom(csArguments.GetSeparators()(e.Index)))
+                        separators.Add(CommaToken.WithConvertedTrailingTriviaFrom(csArguments.GetSeparators()(e.index)))
                     End If
                 Next
-                Dim openParenTokenWithTrivia As SyntaxToken = OpenParenToken.WithConvertedTriviaFrom(OpenToken)
+                Dim openParenTokenWithTrivia As SyntaxToken = openParenToken.WithConvertedTriviaFrom(OpenToken)
                 Dim closeParenTokenWithTrivia As SyntaxToken = CloseParenToken.WithConvertedTriviaFrom(CloseToken)
                 RestructureNodesAndSeparators(openParenTokenWithTrivia, vbNodeList, separators, closeParenTokenWithTrivia)
-                Return Factory.ArgumentList(openParenTokenWithTrivia,
+                Return Factory.argumentList(openParenTokenWithTrivia,
                                               Factory.SeparatedList(vbNodeList, separators),
                                               closeParenTokenWithTrivia
                                              )
@@ -69,7 +69,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     ElseIf csExpression.IsKind(CS.SyntaxKind.IndexExpression) Then
                         Try
                             Dim elementAccessExpression As CSS.ElementAccessExpressionSyntax = CType(node.Parent.Parent, CSS.ElementAccessExpressionSyntax)
-                            Dim offsetFromLength As VBS.ExpressionSyntax = CType(CType(csExpression, CSS.PrefixUnaryExpressionSyntax).Operand.Accept(Me), VBS.ExpressionSyntax)
+                            Dim offsetFromLength As VBS.ExpressionSyntax = CType(CType(csExpression, CSS.PrefixUnaryExpressionSyntax).operand.Accept(Me), VBS.ExpressionSyntax)
                             Dim identName As VBS.IdentifierNameSyntax = Factory.IdentifierName(MakeVBSafeName(elementAccessExpression.Expression.ToString))
                             argumentWithTrivia = Factory.BinaryExpression(VB.SyntaxKind.SubtractExpression, identName, MinusToken, right:=offsetFromLength)
                         Catch ex As Exception
@@ -79,14 +79,14 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Else
                         argumentWithTrivia = DirectCast(csExpression.Accept(Me).AdjustNodeTrivia(SeparatorFollows:=True), VBS.ExpressionSyntax)
                         If argumentWithTrivia.IsKind(VB.SyntaxKind.AddressOfExpression) Then
-                            argumentWithTrivia = CType(argumentWithTrivia, VBS.UnaryExpressionSyntax).Operand.WithTriviaFrom(argumentWithTrivia)
+                            argumentWithTrivia = CType(argumentWithTrivia, VBS.UnaryExpressionSyntax).operand.WithTriviaFrom(argumentWithTrivia)
                         End If
                     End If
 
                     If TypeOf node.Parent Is CSS.BracketedArgumentListSyntax Then
-                        Dim _Typeinfo As TypeInfo = _mSemanticModel.GetTypeInfo(csExpression)
-                        If Not SymbolEqualityComparer.Default.Equals(_Typeinfo.ConvertedType, _Typeinfo.Type) Then
-                            If _Typeinfo.Type?.SpecialType = SpecialType.System_Char Then '
+                        Dim typeinf As TypeInfo = _mSemanticModel.GetTypeInfo(csExpression)
+                        If Not SymbolEqualityComparer.Default.Equals(typeinf.ConvertedType, typeinf.Type) Then
+                            If typeinf.Type?.SpecialType = SpecialType.System_Char Then '
                                 argumentWithTrivia = Factory.ParseExpression($"ChrW({argumentWithTrivia.WithoutTrivia})").WithTriviaFrom(argumentWithTrivia)
                             End If
                         End If
@@ -158,10 +158,10 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 For Each e As IndexClass(Of CSS.TypeSyntax) In csVisitorArguments.WithIndex
                     nodeList.Add(DirectCast(e.Value.Accept(Me), VBS.TypeSyntax))
                     If Not e.IsLast Then
-                        separators.Add(CommaToken.WithConvertedTrailingTriviaFrom(csSeparators(e.Index)))
+                        separators.Add(CommaToken.WithConvertedTrailingTriviaFrom(csSeparators(e.index)))
                     End If
                 Next
-                Dim openParenTokenWithTrivia As SyntaxToken = OpenParenToken.WithConvertedTriviaFrom(node.LessThanToken)
+                Dim openParenTokenWithTrivia As SyntaxToken = openParenToken.WithConvertedTriviaFrom(node.LessThanToken)
                 Dim closeParenTokenWithTrivia As SyntaxToken = CloseParenToken.WithConvertedTriviaFrom(node.GreaterThanToken)
                 RestructureNodesAndSeparators(openParenTokenWithTrivia, nodeList, separators, closeParenTokenWithTrivia)
                 Return Factory.TypeArgumentList(

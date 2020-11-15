@@ -168,6 +168,13 @@ visual_basic_preferred_modifier_order = Partial,Default,Private,Protected,Public
 dotnet_style_qualification_for_method = true:warning
 dotnet_style_qualification_for_property = true:warning
 
+# locals should be camelCase
+dotnet_naming_symbols.locals.applicable_kinds = local
+dotnet_naming_style.camel_case_style.capitalization = camel_case
+dotnet_naming_rule.locals_must_have_camel_case.symbols = locals
+dotnet_naming_rule.locals_must_have_camel_case.severity = warning
+dotnet_naming_rule.locals_must_have_camel_case.style = camel_case_style
+
 # See https://docs.microsoft.com/en-us/visualstudio/ide/editorconfig-naming-conventions?view=vs-2019
 # Also see https://github.com/canton7/RestEase/blob/f7efb7684b96ce9da4f55d52f7abfa94eb7c0340/src/.editorconfig#L215
 

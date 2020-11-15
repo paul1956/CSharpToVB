@@ -538,7 +538,7 @@ Project(""{9A19103F-16F7-4668-BE54-9A1E7A4F7556}"") = ""Microsoft.VisualStudio.L
 EndProject
 Project(""{9A19103F-16F7-4668-BE54-9A1E7A4F7556}"") = ""IdeBenchmarks"", ""src\Tools\IdeBenchmarks\IdeBenchmarks.csproj"", ""{FF38E9C9-7A25-44F0-B2C4-24C9BFD6A8F6}""
 EndProject
-Project(""{2150E333-8FDC-42A3-9474-1A3956D46DE8}"") = ""Solution Items"", ""Solution Items"", ""{157EA250-2F28-4948-A8F2-D58EAEA05DC8}""
+Project(""{2150E333-8FDC-42A3-9474-1A3956D46DE8}"") = ""Solution items"", ""Solution items"", ""{157EA250-2F28-4948-A8F2-D58EAEA05DC8}""
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		.vsconfig = .vsconfig
@@ -1703,11 +1703,11 @@ EndGlobal
 
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
-        <TargetFramework Condition="'$(TargetFrameworkOverride)' == ''">netcoreapp5.0</TargetFramework>
-        <TargetFramework Condition="'$(TargetFrameworkOverride)' != ''">TargetFrameworkOverride</TargetFramework>
+        <TargetFramework condition="'$(TargetFrameworkOverride)' == ''">netcoreapp5.0</TargetFramework>
+        <TargetFramework condition="'$(TargetFrameworkOverride)' != ''">TargetFrameworkOverride</TargetFramework>
         <RootNamespace>Company.WinFormsApplication1</RootNamespace>
         <StartupObject>Company.WinFormsApplication1.Form1</StartupObject>
-        <LangVersion Condition="'$(langVersion)' != ''">$(ProjectLanguageVersion)</LangVersion>
+        <LangVersion condition="'$(langVersion)' != ''">$(ProjectLanguageVersion)</LangVersion>
         <UseWindowsForms>true</UseWindowsForms>
     </PropertyGroup>
 
@@ -1721,11 +1721,11 @@ EndGlobal
 
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
-        <TargetFramework Condition="'$(TargetFrameworkOverride)' == ''">netcoreapp5.0</TargetFramework>
-        <TargetFramework Condition="'$(TargetFrameworkOverride)' != ''">TargetFrameworkOverride</TargetFramework>
+        <TargetFramework condition="'$(TargetFrameworkOverride)' == ''">netcoreapp5.0</TargetFramework>
+        <TargetFramework condition="'$(TargetFrameworkOverride)' != ''">TargetFrameworkOverride</TargetFramework>
         <RootNamespace>Company.WinFormsApplication1</RootNamespace>
         <StartupObject>Company.WinFormsApplication1.Form1</StartupObject>
-        <LangVersion Condition="'$(langVersion)' != ''">$(ProjectLanguageVersion)</LangVersion>
+        <LangVersion condition="'$(langVersion)' != ''">$(ProjectLanguageVersion)</LangVersion>
         <UseWindowsForms>true</UseWindowsForms>
     </PropertyGroup>
 
