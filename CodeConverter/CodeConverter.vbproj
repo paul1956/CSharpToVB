@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <RootNamespace></RootNamespace>
-    <TargetFrameworks>net5.0-windows</TargetFrameworks>
+    <TargetFramework>net5.0-windows7.0</TargetFramework>
     <OptionCompare>Text</OptionCompare>
     <OptionExplicit>On</OptionExplicit>
     <OptionInfer>Off</OptionInfer>
