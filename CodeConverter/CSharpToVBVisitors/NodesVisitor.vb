@@ -294,36 +294,39 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         members.AddRange(ReplaceOneStatementWithMarkedStatements(m, item))
                     End If
                 Next
-                If node.ParameterList IsNot Nothing Then
-                    For Each m As CSS.ParameterSyntax In node.ParameterList.Parameters
-                        Dim name As String = m.Identifier.ValueText
-                        Dim type As VBS.TypeSyntax = CType(m.Type.Accept(Me), VBS.TypeSyntax)
-                        Dim asClause As VBS.AsClauseSyntax = Factory.SimpleAsClause(type)
-                        members.Add(FactoryDimStatement(name, asClause, initializer:=Nothing))
-                    Next
-                End If
                 Dim parameterList As VBS.ParameterListSyntax = DirectCast(node.ParameterList?.Accept(Me), VBS.ParameterListSyntax)
-                If members.Any Then
-                    members(0) = members(0).WithPrependedLeadingTrivia(CollectConvertedTokenTrivia(node.OpenBraceToken, GetLeading:=True, GetTrailing:=False))
-                End If
+                Dim constructorStatements As New SyntaxList(Of VBS.StatementSyntax)
+                For Each m As VBS.ParameterSyntax In parameterList.Parameters
+                    Dim right As VBS.SimpleNameSyntax = Factory.IdentifierName(m.Identifier.Identifier)
+                    Dim left As VBS.ExpressionSyntax = Factory.SimpleMemberAccessExpression(Factory.MeExpression, right)
+                    members.Add(FactoryDimStatement(m.Identifier.Identifier, m.AsClause, initializer:=Nothing))
+                    Dim assignmentStmt As VBS.AssignmentStatementSyntax = Factory.AssignmentStatement(VB.SyntaxKind.SimpleAssignmentStatement, Left, EqualsToken, Right)
+                    constructorStatements = constructorStatements.Add(assignmentStmt)
+                Next
+                Dim subNewStatement As VBS.SubNewStatementSyntax =
+                    Factory.SubNewStatement(attributeLists:=Nothing,
+                                            modifiers:=Nothing,
+                                            parameterList
+                                           ).WithPrependedLeadingTrivia(CollectConvertedTokenTrivia(node.OpenBraceToken, GetLeading:=True, GetTrailing:=False)).WithTrailingEOL
+                Dim newBlock As VBS.ConstructorBlockSyntax = Factory.ConstructorBlock(subNewStatement, constructorStatements)
+                members.Add(newBlock)
                 Dim listOfAttributes As SyntaxList(Of VBS.AttributeListSyntax) = Factory.List(node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))
                 Dim typeParameterList As VBS.TypeParameterListSyntax = DirectCast(node.TypeParameterList?.Accept(Me), VBS.TypeParameterListSyntax)
                 Dim modifiers As SyntaxTokenList = Factory.TokenList(ConvertModifiers(node.Modifiers, Me.IsModule, TokenContext.Struct))
-                Dim structureStmt As VBS.StructureStatementSyntax
-                structureStmt = DirectCast(Factory.StructureStatement(listOfAttributes,
-                                                                            Factory.TokenList(modifiers),
-                                                                            StructureKeyword.WithConvertedTriviaFrom(node.Keyword),
-                                                                            GenerateSafeVBToken(node.Identifier, node, _usedIdentifiers, _mSemanticModel),
-                                                                            typeParameterList
-                                                                            ).RestructureAttributesAndModifiers(listOfAttributes.Any, modifiers.Any), VBS.StructureStatementSyntax).WithTrailingEOL
+                Dim classStmt As VBS.ClassStatementSyntax
+                classStmt = DirectCast(Factory.ClassStatement(listOfAttributes,
+                                                              Factory.TokenList(modifiers),
+                                                              ClassKeyWord.WithConvertedTriviaFrom(node.Keyword),
+                                                              GenerateSafeVBToken(node.Identifier, node, _usedIdentifiers, _mSemanticModel),
+                                                              typeParameterList
+                                                            ).RestructureAttributesAndModifiers(listOfAttributes.Any, modifiers.Any), VBS.ClassStatementSyntax).WithTrailingEOL
 
-                Dim structureBlock As VBS.StructureBlockSyntax = Factory.StructureBlock(
-                                                    structureStmt,
-                                                    [inherits]:=Nothing,
-                                                    [implements]:=Nothing,
-                                                    members:=Factory.List(members),
-                                                    endStructureStatement:=Factory.EndStructureStatement(EndKeyword.WithTrailingTrivia(Factory.Space), StructureKeyword).WithConvertedTriviaFrom(node.CloseBraceToken)
-                                                    )
+                Dim classBlock As VBS.ClassBlockSyntax = Factory.ClassBlock(classStmt,
+                                                                                [inherits]:=Nothing,
+                                                                                [implements]:=Nothing,
+                                                                                members:=Factory.List(members),
+                                                                                Factory.EndClassStatement(EndKeyword.WithTrailingTrivia(Factory.Space), ClassKeyWord).WithConvertedTriviaFrom(node.CloseBraceToken)
+                                                                               )
                 Dim errorModifiers As New List(Of String)
                 For Each t As SyntaxToken In node.Modifiers
                     Select Case t.Text
@@ -335,12 +338,12 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Next
 
                 ' These errors are handled elsewhere just ignore
-                ReplaceOneStatementWithMarkedStatements(node, structureBlock)
+                ReplaceOneStatementWithMarkedStatements(node, classBlock)
                 If errorModifiers.Any Then
-                    structureBlock = structureBlock.WithPrependedLeadingTrivia(Factory.CommentTrivia($"' TODO TASK: VB has no direct equivalent to C# {String.Join(" or ", errorModifiers)} Structure"))
+                    classBlock = classBlock.WithPrependedLeadingTrivia(Factory.CommentTrivia($"' TODO TASK: VB has no direct equivalent to C# {String.Join(" or ", errorModifiers)} Structure"))
                 End If
-                structureBlock = structureBlock.WithPrependedLeadingTrivia(Factory.CommentTrivia($"' TODO TASK: VB has no direct equivalent to C# Records"))
-                Return structureBlock
+                classBlock = classBlock.WithPrependedLeadingTrivia(Factory.CommentTrivia($"' TODO TASK: VB has no direct equivalent to C# Records"))
+                Return classBlock
             End Function
 
             Public Overrides Function VisitRefExpression(node As CSS.RefExpressionSyntax) As VB.VisualBasicSyntaxNode

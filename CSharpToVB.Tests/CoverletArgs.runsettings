@@ -6,7 +6,7 @@
         <Configuration>
           <Format>json</Format>
           <!--<MergeWith>/custom/path/result.json</MergeWith>-->
-          <Exclude>[coverlet.*]*,[*]Coverlet.Core*,[xunit*]*,[Microsoft.DotNet.XUnitExtensions]*,[ManageProgressBar]*,[CSharpToVBApp]*,[HashLibrary]*</Exclude>
+          <Exclude>[coverlet.*]*,[*]Coverlet.Core*,[xunit*]*,[Microsoft.DotNet.XUnitExtensions]*,[ProgressReportLibrary]*,[CSharpToVBApp]*,[HashLibrary]*</Exclude>
           <!-- [Assembly-Filter]Type-Filter -->
           <!--<Include>[coverlet.*]*,[*]Coverlet.Core*</Include> -->
           <!-- [Assembly-Filter]Type-Filter -->
