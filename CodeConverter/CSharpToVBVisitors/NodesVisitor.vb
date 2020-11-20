@@ -330,17 +330,16 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                                                                           [default]:=Nothing
                                                                                          )
                 Dim asBoolean As VBS.SimpleAsClauseSyntax = Factory.SimpleAsClause(PredefinedTypeBoolean)
-                Dim publicOverridesModifiers As SyntaxTokenList = PublicModifier.Add(CType(OverridesKeyword, SyntaxToken))
                 Dim statements As New SyntaxList(Of VBS.StatementSyntax)
                 Dim equalsObjectFuncStmt As VBS.MethodStatementSyntax = Factory.FunctionStatement(attributeLists:=Nothing,
-                                                                                            publicOverridesModifiers,
-                                                                                            equalsIdentifierToken,
-                                                                                            typeParameterList:=Nothing,
-                                                                                            Factory.ParameterList(Factory.SingletonSeparatedList(anotherRecordAsObjectParam)),
-                                                                                            asBoolean,
-                                                                                            handlesClause:=Nothing,
-                                                                                            implementsClause:=Nothing
-                                                                                           )
+                                                                                                  PublicModifier.Add(CType(OverridesKeyword, SyntaxToken)),
+                                                                                                  equalsIdentifierToken,
+                                                                                                  typeParameterList:=Nothing,
+                                                                                                  Factory.ParameterList(Factory.SingletonSeparatedList(anotherRecordAsObjectParam)),
+                                                                                                  asBoolean,
+                                                                                                  handlesClause:=Nothing,
+                                                                                                  implementsClause:=Nothing
+                                                                                                 )
                 Dim equalsValue As VBS.EqualsValueSyntax = Factory.EqualsValue(Factory.TryCastExpression(Factory.IdentifierName(anotherObjectToken),
                                                                                                          recordTypeName
                                                                                                         )
@@ -373,7 +372,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                                                                       [default]:=Nothing
                                                                                      )
                 Dim equalsAnotherRecordFuncStmt As VBS.MethodStatementSyntax = Factory.FunctionStatement(attributeLists:=Nothing,
-                                                                                                         publicOverridesModifiers,
+                                                                                                         PublicModifier.Add(CType(OverloadsKeyword, SyntaxToken)),
                                                                                                          equalsIdentifierToken,
                                                                                                          typeParameterList:=Nothing,
                                                                                                          Factory.ParameterList(Factory.SingletonSeparatedList(anotherRecordAsMeParam)),
@@ -394,7 +393,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Next
                 statements.Add(Factory.ReturnStatement((Factory.TrueLiteralExpression(TrueKeyword))))
 
-                    members.Add(Factory.FunctionBlock(equalsAnotherRecordFuncStmt, statements))
+                members.Add(Factory.FunctionBlock(equalsAnotherRecordFuncStmt, statements))
 
 
                 Dim listOfAttributes As SyntaxList(Of VBS.AttributeListSyntax) = Factory.List(node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))
