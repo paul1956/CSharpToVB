@@ -834,13 +834,13 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         If modifiers.Contains(Function(t As SyntaxToken) t.IsKind(VB.SyntaxKind.PartialKeyword)) Then
                             Return Factory.SubBlock(subOrFunctionStatement,
                                                     statements:=Nothing,
-                                                    endSubOrFunction.With(functionStmtLeadingTrivia, functionStmtTrailingTrivia).WithPrependedLeadingTrivia(finalLeadingTrivia).WithTrailingEOL)
+                                                    endSubOrFunction.With(functionStmtLeadingTrivia, functionStmtTrailingTrivia).WithPrependedLeadingTrivia(finalLeadingTrivia).RemoveExtraLeadingEOL.WithTrailingEOL.WithTrailingEOL)
                         End If
                         Return subOrFunctionStatement
                     End If
                     Return Factory.SubBlock(subOrFunctionStatement,
                                             body.Value,
-                                            endSubOrFunction.WithPrependedLeadingTrivia(finalLeadingTrivia).WithTrailingEOL)
+                                            endSubOrFunction.WithPrependedLeadingTrivia(finalLeadingTrivia).RemoveExtraLeadingEOL.WithTrailingEOL.WithTrailingEOL)
                 End If
                 If node.Body IsNot Nothing Then
                     endSubOrFunction = FactoryEndBlockStatement(VB.SyntaxKind.EndFunctionStatement, FunctionKeyword, finalTrailingTrivia).WithPrependedLeadingTrivia(finalLeadingTrivia)

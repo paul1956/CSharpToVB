@@ -449,7 +449,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         Else
                             vbMemberAccessExpression = vbMemberAccessExpression.AdjustExpressionTrivia(AdjustLeading:=True)
                         End If
-                        Dim handlerStatement As VBS.AddRemoveHandlerStatementSyntax
+                        Dim handlerStatement As AddRemoveHandlerStatementSyntax
                         If node.IsKind(CS.SyntaxKind.AddAssignmentExpression) Then
                             handlerStatement = Factory.AddHandlerStatement(vbMemberAccessExpression, rightExpr)
                         Else
@@ -957,6 +957,20 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Dim variableITypeSymbol As (_Error As Boolean, _ITypeSymbol As ITypeSymbol) = node.Expression.DetermineType(_semanticModel)
                     If variableITypeSymbol._Error = False Then
                         Dim type As TypeSyntax = variableITypeSymbol._ITypeSymbol.ConvertITypeSymbolToType
+                        Select Case True
+                            Case TypeOf type Is ArrayTypeSyntax
+                                type = CType(type, ArrayTypeSyntax).ElementType
+                            Case TypeOf type Is GenericNameSyntax
+                                Dim genericName As GenericNameSyntax = CType(type, GenericNameSyntax)
+                                Select Case genericName.TypeArgumentList.Arguments.Count
+                                    Case 1
+                                        type = genericName.TypeArgumentList.Arguments(0)
+                                    Case 2
+                                        type = Factory.ParseTypeName($"KeyValuePair(Of {genericName.TypeArgumentList.Arguments(0)},{genericName.TypeArgumentList.Arguments(1)})")
+                                    Case Else
+                                        Stop
+                                End Select
+                        End Select
 
                         asClause = If(type IsNot Nothing, Factory.SimpleAsClause(type), Nothing)
                     End If
