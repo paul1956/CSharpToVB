@@ -284,6 +284,7 @@ Partial Class Form1
         Me.mnuEditUndo.Image = CType(resources.GetObject("mnuEditUndo.Image"), System.Drawing.Image)
         Me.mnuEditUndo.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
         Me.mnuEditUndo.Name = "mnuEditUndo"
+        Me.mnuEditUndo.ShortcutKeyDisplayString = "Ctrl+Z"
         Me.mnuEditUndo.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.Z), System.Windows.Forms.Keys)
         Me.mnuEditUndo.Size = New System.Drawing.Size(164, 22)
         Me.mnuEditUndo.Text = "Undo"
@@ -293,6 +294,7 @@ Partial Class Form1
         Me.mnuEditRedo.Image = CType(resources.GetObject("mnuEditRedo.Image"), System.Drawing.Image)
         Me.mnuEditRedo.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
         Me.mnuEditRedo.Name = "mnuEditRedo"
+        Me.mnuEditRedo.ShortcutKeyDisplayString = "Ctrl+Y"
         Me.mnuEditRedo.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.Y), System.Windows.Forms.Keys)
         Me.mnuEditRedo.Size = New System.Drawing.Size(164, 22)
         Me.mnuEditRedo.Text = "Redo"
@@ -307,6 +309,7 @@ Partial Class Form1
         Me.mnuEditCut.Image = CType(resources.GetObject("mnuEditCut.Image"), System.Drawing.Image)
         Me.mnuEditCut.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
         Me.mnuEditCut.Name = "mnuEditCut"
+        Me.mnuEditCut.ShortcutKeyDisplayString = "Ctrl+X"
         Me.mnuEditCut.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.X), System.Windows.Forms.Keys)
         Me.mnuEditCut.Size = New System.Drawing.Size(164, 22)
         Me.mnuEditCut.Text = "Cut"
@@ -316,6 +319,7 @@ Partial Class Form1
         Me.mnuEditCopy.Image = CType(resources.GetObject("mnuEditCopy.Image"), System.Drawing.Image)
         Me.mnuEditCopy.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
         Me.mnuEditCopy.Name = "mnuEditCopy"
+        Me.mnuEditCopy.ShortcutKeyDisplayString = "Ctrl+C"
         Me.mnuEditCopy.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.C), System.Windows.Forms.Keys)
         Me.mnuEditCopy.Size = New System.Drawing.Size(164, 22)
         Me.mnuEditCopy.Text = "Copy"
@@ -325,6 +329,7 @@ Partial Class Form1
         Me.mnuEditPaste.Image = CType(resources.GetObject("mnuEditPaste.Image"), System.Drawing.Image)
         Me.mnuEditPaste.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
         Me.mnuEditPaste.Name = "mnuEditPaste"
+        Me.mnuEditPaste.ShortcutKeyDisplayString = "Ctrl+V"
         Me.mnuEditPaste.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.V), System.Windows.Forms.Keys)
         Me.mnuEditPaste.Size = New System.Drawing.Size(164, 22)
         Me.mnuEditPaste.Text = "Paste"
@@ -333,6 +338,7 @@ Partial Class Form1
         '
         Me.mnuEditSelectAll.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
         Me.mnuEditSelectAll.Name = "mnuEditSelectAll"
+        Me.mnuEditSelectAll.ShortcutKeyDisplayString = "Ctrl+A"
         Me.mnuEditSelectAll.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.A), System.Windows.Forms.Keys)
         Me.mnuEditSelectAll.Size = New System.Drawing.Size(164, 22)
         Me.mnuEditSelectAll.Text = "Select All"
@@ -759,6 +765,7 @@ Partial Class Form1
         '
         Me.ContextMenuSelectAll.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
         Me.ContextMenuSelectAll.Name = "ContextMenuSelectAll"
+        Me.ContextMenuSelectAll.ShortcutKeyDisplayString = "Ctrl+A"
         Me.ContextMenuSelectAll.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.A), System.Windows.Forms.Keys)
         Me.ContextMenuSelectAll.Size = New System.Drawing.Size(164, 22)
         Me.ContextMenuSelectAll.Text = "Select All"
@@ -821,6 +828,7 @@ Partial Class Form1
         Me.ConversionInput.Font = New System.Drawing.Font("Segoe UI", 11.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point)
         Me.ConversionInput.Location = New System.Drawing.Point(0, 0)
         Me.ConversionInput.Name = "ConversionInput"
+        Me.ConversionInput.ShortcutsEnabled = True
         Me.ConversionInput.Size = New System.Drawing.Size(950, 509)
         Me.ConversionInput.TabIndex = 0
         Me.ConversionInput.Text = ""
@@ -834,6 +842,7 @@ Partial Class Form1
         Me.ConversionOutput.Font = New System.Drawing.Font("Segoe UI", 11.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point)
         Me.ConversionOutput.Location = New System.Drawing.Point(999, 0)
         Me.ConversionOutput.Name = "ConversionOutput"
+        Me.ConversionOutput.ShortcutsEnabled = True
         Me.ConversionOutput.Size = New System.Drawing.Size(924, 509)
         Me.ConversionOutput.TabIndex = 1
         Me.ConversionOutput.Text = ""

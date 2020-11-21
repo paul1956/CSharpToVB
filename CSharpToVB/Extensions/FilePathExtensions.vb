@@ -12,29 +12,29 @@ Public Module FilePathExtensions
 
     <Extension>
     Friend Function GetFileCount(DirPath As String, SourceLanguageExtension As String, SkipBinAndObjFolders As Boolean, SkipTestResourceFiles As Boolean, Optional Depth As Integer = 0) As Long
-        Dim TotalFilesToProcess As Long = 0L
+        Dim totalFilesToProcess As Long = 0L
 
         Try
-            For Each Subdirectory As String In Directory.GetDirectories(DirPath)
+            For Each subdirectory As String In Directory.GetDirectories(DirPath)
                 If SkipTestResourceFiles AndAlso
-                        (Subdirectory.EndsWith("Test\Resources", StringComparison.OrdinalIgnoreCase) OrElse
-                         Subdirectory.EndsWith("Setup\Templates", StringComparison.OrdinalIgnoreCase)) Then
+                        (subdirectory.EndsWith("Test\Resources", StringComparison.OrdinalIgnoreCase) OrElse
+                         subdirectory.EndsWith("Setup\Templates", StringComparison.OrdinalIgnoreCase)) Then
                     Continue For
                 End If
-                Dim SubdirectoryName As String = Path.GetFileName(Subdirectory)
-                If SkipBinAndObjFolders AndAlso (SubdirectoryName = "bin" OrElse
-                    SubdirectoryName = "obj" OrElse
-                    SubdirectoryName = "g") Then
+                Dim subdirectoryName As String = Path.GetFileName(subdirectory)
+                If SkipBinAndObjFolders AndAlso (subdirectoryName = "bin" OrElse
+                    subdirectoryName = "obj" OrElse
+                    subdirectoryName = "g") Then
                     Continue For
                 End If
-                TotalFilesToProcess += Subdirectory.GetFileCount(SourceLanguageExtension, SkipBinAndObjFolders, SkipTestResourceFiles, Depth + 1)
+                totalFilesToProcess += subdirectory.GetFileCount(SourceLanguageExtension, SkipBinAndObjFolders, SkipTestResourceFiles, Depth + 1)
             Next
-            For Each File As String In Directory.GetFiles(path:=DirPath, searchPattern:=$"*.{SourceLanguageExtension}")
-                If Not ParseCSharpSource(File, New List(Of String)).
+            For Each file As String In Directory.GetFiles(path:=DirPath, searchPattern:=$"*.{SourceLanguageExtension}")
+                If Not ParseCSharpSource(file, New List(Of String)).
                     GetRoot.SyntaxTree.IsGeneratedCode(Function(t As SyntaxTrivia) As Boolean
                                                            Return t.IsComment OrElse t.IsRegularOrDocComment
                                                        End Function, CancellationToken.None) Then
-                    TotalFilesToProcess += 1
+                    totalFilesToProcess += 1
                 End If
             Next
         Catch ex As OperationCanceledException
@@ -46,7 +46,7 @@ Public Module FilePathExtensions
             Throw
         End Try
 
-        Return TotalFilesToProcess
+        Return totalFilesToProcess
     End Function
 
     ''' <summary>
@@ -81,13 +81,13 @@ Public Module FilePathExtensions
             sourceRoot = defaultRoot
         End If
         ' At this point Solution Directory is the remainder of the path from SolutionRoot
-        Dim PathFromSolutionRoot As List(Of String) = DirOrFileToBeTranslated.Replace(sourceRoot, "", StringComparison.OrdinalIgnoreCase) _
+        Dim pathFromSolutionRoot As List(Of String) = DirOrFileToBeTranslated.Replace(sourceRoot, "", StringComparison.OrdinalIgnoreCase) _
                                                                     .Trim(Path.DirectorySeparatorChar) _
                                                                     .Split(Path.DirectorySeparatorChar).ToList
-        PathFromSolutionRoot(0) = PathFromSolutionRoot(0) & "_vb"
-        Dim solutionRoot As String = $"{sourceRoot}{Path.DirectorySeparatorChar}{PathFromSolutionRoot(0)}"
+        pathFromSolutionRoot(0) = pathFromSolutionRoot(0) & "_vb"
+        Dim solutionRoot As String = $"{sourceRoot}{Path.DirectorySeparatorChar}{pathFromSolutionRoot(0)}"
         ' Remove top director because it will be change to end in _vb
-        PathFromSolutionRoot.RemoveAt(0)
+        pathFromSolutionRoot.RemoveAt(0)
         If File.Exists(solutionRoot) Then
             MsgBox($"A file exists at {solutionRoot} this Is a fatal error the program will exit",
                    MsgBoxStyle.OkOnly Or MsgBoxStyle.Critical Or MsgBoxStyle.MsgBoxSetForeground,
@@ -111,7 +111,7 @@ Public Module FilePathExtensions
                 Case MsgBoxResult.Yes
             End Select
         End If
-        Dim relativePath As String = PathFromSolutionRoot.Join(Path.DirectorySeparatorChar)
+        Dim relativePath As String = pathFromSolutionRoot.Join(Path.DirectorySeparatorChar)
         CreateDirectoryIfNonexistent(Path.Combine(solutionRoot, relativePath))
         Return (solutionRoot, relativePath)
     End Function
@@ -119,9 +119,9 @@ Public Module FilePathExtensions
     <Extension>
     Public Function GetFileTextFromStream(fileStream As Stream) As String
         Using sw As New StreamReader(fileStream)
-            Dim SourceText As String = sw.ReadToEnd()
+            Dim sourceText As String = sw.ReadToEnd()
             sw.Close()
-            Return SourceText
+            Return sourceText
         End Using
     End Function
 

@@ -17,8 +17,9 @@
     <Copyright>Copyright (c) .NET Foundation and Contributors</Copyright>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-    <AssemblyVersion>5.0.0.1</AssemblyVersion>
-    <FileVersion>5.0.0.1</FileVersion>
+    <AssemblyVersion>5.0.0.2</AssemblyVersion>
+    <FileVersion>5.0.0.2</FileVersion>
+    <Product>CSharp To VB Tests</Product>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="1.3.0">

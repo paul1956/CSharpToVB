@@ -21,35 +21,35 @@ Namespace CSharpToVBConverter
 
         <Extension>
         Friend Function WithUniqueLeadingTrivia(Of T As VB.VisualBasicSyntaxNode)(Node As T, HeaderLeadingTrivia As SyntaxTriviaList) As T
-            Dim NodeLeadingTrivia As SyntaxTriviaList = Node.GetLeadingTrivia
-            If NodeLeadingTrivia.Count = 0 Then
+            Dim nodeLeadingTrivia As SyntaxTriviaList = Node.GetLeadingTrivia
+            If nodeLeadingTrivia.Count = 0 Then
                 Return Node
             End If
-            If NodeLeadingTrivia.First.Language = "C#" Then
-                NodeLeadingTrivia = NodeLeadingTrivia.ConvertTriviaList
+            If nodeLeadingTrivia.First.Language = "C#" Then
+                nodeLeadingTrivia = nodeLeadingTrivia.ConvertTriviaList
             End If
             If HeaderLeadingTrivia.Count = 0 Then
                 Return Node
             End If
 
-            If Not NodeLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
+            If Not nodeLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
                 Return Node
             End If
             Dim index As Integer
             For index = 0 To HeaderLeadingTrivia.Count - 1
-                If HeaderLeadingTrivia(index).RawKind <> NodeLeadingTrivia(index).RawKind Then
+                If HeaderLeadingTrivia(index).RawKind <> nodeLeadingTrivia(index).RawKind Then
                     Exit For
                 End If
-                If HeaderLeadingTrivia(index).ToString <> NodeLeadingTrivia(index).ToString Then
+                If HeaderLeadingTrivia(index).ToString <> nodeLeadingTrivia(index).ToString Then
                     Exit For
                 End If
             Next
             Dim newLeadingTrivia As New SyntaxTriviaList
-            For i As Integer = index To NodeLeadingTrivia.Count - 1
-                If i <> 0 AndAlso i = index AndAlso NodeLeadingTrivia(i).IsKind(CS.SyntaxKind.EndOfLineTrivia) Then
+            For i As Integer = index To nodeLeadingTrivia.Count - 1
+                If i <> 0 AndAlso i = index AndAlso nodeLeadingTrivia(i).IsKind(CS.SyntaxKind.EndOfLineTrivia) Then
                     Continue For
                 End If
-                newLeadingTrivia = newLeadingTrivia.Add(NodeLeadingTrivia(i))
+                newLeadingTrivia = newLeadingTrivia.Add(nodeLeadingTrivia(i))
             Next
             Return Node.WithLeadingTrivia(newLeadingTrivia)
         End Function

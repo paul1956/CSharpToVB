@@ -41,7 +41,7 @@ Namespace CSharpToVBConverter
         <Extension>
         Friend Function AdjustTokenLeadingTrivia(Token As SyntaxToken) As SyntaxToken
             Dim newLeadingTrivia As New SyntaxTriviaList
-            Dim initialTrivia As SyntaxTriviaList = Token.leadingTrivia
+            Dim initialTrivia As SyntaxTriviaList = Token.LeadingTrivia
             'Debug.WriteLine($"Leading  Token({sourceLineNumber}) In :{Token.ToFullString}")
 
             For Each e As IndexClass(Of SyntaxTrivia) In initialTrivia.WithIndex
@@ -299,12 +299,12 @@ Namespace CSharpToVBConverter
         Friend Function GetSymbolTableEntry(csIdentifier As SyntaxToken, BaseVBIdent As String, _usedIdentifiers As Dictionary(Of String, SymbolTableEntry), Node As CS.CSharpSyntaxNode, Model As SemanticModel, IsQualifiedNameOrTypeName As Boolean, isField As Boolean) As (IdentToken As SyntaxToken, MeNeeded As Boolean)
             If _usedIdentifiers.ContainsKey(BaseVBIdent) Then
                 Dim symbolTableEntry As SymbolTableEntry = _usedIdentifiers(BaseVBIdent)
-                Return (Factory.identifier(symbolTableEntry.Name).WithConvertedTriviaFrom(csIdentifier), symbolTableEntry.isProperty)
+                Return (Factory.Identifier(symbolTableEntry.Name).WithConvertedTriviaFrom(csIdentifier), symbolTableEntry.isProperty)
             End If
             For Each ident As KeyValuePair(Of String, SymbolTableEntry) In _usedIdentifiers
                 If String.Compare(ident.Key, BaseVBIdent, ignoreCase:=False, Globalization.CultureInfo.InvariantCulture) = 0 Then
                     ' We have an exact match keep looking
-                    Return (Factory.identifier(ident.Key), ident.Value.isProperty)
+                    Return (Factory.Identifier(ident.Key), ident.Value.isProperty)
                 End If
                 If String.Compare(ident.Key, BaseVBIdent, ignoreCase:=True, Globalization.CultureInfo.InvariantCulture) = 0 Then
                     ' If we are here we have seen the variable in a different case so fix it
@@ -315,12 +315,12 @@ Namespace CSharpToVBConverter
                         _usedIdentifiers.Add(BaseVBIdent, New SymbolTableEntry(uniqueName, IsQualifiedNameOrTypeName, isField))
                     End If
                     Dim symbolTableEntry As SymbolTableEntry = _usedIdentifiers(BaseVBIdent)
-                    Return (Factory.identifier(symbolTableEntry.Name).WithConvertedTriviaFrom(csIdentifier), symbolTableEntry.isProperty)
+                    Return (Factory.Identifier(symbolTableEntry.Name).WithConvertedTriviaFrom(csIdentifier), symbolTableEntry.isProperty)
                 End If
             Next
             Dim newIdentifier As String = BaseVBIdent
             _usedIdentifiers.Add(BaseVBIdent, New SymbolTableEntry(newIdentifier, IsQualifiedNameOrTypeName, isField))
-            Return (Factory.identifier(newIdentifier), False)
+            Return (Factory.Identifier(newIdentifier), False)
         End Function
 
         <Extension>
@@ -408,7 +408,7 @@ Namespace CSharpToVBConverter
 
         <Extension>
         Friend Function RemoveExtraEOL(Token As SyntaxToken) As SyntaxToken
-            Dim initialTriviaList As SyntaxTriviaList = Token.leadingTrivia
+            Dim initialTriviaList As SyntaxTriviaList = Token.LeadingTrivia
             Select Case initialTriviaList.Count
                 Case 0
                     Return Token
@@ -458,9 +458,9 @@ Namespace CSharpToVBConverter
 
         <Extension>
         Friend Function RestructureModifier(NodeModifier As SyntaxToken, i As Integer, ByRef AttributesNotFound As Boolean, ByRef statementLeadingTrivia As SyntaxTriviaList, ByRef statementTrailingTrivia As SyntaxTriviaList) As SyntaxToken
-            If (Not AttributesNotFound) AndAlso NodeModifier.RawKind = VB.SyntaxKind.EmptyToken AndAlso NodeModifier.HasLeadingTrivia AndAlso NodeModifier.leadingTrivia.ContainsCommentOrDirectiveTrivia Then
+            If (Not AttributesNotFound) AndAlso NodeModifier.RawKind = VB.SyntaxKind.EmptyToken AndAlso NodeModifier.HasLeadingTrivia AndAlso NodeModifier.LeadingTrivia.ContainsCommentOrDirectiveTrivia Then
                 statementTrailingTrivia = statementTrailingTrivia.Add(VBEOLTrivia)
-                statementTrailingTrivia = statementTrailingTrivia.AddRange(NodeModifier.leadingTrivia)
+                statementTrailingTrivia = statementTrailingTrivia.AddRange(NodeModifier.LeadingTrivia)
                 NodeModifier = NodeModifier.WithLeadingTrivia(Factory.Space)
             Else
                 NodeModifier = NodeModifier.WithLeadingTrivia(NodeModifier.RestructureModifierLeadingTrivia(i, AttributesNotFound, statementLeadingTrivia, statementTrailingTrivia))
@@ -497,7 +497,7 @@ Namespace CSharpToVBConverter
             If Not otherToken.HasLeadingTrivia Then
                 Return node
             End If
-            Return node.WithLeadingTrivia(otherToken.leadingTrivia.ConvertTriviaList())
+            Return node.WithLeadingTrivia(otherToken.LeadingTrivia.ConvertTriviaList())
         End Function
 
         <Extension>
@@ -520,7 +520,7 @@ Namespace CSharpToVBConverter
         Friend Function WithConvertedTriviaFrom(Token As SyntaxToken, otherToken As SyntaxToken) As SyntaxToken
             Try
                 If otherToken.HasLeadingTrivia Then
-                    Token = Token.WithLeadingTrivia(otherToken.leadingTrivia.ConvertTriviaList())
+                    Token = Token.WithLeadingTrivia(otherToken.LeadingTrivia.ConvertTriviaList())
                 End If
                 Return Token.WithTrailingTrivia(otherToken.TrailingTrivia.ConvertTriviaList())
             Catch ex As OperationCanceledException
@@ -548,9 +548,9 @@ Namespace CSharpToVBConverter
             Dim finalLeadingTrivia As New SyntaxTriviaList
             Dim finalTrailingTrivia As New SyntaxTriviaList
             If LeadingToken Then
-                finalLeadingTrivia = finalLeadingTrivia.AddRange(Token.leadingTrivia)
+                finalLeadingTrivia = finalLeadingTrivia.AddRange(Token.LeadingTrivia)
             Else
-                initialTriviaList = Token.leadingTrivia
+                initialTriviaList = Token.LeadingTrivia
                 triviaListUBound = initialTriviaList.Count - 1
                 For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
                     Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.index, LookaheadCount:=1)
@@ -619,7 +619,7 @@ Namespace CSharpToVBConverter
                                     Stop
                             End Select
                         Case VB.SyntaxKind.EndIfDirectiveTrivia
-                            If Token.leadingTrivia.ContainsDirectiveTrivia(VB.SyntaxKind.IfDirectiveTrivia, VB.SyntaxKind.ElseIfDirectiveTrivia) Then
+                            If Token.LeadingTrivia.ContainsDirectiveTrivia(VB.SyntaxKind.IfDirectiveTrivia, VB.SyntaxKind.ElseIfDirectiveTrivia) Then
                                 finalLeadingTrivia = finalLeadingTrivia.AddRange(DirectiveNotAllowedHere(e.Value))
                                 Select Case nextTrivia.RawKind
                                     Case VB.SyntaxKind.None
@@ -727,7 +727,7 @@ Namespace CSharpToVBConverter
                 Return Token
             End If
 
-            Return Token.WithLeadingTrivia(TriviaList.Concat(Token.leadingTrivia))
+            Return Token.WithLeadingTrivia(TriviaList.Concat(Token.LeadingTrivia))
         End Function
 
     End Module

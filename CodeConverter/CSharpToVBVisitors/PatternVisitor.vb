@@ -218,6 +218,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                                                   _usedIdentifiers,
                                                                   _mSemanticModel))
             End Function
+
         End Class
 
     End Class

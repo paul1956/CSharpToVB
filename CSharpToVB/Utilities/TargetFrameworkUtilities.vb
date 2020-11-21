@@ -37,9 +37,9 @@ Module TargetFrameworkUtilities
     End Function
 
     Private Function MapNameToFramework(Base As String, Separator As String, Name As String) As String
-        Dim NameSplit() As String = Name.Split(".")
-        Dim Minor As String = NameSplit(1)
-        Return $"{If(CInt(NameSplit(0)) >= 5, "NET", Base) }{NameSplit(0)}{Separator}{Minor}"
+        Dim nameSplit() As String = Name.Split(".")
+        Dim minor As String = nameSplit(1)
+        Return $"{If(CInt(nameSplit(0)) >= 5, "NET", Base) }{nameSplit(0)}{Separator}{minor}"
     End Function
 
     <Extension>
@@ -79,7 +79,7 @@ Module TargetFrameworkUtilities
     End Function
 
     Friend Function GetAllFrameworkVersions() As List(Of String)
-        Dim Versions As New List(Of String)
+        Dim versions As New List(Of String)
         ' Opens the registry key for the .NET Framework entry.
         Using baseKey As RegistryKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32)
             Using ndpKey As RegistryKey = baseKey.OpenSubKey("SOFTWARE\Microsoft\NET Framework Setup\NDP\")
@@ -97,7 +97,7 @@ Module TargetFrameworkUtilities
                         Dim sp As String = versionKey.GetValue("SP", "").ToString()
 
                         If Not String.IsNullOrEmpty(name) Then
-                            Versions.Add(MapNameToFramework("NET", Separator:="", name))
+                            versions.Add(MapNameToFramework("NET", Separator:="", name))
                             Continue For
                         End If
                         For Each subKeyName As String In versionKey.GetSubKeyNames()
@@ -108,12 +108,12 @@ Module TargetFrameworkUtilities
                             End If
                             Dim install As String = subKey.GetValue("Install", "").ToString()
                             If String.IsNullOrEmpty(install) Then  ' No install info; it must be later.
-                                Versions.Add(MapNameToFramework("NET", Separator:="", name))
+                                versions.Add(MapNameToFramework("NET", Separator:="", name))
                             Else
                                 If Not String.IsNullOrEmpty(sp) AndAlso install = "1" Then
-                                    Versions.Add(MapNameToFramework("NET", Separator:="", name))
+                                    versions.Add(MapNameToFramework("NET", Separator:="", name))
                                 ElseIf install = "1" Then
-                                    Versions.Add(MapNameToFramework("NET", Separator:="", name))
+                                    versions.Add(MapNameToFramework("NET", Separator:="", name))
                                 End If
                             End If
                         Next
@@ -122,11 +122,11 @@ Module TargetFrameworkUtilities
             End Using
             Using ndpKey As RegistryKey = baseKey.OpenSubKey("SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full\")
                 If ndpKey IsNot Nothing AndAlso ndpKey.GetValue("Release") IsNot Nothing Then
-                    Versions.Add(CheckFor45PlusVersion(CInt(ndpKey.GetValue("Release"))))
+                    versions.Add(CheckFor45PlusVersion(CInt(ndpKey.GetValue("Release"))))
                 End If
             End Using
         End Using
-        Return Versions
+        Return versions
     End Function
 
     ''' <summary>

@@ -19,7 +19,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
 
             Private Function VisitCSArguments(OpenToken As SyntaxToken, csArguments As SeparatedSyntaxList(Of CSS.ArgumentSyntax), CloseToken As SyntaxToken) As VB.VisualBasicSyntaxNode
                 If csArguments.Count = 0 Then
-                    Return Factory.argumentList(Factory.SeparatedList(csArguments.Select(Function(a As CSS.ArgumentSyntax) DirectCast(a.Accept(Me), VBS.ArgumentSyntax))))
+                    Return Factory.ArgumentList(Factory.SeparatedList(csArguments.Select(Function(a As CSS.ArgumentSyntax) DirectCast(a.Accept(Me), VBS.ArgumentSyntax))))
                 End If
                 Dim vbNodeList As New List(Of VBS.ArgumentSyntax)
                 Dim separators As New List(Of SyntaxToken)
@@ -34,7 +34,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim openParenTokenWithTrivia As SyntaxToken = openParenToken.WithConvertedTriviaFrom(OpenToken)
                 Dim closeParenTokenWithTrivia As SyntaxToken = CloseParenToken.WithConvertedTriviaFrom(CloseToken)
                 RestructureNodesAndSeparators(openParenTokenWithTrivia, vbNodeList, separators, closeParenTokenWithTrivia)
-                Return Factory.argumentList(openParenTokenWithTrivia,
+                Return Factory.ArgumentList(openParenTokenWithTrivia,
                                               Factory.SeparatedList(vbNodeList, separators),
                                               closeParenTokenWithTrivia
                                              )
@@ -69,7 +69,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     ElseIf csExpression.IsKind(CS.SyntaxKind.IndexExpression) Then
                         Try
                             Dim elementAccessExpression As CSS.ElementAccessExpressionSyntax = CType(node.Parent.Parent, CSS.ElementAccessExpressionSyntax)
-                            Dim offsetFromLength As VBS.ExpressionSyntax = CType(CType(csExpression, CSS.PrefixUnaryExpressionSyntax).operand.Accept(Me), VBS.ExpressionSyntax)
+                            Dim offsetFromLength As VBS.ExpressionSyntax = CType(CType(csExpression, CSS.PrefixUnaryExpressionSyntax).Operand.Accept(Me), VBS.ExpressionSyntax)
                             Dim identName As VBS.IdentifierNameSyntax = Factory.IdentifierName(MakeVBSafeName(elementAccessExpression.Expression.ToString))
                             argumentWithTrivia = Factory.BinaryExpression(VB.SyntaxKind.SubtractExpression, identName, MinusToken, right:=offsetFromLength)
                         Catch ex As Exception
@@ -79,7 +79,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Else
                         argumentWithTrivia = DirectCast(csExpression.Accept(Me).AdjustNodeTrivia(SeparatorFollows:=True), VBS.ExpressionSyntax)
                         If argumentWithTrivia.IsKind(VB.SyntaxKind.AddressOfExpression) Then
-                            argumentWithTrivia = CType(argumentWithTrivia, VBS.UnaryExpressionSyntax).operand.WithTriviaFrom(argumentWithTrivia)
+                            argumentWithTrivia = CType(argumentWithTrivia, VBS.UnaryExpressionSyntax).Operand.WithTriviaFrom(argumentWithTrivia)
                         End If
                     End If
 

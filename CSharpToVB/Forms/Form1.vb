@@ -107,16 +107,16 @@ Partial Public Class Form1
 
         If TypeOf Me.CurrentBuffer Is RichTextBox Then
             Dim sourceBuffer As RichTextBox = CType(Me.CurrentBuffer, RichTextBox)
-            contextMenu.items(contextMenu.IndexOf(NameOf(ContextMenuCopy))).Enabled = sourceBuffer.TextLength > 0 And sourceBuffer.SelectedText.Any
-            contextMenu.items(contextMenu.IndexOf(NameOf(ContextMenuCut))).Enabled = sourceBuffer.TextLength > 0 And sourceBuffer.SelectedText.Any
-            contextMenu.items(contextMenu.IndexOf(NameOf(ContextMenuPaste))).Enabled = sourceBuffer.CanPaste(DataFormats.GetFormat(DataFormats.Rtf)) OrElse sourceBuffer.CanPaste(DataFormats.GetFormat(DataFormats.Text))
-            contextMenu.items(contextMenu.IndexOf(NameOf(ContextMenuRedo))).Enabled = sourceBuffer.CanRedo
-            contextMenu.items(contextMenu.IndexOf(NameOf(ContextMenuUndo))).Enabled = sourceBuffer.CanUndo
+            contextMenu.Items(contextMenu.IndexOf(NameOf(ContextMenuCopy))).Enabled = sourceBuffer.TextLength > 0 And sourceBuffer.SelectedText.Any
+            contextMenu.Items(contextMenu.IndexOf(NameOf(ContextMenuCut))).Enabled = sourceBuffer.TextLength > 0 And sourceBuffer.SelectedText.Any
+            contextMenu.Items(contextMenu.IndexOf(NameOf(ContextMenuPaste))).Enabled = sourceBuffer.CanPaste(DataFormats.GetFormat(DataFormats.Rtf)) OrElse sourceBuffer.CanPaste(DataFormats.GetFormat(DataFormats.Text))
+            contextMenu.Items(contextMenu.IndexOf(NameOf(ContextMenuRedo))).Enabled = sourceBuffer.CanRedo
+            contextMenu.Items(contextMenu.IndexOf(NameOf(ContextMenuUndo))).Enabled = sourceBuffer.CanUndo
         Else
-            contextMenu.items(contextMenu.IndexOf(NameOf(ContextMenuCut))).Enabled = False
-            contextMenu.items(contextMenu.IndexOf(NameOf(ContextMenuPaste))).Enabled = False
-            contextMenu.items(contextMenu.IndexOf(NameOf(ContextMenuRedo))).Enabled = False
-            contextMenu.items(contextMenu.IndexOf(NameOf(ContextMenuUndo))).Enabled = False
+            contextMenu.Items(contextMenu.IndexOf(NameOf(ContextMenuCut))).Enabled = False
+            contextMenu.Items(contextMenu.IndexOf(NameOf(ContextMenuPaste))).Enabled = False
+            contextMenu.Items(contextMenu.IndexOf(NameOf(ContextMenuRedo))).Enabled = False
+            contextMenu.Items(contextMenu.IndexOf(NameOf(ContextMenuUndo))).Enabled = False
         End If
     End Sub
 
@@ -293,7 +293,7 @@ Partial Public Class Form1
     End Sub
 
     Private Sub ListBoxErrorList_Enter(sender As Object, e As EventArgs) Handles ListBoxErrorList.Enter
-        If Me.ListBoxErrorList.items.Count = 0 Then
+        If Me.ListBoxErrorList.Items.Count = 0 Then
             Me.ListBoxErrorList.Enabled = False
             Exit Sub
         End If
@@ -302,7 +302,7 @@ Partial Public Class Form1
     End Sub
 
     Private Sub ListBoxErrorList_MouseEnter(sender As Object, e As EventArgs) Handles ListBoxErrorList.MouseEnter
-        If Me.ListBoxErrorList.items.Count = 0 Then
+        If Me.ListBoxErrorList.Items.Count = 0 Then
             Me.ListBoxErrorList.Enabled = False
             Exit Sub
         End If
@@ -311,12 +311,12 @@ Partial Public Class Form1
     End Sub
 
     Private Sub ListBoxErrorList_SelectedValueChanged(sender As Object, e As EventArgs) Handles ListBoxErrorList.SelectedValueChanged
-        Me.ListBoxErrorList.Enabled = Me.ListBoxErrorList.items.Count > 0
+        Me.ListBoxErrorList.Enabled = Me.ListBoxErrorList.Items.Count > 0
     End Sub
 
     Private Sub ListBoxFileList_DoubleClick(sender As Object, e As EventArgs) Handles ListBoxFileList.DoubleClick
         Using fileList As ListBox = CType(sender, ListBox)
-            If fileList.items.Count = 0 Then
+            If fileList.Items.Count = 0 Then
                 Exit Sub
             End If
             Dim item As NumberedListItem = CType(fileList.SelectedItem, NumberedListItem)
@@ -336,27 +336,27 @@ Partial Public Class Form1
     End Sub
 
     Private Sub ListBoxFileList_Enter(sender As Object, e As EventArgs) Handles ListBoxFileList.Enter
-        If Me.ListBoxFileList.items.Count = 0 Then
+        If Me.ListBoxFileList.Items.Count = 0 Then
             Exit Sub
         End If
         Me.CurrentBuffer = Me.ListBoxFileList
     End Sub
 
     Private Sub ListBoxFileList_MouseEnter(sender As Object, e As EventArgs) Handles ListBoxFileList.MouseEnter
-        If Me.ListBoxFileList.items.Count = 0 Then
+        If Me.ListBoxFileList.Items.Count = 0 Then
             Exit Sub
         End If
         Me.CurrentBuffer = Me.ListBoxFileList
     End Sub
 
     Private Sub ListBoxFileList_SelectedValueChanged(sender As Object, e As EventArgs) Handles ListBoxFileList.SelectedValueChanged
-        Me.ListBoxFileList.Enabled = Me.ListBoxFileList.items.Count > 0
+        Me.ListBoxFileList.Enabled = Me.ListBoxFileList.Items.Count > 0
     End Sub
 
     Private Sub mnuCompile_Click(sender As Object, e As EventArgs) Handles mnuCompile.Click
         Me.LineNumbersForConversionInput.Visible = False
         Me.LineNumbersForConversionOutput.Visible = False
-        Me.ListBoxErrorList.items.Clear()
+        Me.ListBoxErrorList.Items.Clear()
 
         If String.IsNullOrWhiteSpace(Me.ConversionOutput.Text) Then
             Exit Sub
@@ -378,8 +378,8 @@ Partial Public Class Form1
 
     Private Async Sub mnuConvertConvertSnippet_Click(sender As Object, e As EventArgs) Handles mnuConvertConvertSnippet.Click
         SetButtonStopAndCursor(MeForm:=Me, StopButton:=Me.ButtonStopConversion, StopButtonVisible:=True)
-        Me.ListBoxErrorList.items.Clear()
-        Me.ListBoxFileList.items.Clear()
+        Me.ListBoxErrorList.Items.Clear()
+        Me.ListBoxFileList.Items.Clear()
         Me.LineNumbersForConversionOutput.Visible = False
         Me.StatusStripCurrentFileName.Text = ""
         Me.ResizeRichTextBuffers()
@@ -392,7 +392,6 @@ Partial Public Class Form1
                 {
                 .SourceCode = Me.ConversionInput.Text
                 }
-
 
         Dim dontDisplayLineNumbers As Boolean = Await Convert_Compile_ColorizeAsync(Me,
                                                                                     _requestToConvert,
@@ -945,7 +944,7 @@ Partial Public Class Form1
 
 #Region "Form Support Routines"
 
-    Private Sub DoUpdate(progressStr As String)
+    Friend Sub UpdateProgress(progressStr As String)
         Me.ProjectConversionInitProgressLabel.Text = progressStr
         If progressStr.Any Then
             Me.ConversionInput.Text = ""
@@ -983,10 +982,10 @@ Partial Public Class Form1
     Friend Sub UpdateProgressLabels(progressStr As String)
         If Me.InvokeRequired Then
             Me.Invoke(Sub()
-                          Me.DoUpdate(progressStr)
+                          Me.UpdateProgress(progressStr)
                       End Sub)
         Else
-            Me.DoUpdate(progressStr)
+            Me.UpdateProgress(progressStr)
         End If
     End Sub
 

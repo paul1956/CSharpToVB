@@ -27,7 +27,7 @@ Public Module ColorizeSupport
             Else
                 MainForm.ListBoxErrorList.Enabled = True
                 For Each dia As Diagnostic In failures
-                    MainForm.ListBoxErrorList.items.Add($"{dia.Id} Line = {dia.Location.GetLineSpan.StartLinePosition.Line + 1} {dia.GetMessage}")
+                    MainForm.ListBoxErrorList.Items.Add($"{dia.Id} Line = {dia.Location.GetLineSpan.StartLinePosition.Line + 1} {dia.GetMessage}")
                 Next
             End If
 
@@ -120,7 +120,7 @@ Public Module ColorizeSupport
                                                       "Stack Overflow"), state:=Nothing)
             End Sub
 
-        Using progressBar As ToolStripTextProgressBar = New ToolStripTextProgressBar()
+        Using progressBar As New ToolStripTextProgressBar()
             Dim defaultVBOptions As New DefaultVBOptions
             With My.Settings
                 defaultVBOptions = New DefaultVBOptions(.OptionCompare, .OptionCompareIncludeInCode, .OptionExplicit, .OptionExplicitIncludeInCode, .OptionInfer, .OptionInferIncludeInCode, .OptionStrict, .OptionStrictIncludeInCode)
@@ -130,16 +130,15 @@ Public Module ColorizeSupport
             ' that it knows how to get back to the main thread to invoke the callback there no matter what thread calls
             ' IProgress.Report.
             Dim progress As New Progress(Of ProgressReport)(AddressOf progressBar.Update)
-            MainForm._resultOfConversion = Await Task.Run(Function() ConvertInputRequest(
-                                                    RequestToConvert,
-                                                    defaultVBOptions,
-                                                    CSPreprocessorSymbols,
-                                                    VBPreprocessorSymbols,
-                                                    OptionalReferences,
-                                                    reportException,
-                                                    progress,
-                                                    CancelToken)
-                                                    ).ConfigureAwait(True)
+            MainForm._resultOfConversion = Await Task.Run(Function() ConvertInputRequest(RequestToConvert,
+                                                                                         defaultVBOptions,
+                                                                                         CSPreprocessorSymbols,
+                                                                                         VBPreprocessorSymbols,
+                                                                                         OptionalReferences,
+                                                                                         reportException,
+                                                                                         progress,
+                                                                                         CancelToken)
+                                                                                        ).ConfigureAwait(True)
 
         End Using
 

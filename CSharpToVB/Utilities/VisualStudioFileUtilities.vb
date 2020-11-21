@@ -8,43 +8,43 @@ Public Module VisualStudioFileUtilities
     Private Const VisualStudioBaseName As String = "Visual Studio "
 
     Private Function GetUserDirectoryFromTemp() As String
-        Dim SourceDirectory As String = FileIO.SpecialDirectories.Temp
-        SourceDirectory = Directory.GetParent(SourceDirectory).FullName
-        SourceDirectory = Directory.GetParent(SourceDirectory).FullName
-        SourceDirectory = Directory.GetParent(SourceDirectory).FullName
-        Return SourceDirectory
+        Dim sourceDirectory As String = FileIO.SpecialDirectories.Temp
+        sourceDirectory = Directory.GetParent(sourceDirectory).FullName
+        sourceDirectory = Directory.GetParent(sourceDirectory).FullName
+        sourceDirectory = Directory.GetParent(sourceDirectory).FullName
+        Return sourceDirectory
     End Function
 
     Public Function GetAlternetVisualStudioProjectsPath() As String
-        Dim SourceDirectory As String = GetUserDirectoryFromTemp()
+        Dim sourceDirectory As String = GetUserDirectoryFromTemp()
 
-        If Directory.Exists(SourceDirectory) Then
-            Dim ReposPath As String = Path.Combine(SourceDirectory, "Source", "Repos")
-            If Directory.Exists(ReposPath) Then
-                Return ReposPath
+        If Directory.Exists(sourceDirectory) Then
+            Dim reposPath As String = Path.Combine(sourceDirectory, "Source", "Repos")
+            If Directory.Exists(reposPath) Then
+                Return reposPath
             End If
         End If
         Return ""
     End Function
 
     Public Function GetLatestVisualStudioProjectPath() As String
-        Dim DirectoryEntries As String() = Directory.GetDirectories(FileIO.SpecialDirectories.MyDocuments, VisualStudioBaseName.Trim & "*")
-        Dim LatestVersion As Integer = 0
-        For Each dir As String In DirectoryEntries
-            Dim DirectoryFileName As String = Path.GetFileName(dir)
-            If DirectoryFileName.StartsWith(VisualStudioBaseName, StringComparison.OrdinalIgnoreCase) Then
+        Dim directoryEntries As String() = Directory.GetDirectories(FileIO.SpecialDirectories.MyDocuments, VisualStudioBaseName.Trim & "*")
+        Dim latestVersion As Integer = 0
+        For Each dir As String In directoryEntries
+            Dim directoryFileName As String = Path.GetFileName(dir)
+            If directoryFileName.StartsWith(VisualStudioBaseName, StringComparison.OrdinalIgnoreCase) Then
                 If Directory.Exists(Path.Combine(dir, "Projects")) Then
-                    Dim VSVersion As Integer = CInt(DirectoryFileName.Replace(VisualStudioBaseName, "", StringComparison.OrdinalIgnoreCase))
-                    If VSVersion > LatestVersion Then
-                        LatestVersion = VSVersion
+                    Dim vsVersion As Integer = CInt(directoryFileName.Replace(VisualStudioBaseName, "", StringComparison.OrdinalIgnoreCase))
+                    If vsVersion > latestVersion Then
+                        latestVersion = vsVersion
                     End If
                 End If
             End If
         Next
-        If LatestVersion = 0 Then
+        If latestVersion = 0 Then
             Return FileIO.SpecialDirectories.MyDocuments
         End If
-        Return Path.Combine(FileIO.SpecialDirectories.MyDocuments, $"{VisualStudioBaseName}{LatestVersion:0000}", "Projects")
+        Return Path.Combine(FileIO.SpecialDirectories.MyDocuments, $"{VisualStudioBaseName}{latestVersion:0000}", "Projects")
     End Function
 
 End Module

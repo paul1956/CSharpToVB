@@ -58,14 +58,14 @@ Public Module TSToolBaseSupport
         End If
         Dim findFrom As Integer = SearchBuffer.SelectionStart
         Dim findTo As Integer = SearchBuffer.TextLength - 1
-        Dim Options As RichTextBoxFinds = If(MainForm.TSFindMatchCaseCheckBox.Checked, RichTextBoxFinds.MatchCase, RichTextBoxFinds.None)
-        Options = Options Or If(MainForm.TSFindMatchWholeWordCheckBox.Checked, RichTextBoxFinds.WholeWord, RichTextBoxFinds.None)
+        Dim options As RichTextBoxFinds = If(MainForm.TSFindMatchCaseCheckBox.Checked, RichTextBoxFinds.MatchCase, RichTextBoxFinds.None)
+        options = options Or If(MainForm.TSFindMatchWholeWordCheckBox.Checked, RichTextBoxFinds.WholeWord, RichTextBoxFinds.None)
         If Not SearchForward Then
-            Options = Options Or RichTextBoxFinds.Reverse
+            options = options Or RichTextBoxFinds.Reverse
             findTo = findFrom
             findFrom = 0
         End If
-        Dim findIndex As Integer = SearchBuffer.Find(MainForm.TSFindFindWhatComboBox.Text, findFrom, findTo, Options)
+        Dim findIndex As Integer = SearchBuffer.Find(MainForm.TSFindFindWhatComboBox.Text, findFrom, findTo, options)
 
         If findIndex < 0 Then
             SearchBuffer.SelectionStart = If(SearchForward, 0, MainForm.TSFindFindWhatComboBox.Text.Length - 1)
@@ -93,14 +93,14 @@ Public Module TSToolBaseSupport
         inputBufferInUse = MainForm.ConversionInput.Text.Any
         MainForm.mnuConvertConvertSnippet.Enabled = inputBufferInUse
         outputBufferInUse = MainForm.ConversionOutput.Text.Any
-        Dim EnableFind As Boolean = (inputBufferInUse Or outputBufferInUse) And MainForm.TSFindFindWhatComboBox.Text.Any
-        MainForm.TSFindClearHighlightsButton.Enabled = EnableFind
-        MainForm.TSFindFindNextButton.Enabled = EnableFind
-        MainForm.TSFindFindPreviousButton.Enabled = EnableFind
-        MainForm.TSFindMatchCaseCheckBox.Enabled = EnableFind
-        MainForm.TSFindMatchWholeWordCheckBox.Enabled = EnableFind
+        Dim enableFind As Boolean = (inputBufferInUse Or outputBufferInUse) And MainForm.TSFindFindWhatComboBox.Text.Any
+        MainForm.TSFindClearHighlightsButton.Enabled = enableFind
+        MainForm.TSFindFindNextButton.Enabled = enableFind
+        MainForm.TSFindFindPreviousButton.Enabled = enableFind
+        MainForm.TSFindMatchCaseCheckBox.Enabled = enableFind
+        MainForm.TSFindMatchWholeWordCheckBox.Enabled = enableFind
         Dim selectedIndex As Integer = MainForm.TSFindLookInComboBox.SelectedIndex
-        If MainForm.TSFindLookInComboBox.items.Count > 0 AndAlso MainForm.mnuConvert.Enabled Then
+        If MainForm.TSFindLookInComboBox.Items.Count > 0 AndAlso MainForm.mnuConvert.Enabled Then
             If inputBufferInUse AndAlso outputBufferInUse Then
                 MainForm.TSFindLookInComboBox.DropDownStyle = ComboBoxStyle.DropDown
                 MainForm.TSFindLookInComboBox.SelectedIndex = selectedIndex
@@ -113,8 +113,8 @@ Public Module TSToolBaseSupport
                 MainForm.TSFindLookInComboBox.DropDownStyle = ComboBoxStyle.Simple
                 MainForm.TSFindLookInComboBox.SelectedIndex = 0
             End If
-            MainForm.TSFindMatchCaseCheckBox.Enabled = EnableFind
-            MainForm.TSFindMatchWholeWordCheckBox.Enabled = EnableFind
+            MainForm.TSFindMatchCaseCheckBox.Enabled = enableFind
+            MainForm.TSFindMatchWholeWordCheckBox.Enabled = enableFind
         End If
         Return If(ReturnInputInUse, inputBufferInUse, outputBufferInUse)
     End Function

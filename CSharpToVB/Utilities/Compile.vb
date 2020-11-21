@@ -27,22 +27,22 @@ Public Module Compile
         End If
 
         Dim assemblyName As String = Path.GetRandomFileName()
-        Dim PreprocessorSymbols As ImmutableArray(Of String) = ImmutableArray(Of String).Empty
-        PreprocessorSymbols = PreprocessorSymbols.Add(My.Settings.Framework)
-        Dim options As CSharpParseOptions = CSharpParseOptions.Default.WithPreprocessorSymbols(PreprocessorSymbols).WithKind(SourceCodeKind.Script)
+        Dim preprocessorSymbols As ImmutableArray(Of String) = ImmutableArray(Of String).Empty
+        preprocessorSymbols = preprocessorSymbols.Add(My.Settings.Framework)
+        Dim options As CSharpParseOptions = CSharpParseOptions.Default.WithPreprocessorSymbols(preprocessorSymbols).WithKind(SourceCodeKind.Script)
         Dim tree As SyntaxTree = CSharpSyntaxTree.ParseText(StringToBeCompiled, options)
         Dim compilation As CSharpCompilation = CSharpCompilation.Create(assemblyName, syntaxTrees:={tree}, SharedReferences.CSharpReferences("", New List(Of MetadataReference)))
-        Dim CompileResult As EmitResult = Nothing
-        Dim CompileSuccess As Boolean = False
-        Using ms As MemoryStream = New MemoryStream()
+        Dim compileResult As EmitResult = Nothing
+        Dim compileSuccess As Boolean = False
+        Using ms As New MemoryStream()
             Try
-                CompileResult = compilation.Emit(ms)
-                CompileSuccess = True
+                compileResult = compilation.Emit(ms)
+                compileSuccess = True
             Finally
                 ' Ignore fatal compiler errors
             End Try
         End Using
-        Return (CompileSuccess, CompileResult)
+        Return (compileSuccess, compileResult)
     End Function
 
     ''' <summary>
@@ -59,52 +59,51 @@ Public Module Compile
             ResultOfConversion.ResultStatus = ResultTriState.Success
             Return (True, Nothing)
         End If
-        Dim PreprocessorSymbols As New List(Of KeyValuePair(Of String, Object))
-        PreprocessorSymbols.AddRange(AddPredefinedPreprocessorSymbols(OutputKind.DynamicallyLinkedLibrary, VBPreprocessorSymbols))
+        Dim preprocessorSymbols As New List(Of KeyValuePair(Of String, Object))
+        preprocessorSymbols.AddRange(AddPredefinedPreprocessorSymbols(OutputKind.DynamicallyLinkedLibrary,
+                                                                      VBPreprocessorSymbols))
 
-        Dim ParseOptions As VisualBasicParseOptions = New VisualBasicParseOptions(
+        Dim parseOptions As New VisualBasicParseOptions(
                 VisualBasic.LanguageVersion.Latest,
                 DocumentationMode.Diagnose,
                 kind:=SourceCodeKind.Regular,
-                PreprocessorSymbols)
-        Dim syntaxTree As SyntaxTree = VisualBasicSyntaxTree.ParseText(text:=StringToBeCompiled, options:=ParseOptions)
+                preprocessorSymbols)
+        Dim syntaxTree As SyntaxTree = VisualBasicSyntaxTree.ParseText(text:=StringToBeCompiled, options:=parseOptions)
         Dim assemblyName As String = Path.GetRandomFileName()
 
-        Dim CompilationOptions As VisualBasicCompilationOptions =
-            New VisualBasicCompilationOptions(outputKind:=OutputKind.DynamicallyLinkedLibrary,
-                                              optionExplicit:=False,
-                                              optionInfer:=True,
-                                              optionStrict:=OptionStrict.Off,
-                                              parseOptions:=ParseOptions
-                                              )
+        Dim compilationOptions As New VisualBasicCompilationOptions(outputKind:=OutputKind.DynamicallyLinkedLibrary,
+                                                                    optionExplicit:=False,
+                                                                    optionInfer:=True,
+                                                                    optionStrict:=OptionStrict.Off,
+                                                                    parseOptions:=parseOptions)
         Dim compilation As VisualBasicCompilation =
             VisualBasicCompilation.Create(assemblyName,
                                           {syntaxTree},
                                           VisualBasicReferences(Assembly.Load("System.Windows.Forms").Location),
-                                          CompilationOptions
+                                          compilationOptions
                                           )
-        Dim CompileResult As EmitResult = Nothing
-        Dim CompileSuccess As Boolean = False
-        Using ms As MemoryStream = New MemoryStream()
+        Dim compileResult As EmitResult = Nothing
+        Dim compileSuccess As Boolean = False
+        Using ms As New MemoryStream()
             Try
-                CompileResult = compilation.Emit(ms)
-                CompileSuccess = True
+                compileResult = compilation.Emit(ms)
+                compileSuccess = True
             Finally
                 ' Ignore fatal compiler errors
             End Try
         End Using
         ResultOfConversion.SetFilteredListOfFailures(FilterDiagnostics(Diags:=compilation.GetParseDiagnostics(), Severity:=SeverityToReport))
-        Return (CompileSuccess, CompileResult)
+        Return (compileSuccess, compileResult)
     End Function
 
     Private Function FilterDiagnostics(Diags As ImmutableArray(Of Diagnostic), Severity As DiagnosticSeverity) As List(Of Diagnostic)
-        Dim FilteredDiagnostics As New List(Of Diagnostic)
-        For Each Diag As Diagnostic In Diags
-            If Diag.Location.IsInSource = True AndAlso Diag.Severity >= Severity Then
-                FilteredDiagnostics.Add(Diag)
+        Dim filteredDiagnostics As New List(Of Diagnostic)
+        For Each diag As Diagnostic In Diags
+            If diag.Location.IsInSource = True AndAlso diag.Severity >= Severity Then
+                filteredDiagnostics.Add(diag)
             End If
         Next
-        Return FilteredDiagnostics.OrderBy(Function(x As Diagnostic) x.Location.GetLineSpan.StartLinePosition.Line).ThenBy(Function(x As Diagnostic) x.Location.GetLineSpan.StartLinePosition.Character).ToList
+        Return filteredDiagnostics.OrderBy(Function(x As Diagnostic) x.Location.GetLineSpan.StartLinePosition.Line).ThenBy(Function(x As Diagnostic) x.Location.GetLineSpan.StartLinePosition.Character).ToList
     End Function
 
 End Module

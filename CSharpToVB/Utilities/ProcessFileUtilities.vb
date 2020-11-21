@@ -62,7 +62,7 @@ Module ProcessFileUtilities
                                 My.Settings.IgnoreFileList.Add(SourceFileNameWithPath)
                                 My.Settings.Save()
                             End If
-                            .ListBoxErrorList.items.Clear()
+                            .ListBoxErrorList.Items.Clear()
                             .LineNumbersForConversionInput.Visible = My.Settings.ShowSourceLineNumbers
                             .LineNumbersForConversionOutput.Visible = My.Settings.ShowDestinationLineNumbers
                             ._doNotFailOnError = True
@@ -90,7 +90,7 @@ Module ProcessFileUtilities
                 ' 5 second delay
                 Const loopSleep As Integer = 25
                 Dim delay As Integer = (1000 * My.Settings.ConversionDelay) \ loopSleep
-                For index As Integer = 0 To delay
+                For index As Integer = 1 To delay
                     Application.DoEvents()
                     Thread.Sleep(loopSleep)
                     If CancelToken.IsCancellationRequested Then
@@ -120,17 +120,29 @@ Module ProcessFileUtilities
     Friend Async Function ProcessFilesAsync(MainForm As Form1, SourceDirectory As String, TargetDirectory As String, SourceLanguageExtension As String, Stats As ProcessingStats, CancelToken As CancellationToken) As Task(Of Boolean)
         With MainForm
             Try
-                .ListBoxErrorList.items.Clear()
-                .ListBoxFileList.items.Clear()
+                .ListBoxErrorList.Items.Clear()
+                .ListBoxFileList.Items.Clear()
                 SetButtonStopAndCursor(MainForm,
                                        .ButtonStopConversion,
                                        StopButtonVisible:=True)
-                Stats.TotalFilesToProcess = SourceDirectory.GetFileCount(SourceLanguageExtension,
-                                                                         My.Settings.SkipBinAndObjFolders,
-                                                                         My.Settings.SkipTestResourceFiles
-                                                                        )
-                ' Process the list of files found in the directory.
+                MainForm.UpdateProgress("Getting Files List to Process")
+                Dim fileCount As Task(Of Long) = Task.Run(Function() As Long
+                                                              Return SourceDirectory.GetFileCount(SourceLanguageExtension,
+                                                                 My.Settings.SkipBinAndObjFolders,
+                                                                 My.Settings.SkipTestResourceFiles
+                                                                 )
+                                                          End Function
+                                                          )
+                While Not fileCount.IsCompleted
+                    If MainForm._cancellationTokenSource.IsCancellationRequested Then
+                        Exit Try
+                    End If
+                    Await Task.Delay(100, MainForm._cancellationTokenSource.Token).ConfigureAwait(True)
+                End While
+                Stats.TotalFilesToProcess = fileCount.Result
 
+                MainForm.UpdateProgress("")
+                ' Process the list of files found in the directory.
                 Return Await ProcessDirectoryAsync(MainForm,
                                                    SourceDirectory,
                                                    TargetDirectory,
@@ -146,9 +158,8 @@ Module ProcessFileUtilities
                 ' don't crash on exit
                 End
             Finally
-                SetButtonStopAndCursor(MainForm,
-                                       .ButtonStopConversion,
-                                       StopButtonVisible:=False)
+                MainForm.UpdateProgress("")
+                SetButtonStopAndCursor(MainForm, .ButtonStopConversion, StopButtonVisible:=False)
             End Try
         End With
         Return False

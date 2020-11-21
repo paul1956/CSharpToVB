@@ -21,7 +21,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim list As CSS.AttributeListSyntax = DirectCast(node.Parent, CSS.AttributeListSyntax)
                 Return Factory.Attribute(DirectCast(list.Target?.Accept(Me), VBS.AttributeTargetSyntax),
                                                DirectCast(node.Name.Accept(Me).WithConvertedTriviaFrom(node.Name), VBS.TypeSyntax),
-                                               DirectCast(node.argumentList?.Accept(Me), VBS.ArgumentListSyntax))
+                                               DirectCast(node.ArgumentList?.Accept(Me), VBS.ArgumentListSyntax))
             End Function
 
             Public Overrides Function VisitAttributeArgument(node As CSS.AttributeArgumentSyntax) As VB.VisualBasicSyntaxNode
@@ -109,18 +109,18 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     item = item.WithTrailingTrivia(localTrailingTrivia)
                     vbArguments.Add(item)
                 Next
-                Return Factory.argumentList(openParenToken, Factory.SeparatedList(vbArguments), CloseParenToken).WithConvertedLeadingTriviaFrom(node).WithTrailingTrivia(newTrailingTrivia).WithAppendedTrailingTrivia(node.GetTrailingTrivia.ConvertTriviaList())
+                Return Factory.ArgumentList(openParenToken, Factory.SeparatedList(vbArguments), CloseParenToken).WithConvertedLeadingTriviaFrom(node).WithTrailingTrivia(newTrailingTrivia).WithAppendedTrailingTrivia(node.GetTrailingTrivia.ConvertTriviaList())
             End Function
 
             Public Overrides Function VisitAttributeList(node As CSS.AttributeListSyntax) As VB.VisualBasicSyntaxNode
-                Dim csSeparators As IEnumerable(Of SyntaxToken) = node.attributes.GetSeparators
+                Dim csSeparators As IEnumerable(Of SyntaxToken) = node.Attributes.GetSeparators
                 Dim LessThanTokenWithTrivia As SyntaxToken = LessThanToken.WithConvertedTriviaFrom(node.OpenBracketToken)
                 Dim GreaterThenTokenWithTrivia As SyntaxToken = GreaterThanToken.WithTrailingTrivia(node.CloseBracketToken.TrailingTrivia.ConvertTriviaList()).AdjustTokenTrailingTrivia(RemoveTrailingLineContinuation:=True)
                 Dim AttributeList As New List(Of VBS.AttributeSyntax)
                 Dim separators As New List(Of SyntaxToken)
-                Dim separatorCount As Integer = node.attributes.Count - 1
+                Dim separatorCount As Integer = node.Attributes.Count - 1
                 For index As Integer = 0 To separatorCount
-                    Dim e As CSS.AttributeSyntax = node.attributes(index)
+                    Dim e As CSS.AttributeSyntax = node.Attributes(index)
                     AttributeList.Add(DirectCast(e.Accept(Me), VBS.AttributeSyntax).RemoveExtraLeadingEOL)
                     If separatorCount > index Then
                         separators.Add(CommaToken.WithConvertedTrailingTriviaFrom(csSeparators(index)))
@@ -136,7 +136,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
 
             Public Overrides Function VisitAttributeTargetSpecifier(node As CSS.AttributeTargetSpecifierSyntax) As VB.VisualBasicSyntaxNode
                 Dim id As SyntaxToken
-                Select Case CS.CSharpExtensions.Kind(node.identifier)
+                Select Case CS.CSharpExtensions.Kind(node.Identifier)
                     Case CS.SyntaxKind.AssemblyKeyword
                         id = AssemblyKeyword
                     Case CS.SyntaxKind.ModuleKeyword

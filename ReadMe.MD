@@ -63,6 +63,11 @@ Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpec
 Any changes to CSharpToVB application needs to change the version information in the project file **AND** in MyProject/AssemblyInfo.vb until Visual Studio is able to general file automatically for a WinForms application.
 
 ## What's New in this release
+  New in 5.0.0.15/5.0.0.7
+  - Fix corner case with converting Dictionary types
+  - Add support for display of Shortcut keys on Edit menu items
+  - Update formating to comply with .editorConfig
+
   New in 5.0.0.14/5.0.0.6
   - Fix Equals to Convert Record to Class (may not be complete yet)
   - Fix For Each where ElementType was not always used for loop variable type

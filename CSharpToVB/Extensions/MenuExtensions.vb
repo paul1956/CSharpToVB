@@ -53,7 +53,7 @@ Module MenuExtensions
 
     <Extension>
     Friend Function IndexOf(ContextMenu As ContextMenuStrip, Text As String, Optional searchAllChildren As Boolean = False) As Integer
-        Return ContextMenu.items.IndexOf(ContextMenu.items.Find(Text, searchAllChildren)(0))
+        Return ContextMenu.Items.IndexOf(ContextMenu.Items.Find(Text, searchAllChildren)(0))
     End Function
 
     <Extension>
@@ -75,10 +75,10 @@ Module MenuExtensions
     Friend Sub TSFindWhatMRUUpdateUI(dropDownItems As ToolStripComboBox)
         ' clear MRU menu items...
         Dim mruToolStripItems As New List(Of ToolStripItem)
-        dropDownItems.items.Clear()
+        dropDownItems.Items.Clear()
         ' display items (in reverse order so the most recent is on top)...
         For iCounter As Integer = My.Settings.TSFindMRU_Data.Count - 1 To 0 Step -1
-            dropDownItems.items.Add(My.Settings.TSFindMRU_Data(iCounter))
+            dropDownItems.Items.Add(My.Settings.TSFindMRU_Data(iCounter))
         Next
     End Sub
 

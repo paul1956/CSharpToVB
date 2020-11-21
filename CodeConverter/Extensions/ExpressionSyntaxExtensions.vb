@@ -167,7 +167,7 @@ Namespace CSharpToVBConverter
 
         <Extension>
         Friend Function CreateVbArgList(Of T As VBS.ExpressionSyntax)(argExpressions As IEnumerable(Of T)) As VBS.ArgumentListSyntax
-            Return Factory.argumentList(Factory.SeparatedList(argExpressions.Select(Function(e) CType(Factory.SimpleArgument(e), VBS.ArgumentSyntax))))
+            Return Factory.ArgumentList(Factory.SeparatedList(argExpressions.Select(Function(e) CType(Factory.SimpleArgument(e), VBS.ArgumentSyntax))))
         End Function
 
         <Extension>

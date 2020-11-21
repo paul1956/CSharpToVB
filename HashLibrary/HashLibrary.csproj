@@ -13,6 +13,7 @@
     <FileVersion>1.0.0.0</FileVersion>
     <Version>1.0.1</Version>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <Product>Hash Library</Product>
   </PropertyGroup>
 
   <ItemGroup>

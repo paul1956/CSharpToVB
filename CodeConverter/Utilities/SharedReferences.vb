@@ -39,32 +39,32 @@ Namespace CSharpToVBConverter
                 Exit Sub
             End If
             ' CodeAnalysisReference
-            Dim Location As String = GetType(Compilation).Assembly.Location
-            AddReferences(s_referencePath, Location)
+            Dim location As String = GetType(Compilation).Assembly.Location
+            AddReferences(s_referencePath, location)
 
             'SystemReferences
-            For Each DLL_Path As String In Directory.GetFiles(s_frameworkDirectory, "*.dll")
-                If DLL_Path.EndsWith("System.EnterpriseServices.Wrapper.dll", StringComparison.Ordinal) Then
+            For Each dllPath As String In Directory.GetFiles(s_frameworkDirectory, "*.dll")
+                If dllPath.EndsWith("System.EnterpriseServices.Wrapper.dll", StringComparison.Ordinal) Then
                     Continue For
                 End If
-                AddReferences(s_referencePath, DLL_Path)
+                AddReferences(s_referencePath, dllPath)
             Next
 
             ' ComponentModelEditorBrowsable
-            Location = GetType(ComponentModel.EditorBrowsableAttribute).GetAssemblyLocation
-            AddReferences(s_referencePath, Location)
+            location = GetType(ComponentModel.EditorBrowsableAttribute).GetAssemblyLocation
+            AddReferences(s_referencePath, location)
 
             ' SystemCore
-            Location = GetType(Enumerable).Assembly.Location
-            AddReferences(s_referencePath, Location)
+            location = GetType(Enumerable).Assembly.Location
+            AddReferences(s_referencePath, location)
 
             ' SystemXmlLinq
-            Location = GetType(XElement).Assembly.Location
-            AddReferences(s_referencePath, Location)
+            location = GetType(XElement).Assembly.Location
+            AddReferences(s_referencePath, location)
 
             ' VBRuntime
-            Location = GetType(CompilerServices.StandardModuleAttribute).Assembly.Location
-            s_visualBasicReferences.Add(MetadataReference.CreateFromFile(Location))
+            location = GetType(CompilerServices.StandardModuleAttribute).Assembly.Location
+            s_visualBasicReferences.Add(MetadataReference.CreateFromFile(location))
 
             ' Windows Forms
             If Not String.IsNullOrWhiteSpace(WindowsFormsLocation) Then

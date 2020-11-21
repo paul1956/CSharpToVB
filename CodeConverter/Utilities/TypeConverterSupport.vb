@@ -355,7 +355,7 @@ Namespace CSharpToVBConverter
                         indexOf -= 7
                     End If
                     Dim name As String = typeString.Substring(0, length:=indexOf)
-                    typeString = typeString.Substring(indexOf + 3)
+                    typeString = typeString.Substring(indexOf + 3).Trim
                     Dim openParenCount As Integer
                     Dim indexOfTypeEnd As Integer
                     openParenCount = 1
@@ -417,14 +417,12 @@ Namespace CSharpToVBConverter
                             endIndex = possibleTypes.Length
                         ElseIf endIndex = -1 OrElse endIndex > firstLessThan Then
                             firstLessThan = 0
-                            For currentIndex As Integer = firstLessThan To possibleTypes.Length - 1
+                            Dim currentIndex As Integer
+                            For currentIndex = firstLessThan To possibleTypes.Length - 1
                                 Select Case possibleTypes.Chars(currentIndex)
                                     Case "("c, "["c
                                         openParenCount += 1
-                                    Case ")"c
-                                        openParenCount -= 1
-                                        endIndex = currentIndex + 1
-                                    Case "]"c
+                                    Case "]"c, ")"c
                                         openParenCount -= 1
                                         If currentIndex = possibleTypes.Length - 1 Then
                                             endIndex = currentIndex + 1
@@ -436,6 +434,9 @@ Namespace CSharpToVBConverter
                                         End If
                                 End Select
                             Next
+                            If endIndex = -1 OrElse currentIndex > endIndex Then
+                                endIndex = currentIndex
+                            End If
                         End If
                         Dim argument As String = possibleTypes.Substring(0, endIndex)
 

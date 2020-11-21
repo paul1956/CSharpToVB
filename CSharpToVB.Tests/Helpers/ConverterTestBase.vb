@@ -125,15 +125,15 @@ Option Strict Off
             Dim projectID As ProjectId = ProjectId.CreateNewId()
             Dim documentID As DocumentId = DocumentId.CreateNewId(projectId:=projectID)
             workspace.Open(ProjectInfo.Create(
-                                            id:=projectID,
-                                            version:=VersionStamp.Create(),
+                                            projectID,
+                                            VersionStamp.Create(),
                                             name:="TestProject",
                                             assemblyName:="TestProject",
-                                            language:=LanguageNames.VisualBasic,
+                                            LanguageNames.VisualBasic,
                                             filePath:=Nothing,
                                             outputFilePath:=Nothing,
-                                            compilationOptions:=compilationOptions,
-                                            parseOptions:=parseOptions,
+                                            compilationOptions,
+                                            parseOptions,
                                             documents:={
                                                 DocumentInfo.Create(
                                                     documentID,
@@ -143,7 +143,7 @@ Option Strict Off
                                                 )
                                             },
                                             projectReferences:=Nothing,
-                                            metadataReferences:=VisualBasicReferences(Assembly.Load("System.Windows.Forms").Location)))
+                                            VisualBasicReferences(Assembly.Load("System.Windows.Forms").Location)))
             doc = workspace.CurrentSolution.GetProject(projectID).GetDocument(documentID)
         End Sub
 

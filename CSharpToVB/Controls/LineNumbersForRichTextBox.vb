@@ -865,7 +865,7 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
                                 zPoint = New Point(CInt(_zLNIs(zA)._rectangle.Right - Me.Padding.Right + _zLineNumbers_Offset.Width - zTextSize.Width), CInt(_zLNIs(zA)._rectangle.Bottom - Me.Padding.Bottom + 1 + _zLineNumbers_Offset.Height - zTextSize.Height))
                         End Select
                         '   TextClipping
-                        Dim zItemClipRectangle As Rectangle = New Rectangle(zPoint, zTextSize.ToSize)
+                        Dim zItemClipRectangle As New Rectangle(zPoint, zTextSize.ToSize)
                         If _zLineNumbers_ClipByItemRectangle = True Then
                             '   If selected, the text will be clipped so that it doesn't spill out of its own LineNumberItem-area.
                             '   Only the part of the text inside the LineNumberItem.Rectangle should be visible, so intersect with the ItemRectangle

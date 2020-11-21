@@ -85,16 +85,16 @@ Public Module ConvertSolutionFileUtilities
 
     Private Function GetGuid(CurrentLine As String, First As Boolean) As String
         Dim start As Integer
-        Dim Len As Integer
+        Dim len As Integer
         If First Then
             start = CurrentLine.IndexOf("{", StringComparison.OrdinalIgnoreCase) + 1
-            Len = CurrentLine.IndexOf("}", StringComparison.OrdinalIgnoreCase) - start
+            len = CurrentLine.IndexOf("}", StringComparison.OrdinalIgnoreCase) - start
         Else
             start = CurrentLine.LastIndexOf("{", StringComparison.OrdinalIgnoreCase) + 1
-            Len = CurrentLine.LastIndexOf("}", StringComparison.OrdinalIgnoreCase) - start
+            len = CurrentLine.LastIndexOf("}", StringComparison.OrdinalIgnoreCase) - start
         End If
         If start > 0 Then
-            Return CurrentLine.Substring(start, Len).ToUpperInvariant
+            Return CurrentLine.Substring(start, len).ToUpperInvariant
         End If
         Return String.Empty
     End Function
@@ -142,7 +142,7 @@ Public Module ConvertSolutionFileUtilities
             Next
             ' Process File body
             '   Process Projects
-            Dim ProjectsGUIDMap As New Dictionary(Of String, String)
+            Dim projectsGUIDMap As New Dictionary(Of String, String)
             currentLine = GetNextTextLine(sr)
             If currentLine Is Nothing Then
                 Throw New IOException($"Premature EOF in solution file '{SolutionFilePath}'")
@@ -162,7 +162,7 @@ Public Module ConvertSolutionFileUtilities
                     newProjectTypeGuid = oldProjectTypeGUID
                     newProjectGuid = oldProjectGUID
                 End If
-                ProjectsGUIDMap.Add(oldProjectGUID, newProjectGuid)
+                projectsGUIDMap.Add(oldProjectGUID, newProjectGuid)
                 If projectConverted Then
                     sb.AppendLine(currentLine.Replace(oldProjectTypeGUID, newProjectTypeGuid, StringComparison.OrdinalIgnoreCase) _
                                              .Replace(oldProjectGUID, newProjectGuid, StringComparison.OrdinalIgnoreCase) _
@@ -200,7 +200,7 @@ Public Module ConvertSolutionFileUtilities
                                 Stop
                                 sb.AppendLine(currentLine)
                             Else
-                                sb.AppendLine(currentLine.Replace(oldProjectTypeGUID, ProjectsGUIDMap(oldProjectTypeGUID), StringComparison.OrdinalIgnoreCase))
+                                sb.AppendLine(currentLine.Replace(oldProjectTypeGUID, projectsGUIDMap(oldProjectTypeGUID), StringComparison.OrdinalIgnoreCase))
                             End If
                             currentLine = GetNextTextLine(sr)
                         End While
@@ -247,7 +247,7 @@ Public Module ConvertSolutionFileUtilities
                                 Stop
                                 sb.AppendLine(currentLine)
                             Else
-                                sb.AppendLine(currentLine.Replace(oldGUID, ProjectsGUIDMap(oldGUID), StringComparison.OrdinalIgnoreCase))
+                                sb.AppendLine(currentLine.Replace(oldGUID, projectsGUIDMap(oldGUID), StringComparison.OrdinalIgnoreCase))
                             End If
                             currentLine = GetNextTextLine(sr)
                         End While
@@ -260,7 +260,7 @@ Public Module ConvertSolutionFileUtilities
                             If currentLine.Contains("SolutionGuid", StringComparison.OrdinalIgnoreCase) OrElse String.IsNullOrWhiteSpace(oldGUID) Then
                                 sb.AppendLine(currentLine)
                             Else
-                                sb.AppendLine(currentLine.Replace(oldGUID, ProjectsGUIDMap(oldGUID), StringComparison.OrdinalIgnoreCase))
+                                sb.AppendLine(currentLine.Replace(oldGUID, projectsGUIDMap(oldGUID), StringComparison.OrdinalIgnoreCase))
                             End If
                             currentLine = GetNextTextLine(sr)
                         End While
@@ -279,14 +279,14 @@ Public Module ConvertSolutionFileUtilities
                                 Stop
                                 sb.AppendLine(currentLine)
                             Else
-                                currentLine = currentLine.Replace(oldGUID, ProjectsGUIDMap(oldGUID), StringComparison.OrdinalIgnoreCase)
+                                currentLine = currentLine.Replace(oldGUID, projectsGUIDMap(oldGUID), StringComparison.OrdinalIgnoreCase)
                             End If
                             oldGUID = GetGuid(currentLine, First:=False)
                             If String.IsNullOrWhiteSpace(oldGUID) Then
                                 Stop
                                 sb.AppendLine(currentLine)
                             Else
-                                sb.AppendLine(currentLine.Replace(oldGUID, ProjectsGUIDMap(oldGUID), StringComparison.OrdinalIgnoreCase))
+                                sb.AppendLine(currentLine.Replace(oldGUID, projectsGUIDMap(oldGUID), StringComparison.OrdinalIgnoreCase))
                             End If
                             currentLine = GetNextTextLine(sr)
                         End While

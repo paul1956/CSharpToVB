@@ -80,9 +80,9 @@ Public Class ColorSelector
         If String.IsNullOrWhiteSpace(Name) Then
             Return s_colorMappingDictionary("default")
         End If
-        Dim ReturnValue As Color = Nothing
-        If s_colorMappingDictionary.TryGetValue(Name, ReturnValue) Then
-            Return ReturnValue
+        Dim returnValue As Color = Nothing
+        If s_colorMappingDictionary.TryGetValue(Name, returnValue) Then
+            Return returnValue
         End If
         Debug.Print($"GetColorFromName missing({Name})")
         Return s_colorMappingDictionary("error")
@@ -102,20 +102,19 @@ Public Class ColorSelector
             WriteColorDictionaryToFile(FPath)
             Exit Sub
         End If
-        Dim FileStream As FileStream = File.OpenRead(FPath)
-        Dim sr As New StreamReader(FileStream)
+        Dim fileStream As FileStream = File.OpenRead(FPath)
+        Dim sr As New StreamReader(fileStream)
         sr.ReadLine()
         While sr.Peek() <> -1
             Dim line As String = sr.ReadLine()
-            Dim Split() As String = line.Split(","c)
-            Dim key As String = Split(0)
-            Dim R As Integer = Convert.ToInt32(Split(1), Globalization.CultureInfo.InvariantCulture)
-            Dim G As Integer = Convert.ToInt32(Split(2), Globalization.CultureInfo.InvariantCulture)
-            Dim B As Integer = Convert.ToInt32(Split(3), Globalization.CultureInfo.InvariantCulture)
-            s_colorMappingDictionary(key) = Color.FromArgb(R, G, B)
+            Dim splitLine() As String = line.Split(","c)
+            Dim key As String = splitLine(0)
+            s_colorMappingDictionary(key) = Color.FromArgb(red:=Convert.ToInt32(splitLine(1), Globalization.CultureInfo.InvariantCulture),
+                                                           green:=Convert.ToInt32(splitLine(2), Globalization.CultureInfo.InvariantCulture),
+                                                           blue:=Convert.ToInt32(splitLine(3), Globalization.CultureInfo.InvariantCulture))
         End While
         sr.Close()
-        FileStream.Close()
+        fileStream.Close()
     End Sub
 
     Public Shared Sub WriteColorDictionaryToFile()
@@ -123,15 +122,16 @@ Public Class ColorSelector
     End Sub
 
     Public Shared Sub WriteColorDictionaryToFile(FPath As String)
-        Dim FileStream As FileStream = File.OpenWrite(FPath)
-        Dim sw As New StreamWriter(FileStream)
-        sw.WriteLine($"Key,R,G,B")
-        For Each kvp As KeyValuePair(Of String, Color) In s_colorMappingDictionary
-            sw.WriteLine($"{kvp.Key},{kvp.Value.R},{kvp.Value.G},{kvp.Value.B}")
-        Next
-        sw.Flush()
-        sw.Close()
-        FileStream.Close()
+        Using fileStream As FileStream = File.OpenWrite(FPath)
+            Using sw As New StreamWriter(fileStream)
+                sw.WriteLine($"Key,R,G,B")
+                For Each kvp As KeyValuePair(Of String, Color) In s_colorMappingDictionary
+                    sw.WriteLine($"{kvp.Key},{kvp.Value.R},{kvp.Value.G},{kvp.Value.B}")
+                Next
+                sw.Flush()
+                sw.Close()
+            End Using
+        End Using
     End Sub
 
 End Class

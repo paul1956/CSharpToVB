@@ -8,8 +8,8 @@ Public NotInheritable Class AboutBox1
 
     Private Sub AboutBox1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         ' Set the title of the form.
-        Dim ApplicationTitle As String = If(My.Application.Info.Title, IO.Path.GetFileNameWithoutExtension(My.Application.Info.AssemblyName))
-        Me.Text = $"About {ApplicationTitle}"
+        Dim applicationTitle As String = If(My.Application.Info.Title, IO.Path.GetFileNameWithoutExtension(My.Application.Info.AssemblyName))
+        Me.Text = $"About {applicationTitle}"
         ' Initialize all of the text displayed on the About Box.
 
         Me.LabelProductName.Text = $"{My.Application.Info.ProductName}"
@@ -17,8 +17,14 @@ Public NotInheritable Class AboutBox1
 
         Me.LabelCopyright.Text = My.Application.Info.Copyright
         Me.LabelCompanyName.Text = $"Developer {My.Application.Info.CompanyName}"
-        Dim coreinfo As New AssemblyInfo(GetType(CSharpToVBConverter.CodeWithOptions).Assembly)
-        Me.TextBoxDescription.Text = $"{My.Application.Info.Description}{vbCrLf}{vbCrLf}{coreinfo.ProductName} {coreinfo.Version}"
+        Dim codeConverterInfo As New AssemblyInfo(GetType(CSharpToVBConverter.CodeWithOptions).Assembly)
+        Dim hashLibrary As New AssemblyInfo(GetType(HashLibrary.CodeRefactoringHash).Assembly)
+        Dim progressReportLibrary As New AssemblyInfo(GetType(ProgressReportLibrary.ProgressReport).Assembly)
+        Me.TextBoxDescription.Text = $"{My.Application.Info.Description}
+
+{codeConverterInfo.ProductName} {codeConverterInfo.Version}
+{hashLibrary.ProductName} {hashLibrary.Version}
+{progressReportLibrary.ProductName} {progressReportLibrary.Version}"
     End Sub
 
     Private Sub OKButton_Click(sender As Object, e As EventArgs) Handles OKButton.Click

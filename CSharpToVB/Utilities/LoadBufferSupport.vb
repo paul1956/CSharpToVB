@@ -11,16 +11,16 @@ Module LoadBufferSupport
     Friend Function LoadInputBufferFromStream(MainForm As Form1, Path As String) As Integer
         MainForm.ConversionInput.Visible = False
         LocalUseWaitCursor(MainForm, WaitCursorEnable:=True)
-        Dim SourceText As String
+        Dim sourceText As String
         Using myFileStream As FileStream = File.OpenRead(Path)
-            SourceText = myFileStream.GetFileTextFromStream()
+            sourceText = myFileStream.GetFileTextFromStream()
         End Using
 
-        Dim Lines() As String = SourceText.SplitLines
+        Dim lines() As String = sourceText.SplitLines
         If MainForm.mnuOptionsColorizeSource.Checked Then
-            Colorize(MainForm, GetClassifiedRanges(Lines.Join(vbCrLf), LanguageNames.CSharp), MainForm.ConversionInput, Lines.Length)
+            Colorize(MainForm, GetClassifiedRanges(lines.Join(vbCrLf), LanguageNames.CSharp), MainForm.ConversionInput, lines.Length)
         Else
-            MainForm.ConversionInput.Text = Lines.Join(vbCrLf)
+            MainForm.ConversionInput.Text = lines.Join(vbCrLf)
         End If
         MainForm.ConversionInput.Visible = True
         If MainForm.mnuViewShowSourceLineNumbers.Checked Then
@@ -30,21 +30,21 @@ Module LoadBufferSupport
             Application.DoEvents()
         End If
         LocalUseWaitCursor(MainForm, WaitCursorEnable:=False)
-        Return Lines.Length
+        Return lines.Length
     End Function
 
     Friend Sub LoadOutputBufferFromStream(MainForm As Form1, Path As String)
         LocalUseWaitCursor(MainForm, WaitCursorEnable:=True)
-        Dim SourceText As String
+        Dim sourceText As String
         Using myFileStream As FileStream = File.OpenRead(Path)
-            SourceText = myFileStream.GetFileTextFromStream()
+            sourceText = myFileStream.GetFileTextFromStream()
         End Using
 
-        Dim Lines() As String = SourceText.SplitLines
+        Dim lines() As String = sourceText.SplitLines
         If MainForm.mnuOptionsColorizeSource.Checked Then
-            Colorize(MainForm, GetClassifiedRanges(Lines.Join(vbCrLf), LanguageNames.VisualBasic), MainForm.ConversionOutput, Lines.Length)
+            Colorize(MainForm, GetClassifiedRanges(lines.Join(vbCrLf), LanguageNames.VisualBasic), MainForm.ConversionOutput, lines.Length)
         Else
-            MainForm.ConversionOutput.Text = Lines.Join(vbCrLf)
+            MainForm.ConversionOutput.Text = lines.Join(vbCrLf)
         End If
         LocalUseWaitCursor(MainForm, WaitCursorEnable:=False)
     End Sub

@@ -3,6 +3,7 @@
 ' See the LICENSE file in the project root for more information.
 
 Public Class ToolStripCheckBox
+
     Public Sub New()
         MyBase.New(New CheckBox)
     End Sub

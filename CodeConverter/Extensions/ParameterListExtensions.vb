@@ -16,14 +16,14 @@ Namespace CSharpToVBConverter.ToVisualBasic
             If ParameterList IsNot Nothing AndAlso ParameterList.HasTrailingTrivia AndAlso ParameterList.GetTrailingTrivia.ContainsCommentOrDirectiveTrivia Then
                 Dim parameterListTrailingTrivia As New SyntaxTriviaList
                 Dim initialTriviaList As SyntaxTriviaList = ParameterList.GetTrailingTrivia
-                Dim FoundEndIf As Boolean = False
+                Dim foundEndIf As Boolean = False
                 For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
                     Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.index, LookaheadCount:=1)
                     Select Case e.Value.RawKind
                         Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
                             parameterListTrailingTrivia = parameterListTrailingTrivia.Add(e.Value)
                         Case VB.SyntaxKind.EndOfLineTrivia
-                            If FoundEndIf Then
+                            If foundEndIf Then
                                 statementTrailingTrivia = statementTrailingTrivia.Add(e.Value)
                             Else
                                 parameterListTrailingTrivia = parameterListTrailingTrivia.Add(e.Value)
@@ -31,7 +31,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         Case VB.SyntaxKind.WhitespaceTrivia
                             parameterListTrailingTrivia = parameterListTrailingTrivia.Add(e.Value)
                         Case VB.SyntaxKind.EndIfDirectiveTrivia
-                            FoundEndIf = True
+                            foundEndIf = True
                             If Not statementTrailingTrivia.Any Then
                                 statementTrailingTrivia = statementTrailingTrivia.Add(VBEOLTrivia)
                             End If

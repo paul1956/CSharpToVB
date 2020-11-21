@@ -36,7 +36,6 @@ Namespace CSharpToVBConverter.ToVisualBasic
 
                 Dim asClause As VBS.SimpleAsClauseSyntax = Factory.SimpleAsClause(AsKeyword.With(Factory.Space, Factory.Space), New SyntaxList(Of VBS.AttributeListSyntax), ConvertToType(typeName.NormalizeWhitespace.ToString))
 
-
                 GetStatementwithIssues(node).AddMarker(FactoryDimStatement(discardNameToken,
                                                                            asClause,
                                                                            Factory.EqualsValue(NothingExpression)),

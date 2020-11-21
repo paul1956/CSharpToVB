@@ -28,7 +28,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Return Nothing
                 End If
                 Dim ies As CSS.InvocationExpressionSyntax = CType((nameArgument.Parent?.Parent), CSS.InvocationExpressionSyntax)
-                Dim argIndex As Integer = ies.argumentList.Arguments.IndexOf(nameArgument)
+                Dim argIndex As Integer = ies.ArgumentList.Arguments.IndexOf(nameArgument)
                 'TODO: Deal with named parameters
                 Dim symbolInfo As SymbolInfo = _mSemanticModel.GetSymbolInfo(ies.Expression)
                 Dim destinationType As ISymbol = symbolInfo.ExtractBestMatch(Of ISymbol)(Function(m) m.GetParameters().Length > argIndex)

@@ -3,7 +3,7 @@
 ' See the LICENSE file in the project root for more information.
 
 Public Class IgnoreFilesWithErrorsListDialog
-    Private ReadOnly _list_string As IList(Of String) = New List(Of String)()
+    Private ReadOnly _list_string As New List(Of String)()
     Private _fileToLoad As String = ""
 
     Public ReadOnly Property FileToLoad As String

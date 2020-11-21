@@ -22,7 +22,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim parentBlock As SyntaxNode = node.Parent.Parent
                 If TypeOf parentBlock Is CSS.StructDeclarationSyntax Then
                     Dim s As CSS.StructDeclarationSyntax = DirectCast(parentBlock, CSS.StructDeclarationSyntax)
-                    Return CS.SyntaxFactory.TypeParameterConstraintClause(CS.SyntaxFactory.IdentifierName(s.typeParameterList.Parameters(0).identifier.Text), Nothing)
+                    Return CS.SyntaxFactory.TypeParameterConstraintClause(CS.SyntaxFactory.IdentifierName(s.TypeParameterList.Parameters(0).Identifier.Text), Nothing)
                 Else
                     clauses = parentBlock.TypeSwitch(
                     Function(m As CSS.MethodDeclarationSyntax) m.ConstraintClauses,

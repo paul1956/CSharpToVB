@@ -342,7 +342,7 @@ Namespace CSharpToVBConverter
         Friend Function WithAppendedTriviaFromEndOfDirectiveToken(Of T As SyntaxNode)(node As T, Token As SyntaxToken) As T
             Dim newTrailingTrivia As New SyntaxTriviaList
             If Token.HasLeadingTrivia Then
-                newTrailingTrivia = Token.leadingTrivia.ConvertTriviaList()
+                newTrailingTrivia = Token.LeadingTrivia.ConvertTriviaList()
             End If
             If Token.HasTrailingTrivia Then
                 newTrailingTrivia = newTrailingTrivia.AddRange(Token.TrailingTrivia.ConvertTriviaList())
@@ -640,7 +640,7 @@ Namespace CSharpToVBConverter
                 Throw New ArgumentException($"Parameter {NameOf(node)} Is Nothing")
             End If
             If otherToken.HasLeadingTrivia Then
-                node = node.WithLeadingTrivia(otherToken.leadingTrivia.ConvertTriviaList())
+                node = node.WithLeadingTrivia(otherToken.LeadingTrivia.ConvertTriviaList())
             End If
             If Not otherToken.HasTrailingTrivia Then
                 Return node
@@ -669,7 +669,7 @@ Namespace CSharpToVBConverter
             If Not otherToken.HasLeadingTrivia Then
                 Return node
             End If
-            Return node.WithLeadingTrivia(otherToken.leadingTrivia.ConvertTriviaList())
+            Return node.WithLeadingTrivia(otherToken.LeadingTrivia.ConvertTriviaList())
         End Function
 
 #End Region
