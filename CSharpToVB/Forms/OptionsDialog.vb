@@ -13,15 +13,12 @@ Public Class OptionsDialog
 
     Private Sub ItemColor_ComboBox_DrawItem(sender As Object, e As DrawItemEventArgs) Handles ItemColor_ComboBox.DrawItem
         If e.Index >= 0 Then
-            Dim n As String = CType(sender, ComboBox).Items(e.Index).ToString()
-            Using f As New Font("Segoe UI", 9, FontStyle.Regular)
-                Dim c As Color = ColorSelector.GetColorFromName(n)
-                Using b As Brush = New SolidBrush(c)
-                    Dim rect As Rectangle = e.Bounds
-                    Dim g As Graphics = e.Graphics
-                    g.DrawString(n, f, Brushes.Black, rect.X, rect.Top)
-                    g.FillRectangle(b, rect.X + 250, rect.Y + 2, rect.Width - 10, rect.Height - 6)
-                End Using
+            Dim itemName As String = CType(sender, ComboBox).Items(e.Index).ToString()
+            Using b As Brush = New SolidBrush(ColorSelector.GetColorFromName(itemName))
+                Dim eBounds As Rectangle = e.Bounds
+                Dim pt As New Point(eBounds.X, eBounds.Top)
+                TextRenderer.DrawText(e.Graphics, itemName, Me.Font, pt, Color.Black)
+                e.Graphics.FillRectangle(b, eBounds.X + 250, eBounds.Y + 2, eBounds.Width - 10, eBounds.Height - 6)
             End Using
         End If
     End Sub

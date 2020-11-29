@@ -120,27 +120,24 @@ Public Module ColorizeSupport
                                                       "Stack Overflow"), state:=Nothing)
             End Sub
 
-        Using progressBar As New ToolStripTextProgressBar()
-            Dim defaultVBOptions As New DefaultVBOptions
-            With My.Settings
-                defaultVBOptions = New DefaultVBOptions(.OptionCompare, .OptionCompareIncludeInCode, .OptionExplicit, .OptionExplicitIncludeInCode, .OptionInfer, .OptionInferIncludeInCode, .OptionStrict, .OptionStrictIncludeInCode)
-            End With
-            ' The System.Progress class invokes the callback on the UI thread. It does this because we create the
-            ' System.Progress object on the main thread. During creation, it reads SynchronizationContext.Current so
-            ' that it knows how to get back to the main thread to invoke the callback there no matter what thread calls
-            ' IProgress.Report.
-            Dim progress As New Progress(Of ProgressReport)(AddressOf progressBar.Update)
-            MainForm._resultOfConversion = Await Task.Run(Function() ConvertInputRequest(RequestToConvert,
-                                                                                         defaultVBOptions,
-                                                                                         CSPreprocessorSymbols,
-                                                                                         VBPreprocessorSymbols,
-                                                                                         OptionalReferences,
-                                                                                         reportException,
-                                                                                         progress,
-                                                                                         CancelToken)
-                                                                                        ).ConfigureAwait(True)
-
-        End Using
+        Dim defaultVBOptions As New DefaultVBOptions
+        With My.Settings
+            defaultVBOptions = New DefaultVBOptions(.OptionCompare, .OptionCompareIncludeInCode, .OptionExplicit, .OptionExplicitIncludeInCode, .OptionInfer, .OptionInferIncludeInCode, .OptionStrict, .OptionStrictIncludeInCode)
+        End With
+        ' The System.Progress class invokes the callback on the UI thread. It does this because we create the
+        ' System.Progress object on the main thread. During creation, it reads SynchronizationContext.Current so
+        ' that it knows how to get back to the main thread to invoke the callback there no matter what thread calls
+        ' IProgress.Report.
+        Dim progress As New Progress(Of ProgressReport)(AddressOf MainForm.StatusStripConversionProgressBar.Update)
+        MainForm._resultOfConversion = Await Task.Run(Function() ConvertInputRequest(RequestToConvert,
+                                                                                     defaultVBOptions,
+                                                                                     CSPreprocessorSymbols,
+                                                                                     VBPreprocessorSymbols,
+                                                                                     OptionalReferences,
+                                                                                     reportException,
+                                                                                     progress,
+                                                                                     CancelToken)
+                                                                                ).ConfigureAwait(True)
 
         If MainForm._resultOfConversion Is Nothing Then
             MainForm.mnuFileSaveAs.Enabled = False
