@@ -145,7 +145,7 @@ Partial Class Form1
         '
         Me.MenuStrip1.BackColor = System.Drawing.Color.FromArgb(CType(CType(204, Byte), Integer), CType(CType(213, Byte), Integer), CType(CType(240, Byte), Integer))
         Me.MenuStrip1.ImageScalingSize = New System.Drawing.Size(36, 36)
-        Me.MenuStrip1.items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuFile, Me.mnuEdit, Me.mnuCompile, Me.mnuConvert, Me.mnuOptions, Me.mnuView, Me.mnuHelp})
+        Me.MenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuFile, Me.mnuEdit, Me.mnuCompile, Me.mnuConvert, Me.mnuOptions, Me.mnuView, Me.mnuHelp})
         Me.MenuStrip1.Location = New System.Drawing.Point(0, 0)
         Me.MenuStrip1.Name = "MenuStrip1"
         Me.MenuStrip1.Padding = New System.Windows.Forms.Padding(7, 2, 0, 2)
@@ -418,7 +418,7 @@ Partial Class Form1
         'mnuOptionsDelayBetweenConversions
         '
         Me.mnuOptionsDelayBetweenConversions.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.mnuOptionsDelayBetweenConversions.items.AddRange(New Object() {"Delay Between Conversions = None", "Delay Between Conversions = 5 Seconds", "Delay Between Conversions = 10 Seconds"})
+        Me.mnuOptionsDelayBetweenConversions.Items.AddRange(New Object() {"Delay Between Conversions = None", "Delay Between Conversions = 5 Seconds", "Delay Between Conversions = 10 Seconds"})
         Me.mnuOptionsDelayBetweenConversions.MaxDropDownItems = 3
         Me.mnuOptionsDelayBetweenConversions.Name = "mnuOptionsDelayBetweenConversions"
         Me.mnuOptionsDelayBetweenConversions.Size = New System.Drawing.Size(300, 23)
@@ -598,7 +598,7 @@ Partial Class Form1
         'TSFindToolStrip
         '
         Me.TSFindToolStrip.BackColor = System.Drawing.Color.FromArgb(CType(CType(204, Byte), Integer), CType(CType(213, Byte), Integer), CType(CType(240, Byte), Integer))
-        Me.TSFindToolStrip.items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.TSFindFindWhatComboBox, Me.TSFindSeparator1, Me.TSFindLookInLabel, Me.TSFindLookInComboBox, Me.TSFindSeparator2, Me.TSFindFindPreviousButton, Me.TSFindFindNextButton, Me.TSFindSeparator3, Me.TSFindMatchCaseCheckBox, Me.TSFindMatchWholeWordCheckBox, Me.TSFindSeparator4, Me.TSFindClearHighlightsButton, Me.TSFindSeparator5})
+        Me.TSFindToolStrip.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.TSFindFindWhatComboBox, Me.TSFindSeparator1, Me.TSFindLookInLabel, Me.TSFindLookInComboBox, Me.TSFindSeparator2, Me.TSFindFindPreviousButton, Me.TSFindFindNextButton, Me.TSFindSeparator3, Me.TSFindMatchCaseCheckBox, Me.TSFindMatchWholeWordCheckBox, Me.TSFindSeparator4, Me.TSFindClearHighlightsButton, Me.TSFindSeparator5})
         Me.TSFindToolStrip.Location = New System.Drawing.Point(0, 24)
         Me.TSFindToolStrip.Name = "TSFindToolStrip"
         Me.TSFindToolStrip.Size = New System.Drawing.Size(1923, 25)
@@ -629,7 +629,7 @@ Partial Class Form1
         'TSFindLookInComboBox
         '
         Me.TSFindLookInComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems
-        Me.TSFindLookInComboBox.items.AddRange(New Object() {"C# Source", "Visual Basic Output", "Both"})
+        Me.TSFindLookInComboBox.Items.AddRange(New Object() {"C# Source", "Visual Basic Output", "Both"})
         Me.TSFindLookInComboBox.MaxDropDownItems = 3
         Me.TSFindLookInComboBox.Name = "TSFindLookInComboBox"
         Me.TSFindLookInComboBox.Size = New System.Drawing.Size(130, 25)
@@ -704,7 +704,7 @@ Partial Class Form1
         'ContextMenuStrip1
         '
         Me.ContextMenuStrip1.ImageScalingSize = New System.Drawing.Size(36, 36)
-        Me.ContextMenuStrip1.items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ContextMenuUndo, Me.ContextMenuRedo, Me.ContextMenuSeparator1, Me.ContextMenuCut, Me.ContextMenuCopy, Me.ContextMenuPaste, Me.ContextMenuSelectAll})
+        Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ContextMenuUndo, Me.ContextMenuRedo, Me.ContextMenuSeparator1, Me.ContextMenuCut, Me.ContextMenuCopy, Me.ContextMenuPaste, Me.ContextMenuSelectAll})
         Me.ContextMenuStrip1.Name = "ContextMenuStrip1"
         Me.ContextMenuStrip1.Size = New System.Drawing.Size(165, 142)
         '
@@ -915,7 +915,7 @@ Partial Class Form1
         'StatusStrip1
         '
         Me.StatusStrip1.BackColor = System.Drawing.Color.FromArgb(CType(CType(204, Byte), Integer), CType(CType(213, Byte), Integer), CType(CType(240, Byte), Integer))
-        Me.StatusStrip1.items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.StatusStripElapasedTimeLabel, Me.StatusStripCurrentFileName, Me.StatusStripSpacer, Me.StatusStripConversionProgressBar, Me.StatusStripConversionFileProgressLabel})
+        Me.StatusStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.StatusStripElapasedTimeLabel, Me.StatusStripCurrentFileName, Me.StatusStripSpacer, Me.StatusStripConversionProgressBar, Me.StatusStripConversionFileProgressLabel})
         Me.StatusStrip1.Location = New System.Drawing.Point(0, 615)
         Me.StatusStrip1.Name = "StatusStrip1"
         Me.StatusStrip1.Size = New System.Drawing.Size(1923, 22)
