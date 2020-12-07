@@ -226,16 +226,6 @@ Public Module ConvertProjectFileUtilities
         }
         xmlDoc.Load(sourceFilePath)
         Dim root As XmlNode
-        If xmlDoc.DocumentElement IsNot Nothing AndAlso xmlDoc.DocumentElement.Name.Equals("Project", StringComparison.OrdinalIgnoreCase) Then
-            root = xmlDoc.DocumentElement
-        Else
-            root = xmlDoc.FirstChild
-        End If
-        If root.Attributes.Count = 0 OrElse Not root.Attributes(0).Value.StartsWith("Microsoft.NET.Sdk", StringComparison.OrdinalIgnoreCase) Then
-            Return ""
-        End If
-        Dim basePath As String = DestinationFilePath(sourceFilePath, ProjectSavePath)
-
         Dim isDocument As Boolean
         If xmlDoc.DocumentElement IsNot Nothing AndAlso xmlDoc.DocumentElement.Name.Equals("Project", StringComparison.OrdinalIgnoreCase) Then
             root = xmlDoc.DocumentElement
@@ -244,11 +234,11 @@ Public Module ConvertProjectFileUtilities
             root = xmlDoc.FirstChild
             isDocument = False
         End If
-
         If root.Attributes.Count = 0 OrElse Not root.Attributes(0).Value.StartsWith("Microsoft.NET.Sdk", StringComparison.OrdinalIgnoreCase) Then
-            MsgBox("Project conversion only support SDK style projects, project file will not be converted!", MsgBoxStyle.Information)
-            Return Nothing
+            MsgBox("Project {sourceFilePath} is not an SDK project, the project file will not be converted!", MsgBoxStyle.Information, "Project Coversion Issue")
+            Return ""
         End If
+        Dim basePath As String = DestinationFilePath(sourceFilePath, ProjectSavePath)
 
         Dim nodesToBeRemoved As New List(Of (PropertyIndex As Integer, ChildIndex As Integer))
         If isDocument Then
@@ -354,6 +344,7 @@ Public Module ConvertProjectFileUtilities
                                                     For l As Integer = 0 To xmlNode.ChildNodes(k).ChildNodes.Count - 1
                                                         xmlDoc.DocumentElement.ChildNodes(index).ChildNodes(childIndex).ChildNodes(k).ChildNodes(l).Value = ChangeExtension(xmlNode.ChildNodes(k).ChildNodes(l).Value, "cs", "vb")
                                                     Next l
+                                                Case "CopyToOutputDirectory"
                                                 Case Else
                                                     ' xmlNode.ChildNodes(k).Name
                                                     Stop
