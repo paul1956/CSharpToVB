@@ -125,7 +125,7 @@ Public Module ConvertProjectFileUtilities
              "#whitespace"})
 
     Private ReadOnly s_embeddedResourceIgnoreList As New List(Of String)(
-        {"Generator", "GenerateSource", "LastGenOutput", "LogicalName",
+        {"Generator", "GenerateSource", "LogicalName",
          "ManifestResourceName", "MergeWithCTO", "Namespace",
          "SubType", "#whitespace"})
 
@@ -340,11 +340,10 @@ Public Module ConvertProjectFileUtilities
                                                 Continue For
                                             End If
                                             Select Case xmlNode.ChildNodes(k).Name
-                                                Case "DependentUpon"
+                                                Case "DependentUpon", "CopyToOutputDirectory"
                                                     For l As Integer = 0 To xmlNode.ChildNodes(k).ChildNodes.Count - 1
                                                         xmlDoc.DocumentElement.ChildNodes(index).ChildNodes(childIndex).ChildNodes(k).ChildNodes(l).Value = ChangeExtension(xmlNode.ChildNodes(k).ChildNodes(l).Value, "cs", "vb")
                                                     Next l
-                                                Case "CopyToOutputDirectory"
                                                 Case Else
                                                     ' xmlNode.ChildNodes(k).Name
                                                     Stop
