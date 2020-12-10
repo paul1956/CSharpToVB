@@ -26,10 +26,14 @@ Namespace My
         End Sub
 
         Private Sub MyApplication_Startup(sender As Object, e As StartupEventArgs) Handles Me.Startup
-            ' Get the splash screen.
-            'CType(Me.SplashScreen, SplashScreen1).UserName.Text = "Current user: " & User.Name
-        End Sub
+            If Me.SplashScreen.InvokeRequired Then
+                Call Me.SplashScreen.Invoke(New StartupEventHandler(AddressOf Me.MyApplication_Startup), sender, e)
+                Exit Sub
+            End If
 
+            ' Get the splash screen.
+            CType(Me.SplashScreen, SplashScreen1).UserName.Text = "Current user: " & User.Name
+        End Sub
         Private Sub MyApplication_StartupNextInstance(sender As Object, e As StartupNextInstanceEventArgs) Handles Me.StartupNextInstance
             Stop
         End Sub
