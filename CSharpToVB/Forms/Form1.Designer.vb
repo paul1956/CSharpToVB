@@ -825,7 +825,7 @@ Partial Class Form1
         Me.ConversionInput.ContextMenuStrip = Me.ContextMenuStrip1
         Me.ConversionInput.DetectUrls = False
         Me.ConversionInput.Dock = System.Windows.Forms.DockStyle.Left
-        Me.ConversionInput.Font = New System.Drawing.Font("Segoe UI", 11.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point)
+        Me.ConversionInput.Font = New System.Drawing.Font("Consolas", 11.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point)
         Me.ConversionInput.Location = New System.Drawing.Point(0, 0)
         Me.ConversionInput.Name = "ConversionInput"
         Me.ConversionInput.ShortcutsEnabled = True
@@ -839,7 +839,7 @@ Partial Class Form1
         Me.ConversionOutput.ContextMenuStrip = Me.ContextMenuStrip1
         Me.ConversionOutput.DetectUrls = False
         Me.ConversionOutput.Dock = System.Windows.Forms.DockStyle.Right
-        Me.ConversionOutput.Font = New System.Drawing.Font("Segoe UI", 11.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point)
+        Me.ConversionOutput.Font = New System.Drawing.Font("Consolas", 11.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point)
         Me.ConversionOutput.Location = New System.Drawing.Point(999, 0)
         Me.ConversionOutput.Name = "ConversionOutput"
         Me.ConversionOutput.ShortcutsEnabled = True

@@ -680,7 +680,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 If Me.IsModule AndAlso
                     methodNameToken.ValueText = "Main" AndAlso
                     node.Modifiers.Count = 1 AndAlso
-                    node.Modifiers(0).ValueText = "static" Then
+                    node.Modifiers(0).IsKind(CS.SyntaxKind.StaticKeyword) Then
                     modifiers = PublicModifier.ToList
                 Else
                     modifiers = ConvertModifiers(node.Modifiers, Me.IsModule, If(containingType?.IsInterfaceType() = True, TokenContext.Local, TokenContext.Member)).ToList

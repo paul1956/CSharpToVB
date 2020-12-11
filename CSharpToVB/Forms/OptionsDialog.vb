@@ -6,9 +6,17 @@ Public Class OptionsDialog
     Private _selectedColor As Color
     Private _selectedColorName As String = "default"
 
+    Public MainForm As Form1
+
     Private Sub Cancel_Button_Click(sender As Object, e As EventArgs) Handles Cancel_Button.Click
         Me.DialogResult = DialogResult.Cancel
         Me.Close()
+    End Sub
+
+    ' Handle the Apply event by setting all buffers' fonts to the chosen font.
+    Private Sub FontDialog1_Apply(sender As Object, e As EventArgs) Handles FontDialog1.Apply
+        MainForm.ConversionInput.Font = Me.FontDialog1.Font
+        MainForm.ConversionOutput.Font = Me.FontDialog1.Font
     End Sub
 
     Private Sub ItemColor_ComboBox_DrawItem(sender As Object, e As DrawItemEventArgs) Handles ItemColor_ComboBox.DrawItem
@@ -30,12 +38,13 @@ Public Class OptionsDialog
 
     Private Sub OK_Button_Click(sender As Object, e As EventArgs) Handles OK_Button.Click
         My.Settings.DefaultProjectDirectory = CType(Me.ProjectDirectoryList.SelectedItem, MyListItem).Value
-        My.Settings.Save()
         Me.DialogResult = DialogResult.OK
         Me.Cursor = Cursors.WaitCursor
         Application.DoEvents()
         ColorSelector.WriteColorDictionaryToFile()
         Me.Cursor = Cursors.Default
+        My.Settings.EditorFont = MainForm.ConversionInput.Font
+        My.Settings.EditorFontName = MainForm.ConversionInput.Font.Name
         My.Settings.OptionCompare = Me.ComboBoxCompare.SelectedItem.ToString
         My.Settings.OptionCompareIncludeInCode = Me.CheckBoxCompare.Checked
         My.Settings.OptionExplicit = Me.ComboBoxExplicit.SelectedItem.ToString
@@ -45,6 +54,7 @@ Public Class OptionsDialog
         My.Settings.OptionStrict = Me.ComboBoxStrict.SelectedItem.ToString
         My.Settings.OptionStrictIncludeInCode = Me.CheckBoxStrict.Checked
         My.Settings.Save()
+        Me.Cursor = Cursors.Default
         Application.DoEvents()
         Me.Close()
     End Sub
@@ -71,6 +81,38 @@ Public Class OptionsDialog
         Me.CheckBoxExplicit.Checked = My.Settings.OptionExplicitIncludeInCode
         Me.CheckBoxInfer.Checked = My.Settings.OptionInferIncludeInCode
         Me.CheckBoxStrict.Checked = My.Settings.OptionStrictIncludeInCode
+    End Sub
+
+    Private Sub SelectEditorFontButton_Click(sender As Object, e As EventArgs) Handles SelectEditorFontButton.Click
+        Dim oldFont As Font = New Font(MainForm.ConversionInput.Font.Name, MainForm.ConversionInput.Font.SizeInPoints, FontStyle.Regular, GraphicsUnit.Point)
+        ' Display the font being used in Conversion buffers
+        Me.FontDialog1.Font = oldFont
+
+        ' Set FontMustExist to true, which causes message box error
+        ' if the user enters a font that does not exist.
+        Me.FontDialog1.FontMustExist = True
+        Me.FontDialog1.ShowApply = True
+        ' Do not show effects such as Underline and Bold.
+        Me.FontDialog1.ShowEffects = False
+        ' Set a minimum and maximum size to be shown in the FontDialog.
+        Me.FontDialog1.MinSize = 7
+        Me.FontDialog1.MaxSize = 14
+
+        ' Show the dialog and save the result.
+        Dim result As DialogResult = Me.FontDialog1.ShowDialog()
+
+        ' If The OK button in the Font dialog box is clicked,
+        ' set all the conversion buffers' fonts to the chosen font by
+        ' calling the FontDialog1_Apply method.
+        If result = DialogResult.OK Then
+            Me.FontDialog1_Apply(Nothing, New System.EventArgs)
+
+            ' If the Cancel button is clicked, set the buffers'
+            ' fonts back to the original font.
+        ElseIf result = Global.System.Windows.Forms.DialogResult.Cancel Then
+            MainForm.ConversionInput.Font = oldFont
+            MainForm.ConversionOutput.Font = oldFont
+        End If
     End Sub
 
     Private Sub UpdateColor_Button_Click(sender As Object, e As EventArgs) Handles UpdateColor_Button.Click

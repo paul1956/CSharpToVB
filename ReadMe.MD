@@ -63,6 +63,11 @@ Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpec
 Any changes to CSharpToVB application needs to change the version information in the project file **AND** in MyProject/AssemblyInfo.vb until Visual Studio is able to general file automatically for a WinForms application.
 
 ## What's New in this release
+  New in 5.0.0.17/5.0.0.8
+  Fixed crash when trying to set controls in StartUp Form from MyApplication_Startup
+  Change default for editor buffers font to Consolas, added support for user to change font to anything they want, and save changes
+  Better handle Dim X = New Y to use "As" more often
+
   New in 5.0.0.16/5.0.0.7
   - Fix issue where progress reporting was not happening
   - Use TextRenderer where easy to make text more readable

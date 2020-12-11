@@ -70,19 +70,43 @@ Namespace CSharpToVBApp.My_Project
                 Me("DefaultProjectDirectory") = value
             End Set
         End Property
-        
-        <Global.System.Configuration.UserScopedSettingAttribute(),  _
-         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("NETCOREAPP")>  _
-        Public Property Framework() As String
+
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("NETCOREAPP")>
+        Public Property EditorFont() As Font
             Get
-                Return CType(Me("Framework"),String)
+                Return CType(Me("EditorFont"), Font)
             End Get
             Set
-                Me("Framework") = value
+                Me("EditorFont") = Value
             End Set
         End Property
-        
+
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("Consolas")>
+        Public Property EditorFontName() As String
+            Get
+                Return CType(Me("EditorFontName"), String)
+            End Get
+            Set
+                Me("EditorFontName") = Value
+            End Set
+        End Property
+
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("NETCOREAPP")>
+        Public Property Framework() As String
+            Get
+                Return CType(Me("Framework"), String)
+            End Get
+            Set
+                Me("Framework") = Value
+            End Set
+        End Property
+
         <Global.System.Configuration.UserScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute()>  _
         Public Property IgnoreFileList() As Global.System.Collections.Specialized.StringCollection
@@ -321,6 +345,7 @@ Namespace CSharpToVBApp.My_Project
                 Me("StartFolderConvertFromLastFile") = value
             End Set
         End Property
+
         <Global.System.Configuration.UserScopedSettingAttribute(),
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute()>
         Public Property TSFindMRU_Data() As Global.System.Collections.Specialized.StringCollection

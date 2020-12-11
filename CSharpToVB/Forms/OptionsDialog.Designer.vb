@@ -42,6 +42,8 @@ Partial Class OptionsDialog
         Me.ComboBoxInfer = New System.Windows.Forms.ComboBox()
         Me.CheckBoxInfer = New System.Windows.Forms.CheckBox()
         Me.Label3 = New System.Windows.Forms.Label()
+        Me.SelectEditorFontButton = New System.Windows.Forms.Button()
+        Me.FontDialog1 = New System.Windows.Forms.FontDialog()
         Me.TableLayoutPanel1.SuspendLayout()
         Me.SuspendLayout()
         '
@@ -171,7 +173,7 @@ Partial Class OptionsDialog
         '
         Me.ComboBoxCompare.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.ComboBoxCompare.FormattingEnabled = True
-        Me.ComboBoxCompare.items.AddRange(New Object() {"Binary", "Text"})
+        Me.ComboBoxCompare.Items.AddRange(New Object() {"Binary", "Text"})
         Me.ComboBoxCompare.Location = New System.Drawing.Point(98, 178)
         Me.ComboBoxCompare.Name = "ComboBoxCompare"
         Me.ComboBoxCompare.Size = New System.Drawing.Size(121, 23)
@@ -181,7 +183,7 @@ Partial Class OptionsDialog
         '
         Me.ComboBoxExplicit.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.ComboBoxExplicit.FormattingEnabled = True
-        Me.ComboBoxExplicit.items.AddRange(New Object() {"Off", "On"})
+        Me.ComboBoxExplicit.Items.AddRange(New Object() {"Off", "On"})
         Me.ComboBoxExplicit.Location = New System.Drawing.Point(98, 214)
         Me.ComboBoxExplicit.Name = "ComboBoxExplicit"
         Me.ComboBoxExplicit.Size = New System.Drawing.Size(121, 23)
@@ -203,7 +205,7 @@ Partial Class OptionsDialog
         '
         Me.ComboBoxStrict.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.ComboBoxStrict.FormattingEnabled = True
-        Me.ComboBoxStrict.items.AddRange(New Object() {"Off", "On"})
+        Me.ComboBoxStrict.Items.AddRange(New Object() {"Off", "On"})
         Me.ComboBoxStrict.Location = New System.Drawing.Point(352, 214)
         Me.ComboBoxStrict.Name = "ComboBoxStrict"
         Me.ComboBoxStrict.Size = New System.Drawing.Size(121, 23)
@@ -225,7 +227,7 @@ Partial Class OptionsDialog
         '
         Me.ComboBoxInfer.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.ComboBoxInfer.FormattingEnabled = True
-        Me.ComboBoxInfer.items.AddRange(New Object() {"Off", "On"})
+        Me.ComboBoxInfer.Items.AddRange(New Object() {"Off", "On"})
         Me.ComboBoxInfer.Location = New System.Drawing.Point(352, 178)
         Me.ComboBoxInfer.Name = "ComboBoxInfer"
         Me.ComboBoxInfer.Size = New System.Drawing.Size(121, 23)
@@ -252,6 +254,15 @@ Partial Class OptionsDialog
         Me.Label3.TabIndex = 19
         Me.Label3.Text = "Checking any options below will cause them to be included in converted  result!"
         '
+        'SelectEditorFontButton
+        '
+        Me.SelectEditorFontButton.Location = New System.Drawing.Point(16, 258)
+        Me.SelectEditorFontButton.Name = "SelectEditorFontButton"
+        Me.SelectEditorFontButton.Size = New System.Drawing.Size(127, 23)
+        Me.SelectEditorFontButton.TabIndex = 20
+        Me.SelectEditorFontButton.Text = "Select Editor Font"
+        Me.SelectEditorFontButton.UseVisualStyleBackColor = True
+        '
         'OptionsDialog
         '
         Me.AcceptButton = Me.OK_Button
@@ -259,6 +270,7 @@ Partial Class OptionsDialog
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.CancelButton = Me.Cancel_Button
         Me.ClientSize = New System.Drawing.Size(486, 299)
+        Me.Controls.Add(Me.SelectEditorFontButton)
         Me.Controls.Add(Me.Label3)
         Me.Controls.Add(Me.ComboBoxStrict)
         Me.Controls.Add(Me.CheckBoxStrict)
@@ -310,4 +322,6 @@ Partial Class OptionsDialog
     Friend WithEvents ComboBoxInfer As ComboBox
     Friend WithEvents CheckBoxInfer As CheckBox
     Friend WithEvents Label3 As Label
+    Friend WithEvents SelectEditorFontButton As Button
+    Friend WithEvents FontDialog1 As FontDialog
 End Class

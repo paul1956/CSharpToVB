@@ -94,9 +94,14 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 If Not asClause.IsKind(VB.SyntaxKind.AsNewClause) Then
                     initializer = Factory.EqualsValue(initializerValue.WithLeadingTrivia(Factory.Space))
                     If initializer.Value.IsKind(VB.SyntaxKind.ObjectCreationExpression) Then
-                        If asClause IsNot Nothing AndAlso CType(asClause, VBS.SimpleAsClauseSyntax).Type.ToString = CType(initializerValue, VBS.ObjectCreationExpressionSyntax).Type.ToString Then
+                        If asClause Is Nothing Then
                             asClause = Factory.AsNewClause(CType(initializerValue, VBS.ObjectCreationExpressionSyntax))
                             initializer = Nothing
+                        Else
+                            If CType(asClause, VBS.SimpleAsClauseSyntax).Type.ToString = CType(initializerValue, VBS.ObjectCreationExpressionSyntax).Type.ToString Then
+                                asClause = Factory.AsNewClause(CType(initializerValue, VBS.ObjectCreationExpressionSyntax))
+                                initializer = Nothing
+                            End If
                         End If
                     End If
                 End If

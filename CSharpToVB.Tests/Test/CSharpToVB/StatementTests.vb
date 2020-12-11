@@ -54,7 +54,7 @@ Namespace CSharpToVB.Tests
 
     Public Function LoadAnalyzer(analyzerPath As String) As Exception
         _analyzerLoadException = Nothing
-        Dim analyzerRef = New AnalyzerFileReference(analyzerPath, FromFileLoader.Instance)
+        Dim analyzerRef As New AnalyzerFileReference(analyzerPath, FromFileLoader.Instance)
         analyzerRef.AnalyzerLoadFailed += Sub(s, e) _analyzerLoadException = e.Exception
         Dim builder = ImmutableArray.CreateBuilder(Of DiagnosticAnalyzer)()
         analyzerRef.AddAnalyzers(builder, LanguageNames.CSharp)

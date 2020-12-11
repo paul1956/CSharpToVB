@@ -189,9 +189,15 @@ Partial Public Class Form1
 
         If String.IsNullOrWhiteSpace(My.Settings.DefaultProjectDirectory) Then
             My.Settings.DefaultProjectDirectory = GetLatestVisualStudioProjectPath()
-            My.Settings.Save()
-            Application.DoEvents()
         End If
+
+        If My.Settings.EditorFont.Name <> My.Settings.EditorFontName Then
+            My.Settings.EditorFont = New Font("Consolas", 11.0!, FontStyle.Regular)
+            My.Settings.EditorFontName = "Consolas"
+        End If
+        Me.ConversionInput.Font = My.Settings.EditorFont
+        Me.ConversionOutput.Font = My.Settings.EditorFont
+        My.Settings.Save()
 
         Me.Width = Screen.PrimaryScreen.Bounds.Width
         Me.Height = CInt(Screen.PrimaryScreen.Bounds.Height * 0.95)
@@ -241,11 +247,12 @@ Partial Public Class Form1
         Me.ProjectConversionInitProgressLabel.Top = Me.ProjectConversionInitProgressBar.Top - (Me.ProjectConversionInitProgressLabel.Height * 2)
         Me.ToolTipErrorList.SetToolTip(Me.ListBoxErrorList, "Double-Click to scroll to VB error")
         Me.ToolTipFileList.SetToolTip(Me.ListBoxFileList, "Double-Click to open C# and corresponding VB file if available")
-        Application.DoEvents()
         Me.TSFindLookInComboBox.DropDownStyle = ComboBoxStyle.Simple
         Me.TSFindLookInComboBox.SelectedIndex = 0
         Me.TSFindMatchCaseCheckBox.Checked = My.Settings.TSFindMatchCase
         Me.TSFindMatchWholeWordCheckBox.Checked = My.Settings.TSFindMatchWholeWord
+        Application.DoEvents()
+
     End Sub
 
     Private Sub Form1_Resize(sender As Object, e As EventArgs) Handles Me.Resize
@@ -727,6 +734,7 @@ Partial Public Class Form1
 
     Private Sub mnuOptionsAdvanced_Click(sender As Object, e As EventArgs) Handles mnuOptionsAdvanced.Click
         Using o As New OptionsDialog
+            o.MainForm = Me
             Dim r As DialogResult = o.ShowDialog(Me)
         End Using
     End Sub
