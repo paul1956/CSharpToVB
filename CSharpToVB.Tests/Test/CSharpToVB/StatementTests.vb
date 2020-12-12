@@ -849,7 +849,7 @@ End Class")
         }
     }", "NotInheritable Class GotoTest1
 
-    Private Shared Sub Main()
+    Public Shared Sub Main()
         Dim x As Integer = 200, y As Integer = 4
         Dim count As Integer = 0
         Dim array As String(,) = New String(x - 1, y - 1) {}

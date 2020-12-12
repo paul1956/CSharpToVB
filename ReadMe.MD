@@ -64,6 +64,10 @@ Any changes to CSharpToVB application needs to change the version information in
 
 ## What's New in this release
   New in 5.0.0.17/5.0.0.8
+  Merged fix by @elGuille-info to handle "Add Public to Sub Main when declared in non static class in C#" Issue #52
+
+
+  New in 5.0.0.17/5.0.0.8
   Fixed crash when trying to set controls in StartUp Form from MyApplication_Startup
   Change default for editor buffers font to Consolas, added support for user to change font to anything they want, and save changes
   Better handle Dim X = New Y to use "As" more often

@@ -677,11 +677,20 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     body = Factory.List(Of VBS.StatementSyntax)()
                 End If
                 Dim modifiers As List(Of SyntaxToken)
-                If Me.IsModule AndAlso
-                    methodNameToken.ValueText = "Main" AndAlso
-                    node.Modifiers.Count = 1 AndAlso
-                    node.Modifiers(0).IsKind(CS.SyntaxKind.StaticKeyword) Then
-                    modifiers = PublicModifier.ToList
+                If methodNameToken.ValueText = "Main" AndAlso
+                            node.Modifiers.Count = 1 AndAlso
+                            node.Modifiers(0).IsKind(CS.SyntaxKind.StaticKeyword) Then
+                    If Me.IsModule Then
+                        modifiers = PublicModifier.ToList
+                    Else
+                        modifiers = PublicModifier.ToList
+                        modifiers.AddRange(ConvertModifiers(node.Modifiers, Me.IsModule, If(containingType?.IsInterfaceType() = True, TokenContext.Local, TokenContext.Member)).ToList)
+                        'modifiers.Remove(PrivateKeyword)
+                        Dim index As Integer = modifiers.IndexOf(VB.SyntaxKind.PrivateKeyword)
+                        If index > -1 Then
+                            modifiers.RemoveAt(index)
+                        End If
+                    End If
                 Else
                     modifiers = ConvertModifiers(node.Modifiers, Me.IsModule, If(containingType?.IsInterfaceType() = True, TokenContext.Local, TokenContext.Member)).ToList
                 End If
