@@ -39,7 +39,7 @@
       <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="OptionInfer" Type="System.String" Scope="User">
-      <Value Profile="(Default)">Off</Value>
+      <Value Profile="(Default)">On</Value>
     </Setting>
     <Setting Name="OptionInferIncludeInCode" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>

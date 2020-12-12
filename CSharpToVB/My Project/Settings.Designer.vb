@@ -216,7 +216,7 @@ Namespace CSharpToVBApp.My_Project
 
         <Global.System.Configuration.UserScopedSettingAttribute(),
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
-         Global.System.Configuration.DefaultSettingValueAttribute("Off")>
+         Global.System.Configuration.DefaultSettingValueAttribute("On")>
         Public Property OptionInfer() As String
             Get
                 Return CType(Me("OptionInfer"), String)
