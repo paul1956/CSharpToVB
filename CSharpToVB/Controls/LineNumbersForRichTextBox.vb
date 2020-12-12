@@ -599,7 +599,7 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
             _zAutoSizing_Size = New Size(TextRenderer.MeasureText(_zLineNumbers_Format.Replace("0".ToCharArray, "W".ToCharArray, StringComparison.Ordinal), Me.Font).Width, 0)
         End If
 
-        If String.IsNullOrWhiteSpace(Me.ZParent.Text) Then
+        If String.IsNullOrWhiteSpace(Me.ZParent?.Text) Then
             Exit Sub
         End If
 
