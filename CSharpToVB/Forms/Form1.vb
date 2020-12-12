@@ -62,8 +62,16 @@ Partial Public Class Form1
     End Sub
 
     Private Sub ContextMenuCopy_Click(sender As Object, e As EventArgs) Handles ContextMenuCopy.Click
-        If TypeOf Me.ContextMenuStrip1.SourceControl Is RichTextBox Then
-            CType(Me.ContextMenuStrip1.SourceControl, RichTextBox).Copy()
+        Dim sourceControl As RichTextBox = CType(Me.ContextMenuStrip1.SourceControl, RichTextBox)
+        If sourceControl Is Nothing Then
+            If TypeOf Me.CurrentBuffer Is RichTextBox Then
+                sourceControl = CType(Me.CurrentBuffer, RichTextBox)
+            Else
+                Exit Sub
+            End If
+        End If
+        If TypeOf sourceControl Is RichTextBox Then
+            sourceControl.Copy()
         Else
             If Me.ContextMenuStrip1.SourceControl IsNot Nothing Then
                 Clipboard.SetText(CType(Me.ContextMenuStrip1.SourceControl, ListBox).SelectedItem.ToString)
@@ -72,15 +80,25 @@ Partial Public Class Form1
     End Sub
 
     Private Sub ContextMenuCut_Click(sender As Object, e As EventArgs) Handles ContextMenuCut.Click
-        If TypeOf Me.ContextMenuStrip1.SourceControl Is RichTextBox Then
-            CType(Me.ContextMenuStrip1.SourceControl, RichTextBox).Cut()
+        Dim sourceControl As RichTextBox = CType(Me.ContextMenuStrip1.SourceControl, RichTextBox)
+        If sourceControl Is Nothing Then
+            If TypeOf Me.CurrentBuffer Is RichTextBox Then
+                sourceControl = CType(Me.CurrentBuffer, RichTextBox)
+            Else
+                Exit Sub
+            End If
         End If
+        sourceControl.Cut()
     End Sub
 
     Private Sub ContextMenuPaste_Click(sender As Object, e As EventArgs) Handles ContextMenuPaste.Click
         Dim sourceControl As RichTextBox = CType(Me.ContextMenuStrip1.SourceControl, RichTextBox)
         If sourceControl Is Nothing Then
-            Exit Sub
+            If TypeOf Me.CurrentBuffer Is RichTextBox Then
+                sourceControl = CType(Me.CurrentBuffer, RichTextBox)
+            Else
+                Exit Sub
+            End If
         End If
         If sourceControl.CanPaste(DataFormats.GetFormat(DataFormats.Rtf)) OrElse
             sourceControl.CanPaste(DataFormats.GetFormat(DataFormats.Text)) Then
@@ -90,16 +108,28 @@ Partial Public Class Form1
 
     Private Sub ContextMenuRedo_Click(sender As Object, e As EventArgs) Handles ContextMenuRedo.Click
         Dim sourceControl As RichTextBox = CType(Me.ContextMenuStrip1.SourceControl, RichTextBox)
-        If sourceControl IsNot Nothing AndAlso sourceControl.CanRedo Then
+        If sourceControl Is Nothing Then
+            If TypeOf Me.CurrentBuffer Is RichTextBox Then
+                sourceControl = CType(Me.CurrentBuffer, RichTextBox)
+            Else
+                Exit Sub
+            End If
+        End If
+        If sourceControl.CanRedo Then
             sourceControl.Redo()
         End If
     End Sub
 
     Private Sub ContextMenuSelectAll_Click(sender As Object, e As EventArgs) Handles ContextMenuSelectAll.Click
         Dim sourceControl As RichTextBox = CType(Me.ContextMenuStrip1.SourceControl, RichTextBox)
-        If sourceControl IsNot Nothing Then
-            sourceControl.SelectAll()
+        If sourceControl Is Nothing Then
+            If TypeOf Me.CurrentBuffer Is RichTextBox Then
+                sourceControl = CType(Me.CurrentBuffer, RichTextBox)
+            Else
+                Exit Sub
+            End If
         End If
+        sourceControl.SelectAll()
     End Sub
 
     Private Sub ContextMenuStrip1_Opening(sender As Object, e As CancelEventArgs) Handles ContextMenuStrip1.Opening
@@ -122,7 +152,14 @@ Partial Public Class Form1
 
     Private Sub ContextMenuUndo_Click(sender As Object, e As EventArgs) Handles ContextMenuUndo.Click
         Dim sourceControl As RichTextBox = CType(Me.ContextMenuStrip1.SourceControl, RichTextBox)
-        If sourceControl IsNot Nothing AndAlso sourceControl.CanUndo Then
+        If sourceControl Is Nothing Then
+            If TypeOf Me.CurrentBuffer Is RichTextBox Then
+                sourceControl = CType(Me.CurrentBuffer, RichTextBox)
+            Else
+                Exit Sub
+            End If
+        End If
+        If sourceControl.CanUndo Then
             sourceControl.Undo()
         End If
     End Sub
