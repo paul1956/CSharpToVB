@@ -63,11 +63,14 @@ Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpec
 Any changes to CSharpToVB application needs to change the version information in the project file **AND** in MyProject/AssemblyInfo.vb until Visual Studio is able to general file automatically for a WinForms application.
 
 ## What's New in this release
-  New in 5.0.0.18/5.0.0.8
-  Editing keys now work in edit buffers in addition to Edit and Context Menus
+  New in 5.0.0.18/5.0.0.10
+  Fixed Issue #55 Editing keys now work in edit buffers in addition to Edit and Context Menus
+  Fixed Issue #54 Guard against crash when LineNumbersForRichTextBox.Parent is nothing
+  Fixed Issue #53 Create a discard function when a C# discard assign (_) is converted to __ in VB
+  Fixed Issue #51 scoping of nested Blocks
 
   New in 5.0.0.17/5.0.0.8
-  Merged fix by @elGuille-info to handle "Add Public to Sub Main when declared in non static class in C#" Issue #52
+  Fixed Issue #52 Merged fix by @elGuille-info to handle "Add Public to Sub Main when declared in non static class in C#"
 
 
   New in 5.0.0.17/5.0.0.8

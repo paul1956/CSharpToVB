@@ -288,12 +288,15 @@ End Class")
 }", "NotInheritable Class TestClass
 
     Public Shared Sub TestMethod()
+        If True Then
+            Dim x As Integer = 1
+            Console.WriteLine(x)
+        End If
 
-        Dim x As Integer = 1
-        Console.WriteLine(x)
-
-        Dim x As Integer = 2
-        Console.WriteLine(x)
+        If True Then
+            Dim x As Integer = 2
+            Console.WriteLine(x)
+        End If
     End Sub
 End Class")
         End Sub

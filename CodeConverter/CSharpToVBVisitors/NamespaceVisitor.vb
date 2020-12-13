@@ -24,6 +24,12 @@ target = value
 Return value
 End Function
 "
+            Private Const DiscardHelperCode As String = "
+Private Shared  WriteOnly Property __ As Object
+    Set
+    End Set
+End Property
+"
 
             '    Private Const ByRefHelperCode As String = "Private Function __VbByRefHelper(Of t)(ByRef byRefValue As t, byRefSetter As Func(Of t, t)) As t
             '        Dim orgValue = byRefValue
@@ -132,6 +138,10 @@ End Function
                 If InlineAssignHelperMarkers.Contains(node) Then
                     InlineAssignHelperMarkers.Remove(node)
                     Yield TryCast(Factory.ParseSyntaxTree(InlineAssignHelperCode.Replace("Shared ", If(IsModule, "", "Shared "), StringComparison.Ordinal)).GetRoot().ChildNodes().FirstOrDefault(), VBS.StatementSyntax)
+                End If
+                If DiscardHelperMarkers.Contains(node) Then
+                    DiscardHelperMarkers.Remove(node)
+                    Yield TryCast(Factory.ParseSyntaxTree(DiscardHelperCode.Replace("Shared ", If(IsModule, "", "Shared "), StringComparison.Ordinal)).GetRoot().ChildNodes().FirstOrDefault(), VBS.StatementSyntax)
                 End If
             End Function
 

@@ -376,11 +376,6 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                                    RightNode)
             End Function
 
-            Private Sub MarkPatchInlineAssignHelper(node As CS.CSharpSyntaxNode)
-                Dim parentDefinition As CSS.BaseTypeDeclarationSyntax = node.AncestorsAndSelf().OfType(Of CSS.BaseTypeDeclarationSyntax).FirstOrDefault()
-                InlineAssignHelperMarkers.Add(parentDefinition)
-            End Sub
-
             Private Function ReduceArrayUpperBoundExpression(expr As CSS.ExpressionSyntax) As ExpressionSyntax
                 Dim constant As [Optional](Of Object) = _mSemanticModel.GetConstantValue(expr)
                 If constant.HasValue AndAlso TypeOf constant.Value Is Integer Then
@@ -648,7 +643,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                 variableNames.Add(sBuilder.ToString)
                             Else
                                 If e.Value.IsKind(CS.SyntaxKind.DiscardDesignation) Then
-                                    variableNames.Add("__DiscardDesignation__")
+                                    variableNames.Add($"__DiscardDesignation{e.index}")
                                 Else
                                     variableNames.Add(e.Value.Accept(Me).ToString)
                                 End If
@@ -690,7 +685,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                                             WithPrependedLeadingTrivia(Factory.CommentTrivia($" ' TODO: Visual Basic has no equivalent to C# deconstruction declarations, an attempt was made to convert."), VBEOLTrivia))
 
                         For variableIndex As Integer = 0 To variableNames.Count - 1
-                            If variableNames(variableIndex) = "__DiscardDesignation__" Then
+                            If variableNames(variableIndex) = $"__DiscardDesignation{variableIndex}" Then
                                 Continue For
                             End If
                             Dim asClause As AsClauseSyntax = Nothing
@@ -725,6 +720,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                             variableNames.Add(argument.ToString)
                         Next
                         Dim tupleList As New List(Of String)
+                        Dim builder As New StringBuilder()
                         If rightTypeInfo.Type Is Nothing OrElse rightTypeInfo.Type.IsErrorType Then
                             For Each a As CSS.ArgumentSyntax In DirectCast(node.Left, CSS.TupleExpressionSyntax).Arguments
                                 If TypeOf a.Expression Is CSS.DeclarationExpressionSyntax Then
@@ -740,7 +736,8 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         Else
                             If TypeOf rightTypeInfo.Type Is INamedTypeSymbol Then
                                 Dim type As INamedTypeSymbol = DirectCast(rightTypeInfo.ConvertedType, INamedTypeSymbol)
-                                tupleList.Add(type.ConvertToType.ToFullString)
+                                Dim typeAsFullString As String = type.ConvertToType.ToFullString
+                                builder = builder.Append(typeAsFullString)
                             ElseIf TypeOf rightTypeInfo.Type Is ITypeSymbol Then
                                 Try
                                     For Each a As CSS.ArgumentSyntax In DirectCast(node.Left, CSS.TupleExpressionSyntax).Arguments
@@ -764,12 +761,15 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                 Stop
                             End If
                         End If
-                        Dim builder As New StringBuilder()
-                        builder.Append("("c)
-                        For Each e As IndexClass(Of String) In tupleList.WithIndex
-                            builder.Append(e.Value & ", ")
-                        Next
-                        builder.Append(tupleList.Last & ")")
+                        If tupleList.Count > 0 Then
+                            builder.Append("("c)
+                            For Each e As IndexClass(Of String) In tupleList.WithIndex
+                                If Not e.IsLast Then
+                                    builder.Append(e.Value & ", ")
+                                End If
+                            Next
+                            builder.Append(tupleList.Last & ")")
+                        End If
                         Dim tupleTypeStr As String = builder.ToString
 
                         Dim tupleType As TypeSyntax = Factory.ParseTypeName(tupleTypeStr).WithLeadingTrivia(Factory.Space)
@@ -777,6 +777,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         statementList = statementList.Add(FactoryDimStatement(identifierName, simpleAs, initializer))
                         For Each e As IndexClass(Of String) In variableNames.WithIndex
                             If e.Value = "__" Then
+                                DiscardHelperMarkers.Add(node.AncestorsAndSelf().OfType(Of CSS.BaseTypeDeclarationSyntax).FirstOrDefault())
                                 Continue For
                             End If
                             Dim newLeftNode As ExpressionSyntax = Factory.IdentifierName(e.Value)
@@ -805,13 +806,13 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                              )
                 End If
 
-                Me.MarkPatchInlineAssignHelper(node)
+                InlineAssignHelperMarkers.Add(node.AncestorsAndSelf().OfType(Of CSS.BaseTypeDeclarationSyntax).FirstOrDefault())
                 Return Factory.InvocationExpression(
                     expression:=Factory.IdentifierName("__InlineAssignHelper"),
-                    argumentList:=Factory.ArgumentList(Factory.SeparatedList(New ArgumentSyntax() {
+                    argumentList:=Factory.ArgumentList(Factory.SeparatedList((New ArgumentSyntax() {
                                                                             Factory.SimpleArgument(CType(node.Left.Accept(Me), ExpressionSyntax)),
                                                                             Factory.SimpleArgument(CType(node.Right.Accept(Me), ExpressionSyntax))
-                                                                                                       })
+                                                                                                       }))
                                                         )).WithConvertedTriviaFrom(node)
             End Function
 

@@ -19,6 +19,7 @@ Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
+Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace CSharpToVBConverter.ToVisualBasic
 
@@ -800,21 +801,41 @@ Namespace CSharpToVBConverter.ToVisualBasic
 
             Public Overrides Function VisitBlock(node As CSS.BlockSyntax) As SyntaxList(Of StatementSyntax)
                 Dim stmtList As SyntaxList(Of StatementSyntax) = Factory.List(node.Statements.Where(Function(s As CSS.StatementSyntax) Not (TypeOf s Is CSS.EmptyStatementSyntax)).SelectMany(Function(s As CSS.StatementSyntax) s.Accept(Me)))
+                Dim ifStatement As VBS.IfStatementSyntax = Nothing
+                Dim isSubBlock As Boolean = node.Parent.IsKind(CS.SyntaxKind.Block)
+                If isSubBlock AndAlso stmtList.Any Then
+                    ifStatement = Factory.IfStatement(IfKeyword, Factory.TrueLiteralExpression(TrueKeyword), ThenKeyword)
+                End If
                 If node.OpenBraceToken.HasLeadingTrivia OrElse node.OpenBraceToken.HasTrailingTrivia Then
                     If stmtList.Any Then
-                        stmtList = stmtList.Replace(stmtList(0), stmtList(0).WithPrependedLeadingTrivia(ConvertTriviaList(node.OpenBraceToken.TrailingTrivia)).WithPrependedLeadingTrivia(ConvertTriviaList(node.OpenBraceToken.LeadingTrivia)))
+                        If isSubBlock Then
+                            ifStatement = ifStatement.WithPrependedLeadingTrivia(ConvertTriviaList(node.OpenBraceToken.TrailingTrivia)).WithLeadingTrivia(ConvertTriviaList(node.OpenBraceToken.LeadingTrivia))
+                        Else
+                            stmtList = stmtList.Replace(stmtList(0), stmtList(0).WithPrependedLeadingTrivia(ConvertTriviaList(node.OpenBraceToken.TrailingTrivia)).WithPrependedLeadingTrivia(ConvertTriviaList(node.OpenBraceToken.LeadingTrivia)))
+                        End If
                     Else
                         stmtList = stmtList.Add(Factory.EmptyStatement.WithConvertedTriviaFrom(node.OpenBraceToken))
                     End If
                 End If
                 If node.CloseBraceToken.HasLeadingTrivia OrElse node.OpenBraceToken.HasTrailingTrivia Then
                     If stmtList.Any Then
-                        stmtList = stmtList.Replace(stmtList.Last, stmtList.Last.WithAppendedTrailingTrivia(ConvertTriviaList(node.OpenBraceToken.LeadingTrivia)).WithAppendedTrailingTrivia(ConvertTriviaList(node.OpenBraceToken.TrailingTrivia)))
+                        If isSubBlock Then
+                            ifStatement = ifStatement.WithTrailingTrivia(ConvertTriviaList(node.OpenBraceToken.LeadingTrivia)).WithTrailingTrivia(ConvertTriviaList(node.OpenBraceToken.TrailingTrivia))
+                        Else
+                            stmtList = stmtList.Replace(stmtList.Last, stmtList.Last.WithAppendedTrailingTrivia(ConvertTriviaList(node.OpenBraceToken.LeadingTrivia)).WithAppendedTrailingTrivia(ConvertTriviaList(node.OpenBraceToken.TrailingTrivia)))
+                        End If
+
                     Else
                         stmtList = stmtList.Add(Factory.EmptyStatement.WithConvertedTriviaFrom(node.CloseBraceToken))
                     End If
                 End If
-                Return stmtList
+
+                If Not isSubBlock Then
+                    Return stmtList
+                Else
+                    Dim newStmtList As New SyntaxList(Of StatementSyntax)
+                    Return newStmtList.Add(Factory.MultiLineIfBlock(ifStatement, stmtList, Nothing, Nothing))
+                End If
             End Function
 
             Public Overrides Function VisitBreakStatement(node As CSS.BreakStatementSyntax) As SyntaxList(Of StatementSyntax)

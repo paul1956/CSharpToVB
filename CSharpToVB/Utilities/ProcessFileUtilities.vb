@@ -29,10 +29,13 @@ Module ProcessFileUtilities
         End If
         With MainForm
             .ButtonStopConversion.Visible = True
+            .UseWaitCursor = True
             .ConversionOutput.Text = ""
             My.Settings.MRU_Data.mnuAddToMRU(SourceFileNameWithPath)
             .UpdateLastFileMenu()
             .mnuFile.DropDownItems.FileMenuMRUUpdateUI(AddressOf .mnu_MRUList_Click)
+            MainForm.ProjectConversionInitProgressBar.Visible = True
+            Application.DoEvents()
             Dim lines As Integer = LoadInputBufferFromStream(MainForm, SourceFileNameWithPath)
             If lines > 0 Then
 
@@ -86,6 +89,7 @@ Module ProcessFileUtilities
                         End If
                     End If
                 End If
+                MainForm.ProjectConversionInitProgressBar.Visible = False
 
                 ' 5 second delay
                 Const loopSleep As Integer = 25

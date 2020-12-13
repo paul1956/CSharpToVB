@@ -31,6 +31,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
             Private _membersList As SyntaxList(Of VBS.StatementSyntax)
             Friend _usedIdentifiers As Dictionary(Of String, SymbolTableEntry)
             Public ReadOnly AllImports As New List(Of VBS.ImportsStatementSyntax)()
+            Public ReadOnly DiscardHelperMarkers As New List(Of CSS.BaseTypeDeclarationSyntax)()
             Public ReadOnly InlineAssignHelperMarkers As New List(Of CSS.BaseTypeDeclarationSyntax)()
 
             'Public ReadOnly ByRefHelperMarkers As New List(Of CSS.BaseTypeDeclarationSyntax)()

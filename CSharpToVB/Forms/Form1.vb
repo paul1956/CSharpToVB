@@ -49,16 +49,16 @@ Partial Public Class Form1
     End Sub
 
     Private Sub ButtonStop_MouseEnter(sender As Object, e As EventArgs) Handles ButtonStopConversion.MouseEnter
-        LocalUseWaitCursor(MeForm:=Me, WaitCursorEnable:=False)
+        LocalUseWaitCursor(Me, WaitCursorEnable:=False)
     End Sub
 
     Private Sub ButtonStop_MouseLeave(sender As Object, e As EventArgs) Handles ButtonStopConversion.MouseLeave
         Me.ButtonStopConversion.BackColor = SystemColors.Control
-        LocalUseWaitCursor(MeForm:=Me, WaitCursorEnable:=Me.ButtonStopConversion.Visible)
+        LocalUseWaitCursor(Me, WaitCursorEnable:=Me.ButtonStopConversion.Visible)
     End Sub
 
     Private Sub ButtonStop_VisibleChanged(sender As Object, e As EventArgs) Handles ButtonStopConversion.VisibleChanged
-        LocalUseWaitCursor(MeForm:=Me, WaitCursorEnable:=Me.ButtonStopConversion.Visible)
+        LocalUseWaitCursor(Me, WaitCursorEnable:=Me.ButtonStopConversion.Visible)
     End Sub
 
     Private Sub ContextMenuCopy_Click(sender As Object, e As EventArgs) Handles ContextMenuCopy.Click
