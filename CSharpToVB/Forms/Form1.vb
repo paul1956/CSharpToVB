@@ -95,7 +95,13 @@ Partial Public Class Form1
                 If index < 0 Then
                     Exit Sub
                 End If
-                Dim gitHubVersion() As String = line.Substring(index + "New In ".Length).Split("/")
+                Dim versionStr As String = line.Substring(index + "New In ".Length)
+
+                index = versionStr.IndexOf("<"c)
+                If index > 0 Then
+                    versionStr = versionStr.Substring(0, index)
+                End If
+                Dim gitHubVersion() As String = versionStr.Split("/")
                 Dim codeConverterInfo As New AssemblyInfo(GetType(CodeWithOptions).Assembly)
                 If IsNewerVersion(gitHubVersion(0), My.Application.Info.Version) OrElse
                     IsNewerVersion(gitHubVersion(1), codeConverterInfo.Version) Then
