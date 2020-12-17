@@ -4,16 +4,18 @@
 
 Imports System.ComponentModel
 Imports System.IO
+Imports System.Net
 Imports System.Reflection
 Imports System.Threading
 Imports CSharpToVBApp
 Imports CSharpToVBConverter
 Imports Microsoft.CodeAnalysis
+Imports Microsoft.VisualBasic.ApplicationServices
 Imports Microsoft.VisualBasic.FileIO
 Imports ProgressReportLibrary
 
 Partial Public Class Form1
-
+    Private Const ProjectGitHubURL As String = "https://github.com/paul1956/CSharpToVB/"
     Private Shared ReadOnly s_snippetFileWithPath As String = Path.Combine(SpecialDirectories.MyDocuments, "CSharpToVBLastSnippet.RTF")
     Private ReadOnly _frameworkTypeList As New List(Of ToolStripMenuItem)
     Private ReadOnly _frameworkVersionList As New Dictionary(Of String, (item As ToolStripMenuItem, Parent As ToolStripMenuItem))
@@ -28,8 +30,6 @@ Partial Public Class Form1
         Me.InitializeComponent()
     End Sub
 
-    Friend Property BufferToSearch As SearchBuffers = SearchBuffers.CS
-
     Private Property CurrentBuffer As Control
         Get
             Return _currentBuffer
@@ -41,6 +41,12 @@ Partial Public Class Form1
             End If
         End Set
     End Property
+
+    Friend Property BufferToSearch As SearchBuffers = SearchBuffers.CS
+
+    Private Shared Function IsNewerVersion(LatestVersionString As String, MyVersion As Version) As Boolean
+        Return LatestVersionString <> MyVersion.ToString
+    End Function
 
     Private Sub ButtonStop_Click(sender As Object, e As EventArgs) Handles ButtonStopConversion.Click
         Me.ButtonStopConversion.Visible = False
@@ -59,6 +65,60 @@ Partial Public Class Form1
 
     Private Sub ButtonStop_VisibleChanged(sender As Object, e As EventArgs) Handles ButtonStopConversion.VisibleChanged
         LocalUseWaitCursor(Me, WaitCursorEnable:=Me.ButtonStopConversion.Visible)
+    End Sub
+
+    Private Sub CheckForUpdates(ReportResults As Boolean)
+        Try
+            Dim request As WebRequest = WebRequest.Create($"{ProjectGitHubURL}blob/master/ReadMe.MD")
+            request.Timeout = 4000
+            Dim response As WebResponse = request.GetResponse()
+            Using reader As New StreamReader(response.GetResponseStream())
+                Dim line As String
+                Dim index As Integer = -1
+                Do
+                    line = reader.ReadLine
+                    If line Is Nothing Then
+                        Exit Do
+                    End If
+                    If line.Contains("What's New in this release", StringComparison.Ordinal) Then
+                        Exit Do
+                    End If
+                Loop
+                Do
+                    line = reader.ReadLine
+                    If line Is Nothing Then
+                        Exit Do
+                    End If
+                    index = line.IndexOf("New in ", StringComparison.OrdinalIgnoreCase)
+                    Exit Do
+                Loop
+                If index < 0 Then
+                    Exit Sub
+                End If
+                Dim gitHubVersion() As String = line.Substring(index + "New In ".Length).Split("/")
+                Dim codeConverterInfo As New AssemblyInfo(GetType(CodeWithOptions).Assembly)
+                If IsNewerVersion(gitHubVersion(0), My.Application.Info.Version) OrElse
+                    IsNewerVersion(gitHubVersion(1), codeConverterInfo.Version) Then
+                    If ReportResults Then
+                        If MsgBox("There is a newer version available, do you want to install now?", MsgBoxStyle.YesNo, "Updates Available") = MsgBoxResult.Yes Then
+                            Me.OpenURLInBrowser($"{ProjectGitHubURL}")
+                        End If
+                    Else
+                        Me.NotifyIcon1.Visible = True
+                    End If
+                Else
+                    If ReportResults Then
+                        MsgBox("You are running latest version", MsgBoxStyle.OkOnly, "No Updates Available")
+                    Else
+                        Me.NotifyIcon1.Visible = False
+                    End If
+                End If
+            End Using
+        Catch ex As Exception
+            If ReportResults Then
+                MsgBox("Failed while checking for new  version: " + ex.Message, MsgBoxStyle.Information, "Version Check Failed")
+            End If
+        End Try
     End Sub
 
     Private Sub ContextMenuCopy_Click(sender As Object, e As EventArgs) Handles ContextMenuCopy.Click
@@ -202,6 +262,12 @@ Partial Public Class Form1
             My.Settings.Save()
         End If
 
+        Me.UpdateLastFileMenu()
+        Me.TSFindFindWhatComboBox.TSFindWhatMRUUpdateUI()
+
+        ' display MRU if there are any items to display...
+        Me.mnuFile.DropDownItems.FileMenuMRUUpdateUI(AddressOf Me.mnu_MRUList_Click)
+
         Me.mnuOptionsColorizeSource.Checked = My.Settings.ColorizeInput
         Me.mnuOptionsColorizeResult.Checked = My.Settings.ColorizeOutput
 
@@ -289,7 +355,7 @@ Partial Public Class Form1
         Me.TSFindMatchCaseCheckBox.Checked = My.Settings.TSFindMatchCase
         Me.TSFindMatchWholeWordCheckBox.Checked = My.Settings.TSFindMatchWholeWord
         Application.DoEvents()
-
+        Me.CheckForUpdates(ReportResults:=False)
     End Sub
 
     Private Sub Form1_Resize(sender As Object, e As EventArgs) Handles Me.Resize
@@ -723,19 +789,12 @@ Partial Public Class Form1
         End Using
     End Sub
 
+    Private Sub mnuHelpCheckForUpdatesMenuItem_Click(sender As Object, e As EventArgs) Handles mnuHelpCheckForUpdatesMenuItem.Click
+        Me.CheckForUpdates(ReportResults:=True)
+    End Sub
+
     Private Sub mnuHelpReportIssueMenuItem_Click(sender As Object, e As EventArgs) Handles mnuHelpReportIssueMenuItem.Click
-        Dim webAddress As String = "http://github.com/paul1956/CSharpToVB/issues"
-        Try
-            'Devices.Mouse.OverrideCursor = Cursors.AppStarting
-            Me.Cursor = Cursors.AppStarting
-            launchBrowser(webAddress)
-        Catch ex As Exception
-            Stop
-            Throw
-        Finally
-            Me.Cursor = Cursors.AppStarting
-            'Devices.Mouse.OverrideCursor = Nothing
-        End Try
+        Me.OpenURLInBrowser($"{ProjectGitHubURL}issues")
     End Sub
 
     Private Sub mnuOptionDefaultFramework_CheckedChanged(sender As Object, e As EventArgs) Handles mnuOptionsDefaultFramework.CheckedChanged
@@ -863,6 +922,20 @@ Partial Public Class Form1
         My.Settings.Save()
     End Sub
 
+    Private Sub OpenURLInBrowser(webAddress As String)
+        Try
+            'Devices.Mouse.OverrideCursor = Cursors.AppStarting
+            Me.Cursor = Cursors.AppStarting
+            launchBrowser(webAddress)
+        Catch ex As Exception
+            Stop
+            Throw
+        Finally
+            Me.Cursor = Cursors.AppStarting
+            'Devices.Mouse.OverrideCursor = Nothing
+        End Try
+    End Sub
+
     Private Sub SplitContainer1_SplitterMoved(sender As Object, e As SplitterEventArgs) Handles SplitContainer1.SplitterMoved
         Me.ListBoxFileList.Height = Me.SplitContainer1.Panel2.ClientSize.Height
         Me.ListBoxErrorList.Height = Me.SplitContainer1.Panel2.ClientSize.Height
@@ -886,16 +959,12 @@ Partial Public Class Form1
         If My.Settings.MRU_Data Is Nothing Then
             My.Settings.MRU_Data = New Specialized.StringCollection
         End If
-        Me.UpdateLastFileMenu()
 
         If My.Settings.TSFindMRU_Data Is Nothing Then
             My.Settings.TSFindMRU_Data = New Specialized.StringCollection
             My.Settings.Save()
         End If
-        Me.TSFindFindWhatComboBox.TSFindWhatMRUUpdateUI()
 
-        ' display MRU if there are any items to display...
-        Me.mnuFile.DropDownItems.FileMenuMRUUpdateUI(AddressOf Me.mnu_MRUList_Click)
     End Sub
 
     ''' <summary>
@@ -989,6 +1058,22 @@ Partial Public Class Form1
 
 #Region "Form Support Routines"
 
+    Private Sub ResizeRichTextBuffers()
+        Dim lineNumberInputWidth As Integer = If(Me.LineNumbersForConversionInput.Visible AndAlso Me.ConversionInput.TextLength > 0, Me.LineNumbersForConversionInput.Width, 0)
+        Dim lineNumberOutputWidth As Integer = If(Me.LineNumbersForConversionOutput.Visible AndAlso Me.ConversionOutput.TextLength > 0, Me.LineNumbersForConversionOutput.Width, 0)
+        Dim halfClientWidth As Integer = Me.ClientSize.Width \ 2
+        Me.ConversionInput.Left = lineNumberInputWidth - 1
+        Me.ConversionInput.Width = halfClientWidth - lineNumberInputWidth
+        Me.ListBoxFileList.Width = halfClientWidth
+
+        Me.ConversionOutput.Width = Me.ClientSize.Width - (Me.ConversionInput.Width + lineNumberInputWidth + lineNumberOutputWidth)
+        Me.ConversionOutput.Left = Me.ConversionInput.Width + lineNumberInputWidth + lineNumberOutputWidth
+
+        Me.ListBoxErrorList.Left = halfClientWidth
+        Me.ListBoxErrorList.Width = halfClientWidth
+        Me.StatusStripCurrentFileName.Width = halfClientWidth
+    End Sub
+
     Friend Sub UpdateProgress(progressStr As String)
         Me.ProjectConversionInitProgressLabel.Text = progressStr
         If progressStr.Any Then
@@ -1006,22 +1091,6 @@ Partial Public Class Form1
             Me.ProjectConversionInitProgressBar.Visible = False
         End If
         Application.DoEvents()
-    End Sub
-
-    Private Sub ResizeRichTextBuffers()
-        Dim lineNumberInputWidth As Integer = If(Me.LineNumbersForConversionInput.Visible AndAlso Me.ConversionInput.TextLength > 0, Me.LineNumbersForConversionInput.Width, 0)
-        Dim lineNumberOutputWidth As Integer = If(Me.LineNumbersForConversionOutput.Visible AndAlso Me.ConversionOutput.TextLength > 0, Me.LineNumbersForConversionOutput.Width, 0)
-        Dim halfClientWidth As Integer = Me.ClientSize.Width \ 2
-        Me.ConversionInput.Left = lineNumberInputWidth - 1
-        Me.ConversionInput.Width = halfClientWidth - lineNumberInputWidth
-        Me.ListBoxFileList.Width = halfClientWidth
-
-        Me.ConversionOutput.Width = Me.ClientSize.Width - (Me.ConversionInput.Width + lineNumberInputWidth + lineNumberOutputWidth)
-        Me.ConversionOutput.Left = Me.ConversionInput.Width + lineNumberInputWidth + lineNumberOutputWidth
-
-        Me.ListBoxErrorList.Left = halfClientWidth
-        Me.ListBoxErrorList.Width = halfClientWidth
-        Me.StatusStripCurrentFileName.Width = halfClientWidth
     End Sub
 
     Friend Sub UpdateProgressLabels(progressStr As String)

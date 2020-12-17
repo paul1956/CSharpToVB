@@ -29,6 +29,7 @@ Partial Class Form1
     Private Sub InitializeComponent()
         Me.components = New System.ComponentModel.Container()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(Form1))
+        Me.NotifyIcon1 = New System.Windows.Forms.NotifyIcon(Me.components)
         Me.MenuStrip1 = New System.Windows.Forms.MenuStrip()
         Me.mnuFile = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuFileOpen = New System.Windows.Forms.ToolStripMenuItem()
@@ -86,6 +87,7 @@ Partial Class Form1
         Me.mnuViewShowDestinationLineNumbers = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuHelp = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuHelpReportIssueMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.mnuHelpCheckForUpdatesMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuHelpAboutMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.TSFindToolStrip = New System.Windows.Forms.ToolStrip()
         Me.TSFindFindWhatComboBox = New System.Windows.Forms.ToolStripComboBox()
@@ -575,7 +577,7 @@ Partial Class Form1
         '
         'mnuHelp
         '
-        Me.mnuHelp.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuHelpReportIssueMenuItem, Me.mnuHelpAboutMenuItem})
+        Me.mnuHelp.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuHelpReportIssueMenuItem, Me.mnuHelpCheckForUpdatesMenuItem, Me.mnuHelpAboutMenuItem})
         Me.mnuHelp.Name = "mnuHelp"
         Me.mnuHelp.ShortcutKeys = CType((System.Windows.Forms.Keys.Alt Or System.Windows.Forms.Keys.H), System.Windows.Forms.Keys)
         Me.mnuHelp.Size = New System.Drawing.Size(44, 20)
@@ -589,11 +591,24 @@ Partial Class Form1
         Me.mnuHelpReportIssueMenuItem.Size = New System.Drawing.Size(177, 22)
         Me.mnuHelpReportIssueMenuItem.Text = "Report A Problem..."
         '
+        'mnuHelpCheckForUpdatesMenuItem
+        '
+        Me.mnuHelpCheckForUpdatesMenuItem.Name = "mnuHelpCheckForUpdatesMenuItem"
+        Me.mnuHelpCheckForUpdatesMenuItem.Size = New System.Drawing.Size(177, 22)
+        Me.mnuHelpCheckForUpdatesMenuItem.Text = "Check For Updates"
+        '
         'mnuHelpAboutMenuItem
         '
         Me.mnuHelpAboutMenuItem.Name = "mnuHelpAboutMenuItem"
         Me.mnuHelpAboutMenuItem.Size = New System.Drawing.Size(177, 22)
         Me.mnuHelpAboutMenuItem.Text = "About"
+        '
+        'NotifyIcon1
+        '
+        Me.NotifyIcon1.BalloonTipText = "Update Available"
+        Me.NotifyIcon1.Icon = CType(resources.GetObject("NotifyIcon1.Icon"), System.Drawing.Icon)
+        Me.NotifyIcon1.Text = "Update available for CSharp To VB"
+        Me.NotifyIcon1.Visible = True
         '
         'TSFindToolStrip
         '
@@ -1048,6 +1063,7 @@ Partial Class Form1
     Friend WithEvents mnuConvertSep1 As ToolStripSeparator
     Friend WithEvents mnuConvertStartFolderConvertFromLastFile As ToolStripMenuItem
     Friend WithEvents mnuHelp As ToolStripMenuItem
+    Friend WithEvents mnuHelpCheckForUpdatesMenuItem As ToolStripMenuItem
     Friend WithEvents mnuHelpAboutMenuItem As ToolStripMenuItem
     Friend WithEvents mnuHelpReportIssueMenuItem As ToolStripMenuItem
     Friend WithEvents SaveFileDialog1 As SaveFileDialog
@@ -1133,4 +1149,5 @@ Partial Class Form1
     Friend WithEvents TSFindSeparator5 As ToolStripSeparator
     Friend WithEvents mnuEditSelectAll As ToolStripMenuItem
     Friend WithEvents ContextMenuSelectAll As ToolStripMenuItem
+    Friend WithEvents NotifyIcon1 As NotifyIcon
 End Class
