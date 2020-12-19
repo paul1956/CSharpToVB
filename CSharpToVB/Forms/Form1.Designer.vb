@@ -29,7 +29,6 @@ Partial Class Form1
     Private Sub InitializeComponent()
         Me.components = New System.ComponentModel.Container()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(Form1))
-        Me.NotifyIcon1 = New System.Windows.Forms.NotifyIcon(Me.components)
         Me.MenuStrip1 = New System.Windows.Forms.MenuStrip()
         Me.mnuFile = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuFileOpen = New System.Windows.Forms.ToolStripMenuItem()
@@ -128,6 +127,8 @@ Partial Class Form1
         Me.StatusStripSpacer = New System.Windows.Forms.ToolStripStatusLabel()
         Me.StatusStripConversionProgressBar = New ToolStripTextProgressBar()
         Me.StatusStripConversionFileProgressLabel = New System.Windows.Forms.ToolStripStatusLabel()
+        Me.StatusStripUpdateAvailable = New System.Windows.Forms.ToolStripStatusLabel()
+        Me.StatusStripUpdateNotAvailable = New System.Windows.Forms.ToolStripStatusLabel()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
         Me.ProjectConversionInitProgressBar = New System.Windows.Forms.ProgressBar()
         Me.ProjectConversionInitProgressLabel = New System.Windows.Forms.Label()
@@ -603,13 +604,6 @@ Partial Class Form1
         Me.mnuHelpAboutMenuItem.Size = New System.Drawing.Size(177, 22)
         Me.mnuHelpAboutMenuItem.Text = "About"
         '
-        'NotifyIcon1
-        '
-        Me.NotifyIcon1.BalloonTipText = "Update Available"
-        Me.NotifyIcon1.Icon = CType(resources.GetObject("NotifyIcon1.Icon"), System.Drawing.Icon)
-        Me.NotifyIcon1.Text = "Update available for CSharp To VB"
-        Me.NotifyIcon1.Visible = True
-        '
         'TSFindToolStrip
         '
         Me.TSFindToolStrip.BackColor = System.Drawing.Color.FromArgb(CType(CType(204, Byte), Integer), CType(CType(213, Byte), Integer), CType(CType(240, Byte), Integer))
@@ -930,9 +924,10 @@ Partial Class Form1
         'StatusStrip1
         '
         Me.StatusStrip1.BackColor = System.Drawing.Color.FromArgb(CType(CType(204, Byte), Integer), CType(CType(213, Byte), Integer), CType(CType(240, Byte), Integer))
-        Me.StatusStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.StatusStripElapasedTimeLabel, Me.StatusStripCurrentFileName, Me.StatusStripSpacer, Me.StatusStripConversionProgressBar, Me.StatusStripConversionFileProgressLabel})
+        Me.StatusStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.StatusStripElapasedTimeLabel, Me.StatusStripCurrentFileName, Me.StatusStripSpacer, Me.StatusStripConversionProgressBar, Me.StatusStripConversionFileProgressLabel, Me.StatusStripUpdateAvailable, Me.StatusStripUpdatenotAvailable})
         Me.StatusStrip1.Location = New System.Drawing.Point(0, 615)
         Me.StatusStrip1.Name = "StatusStrip1"
+        Me.StatusStrip1.ShowItemToolTips = True
         Me.StatusStrip1.Size = New System.Drawing.Size(1923, 22)
         Me.StatusStrip1.TabIndex = 6
         Me.StatusStrip1.Text = "StatusStrip1"
@@ -979,6 +974,22 @@ Partial Class Form1
         Me.StatusStripConversionFileProgressLabel.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Left
         Me.StatusStripConversionFileProgressLabel.Name = "StatusStripConversionFileProgressLabel"
         Me.StatusStripConversionFileProgressLabel.Size = New System.Drawing.Size(200, 17)
+        '
+        'StatusStripUpdateNotAvailable
+        '
+        Me.StatusStripUpdateNotAvailable.DisplayStyle = ToolStripItemDisplayStyle.Image
+        Me.StatusStripUpdateNotAvailable.Image = CType(resources.GetObject("StatusStripUpdateNotAvailable.Image"), System.Drawing.Image)
+        Me.StatusStripUpdateNotAvailable.Name = "StatusStripUpdateNotAvailable"
+        Me.StatusStripUpdateNotAvailable.Size = New System.Drawing.Size(16, 17)
+        Me.StatusStripUpdateNotAvailable.ToolTipText = "Update Not Available"
+        '
+        'StatusStripUpdateAvailable
+        '
+        Me.StatusStripUpdateAvailable.DisplayStyle = ToolStripItemDisplayStyle.Image
+        Me.StatusStripUpdateAvailable.Image = CType(resources.GetObject("StatusStripUpdateAvailable.Image"), System.Drawing.Image)
+        Me.StatusStripUpdateAvailable.Name = "StatusStripUpdateAvailable"
+        Me.StatusStripUpdateAvailable.Size = New System.Drawing.Size(16, 17)
+        Me.StatusStripUpdateAvailable.ToolTipText = "Update Available"
         '
         'OpenFileDialog1
         '
@@ -1124,6 +1135,8 @@ Partial Class Form1
     Friend WithEvents StatusStripCurrentFileName As ToolStripStatusLabel
     Friend WithEvents StatusStripConversionFileProgressLabel As ToolStripStatusLabel
     Friend WithEvents StatusStripConversionProgressBar As ToolStripTextProgressBar
+    Friend WithEvents StatusStripUpdateAvailable As ToolStripStatusLabel
+    Friend WithEvents StatusStripUpdateNotAvailable As ToolStripStatusLabel
     Friend WithEvents ProjectConversionInitProgressBar As ProgressBar
     Friend WithEvents ProjectConversionInitProgressLabel As Label
     Friend WithEvents ToolTipFileList As ToolTip
@@ -1149,5 +1162,4 @@ Partial Class Form1
     Friend WithEvents TSFindSeparator5 As ToolStripSeparator
     Friend WithEvents mnuEditSelectAll As ToolStripMenuItem
     Friend WithEvents ContextMenuSelectAll As ToolStripMenuItem
-    Friend WithEvents NotifyIcon1 As NotifyIcon
 End Class

@@ -44,8 +44,14 @@ Partial Public Class Form1
 
     Friend Property BufferToSearch As SearchBuffers = SearchBuffers.CS
 
-    Private Shared Function IsNewerVersion(LatestVersionString As String, MyVersion As Version) As Boolean
-        Return LatestVersionString <> MyVersion.ToString
+    Private Shared Function IsNewerVersion(LatestVersionStrings() As String, AppVersion As Version, ConverterVersion As Version) As Boolean
+        If LatestVersionStrings(0) <> AppVersion.ToString Then
+            Return True
+        End If
+        If LatestVersionStrings.Length = 1 Then
+            Return False
+        End If
+        Return LatestVersionStrings(1) <> ConverterVersion.ToString
     End Function
 
     Private Sub ButtonStop_Click(sender As Object, e As EventArgs) Handles ButtonStopConversion.Click
@@ -103,20 +109,21 @@ Partial Public Class Form1
                 End If
                 Dim gitHubVersion() As String = versionStr.Split("/")
                 Dim codeConverterInfo As New AssemblyInfo(GetType(CodeWithOptions).Assembly)
-                If IsNewerVersion(gitHubVersion(0), My.Application.Info.Version) OrElse
-                    IsNewerVersion(gitHubVersion(1), codeConverterInfo.Version) Then
+                If IsNewerVersion(gitHubVersion, My.Application.Info.Version, codeConverterInfo.Version) Then
                     If ReportResults Then
                         If MsgBox("There is a newer version available, do you want to install now?", MsgBoxStyle.YesNo, "Updates Available") = MsgBoxResult.Yes Then
                             Me.OpenURLInBrowser($"{ProjectGitHubURL}")
                         End If
                     Else
-                        Me.NotifyIcon1.Visible = True
+                        Me.StatusStripUpdateAvailable.Visible = True
+                        Me.StatusStripUpdateNotAvailable.Visible = False
                     End If
                 Else
                     If ReportResults Then
                         MsgBox("You are running latest version", MsgBoxStyle.OkOnly, "No Updates Available")
                     Else
-                        Me.NotifyIcon1.Visible = False
+                        Me.StatusStripUpdateAvailable.Visible = False
+                        Me.StatusStripUpdateNotAvailable.Visible = True
                     End If
                 End If
             End Using
