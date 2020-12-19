@@ -25,11 +25,11 @@
     <Product>CSharp To VB Converter</Product>
     <Copyright>Copyright (c) .NET Foundation and Contributors</Copyright>
     <PackageId>CSharp To VB Converter</PackageId>
-    <AssemblyVersion>5.0.0.20</AssemblyVersion>
-    <FileVersion>5.0.0.20</FileVersion>
+    <AssemblyVersion>5.0.0.21</AssemblyVersion>
+    <FileVersion>5.0.0.21</FileVersion>
+    <Version>5.0.0.21</Version>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-    <Version>5.0.0.19</Version>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <NoWarn />

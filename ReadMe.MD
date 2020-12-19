@@ -63,6 +63,9 @@ Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpec
 Any changes to CSharpToVB application needs to change the version information in the project file **AND** in MyProject/AssemblyInfo.vb until Visual Studio is able to general file automatically for a WinForms application.
 
 ## What's New in this release
+  New in 5.0.0.21/5.0.0.10
+  - Improve and simplify update notification handling
+
   New in 5.0.0.20/5.0.0.10
   - Convert notify to StatusStrip Notify icon.
 

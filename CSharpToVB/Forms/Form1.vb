@@ -45,7 +45,7 @@ Partial Public Class Form1
     Friend Property BufferToSearch As SearchBuffers = SearchBuffers.CS
 
     Private Shared Function IsNewerVersion(LatestVersionStrings() As String, AppVersion As Version, ConverterVersion As Version) As Boolean
-        If LatestVersionStrings(0) <> AppVersion.ToString Then
+        If Not (String.IsNullOrWhiteSpace(LatestVersionStrings(0)) OrElse LatestVersionStrings(0) = AppVersion.ToString) Then
             Return True
         End If
         If LatestVersionStrings.Length = 1 Then
@@ -110,20 +110,16 @@ Partial Public Class Form1
                 Dim gitHubVersion() As String = versionStr.Split("/")
                 Dim codeConverterInfo As New AssemblyInfo(GetType(CodeWithOptions).Assembly)
                 If IsNewerVersion(gitHubVersion, My.Application.Info.Version, codeConverterInfo.Version) Then
+                    Me.StatusStripUpdateAvailable.Visible = True
                     If ReportResults Then
                         If MsgBox("There is a newer version available, do you want to install now?", MsgBoxStyle.YesNo, "Updates Available") = MsgBoxResult.Yes Then
-                            Me.OpenURLInBrowser($"{ProjectGitHubURL}")
+                            Me.OpenURLInBrowser(ProjectGitHubURL)
                         End If
-                    Else
-                        Me.StatusStripUpdateAvailable.Visible = True
-                        Me.StatusStripUpdateNotAvailable.Visible = False
                     End If
                 Else
+                    Me.StatusStripUpdateAvailable.Visible = False
                     If ReportResults Then
                         MsgBox("You are running latest version", MsgBoxStyle.OkOnly, "No Updates Available")
-                    Else
-                        Me.StatusStripUpdateAvailable.Visible = False
-                        Me.StatusStripUpdateNotAvailable.Visible = True
                     End If
                 End If
             End Using
@@ -958,6 +954,10 @@ Partial Public Class Form1
         If e.Button = Windows.Forms.MouseButtons.Right Then
             Clipboard.SetText(text:=CType(sender, ToolStripStatusLabel).Text)
         End If
+    End Sub
+
+    Private Sub StatusStripUpdateAvailable_Click(sender As Object, e As EventArgs) Handles StatusStripUpdateAvailable.Click
+        Me.OpenURLInBrowser(ProjectGitHubURL)
     End Sub
 
     Protected Overrides Sub OnLoad(e As EventArgs)
