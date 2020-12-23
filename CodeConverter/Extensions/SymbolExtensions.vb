@@ -7,8 +7,7 @@ Imports System.Runtime.CompilerServices
 Imports Microsoft.CodeAnalysis
 
 Namespace CSharpToVBConverter
-
-    Module SymbolExtensions
+    Friend Module SymbolExtensions
 
         <Extension>
         Public Function GetParameters(symbol As ISymbol) As ImmutableArray(Of IParameterSymbol)

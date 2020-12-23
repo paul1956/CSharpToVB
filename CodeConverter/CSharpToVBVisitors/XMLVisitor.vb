@@ -67,11 +67,11 @@ Namespace CSharpToVBConverter.ToVisualBasic
         End Function
 
         Private Function GatherAttributes(listOfAttributes As SyntaxList(Of CSS.XmlAttributeSyntax)) As SyntaxList(Of VBS.XmlNodeSyntax)
-            Dim VBAttributes As New SyntaxList(Of VBS.XmlNodeSyntax)
+            Dim vbAttributes As New SyntaxList(Of VBS.XmlNodeSyntax)
             For Each a As CSS.XmlAttributeSyntax In listOfAttributes
-                VBAttributes = VBAttributes.Add(DirectCast(a.Accept(Me).WithConvertedLeadingTriviaFrom(a), VBS.XmlNodeSyntax))
+                vbAttributes = vbAttributes.Add(DirectCast(a.Accept(Me).WithConvertedLeadingTriviaFrom(a), VBS.XmlNodeSyntax))
             Next
-            Return VBAttributes
+            Return vbAttributes
         End Function
 
         <ExcludeFromCodeCoverage>
@@ -97,12 +97,11 @@ Namespace CSharpToVBConverter.ToVisualBasic
 
         Public Overrides Function VisitGenericName(node As CSS.GenericNameSyntax) As VB.VisualBasicSyntaxNode
             Dim identifier As SyntaxToken = Factory.Identifier(node.Identifier.ToString)
-            Dim TypeList As New List(Of VBS.TypeSyntax)
+            Dim typeList As New List(Of VBS.TypeSyntax)
             For Each a As CSS.TypeSyntax In node.TypeArgumentList.Arguments
-                Dim TypeIdentifier As VBS.TypeSyntax = DirectCast(a.Accept(Me), VBS.TypeSyntax)
-                TypeList.Add(TypeIdentifier)
+                typeList.Add(DirectCast(a.Accept(Me), VBS.TypeSyntax))
             Next
-            Return Factory.GenericName(identifier, FactoryTypeArgumentList(TypeList))
+            Return Factory.GenericName(identifier, FactoryTypeArgumentList(typeList))
         End Function
 
         Public Overrides Function VisitIdentifierName(node As CSS.IdentifierNameSyntax) As VB.VisualBasicSyntaxNode
@@ -111,48 +110,45 @@ Namespace CSharpToVBConverter.ToVisualBasic
         End Function
 
         Public Overrides Function VisitNameMemberCref(node As CSS.NameMemberCrefSyntax) As VB.VisualBasicSyntaxNode
-            Dim Name As VB.VisualBasicSyntaxNode = node.Name.Accept(Me)
-            Dim CrefParameters As New List(Of VBS.CrefSignaturePartSyntax)
-            Dim Signature As VBS.CrefSignatureSyntax = Nothing
+            Dim name As VB.VisualBasicSyntaxNode = node.Name.Accept(Me)
+            Dim crefParameters As New List(Of VBS.CrefSignaturePartSyntax)
+            Dim signature As VBS.CrefSignatureSyntax = Nothing
             If node.Parameters IsNot Nothing Then
                 For Each p As CSS.CrefParameterSyntax In node.Parameters.Parameters
-                    Dim TypeSyntax1 As VBS.TypeSyntax = DirectCast(p.Accept(Me), VBS.TypeSyntax)
-                    CrefParameters.Add(Factory.CrefSignaturePart(modifier:=Nothing, TypeSyntax1))
+                    crefParameters.Add(Factory.CrefSignaturePart(modifier:=Nothing, DirectCast(p.Accept(Me), VBS.TypeSyntax)))
                 Next
-                Signature = Factory.CrefSignature(CrefParameters.ToArray)
+                signature = Factory.CrefSignature(crefParameters.ToArray)
             End If
-            Return Factory.CrefReference(DirectCast(Name, VBS.TypeSyntax), signature:=Signature, asClause:=Nothing)
+            Return Factory.CrefReference(DirectCast(name, VBS.TypeSyntax), signature:=signature, asClause:=Nothing)
         End Function
 
         Public Overrides Function VisitOperatorMemberCref(node As CSS.OperatorMemberCrefSyntax) As VB.VisualBasicSyntaxNode
-            Dim CrefOperator As SyntaxToken = GetVBOperatorToken(node.OperatorToken.ValueText)
-            Return Factory.CrefOperatorReference(CrefOperator.WithLeadingTrivia(Factory.Space))
+            Return Factory.CrefOperatorReference(GetVBOperatorToken(node.OperatorToken.ValueText).WithLeadingTrivia(Factory.Space))
         End Function
 
         Public Overrides Function VisitPredefinedType(node As CSS.PredefinedTypeSyntax) As VB.VisualBasicSyntaxNode
-            Dim Token As SyntaxToken = CS.CSharpExtensions.Kind(node.Keyword).GetTypeToken(context:=TokenContext.XMLComment)
-            Select Case Token.RawKind
+            Dim token As SyntaxToken = CS.CSharpExtensions.Kind(node.Keyword).GetTypeToken(context:=TokenContext.XMLComment)
+            Select Case token.RawKind
                 Case VB.SyntaxKind.EmptyToken
                     Return Factory.ParseTypeName(node.ToString)
                 Case VB.SyntaxKind.NothingKeyword
                     Return NothingExpression
                 Case Else
-                    Return Factory.PredefinedType(Token)
+                    Return Factory.PredefinedType(token)
             End Select
         End Function
 
         Public Overrides Function VisitQualifiedCref(QualifiedCref As CSS.QualifiedCrefSyntax) As VB.VisualBasicSyntaxNode
-            Dim IdentifierOrTypeName As VB.VisualBasicSyntaxNode = QualifiedCref.Container.Accept(Me)
-            Dim Value As VBS.CrefReferenceSyntax = DirectCast(QualifiedCref.Member.Accept(Me), VBS.CrefReferenceSyntax)
-            Dim identifier As VBS.NameSyntax
-            identifier = If(TypeOf IdentifierOrTypeName Is VBS.NameSyntax, DirectCast(IdentifierOrTypeName, VBS.NameSyntax), Factory.IdentifierName(IdentifierOrTypeName.ToString))
-            Dim QualifiedNameSyntax As VBS.QualifiedNameSyntax = Factory.QualifiedName(left:=identifier,
-                                                                                                DotToken,
-                                                                                                right:=DirectCast(Value.Name, VBS.SimpleNameSyntax))
-            If Value.Signature Is Nothing Then
-                Return QualifiedNameSyntax
+            Dim identifierOrTypeName As VB.VisualBasicSyntaxNode = QualifiedCref.Container.Accept(Me)
+            Dim value As VBS.CrefReferenceSyntax = DirectCast(QualifiedCref.Member.Accept(Me), VBS.CrefReferenceSyntax)
+            Dim identifier As VBS.NameSyntax = If(TypeOf identifierOrTypeName Is VBS.NameSyntax, DirectCast(identifierOrTypeName, VBS.NameSyntax), Factory.IdentifierName(identifierOrTypeName.ToString))
+            Dim qualifiedNameSyntax As VBS.QualifiedNameSyntax = Factory.QualifiedName(left:=identifier,
+                                                                                       DotToken,
+                                                                                       right:=DirectCast(value.Name, VBS.SimpleNameSyntax))
+            If value.Signature Is Nothing Then
+                Return qualifiedNameSyntax
             End If
-            Return Factory.CrefReference(QualifiedNameSyntax, Value.Signature, Nothing)
+            Return Factory.CrefReference(qualifiedNameSyntax, value.Signature, Nothing)
         End Function
 
         Public Overrides Function VisitQualifiedName(node As CSS.QualifiedNameSyntax) As VB.VisualBasicSyntaxNode
@@ -164,8 +160,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
         End Function
 
         Public Overrides Function VisitXmlCDataSection(node As CSS.XmlCDataSectionSyntax) As VB.VisualBasicSyntaxNode
-            Dim TextTokens As SyntaxTokenList = TranslateTokenList(node.TextTokens)
-            Return Factory.XmlCDataSection(BeginCDataToken, TextTokens, EndCDataToken)
+            Return Factory.XmlCDataSection(BeginCDataToken, TranslateTokenList(node.TextTokens), EndCDataToken)
         End Function
 
         Public Overrides Function VisitXmlComment(node As CSS.XmlCommentSyntax) As VB.VisualBasicSyntaxNode
@@ -173,53 +168,53 @@ Namespace CSharpToVBConverter.ToVisualBasic
         End Function
 
         Public Overrides Function VisitXmlCrefAttribute(node As CSS.XmlCrefAttributeSyntax) As VB.VisualBasicSyntaxNode
-            Dim Name As VBS.XmlNameSyntax = DirectCast(node.Name.Accept(Me), VBS.XmlNameSyntax)
+            Dim name As VBS.XmlNameSyntax = DirectCast(node.Name.Accept(Me), VBS.XmlNameSyntax)
 
             Dim cref As VB.VisualBasicSyntaxNode = node.Cref.Accept(Me)
-            Dim SyntaxTokens As New SyntaxTokenList
-            SyntaxTokens = SyntaxTokens.AddRange(cref.DescendantTokens)
-            Dim Value As VBS.XmlNodeSyntax = Factory.XmlString(
-                            DoubleQuoteToken,
-                            SyntaxTokens,
-                            DoubleQuoteToken).WithConvertedTriviaFrom(node)
-            Return Factory.XmlAttribute(Name, Value)
+            Dim syntaxTokens As New SyntaxTokenList
+            syntaxTokens = syntaxTokens.AddRange(cref.DescendantTokens)
+            Return Factory.XmlAttribute(name,
+                                        Factory.XmlString(DoubleQuoteToken,
+                                                          syntaxTokens,
+                                                          DoubleQuoteToken).WithConvertedTriviaFrom(node))
         End Function
 
         Public Overrides Function VisitXmlElement(node As CSS.XmlElementSyntax) As VB.VisualBasicSyntaxNode
-            Dim Content As New SyntaxList(Of VBS.XmlNodeSyntax)
-            Dim StartTag As VBS.XmlElementStartTagSyntax = DirectCast(node.StartTag.Accept(Me).WithConvertedTriviaFrom(node.StartTag), VBS.XmlElementStartTagSyntax)
+            Dim content As New SyntaxList(Of VBS.XmlNodeSyntax)
+            Dim startTag As VBS.XmlElementStartTagSyntax = DirectCast(node.StartTag.Accept(Me).WithConvertedTriviaFrom(node.StartTag), VBS.XmlElementStartTagSyntax)
 
-            Dim NoEndTag As Boolean = String.IsNullOrWhiteSpace(node.EndTag.Name.LocalName.ValueText)
-            Dim EndTag As VBS.XmlElementEndTagSyntax = If(NoEndTag,
-                Factory.XmlElementEndTag(DirectCast(StartTag.Name, VBS.XmlNameSyntax).WithConvertedTriviaFrom(node.EndTag)),
-                Factory.XmlElementEndTag(DirectCast(node.EndTag.Name.Accept(Me), VBS.XmlNameSyntax)))
+            Dim noEndTag As Boolean = String.IsNullOrWhiteSpace(node.EndTag.Name.LocalName.ValueText)
+            Dim endTag As VBS.XmlElementEndTagSyntax
+            endTag = If(noEndTag,
+                        Factory.XmlElementEndTag(DirectCast(startTag.Name, VBS.XmlNameSyntax).WithConvertedTriviaFrom(node.EndTag)),
+                        Factory.XmlElementEndTag(DirectCast(node.EndTag.Name.Accept(Me), VBS.XmlNameSyntax))
+                       )
             Try
                 For Each e As IndexClass(Of CSS.XmlNodeSyntax) In node.Content.WithIndex
                     Dim vbNode As VBS.XmlNodeSyntax = CType(e.Value.Accept(Me).WithConvertedTriviaFrom(e.Value), VBS.XmlNodeSyntax)
-                    If NoEndTag Then
-                        Dim LastToken As SyntaxToken = vbNode.GetLastToken
-                        If LastToken.ValueText.IsNewLine Then
-                            vbNode = vbNode.ReplaceToken(LastToken, Factory.Token(VB.SyntaxKind.EmptyToken))
+                    If noEndTag Then
+                        Dim lastToken As SyntaxToken = vbNode.GetLastToken
+                        If lastToken.ValueText.IsNewLine Then
+                            vbNode = vbNode.ReplaceToken(lastToken, Factory.Token(VB.SyntaxKind.EmptyToken))
                         End If
                     End If
-                    Content = Content.Add(vbNode)
+                    content = content.Add(vbNode)
                 Next
 
                 If node.EndTag?.HasLeadingTrivia AndAlso node.EndTag.GetLeadingTrivia(0).IsKind(CS.SyntaxKind.DocumentationCommentExteriorTrivia) Then
-                    Dim NewLeadingTriviaList As New SyntaxTriviaList
-                    NewLeadingTriviaList = NewLeadingTriviaList.Add(Factory.DocumentationCommentExteriorTrivia(node.EndTag.GetLeadingTrivia(0).ToString.Replace("///", "'''", StringComparison.Ordinal)))
-                    Dim NewTokenList As New SyntaxTokenList
-                    NewTokenList = NewTokenList.Add(Factory.XmlTextLiteralToken(NewLeadingTriviaList, " ", " ", New SyntaxTriviaList))
-                    Content = Content.Add(Factory.XmlText(NewTokenList))
-                    EndTag = EndTag.WithoutLeadingTrivia
+                    Dim newLeadingTriviaList As New SyntaxTriviaList
+                    newLeadingTriviaList = newLeadingTriviaList.Add(Factory.DocumentationCommentExteriorTrivia(node.EndTag.GetLeadingTrivia(0).ToString.Replace("///", "'''", StringComparison.Ordinal)))
+                    Dim newTokenList As New SyntaxTokenList
+                    newTokenList = newTokenList.Add(Factory.XmlTextLiteralToken(newLeadingTriviaList, " ", " ", New SyntaxTriviaList))
+                    content = content.Add(Factory.XmlText(newTokenList))
+                    endTag = endTag.WithoutLeadingTrivia
                 End If
             Catch ex As OperationCanceledException
                 Throw
             Catch ex As Exception
                 Stop
             End Try
-            Dim XmlElement As VBS.XmlElementSyntax = Factory.XmlElement(StartTag, Content, EndTag)
-            Return XmlElement
+            Return Factory.XmlElement(startTag, content, endTag)
         End Function
 
         Public Overrides Function VisitXmlElementEndTag(node As CSS.XmlElementEndTagSyntax) As VB.VisualBasicSyntaxNode
@@ -233,9 +228,9 @@ Namespace CSharpToVBConverter.ToVisualBasic
 
         Public Overrides Function VisitXmlEmptyElement(node As CSS.XmlEmptyElementSyntax) As VB.VisualBasicSyntaxNode
             Try
-                Dim Name As VBS.XmlNodeSyntax = DirectCast(node.Name.Accept(Me), VBS.XmlNodeSyntax)
+                Dim name As VBS.XmlNodeSyntax = DirectCast(node.Name.Accept(Me), VBS.XmlNodeSyntax)
                 Dim listOfAttributes As SyntaxList(Of VBS.XmlNodeSyntax) = Me.GatherAttributes(node.Attributes)
-                Return Factory.XmlEmptyElement(Name, listOfAttributes).WithConvertedTriviaFrom(node)
+                Return Factory.XmlEmptyElement(name, listOfAttributes).WithConvertedTriviaFrom(node)
             Catch ex As OperationCanceledException
                 Throw
             Catch ex As Exception
@@ -244,21 +239,18 @@ Namespace CSharpToVBConverter.ToVisualBasic
         End Function
 
         Public Overrides Function VisitXmlName(node As CSS.XmlNameSyntax) As VB.VisualBasicSyntaxNode
-            Dim Prefix As VBS.XmlPrefixSyntax
-            Prefix = If(node.Prefix Is Nothing, Nothing, DirectCast(node.Prefix.Accept(Me), VBS.XmlPrefixSyntax))
+            Dim prefix As VBS.XmlPrefixSyntax
+            prefix = If(node.Prefix Is Nothing, Nothing, DirectCast(node.Prefix.Accept(Me), VBS.XmlPrefixSyntax))
             Dim localName As SyntaxToken = Factory.XmlNameToken(node.LocalName.ValueText, Nothing)
-            Return Factory.XmlName(Prefix, localName)
+            Return Factory.XmlName(prefix, localName)
         End Function
 
         Public Overrides Function VisitXmlNameAttribute(node As CSS.XmlNameAttributeSyntax) As VB.VisualBasicSyntaxNode
-            Dim Name As VBS.XmlNodeSyntax = DirectCast(node.Name.Accept(Me), VBS.XmlNodeSyntax).WithConvertedLeadingTriviaFrom(node.Name)
-            Dim ValueString As String = node.Identifier.ToString
-            Dim Value As VBS.XmlNodeSyntax = Factory.XmlString(
-                                                    DoubleQuoteToken,
-                                                    SyntaxTokenList.Create(
-                                                    Factory.XmlTextLiteralToken(ValueString, ValueString)),
-                                                    DoubleQuoteToken)
-            Return Factory.XmlAttribute(Name, Value).WithConvertedTriviaFrom(node).WithConvertedTriviaFrom(node)
+            Dim name As VBS.XmlNodeSyntax = DirectCast(node.Name.Accept(Me), VBS.XmlNodeSyntax).WithConvertedLeadingTriviaFrom(node.Name)
+            Dim valueString As String = node.Identifier.ToString
+            Return Factory.XmlAttribute(name, Factory.XmlString(DoubleQuoteToken,
+                                                                SyntaxTokenList.Create(Factory.XmlTextLiteralToken(valueString, valueString)),
+                                                                DoubleQuoteToken)).WithConvertedTriviaFrom(node).WithConvertedTriviaFrom(node)
         End Function
 
         Public Overrides Function VisitXmlPrefix(node As CSS.XmlPrefixSyntax) As VB.VisualBasicSyntaxNode
@@ -270,21 +262,17 @@ Namespace CSharpToVBConverter.ToVisualBasic
         End Function
 
         Public Overrides Function VisitXmlText(node As CSS.XmlTextSyntax) As VB.VisualBasicSyntaxNode
-            Dim TextTokens As SyntaxTokenList = TranslateTokenList(node.TextTokens)
-            Dim XmlText As VBS.XmlTextSyntax = Factory.XmlText(TextTokens)
-            Return XmlText
+            Return Factory.XmlText(TranslateTokenList(node.TextTokens))
         End Function
 
         Public Overrides Function VisitXmlTextAttribute(node As CSS.XmlTextAttributeSyntax) As VB.VisualBasicSyntaxNode
-            Dim Name As VBS.XmlNodeSyntax = DirectCast(node.Name.Accept(Me).WithConvertedTriviaFrom(node.Name), VBS.XmlNodeSyntax)
-            Dim TextTokens As SyntaxTokenList = TranslateTokenList(node.TextTokens)
-            Dim XmlText As VBS.XmlTextSyntax = Factory.XmlText(TextTokens)
-            Dim Value As VBS.XmlNodeSyntax = Factory.XmlString(
-                                                DoubleQuoteToken,
-                                                SyntaxTokenList.Create(
-                                                Factory.XmlTextLiteralToken(XmlText.ToString, XmlText.ToString)),
-                                                DoubleQuoteToken)
-            Return Factory.XmlAttribute(Name, Value)
+            Dim name As VBS.XmlNodeSyntax = DirectCast(node.Name.Accept(Me).WithConvertedTriviaFrom(node.Name), VBS.XmlNodeSyntax)
+            Dim xmlTextStr As String = Factory.XmlText(TranslateTokenList(node.TextTokens)).ToString
+            Return Factory.XmlAttribute(name, Factory.XmlString(DoubleQuoteToken,
+                                                                SyntaxTokenList.Create(
+                                                                Factory.XmlTextLiteralToken(xmlTextStr, xmlTextStr)),
+                                                                DoubleQuoteToken)
+                                                               )
         End Function
 
     End Class

@@ -8,7 +8,7 @@ Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
 Namespace CSharpToVBConverter.ToVisualBasic
-    Module SyntaxKindExtensions
+    Friend Module SyntaxKindExtensions
 
         <Extension>
         Friend Function GetComparisonOperatorToken(lSyntaxKind As CS.SyntaxKind, firstParameterIsString As Boolean) As SyntaxToken

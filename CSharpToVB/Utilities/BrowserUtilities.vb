@@ -4,7 +4,7 @@
 
 Imports Microsoft.Win32
 
-Module BrowserUtilities
+Friend Module BrowserUtilities
 
     Friend Sub launchBrowser(url As String)
         Using userChoiceKey As RegistryKey = Registry.CurrentUser.OpenSubKey("Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice")

@@ -840,7 +840,7 @@ Partial Public Class Form1
     Private Sub mnuOptionsAdvanced_Click(sender As Object, e As EventArgs) Handles mnuOptionsAdvanced.Click
         Using o As New OptionsDialog
             o.MainForm = Me
-            Dim r As DialogResult = o.ShowDialog(Me)
+            o.ShowDialog(Me)
         End Using
     End Sub
 

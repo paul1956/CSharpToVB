@@ -9,7 +9,7 @@ Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace CSharpToVBConverter.ToVisualBasic
-    Module ParameterListExtensions
+    Friend Module ParameterListExtensions
 
         <Extension>
         Friend Function RelocateDirectivesInTrailingTrivia(ParameterList As VBS.ParameterListSyntax, statementTrailingTrivia As SyntaxTriviaList) As VBS.ParameterListSyntax

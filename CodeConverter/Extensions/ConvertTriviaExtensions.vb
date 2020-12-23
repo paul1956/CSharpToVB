@@ -13,7 +13,7 @@ Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace CSharpToVBConverter
-    Module ConvertTriviaExtensions
+    Friend Module ConvertTriviaExtensions
 
         Private Function ReplaceLeadingSlashes(CommentTriviaBody As String) As String
             For charIndex As Integer = 0 To CommentTriviaBody.Length - 1

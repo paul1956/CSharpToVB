@@ -58,11 +58,11 @@ Namespace CSharpToVBConverter.ToVisualBasic
         End Function
 
         Friend Iterator Function ConvertModifiers(csModifiers As IEnumerable(Of SyntaxToken), IsModule As Boolean, Context As TokenContext) As IEnumerable(Of SyntaxToken)
-            Dim FoundVisibility As Boolean = False
+            Dim foundVisibility As Boolean = False
             Dim newLeadingTrivia As New SyntaxTriviaList
-            Dim FirstModifier As Boolean = True
+            Dim firstModifier As Boolean = True
             If csModifiers.Any Then
-                newLeadingTrivia = newLeadingTrivia.AddRange(csModifiers(0).leadingTrivia.ConvertTriviaList())
+                newLeadingTrivia = newLeadingTrivia.AddRange(csModifiers(0).LeadingTrivia.ConvertTriviaList())
             End If
 
             If Context <> TokenContext.Local AndAlso Context <> TokenContext.InterfaceOrModule AndAlso Context <> TokenContext.Class Then
@@ -75,79 +75,79 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Next
 
                 If Not visibility AndAlso Context = TokenContext.Member Then
-                    Dim DefaultVisibility As SyntaxToken = CSharpDefaultVisibility(Context)
-                    If FirstModifier Then
-                        Yield DefaultVisibility.WithLeadingTrivia(newLeadingTrivia)
+                    Dim defaultVisibility As SyntaxToken = CSharpDefaultVisibility(Context)
+                    If firstModifier Then
+                        Yield defaultVisibility.WithLeadingTrivia(newLeadingTrivia)
                         newLeadingTrivia = New SyntaxTriviaList
                         newLeadingTrivia = newLeadingTrivia.Add(Factory.Space)
-                        FirstModifier = False
+                        firstModifier = False
                     Else
-                        Yield DefaultVisibility
+                        Yield defaultVisibility
                     End If
-                    FoundVisibility = Not DefaultVisibility.IsKind(VB.SyntaxKind.EmptyToken)
+                    foundVisibility = Not defaultVisibility.IsKind(VB.SyntaxKind.EmptyToken)
                 End If
             End If
             For Each e As IndexClass(Of SyntaxToken) In csModifiers.WithIndex
                 Dim csModifier As SyntaxToken = e.Value
-                If e.IsFirst AndAlso Not FirstModifier Then
+                If e.IsFirst AndAlso Not firstModifier Then
                     csModifier = csModifier.WithLeadingTrivia(CS.SyntaxFactory.Space)
                 End If
-                Dim VB_Modifier As SyntaxToken = csModifier.ConvertModifier(IsModule, Context, FoundVisibility)
+                Dim vbModifier As SyntaxToken = csModifier.ConvertModifier(IsModule, Context, foundVisibility)
                 Dim newTrailingTrivia As New SyntaxTriviaList
 
                 ' If there is only empty Token then attach leading trivia to it otherwise ignore
-                If VB_Modifier.IsKind(VB.SyntaxKind.EmptyToken) Then
-                    If FirstModifier Then
-                        If Not VB_Modifier.HasLeadingTrivia Then
+                If vbModifier.IsKind(VB.SyntaxKind.EmptyToken) Then
+                    If firstModifier Then
+                        If Not vbModifier.HasLeadingTrivia Then
                             Continue For
                         End If
 
-                        If VB_Modifier.leadingTrivia.Count > 1 Then
-                            FirstModifier = False
+                        If vbModifier.LeadingTrivia.Count > 1 Then
+                            firstModifier = False
                             newLeadingTrivia = New SyntaxTriviaList
-                            Yield VB_Modifier.WithTrailingTrivia()
+                            Yield vbModifier.WithTrailingTrivia()
                             Continue For
                         End If
                     ElseIf e.IsLast Then
                         If newLeadingTrivia.Any AndAlso Not newLeadingTrivia.Last.IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
-                            FirstModifier = False
-                            Yield VB_Modifier.WithPrependedLeadingTrivia(newLeadingTrivia).WithTrailingTrivia()
+                            firstModifier = False
+                            Yield vbModifier.WithPrependedLeadingTrivia(newLeadingTrivia).WithTrailingTrivia()
                             newLeadingTrivia = New SyntaxTriviaList
                             Continue For
                         End If
                     End If
-                    If VB_Modifier.leadingTrivia.ContainsCommentOrDirectiveTrivia Then
-                        FirstModifier = False
+                    If vbModifier.LeadingTrivia.ContainsCommentOrDirectiveTrivia Then
+                        firstModifier = False
                         newLeadingTrivia = New SyntaxTriviaList
-                        Yield VB_Modifier
+                        Yield vbModifier
                     End If
                     Continue For
                 End If
 
                 If IgnoreInContext(csModifier, Context) Then
-                    If FirstModifier Then
-                        VB_Modifier = VB_Modifier.WithLeadingTrivia(newLeadingTrivia)
-                        FirstModifier = False
+                    If firstModifier Then
+                        vbModifier = vbModifier.WithLeadingTrivia(newLeadingTrivia)
+                        firstModifier = False
                         newLeadingTrivia = New SyntaxTriviaList
                     End If
-                    Yield VB_Modifier
+                    Yield vbModifier
                     newLeadingTrivia = New SyntaxTriviaList
                     Continue For
                 End If
-                If FirstModifier Then
-                    VB_Modifier = VB_Modifier.WithLeadingTrivia(newLeadingTrivia)
-                    FirstModifier = False
+                If firstModifier Then
+                    vbModifier = vbModifier.WithLeadingTrivia(newLeadingTrivia)
+                    firstModifier = False
                     newLeadingTrivia = New SyntaxTriviaList
-                    Yield VB_Modifier
+                    Yield vbModifier
                     Continue For
                 End If
-                VB_Modifier = VB_Modifier.WithPrependedLeadingTrivia(newLeadingTrivia)
-                If Not (VB_Modifier.IsKind(VB.SyntaxKind.None) OrElse VB_Modifier.IsKind(VB.SyntaxKind.EmptyToken)) Then
+                vbModifier = vbModifier.WithPrependedLeadingTrivia(newLeadingTrivia)
+                If Not (vbModifier.IsKind(VB.SyntaxKind.None) OrElse vbModifier.IsKind(VB.SyntaxKind.EmptyToken)) Then
                     newLeadingTrivia = New SyntaxTriviaList
                     newLeadingTrivia = newLeadingTrivia.Add(Factory.Space)
-                    ModifyTrailingTrivia(VB_Modifier.leadingTrivia, newTrailingTrivia)
-                    ModifyTrailingTrivia(VB_Modifier.TrailingTrivia, newTrailingTrivia)
-                    Yield VB_Modifier.With(newLeadingTrivia, newTrailingTrivia)
+                    ModifyTrailingTrivia(vbModifier.LeadingTrivia, newTrailingTrivia)
+                    ModifyTrailingTrivia(vbModifier.TrailingTrivia, newTrailingTrivia)
+                    Yield vbModifier.With(newLeadingTrivia, newTrailingTrivia)
                 End If
             Next
 
@@ -163,7 +163,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 If isTheoryOrInlineData Then
                     foundTheory = True
                 End If
-                Dim NewAttributLeadingTrivia As New SyntaxTriviaList
+                Dim newAttributLeadingTrivia As New SyntaxTriviaList
                 If e.IsFirst Then
                     statementLeadingTrivia = statementLeadingTrivia.AddRange(attributeList.GetLeadingTrivia)
                     If statementLeadingTrivia.Any AndAlso statementLeadingTrivia.Last.IsWhitespaceOrEndOfLine Then

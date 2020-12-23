@@ -11,8 +11,7 @@ Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
 Namespace CSharpToVBConverter
-
-    Module SyntaxNodeVBExtensions
+    Friend Module SyntaxNodeVBExtensions
 
         <Extension>
         Friend Function [With](Of T As VB.VisualBasicSyntaxNode)(node As T, leadingTrivia As IEnumerable(Of SyntaxTrivia), trailingTrivia As IEnumerable(Of SyntaxTrivia)) As T

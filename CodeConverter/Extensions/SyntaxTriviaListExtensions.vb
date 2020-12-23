@@ -11,8 +11,7 @@ Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
 Namespace CSharpToVBConverter
-
-    Module SyntaxTriviaListExtensions
+    Friend Module SyntaxTriviaListExtensions
 
         Private Function RemoveLeadingSpacesAndStar(line As String) As String
             Dim newStringBuilder As New StringBuilder

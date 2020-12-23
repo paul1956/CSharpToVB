@@ -7,7 +7,7 @@ Imports Microsoft.CodeAnalysis
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
 Namespace CSharpToVBConverter
-    Module TokenListExtensions
+    Friend Module TokenListExtensions
 
         <Extension>
         Friend Function Contains(Tokens As SyntaxTokenList, Kind As CSharp.SyntaxKind) As Boolean

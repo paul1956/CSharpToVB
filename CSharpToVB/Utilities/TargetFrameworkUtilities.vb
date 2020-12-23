@@ -6,7 +6,7 @@ Imports System.Runtime.CompilerServices
 Imports CSharpToVBConverter
 Imports Microsoft.Win32
 
-Module TargetFrameworkUtilities
+Friend Module TargetFrameworkUtilities
 
     ' Checking the version using >= will enable forward compatibility.
     Private Function CheckFor45PlusVersion(releaseKey As Integer) As String

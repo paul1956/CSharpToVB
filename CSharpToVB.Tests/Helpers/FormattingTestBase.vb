@@ -25,28 +25,32 @@ Namespace Microsoft.CodeAnalysis.UnitTests.Formatting
             Optional ChangedOptionSet As Dictionary(Of OptionKey, Object) = Nothing,
             Optional treeCompare As Boolean = True,
             Optional parseOptions As ParseOptions = Nothing) As Task
-            Using Workspace As AdhocWorkspace = New AdhocWorkspace()
-                Dim project As Project = Workspace.CurrentSolution.AddProject("Project", "Project.dll", language)
+            Using workspace As AdhocWorkspace = New AdhocWorkspace()
+                Dim project As Project = workspace.CurrentSolution.AddProject("Project", "Project.dll", language)
                 If parseOptions IsNot Nothing Then
                     project = project.WithParseOptions(parseOptions)
                 End If
 
-                Dim _Document As Document = project.AddDocument("Document", SourceText.From(code))
+                Dim doc As Document = project.AddDocument("Document", SourceText.From(code))
 
-                Dim _SyntaxTree As SyntaxTree = Await _Document.GetSyntaxTreeAsync().ConfigureAwait(False)
+                Dim tree As SyntaxTree = Await doc.GetSyntaxTreeAsync().ConfigureAwait(False)
 
-                Dim Options As OptionSet = Workspace.Options
+                Dim options As OptionSet = workspace.Options
                 If ChangedOptionSet IsNot Nothing Then
                     For Each entry As KeyValuePair(Of OptionKey, Object) In ChangedOptionSet
-                        Options = Options.WithChangedOption(entry.Key, entry.Value)
+                        options = options.WithChangedOption(entry.Key, entry.Value)
                     Next
                 End If
 
-                Dim Root As SyntaxNode = Await _SyntaxTree.GetRootAsync().ConfigureAwait(False)
-                AssertFormat(Workspace, expected, Root, spans, Options, Await _Document.GetTextAsync().ConfigureAwait(False))
+                AssertFormat(workspace,
+                             expected,
+                             Await tree.GetRootAsync().ConfigureAwait(False),
+                             spans,
+                             options,
+                             Await doc.GetTextAsync().ConfigureAwait(False))
 
                 ' format with node and transform
-                Me.AssertFormatWithTransformation(Workspace, expected, Root, spans, Options, treeCompare, parseOptions)
+                Me.AssertFormatWithTransformation(workspace, expected, Await tree.GetRootAsync().ConfigureAwait(False), spans, options, treeCompare, parseOptions)
             End Using
         End Function
 

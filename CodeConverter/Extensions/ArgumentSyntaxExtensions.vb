@@ -8,7 +8,7 @@ Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace CSharpToVBConverter
-    Module ArgumentSyntaxExtensions
+    Friend Module ArgumentSyntaxExtensions
 
         ''' <summary>
         ''' Remove directive trivia

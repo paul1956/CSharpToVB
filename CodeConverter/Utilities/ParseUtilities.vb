@@ -28,12 +28,9 @@ Namespace CSharpToVBConverter
         End Function
 
         Public Function ParseCSharpSource(SourceText As String, CSPreprocessorSymbols As List(Of String)) As SyntaxTree
-            Dim CSharpParseOptions As CS.CSharpParseOptions = GetCSharpParseOptions(CSPreprocessorSymbols)
-            Dim ParsedCSharpTree As SyntaxTree = CS.SyntaxFactory.ParseSyntaxTree(
-                                                            Text.SourceText.From(SourceText),
-                                                            CSharpParseOptions
-                                                            )
-            Return ParsedCSharpTree
+            Return CS.SyntaxFactory.ParseSyntaxTree(Text.SourceText.From(SourceText),
+                                                    GetCSharpParseOptions(CSPreprocessorSymbols)
+                                                   )
         End Function
 
     End Module

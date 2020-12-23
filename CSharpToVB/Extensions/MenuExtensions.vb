@@ -5,9 +5,9 @@
 Imports System.IO
 Imports System.Runtime.CompilerServices
 
-Module MenuExtensions
+Friend Module MenuExtensions
 
-    Private Sub mnuMRUList_MouseDown(sender As Object, e As MouseEventArgs)
+    Private Sub FileMenuMRUList_MouseDown(sender As Object, e As MouseEventArgs)
         If e.Button = Windows.Forms.MouseButtons.Right Then
             Clipboard.SetText(text:=CType(sender, ToolStripMenuItem).Text)
         End If
@@ -29,7 +29,7 @@ Module MenuExtensions
         ' iterate through list and remove each from menu...
         For Each mruToolStripItem As ToolStripItem In mruToolStripItems
             RemoveHandler mruToolStripItem.Click, ClickEvent
-            RemoveHandler mruToolStripItem.MouseDown, AddressOf mnuMRUList_MouseDown
+            RemoveHandler mruToolStripItem.MouseDown, AddressOf FileMenuMRUList_MouseDown
             dropDownItems.Remove(mruToolStripItem)
             mruToolStripItem.Dispose()
         Next
@@ -44,7 +44,7 @@ Module MenuExtensions
             }
             ' hook into the click event handler so we can open the file later...
             AddHandler clsItem.Click, ClickEvent
-            AddHandler clsItem.MouseDown, AddressOf mnuMRUList_MouseDown
+            AddHandler clsItem.MouseDown, AddressOf FileMenuMRUList_MouseDown
             ' insert into DropDownItems list...
             dropDownItems.Insert(dropDownItems.Count - 10, clsItem)
         Next

@@ -299,7 +299,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     If foundEOL Then
                         parameterTrailingTrivia = parameterTrailingTrivia.Add(VBEOLTrivia)
                     End If
-                    returnType = returnType.WithLeadingTrivia(If(returnType.GetLeadingTrivia.FirstOrDefault.FullWidth > 0, CType(Nothing, SyntaxTrivia), Factory.Space)).WithoutTrailingTrivia
+                    returnType = returnType.WithLeadingTrivia(If(returnType.GetLeadingTrivia.FirstOrDefault.FullWidth > 0, Nothing, Factory.Space)).WithoutTrailingTrivia
                     asClause = Factory.SimpleAsClause(returnType).WithTrailingTrivia(parameterTrailingTrivia)
                 Else
                     identifier = identifier.WithTrailingTrivia(parameterTrailingTrivia)

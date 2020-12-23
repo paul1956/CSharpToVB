@@ -20,35 +20,27 @@ Namespace CSharpToVBConverter
             Me.SourceLanguage = InputLanguage
             Me.ResultStatus = ResultTriState.Success
             Me.TargetLanguage = OutputLanguage
-            Using Workspace As New AdhocWorkspace()
-                Dim project As Project = Workspace.CurrentSolution.AddProject("Project", "Project.dll", OutputLanguage)
-
-                Dim VBParseOptions As VB.VisualBasicParseOptions = GetVBParseOptions(VBPreprocessorSymbols)
-
-                project = project.WithParseOptions(VBParseOptions)
-
-                Dim _Document As Document = project.AddDocument("Document", ConvertedTree)
-                Dim _SyntaxTree As SyntaxTree = _Document.GetSyntaxTreeAsync().Result
-
-                Dim Root As SyntaxNode = _SyntaxTree.GetRootAsync().GetAwaiter.GetResult
+            Using workspace As New AdhocWorkspace()
+                Dim project As Project = workspace.CurrentSolution.AddProject("Project", "Project.dll", OutputLanguage).WithParseOptions(GetVBParseOptions(VBPreprocessorSymbols))
+                Dim syntaxTree As SyntaxTree = project.AddDocument("Document", ConvertedTree).GetSyntaxTreeAsync().Result
+                Dim root As SyntaxNode = syntaxTree.GetRootAsync().GetAwaiter.GetResult
                 Try
-                    Me.ConvertedCode = WorkspaceFormat(Workspace, Root, spans:=Nothing, Workspace.Options, _Document.GetTextAsync().GetAwaiter.GetResult)
-                    Me.ConvertedTree = DirectCast(Root, VB.VisualBasicSyntaxNode)
+                    Me.ConvertedCode = WorkspaceFormat(workspace, root, spans:=Nothing, workspace.Options, project.AddDocument("Document", ConvertedTree).GetTextAsync().GetAwaiter.GetResult)
+                    Me.ConvertedTree = DirectCast(root, VB.VisualBasicSyntaxNode)
                     Exit Sub
                 Catch ex As Exception
                     Stop
                 End Try
 
-                Dim tree As SyntaxTree = VB.VisualBasicSyntaxTree.ParseText(Root.NormalizeWhitespaceEx(useDefaultCasing:=True).ToFullString)
-                Dim Root1 As SyntaxNode = tree.GetRootAsync().GetAwaiter.GetResult
+                Dim tree As SyntaxTree = VB.VisualBasicSyntaxTree.ParseText(root.NormalizeWhitespaceEx(useDefaultCasing:=True).ToFullString)
+                Dim root1 As SyntaxNode = tree.GetRootAsync().GetAwaiter.GetResult
                 Try
-                    Dim ConvertedCode1 As String = WorkspaceFormat(Workspace, Root1, spans:=Nothing, Workspace.Options, _Document.GetTextAsync().GetAwaiter.GetResult)
-                    Me.ConvertedCode = ConvertedCode1
-                    Me.ConvertedTree = DirectCast(Root1, VB.VisualBasicSyntaxNode)
+                    Me.ConvertedCode = WorkspaceFormat(workspace, root1, spans:=Nothing, workspace.Options, project.AddDocument("Document", ConvertedTree).GetTextAsync().GetAwaiter.GetResult)
+                    Me.ConvertedTree = DirectCast(root1, VB.VisualBasicSyntaxNode)
                 Catch ex As Exception
-                    Me.ConvertedCode = DirectCast(Root, VB.VisualBasicSyntaxNode).ToFullString
+                    Me.ConvertedCode = DirectCast(root, VB.VisualBasicSyntaxNode).ToFullString
                 End Try
-                Me.ConvertedTree = DirectCast(Root1, VB.VisualBasicSyntaxNode)
+                Me.ConvertedTree = DirectCast(root1, VB.VisualBasicSyntaxNode)
             End Using
         End Sub
 

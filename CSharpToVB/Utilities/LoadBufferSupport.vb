@@ -6,9 +6,12 @@ Imports System.IO
 Imports CSharpToVBConverter
 Imports Microsoft.CodeAnalysis
 
-Module LoadBufferSupport
+Friend Module LoadBufferSupport
 
     Friend Function LoadInputBufferFromStream(MainForm As Form1, Path As String) As Integer
+        If Not File.Exists(Path) Then
+            Return 0
+        End If
         MainForm.ConversionInput.Visible = False
         LocalUseWaitCursor(MainForm, WaitCursorEnable:=True)
         Dim sourceText As String
@@ -50,8 +53,16 @@ Module LoadBufferSupport
     End Sub
 
     Friend Sub OpenSourceFile(MainForm As Form1, Path As String)
-        MainForm.mnuConvertConvertSnippet.Enabled = LoadInputBufferFromStream(MainForm, Path) <> 0
-        My.Settings.MRU_Data.mnuAddToMRU(Path)
+        Dim lines As Integer = LoadInputBufferFromStream(MainForm, Path)
+        If lines = 0 Then
+            MainForm.mnuConvertConvertSnippet.Enabled = False
+            If My.Settings.MRU_Data.Contains(Path) Then
+                My.Settings.MRU_Data.Remove(Path)
+            End If
+        Else
+            MainForm.mnuConvertConvertSnippet.Enabled = True
+            My.Settings.MRU_Data.mnuAddToMRU(Path)
+        End If
         MainForm.mnuFile.DropDownItems.FileMenuMRUUpdateUI(AddressOf MainForm.mnu_MRUList_Click)
         MainForm.UpdateLastFileMenu()
     End Sub

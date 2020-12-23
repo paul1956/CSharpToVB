@@ -25,8 +25,8 @@
     <Product>CSharp To VB Converter</Product>
     <Copyright>Copyright (c) .NET Foundation and Contributors</Copyright>
     <PackageId>CSharp To VB Converter</PackageId>
-    <AssemblyVersion>5.0.0.21</AssemblyVersion>
-    <FileVersion>5.0.0.21</FileVersion>
+    <AssemblyVersion>5.0.0.22</AssemblyVersion>
+    <FileVersion>5.0.0.22</FileVersion>
     <Version>5.0.0.21</Version>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>

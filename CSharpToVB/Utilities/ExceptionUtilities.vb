@@ -6,7 +6,7 @@ Imports System.Diagnostics.CodeAnalysis
 Imports System.Globalization
 Imports System.Text
 
-Module ExceptionUtilities
+Friend Module ExceptionUtilities
 
     <ExcludeFromCodeCoverage>
     Friend Function GetExceptionsAsString(Exceptions As IReadOnlyList(Of Exception)) As String

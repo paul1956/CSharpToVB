@@ -8,7 +8,7 @@ Imports CSharpToVBConverter
 Imports Microsoft.CodeAnalysis
 Imports ProgressReportLibrary
 
-Module ProcessFileUtilities
+Friend Module ProcessFileUtilities
 
     ''' <summary>
     ''' Convert one file

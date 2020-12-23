@@ -19,15 +19,15 @@ class test : IComparable { }")
 
             Dim compilation As CSharpCompilation = CSharpCompilation.Create("MyCompilation", syntaxTrees:={tree}, CSharpReferences("", New List(Of MetadataReference)))
             Dim lSemanticModel As SemanticModel = compilation.GetSemanticModel(tree)
-            Dim InputNode As Syntax.CompilationUnitSyntax = CType(compilation.SyntaxTrees(0).GetRoot, Syntax.CompilationUnitSyntax)
-            Dim node As Syntax.ClassDeclarationSyntax = CType(InputNode.members(0), Syntax.ClassDeclarationSyntax)
+            Dim inputNode As Syntax.CompilationUnitSyntax = CType(compilation.SyntaxTrees(0).GetRoot, Syntax.CompilationUnitSyntax)
+            Dim node As Syntax.ClassDeclarationSyntax = CType(inputNode.Members(0), Syntax.ClassDeclarationSyntax)
 
             Assert.Equal(node.Kind(), SyntaxKind.ClassDeclaration)
             Dim classOrInterface As Syntax.TypeSyntax = node.BaseList?.Types.FirstOrDefault()?.Type
             Assert.False(classOrInterface Is Nothing)
-            Dim Class_SymbolInfo As SymbolInfo = ModelExtensions.GetSymbolInfo(lSemanticModel, classOrInterface)
-            Assert.NotNull(Class_SymbolInfo)
-            Dim classOrInterfaceSymbol As ISymbol = Class_SymbolInfo.Symbol
+            Dim classSymbolInfo As SymbolInfo = ModelExtensions.GetSymbolInfo(lSemanticModel, classOrInterface)
+            Assert.NotNull(classSymbolInfo)
+            Dim classOrInterfaceSymbol As ISymbol = classSymbolInfo.Symbol
             Assert.NotNull(classOrInterfaceSymbol)
         End Sub
 

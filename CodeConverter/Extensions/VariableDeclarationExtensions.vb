@@ -12,8 +12,7 @@ Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace CSharpToVBConverter.ToVisualBasic
-
-    Module VariableDeclarationExtensions
+    Friend Module VariableDeclarationExtensions
 
         ''' <summary>
         ''' Converts C# VariableDeclaration to VB List(Of VariableDeclaratorSyntax)

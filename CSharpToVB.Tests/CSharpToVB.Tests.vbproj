@@ -17,8 +17,8 @@
     <Copyright>Copyright (c) .NET Foundation and Contributors</Copyright>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-    <AssemblyVersion>5.0.0.2</AssemblyVersion>
-    <FileVersion>5.0.0.2</FileVersion>
+    <AssemblyVersion>5.0.0.3</AssemblyVersion>
+    <FileVersion>5.0.0.3</FileVersion>
     <Product>CSharp To VB Tests</Product>
   </PropertyGroup>
   <ItemGroup>

@@ -18,8 +18,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
             Inherits CS.CSharpSyntaxVisitor(Of VB.VisualBasicSyntaxNode)
 
             Public Overrides Function VisitAttribute(node As CSS.AttributeSyntax) As VB.VisualBasicSyntaxNode
-                Dim list As CSS.AttributeListSyntax = DirectCast(node.Parent, CSS.AttributeListSyntax)
-                Return Factory.Attribute(DirectCast(list.Target?.Accept(Me), VBS.AttributeTargetSyntax),
+                Return Factory.Attribute(DirectCast(DirectCast(node.Parent, CSS.AttributeListSyntax).Target?.Accept(Me), VBS.AttributeTargetSyntax),
                                                DirectCast(node.Name.Accept(Me).WithConvertedTriviaFrom(node.Name), VBS.TypeSyntax),
                                                DirectCast(node.ArgumentList?.Accept(Me), VBS.ArgumentListSyntax))
             End Function
@@ -114,24 +113,24 @@ Namespace CSharpToVBConverter.ToVisualBasic
 
             Public Overrides Function VisitAttributeList(node As CSS.AttributeListSyntax) As VB.VisualBasicSyntaxNode
                 Dim csSeparators As IEnumerable(Of SyntaxToken) = node.Attributes.GetSeparators
-                Dim LessThanTokenWithTrivia As SyntaxToken = LessThanToken.WithConvertedTriviaFrom(node.OpenBracketToken)
-                Dim GreaterThenTokenWithTrivia As SyntaxToken = GreaterThanToken.WithTrailingTrivia(node.CloseBracketToken.TrailingTrivia.ConvertTriviaList()).AdjustTokenTrailingTrivia(RemoveTrailingLineContinuation:=True)
-                Dim AttributeList As New List(Of VBS.AttributeSyntax)
+                Dim lessThanTokenWithTrivia As SyntaxToken = LessThanToken.WithConvertedTriviaFrom(node.OpenBracketToken)
+                Dim greaterThenTokenWithTrivia As SyntaxToken = GreaterThanToken.WithTrailingTrivia(node.CloseBracketToken.TrailingTrivia.ConvertTriviaList()).AdjustTokenTrailingTrivia(RemoveTrailingLineContinuation:=True)
+                Dim attributeList As New List(Of VBS.AttributeSyntax)
                 Dim separators As New List(Of SyntaxToken)
                 Dim separatorCount As Integer = node.Attributes.Count - 1
                 For index As Integer = 0 To separatorCount
                     Dim e As CSS.AttributeSyntax = node.Attributes(index)
-                    AttributeList.Add(DirectCast(e.Accept(Me), VBS.AttributeSyntax).RemoveExtraLeadingEOL)
+                    attributeList.Add(DirectCast(e.Accept(Me), VBS.AttributeSyntax).RemoveExtraLeadingEOL)
                     If separatorCount > index Then
                         separators.Add(CommaToken.WithConvertedTrailingTriviaFrom(csSeparators(index)))
                     End If
                 Next
-                RestructureNodesAndSeparators(LessThanTokenWithTrivia, AttributeList, separators, GreaterThenTokenWithTrivia)
-                Dim Attributes1 As SeparatedSyntaxList(Of VBS.AttributeSyntax) = Factory.SeparatedList(AttributeList, separators)
-                If Attributes1.Last.HasTrailingTrivia Then
-                    Attributes1.Replace(Attributes1.Last, Attributes1.Last.WithoutTrailingTrivia)
+                RestructureNodesAndSeparators(lessThanTokenWithTrivia, attributeList, separators, greaterThenTokenWithTrivia)
+                Dim attributes As SeparatedSyntaxList(Of VBS.AttributeSyntax) = Factory.SeparatedList(attributeList, separators)
+                If attributes.Last.HasTrailingTrivia Then
+                    attributes.Replace(attributes.Last, attributes.Last.WithoutTrailingTrivia)
                 End If
-                Return Factory.AttributeList(LessThanTokenWithTrivia, Attributes1, GreaterThenTokenWithTrivia)
+                Return Factory.AttributeList(lessThanTokenWithTrivia, attributes, greaterThenTokenWithTrivia)
             End Function
 
             Public Overrides Function VisitAttributeTargetSpecifier(node As CSS.AttributeTargetSpecifierSyntax) As VB.VisualBasicSyntaxNode

@@ -60,26 +60,26 @@ Namespace CSharpToVBConverter.ToVisualBasic
         End Sub
 
         Friend Function RelocateDirectiveDisabledTrivia(TriviaList As SyntaxTriviaList, ByRef StatementTrivia As SyntaxTriviaList, RemoveEOL As Boolean) As SyntaxTriviaList
-            Dim NewTrivia As New SyntaxTriviaList
-            Dim FoundDirective As Boolean = False
+            Dim newTrivia As New SyntaxTriviaList
+            Dim foundDirective As Boolean = False
             For Each t As SyntaxTrivia In TriviaList
-                If Not (FoundDirective OrElse t.IsDirective OrElse t.IsSkippedOrDisabledTrivia) Then
+                If Not (foundDirective OrElse t.IsDirective OrElse t.IsSkippedOrDisabledTrivia) Then
                     If t.IsEndOfLine AndAlso RemoveEOL Then
-                        NewTrivia = NewTrivia.Add(Factory.Space)
+                        newTrivia = newTrivia.Add(Factory.Space)
                     Else
-                        NewTrivia = NewTrivia.Add(t)
+                        newTrivia = newTrivia.Add(t)
                     End If
                 Else
                     If t.IsDirective Then
                         StatementTrivia = StatementTrivia.Add(VBEOLTrivia)
                         StatementTrivia = StatementTrivia.Add(t)
-                        FoundDirective = True
+                        foundDirective = True
                     Else
                         StatementTrivia = StatementTrivia.Add(t)
                     End If
                 End If
             Next
-            Return NewTrivia
+            Return newTrivia
         End Function
 
         Friend Function RelocateLeadingCommentTrivia(TriviaList As SyntaxTriviaList, ByRef statementLeadingTrivia As SyntaxTriviaList) As SyntaxTriviaList
