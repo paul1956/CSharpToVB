@@ -19,7 +19,7 @@ Namespace CodeConverter.Tests
 
         Protected Overrides Sub ApplyDocumentTextChanged(id As DocumentId, text As SourceText)
             MyBase.ApplyDocumentTextChanged(id, text)
-            Dim document As Document = CurrentSolution.GetDocument(id)
+            Dim document As Document = Me.CurrentSolution.GetDocument(id)
             If document IsNot Nothing Then
                 Me.OnDocumentTextChanged(id, text, PreservationMode.PreserveValue)
             End If
