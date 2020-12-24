@@ -250,7 +250,7 @@ Namespace CSharpToVBConverter
         End Function
 
         <Extension>
-        Friend Function GetExpressionBodyStatements(ArrowExpressionClause As CSS.ArrowExpressionClauseSyntax, visitor As NodesVisitor) As SyntaxList(Of VBS.StatementSyntax)
+        Friend Function GetExpressionBodyStatements(ArrowExpressionClause As CSS.ArrowExpressionClauseSyntax, IsReturnVoid As Boolean, visitor As NodesVisitor) As SyntaxList(Of VBS.StatementSyntax)
             Dim statement As VBS.StatementSyntax
             Dim expressionBody As VB.VisualBasicSyntaxNode = ArrowExpressionClause.Accept(visitor)
             If TypeOf expressionBody Is VBS.TryBlockSyntax Then
@@ -265,7 +265,7 @@ Namespace CSharpToVBConverter
                         TypeOf expressionBody Is VBS.RaiseEventStatementSyntax OrElse
                         TypeOf expressionBody Is VBS.ThrowStatementSyntax Then
                 statement = DirectCast(expressionBody, VBS.StatementSyntax).WithTrailingEOL
-            ElseIf ArrowExpressionClause.Parent.IsKind(CS.SyntaxKind.SetAccessorDeclaration) Then
+            ElseIf ArrowExpressionClause.Parent.IsKind(CS.SyntaxKind.SetAccessorDeclaration) OrElse IsReturnVoid Then
                 statement = Factory.ExpressionStatement(CType(expressionBody, VBS.ExpressionSyntax))
             Else
                 statement = Factory.ReturnStatement(DirectCast(expressionBody.WithLeadingTrivia(Factory.Space), VBS.ExpressionSyntax)) _

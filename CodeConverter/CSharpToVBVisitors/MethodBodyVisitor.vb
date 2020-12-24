@@ -1386,7 +1386,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Next
                 End If
                 Dim parameterList As ParameterListSyntax = Factory.ParameterList(openParenToken, vbParameters, CloseParenToken)
-                Dim returnsVoid As Boolean = node.ReturnType Is Nothing OrElse node.ReturnType.ToString = "void"
+                Dim iSReturnVoid As Boolean = node.ReturnType Is Nothing OrElse node.ReturnType.ToString = "void"
                 Dim lambdaHeader As LambdaHeaderSyntax
                 Dim kind As VB.SyntaxKind
                 Dim endblock As EndBlockStatementSyntax
@@ -1402,7 +1402,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     modifiers = modifiers.Add(IteratorKeyword)
                 End If
 
-                If returnsVoid Then
+                If iSReturnVoid Then
                     kind = VB.SyntaxKind.MultiLineSubLambdaExpression
                     lambdaHeader = Factory.SubLambdaHeader(attributeLists:=Nothing, modifiers, parameterList, asClause:=Nothing)
                     endblock = Factory.EndSubStatement(EndKeyword.WithTrailingTrivia(Factory.Space), SubKeyword).WithConvertedTriviaFrom(csBraces.closeBrace).WithTrailingEOL
@@ -1418,9 +1418,9 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     body = ReplaceStatementsWithMarkedStatements(node, node.Body.Accept(Me))
                 Else
                     If node.ExpressionBody?.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
-                        body = node.ExpressionBody.WithoutLeadingTrivia.GetExpressionBodyStatements(_nodesVisitor)
+                        body = node.ExpressionBody.WithoutLeadingTrivia.GetExpressionBodyStatements(iSReturnVoid, _nodesVisitor)
                     Else
-                        body = node.ExpressionBody.GetExpressionBodyStatements(_nodesVisitor)
+                        body = node.ExpressionBody.GetExpressionBodyStatements(iSReturnVoid, _nodesVisitor)
                     End If
                 End If
                 If TypeOf node.Parent Is CSS.GlobalStatementSyntax Then
@@ -1430,7 +1430,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim asClause As SimpleAsClauseSyntax = Nothing
                 If typeList.Any Then
                     Dim typeArguments As TypeArgumentListSyntax = FactoryTypeArgumentList(typeList)
-                    Dim genericName As TypeSyntax = Factory.GenericName(Factory.Identifier(If(returnsVoid, "Action", "Func")), typeArguments)
+                    Dim genericName As TypeSyntax = Factory.GenericName(Factory.Identifier(If(iSReturnVoid, "Action", "Func")), typeArguments)
                     asClause = Factory.SimpleAsClause(genericName)
                 Else
                     asClause = Factory.SimpleAsClause(Factory.IdentifierName("Action"))

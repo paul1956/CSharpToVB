@@ -50,7 +50,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     body = node.Body.GetBodyStatements(visitor)
                     isIterator = visitor.IsInterator
                 ElseIf node.ExpressionBody IsNot Nothing Then
-                    body = node.ExpressionBody.GetExpressionBodyStatements(Me)
+                    body = node.ExpressionBody.GetExpressionBodyStatements(False, Me)
                 End If
                 Dim attributes As SyntaxList(Of VBS.AttributeListSyntax) = Factory.List(node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))
                 Dim modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, IsModule, TokenContext.Local).ToList
@@ -307,7 +307,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         End If
                     End If
                 ElseIf node.ExpressionBody IsNot Nothing Then
-                    bodyStmts = node.ExpressionBody.GetExpressionBodyStatements(Me)
+                    bodyStmts = node.ExpressionBody.GetExpressionBodyStatements(False, Me)
                 End If
                 If initializer IsNot Nothing Then
                     bodyStmts = bodyStmts.InsertRange(0, ReplaceOneStatementWithMarkedStatements(node, initializer))
@@ -358,7 +358,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 If node.Body IsNot Nothing Then
                     body = node.Body.GetBodyStatements(visitor)
                 ElseIf node.ExpressionBody IsNot Nothing Then
-                    body = node.ExpressionBody.GetExpressionBodyStatements(Me)
+                    body = node.ExpressionBody.GetExpressionBodyStatements(False, Me)
                 End If
                 Return PrependStatementWithMarkedStatementTrivia(
                     node,
@@ -378,7 +378,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 If node.Body IsNot Nothing Then
                     body = node.Body.GetBodyStatements(New MethodBodyVisitor(_mSemanticModel, Me))
                 Else
-                    body = node.ExpressionBody.GetExpressionBodyStatements(Me)
+                    body = node.ExpressionBody.GetExpressionBodyStatements(False, Me)
                 End If
                 Return Factory.SubBlock(subOrFunctionStatement:=Factory.SubStatement(
                                               attributeLists,
@@ -527,7 +527,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         modifiers.Add(ReadOnlyKeyword.WithLeadingTrivia(Factory.Space).WithTrailingTrivia(lastTrailingTrivia))
 
                         Dim accessorStatement As VBS.AccessorStatementSyntax = Factory.GetAccessorStatement()
-                        Dim body As SyntaxList(Of VBS.StatementSyntax) = node.ExpressionBody.GetExpressionBodyStatements(Me)
+                        Dim body As SyntaxList(Of VBS.StatementSyntax) = node.ExpressionBody.GetExpressionBodyStatements(False, Me)
                         Dim endStmt As VBS.EndBlockStatementSyntax = FactoryEndBlockStatement(VB.SyntaxKind.EndGetStatement, GetKeyword, New SyntaxTriviaList)
                         accessors.Add(Factory.AccessorBlock(VB.SyntaxKind.GetAccessorBlock, accessorStatement, body, endStmt))
                     Case 1
@@ -610,7 +610,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
 
                 Dim methodInfo As ISymbol = ModelExtensions.GetDeclaredSymbol(_mSemanticModel, node)
                 Dim possibleReturnVoid As Boolean? = methodInfo?.GetReturnType()?.SpecialType = SpecialType.System_Void
-                Dim returnVoid As Boolean = If(possibleReturnVoid, False)
+                Dim isReturnVoid As Boolean = If(possibleReturnVoid, False)
                 Dim containingType As INamedTypeSymbol = methodInfo?.ContainingType
                 Dim attributes As New List(Of VBS.AttributeListSyntax)
                 Dim returnAttributes As SyntaxList(Of VBS.AttributeListSyntax) = Nothing
@@ -664,12 +664,12 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     End If
                     If node.ExpressionBody.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
                         functionStmtLeadingTrivia = functionStmtLeadingTrivia.AddRange(node.ExpressionBody.GetLeadingTrivia.ConvertTriviaList())
-                        body = node.ExpressionBody.GetExpressionBodyStatements(Me)
+                        body = node.ExpressionBody.GetExpressionBodyStatements(isReturnVoid, Me)
                         If body.HasValue Then
                             body = body.Value.Replace(body.Value(0), body.Value(0).WithoutLeadingTrivia)
                         End If
                     Else
-                        body = node.ExpressionBody.GetExpressionBodyStatements(Me)
+                        body = node.ExpressionBody.GetExpressionBodyStatements(isReturnVoid, Me)
                     End If
                     body = ReplaceStatementsWithMarkedStatements(node, body.Value)
                 End If
@@ -694,7 +694,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Else
                     modifiers = ConvertModifiers(node.Modifiers, Me.IsModule, If(containingType?.IsInterfaceType() = True, TokenContext.Local, TokenContext.Member)).ToList
                 End If
-                If visitor.IsInterator And Not returnVoid Then
+                If visitor.IsInterator And Not isReturnVoid Then
                     modifiers.Add(IteratorKeyword)
                 End If
                 If node.ParameterList.Parameters.Any AndAlso node.ParameterList.Parameters(0).Modifiers.Any(CS.SyntaxKind.ThisKeyword) Then
@@ -743,7 +743,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     functionStmtLeadingTrivia = functionStmtLeadingTrivia.AddRange(attributes(0).GetLeadingTrivia)
                     attributes(0) = attributes(0).WithLeadingTrivia(Factory.Space)
                 End If
-                If node.ReturnType IsNot Nothing Then
+                If node.ReturnType IsNot Nothing AndAlso Not isReturnVoid Then
                     If modifiers.Count = 0 Then
                         functionStmtLeadingTrivia = functionStmtLeadingTrivia.AddRange(node.ReturnType.GetLeadingTrivia.ConvertTriviaList())
                     Else
@@ -801,7 +801,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 End If
                 Dim endSubOrFunction As VBS.EndBlockStatementSyntax
 
-                If returnVoid Then
+                If isReturnVoid Then
                     If node.Body IsNot Nothing Then
                         endSubOrFunction = FactoryEndBlockStatement(VB.SyntaxKind.EndSubStatement, SubKeyword, finalTrailingTrivia)
                     ElseIf node.ExpressionBody IsNot Nothing Then
@@ -972,7 +972,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 If node.Body IsNot Nothing Then
                     body = Factory.List(node.Body.Statements.SelectMany(Function(s As CSS.StatementSyntax) s.Accept(visitor)))
                 ElseIf node.ExpressionBody IsNot Nothing Then
-                    body = node.ExpressionBody.GetExpressionBodyStatements(Me)
+                    body = node.ExpressionBody.GetExpressionBodyStatements(False, Me)
                 Else
                     Stop
                 End If
