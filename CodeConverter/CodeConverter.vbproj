@@ -16,8 +16,8 @@
     <Product>VB Core Code Converter</Product>
     <RepositoryUrl>https://github.com/paul1956/CSharpToVB</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <AssemblyVersion>5.0.0.13</AssemblyVersion>
-    <FileVersion>5.0.0.13</FileVersion>
+    <AssemblyVersion>5.0.0.14</AssemblyVersion>
+    <FileVersion>5.0.0.14</FileVersion>
     <Copyright>Copyright (c) .NET Foundation and Contributors</Copyright>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>

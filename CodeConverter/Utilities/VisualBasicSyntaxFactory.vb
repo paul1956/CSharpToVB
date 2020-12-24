@@ -129,6 +129,7 @@ Namespace CSharpToVBConverter
         Public ReadOnly NotInheritableKeyword As SyntaxToken = Factory.Token(SyntaxKind.NotInheritableKeyword)
         Public ReadOnly NotKeyword As SyntaxToken = Factory.Token(SyntaxKind.NotKeyword)
         Public ReadOnly NotOverridableKeyword As SyntaxToken = Factory.Token(SyntaxKind.NotOverridableKeyword)
+        Public ReadOnly NullableToken As SyntaxToken = Factory.Token(SyntaxKind.QuestionToken)
         Public ReadOnly ObjectKeyword As SyntaxToken = Factory.Token(SyntaxKind.ObjectKeyword)
         Public ReadOnly OfKeyword As SyntaxToken = Factory.Token(SyntaxKind.OfKeyword)
         Public ReadOnly OpenBraceToken As SyntaxToken = Factory.Token(SyntaxKind.OpenBraceToken)
@@ -216,7 +217,6 @@ Namespace CSharpToVBConverter
         Public ReadOnly PredefinedTypeUInteger As TypeSyntax = Factory.PredefinedType(UIntegerKeyword)
         Public ReadOnly PredefinedTypeULong As TypeSyntax = Factory.PredefinedType(ULongKeyword)
         Public ReadOnly PredefinedTypeUShort As TypeSyntax = Factory.PredefinedType(UShortKeyword)
-
 #End Region
 
 #Region "trivia"

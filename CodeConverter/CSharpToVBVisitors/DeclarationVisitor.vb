@@ -743,7 +743,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     functionStmtLeadingTrivia = functionStmtLeadingTrivia.AddRange(attributes(0).GetLeadingTrivia)
                     attributes(0) = attributes(0).WithLeadingTrivia(Factory.Space)
                 End If
-                If node.ReturnType IsNot Nothing AndAlso Not isReturnVoid Then
+                If node.ReturnType IsNot Nothing Then
                     If modifiers.Count = 0 Then
                         functionStmtLeadingTrivia = functionStmtLeadingTrivia.AddRange(node.ReturnType.GetLeadingTrivia.ConvertTriviaList())
                     Else

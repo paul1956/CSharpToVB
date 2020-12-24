@@ -1604,7 +1604,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                                         Replace(UnicodeOpenQuote, UnicodeDoubleOpenQuote, StringComparison.Ordinal).
                                                         Replace(UnicodeCloseQuote, UnicodeDoubleCloseQuote, StringComparison.Ordinal).
                                                         NormalizeLineEndings,
-                                                    value:=DirectCast(node.Token.Value, String).
+                                                        value:=node.Token.ValueText.
                                                         Replace(Quote, DoubleQuote, StringComparison.Ordinal).
                                                         Replace(UnicodeOpenQuote, UnicodeDoubleOpenQuote, StringComparison.Ordinal).
                                                         Replace(UnicodeCloseQuote, UnicodeDoubleCloseQuote, StringComparison.Ordinal).NormalizeLineEndings)

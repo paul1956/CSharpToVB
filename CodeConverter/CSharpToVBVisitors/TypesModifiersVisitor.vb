@@ -79,6 +79,10 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Return Factory.ArrayType(Factory.NullableType(arrayElementType),
                                              arrayType.RankSpecifiers).WithConvertedTriviaFrom(node)
                 End If
+                If elementType.IsKind(VB.SyntaxKind.PredefinedType) AndAlso elementType.ToString = "String" Then
+                    Return elementType
+                End If
+
                 Return Factory.NullableType(DirectCast(elementType, VBS.TypeSyntax)).WithConvertedTriviaFrom(node)
             End Function
 
