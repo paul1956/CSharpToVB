@@ -62,7 +62,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         blockKind = VB.SyntaxKind.GetAccessorBlock
                         stmt = Factory.GetAccessorStatement(attributes, Factory.TokenList(modifiers), parameterList:=Nothing)
                         endStmt = Factory.EndGetStatement(EndKeyword.WithTrailingTrivia(Factory.Space), GetKeyword)
-                    Case CS.SyntaxKind.SetAccessorDeclaration
+                    Case CS.SyntaxKind.SetAccessorDeclaration, CS.SyntaxKind.InitAccessorDeclaration
                         blockKind = VB.SyntaxKind.SetAccessorBlock
                         valueParam = Factory.Parameter(ValueModifiedIdentifier).
                             WithAsClause(Factory.SimpleAsClause(DirectCast(parent.Type.Accept(Me), VBS.TypeSyntax).
