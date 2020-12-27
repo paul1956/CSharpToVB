@@ -1535,7 +1535,7 @@ public class ConversionResult
 
     Public WriteOnly Property Num As String
         Set(Value As String)
-            Math.Min(Threading.Interlocked.Increment(_num), _num - 1)
+            Call Math.Min(Threading.Interlocked.Increment(_num), _num - 1)
         End Set
     End Property
 

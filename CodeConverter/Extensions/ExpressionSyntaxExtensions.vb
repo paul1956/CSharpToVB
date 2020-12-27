@@ -253,6 +253,9 @@ Namespace CSharpToVBConverter
         Friend Function GetExpressionBodyStatements(ArrowExpressionClause As CSS.ArrowExpressionClauseSyntax, IsReturnVoid As Boolean, visitor As NodesVisitor) As SyntaxList(Of VBS.StatementSyntax)
             Dim statement As VBS.StatementSyntax
             Dim expressionBody As VB.VisualBasicSyntaxNode = ArrowExpressionClause.Accept(visitor)
+            Dim leadingComments As SyntaxTriviaList
+            leadingComments = expressionBody.GetLeadingTrivia
+            expressionBody = expressionBody.WithLeadingTrivia(Factory.Space)
             If TypeOf expressionBody Is VBS.TryBlockSyntax Then
                 Dim tryBlock As VBS.TryBlockSyntax = CType(expressionBody, VBS.TryBlockSyntax)
                 Dim statementList As SyntaxList(Of VBS.StatementSyntax) = ReplaceOneStatementWithMarkedStatements(ArrowExpressionClause, tryBlock.Statements(0))
@@ -267,15 +270,15 @@ Namespace CSharpToVBConverter
                 statement = DirectCast(expressionBody, VBS.StatementSyntax).WithTrailingEOL
             ElseIf ArrowExpressionClause.Parent.IsKind(CS.SyntaxKind.SetAccessorDeclaration) OrElse IsReturnVoid Then
                 If TypeOf expressionBody Is VBS.ObjectCreationExpressionSyntax Then
-                    statement = FactoryDimStatement("tempVar", Factory.AsNewClause(CType(expressionBody, VBS.NewExpressionSyntax)), Nothing)
+                    statement = FactoryDimStatement("tempVar", Factory.AsNewClause(CType(expressionBody, VBS.NewExpressionSyntax)), Nothing).WithPrependedLeadingTrivia(leadingComments)
                 ElseIf TypeOf expressionBody Is VBS.InvocationExpressionSyntax Then
-                    statement = Factory.CallStatement(CType(expressionBody, VBS.InvocationExpressionSyntax))
+                    statement = Factory.CallStatement(CType(expressionBody, VBS.InvocationExpressionSyntax)).WithPrependedLeadingTrivia(leadingComments)
                 Else
-                    statement = Factory.ExpressionStatement(CType(expressionBody, VBS.ExpressionSyntax))
+                    statement = Factory.ExpressionStatement(CType(expressionBody, VBS.ExpressionSyntax)).WithPrependedLeadingTrivia(leadingComments)
                 End If
             Else
                 statement = Factory.ReturnStatement(DirectCast(expressionBody.WithLeadingTrivia(Factory.Space), VBS.ExpressionSyntax)) _
-                                        .WithLeadingTrivia(expressionBody.GetLeadingTrivia)
+                                        .WithLeadingTrivia(leadingComments)
             End If
             Return ReplaceOneStatementWithMarkedStatements(ArrowExpressionClause, statement.WithTrailingEOL)
         End Function
