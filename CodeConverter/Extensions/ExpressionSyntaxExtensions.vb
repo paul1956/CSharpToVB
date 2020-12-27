@@ -266,7 +266,13 @@ Namespace CSharpToVBConverter
                         TypeOf expressionBody Is VBS.ThrowStatementSyntax Then
                 statement = DirectCast(expressionBody, VBS.StatementSyntax).WithTrailingEOL
             ElseIf ArrowExpressionClause.Parent.IsKind(CS.SyntaxKind.SetAccessorDeclaration) OrElse IsReturnVoid Then
-                statement = Factory.ExpressionStatement(CType(expressionBody, VBS.ExpressionSyntax))
+                If TypeOf expressionBody Is VBS.ObjectCreationExpressionSyntax Then
+                    statement = FactoryDimStatement("tempVar", Factory.AsNewClause(CType(expressionBody, VBS.NewExpressionSyntax)), Nothing)
+                ElseIf TypeOf expressionBody Is VBS.InvocationExpressionSyntax Then
+                    statement = Factory.CallStatement(CType(expressionBody, VBS.InvocationExpressionSyntax))
+                Else
+                    statement = Factory.ExpressionStatement(CType(expressionBody, VBS.ExpressionSyntax))
+                End If
             Else
                 statement = Factory.ReturnStatement(DirectCast(expressionBody.WithLeadingTrivia(Factory.Space), VBS.ExpressionSyntax)) _
                                         .WithLeadingTrivia(expressionBody.GetLeadingTrivia)

@@ -63,7 +63,20 @@ Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpec
 Any changes to CSharpToVB application needs to change the version information in the project file **AND** in MyProject/AssemblyInfo.vb until Visual Studio is able to general file automatically for a WinForms application.
 
 ## What's New in this release
+  New in 5.0.0.23/5.0.0.15
+
+- Application UI Changes
+    - Fix Copy of items from File List in main UI using keyboard
+
+- Converter Changes
+  - Add initial support for ImplicitObjectCreationExpression new()
+  - Add support for "Using" local declarations from C# 8
+  - Support Directives in Class header including implements, inherits, Directives are moved to end but logic is maintained 
+
+***Not all cases may be covered for new features so please provide feedback***
+
   New in 5.0.0.22/5.0.0.14
+
   - Fix translation of Nullable Strings and some complex strings
 
   New in 5.0.0.22/5.0.0.13

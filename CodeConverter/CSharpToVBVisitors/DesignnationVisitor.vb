@@ -17,7 +17,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
             Inherits CS.CSharpSyntaxVisitor(Of VB.VisualBasicSyntaxNode)
 
             Public Overrides Function VisitDiscardDesignation(node As CSS.DiscardDesignationSyntax) As VB.VisualBasicSyntaxNode
-                Dim discardNameToken As SyntaxToken = GenerateSafeVBToken(node.UnderscoreToken, node, _usedIdentifiers, _mSemanticModel)
+                Dim discardNameToken As SyntaxToken = GenerateSafeVBToken(node.UnderscoreToken, node, _usedIdentifiers, _semanticModel)
                 Dim identExpr As VBS.IdentifierNameSyntax = Factory.IdentifierName(discardNameToken)
                 Dim modifiedIdent As VBS.ModifiedIdentifierSyntax = Factory.ModifiedIdentifier(discardNameToken)
                 Dim typeName As VB.VisualBasicSyntaxNode
@@ -51,7 +51,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
             End Function
 
             Public Overrides Function VisitSingleVariableDesignation(Node As CSS.SingleVariableDesignationSyntax) As VB.VisualBasicSyntaxNode
-                Dim identifier As SyntaxToken = GenerateSafeVBToken(Node.Identifier, Node, _usedIdentifiers, _mSemanticModel)
+                Dim identifier As SyntaxToken = GenerateSafeVBToken(Node.Identifier, Node, _usedIdentifiers, _semanticModel)
                 Dim identifierExpression As VBS.IdentifierNameSyntax = Factory.IdentifierName(identifier)
 
                 If Node.Parent.IsKind(CS.SyntaxKind.DeclarationExpression) Then
@@ -74,7 +74,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                 If csExpr IsNot Nothing AndAlso csExpr.Name.Identifier.ValueText = "TryGetValue" Then
                                     Dim memberExpression As CSS.MemberAccessExpressionSyntax = CType(csInvocation.Expression, CSS.MemberAccessExpressionSyntax)
                                     If memberExpression IsNot Nothing Then
-                                        Dim typeinf As TypeInfo = _mSemanticModel.GetTypeInfo(memberExpression.Expression)
+                                        Dim typeinf As TypeInfo = _semanticModel.GetTypeInfo(memberExpression.Expression)
                                         If typeinf.Type IsNot Nothing AndAlso Not typeinf.Type.IsErrorType Then
                                             typeName = typeinf.Type.ConvertToType
                                             Dim genericName As VBS.GenericNameSyntax = TryCast(typeName, VBS.GenericNameSyntax)

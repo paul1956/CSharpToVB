@@ -39,7 +39,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim variableType As VBS.TypeSyntax = DirectCast(node.Type.Accept(Me), VBS.TypeSyntax)
 
                 Dim declarationToBeAdded As VBS.LocalDeclarationStatementSyntax =
-                    FactoryDimStatement(GenerateSafeVBToken(designation.Identifier, node, _usedIdentifiers, _mSemanticModel),
+                    FactoryDimStatement(GenerateSafeVBToken(designation.Identifier, node, _usedIdentifiers, _semanticModel),
                                    Factory.SimpleAsClause(variableType),
                                    Factory.EqualsValue(NothingExpression)
                                   ).WithLeadingTrivia(leadingTrivia)
@@ -62,14 +62,14 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Dim designationNameToken As SyntaxToken
                     If TypeOf declarationPattern.Designation Is CSS.SingleVariableDesignationSyntax Then
                         Dim designation As CSS.SingleVariableDesignationSyntax = DirectCast(declarationPattern.Designation, CSS.SingleVariableDesignationSyntax)
-                        designationNameToken = GenerateSafeVBToken(designation.Identifier, node, _usedIdentifiers, _mSemanticModel)
+                        designationNameToken = GenerateSafeVBToken(designation.Identifier, node, _usedIdentifiers, _semanticModel)
                     ElseIf TypeOf declarationPattern.Designation Is CSS.DiscardDesignationSyntax Then
-                        designationNameToken = Factory.Identifier(node.GetUniqueVariableNameInScope("_1", _usedIdentifiers, _mSemanticModel))
+                        designationNameToken = Factory.Identifier(node.GetUniqueVariableNameInScope("_1", _usedIdentifiers, _semanticModel))
                     End If
 
                     Dim varType As VBS.TypeSyntax = CType(declarationPattern.Type.Accept(Me), VBS.TypeSyntax)
                     Dim value As VBS.ExpressionSyntax = Factory.TypeOfIsExpression(vbExpr, varType)
-                    Dim uniqueIdToken As SyntaxToken = Factory.Identifier(node.GetUniqueVariableNameInScope("TempVar", _usedIdentifiers, _mSemanticModel))
+                    Dim uniqueIdToken As SyntaxToken = Factory.Identifier(node.GetUniqueVariableNameInScope("TempVar", _usedIdentifiers, _semanticModel))
 
                     Dim dimToBeAdded As VBS.LocalDeclarationStatementSyntax =
                         FactoryDimStatement(uniqueIdToken,
@@ -184,7 +184,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
             End Function
 
             Public Overrides Function VisitRecursivePattern(node As CSS.RecursivePatternSyntax) As VB.VisualBasicSyntaxNode
-                Return Factory.IdentifierName(node.GetUniqueVariableNameInScope($"RecursivePattern_{node.ToString.GetSafeVBName}", _usedIdentifiers, _mSemanticModel))
+                Return Factory.IdentifierName(node.GetUniqueVariableNameInScope($"RecursivePattern_{node.ToString.GetSafeVBName}", _usedIdentifiers, _semanticModel))
             End Function
 
             Public Overrides Function VisitVarPattern(node As CSS.VarPatternSyntax) As VB.VisualBasicSyntaxNode
@@ -208,7 +208,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                             End If
                         End If
                     Next
-                    designationIdentifier = node.GetUniqueVariableNameInScope("TempVar", _usedIdentifiers, _mSemanticModel)
+                    designationIdentifier = node.GetUniqueVariableNameInScope("TempVar", _usedIdentifiers, _semanticModel)
                 Else
                     Stop
                     Throw UnreachableException
@@ -216,7 +216,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Return Factory.IdentifierName(GenerateSafeVBToken(CS.SyntaxFactory.Identifier(designationIdentifier),
                                                                   node,
                                                                   _usedIdentifiers,
-                                                                  _mSemanticModel))
+                                                                  _semanticModel))
             End Function
 
         End Class

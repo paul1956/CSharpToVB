@@ -56,7 +56,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     End If
                     If nameRequiredIndex > 0 AndAlso Not item.IsNamed Then
                         If TypeOf node.Parent Is CSS.AttributeSyntax Then
-                            Dim possibleMethodInfo As SymbolInfo = _mSemanticModel.GetSymbolInfo(CType(node.Parent, CSS.AttributeSyntax))
+                            Dim possibleMethodInfo As SymbolInfo = _semanticModel.GetSymbolInfo(CType(node.Parent, CSS.AttributeSyntax))
                             If possibleMethodInfo.CandidateSymbols.Length = 1 Then
                                 Dim method As IMethodSymbol = CType(possibleMethodInfo.CandidateSymbols(0), IMethodSymbol)
                                 name = Factory.IdentifierName(method.Parameters(e.index).Name)

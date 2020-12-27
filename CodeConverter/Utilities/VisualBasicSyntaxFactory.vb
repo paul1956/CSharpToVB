@@ -235,6 +235,8 @@ Namespace CSharpToVBConverter
 
 #End Region
 
+        Public ReadOnly EndUsingStatement As EndBlockStatementSyntax = Factory.EndUsingStatement
+
         Public ReadOnly CompilerServices As String = "System.Runtime.CompilerServices"
         Public ReadOnly DimModifier As SyntaxTokenList = Factory.TokenList(DimKeyword.WithTrailingTrivia(Factory.Space))
         Public ReadOnly InteropServices As String = "System.Runtime.InteropServices"

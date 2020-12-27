@@ -145,6 +145,8 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                     finalTrailingTriviaList = finalTrailingTriviaList.Add(Factory.Space)
                                     finalTrailingTriviaList = finalTrailingTriviaList.Add(LineContinuation)
                                     finalTrailingTriviaList = finalTrailingTriviaList.Add(trivia)
+                                Else
+                                    finalTrailingTriviaList = finalTrailingTriviaList.Add(trivia)
                                 End If
                             End If
                             afterComment = False

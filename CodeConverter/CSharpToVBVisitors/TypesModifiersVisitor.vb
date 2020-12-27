@@ -157,7 +157,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Return Factory.TypeParameter(variance,
                                              GenerateSafeVBToken(node.Identifier,
                                                                  node,
-                                                                 _mSemanticModel,
+                                                                 _semanticModel,
                                                                  _usedIdentifiers,
                                                                  IsQualifiedName:=False,
                                                                  IsTypeName:=True),

@@ -76,136 +76,145 @@ Namespace CSharpToVBConverter.ToVisualBasic
             Private Function ConvertLambdaExpression(node As CSS.AnonymousFunctionExpressionSyntax, block As Object, parameters As SeparatedSyntaxList(Of CSS.ParameterSyntax), modifiers As SyntaxTokenList) As LambdaExpressionSyntax
                 Dim vbNodes As New List(Of ParameterSyntax)
                 Dim vbSeparators As New List(Of SyntaxToken)
-                If parameters.Any Then
-                    Dim csSeparators As New List(Of SyntaxToken)
-                    csSeparators.AddRange(parameters.GetSeparators)
-
-                    For index As Integer = 0 To parameters.SeparatorCount - 1
-                        vbNodes.Add(DirectCast(parameters(index).Accept(Me), ParameterSyntax))
-                        vbSeparators.Add(CommaToken.WithConvertedTriviaFrom(csSeparators(index)))
-                    Next
-                    vbNodes.Add(DirectCast(parameters.Last.Accept(Me), ParameterSyntax))
-                End If
-
-                Dim isErrorType As Boolean = True
-                Dim lambdaHeader As LambdaHeaderSyntax
-                Dim returnsVoid As Boolean = True
-                Dim symbol As IMethodSymbol = Nothing
+                Dim savedNeedEndUsings As Integer = Me.NeedEndUsings
                 Try
-                    symbol = TryCast(_mSemanticModel.GetSymbolInfo(node).Symbol, IMethodSymbol)
-                    returnsVoid = symbol.ReturnsVoid
-                    If Not returnsVoid Then
-                        isErrorType = Not symbol.ReturnType.IsType
+                    Me.NeedEndUsings = 0
+                    If parameters.Any Then
+                        Dim csSeparators As New List(Of SyntaxToken)
+                        csSeparators.AddRange(parameters.GetSeparators)
+
+                        For index As Integer = 0 To parameters.SeparatorCount - 1
+                            vbNodes.Add(DirectCast(parameters(index).Accept(Me), ParameterSyntax))
+                            vbSeparators.Add(CommaToken.WithConvertedTriviaFrom(csSeparators(index)))
+                        Next
+                        vbNodes.Add(DirectCast(parameters.Last.Accept(Me), ParameterSyntax))
                     End If
-                Catch ex As OperationCanceledException
-                    Throw
-                Catch ex As Exception
-                    Stop
-                    Throw
-                End Try
-                Dim isFunction As Boolean = Not (returnsVoid OrElse TypeOf node.Body Is CSS.AssignmentExpressionSyntax)
-                Dim modifiersList As SyntaxTokenList
-                modifiersList = modifiersList.AddRange(ConvertModifiers(modifiers, Me.IsModule, TokenContext.Local))
-                Dim endSubOrFunctionStatement As EndBlockStatementSyntax
-                Dim parameterList As ParameterListSyntax = Factory.ParameterList(Factory.SeparatedList(vbNodes, vbSeparators))
-                Dim csBraces As (LeftBrace As SyntaxToken, RightBrace As SyntaxToken) = node.Body.GetBraces
-                Dim asClause As AsClauseSyntax = Nothing
-                If isFunction Then
-                    Dim dontAddAsClause As Boolean = isErrorType OrElse symbol.ReturnType.ToString.Contains("?", StringComparison.Ordinal) OrElse symbol.ReturnType.ToString.StartsWith("<anonymous type: ", StringComparison.Ordinal)
-                    asClause = If(dontAddAsClause,
+
+                    Dim isErrorType As Boolean = True
+                    Dim lambdaHeader As LambdaHeaderSyntax
+                    Dim returnsVoid As Boolean = True
+                    Dim symbol As IMethodSymbol = Nothing
+                    Try
+                        symbol = TryCast(_semanticModel.GetSymbolInfo(node).Symbol, IMethodSymbol)
+                        returnsVoid = symbol.ReturnsVoid
+                        If Not returnsVoid Then
+                            isErrorType = Not symbol.ReturnType.IsType
+                        End If
+                    Catch ex As OperationCanceledException
+                        Throw
+                    Catch ex As Exception
+                        Stop
+                        Throw
+                    End Try
+                    Dim isFunction As Boolean = Not (returnsVoid OrElse TypeOf node.Body Is CSS.AssignmentExpressionSyntax)
+                    Dim modifiersList As SyntaxTokenList
+                    modifiersList = modifiersList.AddRange(ConvertModifiers(modifiers, Me.IsModule, TokenContext.Local))
+                    Dim endSubOrFunctionStatement As EndBlockStatementSyntax
+                    Dim parameterList As ParameterListSyntax = Factory.ParameterList(Factory.SeparatedList(vbNodes, vbSeparators))
+                    Dim csBraces As (LeftBrace As SyntaxToken, RightBrace As SyntaxToken) = node.Body.GetBraces
+                    Dim asClause As AsClauseSyntax = Nothing
+                    If isFunction Then
+                        Dim dontAddAsClause As Boolean = isErrorType OrElse symbol.ReturnType.ToString.Contains("?", StringComparison.Ordinal) OrElse symbol.ReturnType.ToString.StartsWith("<anonymous type: ", StringComparison.Ordinal)
+                        asClause = If(dontAddAsClause,
                                     Nothing,
                                     Factory.SimpleAsClause(AsKeyword.With(Factory.Space, Factory.Space), New SyntaxList(Of AttributeListSyntax), symbol.ReturnType.ConvertToType)
                                     )
-                    lambdaHeader = Factory.FunctionLambdaHeader(Factory.List(Of AttributeListSyntax)(), Factory.TokenList(modifiersList), parameterList, asClause:=CType(asClause, SimpleAsClauseSyntax))
-                    endSubOrFunctionStatement = Factory.EndFunctionStatement(EndKeyword.WithTrailingTrivia(Factory.Space), FunctionKeyword).WithConvertedTriviaFrom(csBraces.RightBrace)
-                Else
-                    lambdaHeader = Factory.SubLambdaHeader(Factory.List(Of AttributeListSyntax)(), Factory.TokenList(modifiersList), parameterList, asClause:=Nothing)
-                    endSubOrFunctionStatement = Factory.EndSubStatement(EndKeyword.WithTrailingTrivia(Factory.Space), SubKeyword).WithConvertedTriviaFrom(csBraces.RightBrace)
-                End If
-                If TypeOf block Is CSS.BlockSyntax Then
-                    block = DirectCast(block, CSS.BlockSyntax).Statements
-                End If
-
-                Dim statements As New SyntaxList(Of StatementSyntax)
-                Dim endBlock As EndBlockStatementSyntax
-                If TypeOf block Is CS.CSharpSyntaxNode Then
-                    Dim body As VB.VisualBasicSyntaxNode = DirectCast(block, CS.CSharpSyntaxNode).Accept(Me)
-                    If TypeOf block Is CSS.ThrowExpressionSyntax Then
-                        statements = Factory.SingletonList(DirectCast(body, StatementSyntax).WithTrailingEOL)
-                        If isFunction Then
-                            Return Factory.MultiLineLambdaExpression(VB.SyntaxKind.MultiLineFunctionLambdaExpression, lambdaHeader.WithTrailingEOL, statements, endSubOrFunctionStatement).WithConvertedTriviaFrom(node)
-                        End If
-                        Return Factory.MultiLineLambdaExpression(VB.SyntaxKind.MultiLineSubLambdaExpression, lambdaHeader.WithTrailingEOL, statements, endSubOrFunctionStatement).WithConvertedTriviaFrom(node)
+                        lambdaHeader = Factory.FunctionLambdaHeader(Factory.List(Of AttributeListSyntax)(), Factory.TokenList(modifiersList), parameterList, asClause:=CType(asClause, SimpleAsClauseSyntax))
+                        endSubOrFunctionStatement = Factory.EndFunctionStatement(EndKeyword.WithTrailingTrivia(Factory.Space), FunctionKeyword).WithConvertedTriviaFrom(csBraces.RightBrace)
+                    Else
+                        lambdaHeader = Factory.SubLambdaHeader(Factory.List(Of AttributeListSyntax)(), Factory.TokenList(modifiersList), parameterList, asClause:=Nothing)
+                        endSubOrFunctionStatement = Factory.EndSubStatement(EndKeyword.WithTrailingTrivia(Factory.Space), SubKeyword).WithConvertedTriviaFrom(csBraces.RightBrace)
                     End If
-                    If TypeOf block Is CSS.ObjectCreationExpressionSyntax Then
-                        If isFunction Then
-                            statements = Factory.SingletonList(Of StatementSyntax)(Factory.ReturnStatement(DirectCast(body, NewExpressionSyntax)).WithTrailingEOL)
-                            Return Factory.MultiLineLambdaExpression(VB.SyntaxKind.MultiLineFunctionLambdaExpression, lambdaHeader.WithTrailingEOL, statements, endSubOrFunctionStatement).WithConvertedTriviaFrom(node)
-                        End If
-                        Dim names As SeparatedSyntaxList(Of ModifiedIdentifierSyntax) = Factory.SingletonSeparatedList(Factory.ModifiedIdentifier("DoNotCare"))
-                        asClause = Factory.AsNewClause(DirectCast(body, NewExpressionSyntax))
-                        statements = Factory.SingletonList(Of StatementSyntax)(FactoryDimStatement("DoNotCare", asClause, initializer:=Nothing))
-                        Return Factory.MultiLineLambdaExpression(VB.SyntaxKind.MultiLineSubLambdaExpression, lambdaHeader.WithTrailingEOL, statements, endSubOrFunctionStatement).WithConvertedTriviaFrom(node)
+                    If TypeOf block Is CSS.BlockSyntax Then
+                        block = DirectCast(block, CSS.BlockSyntax).Statements
                     End If
-                    If body.IsKind(VB.SyntaxKind.SimpleAssignmentStatement) Then
-                        Dim simpleAssignment As AssignmentStatementSyntax = DirectCast(body, AssignmentStatementSyntax)
-                        If simpleAssignment.Left.IsKind(VB.SyntaxKind.SimpleMemberAccessExpression) Then
-                            Dim memberAccessExpression As MemberAccessExpressionSyntax = DirectCast(simpleAssignment.Left, MemberAccessExpressionSyntax)
-                            Select Case memberAccessExpression.Expression.Kind
-                                Case VB.SyntaxKind.ObjectCreationExpression, VB.SyntaxKind.SimpleMemberAccessExpression
-                                    endBlock = Factory.EndSubStatement(EndKeyword.WithTrailingTrivia(Factory.Space), SubKeyword).WithTrailingEOL
-                                    Dim uniqueName As String = node.GetUniqueVariableNameInScope("tempVar", _usedIdentifiers, _mSemanticModel)
-                                    Dim nameToken As SyntaxToken = Factory.Identifier(uniqueName)
-                                    Dim uniqueIdentifier As IdentifierNameSyntax = Factory.IdentifierName(nameToken)
-                                    Dim dimStatement As LocalDeclarationStatementSyntax
 
-                                    If TypeOf memberAccessExpression.Expression Is NewExpressionSyntax Then
-                                        asClause = Factory.AsNewClause(DirectCast(memberAccessExpression.Expression, NewExpressionSyntax))
-                                        dimStatement = FactoryDimStatement(nameToken, asClause, initializer:=Nothing)
-                                    ElseIf TypeOf memberAccessExpression.Expression Is MemberAccessExpressionSyntax Then
-                                        Dim memberAccess As MemberAccessExpressionSyntax = DirectCast(memberAccessExpression.Expression, MemberAccessExpressionSyntax)
-                                        If TypeOf memberAccess.Expression IsNot NewExpressionSyntax Then
+                    Dim statements As New SyntaxList(Of StatementSyntax)
+                    Dim endBlock As EndBlockStatementSyntax
+                    If TypeOf block Is CS.CSharpSyntaxNode Then
+                        Dim body As VB.VisualBasicSyntaxNode = DirectCast(block, CS.CSharpSyntaxNode).Accept(Me)
+                        If TypeOf block Is CSS.ThrowExpressionSyntax Then
+                            statements = Factory.SingletonList(DirectCast(body, StatementSyntax).WithTrailingEOL)
+                            statements = Me.AdjustUsingsInNeeded(statements)
+                            If isFunction Then
+                                Return Factory.MultiLineLambdaExpression(VB.SyntaxKind.MultiLineFunctionLambdaExpression, lambdaHeader.WithTrailingEOL, statements, endSubOrFunctionStatement).WithConvertedTriviaFrom(node)
+                            End If
+                            Return Factory.MultiLineLambdaExpression(VB.SyntaxKind.MultiLineSubLambdaExpression, lambdaHeader.WithTrailingEOL, statements, endSubOrFunctionStatement).WithConvertedTriviaFrom(node)
+                        End If
+                        If TypeOf block Is CSS.ObjectCreationExpressionSyntax Then
+                            If isFunction Then
+                                statements = Factory.SingletonList(Of StatementSyntax)(Factory.ReturnStatement(DirectCast(body, NewExpressionSyntax)).WithTrailingEOL)
+                                statements = Me.AdjustUsingsInNeeded(statements)
+                                Return Factory.MultiLineLambdaExpression(VB.SyntaxKind.MultiLineFunctionLambdaExpression, lambdaHeader.WithTrailingEOL, statements, endSubOrFunctionStatement).WithConvertedTriviaFrom(node)
+                            End If
+                            Dim names As SeparatedSyntaxList(Of ModifiedIdentifierSyntax) = Factory.SingletonSeparatedList(Factory.ModifiedIdentifier("DoNotCare"))
+                            asClause = Factory.AsNewClause(DirectCast(body, NewExpressionSyntax))
+                            statements = Factory.SingletonList(Of StatementSyntax)(FactoryDimStatement("DoNotCare", asClause, initializer:=Nothing))
+                            statements = Me.AdjustUsingsInNeeded(statements)
+                            Return Factory.MultiLineLambdaExpression(VB.SyntaxKind.MultiLineSubLambdaExpression, lambdaHeader.WithTrailingEOL, statements, endSubOrFunctionStatement).WithConvertedTriviaFrom(node)
+                        End If
+                        If body.IsKind(VB.SyntaxKind.SimpleAssignmentStatement) Then
+                            Dim simpleAssignment As AssignmentStatementSyntax = DirectCast(body, AssignmentStatementSyntax)
+                            If simpleAssignment.Left.IsKind(VB.SyntaxKind.SimpleMemberAccessExpression) Then
+                                Dim memberAccessExpression As MemberAccessExpressionSyntax = DirectCast(simpleAssignment.Left, MemberAccessExpressionSyntax)
+                                Select Case memberAccessExpression.Expression.Kind
+                                    Case VB.SyntaxKind.ObjectCreationExpression, VB.SyntaxKind.SimpleMemberAccessExpression
+                                        endBlock = Factory.EndSubStatement(EndKeyword.WithTrailingTrivia(Factory.Space), SubKeyword).WithTrailingEOL
+                                        Dim uniqueName As String = node.GetUniqueVariableNameInScope("tempVar", _usedIdentifiers, _semanticModel)
+                                        Dim nameToken As SyntaxToken = Factory.Identifier(uniqueName)
+                                        Dim uniqueIdentifier As IdentifierNameSyntax = Factory.IdentifierName(nameToken)
+                                        Dim dimStatement As LocalDeclarationStatementSyntax
+
+                                        If TypeOf memberAccessExpression.Expression Is NewExpressionSyntax Then
+                                            asClause = Factory.AsNewClause(DirectCast(memberAccessExpression.Expression, NewExpressionSyntax))
+                                            dimStatement = FactoryDimStatement(nameToken, asClause, initializer:=Nothing)
+                                        ElseIf TypeOf memberAccessExpression.Expression Is MemberAccessExpressionSyntax Then
+                                            Dim memberAccess As MemberAccessExpressionSyntax = DirectCast(memberAccessExpression.Expression, MemberAccessExpressionSyntax)
+                                            If TypeOf memberAccess.Expression IsNot NewExpressionSyntax Then
+                                                Exit Select
+                                            End If
+                                            asClause = Factory.AsNewClause(DirectCast(memberAccess.Expression, NewExpressionSyntax))
+                                            dimStatement = FactoryDimStatement(nameToken, asClause, initializer:=Nothing)
+                                        Else
                                             Exit Select
                                         End If
-                                        asClause = Factory.AsNewClause(DirectCast(memberAccess.Expression, NewExpressionSyntax))
-                                        dimStatement = FactoryDimStatement(nameToken, asClause, initializer:=Nothing)
-                                    Else
-                                        Exit Select
-                                    End If
-                                    statements = statements.Add(dimStatement)
-                                    statements = statements.Add(Factory.SimpleAssignmentStatement(Factory.QualifiedName(uniqueIdentifier, memberAccessExpression.Name), simpleAssignment.Right).WithTrailingEOL)
-                                    Return Factory.MultiLineLambdaExpression(VB.SyntaxKind.MultiLineSubLambdaExpression, lambdaHeader.WithTrailingEOL, statements, endBlock).WithConvertedTriviaFrom(node)
-                                Case VB.SyntaxKind.IdentifierName, VB.SyntaxKind.InvocationExpression, VB.SyntaxKind.MeExpression
-                                    ' handled below
-                                Case Else
-                                    Stop
-                            End Select
+                                        statements = statements.Add(dimStatement)
+                                        statements = statements.Add(Factory.SimpleAssignmentStatement(Factory.QualifiedName(uniqueIdentifier, memberAccessExpression.Name), simpleAssignment.Right).WithTrailingEOL)
+                                        statements = Me.AdjustUsingsInNeeded(statements)
+                                        Return Factory.MultiLineLambdaExpression(VB.SyntaxKind.MultiLineSubLambdaExpression, lambdaHeader.WithTrailingEOL, statements, endBlock).WithConvertedTriviaFrom(node)
+                                    Case VB.SyntaxKind.IdentifierName, VB.SyntaxKind.InvocationExpression, VB.SyntaxKind.MeExpression
+                                        ' handled below
+                                    Case Else
+                                        Stop
+                                End Select
+                            End If
                         End If
-                    End If
-                    If body.ToFullString.Contains(vbCrLf, StringComparison.OrdinalIgnoreCase) Then
-                        Dim syntaxList As SyntaxList(Of StatementSyntax)
-                        If TypeOf body Is StatementSyntax Then
-                            syntaxList = Factory.SingletonList(CType(body, StatementSyntax))
-                        Else
-                            syntaxList = Factory.SingletonList(Of StatementSyntax)(Factory.ReturnStatement(CType(body, ExpressionSyntax)))
-                        End If
-                        If isFunction Then
-                            Return Factory.MultiLineLambdaExpression(VB.SyntaxKind.MultiLineFunctionLambdaExpression, lambdaHeader.WithAsClause(Nothing), syntaxList, Factory.EndFunctionStatement(EndKeyword.WithTrailingTrivia(Factory.Space), FunctionKeyword)).WithConvertedTriviaFrom(node)
-                        End If
-                        Return Factory.MultiLineLambdaExpression(VB.SyntaxKind.MultiLineSubLambdaExpression, lambdaHeader.WithAsClause(Nothing), syntaxList, Factory.EndSubStatement(EndKeyword.WithTrailingTrivia(Factory.Space), SubKeyword)).WithConvertedTriviaFrom(node)
-                    Else
-                        If isFunction Then
-                            Return Factory.SingleLineLambdaExpression(VB.SyntaxKind.SingleLineFunctionLambdaExpression, lambdaHeader.WithAsClause(Nothing), body).WithConvertedTriviaFrom(node)
-                        End If
-                        Return Factory.SingleLineLambdaExpression(VB.SyntaxKind.SingleLineSubLambdaExpression, lambdaHeader.WithAsClause(Nothing), body).WithConvertedTriviaFrom(node)
-                    End If
-                End If
+                        If body.ToFullString.Contains(vbCrLf, StringComparison.OrdinalIgnoreCase) Then
+                            If TypeOf body Is StatementSyntax Then
+                                statements = Factory.SingletonList(CType(body, StatementSyntax))
+                            Else
+                                statements = Factory.SingletonList(Of StatementSyntax)(Factory.ReturnStatement(CType(body, ExpressionSyntax)))
+                            End If
+                            statements = Me.AdjustUsingsInNeeded(statements)
 
-                ' TypeOf block Is SyntaxList(Of CSS.StatementSyntax)
-                statements = statements.AddRange(Factory.List(DirectCast(block, SyntaxList(Of CSS.StatementSyntax)).SelectMany(Function(s As CSS.StatementSyntax) s.Accept(New MethodBodyVisitor(_mSemanticModel, Me)))))
-                Dim expression As ExpressionSyntax = Nothing
-                If asClause Is Nothing AndAlso statements.Count = 1 AndAlso statements(0).TryUnpackExpression(expression) Then
-                    Return Factory.SingleLineLambdaExpression(
+                            If isFunction Then
+                                Return Factory.MultiLineLambdaExpression(VB.SyntaxKind.MultiLineFunctionLambdaExpression, lambdaHeader.WithAsClause(Nothing), statements, Factory.EndFunctionStatement(EndKeyword.WithTrailingTrivia(Factory.Space), FunctionKeyword)).WithConvertedTriviaFrom(node)
+                            End If
+                            Return Factory.MultiLineLambdaExpression(VB.SyntaxKind.MultiLineSubLambdaExpression, lambdaHeader.WithAsClause(Nothing), statements, Factory.EndSubStatement(EndKeyword.WithTrailingTrivia(Factory.Space), SubKeyword)).WithConvertedTriviaFrom(node)
+                        Else
+                            If isFunction Then
+                                Return Factory.SingleLineLambdaExpression(VB.SyntaxKind.SingleLineFunctionLambdaExpression, lambdaHeader.WithAsClause(Nothing), body).WithConvertedTriviaFrom(node)
+                            End If
+                            Return Factory.SingleLineLambdaExpression(VB.SyntaxKind.SingleLineSubLambdaExpression, lambdaHeader.WithAsClause(Nothing), body).WithConvertedTriviaFrom(node)
+                        End If
+                    End If
+
+                    ' TypeOf block Is SyntaxList(Of CSS.StatementSyntax)
+                    statements = statements.AddRange(Factory.List(DirectCast(block, SyntaxList(Of CSS.StatementSyntax)).SelectMany(Function(s As CSS.StatementSyntax) s.Accept(New MethodBodyVisitor(_semanticModel, Me)))))
+                    statements = Me.AdjustUsingsInNeeded(statements)
+                    Dim expression As ExpressionSyntax = Nothing
+                    If asClause Is Nothing AndAlso statements.Count = 1 AndAlso statements(0).TryUnpackExpression(expression) Then
+                        Return Factory.SingleLineLambdaExpression(
                             If(isFunction,
                                 VB.SyntaxKind.SingleLineFunctionLambdaExpression,
                                 VB.SyntaxKind.SingleLineSubLambdaExpression),
@@ -213,20 +222,24 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                 expression).WithConvertedTriviaFrom(node).
                                             WithPrependedLeadingTrivia(statements(0).GetLeadingTrivia
                             )
-                End If
+                    End If
 
-                Dim expressionKind As VB.SyntaxKind
-                If isFunction Then
-                    endBlock = Factory.EndFunctionStatement(EndKeyword.WithTrailingTrivia(Factory.Space), FunctionKeyword).WithConvertedTriviaFrom(csBraces.RightBrace)
-                    expressionKind = VB.SyntaxKind.MultiLineFunctionLambdaExpression
-                Else
-                    endBlock = Factory.EndSubStatement(EndKeyword.WithTrailingTrivia(Factory.Space), SubKeyword).WithConvertedTriviaFrom(csBraces.RightBrace)
-                    expressionKind = VB.SyntaxKind.MultiLineSubLambdaExpression
-                End If
-                Return Factory.MultiLineLambdaExpression(kind:=expressionKind,
+                    Dim expressionKind As VB.SyntaxKind
+                    If isFunction Then
+                        endBlock = Factory.EndFunctionStatement(EndKeyword.WithTrailingTrivia(Factory.Space), FunctionKeyword).WithConvertedTriviaFrom(csBraces.RightBrace)
+                        expressionKind = VB.SyntaxKind.MultiLineFunctionLambdaExpression
+                    Else
+                        endBlock = Factory.EndSubStatement(EndKeyword.WithTrailingTrivia(Factory.Space), SubKeyword).WithConvertedTriviaFrom(csBraces.RightBrace)
+                        expressionKind = VB.SyntaxKind.MultiLineSubLambdaExpression
+                    End If
+                    Return Factory.MultiLineLambdaExpression(kind:=expressionKind,
                                                                lambdaHeader.WithTrailingEOL,
                                                                statements,
                                                                endBlock)
+                Finally
+                    Me.NeedEndUsings = savedNeedEndUsings
+                End Try
+
             End Function
 
             Private Function IsConcatenateStringsExpression(node As CSS.BinaryExpressionSyntax) As Boolean
@@ -239,8 +252,8 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim leftTypeInfo As TypeInfo
                 Dim rightTypeInfo As TypeInfo
                 Try
-                    leftTypeInfo = _mSemanticModel.GetTypeInfo(node.Left)
-                    rightTypeInfo = _mSemanticModel.GetTypeInfo(node.Right)
+                    leftTypeInfo = _semanticModel.GetTypeInfo(node.Left)
+                    rightTypeInfo = _semanticModel.GetTypeInfo(node.Right)
                 Catch ex As OperationCanceledException
                     Throw
                 Catch ex As Exception
@@ -254,7 +267,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
             Private Function IsNameOfExpression(node As CSS.InvocationExpressionSyntax) As Boolean
                 Dim isIdentifierName As Boolean = TypeOf node.Expression Is CSS.IdentifierNameSyntax
                 Dim methodIdentifier As CSS.IdentifierNameSyntax = If(isIdentifierName, CType(node.Expression, CSS.IdentifierNameSyntax), Nothing)
-                Return isIdentifierName AndAlso methodIdentifier?.Identifier.Text = "nameof" AndAlso _mSemanticModel.GetSymbolInfo(methodIdentifier).ExtractBestMatch(Of ISymbol)() Is Nothing
+                Return isIdentifierName AndAlso methodIdentifier?.Identifier.Text = "nameof" AndAlso _semanticModel.GetSymbolInfo(methodIdentifier).ExtractBestMatch(Of ISymbol)() Is Nothing
             End Function
 
             Private Function IsStringExpression(Node As SyntaxNode) As Boolean
@@ -275,19 +288,19 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         If Not binExpr.IsKind(CS.SyntaxKind.AddExpression) Then
                             Return False
                         End If
-                        typeInf = _mSemanticModel.GetTypeInfo(binExpr)
+                        typeInf = _semanticModel.GetTypeInfo(binExpr)
                         If typeInf.IsString Then
                             Return True
                         End If
-                        typeInf = _mSemanticModel.GetTypeInfo(binExpr.Left)
+                        typeInf = _semanticModel.GetTypeInfo(binExpr.Left)
                         If typeInf.IsString Then
                             Return True
                         End If
-                        typeInf = _mSemanticModel.GetTypeInfo(binExpr.Right)
+                        typeInf = _semanticModel.GetTypeInfo(binExpr.Right)
                     ElseIf TypeOf Node Is CSS.MemberAccessExpressionSyntax Then
-                        typeInf = _mSemanticModel.GetTypeInfo(CType(Node, CSS.MemberAccessExpressionSyntax).Expression)
+                        typeInf = _semanticModel.GetTypeInfo(CType(Node, CSS.MemberAccessExpressionSyntax).Expression)
                     Else
-                        typeInf = _mSemanticModel.GetTypeInfo(Node)
+                        typeInf = _semanticModel.GetTypeInfo(Node)
                     End If
                 Catch ex As Exception
                     Stop
@@ -377,7 +390,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
             End Function
 
             Private Function ReduceArrayUpperBoundExpression(expr As CSS.ExpressionSyntax) As ExpressionSyntax
-                Dim constant As [Optional](Of Object) = _mSemanticModel.GetConstantValue(expr)
+                Dim constant As [Optional](Of Object) = _semanticModel.GetConstantValue(expr)
                 If constant.HasValue AndAlso TypeOf constant.Value Is Integer Then
                     Return Factory.NumericLiteralExpression(Factory.Literal(CInt(constant.Value) - 1))
                 End If
@@ -512,8 +525,8 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 If node.IsReturnValueDiscarded Then
                     left = CType(node.Left.Accept(Me), ExpressionSyntax)
                     right = CType(node.Right.Accept(Me), ExpressionSyntax)
-                    If _mSemanticModel.GetTypeInfo(node.Right).ConvertedType.IsDelegateType() Then
-                        If _mSemanticModel.GetSymbolInfo(node.Left).Symbol?.Kind <> SymbolKind.Event Then
+                    If _semanticModel.GetTypeInfo(node.Right).ConvertedType.IsDelegateType() Then
+                        If _semanticModel.GetSymbolInfo(node.Left).Symbol?.Kind <> SymbolKind.Event Then
                             Dim kind1? As CS.SyntaxKind = node.GetAncestor(Of CSS.AccessorDeclarationSyntax)()?.Kind()
                             If kind1 IsNot Nothing AndAlso (kind1.Value = CS.SyntaxKind.AddAccessorDeclaration OrElse kind1.Value = CS.SyntaxKind.RemoveAccessorDeclaration) Then
                                 Dim methodName As String = If(kind1.Value = CS.SyntaxKind.AddAccessorDeclaration, "Combine", "Remove")
@@ -561,7 +574,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         ElseIf TypeOf nodeRight Is CollectionInitializerSyntax Then
                             Dim collection As CollectionInitializerSyntax = CType(nodeRight, CollectionInitializerSyntax)
                             Dim simpleAssignement As CSS.AssignmentExpressionSyntax = node
-                            Dim tInfo As TypeInfo = _mSemanticModel.GetTypeInfo(simpleAssignement.Left)
+                            Dim tInfo As TypeInfo = _semanticModel.GetTypeInfo(simpleAssignement.Left)
                             Dim initializer As ObjectCollectionInitializerSyntax = Factory.ObjectCollectionInitializer(FromKeyword, collection)
                             Dim type1 As TypeSyntax
                             If tInfo.Type Is Nothing OrElse tInfo.Type.IsErrorType Then
@@ -600,7 +613,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     TypeOf node.Left IsNot CSS.TupleExpressionSyntax Then
                     Return Factory.SimpleAssignmentStatement(CType(node.Left.Accept(Me), ExpressionSyntax), CType(node.Right.Accept(Me), ExpressionSyntax))
                 End If
-                Dim rightTypeInfo As TypeInfo = _mSemanticModel.GetTypeInfo(node.Right)
+                Dim rightTypeInfo As TypeInfo = _semanticModel.GetTypeInfo(node.Right)
                 Dim isDelegate As Boolean
                 If rightTypeInfo.ConvertedType IsNot Nothing Then
                     isDelegate = rightTypeInfo.ConvertedType.IsDelegateType
@@ -651,13 +664,13 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         Next
                         Dim tupleType As TupleTypeSyntax = Nothing
                         Dim simpleAs As SimpleAsClauseSyntax = Nothing
-                        Dim identifierName As String = node.GetUniqueVariableNameInScope("TempVar", _usedIdentifiers, _mSemanticModel)
+                        Dim identifierName As String = node.GetUniqueVariableNameInScope("TempVar", _usedIdentifiers, _semanticModel)
                         Dim tempIdentifier As SeparatedSyntaxList(Of ModifiedIdentifierSyntax)
                         If rightTypeInfo.ConvertedType IsNot Nothing AndAlso Not rightTypeInfo.ConvertedType.IsErrorType Then
                             If TypeOf rightTypeInfo.Type Is INamedTypeSymbol Then
                                 Dim possibleTupleType As INamedTypeSymbol = DirectCast(rightTypeInfo.ConvertedType, INamedTypeSymbol)
                                 If possibleTupleType.IsTupleType Then
-                                    identifierName = node.GetUniqueVariableNameInScope("TupleTempVar", _usedIdentifiers, _mSemanticModel)
+                                    identifierName = node.GetUniqueVariableNameInScope("TupleTempVar", _usedIdentifiers, _semanticModel)
                                     tempIdentifier = Factory.SingletonSeparatedList(Factory.ModifiedIdentifier(identifierName))
                                     tupleType = CType(possibleTupleType.TupleElements(0).ContainingType.ToString.ConvertCSStringToName, TupleTypeSyntax)
                                     If tupleType.Elements.All(Function(t As TupleElementSyntax) As Boolean
@@ -715,7 +728,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         Dim leftTupleNode As TupleExpressionSyntax = DirectCast(CType(node.Left.Accept(Me), ExpressionSyntax).WithConvertedTriviaFrom(node.Left), TupleExpressionSyntax)
 
                         variableNames = New List(Of String)
-                        Dim identifierName As String = node.GetUniqueVariableNameInScope("TupleTempVar", _usedIdentifiers, _mSemanticModel)
+                        Dim identifierName As String = node.GetUniqueVariableNameInScope("TupleTempVar", _usedIdentifiers, _semanticModel)
                         For Each argument As ArgumentSyntax In leftTupleNode.Arguments
                             variableNames.Add(argument.ToString)
                         Next
@@ -971,7 +984,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     End If
 
                     leftExp = CType(leftNode, ExpressionSyntax).AdjustExpressionTrivia(AdjustLeading:=True)
-                    Dim isReferenceType As Boolean = IsReferenceComparison(node.Left, node.Right, _mSemanticModel)
+                    Dim isReferenceType As Boolean = IsReferenceComparison(node.Left, node.Right, _semanticModel)
                     operatorToken = GetOperatorToken(kind, isReferenceType).WithConvertedTriviaFrom(node.OperatorToken)
                     If operatorToken.HasLeadingTrivia Then
                         operatorToken = operatorToken.AdjustTokenLeadingTrivia()
@@ -1017,13 +1030,13 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim cTypeExpression As VB.VisualBasicSyntaxNode
                 Dim newTrailingTrivia As SyntaxTriviaList
                 Try
-                    Dim type As ITypeSymbol = _mSemanticModel.GetTypeInfo(node.Type).Type
+                    Dim type As ITypeSymbol = _semanticModel.GetTypeInfo(node.Type).Type
                     Dim expr As ExpressionSyntax = DirectCast(node.Expression.Accept(Me), ExpressionSyntax)
                     newTrailingTrivia = newTrailingTrivia.AddRange(expr.GetTrailingTrivia)
                     newTrailingTrivia = newTrailingTrivia.AddRange(node.GetTrailingTrivia.ConvertTriviaList())
                     expr = expr.WithoutTrivia
 
-                    Dim exprTypeStr As String = _mSemanticModel.GetTypeInfo(node.Expression).Type?.ToString
+                    Dim exprTypeStr As String = _semanticModel.GetTypeInfo(node.Expression).Type?.ToString
                     Dim fixExpr As ExpressionSyntax = Factory.IdentifierName("Fix")
                     Select Case type.SpecialType
                         Case SpecialType.System_Object
@@ -1051,7 +1064,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                             cTypeExpression = Factory.PredefinedCastExpression(CShortKeyword, Factory.InvocationExpression(fixExpr, argumentList))
                         Case SpecialType.System_UInt16
                             If exprTypeStr = "char" Then
-                                cTypeExpression = Factory.ParseExpression(text:=$"ChrW({expr})")
+                                cTypeExpression = Factory.ParseExpression(text:=$"AscW({expr})")
                             Else
                                 cTypeExpression = Factory.PredefinedCastExpression(CUShortKeyword, expr)
                             End If
@@ -1093,7 +1106,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                 Else
                                     cTypeExpression = Factory.CTypeExpression(expr, Factory.ParseTypeName(addrOf.Operand.ToString.RemoveAll("&")))
                                 End If
-                            ElseIf node.Type.DetermineType(_mSemanticModel)._ITypeSymbol.IsDelegateType Then
+                            ElseIf node.Type.DetermineType(_semanticModel)._ITypeSymbol.IsDelegateType Then
                                 If expr.IsKind(VB.SyntaxKind.AddressOfExpression) Then
                                     cTypeExpression = Factory.CTypeExpression(expr, DirectCast(typeOrAddressOf, TypeSyntax))
                                 Else
@@ -1298,7 +1311,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     End If
                 ElseIf node.Expression.IsKind(CS.SyntaxKind.ObjectCreationExpression) Then
                     expression = DirectCast(node.Expression.Accept(Me), ExpressionSyntax)
-                    Dim uniqueName As String = node.GetUniqueVariableNameInScope("tempVar", _usedIdentifiers, _mSemanticModel)
+                    Dim uniqueName As String = node.GetUniqueVariableNameInScope("tempVar", _usedIdentifiers, _semanticModel)
 
                     Dim asClause As AsClauseSyntax = Factory.AsNewClause(DirectCast(expression, NewExpressionSyntax))
                     Dim dimStatement As LocalDeclarationStatementSyntax = FactoryDimStatement(uniqueName, asClause, initializer:=Nothing)
@@ -1585,7 +1598,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                             Stop
                     End Select
                 End If
-                Dim methodInfo As TypeInfo = _mSemanticModel.GetTypeInfo(node.Expression)
+                Dim methodInfo As TypeInfo = _semanticModel.GetTypeInfo(node.Expression)
                 If methodInfo.Type?.Name = "Func" Then
                     Return Factory.InvocationExpression(invocationExpression.WithoutTrailingTrivia, Factory.ArgumentList()).WithTrailingTrivia(newTrailingTrivia)
                 End If
@@ -1658,7 +1671,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                 Stop
                             End If
                         Case CS.SyntaxKind.SimpleAssignmentExpression
-                            Dim leftTypeInfo As TypeInfo = _mSemanticModel.GetTypeInfo(DirectCast(node.Parent, CSS.AssignmentExpressionSyntax).Left)
+                            Dim leftTypeInfo As TypeInfo = _semanticModel.GetTypeInfo(DirectCast(node.Parent, CSS.AssignmentExpressionSyntax).Left)
                             If leftTypeInfo.Type Is Nothing OrElse leftTypeInfo.Type.IsErrorType Then
                                 Return NothingExpression
                             End If
@@ -1670,7 +1683,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                 Return If(leftTypeInfo.Type.Name Is "", NothingExpression, CType(Factory.CTypeExpression(NothingExpression, ConvertToType(leftTypeInfo.Type.Name)), ExpressionSyntax))
                             End If
                         Case CS.SyntaxKind.ConditionalExpression
-                            Dim leftNodeTypeInfo As TypeInfo = _mSemanticModel.GetTypeInfo(DirectCast(node.Parent, CSS.ConditionalExpressionSyntax).WhenTrue)
+                            Dim leftNodeTypeInfo As TypeInfo = _semanticModel.GetTypeInfo(DirectCast(node.Parent, CSS.ConditionalExpressionSyntax).WhenTrue)
                             If leftNodeTypeInfo.Type Is Nothing OrElse leftNodeTypeInfo.Type.IsErrorType Then
                                 Return NothingExpression
                             End If
@@ -1731,7 +1744,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                                                                         ),
                                                        node).WithConvertedTriviaFrom(node)
                 ElseIf TypeOf expression Is CollectionInitializerSyntax Then
-                    Dim uniqueName As String = node.GetUniqueVariableNameInScope("tempVar", _usedIdentifiers, _mSemanticModel)
+                    Dim uniqueName As String = node.GetUniqueVariableNameInScope("tempVar", _usedIdentifiers, _semanticModel)
                     Dim uniqueIdentifier As IdentifierNameSyntax = Factory.IdentifierName(Factory.Identifier(uniqueName))
                     Dim initializer As EqualsValueSyntax = Factory.EqualsValue(expression)
                     Dim dimStatement As LocalDeclarationStatementSyntax =
@@ -1876,12 +1889,13 @@ Namespace CSharpToVBConverter.ToVisualBasic
                    TypeOf expr Is IdentifierNameSyntax OrElse
                    TypeOf expr Is InvocationExpressionSyntax OrElse
                    TypeOf expr Is QueryExpressionSyntax OrElse
-                    TypeOf expr Is TryCastExpressionSyntax Then
+                   TypeOf expr Is TryCastExpressionSyntax OrElse
+                   TypeOf expr Is LiteralExpressionSyntax Then
                     Return expr.WithTrailingTrivia(Factory.Space)
                 End If
                 Dim declarationToBeAdded As LocalDeclarationStatementSyntax
                 If TypeOf node.Parent Is CSS.MemberAccessExpressionSyntax OrElse
-                   TypeOf node.Parent Is CSS.ElementAccessExpressionSyntax OrElse
+                    TypeOf node.Parent Is CSS.ElementAccessExpressionSyntax OrElse
                     TypeOf node.Parent Is CSS.ConditionalAccessExpressionSyntax Then
                     ' statement with issues points to "statement" Probably an Expression statement. If this is part of a single Line If we need to go higher
                     Dim statementWithIssue As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
@@ -1891,7 +1905,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         If node.Expression.IsKind(CS.SyntaxKind.AddExpression) Then
                             Return Factory.ParenthesizedExpression(openParenToken.WithConvertedTriviaFrom(node.OpenParenToken), expr, CloseParenToken.WithConvertedTriviaFrom(node.CloseParenToken))
                         End If
-                        Dim uniqueName As String = node.GetUniqueVariableNameInScope("tempVar", _usedIdentifiers, _mSemanticModel)
+                        Dim uniqueName As String = node.GetUniqueVariableNameInScope("tempVar", _usedIdentifiers, _semanticModel)
                         Dim uniqueIdentifier As IdentifierNameSyntax = Factory.IdentifierName(Factory.Identifier(uniqueName))
                         If TypeOf expr Is TernaryConditionalExpressionSyntax Then
                             Dim tenaryExp As TernaryConditionalExpressionSyntax = DirectCast(expr, TernaryConditionalExpressionSyntax)
@@ -1947,7 +1961,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         statementWithIssue.AddMarker(declarationToBeAdded, StatementHandlingOption.PrependStatement, AllowDuplicates:=False)
                         Return uniqueIdentifier
                     ElseIf TypeOf node.Parent Is CSS.ConditionalAccessExpressionSyntax Then
-                        Dim uniqueName As String = node.GetUniqueVariableNameInScope("tempVar", _usedIdentifiers, _mSemanticModel)
+                        Dim uniqueName As String = node.GetUniqueVariableNameInScope("tempVar", _usedIdentifiers, _semanticModel)
                         declarationToBeAdded = FactoryDimStatement(uniqueName, asClause:=Nothing, initializer).WithConvertedTriviaFrom(node).WithTrailingEOL
                         statementWithIssue.AddMarker(declarationToBeAdded, StatementHandlingOption.PrependStatement, AllowDuplicates:=False)
                         Return Factory.IdentifierName(Factory.Identifier(uniqueName))
@@ -1970,7 +1984,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim kind As VB.SyntaxKind = GetExpressionKind(csExprKind)
                 If TypeOf node.Parent Is CSS.ExpressionStatementSyntax OrElse TypeOf node.Parent Is CSS.ForStatementSyntax Then
                     Try
-                        Dim operandTypeInfo As TypeInfo = _mSemanticModel.GetTypeInfo(node.Operand)
+                        Dim operandTypeInfo As TypeInfo = _semanticModel.GetTypeInfo(node.Operand)
                         If operandTypeInfo.ConvertedType.ToString = "char" Then
                             Dim convertedperandExpression As ExpressionSyntax = Factory.ParseExpression($"ChrW(AscW({leftExpr}))").WithTriviaFrom(leftExpr)
                             kind = If(kind = VB.SyntaxKind.AddAssignmentStatement, VB.SyntaxKind.AddExpression, VB.SyntaxKind.SubtractExpression)
@@ -2103,7 +2117,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         Dim typedTupleElementSyntax1 As TypedTupleElementSyntax = Factory.TypedTupleElement(DirectCast(node.Type.Accept(Me), TypeSyntax))
                         Return typedTupleElementSyntax1
                     End If
-                    Return Factory.NamedTupleElement(GenerateSafeVBToken(node.Identifier, node, _usedIdentifiers, _mSemanticModel).WithConvertedTriviaFrom(node.Type), Factory.SimpleAsClause(AsKeyword.WithTrailingTrivia(Factory.Space), attributeLists:=New SyntaxList(Of AttributeListSyntax), DirectCast(node.Type.Accept(Me).WithConvertedTriviaFrom(node.Identifier), TypeSyntax)))
+                    Return Factory.NamedTupleElement(GenerateSafeVBToken(node.Identifier, node, _usedIdentifiers, _semanticModel).WithConvertedTriviaFrom(node.Type), Factory.SimpleAsClause(AsKeyword.WithTrailingTrivia(Factory.Space), attributeLists:=New SyntaxList(Of AttributeListSyntax), DirectCast(node.Type.Accept(Me).WithConvertedTriviaFrom(node.Identifier), TypeSyntax)))
                 Catch ex As OperationCanceledException
                     Throw
                 Catch ex As Exception

@@ -25,7 +25,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim separators As New List(Of SyntaxToken)
                 For Each e As IndexClass(Of CSS.ArgumentSyntax) In csArguments.WithIndex
                     Dim argument As VBS.ArgumentSyntax = DirectCast(e.Value.Accept(Me), VBS.ArgumentSyntax)
-                    Dim csOperation As Operations.IArgumentOperation = CType(_mSemanticModel.GetOperation(e.Value), Operations.IArgumentOperation)
+                    Dim csOperation As Operations.IArgumentOperation = CType(_semanticModel.GetOperation(e.Value), Operations.IArgumentOperation)
                     vbNodeList.Add(argument.AdjustNodeTrivia(SeparatorFollows:=Not e.IsLast))
                     If Not e.IsLast Then
                         separators.Add(CommaToken.WithConvertedTrailingTriviaFrom(csArguments.GetSeparators()(e.index)))
@@ -84,7 +84,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     End If
 
                     If TypeOf node.Parent Is CSS.BracketedArgumentListSyntax Then
-                        Dim typeinf As TypeInfo = _mSemanticModel.GetTypeInfo(csExpression)
+                        Dim typeinf As TypeInfo = _semanticModel.GetTypeInfo(csExpression)
                         If Not SymbolEqualityComparer.Default.Equals(typeinf.ConvertedType, typeinf.Type) Then
                             If typeinf.Type?.SpecialType = SpecialType.System_Char Then '
                                 argumentWithTrivia = Factory.ParseExpression($"ChrW({argumentWithTrivia.WithoutTrivia})").WithTriviaFrom(argumentWithTrivia)

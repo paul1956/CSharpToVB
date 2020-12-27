@@ -1229,7 +1229,8 @@ Class TestClass
         Dim student2 As New StudentName With
             { _
             .FirstName = ""Craig"",
-            .LastName = ""Playstead""}
+            .LastName = ""Playstead""
+        }
     End Sub
 End Class")
         End Sub
@@ -1279,7 +1280,8 @@ Friend Class Converter
 
     Public Shared ReadOnly Settings As New SomeSettings With
         { _
-        .Converters = New Collections.Generic.IList(Of Object) From {}}
+        .Converters = New Collections.Generic.IList(Of Object) From {}
+    }
 End Class")
         End Sub
 

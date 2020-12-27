@@ -923,7 +923,8 @@ End Class")
     Private Sub TestMethod()
         Dim b As Integer(,) = { _
             {1, 2},
-            {3, 4}}
+            {3, 4}
+        }
     End Sub
 End Class")
         End Sub
@@ -960,7 +961,8 @@ End Class")
     Private Sub TestMethod()
         Dim b As Integer(,) = New Integer(1, 1) { _
             {1, 2},
-            {3, 4}}
+            {3, 4}
+        }
     End Sub
 End Class")
         End Sub
@@ -997,7 +999,8 @@ End Class")
     Private Sub TestMethod()
         Dim b As Integer(,) = New Integer(,) { _
             {1, 2},
-            {3, 4}}
+            {3, 4}
+        }
     End Sub
 End Class")
         End Sub

@@ -131,25 +131,26 @@ Partial Public Class Form1
     End Sub
 
     Private Sub ContextMenuCopy_Click(sender As Object, e As EventArgs) Handles ContextMenuCopy.Click
-        Dim sourceControl As RichTextBox = CType(Me.ContextMenuStrip1.SourceControl, RichTextBox)
-        If sourceControl Is Nothing Then
-            If TypeOf Me.CurrentBuffer Is RichTextBox Then
-                sourceControl = CType(Me.CurrentBuffer, RichTextBox)
-            Else
+        Dim sourceControl As RichTextBox
+        Select Case True
+            Case TypeOf Me.ContextMenuStrip1.SourceControl Is RichTextBox
+                sourceControl = TryCast(Me.ContextMenuStrip1.SourceControl, RichTextBox)
+            Case TypeOf Me.ContextMenuStrip1.SourceControl Is ListBox
+                Dim selectedItem As NumberedListItem = CType(CType(Me.ContextMenuStrip1.SourceControl, ListBox).SelectedItem, NumberedListItem)
+                Clipboard.SetText(selectedItem.SourceFileWithPath)
                 Exit Sub
-            End If
-        End If
-        If TypeOf sourceControl Is RichTextBox Then
-            sourceControl.Copy()
-        Else
-            If Me.ContextMenuStrip1.SourceControl IsNot Nothing Then
-                Clipboard.SetText(CType(Me.ContextMenuStrip1.SourceControl, ListBox).SelectedItem.ToString)
-            End If
-        End If
+            Case Else
+                If TypeOf Me.CurrentBuffer Is RichTextBox Then
+                    sourceControl = CType(Me.CurrentBuffer, RichTextBox)
+                Else
+                    Exit Sub
+                End If
+        End Select
+        sourceControl.Copy()
     End Sub
 
     Private Sub ContextMenuCut_Click(sender As Object, e As EventArgs) Handles ContextMenuCut.Click
-        Dim sourceControl As RichTextBox = CType(Me.ContextMenuStrip1.SourceControl, RichTextBox)
+        Dim sourceControl As RichTextBox = TryCast(Me.ContextMenuStrip1.SourceControl, RichTextBox)
         If sourceControl Is Nothing Then
             If TypeOf Me.CurrentBuffer Is RichTextBox Then
                 sourceControl = CType(Me.CurrentBuffer, RichTextBox)
@@ -161,7 +162,7 @@ Partial Public Class Form1
     End Sub
 
     Private Sub ContextMenuPaste_Click(sender As Object, e As EventArgs) Handles ContextMenuPaste.Click
-        Dim sourceControl As RichTextBox = CType(Me.ContextMenuStrip1.SourceControl, RichTextBox)
+        Dim sourceControl As RichTextBox = TryCast(Me.ContextMenuStrip1.SourceControl, RichTextBox)
         If sourceControl Is Nothing Then
             If TypeOf Me.CurrentBuffer Is RichTextBox Then
                 sourceControl = CType(Me.CurrentBuffer, RichTextBox)
@@ -176,7 +177,7 @@ Partial Public Class Form1
     End Sub
 
     Private Sub ContextMenuRedo_Click(sender As Object, e As EventArgs) Handles ContextMenuRedo.Click
-        Dim sourceControl As RichTextBox = CType(Me.ContextMenuStrip1.SourceControl, RichTextBox)
+        Dim sourceControl As RichTextBox = TryCast(Me.ContextMenuStrip1.SourceControl, RichTextBox)
         If sourceControl Is Nothing Then
             If TypeOf Me.CurrentBuffer Is RichTextBox Then
                 sourceControl = CType(Me.CurrentBuffer, RichTextBox)
@@ -190,7 +191,7 @@ Partial Public Class Form1
     End Sub
 
     Private Sub ContextMenuSelectAll_Click(sender As Object, e As EventArgs) Handles ContextMenuSelectAll.Click
-        Dim sourceControl As RichTextBox = CType(Me.ContextMenuStrip1.SourceControl, RichTextBox)
+        Dim sourceControl As RichTextBox = TryCast(Me.ContextMenuStrip1.SourceControl, RichTextBox)
         If sourceControl Is Nothing Then
             If TypeOf Me.CurrentBuffer Is RichTextBox Then
                 sourceControl = CType(Me.CurrentBuffer, RichTextBox)
@@ -754,7 +755,10 @@ Partial Public Class Form1
             If .ShowDialog <> DialogResult.OK Then
                 Exit Sub
             End If
+            Dim colorizeOutput As Boolean = My.Settings.ColorizeOutput
+            My.Settings.ColorizeOutput = colorizeOutput = False
             ProcessProjectOrSolutionAsync(Me, .FileName)
+            My.Settings.ColorizeOutput = colorizeOutput = colorizeOutput
         End With
     End Sub
 

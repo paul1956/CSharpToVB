@@ -54,27 +54,57 @@ Namespace CSharpToVBConverter.ToVisualBasic
             Dim csDeclaratorsWithoutInitializers As New List(Of CSS.VariableDeclaratorSyntax)()
             Dim vbDeclarators As New List(Of VBS.VariableDeclaratorSyntax)
 
-            For Each v As CSS.VariableDeclaratorSyntax In variableDeclaration.Variables
-                If v.Initializer Is Nothing Then
-                    csDeclaratorsWithoutInitializers.Add(v.WithAppendedTrailingTrivia(csCollectedCommentTrivia))
+            For Each variable As CSS.VariableDeclaratorSyntax In variableDeclaration.Variables
+                If variable.Initializer Is Nothing Then
+                    csDeclaratorsWithoutInitializers.Add(variable.WithAppendedTrailingTrivia(csCollectedCommentTrivia))
                     csCollectedCommentTrivia = New SyntaxTriviaList
                     Continue For
                 End If
                 Dim asClause As VBS.AsClauseSyntax = Nothing
+                Dim csInitializer As CSS.ImplicitObjectCreationExpressionSyntax = Nothing
                 If variableDeclaration.Type.IsKind(CS.SyntaxKind.RefType) Then
                 ElseIf Not variableDeclaration.Type.IsVar Then
-                    If TypeOf v.Initializer.Value Is CSS.ImplicitObjectCreationExpressionSyntax Then
-                        asClause = Factory.AsNewClause(Factory.ObjectCreationExpression(vbType))
+                    If TypeOf variable.Initializer.Value Is CSS.ImplicitObjectCreationExpressionSyntax Then
+                        'Using client As New HttpClient() With {.BaseAddress = New Uri("https://jsonplaceholder.typicode.com")}
+                        'End Using
+                        '        Dim nodesOrTokens As New List(Of SyntaxNodeOrToken) From {
+                        '               KeyKeyword,
+                        '                KeyKeyword,
+                        '                KeyKeyword,
+                        '                KeyKeyword,
+                        '                KeyKeyword
+                        '}
+
+                        csInitializer = CType(variable.Initializer.Value, CSS.ImplicitObjectCreationExpressionSyntax)
+                        Dim argumentList As VBS.ArgumentListSyntax = CType(variable.ArgumentList?.Accept(Visitor), VBS.ArgumentListSyntax)
+                        Dim vbSyntaxNode As VB.VisualBasicSyntaxNode = csInitializer.Accept(Visitor)
+                        Select Case True
+                            Case TypeOf vbSyntaxNode Is VBS.ObjectCreationExpressionSyntax
+                                asClause = Factory.AsNewClause(Factory.ObjectCreationExpression(Nothing,
+                                                                                                vbType,
+                                                                                                CType(vbSyntaxNode, VBS.ObjectCreationExpressionSyntax).ArgumentList,
+                                                                                                CType(vbSyntaxNode, VBS.ObjectCreationExpressionSyntax).Initializer))
+                            Case TypeOf vbSyntaxNode Is VBS.CollectionInitializerSyntax
+                                If argumentList IsNot Nothing Then
+                                    Stop
+                                End If
+                                asClause = Factory.AsNewClause(Factory.ObjectCreationExpression(NewKeyword,
+                                                                                                Nothing,
+                                                                                                vbType,
+                                                                                                Nothing,
+                                                                                                Factory.ObjectCollectionInitializer(FromKeyword,
+                                                                                                                                    CType(vbSyntaxNode, VBS.CollectionInitializerSyntax))))
+                        End Select
                     Else
                         asClause = Factory.SimpleAsClause(vbType)
                     End If
                 Else
                     ' Get Type from Initializer
-                    If v.Initializer.Value.IsKind(CS.SyntaxKind.AnonymousObjectCreationExpression) Then
-                        asClause = Factory.AsNewClause(CType(v.Initializer.Value.Accept(Visitor), VBS.NewExpressionSyntax))
-                    ElseIf v.Initializer.Value.IsKind(CS.SyntaxKind.ImplicitArrayCreationExpression) Then
+                    If variable.Initializer.Value.IsKind(CS.SyntaxKind.AnonymousObjectCreationExpression) Then
+                        asClause = Factory.AsNewClause(CType(variable.Initializer.Value.Accept(Visitor), VBS.NewExpressionSyntax))
+                    ElseIf variable.Initializer.Value.IsKind(CS.SyntaxKind.ImplicitArrayCreationExpression) Then
                     Else
-                        Dim resultTuple As (_Error As Boolean, _TypeSyntax As VBS.TypeSyntax) = v.Initializer.Value.DetermineTypeSyntax(Model)
+                        Dim resultTuple As (_Error As Boolean, _TypeSyntax As VBS.TypeSyntax) = variable.Initializer.Value.DetermineTypeSyntax(Model)
                         If Not resultTuple._Error Then
                             asClause = Factory.SimpleAsClause(resultTuple._TypeSyntax)
                         Else
@@ -82,12 +112,15 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         End If
                     End If
                 End If
-                Dim initializerValue As VBS.ExpressionSyntax = CType(v.Initializer.Value.Accept(Visitor), VBS.ExpressionSyntax)
-                If initializerValue Is Nothing Then
-                    initializerValue = Factory.IdentifierName("HandleRefExpression").WithConvertedTriviaFrom(v.Initializer.Value)
-                End If
-                If initializerValue.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
-                    leadingTrivia = leadingTrivia.AddRange(initializerValue.GetLeadingTrivia)
+                Dim initializerValue As VBS.ExpressionSyntax = Nothing
+                If csInitializer Is Nothing Then
+                    initializerValue = CType(variable.Initializer.Value.Accept(Visitor), VBS.ExpressionSyntax)
+                    If initializerValue Is Nothing Then
+                        initializerValue = Factory.IdentifierName("HandleRefExpression").WithConvertedTriviaFrom(variable.Initializer.Value)
+                    End If
+                    If initializerValue.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
+                        leadingTrivia = leadingTrivia.AddRange(initializerValue.GetLeadingTrivia)
+                    End If
                 End If
                 Dim initializer As VBS.EqualsValueSyntax = Nothing
                 If Not asClause.IsKind(VB.SyntaxKind.AsNewClause) Then
@@ -107,7 +140,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 ' Get the names last to lead with var jsonWriter = new JsonWriter(stringWriter)
                 ' Which should be Dim jsonWriter = new JsonWriter(stringWriter)
                 vbDeclarators.Add(
-                    Factory.VariableDeclarator(Factory.SingletonSeparatedList(DirectCast(v.Accept(Visitor), VBS.ModifiedIdentifierSyntax)),
+                    Factory.VariableDeclarator(Factory.SingletonSeparatedList(DirectCast(variable.Accept(Visitor), VBS.ModifiedIdentifierSyntax)),
                                                 asClause,
                                                 initializer
                                                 ).WithModifiedNodeTrailingTrivia(SeparatorFollows:=False)

@@ -100,7 +100,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
 
                 Dim parameterTrailingTrivia As New SyntaxTriviaList
 
-                Dim id As SyntaxToken = GenerateSafeVBToken(node.Identifier, node, _usedIdentifiers, _mSemanticModel).
+                Dim id As SyntaxToken = GenerateSafeVBToken(node.Identifier, node, _usedIdentifiers, _semanticModel).
                     WithTrailingTrivia(Factory.Space)
 
                 Dim typeLeadingTrivia As New SyntaxTriviaList

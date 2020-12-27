@@ -42,6 +42,7 @@ Namespace CSharpToVBConverter
         Friend Function AdjustTokenLeadingTrivia(Token As SyntaxToken) As SyntaxToken
             Dim newLeadingTrivia As New SyntaxTriviaList
             Dim initialTrivia As SyntaxTriviaList = Token.LeadingTrivia
+            Dim newTrailingTrivia As New SyntaxTriviaList
             'Debug.WriteLine($"Leading  Token({sourceLineNumber}) In :{Token.ToFullString}")
 
             For Each e As IndexClass(Of SyntaxTrivia) In initialTrivia.WithIndex
@@ -78,12 +79,18 @@ Namespace CSharpToVBConverter
                         End If
                     Case VB.SyntaxKind.LineContinuationTrivia
                         newLeadingTrivia = newLeadingTrivia.Add(e.Value)
+                    Case VB.SyntaxKind.IfDirectiveTrivia, VB.SyntaxKind.ElseDirectiveTrivia, VB.SyntaxKind.ElseIfDirectiveTrivia, VB.SyntaxKind.DisabledTextTrivia
+                        If e.IsFirst Then
+                            newTrailingTrivia = newTrailingTrivia.Add(VBEOLTrivia)
+                        End If
+                        newTrailingTrivia = newTrailingTrivia.Add(e.Value)
                     Case Else
                         Stop
                 End Select
             Next
             'Debug.WriteLine($"Leading  Token({sourceLineNumber}) Out:{Token.ToFullString}")
-            Return Token.WithLeadingTrivia(newLeadingTrivia)
+            newTrailingTrivia = newTrailingTrivia.AddRange(Token.TrailingTrivia)
+            Return Token.With(newLeadingTrivia, newTrailingTrivia)
         End Function
 
         <Extension>
@@ -122,6 +129,9 @@ Namespace CSharpToVBConverter
             'Debug.WriteLine($"Trailing Token({sourceLineNumber}) Out:{Token.ToFullString}")
             If RemoveTrailingLineContinuation Then
                 Return Token.WithTrailingTrivia(newTrailingTrivia.WithoutLastLineContinuation)
+            End If
+            If newTrailingTrivia.Count = 0 Then
+                newTrailingTrivia = newTrailingTrivia.Add(Factory.ElasticSpace)
             End If
             Return Token.WithTrailingTrivia(newTrailingTrivia)
         End Function
