@@ -811,42 +811,48 @@ Namespace CSharpToVBConverter.ToVisualBasic
             End Function
 
             Public Overrides Function VisitBlock(node As CSS.BlockSyntax) As SyntaxList(Of StatementSyntax)
-                Dim stmtList As SyntaxList(Of StatementSyntax) = Factory.List(node.Statements.Where(Function(s As CSS.StatementSyntax) Not (TypeOf s Is CSS.EmptyStatementSyntax)).SelectMany(Function(s As CSS.StatementSyntax) s.Accept(Me)))
-                Dim ifStatement As VBS.IfStatementSyntax = Nothing
-                Dim isSubBlock As Boolean = node.Parent.IsKind(CS.SyntaxKind.Block)
-                If isSubBlock AndAlso stmtList.Any Then
-                    ifStatement = Factory.IfStatement(IfKeyword, Factory.TrueLiteralExpression(TrueKeyword), ThenKeyword)
-                End If
-                If node.OpenBraceToken.HasLeadingTrivia OrElse node.OpenBraceToken.HasTrailingTrivia Then
-                    If stmtList.Any Then
-                        If isSubBlock Then
-                            ifStatement = ifStatement.WithPrependedLeadingTrivia(ConvertTriviaList(node.OpenBraceToken.TrailingTrivia)).WithLeadingTrivia(ConvertTriviaList(node.OpenBraceToken.LeadingTrivia))
-                        Else
-                            stmtList = stmtList.Replace(stmtList(0), stmtList(0).WithPrependedLeadingTrivia(ConvertTriviaList(node.OpenBraceToken.TrailingTrivia)).WithPrependedLeadingTrivia(ConvertTriviaList(node.OpenBraceToken.LeadingTrivia)))
-                        End If
-                    Else
-                        stmtList = stmtList.Add(Factory.EmptyStatement.WithConvertedTriviaFrom(node.OpenBraceToken))
+                Dim savedNeedEndUsings As Integer = _nodesVisitor.NeedEndUsings
+                Try
+                    _nodesVisitor.NeedEndUsings = 0
+                    Dim stmtList As SyntaxList(Of StatementSyntax) = Factory.List(node.Statements.Where(Function(s As CSS.StatementSyntax) Not (TypeOf s Is CSS.EmptyStatementSyntax)).SelectMany(Function(s As CSS.StatementSyntax) s.Accept(Me)))
+                    Dim ifStatement As VBS.IfStatementSyntax = Nothing
+                    Dim isSubBlock As Boolean = node.Parent.IsKind(CS.SyntaxKind.Block)
+                    If isSubBlock AndAlso stmtList.Any Then
+                        ifStatement = Factory.IfStatement(IfKeyword, Factory.TrueLiteralExpression(TrueKeyword), ThenKeyword)
                     End If
-                End If
-                If node.CloseBraceToken.HasLeadingTrivia OrElse node.OpenBraceToken.HasTrailingTrivia Then
-                    If stmtList.Any Then
-                        If isSubBlock Then
-                            ifStatement = ifStatement.WithTrailingTrivia(ConvertTriviaList(node.OpenBraceToken.LeadingTrivia)).WithTrailingTrivia(ConvertTriviaList(node.OpenBraceToken.TrailingTrivia))
+                    If node.OpenBraceToken.HasLeadingTrivia OrElse node.OpenBraceToken.HasTrailingTrivia Then
+                        If stmtList.Any Then
+                            If isSubBlock Then
+                                ifStatement = ifStatement.WithPrependedLeadingTrivia(ConvertTriviaList(node.OpenBraceToken.TrailingTrivia)).WithLeadingTrivia(ConvertTriviaList(node.OpenBraceToken.LeadingTrivia))
+                            Else
+                                stmtList = stmtList.Replace(stmtList(0), stmtList(0).WithPrependedLeadingTrivia(ConvertTriviaList(node.OpenBraceToken.TrailingTrivia)).WithPrependedLeadingTrivia(ConvertTriviaList(node.OpenBraceToken.LeadingTrivia)))
+                            End If
                         Else
-                            stmtList = stmtList.Replace(stmtList.Last, stmtList.Last.WithAppendedTrailingTrivia(ConvertTriviaList(node.OpenBraceToken.LeadingTrivia)).WithAppendedTrailingTrivia(ConvertTriviaList(node.OpenBraceToken.TrailingTrivia)))
+                            stmtList = stmtList.Add(Factory.EmptyStatement.WithConvertedTriviaFrom(node.OpenBraceToken))
                         End If
-
-                    Else
-                        stmtList = stmtList.Add(Factory.EmptyStatement.WithConvertedTriviaFrom(node.CloseBraceToken))
                     End If
-                End If
+                    If node.CloseBraceToken.HasLeadingTrivia OrElse node.OpenBraceToken.HasTrailingTrivia Then
+                        If stmtList.Any Then
+                            If isSubBlock Then
+                                ifStatement = ifStatement.WithTrailingTrivia(ConvertTriviaList(node.OpenBraceToken.LeadingTrivia)).WithTrailingTrivia(ConvertTriviaList(node.OpenBraceToken.TrailingTrivia))
+                            Else
+                                stmtList = stmtList.Replace(stmtList.Last, stmtList.Last.WithAppendedTrailingTrivia(ConvertTriviaList(node.OpenBraceToken.LeadingTrivia)).WithAppendedTrailingTrivia(ConvertTriviaList(node.OpenBraceToken.TrailingTrivia)))
+                            End If
 
-                If Not isSubBlock Then
-                    Return stmtList
-                Else
-                    Dim newStmtList As New SyntaxList(Of StatementSyntax)
-                    Return newStmtList.Add(Factory.MultiLineIfBlock(ifStatement, stmtList, Nothing, Nothing))
-                End If
+                        Else
+                            stmtList = stmtList.Add(Factory.EmptyStatement.WithConvertedTriviaFrom(node.CloseBraceToken))
+                        End If
+                    End If
+                    stmtList = _nodesVisitor.AdjustUsingsInNeeded(stmtList)
+                    If Not isSubBlock Then
+                        Return stmtList
+                    Else
+                        Dim newStmtList As New SyntaxList(Of StatementSyntax)
+                        Return newStmtList.Add(Factory.MultiLineIfBlock(ifStatement, stmtList, Nothing, Nothing))
+                    End If
+                Finally
+                    _nodesVisitor.NeedEndUsings = savedNeedEndUsings
+                End Try
             End Function
 
             Public Overrides Function VisitBreakStatement(node As CSS.BreakStatementSyntax) As SyntaxList(Of StatementSyntax)

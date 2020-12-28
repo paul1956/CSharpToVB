@@ -69,7 +69,8 @@ Namespace CSharpToVBConverter.ToVisualBasic
         Private Function GatherAttributes(listOfAttributes As SyntaxList(Of CSS.XmlAttributeSyntax)) As SyntaxList(Of VBS.XmlNodeSyntax)
             Dim vbAttributes As New SyntaxList(Of VBS.XmlNodeSyntax)
             For Each a As CSS.XmlAttributeSyntax In listOfAttributes
-                vbAttributes = vbAttributes.Add(DirectCast(a.Accept(Me).WithConvertedLeadingTriviaFrom(a), VBS.XmlNodeSyntax))
+                Dim attribute As VBS.XmlNodeSyntax = DirectCast(a.Accept(Me).WithConvertedLeadingTriviaFrom(a), VBS.XmlNodeSyntax)
+                vbAttributes = vbAttributes.Add(attribute)
             Next
             Return vbAttributes
         End Function
@@ -167,16 +168,25 @@ Namespace CSharpToVBConverter.ToVisualBasic
             Return MyBase.VisitXmlComment(node).WithConvertedTriviaFrom(node)
         End Function
 
+        '''<summary>
+        ''' Provides helper methods for finding dependent types (derivations, implementations, etc.) across a solution. This
+        ''' Is effectively a graph walk between INamedTypeSymbols walking down the inheritance hierarchy to find related
+        ''' types based either on <see cref="ITypeSymbol.BaseType"/> Or <see cref="ITypeSymbol.Interfaces"/>.
+        ''' While walking up the inheritance hierarchy Is trivial (as the information Is directly contained on the <see
+        ''' cref="ITypeSymbol"/>'s themselves), walking down is complicated.  The general way this works is by using
+        ''' </summary>
+        ''' <param name="node"></param>
+        ''' <returns></returns>
         Public Overrides Function VisitXmlCrefAttribute(node As CSS.XmlCrefAttributeSyntax) As VB.VisualBasicSyntaxNode
-            Dim name As VBS.XmlNameSyntax = DirectCast(node.Name.Accept(Me), VBS.XmlNameSyntax)
-
-            Dim cref As VB.VisualBasicSyntaxNode = node.Cref.Accept(Me)
-            Dim syntaxTokens As New SyntaxTokenList
-            syntaxTokens = syntaxTokens.AddRange(cref.DescendantTokens)
-            Return Factory.XmlAttribute(name,
-                                        Factory.XmlString(DoubleQuoteToken,
-                                                          syntaxTokens,
-                                                          DoubleQuoteToken).WithConvertedTriviaFrom(node))
+            Dim cref As VBS.XmlNameSyntax = CType(node.Name.Accept(Me), VBS.XmlNameSyntax).WithConvertedTriviaFrom(node.Name)
+            Dim memberName As VB.VisualBasicSyntaxNode = node.Cref.Accept(Me)
+            Dim crefType As VBS.CrefReferenceSyntax
+            If TypeOf memberName Is VBS.NameSyntax Then
+                crefType = Factory.CrefReference(CType(memberName, VBS.NameSyntax))
+            Else
+                crefType = CType(memberName, VBS.CrefReferenceSyntax)
+            End If
+            Return Factory.XmlCrefAttribute(cref, DoubleQuoteToken.WithConvertedTriviaFrom(node.StartQuoteToken), crefType, DoubleQuoteToken.WithConvertedTriviaFrom(node.EndQuoteToken))
         End Function
 
         Public Overrides Function VisitXmlElement(node As CSS.XmlElementSyntax) As VB.VisualBasicSyntaxNode
@@ -198,7 +208,12 @@ Namespace CSharpToVBConverter.ToVisualBasic
                             vbNode = vbNode.ReplaceToken(lastToken, Factory.Token(VB.SyntaxKind.EmptyToken))
                         End If
                     End If
-                    content = content.Add(vbNode)
+                    If vbNode.IsKind(VB.SyntaxKind.XmlEmptyElement) Then
+                        Dim emptyElement As VBS.XmlEmptyElementSyntax = CType(vbNode, VBS.XmlEmptyElementSyntax)
+                        content = content.Add(emptyElement)
+                    Else
+                        content = content.Add(vbNode)
+                    End If
                 Next
 
                 If node.EndTag?.HasLeadingTrivia AndAlso node.EndTag.GetLeadingTrivia(0).IsKind(CS.SyntaxKind.DocumentationCommentExteriorTrivia) Then

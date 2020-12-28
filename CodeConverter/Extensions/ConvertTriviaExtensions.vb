@@ -50,7 +50,7 @@ Namespace CSharpToVBConverter
                     Return Factory.CommentTrivia($"'{ReplaceLeadingSlashes(t.ToFullString.Substring(startIndex:=2)).Replace(vbLf, newValue:="", StringComparison.Ordinal)}")
 
                 Case CS.SyntaxKind.DocumentationCommentExteriorTrivia
-                    Return Factory.SyntaxTrivia(VB.SyntaxKind.CommentTrivia, "'''")
+                    Return Factory.SyntaxTrivia(VB.SyntaxKind.CommentTrivia, t.ToString.Replace("///", "'''"))
                 Case CS.SyntaxKind.DisabledTextTrivia
                     If IgnoredIfDepth > 0 Then
                         Return Factory.DisabledTextTrivia(t.ToString.WithoutNewLines(" "c))
