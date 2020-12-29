@@ -1409,7 +1409,6 @@ Namespace CSharpToVBConverter.ToVisualBasic
                             If itemIsField Then
                                 fields.Add(DirectCast(item.RemoveExtraLeadingEOL, FieldInitializerSyntax))
                             Else
-
                                 exprs.Add(DirectCast(item.RemoveExtraLeadingEOL, ExpressionSyntax))
                             End If
                         Catch ex As OperationCanceledException

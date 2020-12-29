@@ -69,7 +69,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
         Private Function GatherAttributes(listOfAttributes As SyntaxList(Of CSS.XmlAttributeSyntax)) As SyntaxList(Of VBS.XmlNodeSyntax)
             Dim vbAttributes As New SyntaxList(Of VBS.XmlNodeSyntax)
             For Each a As CSS.XmlAttributeSyntax In listOfAttributes
-                Dim attribute As VBS.XmlNodeSyntax = DirectCast(a.Accept(Me).WithConvertedLeadingTriviaFrom(a), VBS.XmlNodeSyntax)
+                Dim attribute As VBS.XmlNodeSyntax = DirectCast(a.Accept(Me), VBS.XmlNodeSyntax).WithConvertedTriviaFrom(a)
                 vbAttributes = vbAttributes.Add(attribute)
             Next
             Return vbAttributes
@@ -168,15 +168,6 @@ Namespace CSharpToVBConverter.ToVisualBasic
             Return MyBase.VisitXmlComment(node).WithConvertedTriviaFrom(node)
         End Function
 
-        '''<summary>
-        ''' Provides helper methods for finding dependent types (derivations, implementations, etc.) across a solution. This
-        ''' Is effectively a graph walk between INamedTypeSymbols walking down the inheritance hierarchy to find related
-        ''' types based either on <see cref="ITypeSymbol.BaseType"/> Or <see cref="ITypeSymbol.Interfaces"/>.
-        ''' While walking up the inheritance hierarchy Is trivial (as the information Is directly contained on the <see
-        ''' cref="ITypeSymbol"/>'s themselves), walking down is complicated.  The general way this works is by using
-        ''' </summary>
-        ''' <param name="node"></param>
-        ''' <returns></returns>
         Public Overrides Function VisitXmlCrefAttribute(node As CSS.XmlCrefAttributeSyntax) As VB.VisualBasicSyntaxNode
             Dim cref As VBS.XmlNameSyntax = CType(node.Name.Accept(Me), VBS.XmlNameSyntax).WithConvertedTriviaFrom(node.Name)
             Dim memberName As VB.VisualBasicSyntaxNode = node.Cref.Accept(Me)
@@ -243,7 +234,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
 
         Public Overrides Function VisitXmlEmptyElement(node As CSS.XmlEmptyElementSyntax) As VB.VisualBasicSyntaxNode
             Try
-                Dim name As VBS.XmlNodeSyntax = DirectCast(node.Name.Accept(Me), VBS.XmlNodeSyntax)
+                Dim name As VBS.XmlNodeSyntax = DirectCast(node.Name.Accept(Me), VBS.XmlNodeSyntax).WithConvertedTriviaFrom(node.Name)
                 Dim listOfAttributes As SyntaxList(Of VBS.XmlNodeSyntax) = Me.GatherAttributes(node.Attributes)
                 Return Factory.XmlEmptyElement(name, listOfAttributes).WithConvertedTriviaFrom(node)
             Catch ex As OperationCanceledException

@@ -201,6 +201,9 @@ Namespace CSharpToVBConverter
                                     End If
                                 Next
                             Next
+
+                        Case CS.SyntaxKind.DocumentationCommentExteriorTrivia
+                            newTriviaList.Add(Factory.DocumentationCommentExteriorTrivia(trivia.ToString().Replace("///", "'''", StringComparison.Ordinal)))
                         Case Else
                             Dim convertedTrivia As SyntaxTrivia = trivia.ConvertTrivia
                             If convertedTrivia = Nothing Then
