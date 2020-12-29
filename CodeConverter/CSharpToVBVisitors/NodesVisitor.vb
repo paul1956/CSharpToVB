@@ -668,7 +668,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim modifiers As New SyntaxTokenList
                 Dim statements As New SyntaxList(Of VBS.StatementSyntax)
 
-                Dim identifier As VBS.ModifiedIdentifierSyntax = Factory.ModifiedIdentifier("P1")
+                Dim identifier As VBS.ModifiedIdentifierSyntax = Factory.ModifiedIdentifier("p1")
                 Dim objectExpression As CSS.ObjectCreationExpressionSyntax = CType(node.Expression, CSS.ObjectCreationExpressionSyntax)
                 Dim recordType As VBS.TypeSyntax = CType(objectExpression.Type.Accept(Me), VBS.TypeSyntax)
                 Dim asClause As VBS.SimpleAsClauseSyntax = Factory.SimpleAsClause(recordType)
@@ -678,8 +678,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim parameterList As VBS.ParameterListSyntax = Factory.ParameterList(parameters)
                 Dim subOrFunctionHeader As VBS.LambdaHeaderSyntax = Factory.FunctionLambdaHeader(attributeLists, modifiers, parameterList, asClause)
 
-                'Dim p2 = p1.Clone
-                Dim p1 As VBS.SimpleNameSyntax = Factory.IdentifierName("P1")
+                Dim p1 As VBS.SimpleNameSyntax = Factory.IdentifierName("p1")
                 Dim p2 As SyntaxToken = Factory.Identifier("p2")
                 Dim value As VBS.ExpressionSyntax = Factory.MemberAccessExpression(VB.SyntaxKind.SimpleMemberAccessExpression, p1, DotToken, Factory.IdentifierName("Clone"))
                 Dim initializer As VBS.EqualsValueSyntax = Factory.EqualsValue(value)
