@@ -664,13 +664,28 @@ Namespace CSharpToVBConverter.ToVisualBasic
             End Function
 
             Public Overrides Function VisitWithExpression(node As CSS.WithExpressionSyntax) As VB.VisualBasicSyntaxNode
+
+
+                '' Write the value 4.
+                'Console.WriteLine(CType(Function(x)
+                '                            Return x + 2
+                '                        End Function, Func(Of Integer, Integer))(2))
+
                 Dim attributeLists As New SyntaxList(Of VBS.AttributeListSyntax)
                 Dim modifiers As New SyntaxTokenList
                 Dim statements As New SyntaxList(Of VBS.StatementSyntax)
 
-                Dim identifier As VBS.ModifiedIdentifierSyntax = Factory.ModifiedIdentifier("p1")
-                Dim objectExpression As CSS.ObjectCreationExpressionSyntax = CType(node.Expression, CSS.ObjectCreationExpressionSyntax)
-                Dim recordType As VBS.TypeSyntax = CType(objectExpression.Type.Accept(Me), VBS.TypeSyntax)
+                Dim identifier As VBS.ModifiedIdentifierSyntax = Factory.ModifiedIdentifier("_p1")
+                Dim objectExpression As CS.CSharpSyntaxNode = node.Expression
+                Dim recordType As VBS.TypeSyntax
+                If TypeOf objectExpression Is CSS.ObjectCreationExpressionSyntax Then
+                    recordType = CType(CType(objectExpression, CSS.ObjectCreationExpressionSyntax).Type.Accept(Me), VBS.TypeSyntax)
+                ElseIf TypeOf objectExpression Is CSS.IdentifierNameSyntax Then
+                    recordType = CType(CType(objectExpression, CSS.IdentifierNameSyntax).Accept(Me), VBS.TypeSyntax)
+                Else
+                    Stop
+                    Throw UnreachableException
+                End If
                 Dim asClause As VBS.SimpleAsClauseSyntax = Factory.SimpleAsClause(recordType)
                 Dim parameter As VBS.ParameterSyntax = Factory.Parameter(attributeLists, modifiers, identifier, asClause, Nothing)
                 Dim parameters As SeparatedSyntaxList(Of VBS.ParameterSyntax)
@@ -678,8 +693,8 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim parameterList As VBS.ParameterListSyntax = Factory.ParameterList(parameters)
                 Dim subOrFunctionHeader As VBS.LambdaHeaderSyntax = Factory.FunctionLambdaHeader(attributeLists, modifiers, parameterList, asClause)
 
-                Dim p1 As VBS.SimpleNameSyntax = Factory.IdentifierName("p1")
-                Dim p2 As SyntaxToken = Factory.Identifier("p2")
+                Dim p1 As VBS.SimpleNameSyntax = Factory.IdentifierName("_p1")
+                Dim p2 As SyntaxToken = Factory.Identifier("_p2")
                 Dim value As VBS.ExpressionSyntax = Factory.MemberAccessExpression(VB.SyntaxKind.SimpleMemberAccessExpression, p1, DotToken, Factory.IdentifierName("Clone"))
                 Dim initializer As VBS.EqualsValueSyntax = Factory.EqualsValue(value)
                 statements = statements.Add(FactoryDimStatement(p2, asClause, initializer))
@@ -704,20 +719,15 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim endSubOrFunctionStatement As VBS.EndBlockStatementSyntax = Factory.EndFunctionStatement(EndKeyword.WithTrailingTrivia(Factory.Space), FunctionKeyword).WithConvertedTriviaFrom(node)
 
                 Dim lambda As VBS.MultiLineLambdaExpressionSyntax = Factory.MultiLineFunctionLambdaExpression(subOrFunctionHeader, statements, endSubOrFunctionStatement)
-                Dim lambdaName As VBS.ExpressionSyntax = Factory.IdentifierName("Test")
                 Dim typeArguments As New SeparatedSyntaxList(Of VBS.TypeSyntax)
                 typeArguments = typeArguments.Add(p1)
                 typeArguments = typeArguments.Add(p1)
                 Dim typeArgumentList As VBS.TypeArgumentListSyntax = Factory.TypeArgumentList(typeArguments)
                 Dim genericName As VBS.GenericNameSyntax = Factory.GenericName("Func", typeArgumentList)
-                Dim asLambdaClause As VBS.AsClauseSyntax = Factory.SimpleAsClause(genericName)
-                Dim lambdaDim As VBS.StatementSyntax = FactoryDimStatement(lambdaName.ToString, asLambdaClause, Factory.EqualsValue(lambda))
-                GetStatementwithIssues(node).AddMarker(lambdaDim, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
-
                 Dim lambdaArgument As SeparatedSyntaxList(Of VBS.ArgumentSyntax)
                 lambdaArgument = lambdaArgument.Add(Factory.SimpleArgument(CType(node.Expression.Accept(Me), VBS.ExpressionSyntax)))
                 Dim lambdaArgumentList As VBS.ArgumentListSyntax = Factory.ArgumentList(lambdaArgument)
-                Return Factory.InvocationExpression(lambdaName, lambdaArgumentList)
+                Return Factory.InvocationExpression(Factory.CTypeExpression(lambda, genericName), lambdaArgumentList)
             End Function
         End Class
 

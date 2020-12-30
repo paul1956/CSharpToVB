@@ -63,6 +63,10 @@ Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpec
 Any changes to CSharpToVB application needs to change the version information in the project file **AND** in MyProject/AssemblyInfo.vb until Visual Studio is able to general file automatically for a WinForms application.
 
 ## What's New in this release
+  New in 5.0.0.23/5.0.0.17
+  - Improve support C# 9.0 WithExpressions
+  - Add first unit test for WithExpressions
+
   New in 5.0.0.23/5.0.0.16
   - Support C# 9.0 WithExpressions
 

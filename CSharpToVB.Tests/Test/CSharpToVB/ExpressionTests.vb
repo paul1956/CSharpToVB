@@ -1483,6 +1483,93 @@ Namespace PreHOPL
 End Namespace")
         End Sub
 
+
+        <Fact>
+        Public Shared Sub CSharpToVBValueWithExpression()
+            TestConversionCSharpToVisualBasic("using System;
+
+public class InheritanceExample
+{
+    public record Point(int X, int Y);
+    public record NamedPoint(string Name, int X, int Y) : Point(X, Y);
+
+    public static void Main()
+    {
+        Point p1 = new NamedPoint(""A"", 0, 0);
+        Point p2 = p1 with { X = 5, Y = 3 };
+        Console.WriteLine(p2 is NamedPoint);  // output: True
+        Console.WriteLine(p2);  // output: NamedPoint { X = 5, Y = 3, Name = A }
+    }
+}", "Public NotInheritable Class InheritanceExample
+
+    ' TODO TASK: VB has no direct equivalent to C# Records
+    Public Class Point
+
+        Dim X As Integer
+
+        Dim Y As Integer
+
+        Sub New(X As Integer, Y As Integer)
+            Me.X = X
+            Me.Y = Y
+        End Sub
+
+        Public Overrides Function Equals(anotherObject As Object) As Boolean
+            Dim anotherRecord As Object = TryCast(anotherObject, Point)
+            If anotherRecord Is Nothing Then Return False
+            Return Equals(anotherRecord)
+        End Function
+
+        Public Overloads Function Equals(anotherRecord As Point) As Boolean
+            If Not X.Equals(anotherRecord.X) Then Return False
+            If Not Y.Equals(anotherRecord.Y) Then Return False
+            Return True
+        End Function
+    End Class
+
+    ' TODO TASK: VB has no direct equivalent to C# Records
+    Public Class NamedPoint
+
+        Dim Name As String
+
+        Dim X As Integer
+
+        Dim Y As Integer
+
+        Sub New(Name As String, X As Integer, Y As Integer)
+            Me.Name = Name
+            Me.X = X
+            Me.Y = Y
+        End Sub
+
+        Public Overrides Function Equals(anotherObject As Object) As Boolean
+            Dim anotherRecord As Object = TryCast(anotherObject, NamedPoint)
+            If anotherRecord Is Nothing Then Return False
+            Return Equals(anotherRecord)
+        End Function
+
+        Public Overloads Function Equals(anotherRecord As NamedPoint) As Boolean
+            If Not Name.Equals(anotherRecord.Name) Then Return False
+            If Not X.Equals(anotherRecord.X) Then Return False
+            If Not Y.Equals(anotherRecord.Y) Then Return False
+            Return True
+        End Function
+    End Class
+
+    Public Shared Sub Main()
+        Dim p1 As Point = New NamedPoint(""A"", 0, 0)
+        Dim p2 As Point = CType(Function(_p1 As p1) As p1
+                                    Dim _p2 As p1 = _p1.Clone
+                                    With _p2
+                                        .X = 5
+                                        .Y = 3
+                                    End With
+                                End Function, Func(Of _p1, _p1))(p1)
+        Console.WriteLine(TypeOf p2 Is NamedPoint)  ' output: True
+        Console.WriteLine(p2)  ' output: NamedPoint { X = 5, Y = 3, Name = A }
+    End Sub
+End Class")
+        End Sub
     End Class
 
 End Namespace
