@@ -249,7 +249,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
             Public Function AdjustUsingsInNeeded(blockStatements As SyntaxList(Of VBS.StatementSyntax)) As SyntaxList(Of VBS.StatementSyntax)
                 If Me.NeedEndUsings > 0 Then
                     For i As Integer = 1 To Me.NeedEndUsings
-                        blockStatements = blockStatements.Add(EndUsingStatement)
+                        blockStatements = blockStatements.Add(Factory.EndUsingStatement)
                     Next
                     Me.NeedEndUsings = 0
                 End If
@@ -337,8 +337,8 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim simpleMemberAccessExpr As VBS.MemberAccessExpressionSyntax
                 Dim parent As SyntaxNode = node.Parent.Parent
                 Dim meOrMyExpr As VBS.ExpressionSyntax = If(TypeOf parent Is CSS.StructDeclarationSyntax,
-                                                            DirectCast(Factory.MeExpression(), VBS.ExpressionSyntax),
-                                                            Factory.MyBaseExpression()).WithConvertedLeadingTriviaFrom(node.ColonToken)
+                                                            DirectCast(MeExpression, VBS.ExpressionSyntax),
+                                                            MyBaseExpression).WithConvertedLeadingTriviaFrom(node.ColonToken)
 
                 simpleMemberAccessExpr = Factory.SimpleMemberAccessExpression(meOrMyExpr, Factory.IdentifierName("New"))
                 Return Factory.ExpressionStatement(Factory.InvocationExpression(simpleMemberAccessExpr, argumentList)).
@@ -383,8 +383,6 @@ Namespace CSharpToVBConverter.ToVisualBasic
 
             Public Overrides Function VisitDestructorDeclaration(node As CSS.DestructorDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim attributeLists As SyntaxList(Of VBS.AttributeListSyntax) = Factory.List(node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))
-                Dim modifiers As SyntaxTokenList = Factory.TokenList(ProtectedKeyword, OverridesKeyword)
-                Dim identifier As SyntaxToken = Factory.Identifier(NameOf(Finalize))
                 Dim parameterList As VBS.ParameterListSyntax = DirectCast(node.ParameterList?.Accept(Me), VBS.ParameterListSyntax)
                 Dim body As SyntaxList(Of VBS.StatementSyntax)
                 If node.Body IsNot Nothing Then
@@ -394,8 +392,8 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 End If
                 Return Factory.SubBlock(subOrFunctionStatement:=Factory.SubStatement(
                                               attributeLists,
-                                              modifiers,
-                                              identifier,
+                                              ProtectedModifier.Add(OverridesKeyword),
+                                              FinalizeToken,
                                               typeParameterList:=Nothing,
                                               parameterList,
                                               asClause:=Nothing,
@@ -723,7 +721,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     newLeadingTrivia = New SyntaxTriviaList
                     If Not DirectCast(node.SyntaxTree, CS.CSharpSyntaxTree).HasUsingDirective(CompilerServices) Then
                         If Not AllImports.ContainsName(CompilerServices) Then
-                            AllImports.Add(ImportComilierServices)
+                            AllImports.Add(FactoryImportComilierServices)
                         End If
                     End If
                 End If

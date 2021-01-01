@@ -172,6 +172,22 @@ End Class")
         End Sub
 
         <Fact>
+        Public Shared Sub CSharpToVBCommentAfterSemicolon()
+            TestConversionCSharpToVisualBasic("class TestClass
+{static void SimpleQuery()
+    {
+        int[] numbers = { 7, 9, 5, 3, 6 };           // Test
+
+    }
+}", "NotInheritable Class TestClass
+
+    Private Shared Sub SimpleQuery()
+        Dim numbers As Integer() = {7, 9, 5, 3, 6}           ' Test
+    End Sub
+End Class")
+        End Sub
+
+        <Fact>
         Public Shared Sub CSharpToVBCommentWithHTML()
             TestConversionCSharpToVisualBasic("class TestClass
 {
@@ -192,23 +208,6 @@ End Class")
     End Sub
 End Class")
         End Sub
-
-        <Fact>
-        Public Shared Sub CSharpToVBCommentAfterSemicolon()
-            TestConversionCSharpToVisualBasic("class TestClass
-{static void SimpleQuery()
-    {
-        int[] numbers = { 7, 9, 5, 3, 6 };           // Test
-
-    }
-}", "NotInheritable Class TestClass
-
-    Private Shared Sub SimpleQuery()
-        Dim numbers As Integer() = {7, 9, 5, 3, 6}           ' Test
-    End Sub
-End Class")
-        End Sub
-
         <Fact>
         Public Shared Sub CSharpToVBCompoundAssignmentTest()
             TestConversionCSharpToVisualBasic(
@@ -428,6 +427,28 @@ End Class")
         End Sub
 
         <Fact>
+        Public Shared Sub CSharpToVBDelegateExpression()
+            TestConversionCSharpToVisualBasic("class TestClass
+{
+    void TestMethod()
+    {
+        var test = delegate(int a) { return a * 2 };
+
+        test(3);
+    }
+}", "Class TestClass
+
+    Private Sub TestMethod()
+        Dim test As Func(Of Integer, Integer) = Function(a As Integer) As Integer
+                                                    Return a * 2
+                                                End Function
+
+        test(3)
+    End Sub
+End Class")
+        End Sub
+
+        <Fact>
         Public Shared Sub CSharpToVBDelegateExpressionWithPrivate()
             TestConversionCSharpToVisualBasic("class TestClass
 {
@@ -454,29 +475,6 @@ End Class")
     End Sub
 End Class")
         End Sub
-
-        <Fact>
-        Public Shared Sub CSharpToVBDelegateExpression()
-            TestConversionCSharpToVisualBasic("class TestClass
-{
-    void TestMethod()
-    {
-        var test = delegate(int a) { return a * 2 };
-
-        test(3);
-    }
-}", "Class TestClass
-
-    Private Sub TestMethod()
-        Dim test As Func(Of Integer, Integer) = Function(a As Integer) As Integer
-                                                    Return a * 2
-                                                End Function
-
-        test(3)
-    End Sub
-End Class")
-        End Sub
-
         <Fact>
         Public Shared Sub CSharpToVBElvisOperatorExpression()
             TestConversionCSharpToVisualBasic("class TestClass
@@ -795,6 +793,49 @@ End Class")
         End Sub
 
         <Fact>
+        Public Shared Sub CSharpToVBLinq2MultiLine()
+            TestConversionCSharpToVisualBasic("class TestClass
+{
+    public static void Linq40()
+    {
+        int[] numbers = { 5, 4, 1, 3, 9, 8, 6, 7, 2, 0 };
+
+        var numberGroups =
+            from n in numbers
+            group n by n % 5 into g
+            select new {
+                Remainder = g.Key,
+                Numbers = g
+            };
+
+        foreach (var g in numberGroups)
+        {
+            Console.WriteLine($""Numbers with a remainder of {g.Remainder} when divided by 5:"");
+            foreach (var n in g.Numbers)
+            {
+                Console.WriteLine(n);
+            }
+        }
+    }
+}", "NotInheritable Class TestClass
+
+    Public Shared Sub Linq40()
+        Dim numbers As Integer() = {5, 4, 1, 3, 9, 8, 6, 7, 2, 0}
+
+        Dim numberGroups = From n In numbers
+                           Group n By __groupByKey0__ = n Mod 5 Into g Select New With {Key .Remainder = g.Key, Key .Numbers = g}
+
+        For Each g In numberGroups
+            Console.WriteLine($""Numbers with a remainder of {g.Remainder} when divided by 5:"")
+            For Each n In g.Numbers
+                Console.WriteLine(n)
+            Next
+        Next
+    End Sub
+End Class")
+        End Sub
+
+        <Fact>
         Public Shared Sub CSharpToVBLinq3()
             TestConversionCSharpToVisualBasic("class Product {
     public string Category;
@@ -817,6 +858,67 @@ class Test {
                 from c in categories
                 join p in products on c equals p.Category
                 select new { Category = c, p.ProductName };
+
+        foreach (var v in q)
+        {
+            Console.WriteLine($""{v.ProductName}: {v.Category}"");
+        }
+    }
+}", "Class Product
+
+    Public Category As String
+
+    Public ProductName As String
+End Class
+
+Class Test
+
+    Public Sub Linq102()
+        Dim categories As String() = New String() { _
+            ""Beverages"",
+            ""Condiments"",
+            ""Vegetables"",
+            ""Dairy Products"",
+            ""Seafood""}
+
+        Dim products As Product() = GetProductList()
+
+        Dim q = From c In categories
+                Join p In products On c Equals p.Category
+                Select New With {Key .Category = c, p.ProductName}
+
+        For Each v In q
+            Console.WriteLine($""{v.ProductName}: {v.Category}"")
+        Next
+    End Sub
+End Class")
+        End Sub
+
+        <Fact>
+        Public Shared Sub CSharpToVBLinq3MultiLine()
+            TestConversionCSharpToVisualBasic("class Product {
+    public string Category;
+    public string ProductName;
+}
+
+class Test {
+    public void Linq102()
+    {
+        string[] categories = new string[]{
+            ""Beverages"",
+            ""Condiments"",
+            ""Vegetables"",
+            ""Dairy Products"",
+            ""Seafood"" };
+
+            Product[] products = GetProductList();
+
+            var q =
+                from c in categories
+                join p in products on c equals p.Category
+                select new {
+                    Category = c, p.ProductName
+                };
 
         foreach (var v in q)
         {
@@ -907,111 +1009,6 @@ End Class")
     End Sub
 End Class")
         End Sub
-
-        <Fact>
-        Public Shared Sub CSharpToVBLinq2MultiLine()
-            TestConversionCSharpToVisualBasic("class TestClass
-{
-    public static void Linq40()
-    {
-        int[] numbers = { 5, 4, 1, 3, 9, 8, 6, 7, 2, 0 };
-
-        var numberGroups =
-            from n in numbers
-            group n by n % 5 into g
-            select new {
-                Remainder = g.Key,
-                Numbers = g
-            };
-
-        foreach (var g in numberGroups)
-        {
-            Console.WriteLine($""Numbers with a remainder of {g.Remainder} when divided by 5:"");
-            foreach (var n in g.Numbers)
-            {
-                Console.WriteLine(n);
-            }
-        }
-    }
-}", "NotInheritable Class TestClass
-
-    Public Shared Sub Linq40()
-        Dim numbers As Integer() = {5, 4, 1, 3, 9, 8, 6, 7, 2, 0}
-
-        Dim numberGroups = From n In numbers
-                           Group n By __groupByKey0__ = n Mod 5 Into g Select New With {Key .Remainder = g.Key, Key .Numbers = g}
-
-        For Each g In numberGroups
-            Console.WriteLine($""Numbers with a remainder of {g.Remainder} when divided by 5:"")
-            For Each n In g.Numbers
-                Console.WriteLine(n)
-            Next
-        Next
-    End Sub
-End Class")
-        End Sub
-
-        <Fact>
-        Public Shared Sub CSharpToVBLinq3MultiLine()
-            TestConversionCSharpToVisualBasic("class Product {
-    public string Category;
-    public string ProductName;
-}
-
-class Test {
-    public void Linq102()
-    {
-        string[] categories = new string[]{
-            ""Beverages"",
-            ""Condiments"",
-            ""Vegetables"",
-            ""Dairy Products"",
-            ""Seafood"" };
-
-            Product[] products = GetProductList();
-
-            var q =
-                from c in categories
-                join p in products on c equals p.Category
-                select new {
-                    Category = c, p.ProductName
-                };
-
-        foreach (var v in q)
-        {
-            Console.WriteLine($""{v.ProductName}: {v.Category}"");
-        }
-    }
-}", "Class Product
-
-    Public Category As String
-
-    Public ProductName As String
-End Class
-
-Class Test
-
-    Public Sub Linq102()
-        Dim categories As String() = New String() { _
-            ""Beverages"",
-            ""Condiments"",
-            ""Vegetables"",
-            ""Dairy Products"",
-            ""Seafood""}
-
-        Dim products As Product() = GetProductList()
-
-        Dim q = From c In categories
-                Join p In products On c Equals p.Category
-                Select New With {Key .Category = c, p.ProductName}
-
-        For Each v In q
-            Console.WriteLine($""{v.ProductName}: {v.Category}"")
-        Next
-    End Sub
-End Class")
-        End Sub
-
         <Fact>
         Public Shared Sub CSharpToVBLinq4MultiLine()
             TestConversionCSharpToVisualBasic("class TestClass
@@ -1483,7 +1480,6 @@ Namespace PreHOPL
 End Namespace")
         End Sub
 
-
         <Fact>
         Public Shared Sub CSharpToVBValueWithExpression()
             TestConversionCSharpToVisualBasic("using System;
@@ -1505,66 +1501,91 @@ public class InheritanceExample
     ' TODO TASK: VB has no direct equivalent to C# Records
     Public Class Point
 
-        Dim X As Integer
+        Public Property X As Integer
 
-        Dim Y As Integer
+        Public Property Y As Integer
 
         Sub New(X As Integer, Y As Integer)
             Me.X = X
             Me.Y = Y
         End Sub
 
+        Protected Overrides Sub Finalize()
+            MyBase.Finalize()
+        End Sub
+
+        Friend Function Clone() As Point
+            Return Me.Clone
+        End Function
+
         Public Overrides Function Equals(anotherObject As Object) As Boolean
             Dim anotherRecord As Object = TryCast(anotherObject, Point)
             If anotherRecord Is Nothing Then Return False
-            Return Equals(anotherRecord)
+            Return Me.Equals(anotherRecord)
         End Function
 
         Public Overloads Function Equals(anotherRecord As Point) As Boolean
-            If Not X.Equals(anotherRecord.X) Then Return False
-            If Not Y.Equals(anotherRecord.Y) Then Return False
+            If Not Me.X.Equals(anotherRecord.X) Then Return False
+            If Not Me.Y.Equals(anotherRecord.Y) Then Return False
             Return True
+        End Function
+
+        Public Overrides Function GetHashCode() As Integer
+            Return MyBase.GetHashCode()
+        End Function
+
+        Public Overrides Function ToString() As String
+            Return MyBase.ToString()
         End Function
     End Class
 
     ' TODO TASK: VB has no direct equivalent to C# Records
     Public Class NamedPoint
+        Inherits Point
 
-        Dim Name As String
-
-        Dim X As Integer
-
-        Dim Y As Integer
+        Public Property Name As String
 
         Sub New(Name As String, X As Integer, Y As Integer)
+            MyBase.New(X:=X, Y:=Y)
             Me.Name = Name
-            Me.X = X
-            Me.Y = Y
+        End Sub
+
+        Protected Overrides Sub Finalize()
+            MyBase.Finalize()
         End Sub
 
         Public Overrides Function Equals(anotherObject As Object) As Boolean
             Dim anotherRecord As Object = TryCast(anotherObject, NamedPoint)
             If anotherRecord Is Nothing Then Return False
-            Return Equals(anotherRecord)
+            Return Me.Equals(anotherRecord)
         End Function
 
         Public Overloads Function Equals(anotherRecord As NamedPoint) As Boolean
-            If Not Name.Equals(anotherRecord.Name) Then Return False
-            If Not X.Equals(anotherRecord.X) Then Return False
-            If Not Y.Equals(anotherRecord.Y) Then Return False
+            If Not Me.Name.Equals(anotherRecord.Name) Then Return False
+            If Not Me.X.Equals(anotherRecord.X) Then Return False
+            If Not Me.Y.Equals(anotherRecord.Y) Then Return False
             Return True
+        End Function
+
+        Public Overrides Function GetHashCode() As Integer
+            Return MyBase.GetHashCode()
+        End Function
+
+        Public Overrides Function ToString() As String
+            Return MyBase.ToString()
         End Function
     End Class
 
     Public Shared Sub Main()
         Dim p1 As Point = New NamedPoint(""A"", 0, 0)
-        Dim p2 As Point = CType(Function(_p1 As p1) As p1
-                                    Dim _p2 As p1 = _p1.Clone
-                                    With _p2
-                                        .X = 5
-                                        .Y = 3
-                                    End With
-                                End Function, Func(Of _p1, _p1))(p1)
+        Dim p2 As Point = Function(_p1 As Point) As Point
+                              Dim temp As Point = _p1.Clone
+                              With temp
+                                  .X = 5
+                                  .Y = 3
+                              End With
+                              Return temp
+                          End Function(p1)
         Console.WriteLine(TypeOf p2 Is NamedPoint)  ' output: True
         Console.WriteLine(p2)  ' output: NamedPoint { X = 5, Y = 3, Name = A }
     End Sub

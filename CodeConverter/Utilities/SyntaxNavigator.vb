@@ -25,7 +25,7 @@ Namespace CSharpToVBConverter
                 If trivia.HasStructure AndAlso stepInto(trivia) Then
                     Dim [structure] As SyntaxNode = trivia.GetStructure()
                     Dim token As SyntaxToken = Me.GetFirstToken([structure], predicate, stepInto)
-                    If token.RawKind <> SyntaxKindNone Then
+                    If token.RawKind <> 0 Then
                         Return token
                     End If
                 End If
@@ -39,7 +39,7 @@ Namespace CSharpToVBConverter
             If stepInto IsNot Nothing Then
                 ' search in leading trivia
                 Dim firstToken As SyntaxToken = Me.GetFirstToken(token.leadingTrivia, predicate, stepInto)
-                If firstToken.RawKind <> SyntaxKindNone Then
+                If firstToken.RawKind <> 0 Then
                     Return firstToken
                 End If
             End If
@@ -51,7 +51,7 @@ Namespace CSharpToVBConverter
             If stepInto IsNot Nothing Then
                 ' search in trailing trivia
                 Dim firstToken As SyntaxToken = Me.GetFirstToken(token.TrailingTrivia, predicate, stepInto)
-                If firstToken.RawKind <> SyntaxKindNone Then
+                If firstToken.RawKind <> 0 Then
                     Return firstToken
                 End If
             End If
@@ -69,7 +69,7 @@ Namespace CSharpToVBConverter
                         Dim child As SyntaxNodeOrToken = en.Current
                         If child.IsToken Then
                             Dim token As SyntaxToken = Me.GetFirstToken(child.AsToken(), predicate, stepInto)
-                            If token.RawKind <> SyntaxKindNone Then
+                            If token.RawKind <> 0 Then
                                 Return token
                             End If
                         End If
@@ -96,7 +96,7 @@ Namespace CSharpToVBConverter
                         Dim [structure] As SyntaxNode = trivia.GetStructure()
                         Dim token As SyntaxToken = Me.GetFirstToken([structure], predicate, stepInto)
                         'BC30518: Overload resolution failed because no accessible 'GetFirstToken' can be called with these arguments:
-                        If token.RawKind <> SyntaxKindNone Then
+                        If token.RawKind <> 0 Then
                             Return token
                         End If
                     End If
@@ -116,7 +116,7 @@ Namespace CSharpToVBConverter
             Dim returnNext As Boolean = False
             ' look inside leading trivia for current & next
             Dim token As SyntaxToken = Me.GetNextToken(current, current.Token.leadingTrivia, predicate, stepInto, returnNext)
-            If token.RawKind <> SyntaxKindNone Then
+            If token.RawKind <> 0 Then
                 Return token
             End If
 
@@ -127,7 +127,7 @@ Namespace CSharpToVBConverter
 
             ' look inside trailing trivia for current & next (or just next)
             token = Me.GetNextToken(current, current.Token.TrailingTrivia, predicate, stepInto, returnNext)
-            If token.RawKind <> SyntaxKindNone Then
+            If token.RawKind <> 0 Then
                 Return token
             End If
 
@@ -144,13 +144,13 @@ Namespace CSharpToVBConverter
                         If child.IsToken Then
                             Dim token As SyntaxToken = Me.GetFirstToken(child.AsToken(), predicate, stepInto)
                             'BC30518: Overload resolution failed because no accessible 'GetFirstToken' can be called with these arguments:
-                            If token.RawKind <> SyntaxKindNone Then
+                            If token.RawKind <> 0 Then
                                 Return token
                             End If
                         Else
                             Dim token As SyntaxToken = Me.GetFirstToken(child.AsNode(), predicate, stepInto)
                             'BC30518: Overload resolution failed because no accessible 'GetFirstToken' can be called with these arguments:
-                            If token.RawKind <> SyntaxKindNone Then
+                            If token.RawKind <> 0 Then
                                 Return token
                             End If
                         End If
@@ -176,7 +176,7 @@ Namespace CSharpToVBConverter
                 ' look inside trailing trivia for structure
                 If searchInsideCurrentTokenTrailingTrivia Then
                     Dim firstToken As SyntaxToken = Me.GetFirstToken(current.TrailingTrivia, predicate, stepInto)
-                    If firstToken.RawKind <> SyntaxKindNone Then
+                    If firstToken.RawKind <> 0 Then
                         Return firstToken
                     End If
                 End If
@@ -188,12 +188,12 @@ Namespace CSharpToVBConverter
                     If returnNext Then
                         If child.IsToken Then
                             Dim token As SyntaxToken = Me.GetFirstToken(child.AsToken(), predicate, stepInto)
-                            If token.RawKind <> SyntaxKindNone Then
+                            If token.RawKind <> 0 Then
                                 Return token
                             End If
                         Else
                             Dim token As SyntaxToken = Me.GetFirstToken(child.AsNode(), predicate, stepInto)
-                            If token.RawKind <> SyntaxKindNone Then
+                            If token.RawKind <> 0 Then
                                 Return token
                             End If
                         End If

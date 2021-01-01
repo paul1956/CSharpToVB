@@ -47,7 +47,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
             Public Overrides Function VisitParenthesizedVariableDesignation(node As CSS.ParenthesizedVariableDesignationSyntax) As VB.VisualBasicSyntaxNode
                 Dim vbVariables As List(Of VBS.ModifiedIdentifierSyntax) = ProcessVariableDesignation(node)
                 Dim vbNames As SeparatedSyntaxList(Of VBS.ModifiedIdentifierSyntax) = Factory.SeparatedList(vbVariables)
-                Return Factory.VariableDeclarator(vbNames, Factory.SimpleAsClause(PredefinedTypeObject), initializer:=Nothing)
+                Return Factory.VariableDeclarator(vbNames, AsObject, initializer:=Nothing)
             End Function
 
             Public Overrides Function VisitSingleVariableDesignation(Node As CSS.SingleVariableDesignationSyntax) As VB.VisualBasicSyntaxNode

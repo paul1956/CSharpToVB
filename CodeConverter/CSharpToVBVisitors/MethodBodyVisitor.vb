@@ -30,7 +30,6 @@ Namespace CSharpToVBConverter.ToVisualBasic
             Inherits CSharpSyntaxVisitor(Of SyntaxList(Of StatementSyntax))
 
             Private ReadOnly _blockInfo As Stack(Of BlockInfo) = New Stack(Of BlockInfo)()
-            Private ReadOnly _literalExpression As ExpressionSyntax = Factory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, Factory.Literal(1))
             Private ReadOnly _nodesVisitor As NodesVisitor
             Private ReadOnly _semanticModel As SemanticModel
 
@@ -262,7 +261,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         toValue = Factory.BinaryExpression(VB.SyntaxKind.AddExpression,
                                                                  DirectCast(condition.Right.Accept(_nodesVisitor), ExpressionSyntax),
                                                                  PlusToken,
-                                                                 _literalExpression)
+                                                                 OneExpression)
                     Else
                         Return False
                     End If
@@ -273,7 +272,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         toValue = Factory.BinaryExpression(VB.SyntaxKind.SubtractExpression,
                                                                  DirectCast(condition.Right.Accept(_nodesVisitor), ExpressionSyntax),
                                                                  MinusToken,
-                                                                 _literalExpression)
+                                                                 OneExpression)
                     Else
                         Return False
                     End If
@@ -367,7 +366,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         exprNode = Factory.AssignmentStatement(GetExpressionKind(CS.CSharpExtensions.Kind(node)),
                                                                operandExpr,
                                                                GetOperatorToken(kind, IsReferenceType:=False),
-                                                               _literalExpression)
+                                                               OneExpression)
                         newLeadingTrivia = newLeadingTrivia.AddRange(node.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=False, "Parenthesized Expression Assignment"))
                     End If
                 End If
@@ -478,7 +477,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         oneStatement = Factory.AssignmentStatement(GetExpressionKind(CS.CSharpExtensions.Kind(node)),
                                                                 operandExpression,
                                                                 GetOperatorToken(kind, IsReferenceType:=False),
-                                                                _literalExpression)
+                                                                OneExpression)
                         newLeadingTrivia = newLeadingTrivia.AddRange(node.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=False, "Parenthesized Expression Assignment"))
                     End If
                 End If

@@ -64,6 +64,10 @@ Any changes to CSharpToVB application needs to change the version information in
 
 ## What's New in this release
   New in 5.0.0.23/5.0.0.17
+  - Improve support C# 9.0 WithExpressions, including inherited Records
+  - Cleanup and organize VisualBasicSyntaxFactory 
+
+  New in 5.0.0.23/5.0.0.17
   - Improve support C# 9.0 WithExpressions
   - Add first unit test for WithExpressions
 

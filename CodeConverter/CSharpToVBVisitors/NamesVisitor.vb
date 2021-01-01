@@ -155,7 +155,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                             If node.Parent.IsParentKind(CS.SyntaxKind.ObjectInitializerExpression) Then
                                 Return name
                             End If
-                            Return Factory.SimpleMemberAccessExpression(Factory.MeExpression.WithLeadingTrivia(name.GetLeadingTrivia), name.WithoutLeadingTrivia)
+                            Return Factory.SimpleMemberAccessExpression(MeExpression.WithLeadingTrivia(name.GetLeadingTrivia), name.WithoutLeadingTrivia)
                         End If
                     End If
                 End If

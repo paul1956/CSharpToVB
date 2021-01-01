@@ -260,7 +260,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Stop
                     Throw
                 End Try
-                Dim leftAndRightIsString As Boolean? = leftTypeInfo.ConvertedType?.SpecialType = SystemString OrElse rightTypeInfo.ConvertedType?.SpecialType = SystemString
+                Dim leftAndRightIsString As Boolean? = leftTypeInfo.ConvertedType?.SpecialType = SpecialType.System_String OrElse rightTypeInfo.ConvertedType?.SpecialType = SpecialType.System_String
                 Return leftAndRightIsString.HasValue AndAlso leftAndRightIsString.Value
             End Function
 
@@ -394,7 +394,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 If constant.HasValue AndAlso TypeOf constant.Value Is Integer Then
                     Return Factory.NumericLiteralExpression(Factory.Literal(CInt(constant.Value) - 1))
                 End If
-                Return Factory.BinaryExpression(kind:=VB.SyntaxKind.SubtractExpression, left:=DirectCast(expr.Accept(Me), ExpressionSyntax), operatorToken:=MinusToken, right:=rightExpr)
+                Return Factory.BinaryExpression(kind:=VB.SyntaxKind.SubtractExpression, left:=DirectCast(expr.Accept(Me), ExpressionSyntax), operatorToken:=MinusToken, right:=OneExpression)
             End Function
 
             Private Function TryCreateRaiseEventStatement(invokedCsExpression As CSS.ExpressionSyntax, argumentListSyntax As CSS.ArgumentListSyntax, ByRef visitInvocationExpression As VB.VisualBasicSyntaxNode) As Boolean
@@ -834,7 +834,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
             End Function
 
             Public Overrides Function VisitBaseExpression(node As CSS.BaseExpressionSyntax) As VB.VisualBasicSyntaxNode
-                Return Factory.MyBaseExpression()
+                Return MyBaseExpression
             End Function
 
             Public Overrides Function VisitBinaryExpression(node As CSS.BinaryExpressionSyntax) As VB.VisualBasicSyntaxNode
@@ -1987,7 +1987,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         If operandTypeInfo.ConvertedType.ToString = "char" Then
                             Dim convertedperandExpression As ExpressionSyntax = Factory.ParseExpression($"ChrW(AscW({leftExpr}))").WithTriviaFrom(leftExpr)
                             kind = If(kind = VB.SyntaxKind.AddAssignmentStatement, VB.SyntaxKind.AddExpression, VB.SyntaxKind.SubtractExpression)
-                            Dim mathExpression As ExpressionSyntax = Factory.BinaryExpression(kind, convertedperandExpression, GetOperatorToken(kind, IsReferenceType:=False), rightExpr)
+                            Dim mathExpression As ExpressionSyntax = Factory.BinaryExpression(kind, convertedperandExpression, GetOperatorToken(kind, IsReferenceType:=False), OneExpression)
                             Return Factory.AssignmentStatement(VB.SyntaxKind.SimpleAssignmentStatement,
                                                                leftExpr,
                                                                EqualsToken,
@@ -2003,7 +2003,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Return Factory.AssignmentStatement(GetExpressionKind(CS.CSharpExtensions.Kind(node)),
                                                        leftExpr,
                                                        GetOperatorToken(kind, IsReferenceType:=False),
-                                                       rightExpr)
+                                                       OneExpression)
                 Else
                     Dim operatorName As String
                     Dim minMax As String
@@ -2027,7 +2027,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Dim vbSecondArgumentSyntax As SimpleArgumentSyntax = Factory.SimpleArgument(Factory.BinaryExpression(op,
                                                                                                                          leftExpr,
                                                                                                                          GetOperatorToken(op, IsReferenceType:=False),
-                                                                                                                         rightExpr)
+                                                                                                                         OneExpression)
                                                                                                                         )
                     Return Factory.InvocationExpression(
                         vbMathExpression,
@@ -2053,18 +2053,18 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Return Factory.AssignmentStatement(kind,
                                                        vbOperandExpression,
                                                        GetOperatorToken(kind, IsReferenceType:=False),
-                                                       rightExpr).WithConvertedTriviaFrom(node)
+                                                       OneExpression).WithConvertedTriviaFrom(node)
                 End If
                 If kind = VB.SyntaxKind.AddAssignmentStatement OrElse kind = VB.SyntaxKind.SubtractAssignmentStatement Then
                     If node.Parent.IsKind(CS.SyntaxKind.ForStatement) Then
                         If kind = VB.SyntaxKind.AddAssignmentStatement Then
                             Return Factory.AddAssignmentStatement(vbOperandExpression.WithTrailingTrivia(Factory.Space),
                                                                     GetOperatorToken(kind, IsReferenceType:=False),
-                                                                    rightExpr).WithConvertedTriviaFrom(node)
+                                                                    OneExpression).WithConvertedTriviaFrom(node)
                         Else
                             Return Factory.SubtractAssignmentStatement(vbOperandExpression.WithTrailingTrivia(Factory.Space),
                                                                              GetOperatorToken(kind, IsReferenceType:=False),
-                                                                             rightExpr).WithConvertedTriviaFrom(node)
+                                                                             OneExpression).WithConvertedTriviaFrom(node)
                         End If
                     Else
                         Dim operatorName As String = If(kind = VB.SyntaxKind.AddAssignmentStatement, "Increment", "Decrement")
@@ -2103,7 +2103,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
             End Function
 
             Public Overrides Function VisitThisExpression(node As CSS.ThisExpressionSyntax) As VB.VisualBasicSyntaxNode
-                Return Factory.MeExpression().WithConvertedTriviaFrom(node)
+                Return MeExpression.WithConvertedTriviaFrom(node)
             End Function
 
             Public Overrides Function VisitThrowExpression(node As CSS.ThrowExpressionSyntax) As VB.VisualBasicSyntaxNode

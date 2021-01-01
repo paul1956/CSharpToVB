@@ -59,9 +59,66 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 End Get
             End Property
 
+            Private Shared Function ContainsProperty(PropertyList As List(Of (Type As VBS.TypeSyntax, ArgumentNames As List(Of String))), Name As String) As Boolean
+                For Each e As (Type As VBS.TypeSyntax, ArgumentNames As List(Of String)) In PropertyList
+                    For Each argumentName As String In e.ArgumentNames
+                        If argumentName = Name Then
+                            Return True
+                        End If
+                    Next
+                Next
+                Return False
+            End Function
+
+            Private Shared Function GetArgsFromInheritedClass(PropertyList As List(Of (Type As VBS.TypeSyntax, ArgumentNames As List(Of String)))) As SeparatedSyntaxList(Of VBS.ArgumentSyntax)
+                Dim argumentList As New SeparatedSyntaxList(Of VBS.ArgumentSyntax)
+                For Each e As (Type As VBS.TypeSyntax, ArgumentNames As List(Of String)) In PropertyList
+                    For Each argumentName As String In e.ArgumentNames
+                        Dim argument As VBS.IdentifierNameSyntax = Factory.IdentifierName(argumentName)
+                        argumentList = argumentList.Add(Factory.SimpleArgument(Factory.NameColonEquals(argument), argument))
+                    Next
+                Next
+                Return argumentList
+            End Function
+
             Private Shared Function IsInvokeIdentifier(sns As CSS.SimpleNameSyntax) As Boolean
                 Return sns.Identifier.Value.Equals("Invoke")
             End Function
+
+            Private Sub ConvertRecordBaseList(_Type As CSS.BaseTypeDeclarationSyntax, [inherits] As List(Of VBS.InheritsStatementSyntax), ByRef MovedFinalTrivia As SyntaxTriviaList, ByRef ImplementedMembers As List(Of (Type As VBS.TypeSyntax, ArgumentNames As List(Of String))))
+                Dim recordType As CSS.TypeSyntax = _Type.BaseList?.Types.FirstOrDefault()?.Type
+                If recordType Is Nothing Then
+                    Exit Sub
+                End If
+                Dim baseRecordSymbol As ISymbol = ModelExtensions.GetSymbolInfo(_semanticModel, recordType).Symbol
+                Dim typeNode As VB.VisualBasicSyntaxNode = recordType.Accept(Me)
+                If typeNode.HasLeadingTrivia Then
+                    Dim typeNodeLeadingTrivia As SyntaxTriviaList = typeNode.GetLeadingTrivia
+                    If typeNodeLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
+                        [inherits].Add(Factory.InheritsStatement(DirectCast(typeNode.WithLeadingTrivia(Factory.Space), VBS.TypeSyntax)).WithLeadingTrivia(typeNodeLeadingTrivia))
+                    Else
+                        [inherits].Add(Factory.InheritsStatement(DirectCast(typeNode, VBS.TypeSyntax)))
+                    End If
+                Else
+                    [inherits].Add(Factory.InheritsStatement(DirectCast(typeNode, VBS.TypeSyntax)))
+                End If
+                Dim typeSyntaxList As New List(Of VBS.TypeSyntax)
+                Dim typeArgumentList As New List(Of VBS.ArgumentListSyntax)
+                Dim separatorList As List(Of SyntaxToken) = _Type.BaseList.Types.GetSeparators.ToList
+                Dim argumentNames As New List(Of String)
+                For Each e As IndexClass(Of CSS.BaseTypeSyntax) In _Type.BaseList.Types.WithIndex
+                    If e.index < separatorList.Count Then
+                        FilterLeadingTrivia(ConvertTriviaList(separatorList(e.index).LeadingTrivia), MovedFinalTrivia)
+                    End If
+                    For Each name As VBS.ArgumentSyntax In CType(CType(e.Value, CSS.PrimaryConstructorBaseTypeSyntax).ArgumentList.Accept(Me), VBS.ArgumentListSyntax).Arguments
+                        argumentNames.Add(name.ToString)
+                    Next
+                    ImplementedMembers.Add((DirectCast(e.Value.Type.Accept(Me), VBS.TypeSyntax), argumentNames))
+                Next
+                If [inherits].Any Then
+                    [inherits]([inherits].Count - 1) = [inherits].Last.WithTrailingEOL
+                End If
+            End Sub
 
             Private Function GetIdentifierNameFromName(Expression As VBS.ExpressionSyntax) As VBS.IdentifierNameSyntax
                 Select Case True
@@ -305,7 +362,16 @@ Namespace CSharpToVBConverter.ToVisualBasic
             Public Overrides Function VisitRecordDeclaration(node As CSS.RecordDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim recordName As SyntaxToken = GenerateSafeVBToken(node.Identifier, node, _usedIdentifiers, _semanticModel)
                 Dim recordTypeName As VBS.TypeSyntax = Factory.ParseTypeName(recordName.ToString)
+                Dim asRecordName As VBS.SimpleAsClauseSyntax = Factory.SimpleAsClause(recordTypeName)
+
                 Dim members As New List(Of VBS.StatementSyntax)
+                Dim membersLastIndex As Integer = node.Members.Count - 1
+                Dim [inherits] As New List(Of VBS.InheritsStatementSyntax)()
+                Dim [implements] As New List(Of VBS.ImplementsStatementSyntax)()
+
+                Dim finalTrailingTrivia As SyntaxTriviaList
+                Dim implementedMembers As New List(Of (Type As VBS.TypeSyntax, ArgumentNames As List(Of String)))
+                Me.ConvertRecordBaseList(node, [inherits], finalTrailingTrivia, implementedMembers)
                 For Each m As CSS.MemberDeclarationSyntax In node.Members
                     Dim item As VBS.StatementSyntax = DirectCast(m.Accept(Me), VBS.StatementSyntax)
                     If item Is Nothing Then
@@ -314,104 +380,193 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         members.AddRange(ReplaceOneStatementWithMarkedStatements(m, item))
                     End If
                 Next
-                Dim parameterList As VBS.ParameterListSyntax = DirectCast(node.ParameterList?.Accept(Me), VBS.ParameterListSyntax)
+
                 Dim constructorStatements As New SyntaxList(Of VBS.StatementSyntax)
-                Dim elementList As New List(Of VBS.SimpleNameSyntax)
-                For Each m As VBS.ParameterSyntax In parameterList.Parameters
-                    Dim right As VBS.SimpleNameSyntax = Factory.IdentifierName(m.Identifier.Identifier)
-                    elementList.Add(right)
-                    Dim left As VBS.ExpressionSyntax = Factory.SimpleMemberAccessExpression(Factory.MeExpression, right)
-                    members.Add(FactoryDimStatement(m.Identifier.Identifier, m.AsClause, initializer:=Nothing))
-                    Dim assignmentStmt As VBS.AssignmentStatementSyntax = Factory.AssignmentStatement(VB.SyntaxKind.SimpleAssignmentStatement, left, EqualsToken, right)
-                    constructorStatements = constructorStatements.Add(assignmentStmt)
+                If implementedMembers.Any Then
+                    Dim myBaseNewExpression As VBS.InvocationExpressionSyntax = Factory.InvocationExpression(Factory.SimpleMemberAccessExpression(MyBaseExpression,
+                                                                                                                                                  Factory.IdentifierName("New")),
+                                                                                                             Factory.ArgumentList(GetArgsFromInheritedClass(implementedMembers)))
+                    constructorStatements = constructorStatements.Add(Factory.ExpressionStatement(myBaseNewExpression))
+                End If
+                Dim fullElementList As New List(Of VBS.SimpleNameSyntax)
+                Dim parameterList As VBS.ParameterListSyntax = DirectCast(node.ParameterList?.Accept(Me), VBS.ParameterListSyntax)
+                'constructorStatements = constructorStatements.Add()
+                For Each e As IndexClass(Of VBS.ParameterSyntax) In parameterList.Parameters.WithIndex
+                    Dim assignmentStmt As VBS.AssignmentStatementSyntax
+                    Dim left As VBS.ExpressionSyntax
+                    Dim right As VBS.SimpleNameSyntax = Factory.IdentifierName(e.Value.Identifier.Identifier)
+                    If Not ContainsProperty(implementedMembers, right.Identifier.ToString) Then
+                        left = Factory.SimpleMemberAccessExpression(MeExpression, right)
+
+                        Dim propertyStatement As VBS.StatementSyntax = Factory.PropertyStatement(Nothing, PublicModifier, e.Value.Identifier.Identifier, Nothing, e.Value.AsClause, initializer:=Nothing, implementsClause:=Nothing).RemoveExtraLeadingEOL
+                        members.Add(propertyStatement)
+                        assignmentStmt = Factory.AssignmentStatement(VB.SyntaxKind.SimpleAssignmentStatement, left, EqualsToken, right)
+                        constructorStatements = constructorStatements.Add(assignmentStmt)
+                    End If
+                    fullElementList.Add(right)
                 Next
-                Dim subNewStatement As VBS.SubNewStatementSyntax =
-                    Factory.SubNewStatement(attributeLists:=Nothing,
-                                            modifiers:=Nothing,
-                                            parameterList
-                                           ).WithPrependedLeadingTrivia(CollectConvertedTokenTrivia(node.OpenBraceToken, GetLeading:=True, GetTrailing:=False)).WithTrailingEOL
-                Dim newBlock As VBS.ConstructorBlockSyntax = Factory.ConstructorBlock(subNewStatement, constructorStatements)
-                members.Add(newBlock)
+                members.Add(Factory.ConstructorBlock(Factory.SubNewStatement(attributeLists:=Nothing,
+                                                     modifiers:=Nothing,
+                                                     parameterList
+                                                    ).WithPrependedLeadingTrivia(CollectConvertedTokenTrivia(node.OpenBraceToken, GetLeading:=True, GetTrailing:=False)).WithTrailingEOL(), constructorStatements))
+
+                ' Finalize Block
+                Dim myBaseInvocationExpr As VBS.InvocationExpressionSyntax
+                myBaseInvocationExpr = Factory.InvocationExpression(Factory.MemberAccessExpression(VB.SyntaxKind.SimpleMemberAccessExpression,
+                                                                                                   MyBaseExpression,
+                                                                                                   DotToken,
+                                                                                                   Factory.IdentifierName(FinalizeToken)),
+                                                                    Factory.ArgumentList())
+                members.Add(Factory.SubBlock(Factory.SubStatement(Nothing,
+                                                                  ProtectedModifier.Add(OverridesKeyword),
+                                                                  FinalizeToken,
+                                                                  Nothing,
+                                                                  Factory.ParameterList(),
+                                                                  Nothing,
+                                                                  Nothing,
+                                                                  Nothing),
+                                             Factory.SingletonList(Of VBS.StatementSyntax)(Factory.ExpressionStatement(myBaseInvocationExpr))))
+                If Not implementedMembers.Any Then
+                    ' Function Clone
+                    Dim cloneFuncStmt As VBS.MethodStatementSyntax = Factory.FunctionStatement(attributeLists:=Nothing,
+                                                                                           FriendModifier,
+                                                                                           CloneIdentifier.Identifier,
+                                                                                           typeParameterList:=Nothing,
+                                                                                           Factory.ParameterList(),
+                                                                                           Factory.SimpleAsClause(recordTypeName),
+                                                                                           handlesClause:=Nothing,
+                                                                                           implementsClause:=Nothing
+                                                                                          )
+
+                    Dim cloneStatement As SyntaxList(Of VBS.StatementSyntax) = Factory.SingletonList(Of VBS.StatementSyntax)(Factory.ReturnStatement(Factory.SimpleMemberAccessExpression(MeExpression, CloneIdentifier)))
+                    members.Add(Factory.FunctionBlock(cloneFuncStmt, cloneStatement))
+                End If
 
                 'Public Overrides Function Equals(anotherObject) As Boolean
                 '    Dim anotherRecord = TryCast(anotherObject, Info)
                 '    If anotherRecord Is Nothing Then Return False
-                '    Return Equals(anotherRecord)
+                '    Return Me.Equals(anotherRecord)
                 'End Function
-                Dim equalsIdentifierToken As SyntaxToken = Factory.Identifier("Equals")
-                Dim asObject As VBS.SimpleAsClauseSyntax = Factory.SimpleAsClause(PredefinedTypeObject)
-                Dim anotherObjectToken As SyntaxToken = Factory.Identifier("anotherObject")
                 Dim anotherRecordAsObjectParam As VBS.ParameterSyntax = Factory.Parameter(attributeLists:=Nothing,
                                                                                           modifiers:=Nothing,
-                                                                                          Factory.ModifiedIdentifier(anotherObjectToken),
-                                                                                          asObject,
+                                                                                          Factory.ModifiedIdentifier(Factory.Identifier("anotherObject")),
+                                                                                          AsObject,
                                                                                           [default]:=Nothing
                                                                                          )
-                Dim asBoolean As VBS.SimpleAsClauseSyntax = Factory.SimpleAsClause(PredefinedTypeBoolean)
                 Dim statements As New SyntaxList(Of VBS.StatementSyntax)
+
+                ' Public Overrides Function Equals(anotherObject) As Boolean
                 Dim equalsObjectFuncStmt As VBS.MethodStatementSyntax = Factory.FunctionStatement(attributeLists:=Nothing,
                                                                                                   PublicModifier.Add(OverridesKeyword),
-                                                                                                  equalsIdentifierToken,
+                                                                                                  EqualsIdentifierToken,
                                                                                                   typeParameterList:=Nothing,
                                                                                                   Factory.ParameterList(Factory.SingletonSeparatedList(anotherRecordAsObjectParam)),
-                                                                                                  asBoolean,
+                                                                                                  Factory.SimpleAsClause(PredefinedTypeBoolean),
                                                                                                   handlesClause:=Nothing,
                                                                                                   implementsClause:=Nothing
                                                                                                  )
-                Dim equalsValue As VBS.EqualsValueSyntax = Factory.EqualsValue(Factory.TryCastExpression(Factory.IdentifierName(anotherObjectToken),
+                Dim equalsValue As VBS.EqualsValueSyntax = Factory.EqualsValue(Factory.TryCastExpression(Factory.IdentifierName(Factory.Identifier("anotherObject")),
                                                                                                          recordTypeName
                                                                                                         )
                                                                               )
                 Dim anotherRecordToken As SyntaxToken = Factory.Identifier("anotherRecord")
-                statements = statements.Add(VisualBasicSyntaxFactory.FactoryDimStatement(anotherRecordToken,
-                                                                                         asObject,
-                                                                                         equalsValue
-                                                                                        )
+                statements = statements.Add(FactoryDimStatement(anotherRecordToken,
+                                                                AsObject,
+                                                                equalsValue
+                                                                )
                                            )
                 Dim returnFalse As VBS.StatementSyntax = Factory.ReturnStatement(Factory.FalseLiteralExpression(FalseKeyword))
                 statements = statements.Add(Factory.SingleLineIfStatement(Factory.IsExpression(Factory.IdentifierName(anotherRecordToken), NothingExpression), Factory.SingletonList(returnFalse), elseClause:=Nothing))
                 Dim argument As VBS.ArgumentSyntax = Factory.SimpleArgument(Factory.IdentifierName(anotherRecordToken))
-                Dim arguments As SeparatedSyntaxList(Of VBS.ArgumentSyntax) = Factory.SingletonSeparatedList(Of VBS.ArgumentSyntax)(argument)
+                Dim arguments As SeparatedSyntaxList(Of VBS.ArgumentSyntax) = Factory.SingletonSeparatedList(argument)
                 Dim agrumentList As VBS.ArgumentListSyntax = Factory.ArgumentList(arguments)
-                statements = statements.Add(Factory.ReturnStatement(Factory.InvocationExpression(Factory.IdentifierName(equalsIdentifierToken), agrumentList)))
+                Dim simpleMemberAccess As VBS.MemberAccessExpressionSyntax = Factory.SimpleMemberAccessExpression(MeExpression, Factory.IdentifierName(EqualsIdentifierToken))
+                Dim invocationExpression As VBS.InvocationExpressionSyntax = Factory.InvocationExpression(simpleMemberAccess, agrumentList)
+                statements = statements.Add(Factory.ReturnStatement(invocationExpression))
                 members.Add(Factory.FunctionBlock(equalsObjectFuncStmt, statements))
 
                 'Public Overloads Function Equals(anotherRecord As {recordName}) As Boolean
-                '    If Not X.Equals(anotherRecord.X) Then Return False
-                '    If Not Y.Equals(anotherRecord.Y) Then Return False
-                '    If Not Z.Equals(anotherRecord.Z) Then Return False
+                '    If Not MyBase.X.Equals(anotherRecord.X) Then Return False
+                '    If Not MyBase.Y.Equals(anotherRecord.Y) Then Return False
+                '    If Not Me.Z.Equals(anotherRecord.Z) Then Return False
                 '    Return True
                 'End Function
-                Dim asRecordName As VBS.SimpleAsClauseSyntax = Factory.SimpleAsClause(recordTypeName)
                 Dim anotherRecordAsMeParam As VBS.ParameterSyntax = Factory.Parameter(attributeLists:=Nothing,
                                                                                       modifiers:=Nothing,
                                                                                       Factory.ModifiedIdentifier(anotherRecordToken),
                                                                                       asRecordName,
                                                                                       [default]:=Nothing
                                                                                      )
+                statements = New SyntaxList(Of VBS.StatementSyntax)
                 Dim equalsAnotherRecordFuncStmt As VBS.MethodStatementSyntax = Factory.FunctionStatement(attributeLists:=Nothing,
                                                                                                          PublicModifier.Add(OverloadsKeyword),
-                                                                                                         equalsIdentifierToken,
+                                                                                                         EqualsIdentifierToken,
                                                                                                          typeParameterList:=Nothing,
                                                                                                          Factory.ParameterList(Factory.SingletonSeparatedList(anotherRecordAsMeParam)),
-                                                                                                         asBoolean,
+                                                                                                         Factory.SimpleAsClause(PredefinedTypeBoolean),
                                                                                                          handlesClause:=Nothing,
                                                                                                          implementsClause:=Nothing
                                                                                                         )
 
-                statements = New SyntaxList(Of VBS.StatementSyntax)
-                For Each e As VBS.SimpleNameSyntax In elementList
-                    '   If Not X.Equals(anotherRecord.X) Then Return False
-                    argument = Factory.SimpleArgument(Factory.MemberAccessExpression(VB.SyntaxKind.SimpleMemberAccessExpression, Factory.IdentifierName(anotherRecordToken), DotToken, e))
-                    arguments = Factory.SingletonSeparatedList(Of VBS.ArgumentSyntax)(argument)
-                    agrumentList = Factory.ArgumentList(arguments)
-                    Dim operand As VBS.InvocationExpressionSyntax = Factory.InvocationExpression(Factory.SimpleMemberAccessExpression(e, Factory.IdentifierName(equalsIdentifierToken)), agrumentList)
+                For Each e As VBS.SimpleNameSyntax In fullElementList
+                    '   If Not Me.X.Equals(anotherRecord.X) Then Return False
+
+                    Dim operand As VBS.InvocationExpressionSyntax = Factory.InvocationExpression(Factory.SimpleMemberAccessExpression(Factory.SimpleMemberAccessExpression(MeExpression, e),
+                                                                                                                                      Factory.IdentifierName(EqualsIdentifierToken)),
+                                                                                                 Factory.ArgumentList(Factory.SingletonSeparatedList(Of VBS.ArgumentSyntax)(Factory.SimpleArgument(Factory.MemberAccessExpression(VB.SyntaxKind.SimpleMemberAccessExpression,
+                                                                                                                                                                                                                                  Factory.IdentifierName(anotherRecordToken),
+                                                                                                                                                                                                                                  DotToken,
+                                                                                                                                                                                                                                  e)))))
                     Dim condition As VBS.ExpressionSyntax = Factory.NotExpression(NotKeyword, operand)
                     statements = statements.Add(Factory.SingleLineIfStatement(condition, Factory.SingletonList(returnFalse), elseClause:=Nothing))
                 Next
                 statements = statements.Add(Factory.ReturnStatement(Factory.TrueLiteralExpression(TrueKeyword)))
 
                 members.Add(Factory.FunctionBlock(equalsAnotherRecordFuncStmt, statements))
+
+                '     Public Overrides Function GetHashCode() As Integer
+                '         Return MyBase.GetHashCode()
+                '     End Function
+                Dim getHashCodeIdent As VBS.SimpleNameSyntax = Factory.IdentifierName("GetHashCode")
+                Dim getHashCodeFuncStmt As VBS.MethodStatementSyntax = Factory.FunctionStatement(attributeLists:=Nothing,
+                                                                                           PublicModifier.Add(OverridesKeyword),
+                                                                                           getHashCodeIdent.Identifier,
+                                                                                           typeParameterList:=Nothing,
+                                                                                           Factory.ParameterList(),
+                                                                                           Factory.SimpleAsClause(PredefinedTypeInteger),
+                                                                                           handlesClause:=Nothing,
+                                                                                           implementsClause:=Nothing
+                                                                                          )
+                myBaseInvocationExpr = Factory.InvocationExpression(Factory.MemberAccessExpression(VB.SyntaxKind.SimpleMemberAccessExpression,
+                                                                                                   MyBaseExpression,
+                                                                                                   DotToken,
+                                                                                                   Factory.IdentifierName(getHashCodeIdent.Identifier)),
+                                                                    Factory.ArgumentList())
+
+                Dim getHashCodeStatement As SyntaxList(Of VBS.StatementSyntax) = Factory.SingletonList(Of VBS.StatementSyntax)(Factory.ReturnStatement(myBaseInvocationExpr))
+                members.Add(Factory.FunctionBlock(getHashCodeFuncStmt, getHashCodeStatement))
+
+                '     Public Overrides Function ToString() As String
+                '         Return MyBase.ToString()
+                '     End Function
+                Dim toStringIdent As VBS.SimpleNameSyntax = Factory.IdentifierName("ToString")
+                Dim toStringFuncStmt As VBS.MethodStatementSyntax = Factory.FunctionStatement(attributeLists:=Nothing,
+                                                                                           PublicModifier.Add(OverridesKeyword),
+                                                                                           toStringIdent.Identifier,
+                                                                                           typeParameterList:=Nothing,
+                                                                                           Factory.ParameterList(),
+                                                                                           Factory.SimpleAsClause(PredefinedTypeString),
+                                                                                           handlesClause:=Nothing,
+                                                                                           implementsClause:=Nothing
+                                                                                          )
+
+                myBaseInvocationExpr = Factory.InvocationExpression(Factory.MemberAccessExpression(VB.SyntaxKind.SimpleMemberAccessExpression,
+                                                                                                   MyBaseExpression,
+                                                                                                   DotToken,
+                                                                                                   Factory.IdentifierName(toStringIdent.Identifier)),
+                                                                    Factory.ArgumentList())
+                Dim toStringStatement As SyntaxList(Of VBS.StatementSyntax) = Factory.SingletonList(Of VBS.StatementSyntax)(Factory.ReturnStatement(myBaseInvocationExpr))
+                members.Add(Factory.FunctionBlock(toStringFuncStmt, toStringStatement))
 
                 Dim listOfAttributes As SyntaxList(Of VBS.AttributeListSyntax) = Factory.List(node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))
                 Dim typeParameterList As VBS.TypeParameterListSyntax = DirectCast(node.TypeParameterList?.Accept(Me), VBS.TypeParameterListSyntax)
@@ -424,7 +579,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                                                                              ).RestructureAttributesAndModifiers(listOfAttributes.Any, modifiers.Any), VBS.ClassStatementSyntax).WithTrailingEOL
 
                 Dim classBlock As VBS.ClassBlockSyntax = Factory.ClassBlock(classStmt,
-                                                                            [inherits]:=Nothing,
+                                                                           Factory.List([inherits]),
                                                                             [implements]:=Nothing,
                                                                             members:=Factory.List(members),
                                                                             Factory.EndClassStatement(EndKeyword.WithTrailingTrivia(Factory.Space), ClassKeyWord).WithConvertedTriviaFrom(node.CloseBraceToken)
@@ -638,7 +793,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                             argumentList.Add(Factory.SimpleArgument(Factory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, Factory.Literal(CInt(literalExpression.Token.Value) - 1))).WithConvertedLeadingTriviaFrom(e.Value.Expression))
                         ElseIf TypeOf vbExpression Is VBS.IdentifierNameSyntax Then
                             Dim identName As VBS.IdentifierNameSyntax = CType(vbExpression, VBS.IdentifierNameSyntax)
-                            argumentList.Add(Factory.SimpleArgument(Factory.BinaryExpression(VB.SyntaxKind.SubtractExpression, identName, MinusToken, rightExpr)).WithConvertedLeadingTriviaFrom(e.Value.Expression))
+                            argumentList.Add(Factory.SimpleArgument(Factory.BinaryExpression(VB.SyntaxKind.SubtractExpression, identName, MinusToken, OneExpression)).WithConvertedLeadingTriviaFrom(e.Value.Expression))
                         ElseIf TypeOf vbExpression Is VBS.BinaryExpressionSyntax Then
                             Dim value As VBS.BinaryExpressionSyntax = CType(vbExpression, VBS.BinaryExpressionSyntax)
                             If vbExpression.IsKind(VB.SyntaxKind.AddExpression) Then
@@ -647,7 +802,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                     Continue For
                                 End If
                             End If
-                            argumentList.Add(Factory.SimpleArgument(Factory.BinaryExpression(VB.SyntaxKind.SubtractExpression, value, MinusToken, rightExpr)).WithConvertedLeadingTriviaFrom(e.Value.Expression))
+                            argumentList.Add(Factory.SimpleArgument(Factory.BinaryExpression(VB.SyntaxKind.SubtractExpression, value, MinusToken, OneExpression)).WithConvertedLeadingTriviaFrom(e.Value.Expression))
                         Else
                             Stop
                         End If
@@ -665,7 +820,6 @@ Namespace CSharpToVBConverter.ToVisualBasic
 
             Public Overrides Function VisitWithExpression(node As CSS.WithExpressionSyntax) As VB.VisualBasicSyntaxNode
 
-
                 '' Write the value 4.
                 'Console.WriteLine(CType(Function(x)
                 '                            Return x + 2
@@ -674,19 +828,19 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim attributeLists As New SyntaxList(Of VBS.AttributeListSyntax)
                 Dim modifiers As New SyntaxTokenList
                 Dim statements As New SyntaxList(Of VBS.StatementSyntax)
-
+                Dim variableITypeSymbol As (_Error As Boolean, _ITypeSymbol As ITypeSymbol) = node.Expression.DetermineType(_semanticModel)
+                Dim recordType As VBS.TypeSyntax = Nothing
+                Dim asClause As VBS.SimpleAsClauseSyntax = Nothing
+                If Not variableITypeSymbol._Error Then
+                    recordType = variableITypeSymbol._ITypeSymbol.ConvertToType
+                    If TypeOf recordType Is VBS.QualifiedNameSyntax Then
+                        asClause = Factory.SimpleAsClause(CType(recordType, VBS.QualifiedNameSyntax).Right)
+                    Else
+                        asClause = Factory.SimpleAsClause(recordType)
+                    End If
+                End If
                 Dim identifier As VBS.ModifiedIdentifierSyntax = Factory.ModifiedIdentifier("_p1")
                 Dim objectExpression As CS.CSharpSyntaxNode = node.Expression
-                Dim recordType As VBS.TypeSyntax
-                If TypeOf objectExpression Is CSS.ObjectCreationExpressionSyntax Then
-                    recordType = CType(CType(objectExpression, CSS.ObjectCreationExpressionSyntax).Type.Accept(Me), VBS.TypeSyntax)
-                ElseIf TypeOf objectExpression Is CSS.IdentifierNameSyntax Then
-                    recordType = CType(CType(objectExpression, CSS.IdentifierNameSyntax).Accept(Me), VBS.TypeSyntax)
-                Else
-                    Stop
-                    Throw UnreachableException
-                End If
-                Dim asClause As VBS.SimpleAsClauseSyntax = Factory.SimpleAsClause(recordType)
                 Dim parameter As VBS.ParameterSyntax = Factory.Parameter(attributeLists, modifiers, identifier, asClause, Nothing)
                 Dim parameters As SeparatedSyntaxList(Of VBS.ParameterSyntax)
                 parameters = parameters.Add(parameter)
@@ -694,10 +848,10 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim subOrFunctionHeader As VBS.LambdaHeaderSyntax = Factory.FunctionLambdaHeader(attributeLists, modifiers, parameterList, asClause)
 
                 Dim p1 As VBS.SimpleNameSyntax = Factory.IdentifierName("_p1")
-                Dim p2 As SyntaxToken = Factory.Identifier("_p2")
-                Dim value As VBS.ExpressionSyntax = Factory.MemberAccessExpression(VB.SyntaxKind.SimpleMemberAccessExpression, p1, DotToken, Factory.IdentifierName("Clone"))
+                Dim temp As SyntaxToken = Factory.Identifier("temp")
+                Dim value As VBS.ExpressionSyntax = Factory.MemberAccessExpression(VB.SyntaxKind.SimpleMemberAccessExpression, p1, DotToken, CloneIdentifier)
                 Dim initializer As VBS.EqualsValueSyntax = Factory.EqualsValue(value)
-                statements = statements.Add(FactoryDimStatement(p2, asClause, initializer))
+                statements = statements.Add(FactoryDimStatement(temp, asClause, initializer))
                 Dim withBlock As New SyntaxList(Of VBS.StatementSyntax)
                 For Each expression As CSS.AssignmentExpressionSyntax In node.Initializer.Expressions
                     Dim vbExpression As VB.VisualBasicSyntaxNode = expression.Left.Accept(Me)
@@ -714,21 +868,23 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     withBlock = withBlock.Add(Factory.SimpleAssignmentStatement(left, right))
                 Next
 
-                Dim withStatement As VBS.WithStatementSyntax = Factory.WithStatement(Factory.IdentifierName(p2))
+                Dim withStatement As VBS.WithStatementSyntax = Factory.WithStatement(Factory.IdentifierName(temp))
                 statements = statements.Add(Factory.WithBlock(withStatement, withBlock))
+                statements = statements.Add(Factory.ReturnStatement(Factory.IdentifierName(temp)))
+
                 Dim endSubOrFunctionStatement As VBS.EndBlockStatementSyntax = Factory.EndFunctionStatement(EndKeyword.WithTrailingTrivia(Factory.Space), FunctionKeyword).WithConvertedTriviaFrom(node)
 
                 Dim lambda As VBS.MultiLineLambdaExpressionSyntax = Factory.MultiLineFunctionLambdaExpression(subOrFunctionHeader, statements, endSubOrFunctionStatement)
                 Dim typeArguments As New SeparatedSyntaxList(Of VBS.TypeSyntax)
-                typeArguments = typeArguments.Add(p1)
-                typeArguments = typeArguments.Add(p1)
+                typeArguments = typeArguments.Add(recordType)
+                typeArguments = typeArguments.Add(recordType)
                 Dim typeArgumentList As VBS.TypeArgumentListSyntax = Factory.TypeArgumentList(typeArguments)
                 Dim genericName As VBS.GenericNameSyntax = Factory.GenericName("Func", typeArgumentList)
                 Dim lambdaArgument As SeparatedSyntaxList(Of VBS.ArgumentSyntax)
                 lambdaArgument = lambdaArgument.Add(Factory.SimpleArgument(CType(node.Expression.Accept(Me), VBS.ExpressionSyntax)))
-                Dim lambdaArgumentList As VBS.ArgumentListSyntax = Factory.ArgumentList(lambdaArgument)
-                Return Factory.InvocationExpression(Factory.CTypeExpression(lambda, genericName), lambdaArgumentList)
+                Return Factory.InvocationExpression(lambda, Factory.ArgumentList(lambdaArgument))
             End Function
+
         End Class
 
     End Class

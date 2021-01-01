@@ -90,10 +90,10 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     newAttributes = Array.Empty(Of VBS.AttributeListSyntax)
                 ElseIf node.Modifiers.Contains(CS.SyntaxKind.OutKeyword) Then
                     If Not AllImports.ContainsName(InteropServices) Then
-                        AllImports.Add(ImportInteropServices)
+                        AllImports.Add(FactoryImportInteropServices)
                     End If
 
-                    newAttributes = {Factory.AttributeList(Factory.SingletonSeparatedList(Factory.Attribute(RuntimeInteropServicesOut)))}
+                    newAttributes = {Factory.AttributeList(Factory.SingletonSeparatedList(OutAttribute))}
                 Else
                     newAttributes = Array.Empty(Of VBS.AttributeListSyntax)
                 End If
