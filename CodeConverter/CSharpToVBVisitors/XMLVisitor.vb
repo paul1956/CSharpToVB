@@ -124,7 +124,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
         End Function
 
         Public Overrides Function VisitOperatorMemberCref(node As CSS.OperatorMemberCrefSyntax) As VB.VisualBasicSyntaxNode
-            Return Factory.CrefOperatorReference(GetVBOperatorToken(node.OperatorToken.ValueText).WithLeadingTrivia(Factory.Space))
+            Return Factory.CrefOperatorReference(GetVBOperatorToken(node.OperatorToken.ValueText).WithLeadingTrivia(SpaceTrivia))
         End Function
 
         Public Overrides Function VisitPredefinedType(node As CSS.PredefinedTypeSyntax) As VB.VisualBasicSyntaxNode

@@ -241,7 +241,7 @@ Namespace CSharpToVBConverter
                                 End If
                         End Select
                     Next
-                    typeList.Add(ConvertToType(possibleTypes.Substring(0, commaIndex)).WithLeadingTrivia(Factory.Space))
+                    typeList.Add(ConvertToType(possibleTypes.Substring(0, commaIndex)).WithLeadingTrivia(SpaceTrivia))
                     If commaIndex + 1 < possibleTypes.Length Then
                         possibleTypes = possibleTypes.Substring(commaIndex + 1).Trim
                     Else
@@ -271,7 +271,7 @@ Namespace CSharpToVBConverter
                                 End Select
                             Next
                         End If
-                        typeList.Add(ConvertToType(possibleTypes.Substring(0, commaIndex)).WithLeadingTrivia(Factory.Space))
+                        typeList.Add(ConvertToType(possibleTypes.Substring(0, commaIndex)).WithLeadingTrivia(SpaceTrivia))
                         If commaIndex + 1 < possibleTypes.Length Then
                             possibleTypes = possibleTypes.Substring(commaIndex + 1).Trim
                         Else
@@ -314,7 +314,10 @@ Namespace CSharpToVBConverter
 
         Friend Function ConvertToType(TypeAsCSString As String, Optional AllowArray As Boolean = True) As VBS.TypeSyntax
             Dim typeString As String = TypeAsCSString.Trim
-            Dim isNullable As Boolean = typeString.Last = "?"c
+            Dim isNullable As Boolean = typeString.Last = "?"c AndAlso Not s_referenceTypes.Contains(typeString.RemoveBrackets.TrimEnd("?"c), StringComparer.OrdinalIgnoreCase)
+            If Not isNullable Then
+                typeString = typeString.TrimEnd("?"c)
+            End If
             Dim retType As VBS.TypeSyntax = PredefinedTypeObject
             Try
                 Dim arrayRank As String = ""
@@ -339,7 +342,8 @@ Namespace CSharpToVBConverter
                     If AllowArray AndAlso isArray Then
                         arrayRank = typeString.Substring(indexOfBracket).
                                             Replace("[", "(", StringComparison.Ordinal).
-                                            Replace("]", ")", StringComparison.Ordinal)
+                                            Replace("]", ")", StringComparison.Ordinal).
+                                            Replace("*", "", StringComparison.Ordinal)
                     End If
                     typeString = typeString.Substring(0, indexOfBracket)
                 End If
@@ -461,7 +465,7 @@ Namespace CSharpToVBConverter
                 End If
                 retType = ConvertSimpleTypeToType(typeString)
                 If arrayRank.Any Then
-                    Factory.ParseTypeName($"{retType}{arrayRank}")
+                    retType = Factory.ParseTypeName($"{retType}{arrayRank}")
                 End If
             Catch ex As Exception
                 Stop
@@ -491,7 +495,7 @@ Namespace CSharpToVBConverter
                 builder.Append($"{e.Value}, ")
             Next
             builder.Append(elementList.Last & ")")
-            Return Factory.ParseTypeName($"{builder}{If(isArray, "()", "")}{If(nullable, "?", "")}").WithLeadingTrivia(Factory.Space)
+            Return Factory.ParseTypeName($"{builder}{If(isArray, "()", "")}{If(nullable, "?", "")}").WithLeadingTrivia(SpaceTrivia)
         End Function
 
         <Extension>
@@ -532,7 +536,7 @@ Namespace CSharpToVBConverter
             If TupleElement.Type Is Nothing Then
                 Return Factory.NamedTupleElement(TupleElement.Name.ToString(Globalization.CultureInfo.InvariantCulture))
             End If
-            Dim asClause As VBS.SimpleAsClauseSyntax = Factory.SimpleAsClause(AsKeyword.With(Factory.Space, Factory.Space), New SyntaxList(Of VBS.AttributeListSyntax), TupleElement.Type.ConvertToType)
+            Dim asClause As VBS.SimpleAsClauseSyntax = Factory.SimpleAsClause(AsKeyword.With(SpaceTrivia, SpaceTrivia), New SyntaxList(Of VBS.AttributeListSyntax), TupleElement.Type.ConvertToType)
             Return Factory.NamedTupleElement(Factory.Identifier(MakeVBSafeName(TupleElement.Name)), asClause)
         End Function
 

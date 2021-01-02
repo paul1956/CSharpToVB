@@ -4,8 +4,9 @@
 
 Imports System.Runtime.CompilerServices
 Imports System.Text
-
+Imports Microsoft.CodeAnalysis
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
+Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 
 Namespace CSharpToVBConverter
 
@@ -63,6 +64,11 @@ Namespace CSharpToVBConverter
                 End If
             Next
             Return expressionBuilder.ToString.TrimEnd("_"c)
+        End Function
+
+        <Extension>
+        Public Function GetWhiteSpaceTrivia(length As Integer) As SyntaxTrivia
+            Return If(length = 0, SpaceTrivia, Factory.WhitespaceTrivia(StrDup(length, " "c)))
         End Function
 
         ' String isn't IEnumerable<char> in the current Portable profile.

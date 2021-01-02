@@ -127,11 +127,11 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Stop
                     Throw
                 End Try
-                argumentWithTrivia = argumentWithTrivia.WithLeadingTrivia(newLeadingTrivia).WithTrailingTrivia(Factory.Space)
+                argumentWithTrivia = argumentWithTrivia.WithLeadingTrivia(newLeadingTrivia).WithTrailingTrivia(SpaceTrivia)
                 If name IsNot Nothing Then
                     Dim tempTrivia As SyntaxTriviaList = node.NameColon.GetLeadingTrivia.ConvertTriviaList()
                     tempTrivia = tempTrivia.AddRange(argumentWithTrivia.GetLeadingTrivia)
-                    argumentWithTrivia = argumentWithTrivia.WithLeadingTrivia(Factory.Space)
+                    argumentWithTrivia = argumentWithTrivia.WithLeadingTrivia(SpaceTrivia)
                     name = name.WithLeadingTrivia(tempTrivia)
                 End If
                 Return Factory.SimpleArgument(name, argumentWithTrivia).WithTrailingTrivia(newTrailingTrivia)
@@ -166,7 +166,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 RestructureNodesAndSeparators(openParenTokenWithTrivia, nodeList, separators, closeParenTokenWithTrivia)
                 Return Factory.TypeArgumentList(
                         openParenTokenWithTrivia,
-                        OfKeyword.WithTrailingTrivia(Factory.Space),
+                        OfKeyword.WithTrailingTrivia(SpaceTrivia),
                         Factory.SeparatedList(nodeList, separators),
                         closeParenTokenWithTrivia)
             End Function

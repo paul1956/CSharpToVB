@@ -61,9 +61,10 @@ Namespace CSharpToVBConverter.ToVisualBasic
 
             Public Overrides Function VisitDefaultConstraint(node As CSS.DefaultConstraintSyntax) As VB.VisualBasicSyntaxNode
                 Dim commentTrivia As SyntaxTriviaList = New SyntaxTriviaList
-                commentTrivia = commentTrivia.Add(Factory.Space)
+                commentTrivia = commentTrivia.Add(SpaceTrivia)
                 commentTrivia = commentTrivia.Add(LineContinuation)
-                commentTrivia = commentTrivia.Add(Factory.CommentTrivia(" ' TODO Visual Basic does not support 'Default Constraint'"))
+                commentTrivia = commentTrivia.Add(SpaceTrivia)
+                commentTrivia = commentTrivia.Add(Factory.CommentTrivia("' TODO Visual Basic does not support 'Default Constraint'"))
                 Return Factory.TypeConstraint(Factory.ParseTypeName("[default]").WithTrailingTrivia(commentTrivia))
             End Function
 
@@ -75,6 +76,11 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Dim elementTypeStr As String = arrayElementType.ToString
                     If elementTypeStr.EndsWith("?"c, StringComparison.OrdinalIgnoreCase) Then
                         arrayElementType = Factory.ParseTypeName(elementTypeStr.TrimEnd("?"c))
+                    End If
+                    If s_referenceTypes.Contains(elementTypeStr, StringComparer.OrdinalIgnoreCase) Then
+                        Return Factory.ArrayType(arrayElementType,
+                                             arrayType.RankSpecifiers).WithConvertedTriviaFrom(node)
+
                     End If
                     Return Factory.ArrayType(Factory.NullableType(arrayElementType),
                                              arrayType.RankSpecifiers).WithConvertedTriviaFrom(node)
@@ -167,7 +173,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
             Public Overrides Function VisitTypeParameterConstraintClause(node As CSS.TypeParameterConstraintClauseSyntax) As VB.VisualBasicSyntaxNode
                 Dim braces As (openBrace As SyntaxToken, closeBrace As SyntaxToken) = node.GetBraces
                 If node.Constraints.Count = 1 Then
-                    Return Factory.TypeParameterSingleConstraintClause(AsKeyword.WithTrailingTrivia(Factory.Space),
+                    Return Factory.TypeParameterSingleConstraintClause(AsKeyword.WithTrailingTrivia(SpaceTrivia),
                                                                        DirectCast(node.Constraints(0).Accept(Me), VBS.ConstraintSyntax))
                 End If
                 Return Factory.TypeParameterMultipleConstraintClause(AsKeyword,
@@ -191,13 +197,13 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         finalTrailingTrivia = finalTrailingTrivia.AddRange(itemWithTrivia.GetLeadingTrivia)
                     End If
                     finalTrailingTrivia = finalTrailingTrivia.AddRange(itemWithTrivia.GetTrailingTrivia)
-                    nodes.Add(itemWithTrivia.WithLeadingTrivia(Factory.Space).WithTrailingTrivia(Factory.Space))
+                    nodes.Add(itemWithTrivia.WithLeadingTrivia(SpaceTrivia).WithTrailingTrivia(SpaceTrivia))
                     separators.Add(CommaToken.WithConvertedTriviaFrom(csSeparators(index)))
                 Next
                 nodes.Add(DirectCast(node.Parameters.Last.Accept(Me).WithConvertedTrailingTriviaFrom(node.Parameters.Last), VBS.TypeParameterSyntax))
                 Dim parameters As SeparatedSyntaxList(Of VBS.TypeParameterSyntax) = Factory.SeparatedList(nodes, separators)
                 Return Factory.TypeParameterList(openParenToken,
-                                                 OfKeyword.WithTrailingTrivia(Factory.Space),
+                                                 OfKeyword.WithTrailingTrivia(SpaceTrivia),
                                                  parameters:=parameters,
                                                  CloseParenToken.WithConvertedTriviaFrom(node.GreaterThanToken).WithAppendedTrailingTrivia(finalTrailingTrivia)
                                                 )

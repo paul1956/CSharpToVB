@@ -52,10 +52,8 @@ Namespace CSharpToVBConverter
                         Select Case nextTrivia.RawKind
                             Case VB.SyntaxKind.CommentTrivia,
                              VB.SyntaxKind.DocumentationCommentTrivia
-                                newLeadingTrivia = newLeadingTrivia.AddRange({Factory.Space,
-                                                                    LineContinuation,
-                                                                    e.Value}
-                                                                   )
+                                newLeadingTrivia = newLeadingTrivia.AddRange(SpaceLineContinue)
+                                newLeadingTrivia = newLeadingTrivia.Add(e.Value)
                             Case VB.SyntaxKind.WhitespaceTrivia
                             Case VB.SyntaxKind.None
                                 If e.IsFirst Then
@@ -66,12 +64,12 @@ Namespace CSharpToVBConverter
                         End Select
                     Case VB.SyntaxKind.CommentTrivia
                         If e.IsFirst Then
-                            newLeadingTrivia = newLeadingTrivia.AddRange({Factory.Space, LineContinuation})
+                            newLeadingTrivia = newLeadingTrivia.AddRange(SpaceLineContinue)
                         End If
                         newLeadingTrivia = newLeadingTrivia.Add(e.Value)
                     Case VB.SyntaxKind.EndOfLineTrivia
                         If e.IsFirst Then
-                            newLeadingTrivia = newLeadingTrivia.Add(Factory.Space)
+                            newLeadingTrivia = newLeadingTrivia.Add(SpaceTrivia)
                             newLeadingTrivia = newLeadingTrivia.Add(LineContinuation)
                         End If
                         If Not nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
@@ -114,7 +112,7 @@ Namespace CSharpToVBConverter
                         End If
                     Case VB.SyntaxKind.EndOfLineTrivia
                         If e.IsFirst Then
-                            newTrailingTrivia = newTrailingTrivia.Add(Factory.Space)
+                            newTrailingTrivia = newTrailingTrivia.Add(SpaceTrivia)
                             newTrailingTrivia = newTrailingTrivia.Add(LineContinuation)
                         End If
                         If Not nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
@@ -213,7 +211,7 @@ Namespace CSharpToVBConverter
                             Next
                             If j < initialTriviaListUBound AndAlso initialTriviaList(j).IsComment Then
                                 If String.IsNullOrWhiteSpace(newWhiteSpaceString) Then
-                                    finalLeadingTrivia = finalLeadingTrivia.Add(Factory.Space)
+                                    finalLeadingTrivia = finalLeadingTrivia.Add(SpaceTrivia)
                                 Else
                                     finalLeadingTrivia = finalLeadingTrivia.Add(Factory.WhitespaceTrivia(newWhiteSpaceString))
                                 End If
@@ -227,11 +225,11 @@ Namespace CSharpToVBConverter
                         End If
                     Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
                         If Not afterWhiteSpace Then
-                            finalLeadingTrivia = finalLeadingTrivia.Add(Factory.Space)
+                            finalLeadingTrivia = finalLeadingTrivia.Add(SpaceTrivia)
                         End If
                         If Not afterLineContinuation Then
                             finalLeadingTrivia = finalLeadingTrivia.Add(LineContinuation)
-                            finalLeadingTrivia = finalLeadingTrivia.Add(Factory.Space)
+                            finalLeadingTrivia = finalLeadingTrivia.Add(SpaceTrivia)
                         End If
                         finalLeadingTrivia = finalLeadingTrivia.Add(trivia)
                         afterLineContinuation = False
@@ -258,7 +256,7 @@ Namespace CSharpToVBConverter
                         afterWhiteSpace = False
                     Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
                         If Not afterWhiteSpace = True Then
-                            finalTrailingTrivia = finalTrailingTrivia.Add(Factory.Space)
+                            finalTrailingTrivia = finalTrailingTrivia.Add(SpaceTrivia)
                         End If
                         finalTrailingTrivia = finalTrailingTrivia.AddRange({LineContinuation, trivia})
                         afterWhiteSpace = False
@@ -471,7 +469,7 @@ Namespace CSharpToVBConverter
             If (Not AttributesNotFound) AndAlso NodeModifier.RawKind = VB.SyntaxKind.EmptyToken AndAlso NodeModifier.HasLeadingTrivia AndAlso NodeModifier.LeadingTrivia.ContainsCommentOrDirectiveTrivia Then
                 statementTrailingTrivia = statementTrailingTrivia.Add(VBEOLTrivia)
                 statementTrailingTrivia = statementTrailingTrivia.AddRange(NodeModifier.LeadingTrivia)
-                NodeModifier = NodeModifier.WithLeadingTrivia(Factory.Space)
+                NodeModifier = NodeModifier.WithLeadingTrivia(SpaceTrivia)
             Else
                 NodeModifier = NodeModifier.WithLeadingTrivia(NodeModifier.RestructureModifierLeadingTrivia(i, AttributesNotFound, statementLeadingTrivia, statementTrailingTrivia))
             End If
@@ -480,7 +478,7 @@ Namespace CSharpToVBConverter
                 If statementLeadingTrivia.Any AndAlso statementLeadingTrivia.Last.RawKind <> VB.SyntaxKind.EndOfLineTrivia Then
                     statementLeadingTrivia = statementLeadingTrivia.Add(VBEOLTrivia)
                 End If
-                Return NodeModifier.WithTrailingTrivia(Factory.Space)
+                Return NodeModifier.WithTrailingTrivia(SpaceTrivia)
             End If
             Return NodeModifier.WithTrailingTrivia(RelocateDirectiveDisabledTrivia(NodeModifier.TrailingTrivia, statementTrailingTrivia, RemoveEOL:=True))
         End Function
@@ -591,7 +589,7 @@ Namespace CSharpToVBConverter
                                 Next
                                 If j < triviaListUBound AndAlso initialTriviaList(j).IsKind(VB.SyntaxKind.CommentTrivia) Then
                                     If String.IsNullOrWhiteSpace(newWhiteSpaceStr) Then
-                                        finalLeadingTrivia = finalLeadingTrivia.Add(Factory.Space)
+                                        finalLeadingTrivia = finalLeadingTrivia.Add(SpaceTrivia)
                                     Else
                                         finalLeadingTrivia = finalLeadingTrivia.Add(Factory.WhitespaceTrivia(newWhiteSpaceStr))
                                     End If
@@ -606,11 +604,11 @@ Namespace CSharpToVBConverter
                         Case VB.SyntaxKind.CommentTrivia
                             AfterEOL = False
                             If Not afterWhiteSpace Then
-                                finalLeadingTrivia = finalLeadingTrivia.Add(Factory.Space)
+                                finalLeadingTrivia = finalLeadingTrivia.Add(SpaceTrivia)
                             End If
                             If Not afterLineContinuation Then
                                 finalLeadingTrivia = finalLeadingTrivia.Add(LineContinuation)
-                                finalLeadingTrivia = finalLeadingTrivia.Add(Factory.Space)
+                                finalLeadingTrivia = finalLeadingTrivia.Add(SpaceTrivia)
                             End If
                             finalLeadingTrivia = finalLeadingTrivia.Add(e.Value)
                             afterLineContinuation = False
@@ -683,7 +681,7 @@ Namespace CSharpToVBConverter
                             If j = 0 OrElse (j < triviaListUBound AndAlso initialTriviaList(j).IsKind(VB.SyntaxKind.CommentTrivia)) Then
                                 If Not afterLineContinuation Then
                                     If String.IsNullOrWhiteSpace(newWhiteSpaceStr) Then
-                                        finalTrailingTrivia = finalTrailingTrivia.Add(Factory.Space)
+                                        finalTrailingTrivia = finalTrailingTrivia.Add(SpaceTrivia)
                                     Else
                                         finalTrailingTrivia = finalTrailingTrivia.Add(Factory.WhitespaceTrivia(newWhiteSpaceStr))
                                     End If
@@ -699,11 +697,11 @@ Namespace CSharpToVBConverter
                             End If
                         Case VB.SyntaxKind.CommentTrivia
                             If Not afterWhiteSpace Then
-                                finalTrailingTrivia = finalTrailingTrivia.Add(Factory.Space)
+                                finalTrailingTrivia = finalTrailingTrivia.Add(SpaceTrivia)
                             End If
                             If Not afterLineContinuation Then
                                 finalTrailingTrivia = finalTrailingTrivia.Add(LineContinuation)
-                                finalTrailingTrivia = finalTrailingTrivia.Add(Factory.Space)
+                                finalTrailingTrivia = finalTrailingTrivia.Add(SpaceTrivia)
                             End If
                             finalTrailingTrivia = finalTrailingTrivia.Add(trivia)
                             afterLineContinuation = False
@@ -723,7 +721,7 @@ Namespace CSharpToVBConverter
                 finalTrailingTrivia = finalTrailingTrivia.AddRange(Token.TrailingTrivia)
             End If
             If RequireTrailingSpace AndAlso Not finalTrailingTrivia.FirstOrDefault.IsWhitespaceOrEndOfLine Then
-                finalTrailingTrivia = finalTrailingTrivia.Insert(0, Factory.Space)
+                finalTrailingTrivia = finalTrailingTrivia.Insert(0, SpaceTrivia)
             End If
             Return Token.With(finalLeadingTrivia, finalTrailingTrivia)
 
