@@ -10,6 +10,7 @@ Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
+
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace CSharpToVBConverter.ToVisualBasic
@@ -29,6 +30,17 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     leadingTriviaList = leadingTriviaList.Add(Factory.CommentTrivia($"'    {s}"))
                 Next
                 Return leadingTriviaList
+            End Function
+
+            Private Shared Function FindMatchingStatement(indexedStatementList As List(Of (Integer, StatementSyntax)), Name As SimpleNameSyntax, ByRef StatementIndex As Integer, ByRef statement As LocalDeclarationStatementSyntax) As Boolean
+                For StatementIndex = 0 To indexedStatementList.Count - 1
+                    Dim stmtTuple As (nodeIndex As Integer, stmt As StatementSyntax) = indexedStatementList(StatementIndex)
+                    statement = CType(stmtTuple.stmt, LocalDeclarationStatementSyntax)
+                    If statement.Declarators(0).Names(0).Identifier.ValueText = Name.Identifier.ValueText Then
+                        Return True
+                    End If
+                Next
+                Return False
             End Function
 
             Private Shared Function GetTypeSyntaxFromPossibleAddressOf(vbSyntaxNode As VB.VisualBasicSyntaxNode) As TypeSyntax
@@ -846,17 +858,6 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                                                             Factory.SimpleArgument(CType(node.Right.Accept(Me), ExpressionSyntax))
                                                                                                        }))
                                                         )).WithConvertedTriviaFrom(node)
-            End Function
-
-            Private Shared Function FindMatchingStatement(indexedStatementList As List(Of (Integer, StatementSyntax)), Name As SimpleNameSyntax, ByRef StatementIndex As Integer, ByRef statement As LocalDeclarationStatementSyntax) As Boolean
-                For StatementIndex = 0 To indexedStatementList.Count - 1
-                    Dim stmtTuple As (nodeIndex As Integer, stmt As StatementSyntax) = indexedStatementList(StatementIndex)
-                    statement = CType(stmtTuple.stmt, LocalDeclarationStatementSyntax)
-                    If statement.Declarators(0).Names(0).Identifier.ValueText = Name.Identifier.ValueText Then
-                        Return True
-                    End If
-                Next
-                Return False
             End Function
 
             Public Overrides Function VisitAwaitExpression(node As CSS.AwaitExpressionSyntax) As VB.VisualBasicSyntaxNode
