@@ -37,9 +37,7 @@ Namespace CSharpToVBConverter
         Friend Function DirectiveNotAllowedHere(trivia As SyntaxTrivia) As SyntaxTriviaList
             Dim newTriviaList As New SyntaxTriviaList
             Dim leadingTriviaList As New SyntaxTriviaList
-            leadingTriviaList = leadingTriviaList.AddRange({Factory.Space,
-                                                        LineContinuation,
-                                                        Factory.Space})
+            leadingTriviaList = leadingTriviaList.AddRange(SpaceLineContinueSpace)
 
             Dim triviaAsString As String = ""
 
@@ -76,12 +74,8 @@ Namespace CSharpToVBConverter
             End Select
             Const msg As String = " ' TODO VB does not allow directives here, original directive: "
             newTriviaList = New SyntaxTriviaList
-            newTriviaList = newTriviaList.AddRange({
-            Factory.Space,
-            LineContinuation,
-            Factory.Space,
-            Factory.CommentTrivia($"{msg}{triviaAsString}".Replace("  ", " ", StringComparison.Ordinal).TrimEnd)
-            })
+            newTriviaList = newTriviaList.AddRange(SpaceLineContinueSpace)
+            newTriviaList = newTriviaList.Add(Factory.CommentTrivia($"{msg}{triviaAsString}".Replace("  ", " ", StringComparison.Ordinal).TrimEnd))
             Return newTriviaList
         End Function
 

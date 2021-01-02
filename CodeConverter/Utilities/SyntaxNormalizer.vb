@@ -490,7 +490,7 @@ Namespace CSharpToVBConverter
         End Function
 
         Private Function GetSpace() As SyntaxTrivia
-            Return If(_useElasticTrivia, Factory.ElasticSpace(), Factory.Space)
+            Return If(_useElasticTrivia, Factory.ElasticSpace(), SpaceTrivia)
         End Function
 
         Private Function LineBreaksBetween(currentToken As SyntaxToken, nextToken As SyntaxToken) As Integer
@@ -591,7 +591,7 @@ Namespace CSharpToVBConverter
                         If isTrailing Then
                             _afterIndentation = False
                         Else
-                            currentTriviaList = currentTriviaList.Add(Factory.Space)
+                            currentTriviaList = currentTriviaList.Add(SpaceTrivia)
                             _afterIndentation = True
                         End If
                         _afterLineBreak = False

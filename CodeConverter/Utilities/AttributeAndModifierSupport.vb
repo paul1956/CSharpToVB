@@ -79,7 +79,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     If firstModifier Then
                         Yield defaultVisibility.WithLeadingTrivia(newLeadingTrivia)
                         newLeadingTrivia = New SyntaxTriviaList
-                        newLeadingTrivia = newLeadingTrivia.Add(Factory.Space)
+                        newLeadingTrivia = newLeadingTrivia.Add(SpaceTrivia)
                         firstModifier = False
                     Else
                         Yield defaultVisibility
@@ -144,7 +144,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 vbModifier = vbModifier.WithPrependedLeadingTrivia(newLeadingTrivia)
                 If Not (vbModifier.IsKind(VB.SyntaxKind.None) OrElse vbModifier.IsKind(VB.SyntaxKind.EmptyToken)) Then
                     newLeadingTrivia = New SyntaxTriviaList
-                    newLeadingTrivia = newLeadingTrivia.Add(Factory.Space)
+                    newLeadingTrivia = newLeadingTrivia.Add(SpaceTrivia)
                     ModifyTrailingTrivia(vbModifier.LeadingTrivia, newTrailingTrivia)
                     ModifyTrailingTrivia(vbModifier.TrailingTrivia, newTrailingTrivia)
                     Yield vbModifier.With(newLeadingTrivia, newTrailingTrivia)
@@ -169,7 +169,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     If statementLeadingTrivia.Any AndAlso statementLeadingTrivia.Last.IsWhitespaceOrEndOfLine Then
                         NewAttributeLeadingTrivia = NewAttributeLeadingTrivia.Add(attributeList.GetLeadingTrivia.Last)
                     Else
-                        NewAttributeLeadingTrivia = NewAttributeLeadingTrivia.Add(Factory.Space)
+                        NewAttributeLeadingTrivia = NewAttributeLeadingTrivia.Add(SpaceTrivia)
                     End If
                 Else
                     RelocateAttributeDirectiveDisabledTrivia(e.Value.GetLeadingTrivia, foundDirective, isTheoryOrInlineData, statementLeadingTrivia, statementTrailingTrivia)

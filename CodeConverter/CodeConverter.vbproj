@@ -16,12 +16,12 @@
     <Product>VB Core Code Converter</Product>
     <RepositoryUrl>https://github.com/paul1956/CSharpToVB</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <AssemblyVersion>5.0.0.18</AssemblyVersion>
-    <FileVersion>5.0.0.18</FileVersion>
+    <AssemblyVersion>5.0.0.19</AssemblyVersion>
+    <FileVersion>5.0.0.19</FileVersion>
     <Copyright>Copyright (c) .NET Foundation and Contributors</Copyright>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-    <Version>5.0.0.18</Version>
+    <Version>5.0.0.19</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis" Version="3.8.0" />

@@ -121,6 +121,10 @@ Namespace CSharpToVBConverter
             Return newTrivia.ToSyntaxTriviaList
         End Function
 
+        Private Function IsStatementDictionaryEmpty() As Boolean
+            Return Not s_statementDictionary.Any
+        End Function
+
         Friend Function AddFinalTriviaToField(node As CSS.FieldDeclarationSyntax) As List(Of StatementSyntax)
             Dim statementList As New List(Of StatementSyntax)
             If Not s_statementDictionary.ContainsKey(node) Then
@@ -133,7 +137,7 @@ Namespace CSharpToVBConverter
                     s_statementDictionary.Remove(node)
                 End If
             Next
-            If StatementDictionaryEmpty() Then
+            If IsStatementDictionaryEmpty() Then
                 s_statementSupportTupleList.Clear()
             End If
             Return statementList
@@ -263,6 +267,32 @@ Namespace CSharpToVBConverter
                 builder.Append(statement.ToFullString)
             Next
             Return builder.ToString()
+        End Function
+
+        <Extension>
+        Friend Function GetStatementsForNode(node As CS.CSharpSyntaxNode, kind As VB.SyntaxKind) As List(Of (Integer, StatementSyntax))
+            Dim statements As New List(Of (Integer, StatementSyntax))
+
+            If node Is Nothing Then
+                Return statements
+            End If
+
+            If s_statementDictionary.Count = 0 Then
+                Return statements
+            End If
+
+            Dim newNodesList As New List(Of StatementSyntax)
+            If Not s_statementDictionary.ContainsKey(node) Then
+                Return statements
+            End If
+            Dim index As Integer = s_statementDictionary(node)
+
+            For Each stmtTuple As (index As Integer, statement As StatementSyntax, StatementHandling As StatementHandlingOption) In s_statementSupportTupleList
+                If stmtTuple.index = index AndAlso stmtTuple.statement.Kind = kind Then
+                    statements.Add((index, stmtTuple.statement))
+                End If
+            Next
+            Return statements
         End Function
 
         Friend Function GetStatementwithIssues(node As CS.CSharpSyntaxNode, Optional ReportErrors As Boolean = True) As CS.CSharpSyntaxNode
@@ -421,6 +451,26 @@ Namespace CSharpToVBConverter
             Return statement.WithPrependedLeadingTrivia(newNodesList(0).GetLeadingTrivia)
         End Function
 
+        Friend Sub RemoveMarkedStatement(node As CS.CSharpSyntaxNode, StatementToBeRemoved As VB.VisualBasicSyntaxNode)
+            Dim index As Integer = s_statementDictionary(node)
+            Dim nodeToBeRemoved As Integer = 0
+            Dim totalStatmentForNode As Integer = 0
+            For i As Integer = 0 To s_statementSupportTupleList.Count - 1
+                Dim stmtTuple As (index As Integer, statement As VB.VisualBasicSyntaxNode, RemoveStatement As StatementHandlingOption) = s_statementSupportTupleList(i)
+                If stmtTuple.index = index Then
+                    totalStatmentForNode += 1
+                    If stmtTuple.statement.ToString = StatementToBeRemoved.ToString Then
+                        nodeToBeRemoved = i
+                    End If
+                End If
+            Next
+            s_statementSupportTupleList.RemoveAt(nodeToBeRemoved)
+            If totalStatmentForNode = 1 Then
+                s_statementDictionary.Remove(node)
+            End If
+
+        End Sub
+
         Friend Function ReplaceOneStatementWithMarkedStatements(node As CS.CSharpSyntaxNode, statement As StatementSyntax, Optional RemoveStatement As Boolean = False) As SyntaxList(Of StatementSyntax)
             Return ReplaceStatementsWithMarkedStatements(node, Factory.SingletonList(statement), RemoveStatement)
         End Function
@@ -428,6 +478,7 @@ Namespace CSharpToVBConverter
         Friend Function ReplaceStatementsWithMarkedStatements(node As CS.CSharpSyntaxNode, statements As List(Of StatementSyntax), Optional RemoveStatement As Boolean = False) As SyntaxList(Of StatementSyntax)
             Return ReplaceStatementsWithMarkedStatements(node, Factory.List(statements), RemoveStatement)
         End Function
+
 
         Friend Function ReplaceStatementsWithMarkedStatements(node As CS.CSharpSyntaxNode, statements As SyntaxList(Of StatementSyntax), Optional RemoveStatement As Boolean = False) As SyntaxList(Of StatementSyntax)
             If node Is Nothing Then
@@ -453,7 +504,7 @@ Namespace CSharpToVBConverter
                 End If
             Next
             s_statementDictionary.Remove(node)
-            If StatementDictionaryEmpty() Then
+            If IsStatementDictionaryEmpty() Then
                 s_statementSupportTupleList.Clear()
             End If
             If Not RemoveStatement Then
@@ -470,10 +521,6 @@ Namespace CSharpToVBConverter
             End If
             newNodesList.AddRange(New List(Of StatementSyntax))
             Return Factory.List(newNodesList)
-        End Function
-
-        Friend Function StatementDictionaryEmpty() As Boolean
-            Return Not s_statementDictionary.Any
         End Function
 
         ''' <summary>

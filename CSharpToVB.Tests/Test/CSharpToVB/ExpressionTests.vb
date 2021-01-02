@@ -208,6 +208,7 @@ End Class")
     End Sub
 End Class")
         End Sub
+
         <Fact>
         Public Shared Sub CSharpToVBCompoundAssignmentTest()
             TestConversionCSharpToVisualBasic(
@@ -475,6 +476,7 @@ End Class")
     End Sub
 End Class")
         End Sub
+
         <Fact>
         Public Shared Sub CSharpToVBElvisOperatorExpression()
             TestConversionCSharpToVisualBasic("class TestClass
@@ -1009,6 +1011,7 @@ End Class")
     End Sub
 End Class")
         End Sub
+
         <Fact>
         Public Shared Sub CSharpToVBLinq4MultiLine()
             TestConversionCSharpToVisualBasic("class TestClass
@@ -1414,6 +1417,8 @@ class TestClass
 End Class")
         End Sub
 
+#Region "Tuple Tests"
+
         <Fact>
         Public Shared Sub CSharpToVBTupleAssignment()
             TestConversionCSharpToVisualBasic("class TestClass
@@ -1442,6 +1447,31 @@ End Class")
     Function GetProjectFileReplacementRegexes() As IEnumerable(Of (String, String))
 
 End Interface")
+        End Sub
+
+        <Fact>
+        Public Shared Sub CSharpToVBTupleDeconstruction()
+            TestConversionCSharpToVisualBasic("using System; //Not required in VB due to global imports
+
+    static class Program
+    {
+        private static void Main(string[] args)
+        {
+             // Test infrastructure will wrap after : but VS will not
+             (string[] types, string[] names, string[]? fields) = ExtractProperties(parser);
+        }
+    }
+", "Module Program
+
+    Private Sub Main(args As String())
+        ' Test infrastructure will wrap after : but VS will not
+        Dim TupleTempVar As (String(), String(), String()) = ExtractProperties(parser) :
+        Dim types As String() = TupleTempVar.item1 :
+        Dim names As String() = TupleTempVar.item2 :
+        Dim fields As String() = TupleTempVar.item3
+    End Sub
+
+End Module")
         End Sub
 
         <Fact>
@@ -1479,6 +1509,8 @@ Namespace PreHOPL
     End Module
 End Namespace")
         End Sub
+
+#End Region
 
         <Fact>
         Public Shared Sub CSharpToVBValueWithExpression()
@@ -1591,6 +1623,7 @@ public class InheritanceExample
     End Sub
 End Class")
         End Sub
+
     End Class
 
 End Namespace

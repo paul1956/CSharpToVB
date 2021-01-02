@@ -215,10 +215,11 @@ Namespace CSharpToVBConverter
 
 #Region "Types"
 
-#Region "Predefined Types"
-
         Public ReadOnly HandleRefType As TypeSyntax = Factory.ParseTypeName("HandleRefType")
         Public ReadOnly IntPtrType As TypeSyntax = Factory.ParseTypeName("IntPtr")
+
+#Region "Predefined Types"
+
         Public ReadOnly PredefinedTypeBoolean As TypeSyntax = Factory.PredefinedType(BooleanKeyword)
         Public ReadOnly PredefinedTypeByte As TypeSyntax = Factory.PredefinedType(ByteKeyword)
         Public ReadOnly PredefinedTypeChar As TypeSyntax = Factory.PredefinedType(CharKeyword)
@@ -243,7 +244,37 @@ Namespace CSharpToVBConverter
 #Region "Trivia"
 
         Public ReadOnly LineContinuation As SyntaxTrivia = Factory.LineContinuationTrivia("_")
+        Public ReadOnly SpaceTrivia As SyntaxTrivia = Factory.Space
         Public ReadOnly VBEOLTrivia As SyntaxTrivia = Factory.EndOfLineTrivia(vbCrLf)
+
+#Region "Lists"
+        Public ReadOnly LineContinueSpace As New List(Of SyntaxTrivia) From {
+           LineContinuation,
+           SpaceTrivia
+        }
+        Public ReadOnly SpaceLineContinue As New List(Of SyntaxTrivia) From {
+            SpaceTrivia,
+            LineContinuation
+        }
+
+        Public ReadOnly SpaceLineContinueEOL As New List(Of SyntaxTrivia) From {
+            SpaceTrivia,
+            LineContinuation,
+            VBEOLTrivia
+            }
+
+        Public ReadOnly SpaceLineContinueSpace As New List(Of SyntaxTrivia) From {
+            SpaceTrivia,
+            LineContinuation,
+            SpaceTrivia
+            }
+
+        Public ReadOnly ColonTrivia As New List(Of SyntaxTrivia) From {
+            SpaceTrivia,
+            Factory.ColonTrivia(":"),
+            SpaceTrivia}
+
+#End Region
 
 #End Region
 
@@ -263,13 +294,18 @@ Namespace CSharpToVBConverter
 
 #Region "Modifier Lists"
 
-        Public ReadOnly DimModifier As SyntaxTokenList = Factory.TokenList(DimKeyword.WithTrailingTrivia(Factory.Space))
+        Public ReadOnly DimModifier As SyntaxTokenList = Factory.TokenList(DimKeyword.WithTrailingTrivia(SpaceTrivia))
         Public ReadOnly FriendModifier As SyntaxTokenList = Factory.TokenList(FriendKeyword)
         Public ReadOnly PrivateModifier As SyntaxTokenList = Factory.TokenList(PrivateKeyword)
         Public ReadOnly ProtectedModifier As SyntaxTokenList = Factory.TokenList(ProtectedKeyword)
         Public ReadOnly PublicModifier As SyntaxTokenList = Factory.TokenList(PublicKeyword)
 
 #End Region
+
+        Public ReadOnly s_referenceTypes As New List(Of String) From {
+                "string",
+                "object"
+            }
 
 #End Region
 
@@ -289,21 +325,21 @@ Namespace CSharpToVBConverter
         End Function
 
         Friend Function FactoryDimStatement(Name As SyntaxToken, asClause As AsClauseSyntax, initializer As EqualsValueSyntax) As LocalDeclarationStatementSyntax
-            Dim modifiedIdentifier As ModifiedIdentifierSyntax = Factory.ModifiedIdentifier(Name).WithTrailingTrivia(Factory.Space)
+            Dim modifiedIdentifier As ModifiedIdentifierSyntax = Factory.ModifiedIdentifier(Name).WithTrailingTrivia(SpaceTrivia)
             Dim names As SeparatedSyntaxList(Of ModifiedIdentifierSyntax) = Factory.SingletonSeparatedList(modifiedIdentifier)
             Dim declarator As VariableDeclaratorSyntax = Factory.VariableDeclarator(names, asClause, initializer)
             Return FactoryDimStatement(declarator)
         End Function
 
         Friend Function FactoryEndBlockStatement(EndBlockKind As SyntaxKind, BlockKeyword As SyntaxToken, finaltrivia As SyntaxTriviaList) As EndBlockStatementSyntax
-            Return Factory.EndBlockStatement(EndBlockKind, EndKeyword.WithTrailingTrivia(Factory.Space), BlockKeyword).WithAppendedTrailingTrivia(finaltrivia).WithTrailingEOL
+            Return Factory.EndBlockStatement(EndBlockKind, EndKeyword.WithTrailingTrivia(SpaceTrivia), BlockKeyword).WithAppendedTrailingTrivia(finaltrivia).WithTrailingEOL
         End Function
 
         Public ReadOnly FactoryImportComilierServices As ImportsStatementSyntax = Factory.ImportsStatement(Factory.SingletonSeparatedList(Of ImportsClauseSyntax)(Factory.SimpleImportsClause(Factory.IdentifierName(CompilerServices)))).WithAppendedEOL
         Public ReadOnly FactoryImportInteropServices As ImportsStatementSyntax = Factory.ImportsStatement(Factory.SingletonSeparatedList(Of ImportsClauseSyntax)(Factory.SimpleImportsClause(Factory.IdentifierName(InteropServices)))).WithAppendedEOL
 
         Friend Function FactoryTypeArgumentList(DictionaryTypeElement As List(Of TypeSyntax)) As TypeArgumentListSyntax
-            Return Factory.TypeArgumentList(openParenToken, OfKeyword.WithTrailingTrivia(Factory.Space), Factory.SeparatedList(DictionaryTypeElement), CloseParenToken)
+            Return Factory.TypeArgumentList(openParenToken, OfKeyword.WithTrailingTrivia(SpaceTrivia), Factory.SeparatedList(DictionaryTypeElement), CloseParenToken)
         End Function
 
 #End Region

@@ -65,7 +65,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     If returnType.GetTrailingTrivia.Any AndAlso returnType.GetTrailingTrivia.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
                         Dim trailingTrivia As New SyntaxTriviaList
                         trailingTrivia = trailingTrivia.AddRange(returnType.GetTrailingTrivia)
-                        trailingTrivia = trailingTrivia.InsertRange(trailingTrivia.Count - 1, {Factory.Space, LineContinuation})
+                        trailingTrivia = trailingTrivia.InsertRange(trailingTrivia.Count - 1, SpaceLineContinue)
                         returnType = returnType.WithTrailingTrivia(trailingTrivia)
                     End If
                     If returnType IsNot Nothing Then
@@ -92,8 +92,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     If Not AllImports.ContainsName(InteropServices) Then
                         AllImports.Add(FactoryImportInteropServices)
                     End If
-
-                    newAttributes = {Factory.AttributeList(Factory.SingletonSeparatedList(OutAttribute))}
+                    newAttributes = {Factory.AttributeList(Factory.SingletonSeparatedList(OutAttribute)).WithConvertedLeadingTriviaFrom(node.Modifiers(node.Modifiers.IndexOf(CS.SyntaxKind.OutKeyword)))}
                 Else
                     newAttributes = Array.Empty(Of VBS.AttributeListSyntax)
                 End If
@@ -101,7 +100,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim parameterTrailingTrivia As New SyntaxTriviaList
 
                 Dim id As SyntaxToken = GenerateSafeVBToken(node.Identifier, node, _usedIdentifiers, _semanticModel).
-                    WithTrailingTrivia(Factory.Space)
+                    WithTrailingTrivia(SpaceTrivia)
 
                 Dim typeLeadingTrivia As New SyntaxTriviaList
                 If node.Type IsNot Nothing Then
@@ -116,7 +115,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         typeLeadingTrivia = typeLeadingTrivia.InsertRange(0, modifiers(0).LeadingTrivia)
                         modifiers(0) = modifiers(0).WithLeadingTrivia(typeLeadingTrivia)
                     End If
-                    id = id.WithLeadingTrivia(Factory.Space)
+                    id = id.WithLeadingTrivia(SpaceTrivia)
                 Else
                     id = id.WithLeadingTrivia(typeLeadingTrivia)
                 End If
@@ -132,7 +131,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Next
                 Next
                 originalAttributeListWithTrivia = If(originalAttributeListHasOut, originalAttributeListWithTrivia, newAttributes.Concat(originalAttributeListWithTrivia)).ToList
-                Dim leadingIndent As SyntaxTrivia = Factory.Space
+                Dim leadingIndent As SyntaxTrivia = SpaceTrivia
 
                 If originalAttributeListWithTrivia.Any Then
                     For index As Integer = 0 To originalAttributeListWithTrivia.Count - 1
@@ -142,7 +141,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         Dim foundEOL As Boolean = False
                         For Each e As IndexClass(Of SyntaxTrivia) In originalAttributeListWithTrivia(index).GetLeadingTrivia.WithIndex
                             Dim trivia As SyntaxTrivia = e.Value
-                            If e.IsFirst AndAlso trivia.RawKind = VB.SyntaxKind.WhitespaceTrivia Then
+                            If e.IsFirst AndAlso trivia.RawKind = VB.SyntaxKind.WhitespaceTrivia AndAlso trivia.FullSpan.Length > 0 Then
                                 If index = 0 Then
                                     leadingIndent = trivia
                                 End If
@@ -154,7 +153,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                     If returnType IsNot Nothing Then
                                         parameterTrailingTrivia = parameterTrailingTrivia.Add(trivia)
                                     Else
-                                        attributeTrailingTrivia = attributeTrailingTrivia.Add(Factory.Space)
+                                        attributeTrailingTrivia = attributeTrailingTrivia.Add(SpaceTrivia)
                                         attributeTrailingTrivia = attributeTrailingTrivia.Add(trivia)
                                         needEOL = True
                                     End If
@@ -167,7 +166,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                     needEOL = False
                                 Case VB.SyntaxKind.WhitespaceTrivia
                                     If attributeLeadingTrivia.Any AndAlso attributeLeadingTrivia.Last.RawKind <> VB.SyntaxKind.WhitespaceTrivia Then
-                                        attributeLeadingTrivia = attributeLeadingTrivia.Add(Factory.Space)
+                                        attributeLeadingTrivia = attributeLeadingTrivia.Add(SpaceTrivia)
                                     End If
                                     needEOL = False
                                 Case VB.SyntaxKind.DisableWarningDirectiveTrivia
@@ -185,7 +184,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                     If returnType IsNot Nothing Then
                                         parameterTrailingTrivia = parameterTrailingTrivia.Add(t)
                                     Else
-                                        attributeTrailingTrivia = attributeTrailingTrivia.Add(Factory.Space)
+                                        attributeTrailingTrivia = attributeTrailingTrivia.Add(SpaceTrivia)
                                         attributeTrailingTrivia = attributeTrailingTrivia.Add(t)
                                         foundComment = True
                                     End If
@@ -299,7 +298,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     If foundEOL Then
                         parameterTrailingTrivia = parameterTrailingTrivia.Add(VBEOLTrivia)
                     End If
-                    returnType = returnType.WithLeadingTrivia(If(returnType.GetLeadingTrivia.FirstOrDefault.FullWidth > 0, Nothing, Factory.Space)).WithoutTrailingTrivia
+                    returnType = returnType.WithLeadingTrivia(If(returnType.GetLeadingTrivia.FirstOrDefault.FullWidth > 0, Nothing, SpaceTrivia)).WithoutTrailingTrivia
                     asClause = Factory.SimpleAsClause(returnType).WithTrailingTrivia(parameterTrailingTrivia)
                 Else
                     identifier = identifier.WithTrailingTrivia(parameterTrailingTrivia)
@@ -309,7 +308,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                                                                 Factory.TokenList(modifiers),
                                                                                 identifier,
                                                                                 asClause,
-                                                                                defaultValue) ' .WithLeadingTrivia(Factory.Space)
+                                                                                defaultValue) ' .WithLeadingTrivia(SpaceTrivia)
                 Return parameterSyntax1
             End Function
 

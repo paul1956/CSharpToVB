@@ -60,7 +60,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         finalLeadingTrivia = finalLeadingTrivia.Add(trivia)
                         afterWhiteSpace = False
                         If finalLeadingTrivia.Count = 1 OrElse nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                            finalLeadingTrivia = finalLeadingTrivia.Add(Factory.Space)
+                            finalLeadingTrivia = finalLeadingTrivia.Add(SpaceTrivia)
                             finalLeadingTrivia = finalLeadingTrivia.Add(LineContinuation)
                             afterLineContinuation = True
                         Else
@@ -71,7 +71,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         afterFirstTrivia = True
                         If Not afterLineContinuation OrElse afterEOL Then
                             If Not afterWhiteSpace Then
-                                finalLeadingTrivia = finalLeadingTrivia.Add(Factory.Space)
+                                finalLeadingTrivia = finalLeadingTrivia.Add(SpaceTrivia)
                             End If
                             finalLeadingTrivia = finalLeadingTrivia.Add(LineContinuation)
                             afterLineContinuation = False
@@ -142,7 +142,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                 finalTrailingTriviaList = finalTrailingTriviaList.Add(trivia)
                             Else
                                 If SeparatorFollows Then
-                                    finalTrailingTriviaList = finalTrailingTriviaList.Add(Factory.Space)
+                                    finalTrailingTriviaList = finalTrailingTriviaList.Add(SpaceTrivia)
                                     finalTrailingTriviaList = finalTrailingTriviaList.Add(LineContinuation)
                                     finalTrailingTriviaList = finalTrailingTriviaList.Add(trivia)
                                 Else
@@ -156,11 +156,11 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         End If
                     Case VB.SyntaxKind.CommentTrivia
                         If Not afterWhiteSpace Then
-                            finalTrailingTriviaList = finalTrailingTriviaList.Add(Factory.Space)
+                            finalTrailingTriviaList = finalTrailingTriviaList.Add(SpaceTrivia)
                         End If
                         If Not afterLineContinuation Then
                             finalTrailingTriviaList = finalTrailingTriviaList.Add(LineContinuation)
-                            finalTrailingTriviaList = finalTrailingTriviaList.Add(Factory.Space)
+                            finalTrailingTriviaList = finalTrailingTriviaList.Add(SpaceTrivia)
                         End If
                         finalTrailingTriviaList = finalTrailingTriviaList.Add(trivia)
                         If Not nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
@@ -241,13 +241,13 @@ Namespace CSharpToVBConverter.ToVisualBasic
                             afterWhiteSpace = False
                             If index < NodesOrTokens.Count - 1 Then
                                 If finalLeadingTrivia.Count = 0 Then
-                                    finalLeadingTrivia = finalLeadingTrivia.AddRange({Factory.Space, LineContinuation})
+                                    finalLeadingTrivia = finalLeadingTrivia.AddRange(SpaceLineContinue)
                                 End If
                             End If
                         End If
                     Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
                         If Not afterWhiteSpace Then
-                            finalLeadingTrivia = finalLeadingTrivia.Add(Factory.Space)
+                            finalLeadingTrivia = finalLeadingTrivia.Add(SpaceTrivia)
                         End If
                         finalLeadingTrivia = finalLeadingTrivia.AddRange({LineContinuation, e.Value})
                         If Not nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
@@ -290,8 +290,9 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                 Next
                             End If
                             If (Not IsStatement) OrElse ((Not e.IsLast) AndAlso e.Value.IsComment) Then
-                                Dim whitespaceTrivia As SyntaxTrivia = If(newWhiteSpaceString.Length = 0, Factory.Space, Factory.WhitespaceTrivia(newWhiteSpaceString))
-                                finalTrailingTrivia = finalTrailingTrivia.AddRange({Factory.Space, LineContinuation, whitespaceTrivia, e.Value})
+                                finalTrailingTrivia = finalTrailingTrivia.AddRange(SpaceLineContinue)
+                                finalTrailingTrivia = finalTrailingTrivia.AddRange({GetWhiteSpaceTrivia(newWhiteSpaceString.Length),
+                                                                                   e.Value})
                                 afterLineContinuation = True
                             Else
                                 finalTrailingTrivia = finalTrailingTrivia.Add(e.Value)
@@ -306,11 +307,11 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         End If
                     Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
                         If Not afterWhiteSpace Then
-                            finalTrailingTrivia = finalTrailingTrivia.Add(Factory.Space)
+                            finalTrailingTrivia = finalTrailingTrivia.Add(SpaceTrivia)
                         End If
                         If Not afterLineContinuation Then
                             finalTrailingTrivia = finalTrailingTrivia.Add(LineContinuation)
-                            finalTrailingTrivia = finalTrailingTrivia.Add(Factory.Space)
+                            finalTrailingTrivia = finalTrailingTrivia.Add(SpaceTrivia)
                         End If
                         finalTrailingTrivia = finalTrailingTrivia.Add(e.Value)
                         afterLineContinuation = False
@@ -479,15 +480,12 @@ Namespace CSharpToVBConverter.ToVisualBasic
                             Continue For
                         End If
                         If Not afterLinefeed Then
-                            If afterComment OrElse afterLineContinuation Then
-                                finalTrailingTrivia = finalTrailingTrivia.Add(trivia)
-                            Else
+                            If Not (afterComment OrElse afterLineContinuation) Then
                                 If SeparatorFollows Then
-                                    finalTrailingTrivia = finalTrailingTrivia.AddRange(
-                                        {Factory.Space, LineContinuation, trivia}
-                                        )
+                                    finalTrailingTrivia = finalTrailingTrivia.AddRange(SpaceLineContinue)
                                 End If
                             End If
+                            finalTrailingTrivia = finalTrailingTrivia.Add(trivia)
                             afterComment = False
                             afterLinefeed = True
                             afterWhiteSpace = False
@@ -495,10 +493,10 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         End If
                     Case VB.SyntaxKind.CommentTrivia
                         If Not afterWhiteSpace Then
-                            finalTrailingTrivia = finalTrailingTrivia.Add(Factory.Space)
+                            finalTrailingTrivia = finalTrailingTrivia.Add(SpaceTrivia)
                         End If
                         If Not afterLineContinuation Then
-                            finalTrailingTrivia = finalTrailingTrivia.AddRange({LineContinuation, Factory.Space})
+                            finalTrailingTrivia = finalTrailingTrivia.AddRange({LineContinuation, SpaceTrivia})
                         End If
                         finalTrailingTrivia = finalTrailingTrivia.Add(trivia)
                         If Not nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
