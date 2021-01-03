@@ -281,6 +281,7 @@ Namespace CSharpToVBConverter
 #Region "Expressions"
 
         Public ReadOnly CloneIdentifier As IdentifierNameSyntax = Factory.IdentifierName("Clone")
+        Public ReadOnly MemberwiseCloneIdentifier As IdentifierNameSyntax = Factory.IdentifierName("MemberwiseClone")
         Public ReadOnly DoubleQuoteExpression As LiteralExpressionSyntax = Factory.LiteralExpression(SyntaxKind.StringLiteralExpression, Factory.Literal(""))
         Public ReadOnly IntPrtSizeExpression As ExpressionSyntax = Factory.ParseExpression("IntPrt.Size")
         Public ReadOnly MeExpression As MeExpressionSyntax = Factory.MeExpression()

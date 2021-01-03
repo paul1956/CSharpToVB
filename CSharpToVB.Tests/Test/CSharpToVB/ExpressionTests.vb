@@ -1547,7 +1547,7 @@ public class InheritanceExample
         End Sub
 
         Friend Function Clone() As Point
-            Return Me.Clone
+            Return DirectCast(Me.MemberwiseClone, Point)
         End Function
 
         Public Overrides Function Equals(anotherObject As Object) As Boolean

@@ -438,7 +438,10 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                                                                            implementsClause:=Nothing
                                                                                           )
 
-                    Dim cloneStatement As SyntaxList(Of VBS.StatementSyntax) = Factory.SingletonList(Of VBS.StatementSyntax)(Factory.ReturnStatement(Factory.SimpleMemberAccessExpression(MeExpression, CloneIdentifier)))
+                    ' DirectCast(Me.MemberwiseClone(), Point)
+                    Dim cloneStatement As SyntaxList(Of VBS.StatementSyntax) = Factory.SingletonList(Of VBS.StatementSyntax)(
+                        Factory.ReturnStatement(Factory.DirectCastExpression(Factory.SimpleMemberAccessExpression(MeExpression, MemberwiseCloneIdentifier), recordTypeName))
+                        )
                     members.Add(Factory.FunctionBlock(cloneFuncStmt, cloneStatement))
                 End If
 
