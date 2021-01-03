@@ -549,9 +549,8 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim getHashCodeStatement As SyntaxList(Of VBS.StatementSyntax) = Factory.SingletonList(Of VBS.StatementSyntax)(Factory.ReturnStatement(myBaseInvocationExpr))
                 members.Add(Factory.FunctionBlock(getHashCodeFuncStmt, getHashCodeStatement))
 
-                '     Public Overrides Function ToString() As String
-                '         Return MyBase.ToString()
-                '     End Function
+                ' Public Overrides Function ToString() As String
+                ' NamedPoint { X = 5, Y = 3, Name = A }
                 Dim toStringIdent As VBS.SimpleNameSyntax = Factory.IdentifierName("ToString")
                 Dim toStringFuncStmt As VBS.MethodStatementSyntax = Factory.FunctionStatement(attributeLists:=Nothing,
                                                                                            PublicModifier.Add(OverridesKeyword),
@@ -563,12 +562,21 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                                                                            implementsClause:=Nothing
                                                                                           )
 
-                myBaseInvocationExpr = Factory.InvocationExpression(Factory.MemberAccessExpression(VB.SyntaxKind.SimpleMemberAccessExpression,
-                                                                                                   MyBaseExpression,
-                                                                                                   DotToken,
-                                                                                                   Factory.IdentifierName(toStringIdent.Identifier)),
-                                                                    Factory.ArgumentList())
-                Dim toStringStatement As SyntaxList(Of VBS.StatementSyntax) = Factory.SingletonList(Of VBS.StatementSyntax)(Factory.ReturnStatement(myBaseInvocationExpr))
+                Dim contents As New SyntaxList(Of VBS.InterpolatedStringContentSyntax)
+                Dim nameOfRecordText As String = $"{recordTypeName} = {{{{ "
+                contents = contents.Add(Factory.InterpolatedStringText(Factory.InterpolatedStringTextToken(nameOfRecordText, nameOfRecordText)))
+                For Each e As IndexClass(Of VBS.SimpleNameSyntax) In fullElementList.WithIndex
+                    contents = contents.Add(Factory.InterpolatedStringText(Factory.InterpolatedStringTextToken($"{e.Value} = ", $"{e.Value} = ")))
+                    contents = contents.Add(Factory.Interpolation(Factory.SimpleMemberAccessExpression(MeExpression, e.Value)))
+                    If e.IsLast Then
+                        contents = contents.Add(Factory.InterpolatedStringText(Factory.InterpolatedStringTextToken(" }}", " }}")))
+                    Else
+                        contents = contents.Add(Factory.InterpolatedStringText(Factory.InterpolatedStringTextToken(", ", ", ")))
+                    End If
+                Next
+
+                Dim interpolatedString As VBS.ExpressionSyntax = Factory.InterpolatedStringExpression(contents)
+                Dim toStringStatement As SyntaxList(Of VBS.StatementSyntax) = Factory.SingletonList(Of VBS.StatementSyntax)(Factory.ReturnStatement(interpolatedString))
                 members.Add(Factory.FunctionBlock(toStringFuncStmt, toStringStatement))
 
                 Dim listOfAttributes As SyntaxList(Of VBS.AttributeListSyntax) = Factory.List(node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))

@@ -1567,7 +1567,7 @@ public class InheritanceExample
         End Function
 
         Public Overrides Function ToString() As String
-            Return MyBase.ToString()
+            Return $""Point = {{ X = {Me.X}, Y = {Me.Y} }}""
         End Function
     End Class
 
@@ -1604,7 +1604,7 @@ public class InheritanceExample
         End Function
 
         Public Overrides Function ToString() As String
-            Return MyBase.ToString()
+            Return $""NamedPoint = {{ Name = {Me.Name}, X = {Me.X}, Y = {Me.Y} }}""
         End Function
     End Class
 
