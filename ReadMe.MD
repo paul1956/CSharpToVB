@@ -63,6 +63,11 @@ Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpec
 Any changes to CSharpToVB application needs to change the version information in the project file **AND** in MyProject/AssemblyInfo.vb until Visual Studio is able to general file automatically for a WinForms application.
 
 ## What's New in this release
+  New in 5.0.0.25/5.0.0.20
+  - Add support for foreach variable with variable is a Tuple
+  - Fix custom events to include RaiseEvent
+  - Fix when Namespace and Class names are the same just differing by case
+
   New in 5.0.0.25/5.0.0.19
   - Clean up Tuple Deconstruction
   - Optimize some trivia by creating them at startup

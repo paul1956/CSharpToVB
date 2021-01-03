@@ -501,7 +501,34 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVBForEachStatementWithExplicitType()
+        Public Shared Sub CSharpToVBForEachMultiline()
+            TestConversionCSharpToVisualBasic(
+"class TestClass {
+    void TestMethod(IEnumerable<int> counts) {
+        int summary = 0;
+        Action action = () => {
+            foreach(var c in counts) {
+                var current = c;
+                summary += current;
+            }
+        };
+    }
+}", "Class TestClass
+
+    Private Sub TestMethod(counts As IEnumerable(Of Integer))
+        Dim summary As Integer = 0
+        Dim action1 As Action = Sub()
+                                    For Each c In counts
+                                        Dim current = c
+                                        summary += current
+                                    Next
+                                End Sub
+    End Sub
+End Class")
+        End Sub
+
+        <Fact>
+        Public Shared Sub CSharpToVBForEachWithExplicitType()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod(int[] values)
@@ -531,7 +558,29 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVBForEachStatementWithVar()
+        Public Shared Sub CSharpToVBForEachWithTupleDeconstruction()
+            TestConversionCSharpToVisualBasic("class TestClass
+{
+    static IEnumerable<(string, string)> SourceFilesFromMustachePaths(IEnumerable<(string, string, string)> pathsData)
+    {
+        foreach ((string name, string template, string hash) in pathsData)
+        {
+            yield return (name, SourceFileFromMustachePath(name, template, hash));
+        }
+    }
+}", "Class TestClass
+
+    Private Shared Iterator Function SourceFilesFromMustachePaths(pathsData As IEnumerable(Of (String, String, String))) As IEnumerable(Of (String, String))
+        For Each tempTuple As (name As String, template As String, hash As String) In pathsData
+            Dim name As String = tempTuple.name, template As String = tempTuple.template, hash As String = tempTuple.hash
+            Yield (name, SourceFileFromMustachePath(name, template, hash))
+        Next
+    End Function
+End Class")
+        End Sub
+
+        <Fact>
+        Public Shared Sub CSharpToVBForEachWithVar()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod(int[] values)
@@ -908,6 +957,22 @@ End Class")
         End Sub
 
         <Fact>
+        Public Shared Sub CSharpToVBMultidimensionalArrayInitializationStatement()
+            TestConversionCSharpToVisualBasic("class TestClass
+{
+    void TestMethod()
+    {
+        int[,] b = { { 1, 2 }, { 3, 4 } };
+    }
+}", "Class TestClass
+
+    Private Sub TestMethod()
+        Dim b As Integer(,) = {{1, 2}, {3, 4}}
+    End Sub
+End Class")
+        End Sub
+
+        <Fact>
         Public Shared Sub CSharpToVBMultidimensionalArrayInitializationStatementMultiLine()
             TestConversionCSharpToVisualBasic("class TestClass
 {
@@ -930,17 +995,17 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVBMultidimensionalArrayInitializationStatement()
+        Public Shared Sub CSharpToVBMultidimensionalArrayInitializationStatementWithLengths()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()
     {
-        int[,] b = { { 1, 2 }, { 3, 4 } };
+        int[,] b = new int[2, 2] { { 1, 2 }, { 3, 4 } };
     }
 }", "Class TestClass
 
     Private Sub TestMethod()
-        Dim b As Integer(,) = {{1, 2}, {3, 4}}
+        Dim b As Integer(,) = New Integer(1, 1) {{1, 2}, {3, 4}}
     End Sub
 End Class")
         End Sub
@@ -968,17 +1033,17 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVBMultidimensionalArrayInitializationStatementWithLengths()
+        Public Shared Sub CSharpToVBMultidimensionalArrayInitializationStatementWithType()
             TestConversionCSharpToVisualBasic("class TestClass
 {
     void TestMethod()
     {
-        int[,] b = new int[2, 2] { { 1, 2 }, { 3, 4 } };
+        int[,] b = new int[,] { { 1, 2 }, { 3, 4 } };
     }
 }", "Class TestClass
 
     Private Sub TestMethod()
-        Dim b As Integer(,) = New Integer(1, 1) {{1, 2}, {3, 4}}
+        Dim b As Integer(,) = New Integer(,) {{1, 2}, {3, 4}}
     End Sub
 End Class")
         End Sub
@@ -1001,22 +1066,6 @@ End Class")
             {1, 2},
             {3, 4}
         }
-    End Sub
-End Class")
-        End Sub
-
-        <Fact>
-        Public Shared Sub CSharpToVBMultidimensionalArrayInitializationStatementWithType()
-            TestConversionCSharpToVisualBasic("class TestClass
-{
-    void TestMethod()
-    {
-        int[,] b = new int[,] { { 1, 2 }, { 3, 4 } };
-    }
-}", "Class TestClass
-
-    Private Sub TestMethod()
-        Dim b As Integer(,) = New Integer(,) {{1, 2}, {3, 4}}
     End Sub
 End Class")
         End Sub
@@ -1154,6 +1203,36 @@ End Class")
         End Sub
 
         <Fact>
+        Public Shared Sub CSharpToVBSelectCaseWithDotInCaseLabel()
+            TestConversionCSharpToVisualBasic("class TestClass
+{
+    void TestMethod(double number)
+    {
+        switch (number) {
+            case 3:
+                Console.Write(""section 3"");
+                goto case 5.5;
+            case 5.5:
+                Console.Write(""section 5"");
+                break;
+        }
+    }
+}", "Class TestClass
+
+    Private Sub TestMethod(number As Double)
+        Select Case number
+            Case 3
+                Console.Write(""section 3"")
+                GoTo _5Dot_5
+            Case 5.5
+_5Dot_5:
+                Console.Write(""section 5"")
+        End Select
+    End Sub
+End Class")
+        End Sub
+
+        <Fact>
         Public Shared Sub CSharpToVBSelectCaseWithWhen()
             TestConversionCSharpToVisualBasic("class TestClass
 {
@@ -1191,63 +1270,6 @@ End Class")
             Case Else
                 Console.WriteLine(""4"")
         End Select
-    End Sub
-End Class")
-        End Sub
-
-        <Fact>
-        Public Shared Sub CSharpToVBSelectCaseWithDotInCaseLabel()
-            TestConversionCSharpToVisualBasic("class TestClass
-{
-    void TestMethod(double number)
-    {
-        switch (number) {
-            case 3:
-                Console.Write(""section 3"");
-                goto case 5.5;
-            case 5.5:
-                Console.Write(""section 5"");
-                break;
-        }
-    }
-}", "Class TestClass
-
-    Private Sub TestMethod(number As Double)
-        Select Case number
-            Case 3
-                Console.Write(""section 3"")
-                GoTo _5Dot_5
-            Case 5.5
-_5Dot_5:
-                Console.Write(""section 5"")
-        End Select
-    End Sub
-End Class")
-        End Sub
-
-        <Fact>
-        Public Shared Sub CSharpToVBSubWithForEachMultiline()
-            TestConversionCSharpToVisualBasic(
-"class TestClass {
-    void TestMethod(IEnumerable<int> counts) {
-        int summary = 0;
-        Action action = () => {
-            foreach(var c in counts) {
-                var current = c;
-                summary += current;
-            }
-        };
-    }
-}", "Class TestClass
-
-    Private Sub TestMethod(counts As IEnumerable(Of Integer))
-        Dim summary As Integer = 0
-        Dim action1 As Action = Sub()
-                                    For Each c In counts
-                                        Dim current = c
-                                        summary += current
-                                    Next
-                                End Sub
     End Sub
 End Class")
         End Sub

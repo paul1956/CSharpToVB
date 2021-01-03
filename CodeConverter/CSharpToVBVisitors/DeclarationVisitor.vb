@@ -429,6 +429,11 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     End If
                 Next
                 If accessors.Any Then
+                    Dim parameterList As VBS.ParameterListSyntax = Factory.ParseParameterList("(sender As Object, e As EventArgs)")
+                    ' RaiseEvent(sender As Object, e As EventArgs)
+                    ' End RaiseEvent
+                    Dim accessorStatement As VBS.AccessorStatementSyntax = Factory.RaiseEventAccessorStatement(Nothing, Nothing, parameterList)
+                    accessors.Add(Factory.RaiseEventAccessorBlock(accessorStatement))
                     Return Factory.EventBlock(stmt, Factory.List(accessors)).WithConvertedTriviaFrom(node)
                 End If
                 Return stmt.WithConvertedTriviaFrom(node)
