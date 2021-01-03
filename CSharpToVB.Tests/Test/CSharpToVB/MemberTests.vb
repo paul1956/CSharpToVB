@@ -41,37 +41,6 @@ End Class")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVBCustomEvent()
-            TestConversionCSharpToVisualBasic("using System; //Not required in VB due to global imports
-class TestClass
-{
-    EventHandler backingField;
-
-    public event EventHandler MyEvent {
-        add {
-            this.backingField += value;
-        }
-        remove {
-            this.backingField -= value;
-        }
-    }
-}", "Class TestClass
-
-    Private backingField As EventHandler
-
-    Public Custom Event MyEvent As EventHandler
-        AddHandler(Value As EventHandler)
-            Me.backingField = [Delegate].Combine(Me.backingField, value)
-        End AddHandler
-
-        RemoveHandler(Value As EventHandler)
-            Me.backingField = [Delegate].Remove(Me.backingField, value)
-        End RemoveHandler
-    End Event
-End Class")
-        End Sub
-
-        <Fact>
         Public Shared Sub CSharpToVBDestructor()
             TestConversionCSharpToVisualBasic("class TestClass
 {
@@ -997,6 +966,9 @@ class TestClass {
         RemoveHandler(Value As EventHandler)
             Me.backingField = [Delegate].Remove(Me.backingField, value)
         End RemoveHandler
+
+        RaiseEvent(sender As Object, e As EventArgs)
+        End RaiseEvent
     End Event
 
     Public Sub Reset()
@@ -1028,6 +1000,9 @@ class TestClass {
         RemoveHandler(Value As EventHandler)
             _backingField = [Delegate].Remove(_backingField, value)
         End RemoveHandler
+
+        RaiseEvent(sender As Object, e As EventArgs)
+        End RaiseEvent
     End Event
 End Class")
         End Sub
@@ -1057,6 +1032,9 @@ class TestClass {
         RemoveHandler(Value As EventHandler)
             RemoveHandler backingField, value
         End RemoveHandler
+
+        RaiseEvent(sender As Object, e As EventArgs)
+        End RaiseEvent
     End Event
 End Class")
         End Sub

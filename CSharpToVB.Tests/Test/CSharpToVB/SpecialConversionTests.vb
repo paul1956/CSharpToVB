@@ -194,6 +194,9 @@ End Module")
             Dim tesT3 As Integer = CInt(Fix(o))
             test = [Delegate].Remove(test, value)
         End RemoveHandler
+
+        RaiseEvent(sender As Object, e As EventArgs)
+        End RaiseEvent
     End Event
 End Class")
         End Sub
@@ -421,6 +424,9 @@ public class TestClass {
         RemoveHandler(Value As EventHandler)
             Me.value = [Delegate].Remove(Me.value, value)
         End RemoveHandler
+
+        RaiseEvent(sender As Object, e As EventArgs)
+        End RaiseEvent
     End Event
 End Class")
         End Sub
