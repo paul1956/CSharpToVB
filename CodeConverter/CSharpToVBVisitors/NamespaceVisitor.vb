@@ -24,7 +24,7 @@ Return value
 End Function
 "
             Private Const DiscardHelperCode As String = "
-Private Shared  WriteOnly Property __ As Object
+Private Shared WriteOnly Property __ As Object
     Set
     End Set
 End Property
