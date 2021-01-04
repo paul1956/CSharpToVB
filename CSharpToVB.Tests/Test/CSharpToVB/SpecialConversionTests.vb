@@ -547,7 +547,7 @@ End Class")
 
     Private Sub TestMethod()
         Dim b As Integer, a As Integer = 5
-        b = Math.Min(Threading.Interlocked.Increment(a), a - 1)
+        b = Math.Min(Interlocked.Increment(a), a - 1)
     End Sub
 End Class")
         End Sub
@@ -743,7 +743,7 @@ End Class")
 
     Private Sub TestMethod()
         Dim b As Integer, a As Integer = 5
-        b = Math.Min(Threading.Interlocked.Increment(a), a - 1)
+        b = Math.Min(Interlocked.Increment(a), a - 1)
     End Sub
 End Class")
         End Sub

@@ -745,7 +745,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Next
                     If tokenList.Count = 0 Then
                         modifiers.Clear()
-                        modifiers.Add(Factory.Token(VB.SyntaxKind.EmptyToken).WithLeadingTrivia(newLeadingTrivia))
+                        modifiers.Add(EmptyToken.WithLeadingTrivia(newLeadingTrivia))
                     Else
                         If Not EndsWithSimilarTrivia(newLeadingTrivia, modifiers(0).LeadingTrivia) Then
                             newLeadingTrivia = newLeadingTrivia.InsertRange(0, modifiers(0).LeadingTrivia)

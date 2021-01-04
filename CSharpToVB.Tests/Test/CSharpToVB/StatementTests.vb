@@ -909,7 +909,7 @@ End Class")
         For i As Integer = 0 To x - 1
 
             For j As Integer = 0 To y - 1
-                array(i, j) = Threading.Interlocked.Increment(count).ToString()
+                array(i, j) = Interlocked.Increment(count).ToString()
             Next
         Next
 
