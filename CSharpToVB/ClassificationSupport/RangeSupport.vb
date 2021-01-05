@@ -2,6 +2,7 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
+Imports System.Runtime.CompilerServices
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Classification
 Imports Microsoft.CodeAnalysis.CSharp.Formatting
@@ -10,6 +11,28 @@ Imports Microsoft.CodeAnalysis.Options
 Imports Microsoft.CodeAnalysis.Text
 
 Public Module RangeSupport
+
+    <Extension>
+    Private Function AdjustAdditiveSpans(spans As IEnumerable(Of ClassifiedSpan)) As List(Of ClassifiedSpan)
+        Dim newSpans As New List(Of ClassifiedSpan)
+        Dim spanEnd As Integer
+        For i As Integer = 0 To spans.Count - 1
+            Dim span As ClassifiedSpan = spans(i)
+            If span.TextSpan.Start < spanEnd Then
+                Continue For
+            End If
+            If ClassificationTypeNames.AdditiveTypeNames.Contains(span.ClassificationType) Then
+                Continue For
+            End If
+            If span.ClassificationType <> "string - escape character" Then
+                newSpans.Add(span)
+                spanEnd = span.TextSpan.End
+            Else
+                Stop
+            End If
+        Next
+        Return newSpans
+    End Function
 
     Private Iterator Function FillGaps(text As SourceText, ranges As IEnumerable(Of Range)) As IEnumerable(Of Range)
         Const whitespaceClassification As String = Nothing
@@ -36,6 +59,15 @@ Public Module RangeSupport
         End If
     End Function
 
+    <Extension>
+    Friend Function GetForwardItem(Of T)(ListOfT As List(Of T), index As Integer, LookAhead As Integer) As T
+        Dim finalIndex As Integer = index + LookAhead
+        If finalIndex < 0 Then
+            Return Nothing
+        End If
+        Return If(finalIndex < ListOfT.Count, ListOfT(finalIndex), Nothing)
+    End Function
+
     Public Function GetClassifiedRanges(SourceCode As String, Language As String) As IEnumerable(Of Range)
         Using workspace As New AdhocWorkspace()
             Dim solution As Solution = workspace.CurrentSolution
@@ -55,7 +87,7 @@ Public Module RangeSupport
 
             document = Formatter.FormatAsync(document).Result
             Dim text As SourceText = document.GetTextAsync().Result
-            Dim classifiedSpans As IEnumerable(Of ClassifiedSpan) = Classifier.GetClassifiedSpansAsync(document, TextSpan.FromBounds(0, text.Length)).Result
+            Dim classifiedSpans As List(Of ClassifiedSpan) = Classifier.GetClassifiedSpansAsync(document, TextSpan.FromBounds(0, text.Length)).Result.AdjustAdditiveSpans
             Dim ranges As IEnumerable(Of Range) = From span As ClassifiedSpan In classifiedSpans
                                                   Select New Range(span, text.GetSubText(span.TextSpan).ToString())
             ' Whitespace isn't classified so fill in ranges for whitespace.
