@@ -174,6 +174,10 @@ Namespace CSharpToVBConverter.ToVisualBasic
             Dim crefType As VBS.CrefReferenceSyntax
             If TypeOf memberName Is VBS.NameSyntax Then
                 crefType = Factory.CrefReference(CType(memberName, VBS.NameSyntax))
+            ElseIf memberName.IsKind(VB.SyntaxKind.PredefinedType) Then
+                crefType = Factory.CrefReference(CType(memberName, VBS.TypeSyntax))
+            ElseIf TypeOf memberName Is VBS.LiteralExpressionSyntax Then
+                crefType = Factory.CrefReference(Factory.ParseTypeName(memberName.ToString))
             Else
                 crefType = CType(memberName, VBS.CrefReferenceSyntax)
             End If

@@ -3,6 +3,7 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Runtime.CompilerServices
+Imports System.Text
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Classification
 Imports Microsoft.CodeAnalysis.CSharp.Formatting
@@ -66,6 +67,20 @@ Public Module RangeSupport
             Return Nothing
         End If
         Return If(finalIndex < ListOfT.Count, ListOfT(finalIndex), Nothing)
+    End Function
+
+    <Extension>
+    Friend Function ToStringClassifiedSpan(spans As IEnumerable(Of ClassifiedSpan)) As String
+        Dim builder As New StringBuilder
+        For Each span As ClassifiedSpan In spans
+            builder.AppendLine(span.ToStringClassifiedSpan)
+        Next
+        Return builder.ToString
+    End Function
+
+    <Extension>
+    Friend Function ToStringClassifiedSpan(span As ClassifiedSpan) As String
+        Return $"{span.ClassificationType} Start = {span.TextSpan.Start} End = {span.TextSpan.End}"
     End Function
 
     Public Function GetClassifiedRanges(SourceCode As String, Language As String) As IEnumerable(Of Range)

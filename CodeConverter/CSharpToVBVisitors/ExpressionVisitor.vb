@@ -2026,6 +2026,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Catch ex As OperationCanceledException
                         Throw
                     Catch ex As Exception
+                        Stop
                         ' ignore
                     End Try
 
