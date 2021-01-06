@@ -19,6 +19,7 @@ Public Module TSToolBaseSupport
         If MainForm.TSFindFindWhatComboBox.Text = "Search..." Then
             Exit Sub
         End If
+        MainForm._inColorize = True
         mnuAddToMRU(My.Settings.TSFindMRU_Data, MainForm.TSFindFindWhatComboBox.Text)
         My.Settings.Save()
         TSFindWhatMRUUpdateUI(MainForm.TSFindFindWhatComboBox)
@@ -40,7 +41,7 @@ Public Module TSToolBaseSupport
                    MsgBoxStyle.OkOnly Or MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground,
                    "Text Not Found!")
         End If
-
+        MainForm._inColorize = False
     End Sub
 
     ''' <summary>

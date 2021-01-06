@@ -46,7 +46,7 @@ Public Class ColorSelector
          {"regex - self escaped character", Color.FromArgb(128, 0, 0)},
          {"regex - text", Color.FromArgb(128, 0, 0)},
          {"static symbol", Color.Black},
-         {"string - escape character", Color.FromArgb(183, 118, 251)},
+         {"string - escape character", Color.DarkBlue},
          {"string - verbatim", Color.FromArgb(128, 0, 0)},
          {"string", Color.FromArgb(163, 21, 21)},
          {"struct name", Color.FromArgb(43, 145, 175)},

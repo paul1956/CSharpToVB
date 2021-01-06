@@ -4,6 +4,7 @@
 
 Imports System.Runtime.CompilerServices
 Imports System.Text
+Imports CSharpToVBConverter
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Classification
 Imports Microsoft.CodeAnalysis.CSharp.Formatting
@@ -12,26 +13,54 @@ Imports Microsoft.CodeAnalysis.Options
 Imports Microsoft.CodeAnalysis.Text
 
 Public Module RangeSupport
+    Private s_Text As SourceText
 
     <Extension>
     Private Function AdjustAdditiveSpans(spans As IEnumerable(Of ClassifiedSpan)) As List(Of ClassifiedSpan)
         Dim newSpans As New List(Of ClassifiedSpan)
-        Dim spanEnd As Integer
-        For i As Integer = 0 To spans.Count - 1
-            Dim span As ClassifiedSpan = spans(i)
-            If span.TextSpan.Start < spanEnd Then
-                Continue For
-            End If
-            If ClassificationTypeNames.AdditiveTypeNames.Contains(span.ClassificationType) Then
-                Continue For
-            End If
-            If span.ClassificationType <> "string - escape character" Then
-                newSpans.Add(span)
-                spanEnd = span.TextSpan.End
-            Else
+        If Not spans.Any Then Return newSpans
+        Dim currentSpan As ClassifiedSpan = spans(0)
+        Dim i As Integer = 0
+        While i <= spans.Count - 1
+            Try
+                Dim nextSpan As ClassifiedSpan = spans.GetForwardItem(i, 1)
+                If ClassificationTypeNames.AdditiveTypeNames.Contains(currentSpan.ClassificationType) Then
+                    i += 1
+                    currentSpan = nextSpan
+                    Continue While
+                End If
+                Dim newSpan As ClassifiedSpan
+
+                If i = spans.Count - 1 Then
+                    If spans(i).TextSpan.End < currentSpan.TextSpan.End Then
+                        newSpans.Add(currentSpan)
+                    Else
+                        newSpans.Add(spans(i))
+                    End If
+                    Exit While
+                End If
+                If currentSpan.TextSpan.Length = 0 OrElse
+                    currentSpan.TextSpan.End <= nextSpan.TextSpan.Start Then
+                    newSpans.Add(currentSpan)
+                    currentSpan = nextSpan
+                    i += 1
+                    Continue While
+                End If
+                newSpan = New ClassifiedSpan(currentSpan.ClassificationType, New TextSpan(currentSpan.TextSpan.Start, nextSpan.TextSpan.Start - currentSpan.TextSpan.Start))
+                newSpans.Add(newSpan)
+                newSpans.Add(nextSpan)
+                Dim length As Integer = currentSpan.TextSpan.Length - (newSpan.TextSpan.Length + nextSpan.TextSpan.Length)
+                If length < 0 Then
+                    currentSpan = nextSpan
+                Else
+                    currentSpan = New ClassifiedSpan(currentSpan.ClassificationType, New TextSpan(nextSpan.TextSpan.End, length))
+                End If
+                i += 1
+
+            Catch ex As Exception
                 Stop
-            End If
-        Next
+            End Try
+        End While
         Return newSpans
     End Function
 
@@ -61,7 +90,7 @@ Public Module RangeSupport
     End Function
 
     <Extension>
-    Friend Function GetForwardItem(Of T)(ListOfT As List(Of T), index As Integer, LookAhead As Integer) As T
+    Friend Function GetForwardItem(Of T)(ListOfT As IEnumerable(Of T), index As Integer, LookAhead As Integer) As T
         Dim finalIndex As Integer = index + LookAhead
         If finalIndex < 0 Then
             Return Nothing
@@ -73,14 +102,14 @@ Public Module RangeSupport
     Friend Function ToStringClassifiedSpan(spans As IEnumerable(Of ClassifiedSpan)) As String
         Dim builder As New StringBuilder
         For Each span As ClassifiedSpan In spans
-            builder.AppendLine(span.ToStringClassifiedSpan)
+            builder.AppendLine(span.ToStringClassifiedSpan())
         Next
         Return builder.ToString
     End Function
 
     <Extension>
     Friend Function ToStringClassifiedSpan(span As ClassifiedSpan) As String
-        Return $"{span.ClassificationType} Start = {span.TextSpan.Start} End = {span.TextSpan.End}"
+        Return $"{s_Text.GetSubText(span.TextSpan)} {span.ClassificationType} Start = {span.TextSpan.Start} End = {span.TextSpan.End}"
     End Function
 
     Public Function GetClassifiedRanges(SourceCode As String, Language As String) As IEnumerable(Of Range)
@@ -102,7 +131,8 @@ Public Module RangeSupport
 
             document = Formatter.FormatAsync(document).Result
             Dim text As SourceText = document.GetTextAsync().Result
-            Dim classifiedSpans As List(Of ClassifiedSpan) = Classifier.GetClassifiedSpansAsync(document, TextSpan.FromBounds(0, text.Length)).Result.AdjustAdditiveSpans
+            s_Text = text
+            Dim classifiedSpans As List(Of ClassifiedSpan) = Classifier.GetClassifiedSpansAsync(document, TextSpan.FromBounds(0, text.Length)).Result.AdjustAdditiveSpans()
             Dim ranges As IEnumerable(Of Range) = From span As ClassifiedSpan In classifiedSpans
                                                   Select New Range(span, text.GetSubText(span.TextSpan).ToString())
             ' Whitespace isn't classified so fill in ranges for whitespace.

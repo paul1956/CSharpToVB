@@ -67,12 +67,13 @@ Public Module ColorizeSupport
                 MainForm.LineNumbersForConversionOutput.Visible = True
             End If
             MainForm.StatusStripConversionProgressBar.Clear()
+        Catch ex As OperationCanceledException
         Catch ex As Exception
             Stop
-            Throw
+        Finally
+            ConversionBuffer.Visible = True
+            MainForm._inColorize = False
         End Try
-        ConversionBuffer.Visible = True
-        MainForm._inColorize = False
     End Sub
 
     Friend Sub Compile_Colorize(MainForm As Form1, TextToCompile As String, VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)))

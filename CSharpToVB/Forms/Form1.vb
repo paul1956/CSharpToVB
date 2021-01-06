@@ -997,6 +997,7 @@ Partial Public Class Form1
 #Region "TSFind Events"
 
     Private Sub TSFindClearHighlightsButton_Click(sender As Object, e As EventArgs) Handles TSFindClearHighlightsButton.Click
+        _inColorize = True
         Dim selectionstart As Integer
         If Me.BufferToSearch.IsFlagSet(SearchBuffers.CS) Then
             selectionstart = Me.ConversionInput.SelectionStart
@@ -1013,6 +1014,7 @@ Partial Public Class Form1
             Me.ConversionOutput.ScrollToCaret()
         End If
         Application.DoEvents()
+        _inColorize = False
     End Sub
 
     Private Sub TSFindFindNextButton_Click(sender As Object, e As EventArgs) Handles TSFindFindNextButton.Click
