@@ -22,7 +22,7 @@ Public Class OptionsDialog
     Private Sub ItemColor_ComboBox_DrawItem(sender As Object, e As DrawItemEventArgs) Handles ItemColor_ComboBox.DrawItem
         If e.Index >= 0 Then
             Dim itemName As String = CType(sender, ComboBox).Items(e.Index).ToString()
-            Using b As Brush = New SolidBrush(ColorSelector.GetColorFromName(itemName))
+            Using b As Brush = New SolidBrush(ColorSelector.GetColorFromName(itemName).ForeGround)
                 Dim eBounds As Rectangle = e.Bounds
                 Dim pt As New Point(eBounds.X, eBounds.Top)
                 TextRenderer.DrawText(e.Graphics, itemName, Me.Font, pt, Color.Black)
@@ -33,7 +33,7 @@ Public Class OptionsDialog
 
     Private Sub ItemColor_ComboBox_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ItemColor_ComboBox.SelectedIndexChanged
         _selectedColorName = CStr(Me.ItemColor_ComboBox.SelectedItem)
-        _selectedColor = ColorSelector.GetColorFromName(_selectedColorName)
+        _selectedColor = ColorSelector.GetColorFromName(_selectedColorName).ForeGround
     End Sub
 
     Private Sub OK_Button_Click(sender As Object, e As EventArgs) Handles OK_Button.Click
@@ -118,26 +118,9 @@ Public Class OptionsDialog
     Private Sub UpdateColor_Button_Click(sender As Object, e As EventArgs) Handles UpdateColor_Button.Click
         Me.ColorDialog1.Color = _selectedColor
         If Me.ColorDialog1.ShowDialog <> DialogResult.Cancel Then
-            ColorSelector.SetColor(Me.ItemColor_ComboBox.Items(Me.ItemColor_ComboBox.SelectedIndex).ToString, Me.ColorDialog1.Color)
+            ColorSelector.SetColor(Me.ItemColor_ComboBox.Items(Me.ItemColor_ComboBox.SelectedIndex).ToString, (Me.ColorDialog1.Color, DefaultBackColor))
             Application.DoEvents()
         End If
     End Sub
-
-    Friend Class MyListItem
-
-        Public Sub New(pText As String, pValue As String)
-            _Text = pText
-            _Value = pValue
-        End Sub
-
-        Public ReadOnly Property Text() As String
-
-        Public ReadOnly Property Value() As String
-
-        Public Overrides Function ToString() As String
-            Return Me.Text
-        End Function
-
-    End Class
 
 End Class

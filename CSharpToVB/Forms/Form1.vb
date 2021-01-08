@@ -26,6 +26,9 @@ Partial Public Class Form1
     Friend _requestToConvert As ConvertRequest
     Friend _resultOfConversion As ConversionResult
 
+    Public CurrentThemeName As String = "Light Mode"
+    Public CurrentThemeDictionary As Dictionary(Of String, (ForeGround As Color, Background As Color))
+
     Public Sub New()
         Me.InitializeComponent()
     End Sub
@@ -366,6 +369,19 @@ Partial Public Class Form1
         Me.TSFindMatchWholeWordCheckBox.Checked = My.Settings.TSFindMatchWholeWord
         Application.DoEvents()
         Me.CheckForUpdates(ReportResults:=False)
+        If My.Settings.ColorMode = "Light Theme" Then
+            Me.TSThemeButton.Text = "Light Theme"
+            CurrentThemeDictionary = s_LightThemeMappingDictionary
+        Else
+            Dim executablePath As String = Assembly.GetExecutingAssembly().Location
+            Dim executableDirectory As String = Directory.GetParent(executablePath).FullName
+            Dim themePath As String = Path.Combine(executableDirectory, "Assets", "BigFace.xml")
+            Dim currentTheme As Themes = LoadNewTheme(themePath)
+            Dim tempDictionary As New Dictionary(Of String, (ForeGround As Color, Background As Color))(StringComparer.OrdinalIgnoreCase)
+            LoadDictionaryFromTheme(currentTheme, tempDictionary)
+            Me.TSThemeButton.Text = "Dark Theme"
+            CurrentThemeDictionary = tempDictionary
+        End If
     End Sub
 
     Private Sub Form1_Resize(sender As Object, e As EventArgs) Handles Me.Resize
@@ -1068,6 +1084,38 @@ Partial Public Class Form1
 
     Private Sub TSFindMatchWholeWordCheckBox_Click(sender As Object, e As EventArgs) Handles TSFindMatchWholeWordCheckBox.Click
         My.Settings.TSFindMatchWholeWord = Me.TSFindMatchWholeWordCheckBox.Checked
+        My.Settings.Save()
+    End Sub
+
+    Private Sub TSThemeButton_Click(sender As Object, e As EventArgs) Handles TSThemeButton.Click
+        If Me.TSThemeButton.Text = "Light Theme" Then
+            Me.TSThemeButton.Text = "Dark Theme"
+            DefaultColor = (Color.White, Color.Black)
+            If Not s_DarkThemeMappingDictionary.Any Then
+                Dim executablePath As String = Assembly.GetExecutingAssembly().Location
+                Dim executableDirectory As String = Directory.GetParent(executablePath).FullName
+                Dim themePath As String = Path.Combine(executableDirectory, "Assets", "BigFace.xml")
+                Dim currentTheme As Themes = LoadNewTheme(themePath)
+                LoadDictionaryFromTheme(currentTheme, s_DarkThemeMappingDictionary)
+            End If
+            CurrentThemeDictionary = s_DarkThemeMappingDictionary
+        Else
+            Me.TSThemeButton.Text = "Light Theme"
+            DefaultColor = (Color.White, Color.Black)
+            CurrentThemeDictionary = s_LightThemeMappingDictionary
+        End If
+        If Me.ConversionInput.Text.Any Then
+            If Me.mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
+                Colorize(Me, GetClassifiedRanges(SourceCode:=Me.ConversionInput.Text, LanguageNames.CSharp), ConversionBuffer:=Me.ConversionInput, Lines:=Me.ConversionInput.Lines.Length)
+            End If
+
+        End If
+        If Me.ConversionOutput.Text.Any Then
+            If Me.mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
+                Colorize(Me, GetClassifiedRanges(SourceCode:=Me.ConversionOutput.Text, LanguageNames.VisualBasic), ConversionBuffer:=Me.ConversionOutput, Lines:=Me.ConversionOutput.Lines.Length)
+            End If
+        End If
+        My.Settings.ColorMode = Me.TSThemeButton.Text
         My.Settings.Save()
     End Sub
 

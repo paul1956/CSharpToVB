@@ -25,9 +25,9 @@
     <Product>CSharp To VB Converter</Product>
     <Copyright>Copyright (c) .NET Foundation and Contributors</Copyright>
     <PackageId>CSharp To VB Converter</PackageId>
-    <AssemblyVersion>5.0.0.24</AssemblyVersion>
-    <FileVersion>5.0.0.24</FileVersion>
-    <Version>5.0.0.24</Version>
+    <AssemblyVersion>5.0.0.25</AssemblyVersion>
+    <FileVersion>5.0.0.25</FileVersion>
+    <Version>5.0.0.25</Version>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
@@ -87,6 +87,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <None Update="Assets\BigFace.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="My Project\Application.myapp">
       <Generator>MyApplicationCodeGenerator</Generator>
       <LastGenOutput>Application.Designer.vb</LastGenOutput>

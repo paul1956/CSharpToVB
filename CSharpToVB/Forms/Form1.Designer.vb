@@ -102,6 +102,7 @@ Partial Class Form1
         Me.TSFindSeparator4 = New System.Windows.Forms.ToolStripSeparator()
         Me.TSFindClearHighlightsButton = New System.Windows.Forms.ToolStripButton()
         Me.TSFindSeparator5 = New System.Windows.Forms.ToolStripSeparator()
+        Me.TSThemeButton = New System.Windows.Forms.ToolStripButton()
         Me.SaveFileDialog1 = New System.Windows.Forms.SaveFileDialog()
         Me.ContextMenuStrip1 = New System.Windows.Forms.ContextMenuStrip(Me.components)
         Me.ContextMenuUndo = New System.Windows.Forms.ToolStripMenuItem()
@@ -606,7 +607,7 @@ Partial Class Form1
         'TSFindToolStrip
         '
         Me.TSFindToolStrip.BackColor = System.Drawing.Color.FromArgb(CType(CType(204, Byte), Integer), CType(CType(213, Byte), Integer), CType(CType(240, Byte), Integer))
-        Me.TSFindToolStrip.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.TSFindFindWhatComboBox, Me.TSFindSeparator1, Me.TSFindLookInLabel, Me.TSFindLookInComboBox, Me.TSFindSeparator2, Me.TSFindFindPreviousButton, Me.TSFindFindNextButton, Me.TSFindSeparator3, Me.TSFindMatchCaseCheckBox, Me.TSFindMatchWholeWordCheckBox, Me.TSFindSeparator4, Me.TSFindClearHighlightsButton, Me.TSFindSeparator5})
+        Me.TSFindToolStrip.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.TSFindFindWhatComboBox, Me.TSFindSeparator1, Me.TSFindLookInLabel, Me.TSFindLookInComboBox, Me.TSFindSeparator2, Me.TSFindFindPreviousButton, Me.TSFindFindNextButton, Me.TSFindSeparator3, Me.TSFindMatchCaseCheckBox, Me.TSFindMatchWholeWordCheckBox, Me.TSFindSeparator4, Me.TSFindClearHighlightsButton, Me.TSFindSeparator5, TSThemeButton})
         Me.TSFindToolStrip.Location = New System.Drawing.Point(0, 24)
         Me.TSFindToolStrip.Name = "TSFindToolStrip"
         Me.TSFindToolStrip.Size = New System.Drawing.Size(1923, 25)
@@ -702,6 +703,15 @@ Partial Class Form1
         Me.TSFindClearHighlightsButton.Name = "TSFindClearHighlightsButton"
         Me.TSFindClearHighlightsButton.Size = New System.Drawing.Size(96, 25)
         Me.TSFindClearHighlightsButton.Text = "Clear Highlights"
+        '
+        'TSThemeButton
+        '
+        Me.TSThemeButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text
+        Me.TSThemeButton.ImageTransparentColor = System.Drawing.Color.Magenta
+        Me.TSThemeButton.Margin = New System.Windows.Forms.Padding(1, 0, 1, 0)
+        Me.TSThemeButton.Name = "TSThemeButton"
+        Me.TSThemeButton.Size = New System.Drawing.Size(96, 25)
+        Me.TSThemeButton.Text = "Light Theme"
         '
         'TSFindSeparator5
         '
@@ -1049,108 +1059,109 @@ Partial Class Form1
 
     End Sub
 
+    Friend WithEvents ButtonStopConversion As Button
+    Friend WithEvents ContextMenuCopy As ToolStripMenuItem
+    Friend WithEvents ContextMenuCut As ToolStripMenuItem
+    Friend WithEvents ContextMenuPaste As ToolStripMenuItem
+    Friend WithEvents ContextMenuRedo As ToolStripMenuItem
+    Friend WithEvents ContextMenuSelectAll As ToolStripMenuItem
+    Friend WithEvents ContextMenuSeparator1 As ToolStripSeparator
+    Friend WithEvents ContextMenuStrip1 As ContextMenuStrip
+    Friend WithEvents ContextMenuUndo As ToolStripMenuItem
+    Friend WithEvents ConversionInput As RichTextBox
+    Friend WithEvents ConversionOutput As RichTextBox
+    Friend WithEvents InputFolderBrowserDialog1 As FolderBrowserDialog
+    Friend WithEvents LabelErrorCount As Label
+    Friend WithEvents LineNumbersForConversionInput As LineNumbersForRichTextBox
+    Friend WithEvents LineNumbersForConversionOutput As LineNumbersForRichTextBox
+    Friend WithEvents ListBoxErrorList As ListBox
+    Friend WithEvents ListBoxFileList As ListBox
     Friend WithEvents MenuStrip1 As MenuStrip
-    Friend WithEvents mnuEdit As ToolStripMenuItem
-    Friend WithEvents mnuEditCopy As ToolStripMenuItem
-    Friend WithEvents mnuEditCut As ToolStripMenuItem
-    Friend WithEvents mnuEditPaste As ToolStripMenuItem
-    Friend WithEvents mnuEditRedo As ToolStripMenuItem
-    Friend WithEvents mnuEditUndo As ToolStripMenuItem
-    Friend WithEvents mnuFile As ToolStripMenuItem
-    Friend WithEvents mnuFileSaveAs As ToolStripMenuItem
-    Friend WithEvents mnuOptions As ToolStripMenuItem
-    Friend WithEvents mnuOptionsAdvanced As ToolStripMenuItem
+    Friend WithEvents mnuCompile As ToolStripMenuItem
     Friend WithEvents mnuConvert As ToolStripMenuItem
     Friend WithEvents mnuConvertConvertFolder As ToolStripMenuItem
     Friend WithEvents mnuConvertConvertSnippet As ToolStripMenuItem
     Friend WithEvents mnuConvertSep1 As ToolStripSeparator
     Friend WithEvents mnuConvertStartFolderConvertFromLastFile As ToolStripMenuItem
-    Friend WithEvents mnuHelp As ToolStripMenuItem
-    Friend WithEvents mnuHelpCheckForUpdatesMenuItem As ToolStripMenuItem
-    Friend WithEvents mnuHelpAboutMenuItem As ToolStripMenuItem
-    Friend WithEvents mnuHelpReportIssueMenuItem As ToolStripMenuItem
-    Friend WithEvents SaveFileDialog1 As SaveFileDialog
-    Friend WithEvents mnuOptionsColorizeSource As ToolStripMenuItem
+    Friend WithEvents mnuEdit As ToolStripMenuItem
+    Friend WithEvents mnuEditCopy As ToolStripMenuItem
+    Friend WithEvents mnuEditCut As ToolStripMenuItem
     Friend WithEvents mnuEditFind As ToolStripMenuItem
+    Friend WithEvents mnuEditPaste As ToolStripMenuItem
+    Friend WithEvents mnuEditRedo As ToolStripMenuItem
+    Friend WithEvents mnuEditSelectAll As ToolStripMenuItem
     Friend WithEvents mnuEditSep1 As ToolStripSeparator
     Friend WithEvents mnuEditSep2 As ToolStripSeparator
-    Friend WithEvents InputFolderBrowserDialog1 As FolderBrowserDialog
-    Friend WithEvents ContextMenuStrip1 As ContextMenuStrip
-    Friend WithEvents ContextMenuCopy As ToolStripMenuItem
-    Friend WithEvents ContextMenuCut As ToolStripMenuItem
-    Friend WithEvents ContextMenuPaste As ToolStripMenuItem
-    Friend WithEvents mnuOptionsPauseConvertOnSuccess As ToolStripMenuItem
-    Friend WithEvents mnuFileLabelLastFolder As ToolStripMenuItem
-    Friend WithEvents ButtonStopConversion As Button
-    Friend WithEvents LabelErrorCount As Label
-    Friend WithEvents mnuCompile As ToolStripMenuItem
-    Friend WithEvents mnuOptionsSep2 As ToolStripSeparator
-    Friend WithEvents mnuOptionsSep3 As ToolStripSeparator
-    Friend WithEvents SplitContainer1 As SplitContainer
-    Friend WithEvents ConversionOutput As RichTextBox
-    Friend WithEvents ConversionInput As RichTextBox
-    Friend WithEvents ListBoxErrorList As ListBox
-    Friend WithEvents LineNumbersForConversionInput As LineNumbersForRichTextBox
-    Friend WithEvents LineNumbersForConversionOutput As LineNumbersForRichTextBox
-    Friend WithEvents ListBoxFileList As ListBox
-    Friend WithEvents mnuFileExit As ToolStripMenuItem
-    Friend WithEvents mnuFileSep4 As ToolStripSeparator
-    Friend WithEvents mnuFileSep1 As ToolStripSeparator
-    Friend WithEvents mnuFileSaveSnippet As ToolStripMenuItem
-    Friend WithEvents mnuFileLoadLastSnippet As ToolStripMenuItem
-    Friend WithEvents mnuFileSep3 As ToolStripSeparator
-    Friend WithEvents mnuView As ToolStripMenuItem
-    Friend WithEvents mnuViewShowSourceLineNumbers As ToolStripMenuItem
-    Friend WithEvents mnuViewShowDestinationLineNumbers As ToolStripMenuItem
-    Friend WithEvents mnuOptionsDelayBetweenConversions As ToolStripComboBox
-    Friend WithEvents mnuOptionsColorizeResult As ToolStripMenuItem
-    Friend WithEvents mnuFileOpen As ToolStripMenuItem
-    Friend WithEvents OpenFileDialog1 As OpenFileDialog
-    Friend WithEvents mnuFileSep2 As ToolStripSeparator
+    Friend WithEvents mnuEditUndo As ToolStripMenuItem
+    Friend WithEvents mnuFile As ToolStripMenuItem
     Friend WithEvents mnuFileConvertProject As ToolStripMenuItem
+    Friend WithEvents mnuFileExit As ToolStripMenuItem
+    Friend WithEvents mnuFileLabelLastFolder As ToolStripMenuItem
     Friend WithEvents mnuFileLastFolder As ToolStripMenuItem
+    Friend WithEvents mnuFileLastProject As ToolStripMenuItem
+    Friend WithEvents mnuFileLastSolution As ToolStripMenuItem
+    Friend WithEvents mnuFileLoadLastSnippet As ToolStripMenuItem
+    Friend WithEvents mnuFileOpen As ToolStripMenuItem
+    Friend WithEvents mnuFileSaveAs As ToolStripMenuItem
+    Friend WithEvents mnuFileSaveSnippet As ToolStripMenuItem
+    Friend WithEvents mnuFileSep1 As ToolStripSeparator
+    Friend WithEvents mnuFileSep2 As ToolStripSeparator
+    Friend WithEvents mnuFileSep3 As ToolStripSeparator
+    Friend WithEvents mnuFileSep4 As ToolStripSeparator
+    Friend WithEvents mnuHelp As ToolStripMenuItem
+    Friend WithEvents mnuHelpAboutMenuItem As ToolStripMenuItem
+    Friend WithEvents mnuHelpCheckForUpdatesMenuItem As ToolStripMenuItem
+    Friend WithEvents mnuHelpReportIssueMenuItem As ToolStripMenuItem
+    Friend WithEvents mnuOptions As ToolStripMenuItem
+    Friend WithEvents mnuOptionsAddFilesToIgnoreFilesEithErrorsList As ToolStripMenuItem
+    Friend WithEvents mnuOptionsAdvanced As ToolStripMenuItem
+    Friend WithEvents mnuOptionsColorizeResult As ToolStripMenuItem
+    Friend WithEvents mnuOptionsColorizeSource As ToolStripMenuItem
+    Friend WithEvents mnuOptionsDefaultFramework As ToolStripMenuItem
+    Friend WithEvents mnuOptionsDefaultFrameworkCore As ToolStripMenuItem
+    Friend WithEvents mnuOptionsDefaultFrameworkFull As ToolStripMenuItem
+    Friend WithEvents mnuOptionsDefaultFrameworkFullAnyCore As ToolStripMenuItem
+    Friend WithEvents mnuOptionsDefaultFrameworkFullAnyFull As ToolStripMenuItem
+    Friend WithEvents mnuOptionsDelayBetweenConversions As ToolStripComboBox
     Friend WithEvents mnuOptionsEditIgnoreFilesWithErrorsList As ToolStripMenuItem
     Friend WithEvents mnuOptionsFolderConversionsOptions As ToolStripMenuItem
     Friend WithEvents mnuOptionsFolderConversionsOptionsSkipAutoGenerated As ToolStripMenuItem
     Friend WithEvents mnuOptionsFolderConversionsOptionsSkipBinAndObjFolders As ToolStripMenuItem
     Friend WithEvents mnuOptionsFolderConversionsOptionsSkipTestResourceFiles As ToolStripMenuItem
+    Friend WithEvents mnuOptionsPauseConvertOnSuccess As ToolStripMenuItem
     Friend WithEvents mnuOptionsSep1 As ToolStripSeparator
-    Friend WithEvents mnuOptionsDefaultFramework As ToolStripMenuItem
-    Friend WithEvents mnuOptionsDefaultFrameworkCore As ToolStripMenuItem
-    Friend WithEvents mnuOptionsDefaultFrameworkFullAnyCore As ToolStripMenuItem
-    Friend WithEvents mnuOptionsDefaultFrameworkFull As ToolStripMenuItem
-    Friend WithEvents mnuOptionsDefaultFrameworkFullAnyFull As ToolStripMenuItem
-    Friend WithEvents mnuOptionsAddFilesToIgnoreFilesEithErrorsList As ToolStripMenuItem
-    Friend WithEvents StatusStrip1 As StatusStrip
-    Friend WithEvents StatusStripElapasedTimeLabel As ToolStripStatusLabel
-    Friend WithEvents StatusStripSpacer As ToolStripStatusLabel
-    Friend WithEvents StatusStripCurrentFileName As ToolStripStatusLabel
-    Friend WithEvents StatusStripConversionFileProgressLabel As ToolStripStatusLabel
-    Friend WithEvents StatusStripConversionProgressBar As ToolStripTextProgressBar
-    Friend WithEvents StatusStripUpdateAvailable As ToolStripStatusLabel
+    Friend WithEvents mnuOptionsSep2 As ToolStripSeparator
+    Friend WithEvents mnuOptionsSep3 As ToolStripSeparator
+    Friend WithEvents mnuView As ToolStripMenuItem
+    Friend WithEvents mnuViewShowDestinationLineNumbers As ToolStripMenuItem
+    Friend WithEvents mnuViewShowSourceLineNumbers As ToolStripMenuItem
+    Friend WithEvents OpenFileDialog1 As OpenFileDialog
     Friend WithEvents ProjectConversionInitProgressBar As ProgressBar
     Friend WithEvents ProjectConversionInitProgressLabel As Label
-    Friend WithEvents ToolTipFileList As ToolTip
+    Friend WithEvents SaveFileDialog1 As SaveFileDialog
+    Friend WithEvents SplitContainer1 As SplitContainer
+    Friend WithEvents StatusStrip1 As StatusStrip
+    Friend WithEvents StatusStripConversionFileProgressLabel As ToolStripStatusLabel
+    Friend WithEvents StatusStripConversionProgressBar As ToolStripTextProgressBar
+    Friend WithEvents StatusStripCurrentFileName As ToolStripStatusLabel
+    Friend WithEvents StatusStripElapasedTimeLabel As ToolStripStatusLabel
+    Friend WithEvents StatusStripSpacer As ToolStripStatusLabel
+    Friend WithEvents StatusStripUpdateAvailable As ToolStripStatusLabel
     Friend WithEvents ToolTipErrorList As ToolTip
-    Friend WithEvents mnuFileLastProject As ToolStripMenuItem
-    Friend WithEvents mnuFileLastSolution As ToolStripMenuItem
-    Friend WithEvents TSFindToolStrip As ToolStrip
+    Friend WithEvents ToolTipFileList As ToolTip
+    Friend WithEvents TSFindClearHighlightsButton As ToolStripButton
+    Friend WithEvents TSFindFindNextButton As ToolStripButton
+    Friend WithEvents TSFindFindPreviousButton As ToolStripButton
     Friend WithEvents TSFindFindWhatComboBox As ToolStripComboBox
+    Friend WithEvents TSFindLookInComboBox As ToolStripComboBox
+    Friend WithEvents TSFindLookInLabel As ToolStripLabel
     Friend WithEvents TSFindMatchCaseCheckBox As ToolStripCheckBox
     Friend WithEvents TSFindMatchWholeWordCheckBox As ToolStripCheckBox
-    Friend WithEvents TSFindLookInLabel As ToolStripLabel
-    Friend WithEvents TSFindLookInComboBox As ToolStripComboBox
-    Friend WithEvents TSFindFindPreviousButton As ToolStripButton
-    Friend WithEvents TSFindFindNextButton As ToolStripButton
     Friend WithEvents TSFindSeparator1 As ToolStripSeparator
     Friend WithEvents TSFindSeparator2 As ToolStripSeparator
     Friend WithEvents TSFindSeparator3 As ToolStripSeparator
-    Friend WithEvents TSFindClearHighlightsButton As ToolStripButton
-    Friend WithEvents ContextMenuUndo As ToolStripMenuItem
-    Friend WithEvents ContextMenuRedo As ToolStripMenuItem
-    Friend WithEvents ContextMenuSeparator1 As ToolStripSeparator
     Friend WithEvents TSFindSeparator4 As ToolStripSeparator
     Friend WithEvents TSFindSeparator5 As ToolStripSeparator
-    Friend WithEvents mnuEditSelectAll As ToolStripMenuItem
-    Friend WithEvents ContextMenuSelectAll As ToolStripMenuItem
+    Friend WithEvents TSFindToolStrip As ToolStrip
+    Friend WithEvents TSThemeButton As ToolStripButton
 End Class

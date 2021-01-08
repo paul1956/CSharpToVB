@@ -17,11 +17,11 @@ Public Module ColorizeSupport
         If MainForm._inColorize Then
             Exit Sub
         End If
-        MainForm._inColorize = True
-        If ConversionBuffer.Visible Then
-            ConversionBuffer.Visible = False
-        End If
         Try ' Prevent crash when exiting
+            MainForm._inColorize = True
+            If ConversionBuffer.Visible Then
+                ConversionBuffer.Visible = False
+            End If
             If failures Is Nothing Then
                 MainForm.ListBoxErrorList.Enabled = False
             Else
@@ -35,10 +35,11 @@ Public Module ColorizeSupport
 
             With ConversionBuffer
                 .Clear()
+                .BackColor = ColorSelector.GetColorFromName("Default").Background
                 .Select(.TextLength, 0)
                 For Each range As Range In FragmentRange
                     .Select(.TextLength, 0)
-                    .SelectionColor = ColorSelector.GetColorFromName(range.ClassificationType)
+                    .SelectionColor = ColorSelector.GetColorFromName(range.ClassificationType).ForeGround
                     .AppendText(range.Text)
                     If range.Text.Contains(vbLf, StringComparison.OrdinalIgnoreCase) Then
                         MainForm.StatusStripConversionProgressBar.Increment(range.Text.Count(CType(vbLf, Char)))
@@ -47,8 +48,8 @@ Public Module ColorizeSupport
                     If MainForm._requestToConvert?.CancelToken.IsCancellationRequested Then
                         Exit Sub
                     End If
+                    Application.DoEvents()
                 Next range
-                Application.DoEvents()
                 If failures?.Count > 0 Then
                     For Each dia As Diagnostic In failures
                         Dim errorLine As Integer = dia.Location.GetLineSpan.StartLinePosition.Line
@@ -70,9 +71,12 @@ Public Module ColorizeSupport
         Catch ex As Exception
             Stop
             Throw
+        Finally
+            ConversionBuffer.Visible = True
+            ConversionBuffer.Refresh()
+            Application.DoEvents()
+            MainForm._inColorize = False
         End Try
-        ConversionBuffer.Visible = True
-        MainForm._inColorize = False
     End Sub
 
     Friend Sub Compile_Colorize(MainForm As Form1, TextToCompile As String, VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)))

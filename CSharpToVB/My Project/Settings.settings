@@ -8,11 +8,20 @@
     <Setting Name="ColorizeOutput" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
+    <Setting Name="ColorMode" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Light Mode</Value>
+    </Setting>
     <Setting Name="ConversionDelay" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
     <Setting Name="DefaultProjectDirectory" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="EditorFont" Type="System.Drawing.Font" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="EditorFontName" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Consolas</Value>
     </Setting>
     <Setting Name="Framework" Type="System.String" Scope="User">
       <Value Profile="(Default)">NETCOREAPP</Value>
@@ -82,12 +91,6 @@
     </Setting>
     <Setting Name="UpgradeRequired" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
-    </Setting>
-    <Setting Name="EditorFont" Type="System.Drawing.Font" Scope="User">
-      <Value Profile="(Default)" />
-    </Setting>
-    <Setting Name="EditorFontName" Type="System.String" Scope="User">
-      <Value Profile="(Default)">Consolas</Value>
     </Setting>
   </Settings>
 </SettingsFile>

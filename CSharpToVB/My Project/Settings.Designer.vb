@@ -65,6 +65,18 @@ Namespace My_Project
 
         <Global.System.Configuration.UserScopedSettingAttribute(),
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("Light Mode")>
+        Public Property ColorMode() As String
+            Get
+                Return CType(Me("ColorMode"), String)
+            End Get
+            Set
+                Me("ColorMode") = Value
+            End Set
+        End Property
+
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
          Global.System.Configuration.DefaultSettingValueAttribute("0")>
         Public Property ConversionDelay() As Integer
             Get
