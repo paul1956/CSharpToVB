@@ -26,8 +26,8 @@ Partial Public Class Form1
     Friend _requestToConvert As ConvertRequest
     Friend _resultOfConversion As ConversionResult
 
-    Public CurrentThemeName As String = "Light Mode"
     Public CurrentThemeDictionary As Dictionary(Of String, (ForeGround As Color, Background As Color))
+    Public CurrentThemeName As String = "Light Mode"
 
     Public Sub New()
         Me.InitializeComponent()
@@ -375,11 +375,7 @@ Partial Public Class Form1
             Me.TSThemeButton.Text = "Light Theme"
             CurrentThemeDictionary = s_LightThemeMappingDictionary
         Else
-            Dim executablePath As String = Assembly.GetExecutingAssembly().Location
-            Dim executableDirectory As String = Directory.GetParent(executablePath).FullName
-            Dim themePath As String = Path.Combine(executableDirectory, "Assets", "BigFace.xml")
-            Dim currentTheme As Themes = GetXMLThemeFromFile(themePath)
-            CurrentThemeDictionary = Themes.LoadDictionaryFromTheme(currentTheme, s_DarkThemeMappingDictionary)
+            Me.LoadXMLAssetIntoCurrentDictionary("BigFace.xml", s_DarkThemeMappingDictionary)
             Me.TSThemeButton.Text = "Dark Theme"
         End If
         ChangeTheme(CurrentThemeDictionary, My.Forms.Form1.Controls)
@@ -488,6 +484,18 @@ Partial Public Class Form1
 
     Private Sub ListBoxFileList_SelectedValueChanged(sender As Object, e As EventArgs) Handles ListBoxFileList.SelectedValueChanged
         Me.ListBoxFileList.Enabled = Me.ListBoxFileList.Items.Count > 0
+    End Sub
+
+    Private Sub LoadXMLAssetIntoCurrentDictionary(XMLAssetFileName As String, StartingDictionary As Dictionary(Of String, (ForeGround As Color, Background As Color)))
+        Dim executablePath As String = Assembly.GetExecutingAssembly().Location
+        Dim executableDirectory As String = Directory.GetParent(executablePath).FullName
+        Dim themePath As String = Path.Combine(executableDirectory, "Assets", XMLAssetFileName)
+        Dim currentTheme As Themes = GetXMLThemeFromFile(themePath)
+        ' TODO debugging only
+        CurrentThemeDictionary = StartingDictionary
+
+        ' uncomment next line to enable reading theme from file
+        'CurrentThemeDictionary = Themes.LoadDictionaryFromTheme(currentTheme, StartingDictionary)
     End Sub
 
     Private Sub mnuCompile_Click(sender As Object, e As EventArgs) Handles mnuCompile.Click
@@ -1093,10 +1101,7 @@ Partial Public Class Form1
             Me.TSThemeButton.Text = "Dark Theme"
             DefaultColor = (Color.White, Color.Black)
             If s_DarkThemeMappingDictionary.Count = s_xDarkModeDefaultCount Then
-                Dim executablePath As String = Assembly.GetExecutingAssembly().Location
-                Dim executableDirectory As String = Directory.GetParent(executablePath).FullName
-                Dim themePath As String = Path.Combine(executableDirectory, "Assets", "BigFace.xml")
-                Themes.LoadDictionaryFromTheme(GetXMLThemeFromFile(themePath), s_DarkThemeMappingDictionary)
+                Me.LoadXMLAssetIntoCurrentDictionary("BigFace.xml", s_DarkThemeMappingDictionary)
             End If
             CurrentThemeDictionary = s_DarkThemeMappingDictionary
         Else
