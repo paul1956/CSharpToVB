@@ -10,6 +10,7 @@ Module ClassificationTypeNames
     Public Const ExcludedCode As String = "excluded code"
     Public Const Identifier As String = "identifier"
     Public Const Keyword As String = "keyword"
+    Public Const FunctionKeyword As String = "Function"
     Public Const ControlKeyword As String = "keyword - control"
     Public Const NumericLiteral As String = "number"
     Public Const [Operator] As String = "operator"
