@@ -5,148 +5,218 @@
 Imports System.IO
 Imports System.Xml
 Imports System.Xml.Serialization
-Imports CSharpToVBConverter
 
 Public Module ColorSelector
 
     Private ReadOnly s_fullPath As String = Path.Combine(FileIO.SpecialDirectories.MyDocuments, "ColorDictionary.csv")
+
+#Region "Default Themes"
+
     Public ReadOnly s_DarkThemeMappingDictionary As New Dictionary(Of String, (ForeGround As Color, Background As Color))(StringComparer.OrdinalIgnoreCase) From {
-                    {ClassName, (Color.FromArgb(0, 128, 128), Color.Black)},
-                    {Comment, (Color.FromArgb(0, 100, 0), Color.Black)},
-                    {ConstantName, (Color.White, Color.Black)},
-                    {ControlKeyword, (Color.FromArgb(143, 8, 196), Color.Black)},
-                    {DefaultValue, (Color.White, Color.Black)},
-                    {DelegateName, (Color.FromArgb(0, 128, 128), Color.Black)},
-                    {EnumMemberName, (Color.FromArgb(0, 128, 128), Color.Black)},
-                    {EnumName, (Color.FromArgb(0, 128, 128), Color.Black)},
-                    {ErrorValue, (Color.Red, Color.White)},
-                    {EventName, (Color.White, Color.Black)},
-                    {ExcludedCode, (Color.FromArgb(128, 128, 128), Color.Black)},
-                    {ExtensionMethodName, (Color.White, Color.Black)},
-                    {FieldName, (Color.White, Color.Black)},
-                    {Identifier, (Color.White, Color.Black)},
-                    {InterfaceName, (Color.FromArgb(0, 128, 128), Color.Black)},
-                    {Keyword, (Color.FromArgb(0, 0, 255), Color.Black)},
-                    {LabelName, (Color.White, Color.Black)},
-                    {LocalName, (Color.White, Color.Black)},
-                    {MethodName, (Color.White, Color.Black)},
-                    {ModuleName, (Color.FromArgb(0, 128, 128), Color.Black)},
-                    {NamespaceName, (Color.White, Color.Black)},
-                    {NumericLiteral, (Color.White, Color.Black)},
-                    {OperatorOverloaded, (Color.White, Color.Black)},
-                    {[Operator], (Color.White, Color.Black)},
-                    {ParameterName, (Color.White, Color.Black)},
-                    {PreprocessorKeyword, (Color.Gray, Color.White)},
-                    {PreprocessorText, (Color.White, Color.Black)},
-                    {PropertyName, (Color.White, Color.Black)},
-                    {Punctuation, (Color.White, Color.Black)},
-                    {RegexAlternation, (Color.Teal, Color.White)},
-                    {RegexAnchor, (Color.Pink, Color.White)},
-                    {RegexCharacterClass, (Color.Blue, Color.White)},
-                    {RegexComment, (Color.DarkGreen, Color.White)},
-                    {RegexGrouping, (Color.Teal, Color.White)},
-                    {RegexOtherEscape, (Color.Brown, Color.White)},
-                    {RegexQuantifier, (Color.Pink, Color.White)},
-                    {RegexSelfEscapedCharacter, (Color.DarkRed, Color.White)},
-                    {RegexText, (Color.DarkRed, Color.White)},
-                    {StaticSymbol, (Color.White, Color.Black)},
-                    {StringEscapeCharacter, (Color.DarkBlue, Color.White)},
-                    {VerbatimStringLiteral, (Color.FromArgb(128, 0, 0), Color.Black)},
-                    {StringLiteral, (Color.FromArgb(163, 21, 21), Color.Black)},
-                    {StructName, (Color.FromArgb(43, 145, 175), Color.Black)},
-                    {Text, (Color.White, Color.Black)},
-                    {TypeParameterName, (Color.DarkGray, Color.White)},
-                    {XmlDocCommentAttributeName, (Color.FromArgb(128, 128, 128), Color.Black)},
-                    {XmlDocCommentAttributeQuotes, (Color.FromArgb(128, 128, 128), Color.Black)},
-                    {XmlDocCommentAttributeValue, (Color.FromArgb(128, 128, 128), Color.Black)},
-                    {XmlDocCommentCDataSection, (Color.FromArgb(128, 128, 128), Color.Black)},
-                    {XmlDocCommentComment, (Color.FromArgb(128, 128, 128), Color.Black)},
-                    {XmlDocCommentDelimiter, (Color.FromArgb(128, 128, 128), Color.Black)},
-                    {XmlDocCommentEntityReference, (Color.FromArgb(0, 128, 0), Color.Black)},
-                    {XmlDocCommentName, (Color.FromArgb(128, 128, 128), Color.Black)},
-                    {XmlDocCommentProcessingInstruction, (Color.FromArgb(128, 128, 128), Color.Black)},
-                    {XmlDocCommentText, (Color.FromArgb(0, 128, 0), Color.Black)},
-                    {XmlLiteralAttributeName, (Color.FromArgb(128, 128, 128), Color.Black)},
-                    {XmlLiteralAttributeQuotes, (Color.FromArgb(128, 128, 128), Color.Black)},
-                    {XmlLiteralAttributeValue, (Color.FromArgb(128, 128, 128), Color.Black)},
-                    {XmlLiteralCDataSection, (Color.FromArgb(128, 128, 128), Color.Black)},
-                    {XmlLiteralComment, (Color.FromArgb(128, 128, 128), Color.Black)},
-                    {XmlLiteralDelimiter, (Color.FromArgb(100, 100, 185), Color.Black)},
-                    {XmlLiteralEmbeddedExpression, (Color.FromArgb(128, 128, 128), Color.Black)},
-                    {XmlLiteralEntityReference, (Color.FromArgb(185, 100, 100), Color.Black)},
-                    {XmlLiteralName, (Color.FromArgb(132, 70, 70), Color.Black)},
-                    {XmlLiteralProcessingInstruction, (Color.FromArgb(128, 128, 128), Color.Black)},
-                    {XmlLiteralText, (Color.FromArgb(85, 85, 85), Color.Black)}
-                    }
+                        {DefaultValue, (Color.White, Color.Black)},
+                        {ClassName, (Color.FromArgb(0, 128, 128), Color.Black)},
+                        {Comment, (Color.FromArgb(0, 100, 0), Color.Black)},
+                        {ConstantName, (Color.White, Color.Black)},
+                        {ControlKeyword, (Color.FromArgb(143, 8, 196), Color.Black)},
+                        {DelegateName, (Color.FromArgb(0, 128, 128), Color.Black)},
+                        {EnumMemberName, (Color.FromArgb(0, 128, 128), Color.Black)},
+                        {EnumName, (Color.FromArgb(0, 128, 128), Color.Black)},
+                        {ErrorValue, (Color.Red, Color.White)},
+                        {EventName, (Color.White, Color.Black)},
+                        {ExcludedCode, (Color.FromArgb(128, 128, 128), Color.Black)},
+                        {ExtensionMethodName, (Color.White, Color.Black)},
+                        {FieldName, (Color.White, Color.Black)},
+                        {Identifier, (Color.White, Color.Black)},
+                        {InterfaceName, (Color.FromArgb(0, 128, 128), Color.Black)},
+                        {Keyword, (Color.FromArgb(0, 0, 255), Color.Black)},
+                        {LabelName, (Color.White, Color.Black)},
+                        {LocalName, (Color.White, Color.Black)},
+                        {MethodName, (Color.White, Color.Black)},
+                        {ModuleName, (Color.FromArgb(0, 128, 128), Color.Black)},
+                        {NamespaceName, (Color.White, Color.Black)},
+                        {NumericLiteral, (Color.White, Color.Black)},
+                        {OperatorOverloaded, (Color.White, Color.Black)},
+                        {[Operator], (Color.White, Color.Black)},
+                        {ParameterName, (Color.White, Color.Black)},
+                        {PreprocessorKeyword, (Color.Gray, Color.White)},
+                        {PreprocessorText, (Color.White, Color.Black)},
+                        {PropertyName, (Color.White, Color.Black)},
+                        {Punctuation, (Color.White, Color.Black)},
+                        {RegexAlternation, (Color.Teal, Color.White)},
+                        {RegexAnchor, (Color.Pink, Color.White)},
+                        {RegexCharacterClass, (Color.Blue, Color.White)},
+                        {RegexComment, (Color.DarkGreen, Color.White)},
+                        {RegexGrouping, (Color.Teal, Color.White)},
+                        {RegexOtherEscape, (Color.Brown, Color.White)},
+                        {RegexQuantifier, (Color.Pink, Color.White)},
+                        {RegexSelfEscapedCharacter, (Color.DarkRed, Color.White)},
+                        {RegexText, (Color.DarkRed, Color.White)},
+                        {StaticSymbol, (Color.White, Color.Black)},
+                        {StringEscapeCharacter, (Color.DarkBlue, Color.White)},
+                        {VerbatimStringLiteral, (Color.FromArgb(128, 0, 0), Color.Black)},
+                        {StringLiteral, (Color.FromArgb(163, 21, 21), Color.Black)},
+                        {StructName, (Color.FromArgb(43, 145, 175), Color.Black)},
+                        {Text, (Color.White, Color.Black)},
+                        {TypeParameterName, (Color.DarkGray, Color.White)},
+                        {XmlDocCommentAttributeName, (Color.FromArgb(128, 128, 128), Color.Black)},
+                        {XmlDocCommentAttributeQuotes, (Color.FromArgb(128, 128, 128), Color.Black)},
+                        {XmlDocCommentAttributeValue, (Color.FromArgb(128, 128, 128), Color.Black)},
+                        {XmlDocCommentCDataSection, (Color.FromArgb(128, 128, 128), Color.Black)},
+                        {XmlDocCommentComment, (Color.FromArgb(128, 128, 128), Color.Black)},
+                        {XmlDocCommentDelimiter, (Color.FromArgb(128, 128, 128), Color.Black)},
+                        {XmlDocCommentEntityReference, (Color.FromArgb(0, 128, 0), Color.Black)},
+                        {XmlDocCommentName, (Color.FromArgb(128, 128, 128), Color.Black)},
+                        {XmlDocCommentProcessingInstruction, (Color.FromArgb(128, 128, 128), Color.Black)},
+                        {XmlDocCommentText, (Color.FromArgb(0, 128, 0), Color.Black)},
+                        {XmlLiteralAttributeName, (Color.FromArgb(128, 128, 128), Color.Black)},
+                        {XmlLiteralAttributeQuotes, (Color.FromArgb(128, 128, 128), Color.Black)},
+                        {XmlLiteralAttributeValue, (Color.FromArgb(128, 128, 128), Color.Black)},
+                        {XmlLiteralCDataSection, (Color.FromArgb(128, 128, 128), Color.Black)},
+                        {XmlLiteralComment, (Color.FromArgb(128, 128, 128), Color.Black)},
+                        {XmlLiteralDelimiter, (Color.FromArgb(100, 100, 185), Color.Black)},
+                        {XmlLiteralEmbeddedExpression, (Color.FromArgb(128, 128, 128), Color.Black)},
+                        {XmlLiteralEntityReference, (Color.FromArgb(185, 100, 100), Color.Black)},
+                        {XmlLiteralName, (Color.FromArgb(132, 70, 70), Color.Black)},
+                        {XmlLiteralProcessingInstruction, (Color.FromArgb(128, 128, 128), Color.Black)},
+                        {XmlLiteralText, (Color.FromArgb(85, 85, 85), Color.Black)},
+                        {"Button", (SystemColors.ButtonHighlight, SystemColors.ButtonFace)},
+                        {"CheckBox", (SystemColors.ControlLightLight, SystemColors.ControlDark)},
+                        {"ComboBox", (SystemColors.ControlLightLight, SystemColors.ControlDark)},
+                        {"ContextMenuStrip", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"FloatingMenu", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"FolderBrowserDialog", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"Label", (SystemColors.ControlText, SystemColors.ControlDark)},
+                        {"LineNumbersForRichTextBox", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"ListBox", (SystemColors.ControlText, SystemColors.Control)},
+                        {"Menu", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"MenuStrip", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"MenuText", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"ProgressBar", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"RichTextBox", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"SplitBar", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"SplitContainer", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"StatusBarDefault", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"StatusStrip", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"StatusStripDefault", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"TextBox", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"ToolBar", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"ToolStrip", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"ToolStripButton", (SystemColors.ControlText, SystemColors.MenuBar)},
+                        {"ToolStripCheckBox", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"ToolStripComboBox", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"ToolStripLabel", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"ToolStripMenuItem", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"ToolStripSeparator", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"ToolStripStatusLabel", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"ToolStripTextProgressBar", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"ToolTip", (SystemColors.Menu, SystemColors.MenuBar)}
+                        }
 
     Public ReadOnly s_LightThemeMappingDictionary As New Dictionary(Of String, (ForeGround As Color, Background As Color))(StringComparer.OrdinalIgnoreCase) From {
-                    {ClassName, (Color.FromArgb(0, 128, 128), Color.White)},
-                    {Comment, (Color.FromArgb(0, 100, 0), Color.White)},
-                    {ConstantName, (Color.Black, Color.White)},
-                    {ControlKeyword, (Color.FromArgb(143, 8, 196), Color.White)},
-                    {DefaultValue, (Color.Black, Color.White)},
-                    {DelegateName, (Color.FromArgb(0, 128, 128), Color.White)},
-                    {EnumMemberName, (Color.FromArgb(0, 128, 128), Color.White)},
-                    {EnumName, (Color.FromArgb(0, 128, 128), Color.White)},
-                    {ErrorValue, (Color.Red, Color.White)},
-                    {EventName, (Color.Black, Color.White)},
-                    {ExcludedCode, (Color.FromArgb(128, 128, 128), Color.White)},
-                    {ExtensionMethodName, (Color.Black, Color.White)},
-                    {FieldName, (Color.Black, Color.White)},
-                    {Identifier, (Color.Black, Color.White)},
-                    {InterfaceName, (Color.FromArgb(0, 128, 128), Color.White)},
-                    {Keyword, (Color.FromArgb(0, 0, 255), Color.White)},
-                    {LabelName, (Color.Black, Color.White)},
-                    {LocalName, (Color.Black, Color.White)},
-                    {MethodName, (Color.Black, Color.White)},
-                    {ModuleName, (Color.FromArgb(0, 128, 128), Color.White)},
-                    {NamespaceName, (Color.Black, Color.White)},
-                    {NumericLiteral, (Color.Black, Color.White)},
-                    {OperatorOverloaded, (Color.Black, Color.White)},
-                    {[Operator], (Color.Black, Color.White)},
-                    {ParameterName, (Color.Black, Color.White)},
-                    {PreprocessorKeyword, (Color.Gray, Color.White)},
-                    {PreprocessorText, (Color.Black, Color.White)},
-                    {PropertyName, (Color.Black, Color.White)},
-                    {Punctuation, (Color.Black, Color.White)},
-                    {RegexAlternation, (Color.Teal, Color.White)},
-                    {RegexAnchor, (Color.Pink, Color.White)},
-                    {RegexCharacterClass, (Color.Blue, Color.White)},
-                    {RegexComment, (Color.DarkGreen, Color.White)},
-                    {RegexGrouping, (Color.Teal, Color.White)},
-                    {RegexOtherEscape, (Color.Brown, Color.White)},
-                    {RegexQuantifier, (Color.Pink, Color.White)},
-                    {RegexSelfEscapedCharacter, (Color.DarkRed, Color.White)},
-                    {RegexText, (Color.DarkRed, Color.White)},
-                    {StaticSymbol, (Color.Black, Color.White)},
-                    {StringEscapeCharacter, (Color.DarkBlue, Color.White)},
-                    {VerbatimStringLiteral, (Color.FromArgb(128, 0, 0), Color.White)},
-                    {StringLiteral, (Color.FromArgb(163, 21, 21), Color.White)},
-                    {StructName, (Color.FromArgb(43, 145, 175), Color.White)},
-                    {Text, (Color.Black, Color.White)},
-                    {TypeParameterName, (Color.DarkGray, Color.White)},
-                    {XmlDocCommentAttributeName, (Color.FromArgb(128, 128, 128), Color.White)},
-                    {XmlDocCommentAttributeQuotes, (Color.FromArgb(128, 128, 128), Color.White)},
-                    {XmlDocCommentAttributeValue, (Color.FromArgb(128, 128, 128), Color.White)},
-                    {XmlDocCommentCDataSection, (Color.FromArgb(128, 128, 128), Color.White)},
-                    {XmlDocCommentComment, (Color.FromArgb(128, 128, 128), Color.White)},
-                    {XmlDocCommentDelimiter, (Color.FromArgb(128, 128, 128), Color.White)},
-                    {XmlDocCommentEntityReference, (Color.FromArgb(0, 128, 0), Color.White)},
-                    {XmlDocCommentName, (Color.FromArgb(128, 128, 128), Color.White)},
-                    {XmlDocCommentProcessingInstruction, (Color.FromArgb(128, 128, 128), Color.White)},
-                    {XmlDocCommentText, (Color.FromArgb(0, 128, 0), Color.White)},
-                    {XmlLiteralAttributeName, (Color.FromArgb(128, 128, 128), Color.White)},
-                    {XmlLiteralAttributeQuotes, (Color.FromArgb(128, 128, 128), Color.White)},
-                    {XmlLiteralAttributeValue, (Color.FromArgb(128, 128, 128), Color.White)},
-                    {XmlLiteralCDataSection, (Color.FromArgb(128, 128, 128), Color.White)},
-                    {XmlLiteralComment, (Color.FromArgb(128, 128, 128), Color.White)},
-                    {XmlLiteralDelimiter, (Color.FromArgb(100, 100, 185), Color.White)},
-                    {XmlLiteralEmbeddedExpression, (Color.FromArgb(128, 128, 128), Color.White)},
-                    {XmlLiteralEntityReference, (Color.FromArgb(185, 100, 100), Color.White)},
-                    {XmlLiteralName, (Color.FromArgb(132, 70, 70), Color.White)},
-                    {XmlLiteralProcessingInstruction, (Color.FromArgb(128, 128, 128), Color.White)},
-                    {XmlLiteralText, (Color.FromArgb(85, 85, 85), Color.White)}
-                    }
+                        {DefaultValue, (Color.Black, Color.White)},
+                        {ClassName, (Color.FromArgb(0, 128, 128), Color.White)},
+                        {Comment, (Color.FromArgb(0, 100, 0), Color.White)},
+                        {ConstantName, (Color.Black, Color.White)},
+                        {ControlKeyword, (Color.FromArgb(143, 8, 196), Color.White)},
+                        {DelegateName, (Color.FromArgb(0, 128, 128), Color.White)},
+                        {EnumMemberName, (Color.FromArgb(0, 128, 128), Color.White)},
+                        {EnumName, (Color.FromArgb(0, 128, 128), Color.White)},
+                        {ErrorValue, (Color.Red, Color.White)},
+                        {EventName, (Color.Black, Color.White)},
+                        {ExcludedCode, (Color.FromArgb(128, 128, 128), Color.White)},
+                        {ExtensionMethodName, (Color.Black, Color.White)},
+                        {FieldName, (Color.Black, Color.White)},
+                        {Identifier, (Color.Black, Color.White)},
+                        {InterfaceName, (Color.FromArgb(0, 128, 128), Color.White)},
+                        {Keyword, (Color.FromArgb(0, 0, 255), Color.White)},
+                        {LabelName, (Color.Black, Color.White)},
+                        {LocalName, (Color.Black, Color.White)},
+                        {MethodName, (Color.Black, Color.White)},
+                        {ModuleName, (Color.FromArgb(0, 128, 128), Color.White)},
+                        {NamespaceName, (Color.Black, Color.White)},
+                        {NumericLiteral, (Color.Black, Color.White)},
+                        {OperatorOverloaded, (Color.Black, Color.White)},
+                        {[Operator], (Color.Black, Color.White)},
+                        {ParameterName, (Color.Black, Color.White)},
+                        {PreprocessorKeyword, (Color.Gray, Color.White)},
+                        {PreprocessorText, (Color.Black, Color.White)},
+                        {PropertyName, (Color.Black, Color.White)},
+                        {Punctuation, (Color.Black, Color.White)},
+                        {RegexAlternation, (Color.Teal, Color.White)},
+                        {RegexAnchor, (Color.Pink, Color.White)},
+                        {RegexCharacterClass, (Color.Blue, Color.White)},
+                        {RegexComment, (Color.DarkGreen, Color.White)},
+                        {RegexGrouping, (Color.Teal, Color.White)},
+                        {RegexOtherEscape, (Color.Brown, Color.White)},
+                        {RegexQuantifier, (Color.Pink, Color.White)},
+                        {RegexSelfEscapedCharacter, (Color.DarkRed, Color.White)},
+                        {RegexText, (Color.DarkRed, Color.White)},
+                        {StaticSymbol, (Color.Black, Color.White)},
+                        {StringEscapeCharacter, (Color.DarkBlue, Color.White)},
+                        {VerbatimStringLiteral, (Color.FromArgb(128, 0, 0), Color.White)},
+                        {StringLiteral, (Color.FromArgb(163, 21, 21), Color.White)},
+                        {StructName, (Color.FromArgb(43, 145, 175), Color.White)},
+                        {Text, (Color.Black, Color.White)},
+                        {TypeParameterName, (Color.DarkGray, Color.White)},
+                        {XmlDocCommentAttributeName, (Color.FromArgb(128, 128, 128), Color.White)},
+                        {XmlDocCommentAttributeQuotes, (Color.FromArgb(128, 128, 128), Color.White)},
+                        {XmlDocCommentAttributeValue, (Color.FromArgb(128, 128, 128), Color.White)},
+                        {XmlDocCommentCDataSection, (Color.FromArgb(128, 128, 128), Color.White)},
+                        {XmlDocCommentComment, (Color.FromArgb(128, 128, 128), Color.White)},
+                        {XmlDocCommentDelimiter, (Color.FromArgb(128, 128, 128), Color.White)},
+                        {XmlDocCommentEntityReference, (Color.FromArgb(0, 128, 0), Color.White)},
+                        {XmlDocCommentName, (Color.FromArgb(128, 128, 128), Color.White)},
+                        {XmlDocCommentProcessingInstruction, (Color.FromArgb(128, 128, 128), Color.White)},
+                        {XmlDocCommentText, (Color.FromArgb(0, 128, 0), Color.White)},
+                        {XmlLiteralAttributeName, (Color.FromArgb(128, 128, 128), Color.White)},
+                        {XmlLiteralAttributeQuotes, (Color.FromArgb(128, 128, 128), Color.White)},
+                        {XmlLiteralAttributeValue, (Color.FromArgb(128, 128, 128), Color.White)},
+                        {XmlLiteralCDataSection, (Color.FromArgb(128, 128, 128), Color.White)},
+                        {XmlLiteralComment, (Color.FromArgb(128, 128, 128), Color.White)},
+                        {XmlLiteralDelimiter, (Color.FromArgb(100, 100, 185), Color.White)},
+                        {XmlLiteralEmbeddedExpression, (Color.FromArgb(128, 128, 128), Color.White)},
+                        {XmlLiteralEntityReference, (Color.FromArgb(185, 100, 100), Color.White)},
+                        {XmlLiteralName, (Color.FromArgb(132, 70, 70), Color.White)},
+                        {XmlLiteralProcessingInstruction, (Color.FromArgb(128, 128, 128), Color.White)},
+                        {XmlLiteralText, (Color.FromArgb(85, 85, 85), Color.Black)},
+                        {"Button", (SystemColors.ButtonHighlight, SystemColors.ButtonFace)},
+                        {"CheckBox", (SystemColors.ControlLightLight, SystemColors.ControlDark)},
+                        {"ComboBox", (SystemColors.ControlText, SystemColors.Control)},
+                        {"ContextMenuStrip", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"FloatingMenu", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"FolderBrowserDialog", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"Label", (SystemColors.ControlText, SystemColors.ControlDark)},
+                        {"LineNumbersForRichTextBox", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"ListBox", (SystemColors.ControlText, SystemColors.Control)},
+                        {"Menu", (SystemColors.ControlText, Color.FromArgb(238, 238, 242))},
+                        {"MenuStrip", (SystemColors.ControlText, Color.FromArgb(238, 238, 242))},
+                        {"MenuText", (Color.Black, Color.FromArgb(238, 238, 242))},
+                        {"ProgressBar", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"RichTextBox", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"SplitBar", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"SplitContainer", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"StatusBarDefault", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"StatusStrip", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"StatusStripDefault", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"TextBox", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"ToolBar", (SystemColors.ControlText, Color.FromArgb(238, 238, 242))},
+                        {"ToolStrip", (SystemColors.ControlText, Color.FromArgb(238, 238, 242))},
+                        {"ToolStripButton", (SystemColors.ControlText, SystemColors.MenuBar)},
+                        {"ToolStripCheckBox", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"ToolStripComboBox", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"ToolStripLabel", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"ToolStripMenuItem", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"ToolStripSeparator", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"ToolStripStatusLabel", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"ToolStripTextProgressBar", (SystemColors.Menu, SystemColors.MenuBar)},
+                        {"ToolTip", (SystemColors.Menu, SystemColors.MenuBar)}
+                        }
+
+    ' Do not rename the next two fields need to be last in region
+    Public ReadOnly s_xDarkModeDefaultCount As Integer = s_DarkThemeMappingDictionary.Count
+    Public ReadOnly s_xlightModeDefaultCount As Integer = s_LightThemeMappingDictionary.Count
+
+#End Region
 
     Public Property DefaultColor As (ForeGround As Color, Background As Color) = (Color.Black, Color.White)
 
@@ -166,51 +236,7 @@ Public Module ColorSelector
         Return My.Forms.Form1.CurrentThemeDictionary.Keys
     End Function
 
-    Public Function LoadDictionaryFromTheme(CurrentTheme As Themes, ThemeDictionary As Dictionary(Of String, (ForeGround As Color, Background As Color))) As Dictionary(Of String, (ForeGround As Color, Background As Color))
-        If CurrentTheme Is Nothing Then
-            Throw New ArgumentNullException(NameOf(CurrentTheme))
-        End If
-        If ThemeDictionary Is Nothing Then
-            Throw New ArgumentNullException(NameOf(ThemeDictionary))
-        End If
-        Dim categoryColorList As New List(Of ThemesThemeCategoryColor)
-        For Each cat As ThemesThemeCategory In CurrentTheme.Theme.Category
-            If cat.Name = "Text Editor Language Service Items" Then
-                categoryColorList.AddRange(cat.Color)
-            End If
-        Next
-
-        For Each cat As ThemesThemeCategory In CurrentTheme.Theme.Category
-            If cat.Name = "Text Editor Language Service Items" Then
-                Continue For
-            End If
-            For Each categoryColor As ThemesThemeCategoryColor In cat.Color
-                Dim found As Boolean = False
-                If My.Forms.Form1.CurrentThemeDictionary.ContainsKey(categoryColor.Name) Then
-                    For Each c As ThemesThemeCategoryColor In categoryColorList
-                        If c.Name = categoryColor.Name Then
-                            found = True
-                            Exit For
-                        End If
-                    Next
-                    If Not found Then
-                        categoryColorList.Add(categoryColor)
-                    End If
-                End If
-            Next
-        Next
-        DefaultColor = (categoryColorList(0).Foreground.Source.ToColor, categoryColorList(0).Background.Source.ToColor)
-        For Each categoryColor As ThemesThemeCategoryColor In categoryColorList
-            If ThemeDictionary.ContainsKey(categoryColor.Name) Then
-                ThemeDictionary(categoryColor.Name) = (categoryColor.Foreground.Source.ToColor, categoryColor.Background.Source.ToColor)
-            Else
-                ThemeDictionary.Add(categoryColor.Name, (categoryColor.Foreground.Source.ToColor, categoryColor.Background.Source.ToColor))
-            End If
-        Next
-        Return ThemeDictionary
-    End Function
-
-    Public Function LoadNewTheme(Filename As String) As Themes
+    Public Function GetXMLThemeFromFile(Filename As String) As Themes
         Using sr As New StreamReader(Filename)
             Using xr As XmlReader = XmlReader.Create(sr)
                 Return CType(New XmlSerializer(GetType(Themes)).Deserialize(xr), Themes)
