@@ -146,7 +146,6 @@ Partial Class Form1
         '
         'MenuStrip1
         '
-        Me.MenuStrip1.BackColor = System.Drawing.Color.FromArgb(CType(CType(204, Byte), Integer), CType(CType(213, Byte), Integer), CType(CType(240, Byte), Integer))
         Me.MenuStrip1.ImageScalingSize = New System.Drawing.Size(36, 36)
         Me.MenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuFile, Me.mnuEdit, Me.mnuCompile, Me.mnuConvert, Me.mnuOptions, Me.mnuView, Me.mnuHelp})
         Me.MenuStrip1.Location = New System.Drawing.Point(0, 0)
@@ -606,7 +605,6 @@ Partial Class Form1
         '
         'TSFindToolStrip
         '
-        Me.TSFindToolStrip.BackColor = System.Drawing.Color.FromArgb(CType(CType(204, Byte), Integer), CType(CType(213, Byte), Integer), CType(CType(240, Byte), Integer))
         Me.TSFindToolStrip.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.TSFindFindWhatComboBox, Me.TSFindSeparator1, Me.TSFindLookInLabel, Me.TSFindLookInComboBox, Me.TSFindSeparator2, Me.TSFindFindPreviousButton, Me.TSFindFindNextButton, Me.TSFindSeparator3, Me.TSFindMatchCaseCheckBox, Me.TSFindMatchWholeWordCheckBox, Me.TSFindSeparator4, Me.TSFindClearHighlightsButton, Me.TSFindSeparator5, TSThemeButton})
         Me.TSFindToolStrip.Location = New System.Drawing.Point(0, 24)
         Me.TSFindToolStrip.Name = "TSFindToolStrip"
@@ -806,7 +804,6 @@ Partial Class Form1
         'LabelErrorCount
         '
         Me.LabelErrorCount.AutoSize = True
-        Me.LabelErrorCount.BackColor = System.Drawing.Color.FromArgb(CType(CType(204, Byte), Integer), CType(CType(213, Byte), Integer), CType(CType(240, Byte), Integer))
         Me.LabelErrorCount.Location = New System.Drawing.Point(1463, 4)
         Me.LabelErrorCount.Name = "LabelErrorCount"
         Me.LabelErrorCount.Size = New System.Drawing.Size(110, 15)
@@ -932,7 +929,6 @@ Partial Class Form1
         '
         'StatusStrip1
         '
-        Me.StatusStrip1.BackColor = System.Drawing.Color.FromArgb(CType(CType(204, Byte), Integer), CType(CType(213, Byte), Integer), CType(CType(240, Byte), Integer))
         Me.StatusStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.StatusStripElapasedTimeLabel, Me.StatusStripCurrentFileName, Me.StatusStripSpacer, Me.StatusStripConversionProgressBar, Me.StatusStripConversionFileProgressLabel, Me.StatusStripUpdateAvailable})
         Me.StatusStrip1.Location = New System.Drawing.Point(0, 615)
         Me.StatusStrip1.Name = "StatusStrip1"
@@ -951,7 +947,6 @@ Partial Class Form1
         'StatusStripCurrentFileName
         '
         Me.StatusStripCurrentFileName.AutoSize = False
-        Me.StatusStripCurrentFileName.BackColor = System.Drawing.Color.FromArgb(CType(CType(204, Byte), Integer), CType(CType(213, Byte), Integer), CType(CType(240, Byte), Integer))
         Me.StatusStripCurrentFileName.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right
         Me.StatusStripCurrentFileName.Name = "StatusStripCurrentFileName"
         Me.StatusStripCurrentFileName.Size = New System.Drawing.Size(500, 17)
@@ -959,7 +954,6 @@ Partial Class Form1
         '
         'StatusStripSpacer
         '
-        Me.StatusStripSpacer.BackColor = System.Drawing.Color.FromArgb(CType(CType(204, Byte), Integer), CType(CType(213, Byte), Integer), CType(CType(240, Byte), Integer))
         Me.StatusStripSpacer.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right
         Me.StatusStripSpacer.Name = "StatusStripSpacer"
         Me.StatusStripSpacer.Size = New System.Drawing.Size(856, 17)
@@ -969,8 +963,6 @@ Partial Class Form1
         '
         Me.StatusStripConversionProgressBar.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right
         Me.StatusStripConversionProgressBar.AutoSize = False
-        Me.StatusStripConversionProgressBar.BackColor = System.Drawing.Color.FromArgb(CType(CType(204, Byte), Integer), CType(CType(213, Byte), Integer), CType(CType(240, Byte), Integer))
-        Me.StatusStripConversionProgressBar.ForeColor = System.Drawing.Color.FromArgb(CType(CType(52, Byte), Integer), CType(CType(47, Byte), Integer), CType(CType(16, Byte), Integer))
         Me.StatusStripConversionProgressBar.Name = "StatusStripConversionProgressBar"
         Me.StatusStripConversionProgressBar.Size = New System.Drawing.Size(200, 16)
         Me.StatusStripConversionProgressBar.Step = 1
@@ -979,7 +971,6 @@ Partial Class Form1
         'StatusStripConversionFileProgressLabel
         '
         Me.StatusStripConversionFileProgressLabel.AutoSize = False
-        Me.StatusStripConversionFileProgressLabel.BackColor = System.Drawing.Color.FromArgb(CType(CType(204, Byte), Integer), CType(CType(213, Byte), Integer), CType(CType(240, Byte), Integer))
         Me.StatusStripConversionFileProgressLabel.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Left
         Me.StatusStripConversionFileProgressLabel.Name = "StatusStripConversionFileProgressLabel"
         Me.StatusStripConversionFileProgressLabel.Size = New System.Drawing.Size(200, 17)

@@ -69,6 +69,7 @@ Public Class OptionsDialog
                 Exit For
             End If
         Next
+        Me.ModeTextBox.Text = My.Forms.Form1.TSThemeButton.Text
         For Each name As String In ColorSelector.GetColorNameList()
             Me.ItemColor_ComboBox.Items.Add(name)
         Next name

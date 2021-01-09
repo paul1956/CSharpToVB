@@ -44,6 +44,7 @@ Partial Class OptionsDialog
         Me.Label3 = New System.Windows.Forms.Label()
         Me.SelectEditorFontButton = New System.Windows.Forms.Button()
         Me.FontDialog1 = New System.Windows.Forms.FontDialog()
+        Me.ModeTextBox = New System.Windows.Forms.TextBox()
         Me.TableLayoutPanel1.SuspendLayout()
         Me.SuspendLayout()
         '
@@ -128,9 +129,9 @@ Partial Class OptionsDialog
         '
         'UpdateColor_Button
         '
-        Me.UpdateColor_Button.Location = New System.Drawing.Point(335, 61)
+        Me.UpdateColor_Button.Location = New System.Drawing.Point(352, 61)
         Me.UpdateColor_Button.Name = "UpdateColor_Button"
-        Me.UpdateColor_Button.Size = New System.Drawing.Size(138, 27)
+        Me.UpdateColor_Button.Size = New System.Drawing.Size(121, 27)
         Me.UpdateColor_Button.TabIndex = 5
         Me.UpdateColor_Button.Text = "Update Color"
         Me.UpdateColor_Button.UseVisualStyleBackColor = True
@@ -263,6 +264,18 @@ Partial Class OptionsDialog
         Me.SelectEditorFontButton.Text = "Select Editor Font"
         Me.SelectEditorFontButton.UseVisualStyleBackColor = True
         '
+        'FontDialog1
+        '
+        '
+        'ModeTextBox
+        '
+        Me.ModeTextBox.Location = New System.Drawing.Point(205, 64)
+        Me.ModeTextBox.Name = "ModeTextBox"
+        Me.ModeTextBox.ReadOnly = True
+        Me.ModeTextBox.Size = New System.Drawing.Size(100, 23)
+        Me.ModeTextBox.TabIndex = 21
+        Me.ModeTextBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
+        '
         'OptionsDialog
         '
         Me.AcceptButton = Me.OK_Button
@@ -270,6 +283,7 @@ Partial Class OptionsDialog
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.CancelButton = Me.Cancel_Button
         Me.ClientSize = New System.Drawing.Size(486, 299)
+        Me.Controls.Add(Me.ModeTextBox)
         Me.Controls.Add(Me.SelectEditorFontButton)
         Me.Controls.Add(Me.Label3)
         Me.Controls.Add(Me.ComboBoxStrict)
@@ -324,4 +338,5 @@ Partial Class OptionsDialog
     Friend WithEvents Label3 As Label
     Friend WithEvents SelectEditorFontButton As Button
     Friend WithEvents FontDialog1 As FontDialog
+    Friend WithEvents ModeTextBox As TextBox
 End Class
