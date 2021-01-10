@@ -320,8 +320,8 @@ Partial Public Class Form1
         Me.Width = Screen.PrimaryScreen.Bounds.Width
         Me.Height = CInt(Screen.PrimaryScreen.Bounds.Height * 0.95)
 
-        Me.ListBoxFileList.Height = Me.SplitContainer1.Panel2.ClientSize.Height
-        Me.ListBoxErrorList.Height = Me.SplitContainer1.Panel2.ClientSize.Height
+        Me.ListBoxFileList.Height = Me.SplitContainer1.Panel2.ClientSize.Height - 4
+        Me.ListBoxErrorList.Height = Me.SplitContainer1.Panel2.ClientSize.Height - 4
 
         For Each frameworkType As ToolStripMenuItem In Me.mnuOptionsDefaultFramework.DropDownItems
             If frameworkType.Text = ".Net Full Framework" Then
@@ -975,8 +975,8 @@ Partial Public Class Form1
     End Sub
 
     Private Sub SplitContainer1_SplitterMoved(sender As Object, e As SplitterEventArgs) Handles SplitContainer1.SplitterMoved
-        Me.ListBoxFileList.Height = Me.SplitContainer1.Panel2.ClientSize.Height
-        Me.ListBoxErrorList.Height = Me.SplitContainer1.Panel2.ClientSize.Height
+        Me.ListBoxFileList.Height = Me.SplitContainer1.Panel2.ClientSize.Height - 4
+        Me.ListBoxErrorList.Height = Me.SplitContainer1.Panel2.ClientSize.Height - 4
     End Sub
 
     Private Sub StatusStripCurrentFileName_MouseDown(sender As Object, e As MouseEventArgs) Handles StatusStripCurrentFileName.MouseDown
