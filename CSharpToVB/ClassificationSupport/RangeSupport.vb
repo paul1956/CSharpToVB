@@ -23,7 +23,7 @@ Public Module RangeSupport
         While i <= spans.Count - 1
             Try
                 Dim nextSpan As ClassifiedSpan = spans.GetForwardItem(i, 1)
-                If ClassificationTypeNames.AdditiveTypeNames.Contains(currentSpan.ClassificationType) Then
+                If Classification.ClassificationTypeNames.AdditiveTypeNames.Contains(currentSpan.ClassificationType) Then
                     i += 1
                     currentSpan = nextSpan
                     Continue While
