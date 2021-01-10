@@ -42,6 +42,7 @@ Namespace CSharpToVBConverter
         Public ReadOnly BeginCDataToken As SyntaxToken = Factory.Token(SyntaxKind.BeginCDataToken)
         Public ReadOnly CloseBraceToken As SyntaxToken = Factory.Token(SyntaxKind.CloseBraceToken)
         Public ReadOnly CloseParenToken As SyntaxToken = Factory.Token(SyntaxKind.CloseParenToken)
+        Public ReadOnly ColonToken As SyntaxToken = Factory.Token(SyntaxKind.ColonToken)
         Public ReadOnly CommaToken As SyntaxToken = Factory.Token(SyntaxKind.CommaToken)
         Public ReadOnly DotToken As SyntaxToken = Factory.Token(SyntaxKind.DotToken)
         Public ReadOnly DoubleQuoteToken As SyntaxToken = Factory.Token(SyntaxKind.DoubleQuoteToken)
@@ -82,6 +83,17 @@ Namespace CSharpToVBConverter
         Public ReadOnly OnToken As SyntaxToken = Factory.Token(SyntaxKind.OnKeyword)
         Public ReadOnly StrictToken As SyntaxToken = Factory.Token(SyntaxKind.StrictKeyword)
         Public ReadOnly TextToken As SyntaxToken = Factory.Token(SyntaxKind.TextKeyword)
+
+#End Region
+
+#Region "Identifiers"
+
+        Public ReadOnly DecrementIdentifier As IdentifierNameSyntax = Factory.IdentifierName("Decrement")
+        Public ReadOnly IncrementIdentifier As IdentifierNameSyntax = Factory.IdentifierName("Increment")
+        Public ReadOnly InterlockedIdentifier As IdentifierNameSyntax = Factory.IdentifierName("Interlocked")
+        Public ReadOnly MathIdentifier As IdentifierNameSyntax = Factory.IdentifierName("Math")
+        Public ReadOnly MaxIdentifier As IdentifierNameSyntax = Factory.IdentifierName("Max")
+        Public ReadOnly MinIdentifier As IdentifierNameSyntax = Factory.IdentifierName("Min")
 
 #End Region
 
@@ -281,6 +293,7 @@ Namespace CSharpToVBConverter
 #Region "Expressions"
 
         Public ReadOnly CloneIdentifier As IdentifierNameSyntax = Factory.IdentifierName("Clone")
+        Public ReadOnly MemberwiseCloneIdentifier As IdentifierNameSyntax = Factory.IdentifierName("MemberwiseClone")
         Public ReadOnly DoubleQuoteExpression As LiteralExpressionSyntax = Factory.LiteralExpression(SyntaxKind.StringLiteralExpression, Factory.Literal(""))
         Public ReadOnly IntPrtSizeExpression As ExpressionSyntax = Factory.ParseExpression("IntPrt.Size")
         Public ReadOnly MeExpression As MeExpressionSyntax = Factory.MeExpression()

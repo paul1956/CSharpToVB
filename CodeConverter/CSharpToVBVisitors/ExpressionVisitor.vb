@@ -11,8 +11,6 @@ Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
-Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
-
 Namespace CSharpToVBConverter.ToVisualBasic
 
     Partial Public Class CSharpConverter
@@ -56,7 +54,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 For Each namePart As String In nameParts.Skip(1)
                     lhs = Factory.MemberAccessExpression(VB.SyntaxKind.SimpleMemberAccessExpression,
                                                          If(lhs, CType(Factory.IdentifierName(nameParts(0)), ExpressionSyntax)),
-                                                         Factory.Token(VB.SyntaxKind.DotToken),
+                                                         DotToken,
                                                          Factory.IdentifierName(namePart))
                 Next
                 Return lhs
@@ -132,10 +130,10 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                     Nothing,
                                     Factory.SimpleAsClause(AsKeyword.With(SpaceTrivia, SpaceTrivia), New SyntaxList(Of AttributeListSyntax), symbol.ReturnType.ConvertToType)
                                     )
-                        lambdaHeader = Factory.FunctionLambdaHeader(Factory.List(Of AttributeListSyntax)(), Factory.TokenList(modifiersList), parameterList, asClause:=CType(asClause, SimpleAsClauseSyntax))
+                        lambdaHeader = Factory.FunctionLambdaHeader(Factory.List(Of AttributeListSyntax)(), modifiersList, parameterList, asClause:=CType(asClause, SimpleAsClauseSyntax))
                         endSubOrFunctionStatement = Factory.EndFunctionStatement(EndKeyword.WithTrailingTrivia(SpaceTrivia), FunctionKeyword).WithConvertedTriviaFrom(csBraces.RightBrace)
                     Else
-                        lambdaHeader = Factory.SubLambdaHeader(Factory.List(Of AttributeListSyntax)(), Factory.TokenList(modifiersList), parameterList, asClause:=Nothing)
+                        lambdaHeader = Factory.SubLambdaHeader(Factory.List(Of AttributeListSyntax)(), modifiersList, parameterList, asClause:=Nothing)
                         endSubOrFunctionStatement = Factory.EndSubStatement(EndKeyword.WithTrailingTrivia(SpaceTrivia), SubKeyword).WithConvertedTriviaFrom(csBraces.RightBrace)
                     End If
                     If TypeOf block Is CSS.BlockSyntax Then
@@ -1559,12 +1557,12 @@ Namespace CSharpToVBConverter.ToVisualBasic
             End Function
 
             Public Overrides Function VisitInterpolationAlignmentClause(node As CSS.InterpolationAlignmentClauseSyntax) As VB.VisualBasicSyntaxNode
-                Return Factory.InterpolationAlignmentClause(Factory.Token(VB.SyntaxKind.CommaToken), CType(node.Value.Accept(Me), ExpressionSyntax))
+                Return Factory.InterpolationAlignmentClause(CommaToken, CType(node.Value.Accept(Me), ExpressionSyntax))
             End Function
 
             Public Overrides Function VisitInterpolationFormatClause(node As CSS.InterpolationFormatClauseSyntax) As VB.VisualBasicSyntaxNode
                 Dim formatStringToken As SyntaxToken = Factory.InterpolatedStringTextToken(SyntaxTriviaList.Empty, node.FormatStringToken.Text, node.FormatStringToken.ValueText, SyntaxTriviaList.Empty)
-                Return Factory.InterpolationFormatClause(Factory.Token(VB.SyntaxKind.ColonToken), formatStringToken)
+                Return Factory.InterpolationFormatClause(ColonToken, formatStringToken)
             End Function
 
             Public Overrides Function VisitInvocationExpression(node As CSS.InvocationExpressionSyntax) As VB.VisualBasicSyntaxNode
@@ -2028,6 +2026,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Catch ex As OperationCanceledException
                         Throw
                     Catch ex As Exception
+                        Stop
                         ' ignore
                     End Try
 
@@ -2036,20 +2035,20 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                                        GetOperatorToken(kind, IsReferenceType:=False),
                                                        OneExpression)
                 Else
-                    Dim operatorName As String
-                    Dim minMax As String
+                    Dim operatorName As IdentifierNameSyntax
+                    Dim minMax As IdentifierNameSyntax
                     Dim op As VB.SyntaxKind
                     If kind = VB.SyntaxKind.AddAssignmentStatement Then
-                        operatorName = "Increment"
-                        minMax = "Min"
+                        operatorName = IncrementIdentifier
+                        minMax = MinIdentifier
                         op = VB.SyntaxKind.SubtractExpression
                     Else
-                        operatorName = "Decrement"
-                        minMax = "Max"
+                        operatorName = DecrementIdentifier
+                        minMax = MaxIdentifier
                         op = VB.SyntaxKind.AddExpression
                     End If
-                    Dim vbMathExpression As NameSyntax = Factory.ParseName("Math." & minMax)
-                    Dim vbInterlockedExpressionName As NameSyntax = Factory.ParseName("Threading.Interlocked." & operatorName)
+                    Dim vbMathExpression As MemberAccessExpressionSyntax = Factory.MemberAccessExpression(VB.SyntaxKind.SimpleMemberAccessExpression, MathIdentifier, DotToken, minMax)
+                    Dim vbInterlockedExpressionName As MemberAccessExpressionSyntax = Factory.MemberAccessExpression(VB.SyntaxKind.SimpleMemberAccessExpression, InterlockedIdentifier, DotToken, operatorName)
 
                     Dim vbOperandArgument As SimpleArgumentSyntax = Factory.SimpleArgument(leftExpr)
 
@@ -2098,8 +2097,8 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                                                              OneExpression).WithConvertedTriviaFrom(node)
                         End If
                     Else
-                        Dim operatorName As String = If(kind = VB.SyntaxKind.AddAssignmentStatement, "Increment", "Decrement")
-                        Dim mathExpr As NameSyntax = Factory.ParseName("Threading.Interlocked." & operatorName)
+                        Dim operatorName As VB.Syntax.IdentifierNameSyntax = If(kind = VB.SyntaxKind.AddAssignmentStatement, IncrementIdentifier, DecrementIdentifier)
+                        Dim mathExpr As MemberAccessExpressionSyntax = Factory.MemberAccessExpression(VB.SyntaxKind.SimpleMemberAccessExpression, InterlockedIdentifier, DotToken, operatorName)
                         Return Factory.InvocationExpression(mathExpr,
                                                               Factory.ArgumentList(Factory.SeparatedList(
                                                                                         New ArgumentSyntax() {Factory.SimpleArgument(vbOperandExpression)})

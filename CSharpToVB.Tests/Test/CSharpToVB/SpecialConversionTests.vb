@@ -194,6 +194,9 @@ End Module")
             Dim tesT3 As Integer = CInt(Fix(o))
             test = [Delegate].Remove(test, value)
         End RemoveHandler
+
+        RaiseEvent(sender As Object, e As EventArgs)
+        End RaiseEvent
     End Event
 End Class")
         End Sub
@@ -421,6 +424,9 @@ public class TestClass {
         RemoveHandler(Value As EventHandler)
             Me.value = [Delegate].Remove(Me.value, value)
         End RemoveHandler
+
+        RaiseEvent(sender As Object, e As EventArgs)
+        End RaiseEvent
     End Event
 End Class")
         End Sub
@@ -541,7 +547,7 @@ End Class")
 
     Private Sub TestMethod()
         Dim b As Integer, a As Integer = 5
-        b = Math.Min(Threading.Interlocked.Increment(a), a - 1)
+        b = Math.Min(Interlocked.Increment(a), a - 1)
     End Sub
 End Class")
         End Sub
@@ -737,7 +743,7 @@ End Class")
 
     Private Sub TestMethod()
         Dim b As Integer, a As Integer = 5
-        b = Math.Min(Threading.Interlocked.Increment(a), a - 1)
+        b = Math.Min(Interlocked.Increment(a), a - 1)
     End Sub
 End Class")
         End Sub

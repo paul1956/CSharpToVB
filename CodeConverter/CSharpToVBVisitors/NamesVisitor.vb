@@ -66,6 +66,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Catch ex As OperationCanceledException
                     Throw
                 Catch ex As Exception
+                    Stop
                     Throw
                 End Try
                 Dim symbol As ISymbol = If(symbolInfo.Symbol, symbolInfo.CandidateSymbols.FirstOrDefault())

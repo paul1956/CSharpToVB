@@ -356,6 +356,10 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Return blocknode
                 End If
 
+                If TypeOf blocknode Is CSS.NamespaceDeclarationSyntax Then
+                    Return blocknode
+                End If
+
                 If TypeOf blocknode Is CSS.PropertyDeclarationSyntax Then
                     Return blocknode
                 End If
