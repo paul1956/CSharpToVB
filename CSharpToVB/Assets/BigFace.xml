@@ -4502,7 +4502,7 @@
                 <Background Type="CT_RAW" Source="FFA0A0A0" />
             </Color>
         </Category>
-        <Category Name="NotificationBubble" GUID="{800c5171-6625-4a74-b3e2-a6cd0b4698d4}">
+         <Category Name="NotificationBubble" GUID="{800c5171-6625-4a74-b3e2-a6cd0b4698d4}">
             <Color Name="NotificationBubbleBorder">
                 <Background Type="CT_RAW" Source="FF92CAF4" />
             </Color>
