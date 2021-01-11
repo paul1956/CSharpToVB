@@ -4,7 +4,7 @@
 
 Public Class OptionsDialog
     Private _selectedColor As Color
-    Private _selectedColorName As String = "default"
+    Private _selectedColorName As String = DefaultValue
 
     Public MainForm As Form1
 
@@ -24,11 +24,15 @@ Public Class OptionsDialog
             Dim itemName As String = CType(sender, ComboBox).Items(e.Index).ToString()
             Dim itemColor As (ForeGround As Color, Background As Color) = ColorSelector.GetColorFromName(itemName)
 
-            Using b As Brush = New SolidBrush(itemColor.ForeGround)
-                Dim eBounds As Rectangle = e.Bounds
+            Dim eBounds As Rectangle = e.Bounds
+            Using b As Brush = New SolidBrush(DefaultColor.Background)
                 Dim pt As New Point(eBounds.X, eBounds.Top)
-                TextRenderer.DrawText(e.Graphics, itemName, Me.Font, pt, DefaultColor.Background)
-                e.Graphics.FillRectangle(b, eBounds.X + 250, eBounds.Y + 2, eBounds.Width - 10, eBounds.Height - 6)
+                e.Graphics.FillRectangle(b, eBounds.X, eBounds.Y, eBounds.Width - 200, eBounds.Height)
+                TextRenderer.DrawText(e.Graphics, itemName, Me.Font, pt, DefaultColor.ForeGround, DefaultColor.Background)
+            End Using
+            Using b As Brush = New SolidBrush(itemColor.Background)
+                e.Graphics.FillRectangle(b, eBounds.X + 250, eBounds.Y, eBounds.Width - 250, eBounds.Height)
+                TextRenderer.DrawText(e.Graphics, itemName, Me.Font, New Point(eBounds.X + 250, eBounds.Top), itemColor.ForeGround, itemColor.Background)
             End Using
         End If
     End Sub
@@ -75,7 +79,7 @@ Public Class OptionsDialog
         For Each name As String In ColorSelector.GetColorNameList()
             Me.ItemColor_ComboBox.Items.Add(name)
         Next name
-        Me.ItemColor_ComboBox.SelectedIndex = Me.ItemColor_ComboBox.FindStringExact("default")
+        Me.ItemColor_ComboBox.SelectedIndex = Me.ItemColor_ComboBox.FindStringExact(DefaultValue)
         Me.ComboBoxCompare.SelectedItem = My.Settings.OptionCompare
         Me.ComboBoxExplicit.SelectedItem = My.Settings.OptionExplicit
         Me.ComboBoxInfer.SelectedItem = My.Settings.OptionInfer

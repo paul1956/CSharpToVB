@@ -35,7 +35,7 @@ Public Module ColorizeSupport
 
             With ConversionBuffer
                 .Clear()
-                .BackColor = ColorSelector.GetColorFromName("Default").Background
+                .BackColor = ColorSelector.GetColorFromName(DefaultValue).Background
                 .Select(.TextLength, 0)
                 For Each range As Range In FragmentRange
                     .Select(.TextLength, 0)

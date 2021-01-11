@@ -388,6 +388,7 @@ Partial Public Class Form1
             CurrentThemeDictionary = s_DarkThemeMappingDictionary
         End If
         ChangeTheme(CurrentThemeDictionary, My.Forms.Form1.Controls)
+        DefaultColor = CurrentThemeDictionary(DefaultValue)
     End Sub
 
     Private Sub Form1_Resize(sender As Object, e As EventArgs) Handles Me.Resize
@@ -1096,7 +1097,7 @@ Partial Public Class Form1
     Private Sub TSThemeButton_Click(sender As Object, e As EventArgs) Handles TSThemeButton.Click
         If Me.TSThemeButton.Text = "Light Theme" Then
             Me.TSThemeButton.Text = "Dark Theme"
-            DefaultColor = GetColorFromName("default")
+            DefaultColor = GetColorFromName(DefaultValue)
             If s_DarkThemeMappingDictionary.Count = s_xDarkModeDefaultCount Then
                 ' TODO For now don't try to get colors from Theme
                 CurrentThemeDictionary = LoadXMLAssetIntoCurrentDictionary("BigFace.xml", s_DarkThemeMappingDictionary)
@@ -1104,7 +1105,7 @@ Partial Public Class Form1
             CurrentThemeDictionary = s_DarkThemeMappingDictionary
         Else
             Me.TSThemeButton.Text = "Light Theme"
-            DefaultColor = GetColorFromName("default")
+            DefaultColor = GetColorFromName(DefaultValue)
             CurrentThemeDictionary = s_LightThemeMappingDictionary
         End If
         ChangeTheme(CurrentThemeDictionary, My.Forms.Form1.Controls)
