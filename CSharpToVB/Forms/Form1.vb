@@ -57,6 +57,14 @@ Partial Public Class Form1
         Return LatestVersionStrings(1) <> ConverterVersion.ToString
     End Function
 
+    Private Shared Function LoadXMLAssetIntoCurrentDictionary(XMLAssetFileName As String, StartingDictionary As Dictionary(Of String, (ForeGround As Color, Background As Color))) As Dictionary(Of String, (ForeGround As Color, Background As Color))
+        Dim executablePath As String = Assembly.GetExecutingAssembly().Location
+        Dim executableDirectory As String = Directory.GetParent(executablePath).FullName
+        Dim themePath As String = Path.Combine(executableDirectory, "Assets", XMLAssetFileName)
+        Dim currentTheme As Themes = GetXMLThemeFromFile(themePath)
+        Return Themes.LoadDictionaryFromTheme(currentTheme, StartingDictionary)
+    End Function
+
     Private Sub ButtonStop_Click(sender As Object, e As EventArgs) Handles ButtonStopConversion.Click
         Me.ButtonStopConversion.Visible = False
         _cancellationTokenSource.Cancel()
@@ -375,8 +383,9 @@ Partial Public Class Form1
             Me.TSThemeButton.Text = "Light Theme"
             CurrentThemeDictionary = s_LightThemeMappingDictionary
         Else
-            Me.LoadXMLAssetIntoCurrentDictionary("BigFace.xml", s_DarkThemeMappingDictionary)
+            'Me.LoadXMLAssetIntoCurrentDictionary("BigFace.xml", s_DarkThemeMappingDictionary)
             Me.TSThemeButton.Text = "Dark Theme"
+            CurrentThemeDictionary = s_DarkThemeMappingDictionary
         End If
         ChangeTheme(CurrentThemeDictionary, My.Forms.Form1.Controls)
     End Sub
@@ -484,18 +493,6 @@ Partial Public Class Form1
 
     Private Sub ListBoxFileList_SelectedValueChanged(sender As Object, e As EventArgs) Handles ListBoxFileList.SelectedValueChanged
         Me.ListBoxFileList.Enabled = Me.ListBoxFileList.Items.Count > 0
-    End Sub
-
-    Private Sub LoadXMLAssetIntoCurrentDictionary(XMLAssetFileName As String, StartingDictionary As Dictionary(Of String, (ForeGround As Color, Background As Color)))
-        Dim executablePath As String = Assembly.GetExecutingAssembly().Location
-        Dim executableDirectory As String = Directory.GetParent(executablePath).FullName
-        Dim themePath As String = Path.Combine(executableDirectory, "Assets", XMLAssetFileName)
-        Dim currentTheme As Themes = GetXMLThemeFromFile(themePath)
-        ' TODO debugging only
-        CurrentThemeDictionary = StartingDictionary
-
-        ' uncomment next line to enable reading theme from file
-        'CurrentThemeDictionary = Themes.LoadDictionaryFromTheme(currentTheme, StartingDictionary)
     End Sub
 
     Private Sub mnuCompile_Click(sender As Object, e As EventArgs) Handles mnuCompile.Click
@@ -1099,14 +1096,15 @@ Partial Public Class Form1
     Private Sub TSThemeButton_Click(sender As Object, e As EventArgs) Handles TSThemeButton.Click
         If Me.TSThemeButton.Text = "Light Theme" Then
             Me.TSThemeButton.Text = "Dark Theme"
-            DefaultColor = (Color.White, Color.Black)
+            DefaultColor = GetColorFromName("default")
             If s_DarkThemeMappingDictionary.Count = s_xDarkModeDefaultCount Then
-                Me.LoadXMLAssetIntoCurrentDictionary("BigFace.xml", s_DarkThemeMappingDictionary)
+                ' TODO For now don't try to get colors from Theme
+                CurrentThemeDictionary = LoadXMLAssetIntoCurrentDictionary("BigFace.xml", s_DarkThemeMappingDictionary)
             End If
             CurrentThemeDictionary = s_DarkThemeMappingDictionary
         Else
             Me.TSThemeButton.Text = "Light Theme"
-            DefaultColor = (Color.White, Color.Black)
+            DefaultColor = GetColorFromName("default")
             CurrentThemeDictionary = s_LightThemeMappingDictionary
         End If
         ChangeTheme(CurrentThemeDictionary, My.Forms.Form1.Controls)
