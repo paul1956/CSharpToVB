@@ -22,10 +22,12 @@ Public Class OptionsDialog
     Private Sub ItemColor_ComboBox_DrawItem(sender As Object, e As DrawItemEventArgs) Handles ItemColor_ComboBox.DrawItem
         If e.Index >= 0 Then
             Dim itemName As String = CType(sender, ComboBox).Items(e.Index).ToString()
-            Using b As Brush = New SolidBrush(ColorSelector.GetColorFromName(itemName).ForeGround)
+            Dim itemColor As (ForeGround As Color, Background As Color) = ColorSelector.GetColorFromName(itemName)
+
+            Using b As Brush = New SolidBrush(itemColor.ForeGround)
                 Dim eBounds As Rectangle = e.Bounds
                 Dim pt As New Point(eBounds.X, eBounds.Top)
-                TextRenderer.DrawText(e.Graphics, itemName, Me.Font, pt, Color.Black)
+                TextRenderer.DrawText(e.Graphics, itemName, Me.Font, pt, DefaultColor.Background)
                 e.Graphics.FillRectangle(b, eBounds.X + 250, eBounds.Y + 2, eBounds.Width - 10, eBounds.Height - 6)
             End Using
         End If
@@ -82,6 +84,7 @@ Public Class OptionsDialog
         Me.CheckBoxExplicit.Checked = My.Settings.OptionExplicitIncludeInCode
         Me.CheckBoxInfer.Checked = My.Settings.OptionInferIncludeInCode
         Me.CheckBoxStrict.Checked = My.Settings.OptionStrictIncludeInCode
+        ChangeTheme(My.Forms.Form1.CurrentThemeDictionary, Me.Controls)
     End Sub
 
     Private Sub SelectEditorFontButton_Click(sender As Object, e As EventArgs) Handles SelectEditorFontButton.Click

@@ -47,6 +47,10 @@ Module ThemeSupport
                 CheckAndSetColor(component, scheme, "LineNumbersForRichTextBox", isInToolStrip, isEnabled)
             ElseIf TypeOf component Is RichTextBox Then
                 CheckAndSetColor(component, scheme, "RichTextBox", isInToolStrip, isEnabled)
+            ElseIf TypeOf component Is PictureBox Then
+                ' skip for now
+            ElseIf TypeOf component Is TextBox Then
+                CheckAndSetColor(component, scheme, "TextBox", isInToolStrip, isEnabled)
             Else
                 Stop
             End If
