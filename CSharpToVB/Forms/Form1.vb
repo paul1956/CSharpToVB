@@ -1024,14 +1024,14 @@ Partial Public Class Form1
         If Me.BufferToSearch.IsFlagSet(SearchBuffers.CS) Then
             selectionstart = Me.ConversionInput.SelectionStart
             Me.ConversionInput.SelectAll()
-            Me.ConversionInput.SelectionBackColor = Color.White
+            Me.ConversionInput.SelectionBackColor = DefaultColor.Background
             Me.ConversionInput.Select(selectionstart, 0)
             Me.ConversionInput.ScrollToCaret()
         End If
         If Me.BufferToSearch.IsFlagSet(SearchBuffers.VB) Then
             selectionstart = Me.ConversionOutput.SelectionStart
             Me.ConversionOutput.SelectAll()
-            Me.ConversionOutput.SelectionBackColor = Color.White
+            Me.ConversionOutput.SelectionBackColor = DefaultColor.Background
             Me.ConversionOutput.Select(selectionstart, 0)
             Me.ConversionOutput.ScrollToCaret()
         End If
@@ -1105,9 +1105,9 @@ Partial Public Class Form1
             CurrentThemeDictionary = s_DarkThemeMappingDictionary
         Else
             Me.TSThemeButton.Text = "Light Theme"
-            DefaultColor = GetColorFromName(DefaultValue)
             CurrentThemeDictionary = s_LightThemeMappingDictionary
         End If
+        DefaultColor = GetColorFromName(DefaultValue)
         ChangeTheme(CurrentThemeDictionary, My.Forms.Form1.Controls)
         If Me.ConversionInput.Text.Any Then
             If Me.mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then

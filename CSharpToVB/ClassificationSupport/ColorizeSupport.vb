@@ -38,9 +38,9 @@ Public Module ColorizeSupport
                 .BackColor = ColorSelector.GetColorFromName(DefaultValue).Background
                 .Select(.TextLength, 0)
                 For Each range As Range In FragmentRange
-                    .Select(.TextLength, 0)
+                    Call .Select(.TextLength, 0)
                     .SelectionColor = ColorSelector.GetColorFromName(range.ClassificationType).ForeGround
-                    .AppendText(range.Text)
+                    Call .AppendText(range.Text)
                     If range.Text.Contains(vbLf, StringComparison.OrdinalIgnoreCase) Then
                         MainForm.StatusStripConversionProgressBar.Increment(range.Text.Count(CType(vbLf, Char)))
                         Application.DoEvents()
@@ -57,7 +57,9 @@ Public Module ColorizeSupport
                         Dim errorCharactorPosition As Integer = dia.Location.GetLineSpan.StartLinePosition.Character
                         Dim length As Integer = dia.Location.GetLineSpan.EndLinePosition.Character - errorCharactorPosition
                         .Select(.GetFirstCharIndexFromLine(errorLine) + errorCharactorPosition, length)
-                        .SelectionColor = Color.Red
+                        Dim selectionColor As (ForeGround As Color, Background As Color) = GetColorFromName("Error")
+                        .SelectionBackColor = selectionColor.Background
+                        .SelectionColor = selectionColor.ForeGround
                         .Select(.TextLength, 0)
                     Next
                     .Select(.GetFirstCharIndexFromLine(failures(0).Location.GetLineSpan.StartLinePosition.Line), 0)
@@ -142,7 +144,7 @@ Public Module ColorizeSupport
                                                                                      reportException,
                                                                                      progress,
                                                                                      CancelToken)
-                                                                                ).ConfigureAwait(True)
+                                                                                    ).ConfigureAwait(True)
 
         If MainForm._resultOfConversion Is Nothing Then
             MainForm.mnuFileSaveAs.Enabled = False
@@ -158,7 +160,9 @@ Public Module ColorizeSupport
                 Return filteredErrorCount = 0
             Case ResultTriState.Failure
                 If TypeOf MainForm._resultOfConversion.Exceptions(0) IsNot OperationCanceledException Then
-                    MainForm.ConversionOutput.SelectionColor = Color.Red
+                    Dim selectionColor As (Foreground As Color, Background As Color) = GetColorFromName(ErrorValue)
+                    MainForm.ConversionOutput.SelectionBackColor = selectionColor.Background
+                    MainForm.ConversionOutput.SelectionColor = selectionColor.Foreground
                     MainForm.ConversionOutput.Text = GetExceptionsAsString(MainForm._resultOfConversion.Exceptions)
                 End If
             Case ResultTriState.Ignore

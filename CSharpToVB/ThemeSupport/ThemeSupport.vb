@@ -10,7 +10,7 @@ Module ThemeSupport
             Dim isInToolStrip As Boolean = TypeOf component.Parent Is ToolStrip
             If TypeOf component Is Panel Then
                 ChangeTheme(scheme, component.Controls)
-                CheckAndSetColor(component, scheme, "PanelBoarderStyle", isInToolStrip, isEnabled)
+                CheckAndSetColor(component, scheme, "Panel", isInToolStrip, isEnabled)
             ElseIf TypeOf component Is MenuStrip Then
                 ChangeTheme(scheme, component.Controls)
                 For Each dropDownItem As Object In CType(component, MenuStrip).Items
