@@ -856,16 +856,6 @@ Partial Class Form1
         Me.ConversionOutput.Text = ""
         Me.ConversionOutput.WordWrap = False
         '
-        'ListBoxFileList
-        '
-        Me.ListBoxFileList.ContextMenuStrip = Me.ContextMenuStrip1
-        Me.ListBoxFileList.Enabled = False
-        Me.ListBoxFileList.ItemHeight = 15
-        Me.ListBoxFileList.Location = New System.Drawing.Point(0, 5)
-        Me.ListBoxFileList.Name = "ListBoxFileList"
-        Me.ListBoxFileList.Size = New System.Drawing.Size(971, 64)
-        Me.ListBoxFileList.TabIndex = 0
-        '
         'LineNumbersForConversionInput
         '
         Me.LineNumbersForConversionInput.BackgroundGradientAlphaColor = System.Drawing.Color.FromArgb(CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer))

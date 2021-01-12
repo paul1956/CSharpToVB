@@ -63,6 +63,9 @@ Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpec
 Any changes to CSharpToVB application needs to change the version information in the project file **AND** in MyProject/AssemblyInfo.vb until Visual Studio is able to general file automatically for a WinForms application.
 
 ## What's New in this release
+  New in 5.0.0.28/5.0.0.24
+  - Set edit buffers to read-only instead of Disabled when colorizing
+
   New in 5.0.0.27/5.0.0.24
   - Improve Colorization to handle Regex and SubStrings, a new function AdjustAdditiveSpans was added to merger the new spans it would use a good design review.
 
