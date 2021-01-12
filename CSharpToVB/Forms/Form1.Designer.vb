@@ -605,7 +605,7 @@ Partial Class Form1
         '
         'TSFindToolStrip
         '
-        Me.TSFindToolStrip.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.TSFindFindWhatComboBox, Me.TSFindSeparator1, Me.TSFindLookInLabel, Me.TSFindLookInComboBox, Me.TSFindSeparator2, Me.TSFindFindPreviousButton, Me.TSFindFindNextButton, Me.TSFindSeparator3, Me.TSFindMatchCaseCheckBox, Me.TSFindMatchWholeWordCheckBox, Me.TSFindSeparator4, Me.TSFindClearHighlightsButton, Me.TSFindSeparator5, TSThemeButton})
+        Me.TSFindToolStrip.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.TSFindFindWhatComboBox, Me.TSFindSeparator1, Me.TSFindLookInLabel, Me.TSFindLookInComboBox, Me.TSFindSeparator2, Me.TSFindFindPreviousButton, Me.TSFindFindNextButton, Me.TSFindSeparator3, Me.TSFindMatchCaseCheckBox, Me.TSFindMatchWholeWordCheckBox, Me.TSFindSeparator4, Me.TSFindClearHighlightsButton, Me.TSFindSeparator5, Me.TSThemeButton})
         Me.TSFindToolStrip.Location = New System.Drawing.Point(0, 24)
         Me.TSFindToolStrip.Name = "TSFindToolStrip"
         Me.TSFindToolStrip.Size = New System.Drawing.Size(1923, 25)
@@ -702,20 +702,20 @@ Partial Class Form1
         Me.TSFindClearHighlightsButton.Size = New System.Drawing.Size(96, 25)
         Me.TSFindClearHighlightsButton.Text = "Clear Highlights"
         '
+        'TSFindSeparator5
+        '
+        Me.TSFindSeparator5.Margin = New System.Windows.Forms.Padding(5, 0, 5, 0)
+        Me.TSFindSeparator5.Name = "TSFindSeparator5"
+        Me.TSFindSeparator5.Size = New System.Drawing.Size(6, 25)
+        '
         'TSThemeButton
         '
         Me.TSThemeButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text
         Me.TSThemeButton.ImageTransparentColor = System.Drawing.Color.Magenta
         Me.TSThemeButton.Margin = New System.Windows.Forms.Padding(1, 0, 1, 0)
         Me.TSThemeButton.Name = "TSThemeButton"
-        Me.TSThemeButton.Size = New System.Drawing.Size(96, 25)
+        Me.TSThemeButton.Size = New System.Drawing.Size(77, 25)
         Me.TSThemeButton.Text = "Light Theme"
-        '
-        'TSFindSeparator5
-        '
-        Me.TSFindSeparator5.Margin = New System.Windows.Forms.Padding(5, 0, 5, 0)
-        Me.TSFindSeparator5.Name = "TSFindSeparator5"
-        Me.TSFindSeparator5.Size = New System.Drawing.Size(6, 25)
         '
         'ContextMenuStrip1
         '
@@ -831,7 +831,7 @@ Partial Class Form1
         Me.SplitContainer1.Panel2.Controls.Add(Me.ListBoxFileList)
         Me.SplitContainer1.Panel2.Controls.Add(Me.ListBoxErrorList)
         Me.SplitContainer1.Size = New System.Drawing.Size(1923, 566)
-        Me.SplitContainer1.SplitterDistance = 509
+        Me.SplitContainer1.SplitterDistance = 460
         Me.SplitContainer1.SplitterWidth = 2
         Me.SplitContainer1.TabIndex = 22
         '
@@ -841,10 +841,9 @@ Partial Class Form1
         Me.ConversionInput.DetectUrls = False
         Me.ConversionInput.Dock = System.Windows.Forms.DockStyle.Left
         Me.ConversionInput.Font = New System.Drawing.Font("Consolas", 11.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point)
-        Me.ConversionInput.Location = New System.Drawing.Point(0, 0)
+        Me.ConversionInput.Location = New System.Drawing.Point(23, 0)
         Me.ConversionInput.Name = "ConversionInput"
-        Me.ConversionInput.ShortcutsEnabled = True
-        Me.ConversionInput.Size = New System.Drawing.Size(950, 509)
+        Me.ConversionInput.Size = New System.Drawing.Size(950, 460)
         Me.ConversionInput.TabIndex = 0
         Me.ConversionInput.Text = ""
         Me.ConversionInput.WordWrap = False
@@ -857,8 +856,7 @@ Partial Class Form1
         Me.ConversionOutput.Font = New System.Drawing.Font("Consolas", 11.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point)
         Me.ConversionOutput.Location = New System.Drawing.Point(999, 0)
         Me.ConversionOutput.Name = "ConversionOutput"
-        Me.ConversionOutput.ShortcutsEnabled = True
-        Me.ConversionOutput.Size = New System.Drawing.Size(924, 509)
+        Me.ConversionOutput.Size = New System.Drawing.Size(924, 460)
         Me.ConversionOutput.TabIndex = 1
         Me.ConversionOutput.Text = ""
         Me.ConversionOutput.WordWrap = False
@@ -903,7 +901,7 @@ Partial Class Form1
         Me.ListBoxFileList.ItemHeight = 15
         Me.ListBoxFileList.Location = New System.Drawing.Point(0, 5)
         Me.ListBoxFileList.Name = "ListBoxFileList"
-        Me.ListBoxFileList.Size = New System.Drawing.Size(971, 64)
+        Me.ListBoxFileList.Size = New System.Drawing.Size(971, 94)
         Me.ListBoxFileList.TabIndex = 0
         '
         'ListBoxErrorList
@@ -914,7 +912,7 @@ Partial Class Form1
         Me.ListBoxErrorList.ItemHeight = 15
         Me.ListBoxErrorList.Location = New System.Drawing.Point(977, 5)
         Me.ListBoxErrorList.Name = "ListBoxErrorList"
-        Me.ListBoxErrorList.Size = New System.Drawing.Size(958, 64)
+        Me.ListBoxErrorList.Size = New System.Drawing.Size(958, 94)
         Me.ListBoxErrorList.TabIndex = 1
         '
         'StatusStrip1
@@ -953,10 +951,12 @@ Partial Class Form1
         '
         Me.StatusStripConversionProgressBar.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right
         Me.StatusStripConversionProgressBar.AutoSize = False
+        Me.StatusStripConversionProgressBar.DisplayIncrement = 10
         Me.StatusStripConversionProgressBar.Name = "StatusStripConversionProgressBar"
         Me.StatusStripConversionProgressBar.Size = New System.Drawing.Size(200, 16)
         Me.StatusStripConversionProgressBar.Step = 1
         Me.StatusStripConversionProgressBar.Style = System.Windows.Forms.ProgressBarStyle.Continuous
+        Me.StatusStripConversionProgressBar.TextImageRelation = System.Windows.Forms.TextImageRelation.Overlay
         '
         'StatusStripConversionFileProgressLabel
         '
@@ -967,7 +967,7 @@ Partial Class Form1
         '
         'StatusStripUpdateAvailable
         '
-        Me.StatusStripUpdateAvailable.DisplayStyle = ToolStripItemDisplayStyle.Image
+        Me.StatusStripUpdateAvailable.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
         Me.StatusStripUpdateAvailable.Image = CType(resources.GetObject("StatusStripUpdateAvailable.Image"), System.Drawing.Image)
         Me.StatusStripUpdateAvailable.Name = "StatusStripUpdateAvailable"
         Me.StatusStripUpdateAvailable.Size = New System.Drawing.Size(16, 17)
