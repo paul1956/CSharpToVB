@@ -830,8 +830,8 @@ Partial Class Form1
         '
         Me.SplitContainer1.Panel2.Controls.Add(Me.ListBoxFileList)
         Me.SplitContainer1.Panel2.Controls.Add(Me.ListBoxErrorList)
-        Me.SplitContainer1.Size = New System.Drawing.Size(1923, 566)
-        Me.SplitContainer1.SplitterDistance = 509
+        Me.SplitContainer1.Size = New System.Drawing.Size(1923, 600)
+        Me.SplitContainer1.SplitterDistance = 510
         Me.SplitContainer1.SplitterWidth = 2
         Me.SplitContainer1.TabIndex = 22
         '
@@ -862,16 +862,6 @@ Partial Class Form1
         Me.ConversionOutput.TabIndex = 1
         Me.ConversionOutput.Text = ""
         Me.ConversionOutput.WordWrap = False
-        '
-        'ListBoxFileList
-        '
-        Me.ListBoxFileList.ContextMenuStrip = Me.ContextMenuStrip1
-        Me.ListBoxFileList.Enabled = False
-        Me.ListBoxFileList.ItemHeight = 15
-        Me.ListBoxFileList.Location = New System.Drawing.Point(0, 5)
-        Me.ListBoxFileList.Name = "ListBoxFileList"
-        Me.ListBoxFileList.Size = New System.Drawing.Size(971, 64)
-        Me.ListBoxFileList.TabIndex = 0
         '
         'LineNumbersForConversionInput
         '
