@@ -635,8 +635,8 @@ Partial Class Form1
         '
         'TSFindLookInComboBox
         '
-        Me.TSFindLookInComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems
         Me.TSFindLookInComboBox.Items.AddRange(New Object() {"C# Source", "Visual Basic Output", "Both"})
+        Me.TSFindLookInComboBox.AutoCompleteSource = AutoCompleteSource.ListItems
         Me.TSFindLookInComboBox.MaxDropDownItems = 3
         Me.TSFindLookInComboBox.Name = "TSFindLookInComboBox"
         Me.TSFindLookInComboBox.Size = New System.Drawing.Size(130, 25)
