@@ -70,6 +70,7 @@ Public Module ColorizeSupport
                 MainForm.LineNumbersForConversionOutput.Visible = True
             End If
             MainForm.StatusStripConversionProgressBar.Clear()
+        Catch ex As OperationCanceledException
         Catch ex As Exception
             Stop
             Throw
