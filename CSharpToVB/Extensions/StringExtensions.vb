@@ -29,4 +29,9 @@ Public Module StringExtensions
         Return String.Join(separator, source)
     End Function
 
+    <Extension()>
+    Public Function ToColor(source As String) As Color
+        Return Color.FromArgb(Convert.ToInt32(source, 16))
+    End Function
+
 End Module

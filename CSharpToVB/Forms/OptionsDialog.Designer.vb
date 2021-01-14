@@ -128,9 +128,9 @@ Partial Class OptionsDialog
         '
         'UpdateColor_Button
         '
-        Me.UpdateColor_Button.Location = New System.Drawing.Point(335, 61)
+        Me.UpdateColor_Button.Location = New System.Drawing.Point(352, 61)
         Me.UpdateColor_Button.Name = "UpdateColor_Button"
-        Me.UpdateColor_Button.Size = New System.Drawing.Size(138, 27)
+        Me.UpdateColor_Button.Size = New System.Drawing.Size(121, 27)
         Me.UpdateColor_Button.TabIndex = 5
         Me.UpdateColor_Button.Text = "Update Color"
         Me.UpdateColor_Button.UseVisualStyleBackColor = True
