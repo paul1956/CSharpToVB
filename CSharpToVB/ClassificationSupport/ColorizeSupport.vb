@@ -49,7 +49,6 @@ Public Module ColorizeSupport
                     End If
                     Application.DoEvents()
                 Next range
-                .Select(0, 0)
                 If failures?.Count > 0 Then
                     For Each dia As Diagnostic In failures
                         Dim errorLine As Integer = dia.Location.GetLineSpan.StartLinePosition.Line
