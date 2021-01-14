@@ -249,12 +249,12 @@ Public Module ColorSelector
 
     Public Sub SetColor(name As String, value As (ForeGround As Color, Background As Color))
         My.Forms.Form1.CurrentThemeDictionary(name) = value
-        WriteColorDictionaryToFile(s_fullPath)
+        WriteColorDictionaryToFile(s_fullPath, My.Forms.Form1.CurrentThemeDictionary)
     End Sub
 
-    Public Sub UpdateColorDictionaryFromFile(FPath As String)
+    Public Sub UpdateColorDictionaryFromFile(FPath As String, ThemeDictionary As Dictionary(Of String, (ForeGround As Color, Background As Color)))
         If Not File.Exists(FPath) Then
-            WriteColorDictionaryToFile(FPath)
+            WriteColorDictionaryToFile(FPath, My.Forms.Form1.CurrentThemeDictionary)
             Exit Sub
         End If
         Dim fileStream As FileStream = File.OpenRead(FPath)
@@ -264,26 +264,26 @@ Public Module ColorSelector
             Dim line As String = sr.ReadLine()
             Dim splitLine() As String = line.Split(","c)
             Dim key As String = splitLine(0)
-            My.Forms.Form1.CurrentThemeDictionary(key) = (Color.FromArgb(red:=Convert.ToInt32(splitLine(1), Globalization.CultureInfo.InvariantCulture),
-                                                                green:=Convert.ToInt32(splitLine(2), Globalization.CultureInfo.InvariantCulture),
-                                                                blue:=Convert.ToInt32(splitLine(3), Globalization.CultureInfo.InvariantCulture)),
-                                                          Color.FromArgb(red:=Convert.ToInt32(splitLine(4), Globalization.CultureInfo.InvariantCulture),
-                                                                green:=Convert.ToInt32(splitLine(5), Globalization.CultureInfo.InvariantCulture),
-                                                                blue:=Convert.ToInt32(splitLine(6), Globalization.CultureInfo.InvariantCulture)))
+            ThemeDictionary(key) = (Color.FromArgb(red:=Convert.ToInt32(splitLine(1), Globalization.CultureInfo.InvariantCulture),
+                                                   green:=Convert.ToInt32(splitLine(2), Globalization.CultureInfo.InvariantCulture),
+                                                   blue:=Convert.ToInt32(splitLine(3), Globalization.CultureInfo.InvariantCulture)),
+                                    Color.FromArgb(red:=Convert.ToInt32(splitLine(4), Globalization.CultureInfo.InvariantCulture),
+                                                   green:=Convert.ToInt32(splitLine(5), Globalization.CultureInfo.InvariantCulture),
+                                                   blue:=Convert.ToInt32(splitLine(6), Globalization.CultureInfo.InvariantCulture)))
         End While
         sr.Close()
         fileStream.Close()
     End Sub
 
     Public Sub WriteColorDictionaryToFile()
-        WriteColorDictionaryToFile(s_fullPath)
+        WriteColorDictionaryToFile(s_fullPath, My.Forms.Form1.CurrentThemeDictionary)
     End Sub
 
-    Public Sub WriteColorDictionaryToFile(FPath As String)
+    Public Sub WriteColorDictionaryToFile(FPath As String, ThemeDictionary As Dictionary(Of String, (ForeGround As Color, Background As Color)))
         Using fileStream As FileStream = File.OpenWrite(FPath)
             Using sw As New StreamWriter(fileStream)
                 sw.WriteLine($"Key,ForeGroundR,ForeGroundG,ForeGroundB,BackgroundR,BackgroundG,BackgroundB")
-                For Each kvp As KeyValuePair(Of String, (ForeGround As Color, Background As Color)) In My.Forms.Form1.CurrentThemeDictionary
+                For Each kvp As KeyValuePair(Of String, (ForeGround As Color, Background As Color)) In ThemeDictionary
                     sw.WriteLine($"{kvp.Key},{kvp.Value.ForeGround.R},{kvp.Value.ForeGround.G},{kvp.Value.ForeGround.B},{kvp.Value.Background.R},{kvp.Value.Background.G},{kvp.Value.Background.B}")
                 Next
                 sw.Flush()
