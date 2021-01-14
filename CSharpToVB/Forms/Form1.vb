@@ -1114,12 +1114,14 @@ Partial Public Class Form1
         If Me.ConversionInput.Text.Any Then
             If Me.mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
                 Colorize(Me, GetClassifiedRanges(SourceCode:=Me.ConversionInput.Text, LanguageNames.CSharp), ConversionBuffer:=Me.ConversionInput, Lines:=Me.ConversionInput.Lines.Length)
+                Me.ConversionInput.Select(0, 0)
             End If
 
         End If
         If Me.ConversionOutput.Text.Any Then
             If Me.mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
                 Colorize(Me, GetClassifiedRanges(SourceCode:=Me.ConversionOutput.Text, LanguageNames.VisualBasic), ConversionBuffer:=Me.ConversionOutput, Lines:=Me.ConversionOutput.Lines.Length)
+                Me.ConversionOutput.Select(0, 0)
             End If
         End If
         My.Settings.ColorMode = Me.TSThemeButton.Text

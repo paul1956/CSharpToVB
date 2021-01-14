@@ -38,9 +38,9 @@ Public Module ColorizeSupport
                 .BackColor = ColorSelector.GetColorFromName(DefaultValue).Background
                 .Select(.TextLength, 0)
                 For Each range As Range In FragmentRange
-                    Call .Select(.TextLength, 0)
+                    .Select(.TextLength, 0)
                     .SelectionColor = ColorSelector.GetColorFromName(range.ClassificationType).ForeGround
-                    Call .AppendText(range.Text)
+                    .AppendText(range.Text)
                     If range.Text.Contains(vbLf, StringComparison.OrdinalIgnoreCase) Then
                         MainForm.StatusStripConversionProgressBar.Increment(range.Text.Count(CType(vbLf, Char)))
                         Application.DoEvents()
@@ -50,7 +50,6 @@ Public Module ColorizeSupport
                     End If
                     Application.DoEvents()
                 Next range
-                .Select(0, 0)
                 If failures?.Count > 0 Then
                     For Each dia As Diagnostic In failures
                         Dim errorLine As Integer = dia.Location.GetLineSpan.StartLinePosition.Line
@@ -92,6 +91,7 @@ Public Module ColorizeSupport
         If compileResult.Success AndAlso compileResult.EmitResult.Success Then
             If My.Settings.ColorizeOutput Then
                 Colorize(MainForm, fragmentRange, MainForm.ConversionOutput, TextToCompile.SplitLines.Length)
+                MainForm.ConversionOutput.Select(0, 0)
             Else
                 MainForm.ConversionOutput.Text = TextToCompile
             End If
@@ -100,11 +100,13 @@ Public Module ColorizeSupport
                 MainForm._resultOfConversion.ResultStatus = ResultTriState.Success
                 If My.Settings.ColorizeOutput Then
                     Colorize(MainForm, fragmentRange, MainForm.ConversionOutput, TextToCompile.SplitLines.Length, MainForm._resultOfConversion.GetFilteredListOfFailures())
+                    MainForm.ConversionOutput.Select(0, 0)
                 Else
                     MainForm.ConversionOutput.Text = TextToCompile
                 End If
             Else
                 Colorize(MainForm, fragmentRange, MainForm.ConversionOutput, TextToCompile.SplitLines.Length, MainForm._resultOfConversion.GetFilteredListOfFailures())
+                MainForm.ConversionOutput.Select(0, 0)
             End If
         End If
         MainForm.ConversionOutput.Visible = True
