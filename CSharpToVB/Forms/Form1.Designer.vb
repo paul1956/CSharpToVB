@@ -831,7 +831,7 @@ Partial Class Form1
         Me.SplitContainer1.Panel2.Controls.Add(Me.ListBoxFileList)
         Me.SplitContainer1.Panel2.Controls.Add(Me.ListBoxErrorList)
         Me.SplitContainer1.Size = New System.Drawing.Size(1923, 566)
-        Me.SplitContainer1.SplitterDistance = 460
+        Me.SplitContainer1.SplitterDistance = 509
         Me.SplitContainer1.SplitterWidth = 2
         Me.SplitContainer1.TabIndex = 22
         '
@@ -841,9 +841,10 @@ Partial Class Form1
         Me.ConversionInput.DetectUrls = False
         Me.ConversionInput.Dock = System.Windows.Forms.DockStyle.Left
         Me.ConversionInput.Font = New System.Drawing.Font("Consolas", 11.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point)
-        Me.ConversionInput.Location = New System.Drawing.Point(23, 0)
+        Me.ConversionInput.Location = New System.Drawing.Point(0, 0)
         Me.ConversionInput.Name = "ConversionInput"
-        Me.ConversionInput.Size = New System.Drawing.Size(950, 460)
+        Me.ConversionInput.ShortcutsEnabled = True
+        Me.ConversionInput.Size = New System.Drawing.Size(950, 509)
         Me.ConversionInput.TabIndex = 0
         Me.ConversionInput.Text = ""
         Me.ConversionInput.WordWrap = False
@@ -856,7 +857,8 @@ Partial Class Form1
         Me.ConversionOutput.Font = New System.Drawing.Font("Consolas", 11.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point)
         Me.ConversionOutput.Location = New System.Drawing.Point(999, 0)
         Me.ConversionOutput.Name = "ConversionOutput"
-        Me.ConversionOutput.Size = New System.Drawing.Size(924, 460)
+        Me.ConversionInput.ShortcutsEnabled = True
+        Me.ConversionOutput.Size = New System.Drawing.Size(924, 509)
         Me.ConversionOutput.TabIndex = 1
         Me.ConversionOutput.Text = ""
         Me.ConversionOutput.WordWrap = False

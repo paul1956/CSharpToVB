@@ -328,8 +328,8 @@ Partial Public Class Form1
         Me.Width = Screen.PrimaryScreen.Bounds.Width
         Me.Height = CInt(Screen.PrimaryScreen.Bounds.Height * 0.95)
 
-        Me.ListBoxFileList.Height = Me.SplitContainer1.Panel2.ClientSize.Height - 4
-        Me.ListBoxErrorList.Height = Me.SplitContainer1.Panel2.ClientSize.Height - 4
+        Me.ListBoxFileList.Height = Me.SplitContainer1.Panel2.ClientSize.Height
+        Me.ListBoxErrorList.Height = Me.SplitContainer1.Panel2.ClientSize.Height
 
         For Each frameworkType As ToolStripMenuItem In Me.mnuOptionsDefaultFramework.DropDownItems
             If frameworkType.Text = ".Net Full Framework" Then
@@ -1021,6 +1021,7 @@ Partial Public Class Form1
 
     Private Sub TSFindClearHighlightsButton_Click(sender As Object, e As EventArgs) Handles TSFindClearHighlightsButton.Click
         Dim selectionstart As Integer
+        _inColorize = True
         If Me.BufferToSearch.IsFlagSet(SearchBuffers.CS) Then
             selectionstart = Me.ConversionInput.SelectionStart
             Me.ConversionInput.SelectAll()
@@ -1036,6 +1037,7 @@ Partial Public Class Form1
             Me.ConversionOutput.ScrollToCaret()
         End If
         Application.DoEvents()
+        _inColorize = False
     End Sub
 
     Private Sub TSFindFindNextButton_Click(sender As Object, e As EventArgs) Handles TSFindFindNextButton.Click
