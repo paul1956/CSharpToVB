@@ -89,6 +89,7 @@ Public Module ColorizeSupport
         If compileResult.Success AndAlso compileResult.EmitResult.Success Then
             If My.Settings.ColorizeOutput Then
                 Colorize(MainForm, fragmentRange, MainForm.ConversionOutput, TextToCompile.SplitLines.Length)
+                MainForm.ConversionOutput.Select(0, 0)
             Else
                 MainForm.ConversionOutput.Text = TextToCompile
             End If
@@ -97,11 +98,13 @@ Public Module ColorizeSupport
                 MainForm._resultOfConversion.ResultStatus = ResultTriState.Success
                 If My.Settings.ColorizeOutput Then
                     Colorize(MainForm, fragmentRange, MainForm.ConversionOutput, TextToCompile.SplitLines.Length, MainForm._resultOfConversion.GetFilteredListOfFailures())
+                    MainForm.ConversionOutput.Select(0, 0)
                 Else
                     MainForm.ConversionOutput.Text = TextToCompile
                 End If
             Else
                 Colorize(MainForm, fragmentRange, MainForm.ConversionOutput, TextToCompile.SplitLines.Length, MainForm._resultOfConversion.GetFilteredListOfFailures())
+                MainForm.ConversionOutput.Select(0, 0)
             End If
         End If
         MainForm.ConversionOutput.Visible = True

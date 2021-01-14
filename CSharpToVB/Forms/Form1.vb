@@ -997,8 +997,8 @@ Partial Public Class Form1
 #Region "TSFind Events"
 
     Private Sub TSFindClearHighlightsButton_Click(sender As Object, e As EventArgs) Handles TSFindClearHighlightsButton.Click
-        _inColorize = True
         Dim selectionstart As Integer
+        _inColorize = True
         If Me.BufferToSearch.IsFlagSet(SearchBuffers.CS) Then
             selectionstart = Me.ConversionInput.SelectionStart
             Me.ConversionInput.SelectAll()
