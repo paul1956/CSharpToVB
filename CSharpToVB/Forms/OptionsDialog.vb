@@ -123,21 +123,4 @@ Public Class OptionsDialog
         End If
     End Sub
 
-    Friend Class MyListItem
-
-        Public Sub New(pText As String, pValue As String)
-            _Text = pText
-            _Value = pValue
-        End Sub
-
-        Public ReadOnly Property Text() As String
-
-        Public ReadOnly Property Value() As String
-
-        Public Overrides Function ToString() As String
-            Return Me.Text
-        End Function
-
-    End Class
-
 End Class

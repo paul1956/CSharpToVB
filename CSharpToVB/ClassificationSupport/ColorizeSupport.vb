@@ -18,10 +18,10 @@ Public Module ColorizeSupport
             Exit Sub
         End If
         MainForm._inColorize = True
-        If ConversionBuffer.Visible Then
-            ConversionBuffer.Visible = False
-        End If
         Try ' Prevent crash when exiting
+            If ConversionBuffer.Visible Then
+                ConversionBuffer.Visible = False
+            End If
             If failures Is Nothing Then
                 MainForm.ListBoxErrorList.Enabled = False
             Else
@@ -47,8 +47,8 @@ Public Module ColorizeSupport
                     If MainForm._requestToConvert?.CancelToken.IsCancellationRequested Then
                         Exit Sub
                     End If
+                    Application.DoEvents()
                 Next range
-                Application.DoEvents()
                 If failures?.Count > 0 Then
                     For Each dia As Diagnostic In failures
                         Dim errorLine As Integer = dia.Location.GetLineSpan.StartLinePosition.Line
@@ -72,6 +72,8 @@ Public Module ColorizeSupport
             Stop
         Finally
             ConversionBuffer.Visible = True
+            ConversionBuffer.Refresh()
+            Application.DoEvents()
             MainForm._inColorize = False
         End Try
     End Sub
@@ -138,7 +140,7 @@ Public Module ColorizeSupport
                                                                                      reportException,
                                                                                      progress,
                                                                                      CancelToken)
-                                                                                ).ConfigureAwait(True)
+                                                                                    ).ConfigureAwait(True)
 
         If MainForm._resultOfConversion Is Nothing Then
             MainForm.mnuFileSaveAs.Enabled = False
