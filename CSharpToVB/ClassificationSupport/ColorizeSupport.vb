@@ -17,8 +17,8 @@ Public Module ColorizeSupport
         If MainForm._inColorize Then
             Exit Sub
         End If
-        MainForm._inColorize = True
         Try ' Prevent crash when exiting
+            MainForm._inColorize = True
             If ConversionBuffer.Visible Then
                 ConversionBuffer.Visible = False
             End If
