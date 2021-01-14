@@ -857,7 +857,7 @@ Partial Class Form1
         Me.ConversionOutput.Font = New System.Drawing.Font("Consolas", 11.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point)
         Me.ConversionOutput.Location = New System.Drawing.Point(999, 0)
         Me.ConversionOutput.Name = "ConversionOutput"
-        Me.ConversionInput.ShortcutsEnabled = True
+        Me.ConversionOutput.ShortcutsEnabled = True
         Me.ConversionOutput.Size = New System.Drawing.Size(924, 509)
         Me.ConversionOutput.TabIndex = 1
         Me.ConversionOutput.Text = ""
