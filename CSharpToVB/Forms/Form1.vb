@@ -247,7 +247,7 @@ Partial Public Class Form1
         Me.mnuViewShowSourceLineNumbers.Checked = inputBufferInUse And My.Settings.ShowSourceLineNumbers
         Me.mnuFileSaveSnippet.Enabled = inputBufferInUse
         If Me.mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
-            Colorize(Me, GetClassifiedRanges(SourceCode:=Me.ConversionInput.Text, LanguageNames.CSharp), ConversionBuffer:=Me.ConversionInput, Lines:=Me.ConversionInput.Lines.Length)
+            Colorize(Me, GetClassifiedRanges(Me.ConversionInput.Text, LanguageNames.CSharp), Me.ConversionInput)
         End If
     End Sub
 
@@ -259,6 +259,9 @@ Partial Public Class Form1
         Dim outputBufferInUse As Boolean = CType(sender, RichTextBox).TextLength > 0
         Me.mnuViewShowDestinationLineNumbers.Checked = outputBufferInUse And My.Settings.ShowDestinationLineNumbers
         Me.mnuCompile.Enabled = outputBufferInUse
+        If Me.mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
+            Colorize(Me, GetClassifiedRanges(Me.ConversionInput.Text, LanguageNames.VisualBasic), Me.ConversionOutput)
+        End If
         Me.SetSearchControls()
     End Sub
 
