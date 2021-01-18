@@ -3,12 +3,8 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.IO
-Imports System.Xml
-Imports System.Xml.Serialization
 
 Public Module ColorSelector
-
-    Private ReadOnly s_fullPath As String = Path.Combine(FileIO.SpecialDirectories.MyDocuments, $"{If(My.Forms.Form1.TSThemeButton.Text = "Light Mode", "LightMode", "DarkMode")}ColorDictionary.csv")
 
 #Region "Default Themes"
 
@@ -26,7 +22,7 @@ Public Module ColorSelector
                         {ExcludedCode, (Color.FromArgb(128, 128, 128), Color.FromArgb(18, 32, 42))},
                         {ExtensionMethodName, (Color.FromArgb(220, 220, 170), Color.FromArgb(18, 32, 42))},
                         {FieldName, (Color.FromArgb(220, 220, 220), Color.FromArgb(18, 32, 42))},
-                        {FunctionKeyword, (Color.FromArgb(0, 0, 255), Color.FromArgb(18, 32, 42))},
+                        {FunctionKeyword, (Color.FromArgb(141, 141, 207), Color.FromArgb(18, 32, 42))},
                         {Identifier, (Color.FromArgb(220, 220, 220), Color.FromArgb(18, 32, 42))},
                         {InterfaceName, (Color.FromArgb(0, 128, 128), Color.FromArgb(18, 32, 42))},
                         {Keyword, (Color.FromArgb(86, 156, 214), Color.FromArgb(18, 32, 42))},
@@ -238,20 +234,6 @@ Public Module ColorSelector
         Return My.Forms.Form1.CurrentThemeDictionary.Keys
     End Function
 
-    Public Function GetXMLThemeFromFile(Filename As String) As Themes
-        Using sr As New StreamReader(Filename)
-            Using xr As XmlReader = XmlReader.Create(sr)
-                Return CType(New XmlSerializer(GetType(Themes)).Deserialize(xr), Themes)
-                ' "Text Editor Language Service Items"
-            End Using
-        End Using
-    End Function
-
-    Public Sub SetColor(name As String, value As (ForeGround As Color, Background As Color))
-        My.Forms.Form1.CurrentThemeDictionary(name) = value
-        WriteColorDictionaryToFile(s_fullPath, My.Forms.Form1.CurrentThemeDictionary)
-    End Sub
-
     Public Sub UpdateColorDictionaryFromFile(FPath As String, ThemeDictionary As Dictionary(Of String, (ForeGround As Color, Background As Color)))
         If Not File.Exists(FPath) Then
             WriteColorDictionaryToFile(FPath, My.Forms.Form1.CurrentThemeDictionary)
@@ -276,7 +258,8 @@ Public Module ColorSelector
     End Sub
 
     Public Sub WriteColorDictionaryToFile()
-        WriteColorDictionaryToFile(s_fullPath, My.Forms.Form1.CurrentThemeDictionary)
+        WriteColorDictionaryToFile(Path.Combine(FileIO.SpecialDirectories.MyDocuments,
+                                                $"{If(My.Forms.Form1.TSThemeButton.Text = "Light Mode", "LightMode", "DarkMode")}ColorDictionary.csv"), My.Forms.Form1.CurrentThemeDictionary)
     End Sub
 
     Public Sub WriteColorDictionaryToFile(FPath As String, ThemeDictionary As Dictionary(Of String, (ForeGround As Color, Background As Color)))

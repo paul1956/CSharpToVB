@@ -715,7 +715,7 @@ Partial Class Form1
         Me.TSThemeButton.Margin = New System.Windows.Forms.Padding(1, 0, 1, 0)
         Me.TSThemeButton.Name = "TSThemeButton"
         Me.TSThemeButton.Size = New System.Drawing.Size(77, 25)
-        Me.TSThemeButton.Text = "Light Theme"
+        Me.TSThemeButton.Text = "Light Mode"
         '
         'ContextMenuStrip1
         '

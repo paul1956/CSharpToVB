@@ -64,6 +64,9 @@ Any changes to CSharpToVB application needs to change the version information in
 
 ## What's New in this release
   New in 5.0.0.27/5.0.0.24
+  - Update color handling logic, allow foreground and background to be edited in Advanced Options UI
+
+  New in 5.0.0.27/5.0.0.24
   - Merge From Master
 
   New in 5.0.0.25/5.0.0.19

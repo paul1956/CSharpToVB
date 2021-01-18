@@ -3,7 +3,7 @@
 ' See the LICENSE file in the project root for more information.
 
 Public Class OptionsDialog
-    Private _selectedColor As Color
+    Private _selectedColor As (Foreground As Color, Background As Color)
     Private _selectedColorName As String = DefaultValue
 
     Public MainForm As Form1
@@ -39,7 +39,9 @@ Public Class OptionsDialog
 
     Private Sub ItemColor_ComboBox_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ItemColor_ComboBox.SelectedIndexChanged
         _selectedColorName = CStr(Me.ItemColor_ComboBox.SelectedItem)
-        _selectedColor = ColorSelector.GetColorFromName(_selectedColorName).ForeGround
+        _selectedColor = ColorSelector.GetColorFromName(_selectedColorName)
+        Me.SampleTextBox.BackColor = _selectedColor.Background
+        Me.SampleTextBox.ForeColor = _selectedColor.Foreground
     End Sub
 
     Private Sub OK_Button_Click(sender As Object, e As EventArgs) Handles OK_Button.Click
@@ -80,8 +82,12 @@ Public Class OptionsDialog
             Me.ItemColor_ComboBox.Items.Add(name)
         Next name
         Me.ItemColor_ComboBox.SelectedIndex = Me.ItemColor_ComboBox.FindStringExact(DefaultValue)
+
         Me.ComboBoxCompare.SelectedItem = My.Settings.OptionCompare
         Me.ComboBoxExplicit.SelectedItem = My.Settings.OptionExplicit
+        Me.SampleTextBox.ForeColor = ColorSelector.DefaultColor.ForeGround
+        Me.SampleTextBox.BackColor = ColorSelector.DefaultColor.Background
+
         Me.ComboBoxInfer.SelectedItem = My.Settings.OptionInfer
         Me.ComboBoxStrict.SelectedItem = My.Settings.OptionStrict
         Me.CheckBoxCompare.Checked = My.Settings.OptionCompareIncludeInCode
@@ -123,10 +129,20 @@ Public Class OptionsDialog
         End If
     End Sub
 
-    Private Sub UpdateColor_Button_Click(sender As Object, e As EventArgs) Handles UpdateColor_Button.Click
-        Me.ColorDialog1.Color = _selectedColor
+    Private Sub UpdateBackground_Button_Click(sender As Object, e As EventArgs) Handles UpdateBackground_Button.Click
+        Me.ColorDialog1.Color = _selectedColor.Background
         If Me.ColorDialog1.ShowDialog <> DialogResult.Cancel Then
-            ColorSelector.SetColor(Me.ItemColor_ComboBox.Items(Me.ItemColor_ComboBox.SelectedIndex).ToString, (Me.ColorDialog1.Color, DefaultBackColor))
+            Me.SampleTextBox.BackColor = Me.ColorDialog1.Color
+            My.Forms.Form1.CurrentThemeDictionary(Me.ItemColor_ComboBox.Items(Me.ItemColor_ComboBox.SelectedIndex).ToString) = (Me.SampleTextBox.ForeColor, Me.SampleTextBox.BackColor)
+            Application.DoEvents()
+        End If
+    End Sub
+
+    Private Sub UpdateForeground_Button_Click(sender As Object, e As EventArgs) Handles UpdateForeground_Button.Click
+        Me.ColorDialog1.Color = _selectedColor.Foreground
+        If Me.ColorDialog1.ShowDialog <> DialogResult.Cancel Then
+            Me.SampleTextBox.ForeColor = Me.ColorDialog1.Color
+            My.Forms.Form1.CurrentThemeDictionary(Me.ItemColor_ComboBox.Items(Me.ItemColor_ComboBox.SelectedIndex).ToString) = (Me.SampleTextBox.ForeColor, Me.SampleTextBox.BackColor)
             Application.DoEvents()
         End If
     End Sub

@@ -57,14 +57,6 @@ Partial Public Class Form1
         Return LatestVersionStrings(1) <> ConverterVersion.ToString
     End Function
 
-    Private Shared Function LoadXMLAssetIntoCurrentDictionary(XMLAssetFileName As String, StartingDictionary As Dictionary(Of String, (ForeGround As Color, Background As Color))) As Dictionary(Of String, (ForeGround As Color, Background As Color))
-        Dim executablePath As String = Assembly.GetExecutingAssembly().Location
-        Dim executableDirectory As String = Directory.GetParent(executablePath).FullName
-        Dim themePath As String = Path.Combine(executableDirectory, "Assets", XMLAssetFileName)
-        Dim currentTheme As Themes = GetXMLThemeFromFile(themePath)
-        Return Themes.LoadDictionaryFromTheme(currentTheme, StartingDictionary)
-    End Function
-
     Private Sub ButtonStop_Click(sender As Object, e As EventArgs) Handles ButtonStopConversion.Click
         Me.ButtonStopConversion.Visible = False
         _cancellationTokenSource.Cancel()
@@ -379,12 +371,12 @@ Partial Public Class Form1
         Me.TSFindMatchWholeWordCheckBox.Checked = My.Settings.TSFindMatchWholeWord
         Application.DoEvents()
         Me.CheckForUpdates(ReportResults:=False)
-        If My.Settings.ColorMode = "Light Theme" Then
-            Me.TSThemeButton.Text = "Light Theme"
+        If My.Settings.ColorMode = "Light Mode" Then
+            Me.TSThemeButton.Text = "Light Mode"
             CurrentThemeDictionary = s_LightThemeMappingDictionary
         Else
             'Me.LoadXMLAssetIntoCurrentDictionary("BigFace.xml", s_DarkThemeMappingDictionary)
-            Me.TSThemeButton.Text = "Dark Theme"
+            Me.TSThemeButton.Text = "Dark Mode"
             CurrentThemeDictionary = s_DarkThemeMappingDictionary
         End If
         ChangeTheme(CurrentThemeDictionary, My.Forms.Form1.Controls)
@@ -1097,16 +1089,11 @@ Partial Public Class Form1
     End Sub
 
     Private Sub TSThemeButton_Click(sender As Object, e As EventArgs) Handles TSThemeButton.Click
-        If Me.TSThemeButton.Text = "Light Theme" Then
-            Me.TSThemeButton.Text = "Dark Theme"
-            DefaultColor = GetColorFromName(DefaultValue)
-            If s_DarkThemeMappingDictionary.Count = s_xDarkModeDefaultCount Then
-                ' TODO For now don't try to get colors from Theme
-                CurrentThemeDictionary = LoadXMLAssetIntoCurrentDictionary("BigFace.xml", s_DarkThemeMappingDictionary)
-            End If
+        If Me.TSThemeButton.Text = "Light Mode" Then
+            Me.TSThemeButton.Text = "Dark Mode"
             CurrentThemeDictionary = s_DarkThemeMappingDictionary
         Else
-            Me.TSThemeButton.Text = "Light Theme"
+            Me.TSThemeButton.Text = "Light Mode"
             CurrentThemeDictionary = s_LightThemeMappingDictionary
         End If
         DefaultColor = GetColorFromName(DefaultValue)
