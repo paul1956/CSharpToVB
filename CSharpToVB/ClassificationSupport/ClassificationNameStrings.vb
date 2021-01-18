@@ -2,7 +2,7 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
-Module ClassificationTypeNames
+Module ClassificationNameStrings
     Public Const DefaultValue As String = "default"
     Public Const ErrorValue As String = "error"
 
@@ -24,8 +24,8 @@ Module ClassificationTypeNames
 
     Public Const PreprocessorText As String = "preprocessor text"
     Public Const Punctuation As String = "punctuation"
-    Public Const VerbatimStringLiteral As String = "string - verbatim"
     Public Const StringEscapeCharacter As String = "string - escape character"
+    Public Const StringVerbatimLiteral As String = "string - verbatim"
 
     Public Const ClassName As String = "class name"
     Public Const DelegateName As String = "delegate name"
