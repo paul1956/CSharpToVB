@@ -46,7 +46,6 @@ Partial Class OptionsDialog
         Me.FontDialog1 = New System.Windows.Forms.FontDialog()
         Me.ModeTextBox = New System.Windows.Forms.TextBox()
         Me.SampleTextBox = New System.Windows.Forms.TextBox()
-        Me.Label4 = New System.Windows.Forms.Label()
         Me.UpdateBackground_Button = New System.Windows.Forms.Button()
         Me.TableLayoutPanel1.SuspendLayout()
         Me.SuspendLayout()
@@ -115,10 +114,10 @@ Partial Class OptionsDialog
         Me.ItemColor_ComboBox.DropDownWidth = 300
         Me.ItemColor_ComboBox.FormattingEnabled = True
         Me.ItemColor_ComboBox.IntegralHeight = False
-        Me.ItemColor_ComboBox.Location = New System.Drawing.Point(3, 152)
+        Me.ItemColor_ComboBox.Location = New System.Drawing.Point(10, 152)
         Me.ItemColor_ComboBox.MaxDropDownItems = 20
         Me.ItemColor_ComboBox.Name = "ItemColor_ComboBox"
-        Me.ItemColor_ComboBox.Size = New System.Drawing.Size(470, 24)
+        Me.ItemColor_ComboBox.Size = New System.Drawing.Size(463, 24)
         Me.ItemColor_ComboBox.TabIndex = 3
         '
         'Label2
@@ -132,11 +131,11 @@ Partial Class OptionsDialog
         '
         'UpdateForeground_Button
         '
-        Me.UpdateForeground_Button.Location = New System.Drawing.Point(205, 102)
+        Me.UpdateForeground_Button.Location = New System.Drawing.Point(148, 102)
         Me.UpdateForeground_Button.Name = "UpdateForeground_Button"
-        Me.UpdateForeground_Button.Size = New System.Drawing.Size(121, 27)
+        Me.UpdateForeground_Button.Size = New System.Drawing.Size(159, 27)
         Me.UpdateForeground_Button.TabIndex = 5
-        Me.UpdateForeground_Button.Text = "Update Foreground"
+        Me.UpdateForeground_Button.Text = "Update Foreground Color"
         Me.UpdateForeground_Button.UseVisualStyleBackColor = True
         '
         'LabelHorizontalLine
@@ -156,7 +155,7 @@ Partial Class OptionsDialog
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.Label5.BackColor = System.Drawing.Color.Black
         Me.Label5.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.Label5.Location = New System.Drawing.Point(10, 194)
+        Me.Label5.Location = New System.Drawing.Point(13, 194)
         Me.Label5.Name = "Label5"
         Me.Label5.Size = New System.Drawing.Size(460, 2)
         Me.Label5.TabIndex = 9
@@ -210,7 +209,7 @@ Partial Class OptionsDialog
         Me.ComboBoxStrict.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.ComboBoxStrict.FormattingEnabled = True
         Me.ComboBoxStrict.Items.AddRange(New Object() {"Off", "On"})
-        Me.ComboBoxStrict.Location = New System.Drawing.Point(349, 278)
+        Me.ComboBoxStrict.Location = New System.Drawing.Point(352, 278)
         Me.ComboBoxStrict.Name = "ComboBoxStrict"
         Me.ComboBoxStrict.Size = New System.Drawing.Size(121, 23)
         Me.ComboBoxStrict.TabIndex = 18
@@ -232,7 +231,7 @@ Partial Class OptionsDialog
         Me.ComboBoxInfer.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.ComboBoxInfer.FormattingEnabled = True
         Me.ComboBoxInfer.Items.AddRange(New Object() {"Off", "On"})
-        Me.ComboBoxInfer.Location = New System.Drawing.Point(349, 242)
+        Me.ComboBoxInfer.Location = New System.Drawing.Point(352, 242)
         Me.ComboBoxInfer.Name = "ComboBoxInfer"
         Me.ComboBoxInfer.Size = New System.Drawing.Size(121, 23)
         Me.ComboBoxInfer.TabIndex = 16
@@ -252,7 +251,7 @@ Partial Class OptionsDialog
         'Label3
         '
         Me.Label3.AutoSize = True
-        Me.Label3.Location = New System.Drawing.Point(13, 214)
+        Me.Label3.Location = New System.Drawing.Point(29, 214)
         Me.Label3.Name = "Label3"
         Me.Label3.Size = New System.Drawing.Size(428, 15)
         Me.Label3.TabIndex = 19
@@ -260,9 +259,9 @@ Partial Class OptionsDialog
         '
         'SelectEditorFontButton
         '
-        Me.SelectEditorFontButton.Location = New System.Drawing.Point(13, 322)
+        Me.SelectEditorFontButton.Location = New System.Drawing.Point(315, 66)
         Me.SelectEditorFontButton.Name = "SelectEditorFontButton"
-        Me.SelectEditorFontButton.Size = New System.Drawing.Size(127, 23)
+        Me.SelectEditorFontButton.Size = New System.Drawing.Size(158, 23)
         Me.SelectEditorFontButton.TabIndex = 20
         Me.SelectEditorFontButton.Text = "Select Editor Font"
         Me.SelectEditorFontButton.UseVisualStyleBackColor = True
@@ -281,30 +280,21 @@ Partial Class OptionsDialog
         '
         'SampleTextBox
         '
-        Me.SampleTextBox.Location = New System.Drawing.Point(82, 106)
+        Me.SampleTextBox.Location = New System.Drawing.Point(13, 106)
         Me.SampleTextBox.Name = "SampleTextBox"
         Me.SampleTextBox.ReadOnly = True
-        Me.SampleTextBox.Size = New System.Drawing.Size(100, 23)
+        Me.SampleTextBox.Size = New System.Drawing.Size(127, 23)
         Me.SampleTextBox.TabIndex = 22
-        Me.SampleTextBox.Text = "Text"
+        Me.SampleTextBox.Text = "Sample Color"
         Me.SampleTextBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
-        '
-        'Label4
-        '
-        Me.Label4.AutoSize = True
-        Me.Label4.Location = New System.Drawing.Point(13, 114)
-        Me.Label4.Name = "Label4"
-        Me.Label4.Size = New System.Drawing.Size(46, 15)
-        Me.Label4.TabIndex = 23
-        Me.Label4.Text = "Sample"
         '
         'UpdateBackground_Button
         '
-        Me.UpdateBackground_Button.Location = New System.Drawing.Point(349, 102)
+        Me.UpdateBackground_Button.Location = New System.Drawing.Point(315, 102)
         Me.UpdateBackground_Button.Name = "UpdateBackground_Button"
-        Me.UpdateBackground_Button.Size = New System.Drawing.Size(121, 27)
+        Me.UpdateBackground_Button.Size = New System.Drawing.Size(158, 27)
         Me.UpdateBackground_Button.TabIndex = 24
-        Me.UpdateBackground_Button.Text = "Update Background"
+        Me.UpdateBackground_Button.Text = "Update Background Color"
         Me.UpdateBackground_Button.UseVisualStyleBackColor = True
         '
         'OptionsDialog
@@ -315,7 +305,6 @@ Partial Class OptionsDialog
         Me.CancelButton = Me.Cancel_Button
         Me.ClientSize = New System.Drawing.Size(486, 362)
         Me.Controls.Add(Me.UpdateBackground_Button)
-        Me.Controls.Add(Me.Label4)
         Me.Controls.Add(Me.SampleTextBox)
         Me.Controls.Add(Me.ModeTextBox)
         Me.Controls.Add(Me.SelectEditorFontButton)
@@ -374,6 +363,5 @@ Partial Class OptionsDialog
     Friend WithEvents FontDialog1 As FontDialog
     Friend WithEvents ModeTextBox As TextBox
     Friend WithEvents SampleTextBox As TextBox
-    Friend WithEvents Label4 As Label
     Friend WithEvents UpdateBackground_Button As Button
 End Class

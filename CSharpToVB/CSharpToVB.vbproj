@@ -50,13 +50,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Buildalyzer" Version="3.1.1" />
-    <PackageReference Include="Buildalyzer.Workspaces" Version="3.1.1" />
+    <PackageReference Include="Buildalyzer" Version="3.2.0" />
+    <PackageReference Include="Buildalyzer.Workspaces" Version="3.2.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.8.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="3.8.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="3.8.0" />
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
-    <PackageReference Include="NuGet.Frameworks" Version="5.8.0" />
+    <PackageReference Include="NuGet.Frameworks" Version="5.8.1" />
     <PackageReference Include="PInvoke.Windows.Core" Version="0.7.78" />
     <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
     <PackageReference Include="System.Reflection.Metadata" Version="5.0.0" />

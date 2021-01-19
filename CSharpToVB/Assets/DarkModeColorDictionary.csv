@@ -12,7 +12,7 @@ event name,220,220,220,18,32,42
 excluded code,128,128,128,18,32,42
 extension method name,220,220,170,18,32,42
 field name,220,220,220,18,32,42
-Function,0,0,255,18,32,42
+Function,141,141,207,18,32,42
 identifier,220,220,220,18,32,42
 interface name,0,128,128,18,32,42
 keyword,86,156,214,18,32,42
@@ -26,7 +26,7 @@ operator,180,180,180,18,32,42
 operator - overloaded,220,220,170,18,32,42
 parameter name,156,220,254,18,32,42
 preprocessor keyword,128,128,128,18,32,42
-preprocessor text,30,30,30,18,32,42
+preprocessor text,220,220,220,18,32,42
 property name,156,220,254,18,32,42
 punctuation,220,220,220,18,32,42
 regex - alternation,0,128,128,18,32,42
@@ -39,7 +39,7 @@ regex - quantifier,255,192,203,18,32,42
 regex - self escaped character,139,0,0,18,32,42
 regex - text,139,0,0,18,32,42
 static symbol,95,149,250,18,32,42
-string - escape character,0,0,139,18,32,42
+string - escape character,255,214,143,18,32,42
 string,163,21,21,18,32,42
 struct name,43,145,175,18,32,42
 text,220,220,220,18,32,42

@@ -17,6 +17,9 @@ Public Class OptionsDialog
     Private Sub FontDialog1_Apply(sender As Object, e As EventArgs) Handles FontDialog1.Apply
         MainForm.ConversionInput.Font = Me.FontDialog1.Font
         MainForm.ConversionOutput.Font = Me.FontDialog1.Font
+        Me.SampleTextBox.Font = Me.FontDialog1.Font
+        My.Settings.EditorFont = Me.FontDialog1.Font
+        My.Settings.Save()
     End Sub
 
     Private Sub ItemColor_ComboBox_DrawItem(sender As Object, e As DrawItemEventArgs) Handles ItemColor_ComboBox.DrawItem
@@ -68,6 +71,8 @@ Public Class OptionsDialog
     End Sub
 
     Private Sub OptionsDialog_Load(sender As Object, e As EventArgs) Handles Me.Load
+        Me.FontDialog1.Font = My.Settings.EditorFont
+
         Me.ProjectDirectoryList.Items.Add(New MyListItem("Projects", GetLatestVisualStudioProjectPath))
         Me.ProjectDirectoryList.Items.Add(New MyListItem("Repos", GetAlternetVisualStudioProjectsPath))
         Me.ProjectDirectoryList.SelectedIndex = 0
@@ -123,9 +128,10 @@ Public Class OptionsDialog
 
             ' If the Cancel button is clicked, set the buffers'
             ' fonts back to the original font.
-        ElseIf result = Global.System.Windows.Forms.DialogResult.Cancel Then
+        ElseIf result = DialogResult.Cancel Then
             MainForm.ConversionInput.Font = oldFont
             MainForm.ConversionOutput.Font = oldFont
+            Me.SampleTextBox.Font = oldFont
         End If
     End Sub
 
