@@ -21,7 +21,7 @@ Namespace DictionaryLoadSave.Tests
         Public Sub VBDictionaryWriteTest()
             Dim filePath As String = Path.Combine(Path.GetTempPath, "TestColorDictionary.csv")
             ColorSelector.WriteColorDictionaryToFile(filePath, _testThemeMappingDictionary)
-            ColorSelector.UpdateColorDictionaryFromFile(filePath, _resultDictionary)
+            ColorSelector.LoadColorDictionaryFromFile(filePath, _resultDictionary)
             Assert.Equal(_testThemeMappingDictionary.Count, _resultDictionary.Count)
             Assert.Equal(_testThemeMappingDictionary("default").ForeGround.ToArgb, _resultDictionary("default").ForeGround.ToArgb)
             Assert.Equal(_testThemeMappingDictionary("default").Background.ToArgb, _resultDictionary("default").Background.ToArgb)

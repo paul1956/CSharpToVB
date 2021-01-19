@@ -2,6 +2,8 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
+Imports System.IO
+
 Public Class OptionsDialog
     Private _selectedColor As (Foreground As Color, Background As Color)
     Private _selectedColorName As String = DefaultValue
@@ -25,7 +27,7 @@ Public Class OptionsDialog
     Private Sub ItemColor_ComboBox_DrawItem(sender As Object, e As DrawItemEventArgs) Handles ItemColor_ComboBox.DrawItem
         If e.Index >= 0 Then
             Dim itemName As String = CType(sender, ComboBox).Items(e.Index).ToString()
-            Dim itemColor As (ForeGround As Color, Background As Color) = ColorSelector.GetColorFromName(itemName)
+            Dim itemColor As (ForeGround As Color, Background As Color) = GetColorFromName(itemName)
 
             Dim eBounds As Rectangle = e.Bounds
             Using b As Brush = New SolidBrush(DefaultColor.Background)
@@ -42,7 +44,7 @@ Public Class OptionsDialog
 
     Private Sub ItemColor_ComboBox_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ItemColor_ComboBox.SelectedIndexChanged
         _selectedColorName = CStr(Me.ItemColor_ComboBox.SelectedItem)
-        _selectedColor = ColorSelector.GetColorFromName(_selectedColorName)
+        _selectedColor = GetColorFromName(_selectedColorName)
         Me.SampleTextBox.BackColor = _selectedColor.Background
         Me.SampleTextBox.ForeColor = _selectedColor.Foreground
     End Sub
@@ -52,7 +54,7 @@ Public Class OptionsDialog
         Me.DialogResult = DialogResult.OK
         Me.Cursor = Cursors.WaitCursor
         Application.DoEvents()
-        ColorSelector.WriteColorDictionaryToFile()
+        WriteColorDictionaryToFile()
         Me.Cursor = Cursors.Default
         My.Settings.EditorFont = MainForm.ConversionInput.Font
         My.Settings.EditorFontName = MainForm.ConversionInput.Font.Name
@@ -83,15 +85,15 @@ Public Class OptionsDialog
             End If
         Next
         Me.ModeTextBox.Text = My.Forms.Form1.TSThemeButton.Text
-        For Each name As String In ColorSelector.GetColorNameList()
+        For Each name As String In GetColorNameList()
             Me.ItemColor_ComboBox.Items.Add(name)
         Next name
         Me.ItemColor_ComboBox.SelectedIndex = Me.ItemColor_ComboBox.FindStringExact(DefaultValue)
 
         Me.ComboBoxCompare.SelectedItem = My.Settings.OptionCompare
         Me.ComboBoxExplicit.SelectedItem = My.Settings.OptionExplicit
-        Me.SampleTextBox.ForeColor = ColorSelector.DefaultColor.ForeGround
-        Me.SampleTextBox.BackColor = ColorSelector.DefaultColor.Background
+        Me.SampleTextBox.ForeColor = DefaultColor.ForeGround
+        Me.SampleTextBox.BackColor = DefaultColor.Background
 
         Me.ComboBoxInfer.SelectedItem = My.Settings.OptionInfer
         Me.ComboBoxStrict.SelectedItem = My.Settings.OptionStrict
@@ -100,6 +102,28 @@ Public Class OptionsDialog
         Me.CheckBoxInfer.Checked = My.Settings.OptionInferIncludeInCode
         Me.CheckBoxStrict.Checked = My.Settings.OptionStrictIncludeInCode
         ChangeTheme(My.Forms.Form1.CurrentThemeDictionary, Me.Controls)
+    End Sub
+
+    Private Sub ResetThemeButton_Click(sender As Object, e As EventArgs) Handles ResetThemeButton.Click
+        If MessageBox.Show("You are about to reset the '{My.Forms.Form1.TSThemeButton.Text}' theme any customizations will be lost, are you sure?", "Confirm Theme Reset", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) <> DialogResult.OK Then
+            Exit Sub
+        End If
+        Dim executableDirectoryPath As String = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "Assets")
+
+        Dim userColorFile As String
+        If My.Settings.ColorMode = "Light Mode" Then
+            userColorFile = Path.Combine(FileIO.SpecialDirectories.MyDocuments, "LightModeColorDictionary.csv")
+            LoadColorDictionaryFromFile(Path.Combine(executableDirectoryPath, "LightModeColorDictionary.csv"), s_LightModeColorDictionary)
+            MainForm.CurrentThemeDictionary = s_LightModeColorDictionary
+        Else
+            userColorFile = Path.Combine(FileIO.SpecialDirectories.MyDocuments, "DarkModeColorDictionary.csv")
+            LoadColorDictionaryFromFile(Path.Combine(executableDirectoryPath, "DarkModeColorDictionary.csv"), s_DarkModeColorDictionary)
+            MainForm.CurrentThemeDictionary = s_DarkModeColorDictionary
+        End If
+        If File.Exists(userColorFile) Then
+            File.Delete(userColorFile)
+        End If
+        DefaultColor = MainForm.CurrentThemeDictionary(DefaultValue)
     End Sub
 
     Private Sub SelectEditorFontButton_Click(sender As Object, e As EventArgs) Handles SelectEditorFontButton.Click

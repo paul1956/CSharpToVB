@@ -35,11 +35,11 @@ Public Module ColorizeSupport
 
             With ConversionBuffer
                 .Clear()
-                .BackColor = ColorSelector.GetColorFromName(DefaultValue).Background
+                .BackColor = GetColorFromName(DefaultValue).Background
                 .Select(.TextLength, 0)
                 For Each range As Range In FragmentRange
                     .Select(.TextLength, 0)
-                    .SelectionColor = ColorSelector.GetColorFromName(range.ClassificationType).ForeGround
+                    .SelectionColor = GetColorFromName(range.ClassificationType).ForeGround
                     .AppendText(range.Text)
                     If range.Text.Contains(vbLf, StringComparison.OrdinalIgnoreCase) Then
                         MainForm.StatusStripConversionProgressBar.Increment(range.Text.Count(CType(vbLf, Char)))

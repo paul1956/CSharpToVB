@@ -47,6 +47,7 @@ Partial Class OptionsDialog
         Me.ModeTextBox = New System.Windows.Forms.TextBox()
         Me.SampleTextBox = New System.Windows.Forms.TextBox()
         Me.UpdateBackground_Button = New System.Windows.Forms.Button()
+        Me.ResetThemeButton = New System.Windows.Forms.Button()
         Me.TableLayoutPanel1.SuspendLayout()
         Me.SuspendLayout()
         '
@@ -58,7 +59,7 @@ Partial Class OptionsDialog
         Me.TableLayoutPanel1.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
         Me.TableLayoutPanel1.Controls.Add(Me.OK_Button, 0, 0)
         Me.TableLayoutPanel1.Controls.Add(Me.Cancel_Button, 1, 0)
-        Me.TableLayoutPanel1.Location = New System.Drawing.Point(303, 317)
+        Me.TableLayoutPanel1.Location = New System.Drawing.Point(303, 335)
         Me.TableLayoutPanel1.Name = "TableLayoutPanel1"
         Me.TableLayoutPanel1.RowCount = 1
         Me.TableLayoutPanel1.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
@@ -114,7 +115,7 @@ Partial Class OptionsDialog
         Me.ItemColor_ComboBox.DropDownWidth = 300
         Me.ItemColor_ComboBox.FormattingEnabled = True
         Me.ItemColor_ComboBox.IntegralHeight = False
-        Me.ItemColor_ComboBox.Location = New System.Drawing.Point(10, 152)
+        Me.ItemColor_ComboBox.Location = New System.Drawing.Point(10, 293)
         Me.ItemColor_ComboBox.MaxDropDownItems = 20
         Me.ItemColor_ComboBox.Name = "ItemColor_ComboBox"
         Me.ItemColor_ComboBox.Size = New System.Drawing.Size(463, 24)
@@ -123,15 +124,15 @@ Partial Class OptionsDialog
         'Label2
         '
         Me.Label2.AutoSize = True
-        Me.Label2.Location = New System.Drawing.Point(13, 74)
+        Me.Label2.Location = New System.Drawing.Point(189, 177)
         Me.Label2.Name = "Label2"
-        Me.Label2.Size = New System.Drawing.Size(104, 15)
+        Me.Label2.Size = New System.Drawing.Size(109, 15)
         Me.Label2.TabIndex = 4
-        Me.Label2.Text = "Display item Color"
+        Me.Label2.Text = "Theme Color Editor"
         '
         'UpdateForeground_Button
         '
-        Me.UpdateForeground_Button.Location = New System.Drawing.Point(148, 102)
+        Me.UpdateForeground_Button.Location = New System.Drawing.Point(148, 249)
         Me.UpdateForeground_Button.Name = "UpdateForeground_Button"
         Me.UpdateForeground_Button.Size = New System.Drawing.Size(159, 27)
         Me.UpdateForeground_Button.TabIndex = 5
@@ -155,7 +156,7 @@ Partial Class OptionsDialog
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.Label5.BackColor = System.Drawing.Color.Black
         Me.Label5.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.Label5.Location = New System.Drawing.Point(13, 194)
+        Me.Label5.Location = New System.Drawing.Point(13, 165)
         Me.Label5.Name = "Label5"
         Me.Label5.Size = New System.Drawing.Size(460, 2)
         Me.Label5.TabIndex = 9
@@ -165,7 +166,7 @@ Partial Class OptionsDialog
         Me.CheckBoxCompare.AutoSize = True
         Me.CheckBoxCompare.Checked = True
         Me.CheckBoxCompare.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.CheckBoxCompare.Location = New System.Drawing.Point(13, 244)
+        Me.CheckBoxCompare.Location = New System.Drawing.Point(13, 95)
         Me.CheckBoxCompare.Name = "CheckBoxCompare"
         Me.CheckBoxCompare.Size = New System.Drawing.Size(75, 19)
         Me.CheckBoxCompare.TabIndex = 11
@@ -177,7 +178,7 @@ Partial Class OptionsDialog
         Me.ComboBoxCompare.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.ComboBoxCompare.FormattingEnabled = True
         Me.ComboBoxCompare.Items.AddRange(New Object() {"Binary", "Text"})
-        Me.ComboBoxCompare.Location = New System.Drawing.Point(95, 242)
+        Me.ComboBoxCompare.Location = New System.Drawing.Point(95, 93)
         Me.ComboBoxCompare.Name = "ComboBoxCompare"
         Me.ComboBoxCompare.Size = New System.Drawing.Size(121, 23)
         Me.ComboBoxCompare.TabIndex = 12
@@ -187,7 +188,7 @@ Partial Class OptionsDialog
         Me.ComboBoxExplicit.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.ComboBoxExplicit.FormattingEnabled = True
         Me.ComboBoxExplicit.Items.AddRange(New Object() {"Off", "On"})
-        Me.ComboBoxExplicit.Location = New System.Drawing.Point(95, 278)
+        Me.ComboBoxExplicit.Location = New System.Drawing.Point(95, 129)
         Me.ComboBoxExplicit.Name = "ComboBoxExplicit"
         Me.ComboBoxExplicit.Size = New System.Drawing.Size(121, 23)
         Me.ComboBoxExplicit.TabIndex = 14
@@ -197,7 +198,7 @@ Partial Class OptionsDialog
         Me.CheckBoxExplicit.AutoSize = True
         Me.CheckBoxExplicit.Checked = True
         Me.CheckBoxExplicit.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.CheckBoxExplicit.Location = New System.Drawing.Point(13, 280)
+        Me.CheckBoxExplicit.Location = New System.Drawing.Point(13, 131)
         Me.CheckBoxExplicit.Name = "CheckBoxExplicit"
         Me.CheckBoxExplicit.Size = New System.Drawing.Size(64, 19)
         Me.CheckBoxExplicit.TabIndex = 13
@@ -209,7 +210,7 @@ Partial Class OptionsDialog
         Me.ComboBoxStrict.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.ComboBoxStrict.FormattingEnabled = True
         Me.ComboBoxStrict.Items.AddRange(New Object() {"Off", "On"})
-        Me.ComboBoxStrict.Location = New System.Drawing.Point(352, 278)
+        Me.ComboBoxStrict.Location = New System.Drawing.Point(352, 129)
         Me.ComboBoxStrict.Name = "ComboBoxStrict"
         Me.ComboBoxStrict.Size = New System.Drawing.Size(121, 23)
         Me.ComboBoxStrict.TabIndex = 18
@@ -219,7 +220,7 @@ Partial Class OptionsDialog
         Me.CheckBoxStrict.AutoSize = True
         Me.CheckBoxStrict.Checked = True
         Me.CheckBoxStrict.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.CheckBoxStrict.Location = New System.Drawing.Point(284, 280)
+        Me.CheckBoxStrict.Location = New System.Drawing.Point(284, 131)
         Me.CheckBoxStrict.Name = "CheckBoxStrict"
         Me.CheckBoxStrict.Size = New System.Drawing.Size(53, 19)
         Me.CheckBoxStrict.TabIndex = 17
@@ -231,7 +232,7 @@ Partial Class OptionsDialog
         Me.ComboBoxInfer.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.ComboBoxInfer.FormattingEnabled = True
         Me.ComboBoxInfer.Items.AddRange(New Object() {"Off", "On"})
-        Me.ComboBoxInfer.Location = New System.Drawing.Point(352, 242)
+        Me.ComboBoxInfer.Location = New System.Drawing.Point(352, 93)
         Me.ComboBoxInfer.Name = "ComboBoxInfer"
         Me.ComboBoxInfer.Size = New System.Drawing.Size(121, 23)
         Me.ComboBoxInfer.TabIndex = 16
@@ -241,7 +242,7 @@ Partial Class OptionsDialog
         Me.CheckBoxInfer.AutoSize = True
         Me.CheckBoxInfer.Checked = True
         Me.CheckBoxInfer.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.CheckBoxInfer.Location = New System.Drawing.Point(284, 244)
+        Me.CheckBoxInfer.Location = New System.Drawing.Point(284, 95)
         Me.CheckBoxInfer.Name = "CheckBoxInfer"
         Me.CheckBoxInfer.Size = New System.Drawing.Size(50, 19)
         Me.CheckBoxInfer.TabIndex = 15
@@ -251,7 +252,7 @@ Partial Class OptionsDialog
         'Label3
         '
         Me.Label3.AutoSize = True
-        Me.Label3.Location = New System.Drawing.Point(29, 214)
+        Me.Label3.Location = New System.Drawing.Point(29, 65)
         Me.Label3.Name = "Label3"
         Me.Label3.Size = New System.Drawing.Size(428, 15)
         Me.Label3.TabIndex = 19
@@ -259,7 +260,7 @@ Partial Class OptionsDialog
         '
         'SelectEditorFontButton
         '
-        Me.SelectEditorFontButton.Location = New System.Drawing.Point(315, 66)
+        Me.SelectEditorFontButton.Location = New System.Drawing.Point(315, 209)
         Me.SelectEditorFontButton.Name = "SelectEditorFontButton"
         Me.SelectEditorFontButton.Size = New System.Drawing.Size(158, 23)
         Me.SelectEditorFontButton.TabIndex = 20
@@ -271,7 +272,7 @@ Partial Class OptionsDialog
         '
         'ModeTextBox
         '
-        Me.ModeTextBox.Location = New System.Drawing.Point(205, 70)
+        Me.ModeTextBox.Location = New System.Drawing.Point(193, 209)
         Me.ModeTextBox.Name = "ModeTextBox"
         Me.ModeTextBox.ReadOnly = True
         Me.ModeTextBox.Size = New System.Drawing.Size(100, 23)
@@ -280,7 +281,7 @@ Partial Class OptionsDialog
         '
         'SampleTextBox
         '
-        Me.SampleTextBox.Location = New System.Drawing.Point(13, 106)
+        Me.SampleTextBox.Location = New System.Drawing.Point(13, 251)
         Me.SampleTextBox.Name = "SampleTextBox"
         Me.SampleTextBox.ReadOnly = True
         Me.SampleTextBox.Size = New System.Drawing.Size(127, 23)
@@ -290,12 +291,21 @@ Partial Class OptionsDialog
         '
         'UpdateBackground_Button
         '
-        Me.UpdateBackground_Button.Location = New System.Drawing.Point(315, 102)
+        Me.UpdateBackground_Button.Location = New System.Drawing.Point(315, 249)
         Me.UpdateBackground_Button.Name = "UpdateBackground_Button"
         Me.UpdateBackground_Button.Size = New System.Drawing.Size(158, 27)
         Me.UpdateBackground_Button.TabIndex = 24
         Me.UpdateBackground_Button.Text = "Update Background Color"
         Me.UpdateBackground_Button.UseVisualStyleBackColor = True
+        '
+        'ResetThemeButton
+        '
+        Me.ResetThemeButton.Location = New System.Drawing.Point(13, 340)
+        Me.ResetThemeButton.Name = "ResetThemeButton"
+        Me.ResetThemeButton.Size = New System.Drawing.Size(127, 23)
+        Me.ResetThemeButton.TabIndex = 25
+        Me.ResetThemeButton.Text = "Reset Theme"
+        Me.ResetThemeButton.UseVisualStyleBackColor = True
         '
         'OptionsDialog
         '
@@ -303,7 +313,8 @@ Partial Class OptionsDialog
         Me.AutoScaleDimensions = New System.Drawing.SizeF(7.0!, 15.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.CancelButton = Me.Cancel_Button
-        Me.ClientSize = New System.Drawing.Size(486, 362)
+        Me.ClientSize = New System.Drawing.Size(486, 380)
+        Me.Controls.Add(Me.ResetThemeButton)
         Me.Controls.Add(Me.UpdateBackground_Button)
         Me.Controls.Add(Me.SampleTextBox)
         Me.Controls.Add(Me.ModeTextBox)
@@ -364,4 +375,5 @@ Partial Class OptionsDialog
     Friend WithEvents ModeTextBox As TextBox
     Friend WithEvents SampleTextBox As TextBox
     Friend WithEvents UpdateBackground_Button As Button
+    Friend WithEvents ResetThemeButton As Button
 End Class

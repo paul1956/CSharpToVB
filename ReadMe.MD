@@ -63,8 +63,8 @@ Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpec
 Any changes to CSharpToVB application needs to change the version information in the project file **AND** in MyProject/AssemblyInfo.vb until Visual Studio is able to general file automatically for a WinForms application.
 
 ## What's New in this release
-  New in 5.0.0.27/5.0.0.24
-  - Update color handling logic, allow foreground and background to be edited in Advanced Options UI
+  New in 5.0.1.0/5.0.0.24
+  - Add basic support for Dark and Light themes, with theme editing, user themes
 
   New in 5.0.0.27/5.0.0.24
   - Merge From Master

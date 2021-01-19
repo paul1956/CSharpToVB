@@ -84,6 +84,11 @@ Friend Module MenuExtensions
 
     <Extension>
     Friend Sub UpdateLastFileMenu(MainForm As Form1)
+        ' load MRU...
+        If My.Settings.MRU_Data Is Nothing Then
+            My.Settings.MRU_Data = New Specialized.StringCollection
+        End If
+
         My.Settings.Save()
         ' show separator...
         If My.Settings.MRU_Data.Count > 0 Then

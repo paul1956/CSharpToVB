@@ -274,9 +274,16 @@ Partial Public Class Form1
             My.Settings.UpgradeRequired = False
             My.Settings.Save()
         End If
-        If s_xDarkModeDefaultCount <> s_xlightModeDefaultCount Then
-            Throw New Exception($"darkModeDefault.Count{s_xDarkModeDefaultCount} <> lightModeDefault.Count{s_xlightModeDefaultCount}")
+
+        If My.Settings.IgnoreFileList Is Nothing Then
+            My.Settings.IgnoreFileList = New Specialized.StringCollection
         End If
+
+        If My.Settings.TSFindMRU_Data Is Nothing Then
+            My.Settings.TSFindMRU_Data = New Specialized.StringCollection
+            My.Settings.Save()
+        End If
+
         Me.UpdateLastFileMenu()
         Me.TSFindFindWhatComboBox.TSFindWhatMRUUpdateUI()
 
@@ -370,17 +377,17 @@ Partial Public Class Form1
         Me.TSFindMatchCaseCheckBox.Checked = My.Settings.TSFindMatchCase
         Me.TSFindMatchWholeWordCheckBox.Checked = My.Settings.TSFindMatchWholeWord
         Application.DoEvents()
+        UpdateColorDictionariesFromFile()
         Me.CheckForUpdates(ReportResults:=False)
         If My.Settings.ColorMode = "Light Mode" Then
             Me.TSThemeButton.Text = "Light Mode"
-            CurrentThemeDictionary = s_LightThemeMappingDictionary
+            CurrentThemeDictionary = s_LightModeColorDictionary
         Else
-            'Me.LoadXMLAssetIntoCurrentDictionary("BigFace.xml", s_DarkThemeMappingDictionary)
             Me.TSThemeButton.Text = "Dark Mode"
-            CurrentThemeDictionary = s_DarkThemeMappingDictionary
+            CurrentThemeDictionary = s_DarkModeColorDictionary
         End If
-        ChangeTheme(CurrentThemeDictionary, My.Forms.Form1.Controls)
         DefaultColor = CurrentThemeDictionary(DefaultValue)
+        ChangeTheme(CurrentThemeDictionary, My.Forms.Form1.Controls)
     End Sub
 
     Private Sub Form1_Resize(sender As Object, e As EventArgs) Handles Me.Resize
@@ -983,20 +990,6 @@ Partial Public Class Form1
         Me.SetStyle(ControlStyles.AllPaintingInWmPaint Or ControlStyles.UserPaint Or ControlStyles.DoubleBuffer, True)
         ' enable events...
         MyBase.OnLoad(e)
-        If My.Settings.IgnoreFileList Is Nothing Then
-            My.Settings.IgnoreFileList = New Specialized.StringCollection
-        End If
-
-        ' load MRU...
-        If My.Settings.MRU_Data Is Nothing Then
-            My.Settings.MRU_Data = New Specialized.StringCollection
-        End If
-
-        If My.Settings.TSFindMRU_Data Is Nothing Then
-            My.Settings.TSFindMRU_Data = New Specialized.StringCollection
-            My.Settings.Save()
-        End If
-
     End Sub
 
     ''' <summary>
@@ -1091,10 +1084,10 @@ Partial Public Class Form1
     Private Sub TSThemeButton_Click(sender As Object, e As EventArgs) Handles TSThemeButton.Click
         If Me.TSThemeButton.Text = "Light Mode" Then
             Me.TSThemeButton.Text = "Dark Mode"
-            CurrentThemeDictionary = s_DarkThemeMappingDictionary
+            CurrentThemeDictionary = s_DarkModeColorDictionary
         Else
             Me.TSThemeButton.Text = "Light Mode"
-            CurrentThemeDictionary = s_LightThemeMappingDictionary
+            CurrentThemeDictionary = s_LightModeColorDictionary
         End If
         DefaultColor = GetColorFromName(DefaultValue)
         ChangeTheme(CurrentThemeDictionary, My.Forms.Form1.Controls)
