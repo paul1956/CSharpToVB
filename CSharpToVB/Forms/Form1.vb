@@ -578,7 +578,9 @@ Partial Public Class Form1
             End If
         Next
 
-        Await Me.ConvertSnippetOfTopLevelStmt($"{usings}
+        Await Me.ConvertSnippetOfTopLevelStmt($"/* Top Level Code boilerplate is included, to remove deselect 'Top Level Statements' under Options/Advance Options */
+
+{usings}
 namespace Application
 {{
     class Program

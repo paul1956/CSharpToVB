@@ -148,6 +148,18 @@ Namespace My_Project
 
         <Global.System.Configuration.UserScopedSettingAttribute(),
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("True")>
+        Public Property IncludeTopLevelStmtProtoInCode() As Boolean
+            Get
+                Return CType(Me("IncludeTopLevelStmtProtoInCode"), Boolean)
+            End Get
+            Set
+                Me("IncludeTopLevelStmtProtoInCode") = Value
+            End Set
+        End Property
+
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
          Global.System.Configuration.DefaultSettingValueAttribute("")>
         Public Property LastPath() As String
             Get

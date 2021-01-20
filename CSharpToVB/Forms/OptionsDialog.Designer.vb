@@ -48,6 +48,7 @@ Partial Class OptionsDialog
         Me.SampleTextBox = New System.Windows.Forms.TextBox()
         Me.UpdateBackground_Button = New System.Windows.Forms.Button()
         Me.ResetThemeButton = New System.Windows.Forms.Button()
+        Me.CheckBoxTopLevelStatements = New System.Windows.Forms.CheckBox()
         Me.TableLayoutPanel1.SuspendLayout()
         Me.SuspendLayout()
         '
@@ -178,9 +179,9 @@ Partial Class OptionsDialog
         Me.ComboBoxCompare.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.ComboBoxCompare.FormattingEnabled = True
         Me.ComboBoxCompare.Items.AddRange(New Object() {"Binary", "Text"})
-        Me.ComboBoxCompare.Location = New System.Drawing.Point(95, 93)
+        Me.ComboBoxCompare.Location = New System.Drawing.Point(88, 93)
         Me.ComboBoxCompare.Name = "ComboBoxCompare"
-        Me.ComboBoxCompare.Size = New System.Drawing.Size(121, 23)
+        Me.ComboBoxCompare.Size = New System.Drawing.Size(66, 23)
         Me.ComboBoxCompare.TabIndex = 12
         '
         'ComboBoxExplicit
@@ -188,9 +189,9 @@ Partial Class OptionsDialog
         Me.ComboBoxExplicit.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.ComboBoxExplicit.FormattingEnabled = True
         Me.ComboBoxExplicit.Items.AddRange(New Object() {"Off", "On"})
-        Me.ComboBoxExplicit.Location = New System.Drawing.Point(95, 129)
+        Me.ComboBoxExplicit.Location = New System.Drawing.Point(88, 129)
         Me.ComboBoxExplicit.Name = "ComboBoxExplicit"
-        Me.ComboBoxExplicit.Size = New System.Drawing.Size(121, 23)
+        Me.ComboBoxExplicit.Size = New System.Drawing.Size(66, 23)
         Me.ComboBoxExplicit.TabIndex = 14
         '
         'CheckBoxExplicit
@@ -210,9 +211,9 @@ Partial Class OptionsDialog
         Me.ComboBoxStrict.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.ComboBoxStrict.FormattingEnabled = True
         Me.ComboBoxStrict.Items.AddRange(New Object() {"Off", "On"})
-        Me.ComboBoxStrict.Location = New System.Drawing.Point(352, 129)
+        Me.ComboBoxStrict.Location = New System.Drawing.Point(235, 129)
         Me.ComboBoxStrict.Name = "ComboBoxStrict"
-        Me.ComboBoxStrict.Size = New System.Drawing.Size(121, 23)
+        Me.ComboBoxStrict.Size = New System.Drawing.Size(66, 23)
         Me.ComboBoxStrict.TabIndex = 18
         '
         'CheckBoxStrict
@@ -220,7 +221,7 @@ Partial Class OptionsDialog
         Me.CheckBoxStrict.AutoSize = True
         Me.CheckBoxStrict.Checked = True
         Me.CheckBoxStrict.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.CheckBoxStrict.Location = New System.Drawing.Point(284, 131)
+        Me.CheckBoxStrict.Location = New System.Drawing.Point(182, 131)
         Me.CheckBoxStrict.Name = "CheckBoxStrict"
         Me.CheckBoxStrict.Size = New System.Drawing.Size(53, 19)
         Me.CheckBoxStrict.TabIndex = 17
@@ -232,9 +233,9 @@ Partial Class OptionsDialog
         Me.ComboBoxInfer.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.ComboBoxInfer.FormattingEnabled = True
         Me.ComboBoxInfer.Items.AddRange(New Object() {"Off", "On"})
-        Me.ComboBoxInfer.Location = New System.Drawing.Point(352, 93)
+        Me.ComboBoxInfer.Location = New System.Drawing.Point(235, 93)
         Me.ComboBoxInfer.Name = "ComboBoxInfer"
-        Me.ComboBoxInfer.Size = New System.Drawing.Size(121, 23)
+        Me.ComboBoxInfer.Size = New System.Drawing.Size(66, 23)
         Me.ComboBoxInfer.TabIndex = 16
         '
         'CheckBoxInfer
@@ -242,7 +243,7 @@ Partial Class OptionsDialog
         Me.CheckBoxInfer.AutoSize = True
         Me.CheckBoxInfer.Checked = True
         Me.CheckBoxInfer.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.CheckBoxInfer.Location = New System.Drawing.Point(284, 95)
+        Me.CheckBoxInfer.Location = New System.Drawing.Point(182, 95)
         Me.CheckBoxInfer.Name = "CheckBoxInfer"
         Me.CheckBoxInfer.Size = New System.Drawing.Size(50, 19)
         Me.CheckBoxInfer.TabIndex = 15
@@ -307,6 +308,18 @@ Partial Class OptionsDialog
         Me.ResetThemeButton.Text = "Reset Theme"
         Me.ResetThemeButton.UseVisualStyleBackColor = True
         '
+        'TopLevelStatementsCheckBox
+        '
+        Me.CheckBoxTopLevelStatements.AutoSize = True
+        Me.CheckBoxTopLevelStatements.Checked = True
+        Me.CheckBoxTopLevelStatements.CheckState = System.Windows.Forms.CheckState.Checked
+        Me.CheckBoxTopLevelStatements.Location = New System.Drawing.Point(336, 95)
+        Me.CheckBoxTopLevelStatements.Name = "TopLevelStatementsCheckBox"
+        Me.CheckBoxTopLevelStatements.Size = New System.Drawing.Size(137, 19)
+        Me.CheckBoxTopLevelStatements.TabIndex = 26
+        Me.CheckBoxTopLevelStatements.Text = "Top Level Statements"
+        Me.CheckBoxTopLevelStatements.UseVisualStyleBackColor = True
+        '
         'OptionsDialog
         '
         Me.AcceptButton = Me.OK_Button
@@ -314,6 +327,7 @@ Partial Class OptionsDialog
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.CancelButton = Me.Cancel_Button
         Me.ClientSize = New System.Drawing.Size(486, 380)
+        Me.Controls.Add(Me.CheckBoxTopLevelStatements)
         Me.Controls.Add(Me.ResetThemeButton)
         Me.Controls.Add(Me.UpdateBackground_Button)
         Me.Controls.Add(Me.SampleTextBox)
@@ -367,6 +381,7 @@ Partial Class OptionsDialog
     Friend WithEvents CheckBoxExplicit As CheckBox
     Friend WithEvents ComboBoxStrict As ComboBox
     Friend WithEvents CheckBoxStrict As CheckBox
+    Friend WithEvents CheckBoxTopLevelStatements As CheckBox
     Friend WithEvents ComboBoxInfer As ComboBox
     Friend WithEvents CheckBoxInfer As CheckBox
     Friend WithEvents Label3 As Label

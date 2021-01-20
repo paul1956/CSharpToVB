@@ -2,6 +2,7 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
+Imports System.Text
 Imports System.Threading
 
 Imports CSharpToVBApp
@@ -102,30 +103,61 @@ Public Module ColorizeSupport
     End Sub
 
     Friend Sub Compile_Colorize(MainForm As Form1, TextToCompile As String, VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)))
-        MainForm._inColorize = False
         Dim compileResult As (Success As Boolean, EmitResult As EmitResult) = CompileVisualBasicString(TextToCompile, VBPreprocessorSymbols, DiagnosticSeverity.Error, MainForm._resultOfConversion)
 
         MainForm.LabelErrorCount.Text = $"Number Of Errors:  {MainForm._resultOfConversion.GetFilteredListOfFailures().Count}"
-        Dim fragmentRange As IEnumerable(Of Range) = GetClassifiedRanges(TextToCompile, LanguageNames.VisualBasic)
+        If Not My.Settings.IncludeTopLevelStmtProtoInCode Then
+            MainForm._inColorize = True
+
+            MainForm._inColorize = False
+        End If
 
         If compileResult.Success AndAlso compileResult.EmitResult.Success Then
+            If Not My.Settings.IncludeTopLevelStmtProtoInCode Then
+                Stop
+            End If
+
             If My.Settings.ColorizeOutput Then
-                Colorize(MainForm, fragmentRange, MainForm.ConversionOutput, TextToCompile.SplitLines.Length)
+                Colorize(MainForm, GetClassifiedRanges(TextToCompile, LanguageNames.VisualBasic), MainForm.ConversionOutput, TextToCompile.SplitLines.Length)
                 MainForm.ConversionOutput.Select(0, 0)
             Else
                 MainForm.ConversionOutput.Text = TextToCompile
             End If
         Else
             If Not MainForm._resultOfConversion.GetFilteredListOfFailures().Any Then
+                If Not My.Settings.IncludeTopLevelStmtProtoInCode AndAlso TextToCompile.Contains("Top Level Code boilerplate is included,") Then
+                    Dim filteredCode As New StringBuilder
+                    Dim skipNext As Boolean
+                    For Each e As IndexClass(Of String) In TextToCompile.SplitLines.WithIndex
+                        Dim stmt As String = e.Value
+                        Select Case True
+                            Case stmt.Trim.StartsWith("' Top Level Code boilerplate is included")
+                            Case stmt.Trim.StartsWith("Namespace Application")
+                            Case stmt.Trim.StartsWith("NotInheritable Class Program")
+                            Case stmt.Trim.StartsWith("Private Shared ")
+                                skipNext = True
+                            Case stmt.Trim.StartsWith("End Sub")
+                            Case stmt.Trim.StartsWith("End Class")
+                            Case stmt.Trim.StartsWith("End Namespace")
+                            Case stmt.StartsWith("            ")
+                                filteredCode.AppendLine(stmt.Substring(12))
+                            Case skipNext
+                                skipNext = False
+                            Case Else
+                                filteredCode.AppendLine(stmt)
+                        End Select
+                    Next
+                    TextToCompile = filteredCode.ToString
+                End If
                 MainForm._resultOfConversion.ResultStatus = ResultTriState.Success
                 If My.Settings.ColorizeOutput Then
-                    Colorize(MainForm, fragmentRange, MainForm.ConversionOutput, TextToCompile.SplitLines.Length, MainForm._resultOfConversion.GetFilteredListOfFailures())
+                    Colorize(MainForm, GetClassifiedRanges(TextToCompile, LanguageNames.VisualBasic), MainForm.ConversionOutput, TextToCompile.SplitLines.Length, MainForm._resultOfConversion.GetFilteredListOfFailures())
                     MainForm.ConversionOutput.Select(0, 0)
                 Else
                     MainForm.ConversionOutput.Text = TextToCompile
                 End If
             Else
-                Colorize(MainForm, fragmentRange, MainForm.ConversionOutput, TextToCompile.SplitLines.Length, MainForm._resultOfConversion.GetFilteredListOfFailures())
+                Colorize(MainForm, GetClassifiedRanges(TextToCompile, LanguageNames.VisualBasic), MainForm.ConversionOutput, TextToCompile.SplitLines.Length, MainForm._resultOfConversion.GetFilteredListOfFailures())
                 MainForm.ConversionOutput.Select(0, 0)
             End If
         End If

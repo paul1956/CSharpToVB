@@ -58,6 +58,7 @@ Public Class OptionsDialog
         Me.Cursor = Cursors.Default
         My.Settings.EditorFont = MainForm.ConversionInput.Font
         My.Settings.EditorFontName = MainForm.ConversionInput.Font.Name
+        My.Settings.IncludeTopLevelStmtProtoInCode = Me.CheckBoxTopLevelStatements.Checked
         My.Settings.OptionCompare = Me.ComboBoxCompare.SelectedItem.ToString
         My.Settings.OptionCompareIncludeInCode = Me.CheckBoxCompare.Checked
         My.Settings.OptionExplicit = Me.ComboBoxExplicit.SelectedItem.ToString
@@ -100,6 +101,7 @@ Public Class OptionsDialog
         Me.CheckBoxCompare.Checked = My.Settings.OptionCompareIncludeInCode
         Me.CheckBoxExplicit.Checked = My.Settings.OptionExplicitIncludeInCode
         Me.CheckBoxInfer.Checked = My.Settings.OptionInferIncludeInCode
+        Me.CheckBoxTopLevelStatements.Checked = My.Settings.IncludeTopLevelStmtProtoInCode
         Me.CheckBoxStrict.Checked = My.Settings.OptionStrictIncludeInCode
         ChangeTheme(My.Forms.Form1.CurrentThemeDictionary, Me.Controls)
     End Sub
