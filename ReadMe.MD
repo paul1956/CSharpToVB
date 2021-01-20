@@ -63,6 +63,9 @@ Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpec
 Any changes to CSharpToVB application needs to change the version information in the project file **AND** in MyProject/AssemblyInfo.vb until Visual Studio is able to general file automatically for a WinForms application.
 
 ## What's New in this release
+  New in 5.0.0.30/5.0.0.25
+  - Add support for exact translation of Top Level Statements, this could be improved by deleting extra lines in output
+
   New in 5.0.0.29/5.0.0.24
   - Improve edit experience of Colorized buffers
 

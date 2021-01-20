@@ -93,6 +93,7 @@ Public Module TSToolBaseSupport
         Dim outputBufferInUse As Boolean
         inputBufferInUse = MainForm.ConversionInput.Text.Any
         MainForm.mnuConvertConvertSnippet.Enabled = inputBufferInUse
+        MainForm.mnuConvertConvertTopLevelStmts.Enabled = inputBufferInUse
         outputBufferInUse = MainForm.ConversionOutput.Text.Any
         Dim enableFind As Boolean = (inputBufferInUse Or outputBufferInUse) And MainForm.TSFindFindWhatComboBox.Text.Any
         MainForm.TSFindClearHighlightsButton.Enabled = enableFind
