@@ -763,6 +763,15 @@ namespace Application
         ProcessProjectOrSolutionAsync(Me, solutionFileName)
     End Sub
 
+    Private Sub mnuFileLoadLastSnippet_Click(sender As Object, e As EventArgs) Handles mnuFileLoadLastSnippet.Click
+        If My.Settings.ColorizeInput Then
+            Me.mnuConvertConvertSnippet.Enabled = 0 <> LoadInputBufferFromStream(Me, s_snippetFileWithPath)
+        Else
+            Me.ConversionInput.LoadFile(s_snippetFileWithPath, RichTextBoxStreamType.PlainText)
+        End If
+        Me.mnuCompile.Enabled = True
+    End Sub
+
     Private Sub mnuFileOpen_Click(sender As Object, e As EventArgs) Handles mnuFileOpen.Click
         With Me.OpenFileDialog1
             .AddExtension = True
@@ -821,16 +830,7 @@ namespace Application
         End If
     End Sub
 
-    Private Sub mnuFileSnippetLoadLast_Click(sender As Object, e As EventArgs) Handles mnuFileLoadLastSnippet.Click
-        If My.Settings.ColorizeInput Then
-            Me.mnuConvertConvertSnippet.Enabled = 0 <> LoadInputBufferFromStream(Me, s_snippetFileWithPath)
-        Else
-            Me.ConversionInput.LoadFile(s_snippetFileWithPath, RichTextBoxStreamType.PlainText)
-        End If
-        Me.mnuCompile.Enabled = True
-    End Sub
-
-    Private Sub mnuFileSnippetSave_Click(sender As Object, e As EventArgs) Handles mnuFileSaveSnippet.Click
+    Private Sub mnuFileSaveSnippet_Click(sender As Object, e As EventArgs) Handles mnuFileSaveSnippet.Click
         If Me.ConversionInput.TextLength = 0 Then
             Exit Sub
         End If
