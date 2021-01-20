@@ -63,11 +63,36 @@ Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpec
 Any changes to CSharpToVB application needs to change the version information in the project file **AND** in MyProject/AssemblyInfo.vb until Visual Studio is able to general file automatically for a WinForms application.
 
 ## What's New in this release
-  New in 5.0.1.0/5.0.0.24
-  - Add basic support for Dark and Light themes, with theme editing, user themes
+  New in 5.0.1.1/5.0.0.25
+  - Add support for exact translation of Top Level Statements, this could be improved by deleting extra lines in output
+
+  New in 5.0.0.29/5.0.0.24
+  - Improve edit experience of Colorized buffers
+
+  New in 5.0.0.28/5.0.0.24
+  - Set edit buffers to read-only instead of Disabled when colorizing
 
   New in 5.0.0.27/5.0.0.24
-  - Merge From Master
+  - Improve Colorization to handle Regex and SubStrings, a new function AdjustAdditiveSpans was added to merger the new spans it would use a good design review.
+
+  New in 5.0.0.25/5.0.0.24
+  - Fix Cref conversions
+  - Add more Stops before throw to help debug
+  - Change color from Yellow to Purple for String Escape
+
+  New in 5.0.0.25/5.0.0.23
+  - Fix issue #63
+
+  New in 5.0.0.25/5.0.0.22
+  - Improve ++ and -- handling and use more existing keywords and tokens
+
+  New in 5.0.0.25/5.0.0.21
+  - Implement ToString for Records
+
+  New in 5.0.0.25/5.0.0.20
+  - Add support for foreach variable with variable is a Tuple
+  - Fix custom events to include RaiseEvent
+  - Fix when Namespace and Class names are the same just differing by case
 
   New in 5.0.0.25/5.0.0.19
   - Clean up Tuple Deconstruction

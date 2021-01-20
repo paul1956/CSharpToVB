@@ -58,11 +58,13 @@ Friend Module LoadBufferSupport
         Dim lines As Integer = LoadInputBufferFromStream(MainForm, Path)
         If lines = 0 Then
             MainForm.mnuConvertConvertSnippet.Enabled = False
+            MainForm.mnuConvertConvertTopLevelStmts.Enabled = False
             If My.Settings.MRU_Data.Contains(Path) Then
                 My.Settings.MRU_Data.Remove(Path)
             End If
         Else
             MainForm.mnuConvertConvertSnippet.Enabled = True
+            MainForm.mnuConvertConvertTopLevelStmts.Enabled = True
             My.Settings.MRU_Data.mnuAddToMRU(Path)
         End If
         MainForm.mnuFile.DropDownItems.FileMenuMRUUpdateUI(AddressOf MainForm.mnu_MRUList_Click)

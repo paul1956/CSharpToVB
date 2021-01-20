@@ -59,6 +59,7 @@ Partial Class Form1
         Me.mnuConvert = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuConvertConvertFolder = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuConvertConvertSnippet = New System.Windows.Forms.ToolStripMenuItem()
+        Me.mnuConvertConvertTopLevelStmts = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuConvertSep1 = New System.Windows.Forms.ToolStripSeparator()
         Me.mnuConvertStartFolderConvertFromLastFile = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuOptions = New System.Windows.Forms.ToolStripMenuItem()
@@ -354,7 +355,7 @@ Partial Class Form1
         '
         'mnuConvert
         '
-        Me.mnuConvert.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuConvertConvertFolder, Me.mnuConvertConvertSnippet, Me.mnuConvertSep1, Me.mnuConvertStartFolderConvertFromLastFile})
+        Me.mnuConvert.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuConvertConvertFolder, Me.mnuConvertConvertSnippet, Me.mnuConvertConvertTopLevelStmts, Me.mnuConvertSep1, Me.mnuConvertStartFolderConvertFromLastFile})
         Me.mnuConvert.Name = "mnuConvert"
         Me.mnuConvert.Size = New System.Drawing.Size(61, 20)
         Me.mnuConvert.Text = "Convert"
@@ -377,6 +378,15 @@ Partial Class Form1
         Me.mnuConvertConvertSnippet.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.S), System.Windows.Forms.Keys)
         Me.mnuConvertConvertSnippet.Size = New System.Drawing.Size(237, 22)
         Me.mnuConvertConvertSnippet.Text = "Convert Snippet"
+        '
+        'mnuConvertConvertTopLevelStmts
+        '
+        Me.mnuConvertConvertTopLevelStmts.Enabled = False
+        Me.mnuConvertConvertTopLevelStmts.Image = CType(resources.GetObject("mnuConvertConvertSnippet.Image"), System.Drawing.Image)
+        Me.mnuConvertConvertTopLevelStmts.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.mnuConvertConvertTopLevelStmts.Name = "mnuConvertConvertTopLevelStmts"
+        Me.mnuConvertConvertTopLevelStmts.Size = New System.Drawing.Size(237, 22)
+        Me.mnuConvertConvertTopLevelStmts.Text = "Convert Top Level Statements"
         '
         'mnuConvertSep1
         '
@@ -1064,6 +1074,7 @@ Partial Class Form1
     Friend WithEvents mnuConvert As ToolStripMenuItem
     Friend WithEvents mnuConvertConvertFolder As ToolStripMenuItem
     Friend WithEvents mnuConvertConvertSnippet As ToolStripMenuItem
+    Friend WithEvents mnuConvertConvertTopLevelStmts As ToolStripMenuItem
     Friend WithEvents mnuConvertSep1 As ToolStripSeparator
     Friend WithEvents mnuConvertStartFolderConvertFromLastFile As ToolStripMenuItem
     Friend WithEvents mnuEdit As ToolStripMenuItem

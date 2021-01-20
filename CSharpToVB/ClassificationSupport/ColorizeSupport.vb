@@ -5,13 +5,33 @@
 Imports System.Threading
 
 Imports CSharpToVBApp
+
 Imports CSharpToVBConverter
 Imports CSharpToVBConverter.ConversionResult
+
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Emit
+
 Imports ProgressReportLibrary
 
 Public Module ColorizeSupport
+
+    Friend Sub Colorize(MainForm As Form1, FragmentRange As IEnumerable(Of Range), ConversionBuffer As RichTextBox)
+        Dim currentChar As Integer = ConversionBuffer.SelectionStart
+        Dim currentlength As Integer = ConversionBuffer.SelectionLength
+        With ConversionBuffer
+            For Each range As Range In FragmentRange
+                If currentChar < range.TextSpan.Start Then
+                    Continue For
+                End If
+                .Select(range.TextSpan.Start, range.TextSpan.Length)
+                .SelectionColor = GetColorFromName(range.ClassificationType).ForeGround
+                Exit For
+                Application.DoEvents()
+            Next range
+            .Select(currentChar, currentlength)
+        End With
+    End Sub
 
     Friend Sub Colorize(MainForm As Form1, FragmentRange As IEnumerable(Of Range), ConversionBuffer As RichTextBox, Lines As Integer, Optional failures As IEnumerable(Of Diagnostic) = Nothing)
         If MainForm._inColorize Then
@@ -73,7 +93,6 @@ Public Module ColorizeSupport
         Catch ex As OperationCanceledException
         Catch ex As Exception
             Stop
-            Throw
         Finally
             ConversionBuffer.Visible = True
             ConversionBuffer.Refresh()
