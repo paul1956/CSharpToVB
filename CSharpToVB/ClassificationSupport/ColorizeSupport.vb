@@ -113,10 +113,7 @@ Public Module ColorizeSupport
         End If
 
         If compileResult.Success AndAlso compileResult.EmitResult.Success Then
-            If Not My.Settings.IncludeTopLevelStmtProtoInCode Then
-                Stop
-            End If
-
+            TextToCompile = FilterOutTopLevelStatementCode(TextToCompile)
             If My.Settings.ColorizeOutput Then
                 Colorize(MainForm, GetClassifiedRanges(TextToCompile, LanguageNames.VisualBasic), MainForm.ConversionOutput, TextToCompile.SplitLines.Length)
                 MainForm.ConversionOutput.Select(0, 0)
@@ -125,30 +122,7 @@ Public Module ColorizeSupport
             End If
         Else
             If Not MainForm._resultOfConversion.GetFilteredListOfFailures().Any Then
-                If Not My.Settings.IncludeTopLevelStmtProtoInCode AndAlso TextToCompile.Contains("Top Level Code boilerplate is included,") Then
-                    Dim filteredCode As New StringBuilder
-                    Dim skipNext As Boolean
-                    For Each e As IndexClass(Of String) In TextToCompile.SplitLines.WithIndex
-                        Dim stmt As String = e.Value
-                        Select Case True
-                            Case stmt.Trim.StartsWith("' Top Level Code boilerplate is included")
-                            Case stmt.Trim.StartsWith("Namespace Application")
-                            Case stmt.Trim.StartsWith("NotInheritable Class Program")
-                            Case stmt.Trim.StartsWith("Private Shared ")
-                                skipNext = True
-                            Case stmt.Trim.StartsWith("End Sub")
-                            Case stmt.Trim.StartsWith("End Class")
-                            Case stmt.Trim.StartsWith("End Namespace")
-                            Case stmt.StartsWith("            ")
-                                filteredCode.AppendLine(stmt.Substring(12))
-                            Case skipNext
-                                skipNext = False
-                            Case Else
-                                filteredCode.AppendLine(stmt)
-                        End Select
-                    Next
-                    TextToCompile = filteredCode.ToString
-                End If
+                TextToCompile = FilterOutTopLevelStatementCode(TextToCompile)
                 MainForm._resultOfConversion.ResultStatus = ResultTriState.Success
                 If My.Settings.ColorizeOutput Then
                     Colorize(MainForm, GetClassifiedRanges(TextToCompile, LanguageNames.VisualBasic), MainForm.ConversionOutput, TextToCompile.SplitLines.Length, MainForm._resultOfConversion.GetFilteredListOfFailures())
@@ -164,6 +138,35 @@ Public Module ColorizeSupport
         MainForm.ConversionOutput.Visible = True
         Application.DoEvents()
     End Sub
+
+    Private Function FilterOutTopLevelStatementCode(TextToCompile As String) As String
+        If Not My.Settings.IncludeTopLevelStmtProtoInCode AndAlso TextToCompile.Contains("Top Level Code boilerplate is included,") Then
+            Dim filteredCode As New StringBuilder
+            Dim skipNext As Boolean
+            For Each e As IndexClass(Of String) In TextToCompile.SplitLines.WithIndex
+                Dim stmt As String = e.Value
+                Select Case True
+                    Case stmt.Trim.StartsWith("' Top Level Code boilerplate is included")
+                    Case stmt.Trim.StartsWith("Namespace Application")
+                    Case stmt.Trim.StartsWith("NotInheritable Class Program")
+                    Case stmt.Trim.StartsWith("Private Shared ")
+                        skipNext = True
+                    Case stmt.Trim.StartsWith("End Sub")
+                    Case stmt.Trim.StartsWith("End Class")
+                    Case stmt.Trim.StartsWith("End Namespace")
+                    Case stmt.StartsWith("            ")
+                        filteredCode.AppendLine(stmt.Substring(12))
+                    Case skipNext
+                        skipNext = False
+                    Case Else
+                        filteredCode.AppendLine(stmt)
+                End Select
+            Next
+            TextToCompile = filteredCode.ToString
+        End If
+
+        Return TextToCompile
+    End Function
 
     Friend Async Function Convert_Compile_ColorizeAsync(
         MainForm As Form1,
