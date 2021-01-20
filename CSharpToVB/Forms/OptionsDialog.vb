@@ -45,6 +45,7 @@ Public Class OptionsDialog
         Me.Cursor = Cursors.Default
         My.Settings.EditorFont = MainForm.ConversionInput.Font
         My.Settings.EditorFontName = MainForm.ConversionInput.Font.Name
+        My.Settings.IncludeTopLevelStmtProtoInCode = Me.CheckBoxTopLevelStatements.Checked
         My.Settings.OptionCompare = Me.ComboBoxCompare.SelectedItem.ToString
         My.Settings.OptionCompareIncludeInCode = Me.CheckBoxCompare.Checked
         My.Settings.OptionExplicit = Me.ComboBoxExplicit.SelectedItem.ToString
@@ -80,6 +81,7 @@ Public Class OptionsDialog
         Me.CheckBoxCompare.Checked = My.Settings.OptionCompareIncludeInCode
         Me.CheckBoxExplicit.Checked = My.Settings.OptionExplicitIncludeInCode
         Me.CheckBoxInfer.Checked = My.Settings.OptionInferIncludeInCode
+        Me.CheckBoxTopLevelStatements.Checked = My.Settings.IncludeTopLevelStmtProtoInCode
         Me.CheckBoxStrict.Checked = My.Settings.OptionStrictIncludeInCode
     End Sub
 
@@ -109,17 +111,9 @@ Public Class OptionsDialog
 
             ' If the Cancel button is clicked, set the buffers'
             ' fonts back to the original font.
-        ElseIf result = Global.System.Windows.Forms.DialogResult.Cancel Then
+        ElseIf result = DialogResult.Cancel Then
             MainForm.ConversionInput.Font = oldFont
             MainForm.ConversionOutput.Font = oldFont
-        End If
-    End Sub
-
-    Private Sub UpdateColor_Button_Click(sender As Object, e As EventArgs) Handles UpdateColor_Button.Click
-        Me.ColorDialog1.Color = _selectedColor
-        If Me.ColorDialog1.ShowDialog <> DialogResult.Cancel Then
-            ColorSelector.SetColor(Me.ItemColor_ComboBox.Items(Me.ItemColor_ComboBox.SelectedIndex).ToString, Me.ColorDialog1.Color)
-            Application.DoEvents()
         End If
     End Sub
 

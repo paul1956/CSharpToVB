@@ -65,6 +65,18 @@ Namespace My_Project
 
         <Global.System.Configuration.UserScopedSettingAttribute(),
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("Light Mode")>
+        Public Property ColorMode() As String
+            Get
+                Return CType(Me("ColorMode"), String)
+            End Get
+            Set
+                Me("ColorMode") = Value
+            End Set
+        End Property
+
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
          Global.System.Configuration.DefaultSettingValueAttribute("0")>
         Public Property ConversionDelay() As Integer
             Get
@@ -131,6 +143,18 @@ Namespace My_Project
             End Get
             Set
                 Me("IgnoreFileList") = Value
+            End Set
+        End Property
+
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("True")>
+        Public Property IncludeTopLevelStmtProtoInCode() As Boolean
+            Get
+                Return CType(Me("IncludeTopLevelStmtProtoInCode"), Boolean)
+            End Get
+            Set
+                Me("IncludeTopLevelStmtProtoInCode") = Value
             End Set
         End Property
 

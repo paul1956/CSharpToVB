@@ -2,6 +2,7 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
+Imports System.Text
 Imports System.Threading
 
 Imports CSharpToVBApp
@@ -30,6 +31,9 @@ Public Module ColorizeSupport
     End Sub
 
     Friend Sub Colorize(MainForm As Form1, FragmentRange As IEnumerable(Of Range), ConversionBuffer As RichTextBox, Lines As Integer, Optional failures As IEnumerable(Of Diagnostic) = Nothing)
+        If MainForm._inColorize Then
+            Exit Sub
+        End If
         Try ' Prevent crash when exiting
             MainForm._inColorize = True
             If ConversionBuffer.Visible Then
@@ -96,32 +100,67 @@ Public Module ColorizeSupport
         Dim compileResult As (Success As Boolean, EmitResult As EmitResult) = CompileVisualBasicString(TextToCompile, VBPreprocessorSymbols, DiagnosticSeverity.Error, MainForm._resultOfConversion)
 
         MainForm.LabelErrorCount.Text = $"Number Of Errors:  {MainForm._resultOfConversion.GetFilteredListOfFailures().Count}"
-        Dim fragmentRange As IEnumerable(Of Range) = GetClassifiedRanges(TextToCompile, LanguageNames.VisualBasic)
+        If Not My.Settings.IncludeTopLevelStmtProtoInCode Then
+            MainForm._inColorize = True
+
+            MainForm._inColorize = False
+        End If
 
         If compileResult.Success AndAlso compileResult.EmitResult.Success Then
+            TextToCompile = FilterOutTopLevelStatementCode(TextToCompile)
             If My.Settings.ColorizeOutput Then
-                Colorize(MainForm, fragmentRange, MainForm.ConversionOutput, TextToCompile.SplitLines.Length)
+                Colorize(MainForm, GetClassifiedRanges(TextToCompile, LanguageNames.VisualBasic), MainForm.ConversionOutput, TextToCompile.SplitLines.Length)
                 MainForm.ConversionOutput.Select(0, 0)
             Else
                 MainForm.ConversionOutput.Text = TextToCompile
             End If
         Else
             If Not MainForm._resultOfConversion.GetFilteredListOfFailures().Any Then
+                TextToCompile = FilterOutTopLevelStatementCode(TextToCompile)
                 MainForm._resultOfConversion.ResultStatus = ResultTriState.Success
                 If My.Settings.ColorizeOutput Then
-                    Colorize(MainForm, fragmentRange, MainForm.ConversionOutput, TextToCompile.SplitLines.Length, MainForm._resultOfConversion.GetFilteredListOfFailures())
+                    Colorize(MainForm, GetClassifiedRanges(TextToCompile, LanguageNames.VisualBasic), MainForm.ConversionOutput, TextToCompile.SplitLines.Length, MainForm._resultOfConversion.GetFilteredListOfFailures())
                     MainForm.ConversionOutput.Select(0, 0)
                 Else
                     MainForm.ConversionOutput.Text = TextToCompile
                 End If
             Else
-                Colorize(MainForm, fragmentRange, MainForm.ConversionOutput, TextToCompile.SplitLines.Length, MainForm._resultOfConversion.GetFilteredListOfFailures())
+                Colorize(MainForm, GetClassifiedRanges(TextToCompile, LanguageNames.VisualBasic), MainForm.ConversionOutput, TextToCompile.SplitLines.Length, MainForm._resultOfConversion.GetFilteredListOfFailures())
                 MainForm.ConversionOutput.Select(0, 0)
             End If
         End If
         MainForm.ConversionOutput.Visible = True
         Application.DoEvents()
     End Sub
+
+    Private Function FilterOutTopLevelStatementCode(TextToCompile As String) As String
+        If Not My.Settings.IncludeTopLevelStmtProtoInCode AndAlso TextToCompile.Contains("Top Level Code boilerplate is included,") Then
+            Dim filteredCode As New StringBuilder
+            Dim skipNext As Boolean
+            For Each e As IndexClass(Of String) In TextToCompile.SplitLines.WithIndex
+                Dim stmt As String = e.Value
+                Select Case True
+                    Case stmt.Trim.StartsWith("' Top Level Code boilerplate is included")
+                    Case stmt.Trim.StartsWith("Namespace Application")
+                    Case stmt.Trim.StartsWith("NotInheritable Class Program")
+                    Case stmt.Trim.StartsWith("Private Shared ")
+                        skipNext = True
+                    Case stmt.Trim.StartsWith("End Sub")
+                    Case stmt.Trim.StartsWith("End Class")
+                    Case stmt.Trim.StartsWith("End Namespace")
+                    Case stmt.StartsWith("            ")
+                        filteredCode.AppendLine(stmt.Substring(12))
+                    Case skipNext
+                        skipNext = False
+                    Case Else
+                        filteredCode.AppendLine(stmt)
+                End Select
+            Next
+            TextToCompile = filteredCode.ToString
+        End If
+
+        Return TextToCompile
+    End Function
 
     Friend Async Function Convert_Compile_ColorizeAsync(
         MainForm As Form1,
@@ -172,7 +211,8 @@ Public Module ColorizeSupport
                 Return filteredErrorCount = 0
             Case ResultTriState.Failure
                 If TypeOf MainForm._resultOfConversion.Exceptions(0) IsNot OperationCanceledException Then
-                    MainForm.ConversionOutput.SelectionColor = Color.Red
+                    Dim selectionColor As Color = ColorSelector.GetColorFromName(ErrorValue)
+                    MainForm.ConversionOutput.SelectionColor = selectionColor
                     MainForm.ConversionOutput.Text = GetExceptionsAsString(MainForm._resultOfConversion.Exceptions)
                 End If
             Case ResultTriState.Ignore
