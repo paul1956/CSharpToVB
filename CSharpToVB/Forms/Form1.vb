@@ -741,6 +741,7 @@ namespace Application
 
     Private Sub mnuFile_DropDownOpening(sender As Object, e As EventArgs) Handles mnuFile.DropDownOpening
         Me.mnuFileLoadLastSnippet.Enabled = File.Exists(s_snippetFileWithPath)
+        Me.mnuFileSaveSnippet.Enabled = Me.ConversionInput.TextLength > 0
     End Sub
 
     Private Sub mnuFileExit_Click(sender As Object, e As EventArgs) Handles mnuFileExit.Click
@@ -783,6 +784,15 @@ namespace Application
     Private Sub mnuFileLastSolution_Click(sender As Object, e As EventArgs) Handles mnuFileLastSolution.Click
         Dim solutionFileName As String = My.Settings.LastSolution
         ProcessProjectOrSolutionAsync(Me, solutionFileName)
+    End Sub
+
+    Private Sub mnuFileLoadLastSnippet_Click(sender As Object, e As EventArgs) Handles mnuFileLoadLastSnippet.Click
+        If My.Settings.ColorizeInput Then
+            Me.mnuConvertConvertSnippet.Enabled = 0 <> LoadInputBufferFromStream(Me, s_snippetFileWithPath)
+        Else
+            Me.ConversionInput.LoadFile(s_snippetFileWithPath, RichTextBoxStreamType.PlainText)
+        End If
+        Me.mnuCompile.Enabled = True
     End Sub
 
     Private Sub mnuFileOpen_Click(sender As Object, e As EventArgs) Handles mnuFileOpen.Click
@@ -843,16 +853,7 @@ namespace Application
         End If
     End Sub
 
-    Private Sub mnuFileSnippetLoadLast_Click(sender As Object, e As EventArgs) Handles mnuFileLoadLastSnippet.Click
-        If My.Settings.ColorizeInput Then
-            Me.mnuConvertConvertSnippet.Enabled = 0 <> LoadInputBufferFromStream(Me, s_snippetFileWithPath)
-        Else
-            Me.ConversionInput.LoadFile(s_snippetFileWithPath, RichTextBoxStreamType.PlainText)
-        End If
-        Me.mnuCompile.Enabled = True
-    End Sub
-
-    Private Sub mnuFileSnippetSave_Click(sender As Object, e As EventArgs) Handles mnuFileSaveSnippet.Click
+    Private Sub mnuFileSaveSnippet_Click(sender As Object, e As EventArgs) Handles mnuFileSaveSnippet.Click
         If Me.ConversionInput.TextLength = 0 Then
             Exit Sub
         End If
