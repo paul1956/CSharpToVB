@@ -7,9 +7,11 @@ Imports System.Runtime.CompilerServices
 
 Public Module ColorSelector
 
-    Friend Property DefaultColor As (ForeGround As Color, Background As Color) = (Color.Black, Color.White)
     Friend s_DarkModeColorDictionary As New Dictionary(Of String, (ForeGround As Color, Background As Color))(StringComparer.OrdinalIgnoreCase)
     Friend s_LightModeColorDictionary As New Dictionary(Of String, (ForeGround As Color, Background As Color))(StringComparer.OrdinalIgnoreCase)
+    Public ReadOnly _darkModeDictionaryFileName As String = "DarkModeColorDictionary.csv"
+    Public ReadOnly _lightModeDictionaryFileName As String = "LightModeColorDictionary.csv"
+    Friend Property DefaultColor As (ForeGround As Color, Background As Color) = (Color.Black, Color.White)
 
     <Extension>
     Private Function IsNotIdentical(filename As String, filename2 As String) As Boolean
@@ -81,16 +83,16 @@ Public Module ColorSelector
 
     Public Sub UpdateColorDictionariesFromFile()
         Dim executableDirectoryPath As String = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "Assets")
-        Dim assetColorFile As String = Path.Combine(executableDirectoryPath, "LightModeColorDictionary.csv")
-        Dim userColorFile As String = Path.Combine(FileIO.SpecialDirectories.MyDocuments, "LightModeColorDictionary.csv")
+        Dim assetColorFile As String = Path.Combine(executableDirectoryPath, _lightModeDictionaryFileName)
+        Dim userColorFile As String = Path.Combine(FileIO.SpecialDirectories.MyDocuments, _lightModeDictionaryFileName)
 
         If File.Exists(userColorFile) AndAlso assetColorFile.IsNotIdentical(userColorFile) Then
             s_LightModeColorDictionary = MergeColorDictionary(userColorFile, File.GetLastAccessTime(assetColorFile), s_LightModeColorDictionary)
         Else
             LoadColorDictionaryFromFile(assetColorFile, s_LightModeColorDictionary)
         End If
-        assetColorFile = Path.Combine(executableDirectoryPath, "DarkModeColorDictionary.csv")
-        userColorFile = Path.Combine(FileIO.SpecialDirectories.MyDocuments, "DarkModeColorDictionary.csv")
+        assetColorFile = Path.Combine(executableDirectoryPath, _darkModeDictionaryFileName)
+        userColorFile = Path.Combine(FileIO.SpecialDirectories.MyDocuments, _darkModeDictionaryFileName)
         If File.Exists(userColorFile) AndAlso assetColorFile.IsNotIdentical(userColorFile) Then
             s_DarkModeColorDictionary = MergeColorDictionary(userColorFile, File.GetLastWriteTime(assetColorFile), s_DarkModeColorDictionary)
         Else

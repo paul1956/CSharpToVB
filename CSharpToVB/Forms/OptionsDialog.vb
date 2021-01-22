@@ -114,12 +114,12 @@ Public Class OptionsDialog
 
         Dim userColorFile As String
         If My.Settings.ColorMode = "Light Mode" Then
-            userColorFile = Path.Combine(FileIO.SpecialDirectories.MyDocuments, "LightModeColorDictionary.csv")
-            LoadColorDictionaryFromFile(Path.Combine(executableDirectoryPath, "LightModeColorDictionary.csv"), s_LightModeColorDictionary)
+            userColorFile = Path.Combine(FileIO.SpecialDirectories.MyDocuments, _lightModeDictionaryFileName)
+            LoadColorDictionaryFromFile(Path.Combine(executableDirectoryPath, _lightModeDictionaryFileName), s_LightModeColorDictionary)
             MainForm.CurrentThemeDictionary = s_LightModeColorDictionary
         Else
-            userColorFile = Path.Combine(FileIO.SpecialDirectories.MyDocuments, "DarkModeColorDictionary.csv")
-            LoadColorDictionaryFromFile(Path.Combine(executableDirectoryPath, "DarkModeColorDictionary.csv"), s_DarkModeColorDictionary)
+            userColorFile = Path.Combine(FileIO.SpecialDirectories.MyDocuments, _darkModeDictionaryFileName)
+            LoadColorDictionaryFromFile(Path.Combine(executableDirectoryPath, _darkModeDictionaryFileName), s_DarkModeColorDictionary)
             MainForm.CurrentThemeDictionary = s_DarkModeColorDictionary
         End If
         If File.Exists(userColorFile) Then
