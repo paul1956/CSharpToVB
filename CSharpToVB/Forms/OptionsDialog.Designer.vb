@@ -310,12 +310,12 @@ Partial Class OptionsDialog
         Me.ResetThemeButton.UseVisualStyleBackColor = True
         '
         'CheckBoxTopLevelStatements
-        '
+>        '
         Me.CheckBoxTopLevelStatements.AutoSize = True
         Me.CheckBoxTopLevelStatements.Checked = True
         Me.CheckBoxTopLevelStatements.CheckState = System.Windows.Forms.CheckState.Checked
         Me.CheckBoxTopLevelStatements.Location = New System.Drawing.Point(336, 95)
-        Me.CheckBoxTopLevelStatements.Name = "CheckBoxTopLevelStatements"
+        Me.CheckBoxTopLevelStatements.Name = "TopLevelStatementsCheckBox"
         Me.CheckBoxTopLevelStatements.Size = New System.Drawing.Size(137, 19)
         Me.CheckBoxTopLevelStatements.TabIndex = 26
         Me.CheckBoxTopLevelStatements.Text = "Top Level Statements"
