@@ -310,7 +310,7 @@ Partial Class OptionsDialog
         Me.ResetThemeButton.UseVisualStyleBackColor = True
         '
         'CheckBoxTopLevelStatements
->        '
+        '
         Me.CheckBoxTopLevelStatements.AutoSize = True
         Me.CheckBoxTopLevelStatements.Checked = True
         Me.CheckBoxTopLevelStatements.CheckState = System.Windows.Forms.CheckState.Checked
