@@ -5,6 +5,8 @@
 Imports System.IO
 
 Public Class OptionsDialog
+    Private ReadOnly _darkModeDictionaryFileName As String = "DarkModeColorDictionary.csv"
+    Private ReadOnly _lightModeDictionaryFileName As String = "LightModeColorDictionary.csv"
     Private _selectedColor As (Foreground As Color, Background As Color)
     Private _selectedColorName As String = DefaultValue
 
