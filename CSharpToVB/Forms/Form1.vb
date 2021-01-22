@@ -1118,7 +1118,7 @@ namespace Application
 
     Private Sub TSFindMatchWholeWordCheckBox_Click(sender As Object, e As EventArgs) Handles TSFindMatchWholeWordCheckBox.Click
         My.Settings.TSFindMatchWholeWord = Me.TSFindMatchWholeWordCheckBox.Checked
-		My.Settings.Save()
+        My.Settings.Save()
         My.Settings.Save()
     End Sub
 

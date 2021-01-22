@@ -19,7 +19,6 @@ Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
-Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace CSharpToVBConverter.ToVisualBasic
 
@@ -837,7 +836,6 @@ Namespace CSharpToVBConverter.ToVisualBasic
                             Else
                                 stmtList = stmtList.Replace(stmtList.Last, stmtList.Last.WithAppendedTrailingTrivia(ConvertTriviaList(node.OpenBraceToken.LeadingTrivia)).WithAppendedTrailingTrivia(ConvertTriviaList(node.OpenBraceToken.TrailingTrivia)))
                             End If
-
                         Else
                             stmtList = stmtList.Add(Factory.EmptyStatement.WithConvertedTriviaFrom(node.CloseBraceToken))
                         End If
@@ -1144,7 +1142,6 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 If TypeOf node.Variable Is CSS.TupleExpressionSyntax Then
                     Dim forEachVariableToken As SyntaxToken = Factory.Identifier("tempTuple")
                     Dim variableIdentifier As IdentifierNameSyntax = Factory.IdentifierName(forEachVariableToken)
-
 
                     Dim nodes As New List(Of TupleElementSyntax)
                     Dim declarators As SeparatedSyntaxList(Of VariableDeclaratorSyntax)

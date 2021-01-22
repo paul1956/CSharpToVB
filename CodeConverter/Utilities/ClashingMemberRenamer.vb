@@ -71,6 +71,7 @@ Namespace CSharpToVBConverter
         End Function
 
 #Disable Warning IDE0051 ' Remove unused private members
+
         <Extension>
         Private Function GetCsSymbolsPerScope(_semanticModel As SemanticModel, symbol As ISymbol) As IEnumerable(Of IEnumerable(Of ISymbol))
 #Enable Warning IDE0051 ' Remove unused private members

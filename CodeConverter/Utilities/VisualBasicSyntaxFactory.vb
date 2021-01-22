@@ -260,10 +260,12 @@ Namespace CSharpToVBConverter
         Public ReadOnly VBEOLTrivia As SyntaxTrivia = Factory.EndOfLineTrivia(vbCrLf)
 
 #Region "Lists"
+
         Public ReadOnly LineContinueSpace As New List(Of SyntaxTrivia) From {
            LineContinuation,
            SpaceTrivia
         }
+
         Public ReadOnly SpaceLineContinue As New List(Of SyntaxTrivia) From {
             SpaceTrivia,
             LineContinuation

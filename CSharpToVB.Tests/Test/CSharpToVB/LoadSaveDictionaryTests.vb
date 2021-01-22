@@ -12,9 +12,11 @@ Imports Xunit
 Namespace DictionaryLoadSave.Tests
 
     <TestClass()> Public NotInheritable Class LoadSaveDictionaryTests
+
         Private ReadOnly _testThemeMappingDictionary As New Dictionary(Of String, (ForeGround As Color, Background As Color))(StringComparer.OrdinalIgnoreCase) From {
                         {"default", (Color.White, Color.FromArgb(30, 30, 30))},
                         {"class name", (Color.FromArgb(0, 128, 128), Color.FromArgb(18, 32, 42))}}
+
         Private ReadOnly _resultDictionary As New Dictionary(Of String, (ForeGround As Color, Background As Color))(StringComparer.OrdinalIgnoreCase)
 
         <Fact>

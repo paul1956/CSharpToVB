@@ -128,13 +128,6 @@ Public Class OptionsDialog
         DefaultColor = MainForm.CurrentThemeDictionary(DefaultValue)
     End Sub
 
-    Private Sub ResetThemeButton_Click(sender As Object, e As EventArgs) Handles ResetThemeButton.Click
-        If MessageBox.Show("You are about to reset the '{My.Forms.Form1.TSThemeButton.Text}' theme any customizations will be lost, are you sure?", "Confirm Theme Reset", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) <> DialogResult.OK Then
-            Exit Sub
-        End If
-        Dim executableDirectoryPath As String = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "Assets")
-    End Sub
-
     Private Sub SelectEditorFontButton_Click(sender As Object, e As EventArgs) Handles SelectEditorFontButton.Click
         Dim oldFont As Font = New Font(MainForm.ConversionInput.Font.Name, MainForm.ConversionInput.Font.SizeInPoints, FontStyle.Regular, GraphicsUnit.Point)
         ' Display the font being used in Conversion buffers

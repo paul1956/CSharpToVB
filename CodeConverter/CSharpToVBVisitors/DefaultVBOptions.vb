@@ -5,6 +5,7 @@
 Namespace CSharpToVBConverter
 
     Public Class DefaultVBOptions
+
         Public Sub New(OptionCompare As String, OptionCompareInclude As Boolean, OptionExplicit As String, OptionExplicitInclude As Boolean, OptionInfer As String, OptionInferInclude As Boolean, OptionStrict As String, OptionStrictInclude As Boolean)
             Me.OptionCompare = OptionCompare
             Me.OptionCompareInclude = OptionCompareInclude

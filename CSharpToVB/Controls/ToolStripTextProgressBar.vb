@@ -8,6 +8,7 @@ Imports ProgressReportLibrary
 
 Public Class ToolStripTextProgressBar
     Inherits ToolStripProgressBar
+
     Public Sub New()
         Me.TextImageRelation = TextImageRelation.Overlay
         Me.Value = 0

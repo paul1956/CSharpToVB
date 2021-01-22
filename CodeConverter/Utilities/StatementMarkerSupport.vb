@@ -479,7 +479,6 @@ Namespace CSharpToVBConverter
             Return ReplaceStatementsWithMarkedStatements(node, Factory.List(statements), RemoveStatement)
         End Function
 
-
         Friend Function ReplaceStatementsWithMarkedStatements(node As CS.CSharpSyntaxNode, statements As SyntaxList(Of StatementSyntax), Optional RemoveStatement As Boolean = False) As SyntaxList(Of StatementSyntax)
             If node Is Nothing Then
                 Return statements

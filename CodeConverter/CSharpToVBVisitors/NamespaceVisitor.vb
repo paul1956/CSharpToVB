@@ -23,15 +23,16 @@ target = value
 Return value
 End Function
 "
+
             Private Const DiscardHelperCode As String = "
 Private Shared WriteOnly Property __ As Object
     Set
     End Set
 End Property
 "
+
             Private Shared ReadOnly s_leadingDirectiveMovedComment As SyntaxTrivia = Factory.CommentTrivia("' This directive was moved from leading statement trivia")
             Private Shared ReadOnly s_trailingDirectiveMovedComment As SyntaxTrivia = Factory.CommentTrivia("' This directive was moved from trailing statement trivia")
-
 
             '    Private Const ByRefHelperCode As String = "Private Function __VbByRefHelper(Of t)(ByRef byRefValue As t, byRefSetter As Func(Of t, t)) As t
             '        Dim orgValue = byRefValue

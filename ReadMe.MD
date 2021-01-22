@@ -26,7 +26,7 @@ description: "C# to VB Converter"
 - Code Converter
 
 ## Updated
-- 11/12/2020
+- 1/21/2021
 
 ## Description
 This application will convert C# to VB while trying to preserve comments, formatting and as many Directives
@@ -65,6 +65,7 @@ Any changes to CSharpToVB application needs to change the version information in
 ## What's New in this release
   New in 5.0.1.1/5.0.0.25
   - Add support for exact translation of Top Level Statements, this could be improved by deleting extra lines in output
+  - Add theme support for Light and Dark Mode
 
   New in 5.0.0.29/5.0.0.24
   - Improve edit experience of Colorized buffers

@@ -55,7 +55,6 @@ Public Module RangeSupport
                     currentSpan = New ClassifiedSpan(currentSpan.ClassificationType, New TextSpan(nextSpan.TextSpan.End, length))
                 End If
                 i += 1
-
             Catch ex As Exception
                 Stop
             End Try
