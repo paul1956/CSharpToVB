@@ -34,6 +34,7 @@ Namespace My
             ' Get the splash screen.
             CType(Me.SplashScreen, SplashScreen1).UserName.Text = "Current user: " & User.Name
         End Sub
+
         Private Sub MyApplication_StartupNextInstance(sender As Object, e As StartupNextInstanceEventArgs) Handles Me.StartupNextInstance
             Stop
         End Sub

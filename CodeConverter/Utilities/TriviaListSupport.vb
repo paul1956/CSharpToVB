@@ -114,9 +114,9 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim tokenText As String = token.Text
                 Dim valueText As String = token.ValueText
                 If token.HasLeadingTrivia Then
-                    For Each t As SyntaxTrivia In token.leadingTrivia
+                    For Each t As SyntaxTrivia In token.LeadingTrivia
                         If t.IsKind(CS.SyntaxKind.DocumentationCommentExteriorTrivia) Then
-                            newLeadingTriviaList = newLeadingTriviaList.Add(Factory.DocumentationCommentExteriorTrivia(token.leadingTrivia(0).
+                            newLeadingTriviaList = newLeadingTriviaList.Add(Factory.DocumentationCommentExteriorTrivia(token.LeadingTrivia(0).
                                                                                                                          ToString().
                                                                                                                          Replace("///", "'''", StringComparison.Ordinal)))
                             If Not tokenText.StartsWith(" ", StringComparison.Ordinal) Then

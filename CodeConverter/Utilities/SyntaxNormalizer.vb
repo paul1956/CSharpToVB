@@ -768,7 +768,7 @@ Namespace CSharpToVBConverter
             Dim hasInherits As Boolean = node.Inherits.Any
 
             ' add a line break between begin statement and the ones from the statement list
-            If Not hasInherits AndAlso Not hasImplements AndAlso node.members.Any Then
+            If Not hasInherits AndAlso Not hasImplements AndAlso node.Members.Any Then
                 Me.AddLinebreaksAfterTokenIfNeeded(node.BlockStatement.GetLastToken(), 2)
             Else
                 Me.AddLinebreaksAfterTokenIfNeeded(node.BlockStatement.GetLastToken(), 1)
@@ -784,13 +784,13 @@ Namespace CSharpToVBConverter
 
             Select Case node.Kind
                 Case SyntaxKind.InterfaceBlock
-                    Me.AddLinebreaksAfterElementsIfNeeded(node.members, 1, 2)
+                    Me.AddLinebreaksAfterElementsIfNeeded(node.Members, 1, 2)
                 Case SyntaxKind.StructureBlock
-                    Me.AddLinebreaksAfterElementsIfNeeded(node.members, 1, 2)
+                    Me.AddLinebreaksAfterElementsIfNeeded(node.Members, 1, 2)
                 Case SyntaxKind.ModuleBlock
-                    Me.AddLinebreaksAfterElementsIfNeeded(node.members, 1, 2)
+                    Me.AddLinebreaksAfterElementsIfNeeded(node.Members, 1, 2)
                 Case Else
-                    Me.AddLinebreaksAfterElementsIfNeeded(node.members, 2, 1)
+                    Me.AddLinebreaksAfterElementsIfNeeded(node.Members, 2, 1)
             End Select
         End Sub
 
@@ -898,8 +898,8 @@ Namespace CSharpToVBConverter
         ''' </summary>
         Public Overrides Function VisitCompilationUnit(node As CompilationUnitSyntax) As SyntaxNode
             Dim hasImports As Boolean = node.Imports.Any
-            Dim hasMembers As Boolean = node.members.Any
-            Dim hasAttributes As Boolean = node.attributes.Any
+            Dim hasMembers As Boolean = node.Members.Any
+            Dim hasAttributes As Boolean = node.Attributes.Any
 
             If hasImports OrElse hasAttributes OrElse hasMembers Then
                 Me.AddLinebreaksAfterElementsIfNeeded(node.Options, 1, 2)
@@ -914,12 +914,12 @@ Namespace CSharpToVBConverter
             End If
 
             If hasMembers Then
-                Me.AddLinebreaksAfterElementsIfNeeded(node.attributes, 1, 2)
+                Me.AddLinebreaksAfterElementsIfNeeded(node.Attributes, 1, 2)
             Else
-                Me.AddLinebreaksAfterElementsIfNeeded(node.attributes, 1, 1)
+                Me.AddLinebreaksAfterElementsIfNeeded(node.Attributes, 1, 1)
             End If
 
-            Me.AddLinebreaksAfterElementsIfNeeded(node.members, 2, 1)
+            Me.AddLinebreaksAfterElementsIfNeeded(node.Members, 2, 1)
 
             Return MyBase.VisitCompilationUnit(node)
         End Function
@@ -1053,7 +1053,7 @@ Namespace CSharpToVBConverter
         ''' </summary>
         Public Overrides Function VisitEnumBlock(node As EnumBlockSyntax) As SyntaxNode
             Me.AddLinebreaksAfterTokenIfNeeded(node.EnumStatement.GetLastToken(), 1)
-            Me.AddLinebreaksAfterElementsIfNeeded(node.members, 1, 1)
+            Me.AddLinebreaksAfterElementsIfNeeded(node.Members, 1, 1)
 
             Return MyBase.VisitEnumBlock(node)
         End Function
@@ -1266,16 +1266,16 @@ Namespace CSharpToVBConverter
         ''' Separate each member of a namespace with an empty line.
         ''' </summary>
         Public Overrides Function VisitNamespaceBlock(node As NamespaceBlockSyntax) As SyntaxNode
-            If node.members.Any Then
+            If node.Members.Any Then
                 ' Add an empty line after the namespace begin if there
                 ' is not a namespace declaration as first member
-                If node.members(0).Kind <> SyntaxKind.NamespaceBlock Then
+                If node.Members(0).Kind <> SyntaxKind.NamespaceBlock Then
                     Me.AddLinebreaksAfterTokenIfNeeded(node.NamespaceStatement.GetLastToken(), 2)
                 Else
                     Me.AddLinebreaksAfterTokenIfNeeded(node.NamespaceStatement.GetLastToken(), 1)
                 End If
 
-                Me.AddLinebreaksAfterElementsIfNeeded(node.members, 2, 1)
+                Me.AddLinebreaksAfterElementsIfNeeded(node.Members, 2, 1)
             Else
                 Me.AddLinebreaksAfterTokenIfNeeded(node.NamespaceStatement.GetLastToken(), 1)
             End If
@@ -1440,7 +1440,7 @@ Namespace CSharpToVBConverter
                 End If
                 _eolLeadingTriviaCount = 0
 
-                Dim leadingTrivia As SyntaxTriviaList = token.leadingTrivia
+                Dim leadingTrivia As SyntaxTriviaList = token.LeadingTrivia
                 If _previousToken.IsKind(SyntaxKind.GreaterThanToken) AndAlso token.IsKind(SyntaxKind.LessThanToken) Then
                     Do While leadingTrivia.Any AndAlso leadingTrivia(0).IsKind(SyntaxKind.EndOfLineTrivia)
                         leadingTrivia = leadingTrivia.RemoveAt(0)

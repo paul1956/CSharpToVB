@@ -85,7 +85,7 @@ Namespace CSharpToVBConverter
                 End Get
             End Property
 
-            Default Friend Property item(index As Integer) As T Implements IList(Of T).item
+            Default Friend Property item(index As Integer) As T Implements IList(Of T).Item
                 Get
                     If index <> 0 Then
                         Throw New IndexOutOfRangeException()

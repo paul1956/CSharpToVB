@@ -183,7 +183,6 @@ Option Strict Off
                     New KeyValuePair(Of String, Object)("NETCOREAPP", True)
                 }
 
-
                 project = project.WithParseOptions(New VisualBasicParseOptions(
                                                         VisualBasic.LanguageVersion.VisualBasic16,
                                                         DocumentationMode.Diagnose,

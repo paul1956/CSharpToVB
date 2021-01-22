@@ -604,4 +604,5 @@ Namespace ConvertDirectory.Tests
         End Function
 
     End Class
+
 End Namespace

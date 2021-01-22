@@ -38,7 +38,7 @@ Namespace CSharpToVBConverter
             ' find first token that matches (either specified token or token inside related trivia)
             If stepInto IsNot Nothing Then
                 ' search in leading trivia
-                Dim firstToken As SyntaxToken = Me.GetFirstToken(token.leadingTrivia, predicate, stepInto)
+                Dim firstToken As SyntaxToken = Me.GetFirstToken(token.LeadingTrivia, predicate, stepInto)
                 If firstToken.RawKind <> 0 Then
                     Return firstToken
                 End If
@@ -115,7 +115,7 @@ Namespace CSharpToVBConverter
         Friend Function GetNextToken(current As SyntaxTrivia, predicate As Func(Of SyntaxToken, Boolean), stepInto As Func(Of SyntaxTrivia, Boolean)) As SyntaxToken
             Dim returnNext As Boolean = False
             ' look inside leading trivia for current & next
-            Dim token As SyntaxToken = Me.GetNextToken(current, current.Token.leadingTrivia, predicate, stepInto, returnNext)
+            Dim token As SyntaxToken = Me.GetNextToken(current, current.Token.LeadingTrivia, predicate, stepInto, returnNext)
             If token.RawKind <> 0 Then
                 Return token
             End If

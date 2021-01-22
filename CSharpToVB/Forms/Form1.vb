@@ -1118,7 +1118,34 @@ namespace Application
 
     Private Sub TSFindMatchWholeWordCheckBox_Click(sender As Object, e As EventArgs) Handles TSFindMatchWholeWordCheckBox.Click
         My.Settings.TSFindMatchWholeWord = Me.TSFindMatchWholeWordCheckBox.Checked
-		My.Settings.Save()
+        My.Settings.Save()
+        My.Settings.Save()
+    End Sub
+
+    Private Sub TSThemeButton_Click(sender As Object, e As EventArgs) Handles TSThemeButton.Click
+        If Me.TSThemeButton.Text = "Light Mode" Then
+            Me.TSThemeButton.Text = "Dark Mode"
+            CurrentThemeDictionary = s_DarkModeColorDictionary
+        Else
+            Me.TSThemeButton.Text = "Light Mode"
+            CurrentThemeDictionary = s_LightModeColorDictionary
+        End If
+        DefaultColor = GetColorFromName(DefaultValue)
+        ChangeTheme(CurrentThemeDictionary, My.Forms.Form1.Controls)
+        If Me.ConversionInput.Text.Any Then
+            If Me.mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
+                Colorize(Me, GetClassifiedRanges(SourceCode:=Me.ConversionInput.Text, LanguageNames.CSharp), ConversionBuffer:=Me.ConversionInput, Lines:=Me.ConversionInput.Lines.Length)
+                Me.ConversionInput.Select(0, 0)
+            End If
+
+        End If
+        If Me.ConversionOutput.Text.Any Then
+            If Me.mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
+                Colorize(Me, GetClassifiedRanges(SourceCode:=Me.ConversionOutput.Text, LanguageNames.VisualBasic), ConversionBuffer:=Me.ConversionOutput, Lines:=Me.ConversionOutput.Lines.Length)
+                Me.ConversionOutput.Select(0, 0)
+            End If
+        End If
+        My.Settings.ColorMode = Me.TSThemeButton.Text
         My.Settings.Save()
     End Sub
 

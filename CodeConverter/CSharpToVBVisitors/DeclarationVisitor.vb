@@ -1323,7 +1323,6 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                                endPropertyStatement.WithTrailingEOL).
                                         WithAppendedTrailingTrivia(typeLeadingTrivia).
                                         RestructureAttributesAndModifiers(attributes.Any, modifiers.Any).NormalizeWhitespaceEx(useDefaultCasing:=True).WithTrailingEOL
-
                 Finally
                     Me.NeedEndUsings = savedNeedEndUsings
                 End Try

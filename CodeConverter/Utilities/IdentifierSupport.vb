@@ -20,10 +20,10 @@ Namespace CSharpToVBConverter
             sBuilder.Append("TupleTempVar")
             For j As Integer = 0 To ListOfVariables.Count - 1
                 Dim v As VBS.ModifiedIdentifierSyntax = ListOfVariables(j)
-                If v.identifier.ValueText = "_" Then
+                If v.Identifier.ValueText = "_" Then
                     sBuilder.Append($"_Discard{j}")
                 Else
-                    sBuilder.Append($"_{v.identifier.ValueText}")
+                    sBuilder.Append($"_{v.Identifier.ValueText}")
                 End If
             Next
         End Sub

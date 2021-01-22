@@ -220,15 +220,15 @@ Namespace CSharpToVBConverter
                     Return Factory.TrueLiteralExpression(TrueKeyword)
                 Case CS.SyntaxKind.CharacterLiteralToken
                     If AscW(CChar(value)) = &H201C Then
-                        Return Factory.literalExpression(VB.SyntaxKind.CharacterLiteralExpression, Factory.Literal($"{UnicodeOpenQuote}{UnicodeOpenQuote}"))
+                        Return Factory.LiteralExpression(VB.SyntaxKind.CharacterLiteralExpression, Factory.Literal($"{UnicodeOpenQuote}{UnicodeOpenQuote}"))
                     End If
                     If AscW(CChar(value)) = &H201D Then
-                        Return Factory.literalExpression(VB.SyntaxKind.CharacterLiteralExpression, Factory.Literal($"{UnicodeCloseQuote}{UnicodeCloseQuote}"))
+                        Return Factory.LiteralExpression(VB.SyntaxKind.CharacterLiteralExpression, Factory.Literal($"{UnicodeCloseQuote}{UnicodeCloseQuote}"))
                     End If
                     If Token.Text.StartsWith("'\u", StringComparison.OrdinalIgnoreCase) Then
                         Return Factory.ParseExpression($"ChrW(&H{Token.Text.RemoveAll("'").Substring(startIndex:=2)})")
                     End If
-                    Return Factory.literalExpression(VB.SyntaxKind.CharacterLiteralExpression, Factory.Literal(CChar(value)))
+                    Return Factory.LiteralExpression(VB.SyntaxKind.CharacterLiteralExpression, Factory.Literal(CChar(value)))
                 Case CS.SyntaxKind.DefaultKeyword
                     Dim methodStatement As CSS.MethodDeclarationSyntax = Token.Parent.GetAncestor(Of CSS.MethodDeclarationSyntax)
                     Dim returnType As VBS.TypeSyntax

@@ -3,6 +3,7 @@
 ' See the LICENSE file in the project root for more information.
 
 Public Class NumberedListItem
+
     Public Sub New(display As String, value As String)
         Me._displayItem = display
         Me._valueItem = value

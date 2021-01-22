@@ -5,7 +5,6 @@
 Imports Microsoft.CodeAnalysis
 
 Imports CS = Microsoft.CodeAnalysis.CSharp
-Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
@@ -159,7 +158,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
             Dim isTheoryOrInlineData As Boolean
             For Each e As IndexClass(Of VBS.AttributeListSyntax) In vbAttributeLists.WithIndex
                 Dim attributeList As VBS.AttributeListSyntax = e.Value.RemoveExtraLeadingEOL
-                isTheoryOrInlineData = attributeList.attributes.FirstOrDefault.ToString.ContainsAny(StringComparison.OrdinalIgnoreCase, "Theory", "InlineData")
+                isTheoryOrInlineData = attributeList.Attributes.FirstOrDefault.ToString.ContainsAny(StringComparison.OrdinalIgnoreCase, "Theory", "InlineData")
                 If isTheoryOrInlineData Then
                     foundTheory = True
                 End If
