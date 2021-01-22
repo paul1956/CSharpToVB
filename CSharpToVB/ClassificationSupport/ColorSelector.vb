@@ -6,7 +6,7 @@ Imports System.IO
 
 Public Class ColorSelector
 
-    Private Shared ReadOnly s_colorMappingDictionary As New Dictionary(Of String, Color)(StringComparer.OrdinalIgnoreCase) From {
+    Public Shared ReadOnly s_colorMappingDictionary As New Dictionary(Of String, Color)(StringComparer.OrdinalIgnoreCase) From {
          {"class name", Color.FromArgb(0, 128, 128)},
          {"comment", Color.FromArgb(0, 100, 0)},
          {"constant name", Color.Black},
@@ -116,6 +116,9 @@ Public Class ColorSelector
         sr.ReadLine()
         While sr.Peek() <> -1
             Dim line As String = sr.ReadLine()
+            If Not line.Any Then
+                Continue While
+            End If
             Dim splitLine() As String = line.Split(","c)
             Dim key As String = splitLine(0)
             s_colorMappingDictionary(key) = Color.FromArgb(red:=Convert.ToInt32(splitLine(1), Globalization.CultureInfo.InvariantCulture),

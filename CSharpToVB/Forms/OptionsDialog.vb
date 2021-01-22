@@ -2,9 +2,11 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
+Imports System.IO
+
 Public Class OptionsDialog
-    Private _selectedColor As Color
-    Private _selectedColorName As String = "default"
+    Private _selectedColor As (Foreground As Color, Background As Color)
+    Private _selectedColorName As String = DefaultValue
 
     Public MainForm As Form1
 
@@ -17,23 +19,34 @@ Public Class OptionsDialog
     Private Sub FontDialog1_Apply(sender As Object, e As EventArgs) Handles FontDialog1.Apply
         MainForm.ConversionInput.Font = Me.FontDialog1.Font
         MainForm.ConversionOutput.Font = Me.FontDialog1.Font
+        Me.SampleTextBox.Font = Me.FontDialog1.Font
+        My.Settings.EditorFont = Me.FontDialog1.Font
+        My.Settings.Save()
     End Sub
 
     Private Sub ItemColor_ComboBox_DrawItem(sender As Object, e As DrawItemEventArgs) Handles ItemColor_ComboBox.DrawItem
         If e.Index >= 0 Then
             Dim itemName As String = CType(sender, ComboBox).Items(e.Index).ToString()
-            Using b As Brush = New SolidBrush(ColorSelector.GetColorFromName(itemName))
-                Dim eBounds As Rectangle = e.Bounds
+            Dim itemColor As (Foreground As Color, Background As Color) = (ColorSelector.GetColorFromName(itemName), Color.White)
+
+            Dim eBounds As Rectangle = e.Bounds
+            Using b As Brush = New SolidBrush(Color.Black)
                 Dim pt As New Point(eBounds.X, eBounds.Top)
-                TextRenderer.DrawText(e.Graphics, itemName, Me.Font, pt, Color.Black)
-                e.Graphics.FillRectangle(b, eBounds.X + 250, eBounds.Y + 2, eBounds.Width - 10, eBounds.Height - 6)
+                e.Graphics.FillRectangle(b, eBounds.X, eBounds.Y, eBounds.Width - 200, eBounds.Height)
+                TextRenderer.DrawText(e.Graphics, itemName, Me.Font, pt, Color.Black, Color.White)
+            End Using
+            Using b As Brush = New SolidBrush(itemColor.Background)
+                e.Graphics.FillRectangle(b, eBounds.X + 250, eBounds.Y, eBounds.Width - 250, eBounds.Height)
+                TextRenderer.DrawText(e.Graphics, itemName, Me.Font, New Point(eBounds.X + 250, eBounds.Top), itemColor.Foreground, itemColor.Background)
             End Using
         End If
     End Sub
 
     Private Sub ItemColor_ComboBox_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ItemColor_ComboBox.SelectedIndexChanged
         _selectedColorName = CStr(Me.ItemColor_ComboBox.SelectedItem)
-        _selectedColor = ColorSelector.GetColorFromName(_selectedColorName)
+        _selectedColor = (ColorSelector.GetColorFromName(_selectedColorName), Color.White)
+        Me.SampleTextBox.BackColor = _selectedColor.Background
+        Me.SampleTextBox.ForeColor = _selectedColor.Foreground
     End Sub
 
     Private Sub OK_Button_Click(sender As Object, e As EventArgs) Handles OK_Button.Click
@@ -41,7 +54,6 @@ Public Class OptionsDialog
         Me.DialogResult = DialogResult.OK
         Me.Cursor = Cursors.WaitCursor
         Application.DoEvents()
-        ColorSelector.WriteColorDictionaryToFile()
         Me.Cursor = Cursors.Default
         My.Settings.EditorFont = MainForm.ConversionInput.Font
         My.Settings.EditorFontName = MainForm.ConversionInput.Font.Name
@@ -61,6 +73,8 @@ Public Class OptionsDialog
     End Sub
 
     Private Sub OptionsDialog_Load(sender As Object, e As EventArgs) Handles Me.Load
+        Me.FontDialog1.Font = My.Settings.EditorFont
+
         Me.ProjectDirectoryList.Items.Add(New MyListItem("Projects", GetLatestVisualStudioProjectPath))
         Me.ProjectDirectoryList.Items.Add(New MyListItem("Repos", GetAlternetVisualStudioProjectsPath))
         Me.ProjectDirectoryList.SelectedIndex = 0
@@ -70,12 +84,17 @@ Public Class OptionsDialog
                 Exit For
             End If
         Next
+        Me.ModeTextBox.Text = "Light Mode"
         For Each name As String In ColorSelector.GetColorNameList()
             Me.ItemColor_ComboBox.Items.Add(name)
         Next name
-        Me.ItemColor_ComboBox.SelectedIndex = Me.ItemColor_ComboBox.FindStringExact("default")
+        Me.ItemColor_ComboBox.SelectedIndex = Me.ItemColor_ComboBox.FindStringExact(DefaultValue)
+
         Me.ComboBoxCompare.SelectedItem = My.Settings.OptionCompare
         Me.ComboBoxExplicit.SelectedItem = My.Settings.OptionExplicit
+        Me.SampleTextBox.ForeColor = Color.Black
+        Me.SampleTextBox.BackColor = Color.White
+
         Me.ComboBoxInfer.SelectedItem = My.Settings.OptionInfer
         Me.ComboBoxStrict.SelectedItem = My.Settings.OptionStrict
         Me.CheckBoxCompare.Checked = My.Settings.OptionCompareIncludeInCode
@@ -83,6 +102,13 @@ Public Class OptionsDialog
         Me.CheckBoxInfer.Checked = My.Settings.OptionInferIncludeInCode
         Me.CheckBoxTopLevelStatements.Checked = My.Settings.IncludeTopLevelStmtProtoInCode
         Me.CheckBoxStrict.Checked = My.Settings.OptionStrictIncludeInCode
+    End Sub
+
+    Private Sub ResetThemeButton_Click(sender As Object, e As EventArgs) Handles ResetThemeButton.Click
+        If MessageBox.Show("You are about to reset the '{My.Forms.Form1.TSThemeButton.Text}' theme any customizations will be lost, are you sure?", "Confirm Theme Reset", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) <> DialogResult.OK Then
+            Exit Sub
+        End If
+        Dim executableDirectoryPath As String = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "Assets")
     End Sub
 
     Private Sub SelectEditorFontButton_Click(sender As Object, e As EventArgs) Handles SelectEditorFontButton.Click
@@ -114,6 +140,16 @@ Public Class OptionsDialog
         ElseIf result = DialogResult.Cancel Then
             MainForm.ConversionInput.Font = oldFont
             MainForm.ConversionOutput.Font = oldFont
+            Me.SampleTextBox.Font = oldFont
+        End If
+    End Sub
+
+    Private Sub UpdateForeground_Button_Click(sender As Object, e As EventArgs) Handles UpdateForeground_Button.Click
+        Me.ColorDialog1.Color = _selectedColor.Foreground
+        If Me.ColorDialog1.ShowDialog <> DialogResult.Cancel Then
+            Me.SampleTextBox.ForeColor = Me.ColorDialog1.Color
+            ColorSelector.s_colorMappingDictionary(Me.ItemColor_ComboBox.Items(Me.ItemColor_ComboBox.SelectedIndex).ToString) = Me.SampleTextBox.ForeColor
+            Application.DoEvents()
         End If
     End Sub
 

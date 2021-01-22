@@ -310,6 +310,9 @@ Partial Public Class Form1
             My.Settings.UpgradeRequired = False
             My.Settings.Save()
         End If
+        If My.Settings.IgnoreFileList Is Nothing Then
+            My.Settings.IgnoreFileList = New Specialized.StringCollection
+        End If
 
         Me.UpdateLastFileMenu()
         Me.TSFindFindWhatComboBox.TSFindWhatMRUUpdateUI()
@@ -719,6 +722,7 @@ namespace Application
 
     Private Sub mnuFile_DropDownOpening(sender As Object, e As EventArgs) Handles mnuFile.DropDownOpening
         Me.mnuFileLoadLastSnippet.Enabled = File.Exists(s_snippetFileWithPath)
+        Me.mnuFileSaveSnippet.Enabled = Me.ConversionInput.TextLength > 0
     End Sub
 
     Private Sub mnuFileExit_Click(sender As Object, e As EventArgs) Handles mnuFileExit.Click
@@ -875,6 +879,10 @@ namespace Application
     End Sub
 
     Private Sub mnuOptionsAddFilesToIgnoreFilesEithErrorsList_Click(sender As Object, e As EventArgs) Handles mnuOptionsAddFilesToIgnoreFilesEithErrorsList.Click
+        If My.Settings.IgnoreFileList Is Nothing Then
+            My.Settings.IgnoreFileList = New Specialized.StringCollection
+        End If
+
         Dim srcFileNameWithPath As String = My.Settings.MRU_Data.Last
         If Not My.Settings.IgnoreFileList.Contains(srcFileNameWithPath) Then
             My.Settings.IgnoreFileList.Add(srcFileNameWithPath)
@@ -1009,20 +1017,6 @@ namespace Application
         Me.SetStyle(ControlStyles.AllPaintingInWmPaint Or ControlStyles.UserPaint Or ControlStyles.DoubleBuffer, True)
         ' enable events...
         MyBase.OnLoad(e)
-        If My.Settings.IgnoreFileList Is Nothing Then
-            My.Settings.IgnoreFileList = New Specialized.StringCollection
-        End If
-
-        ' load MRU...
-        If My.Settings.MRU_Data Is Nothing Then
-            My.Settings.MRU_Data = New Specialized.StringCollection
-        End If
-
-        If My.Settings.TSFindMRU_Data Is Nothing Then
-            My.Settings.TSFindMRU_Data = New Specialized.StringCollection
-            My.Settings.Save()
-        End If
-
     End Sub
 
     ''' <summary>
@@ -1111,6 +1105,7 @@ namespace Application
 
     Private Sub TSFindMatchWholeWordCheckBox_Click(sender As Object, e As EventArgs) Handles TSFindMatchWholeWordCheckBox.Click
         My.Settings.TSFindMatchWholeWord = Me.TSFindMatchWholeWordCheckBox.Checked
+		My.Settings.Save()
         My.Settings.Save()
     End Sub
 

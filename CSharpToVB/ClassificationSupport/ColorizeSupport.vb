@@ -96,7 +96,6 @@ Public Module ColorizeSupport
     End Sub
 
     Friend Sub Compile_Colorize(MainForm As Form1, TextToCompile As String, VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)))
-        MainForm._inColorize = False
         Dim compileResult As (Success As Boolean, EmitResult As EmitResult) = CompileVisualBasicString(TextToCompile, VBPreprocessorSymbols, DiagnosticSeverity.Error, MainForm._resultOfConversion)
 
         MainForm.LabelErrorCount.Text = $"Number Of Errors:  {MainForm._resultOfConversion.GetFilteredListOfFailures().Count}"

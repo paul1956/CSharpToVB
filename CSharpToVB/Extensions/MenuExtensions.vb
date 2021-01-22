@@ -73,6 +73,10 @@ Friend Module MenuExtensions
 
     <Extension>
     Friend Sub TSFindWhatMRUUpdateUI(dropDownItems As ToolStripComboBox)
+        If My.Settings.TSFindMRU_Data Is Nothing Then
+            My.Settings.TSFindMRU_Data = New Specialized.StringCollection
+            My.Settings.Save()
+        End If
         ' clear MRU menu items...
         Dim mruToolStripItems As New List(Of ToolStripItem)
         dropDownItems.Items.Clear()
@@ -84,6 +88,11 @@ Friend Module MenuExtensions
 
     <Extension>
     Friend Sub UpdateLastFileMenu(MainForm As Form1)
+        ' load MRU...
+        If My.Settings.MRU_Data Is Nothing Then
+            My.Settings.MRU_Data = New Specialized.StringCollection
+        End If
+
         My.Settings.Save()
         ' show separator...
         If My.Settings.MRU_Data.Count > 0 Then
