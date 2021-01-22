@@ -25,6 +25,7 @@ Public NotInheritable Class AboutBox1
 {codeConverterInfo.ProductName} {codeConverterInfo.Version}
 {hashLibrary.ProductName} {hashLibrary.Version}
 {progressReportLibrary.ProductName} {progressReportLibrary.Version}"
+        ChangeTheme(My.Forms.Form1.CurrentThemeDictionary, Me.Controls)
     End Sub
 
     Private Sub OKButton_Click(sender As Object, e As EventArgs) Handles OKButton.Click

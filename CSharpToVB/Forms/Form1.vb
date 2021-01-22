@@ -27,6 +27,9 @@ Partial Public Class Form1
     Friend _requestToConvert As ConvertRequest
     Friend _resultOfConversion As ConversionResult
 
+    Public CurrentThemeDictionary As Dictionary(Of String, (Foreground As Color, Background As Color))
+    Public CurrentThemeName As String = "Light Mode"
+
     Public Sub New()
         Me.InitializeComponent()
     End Sub
@@ -407,7 +410,17 @@ Partial Public Class Form1
         Me.TSFindMatchCaseCheckBox.Checked = My.Settings.TSFindMatchCase
         Me.TSFindMatchWholeWordCheckBox.Checked = My.Settings.TSFindMatchWholeWord
         Application.DoEvents()
+        UpdateColorDictionariesFromFile()
         Me.CheckForUpdates(ReportResults:=False)
+        If My.Settings.ColorMode = "Light Mode" Then
+            Me.TSThemeButton.Text = "Light Mode"
+            CurrentThemeDictionary = s_LightModeColorDictionary
+        Else
+            Me.TSThemeButton.Text = "Dark Mode"
+            CurrentThemeDictionary = s_DarkModeColorDictionary
+        End If
+        DefaultColor = CurrentThemeDictionary(DefaultValue)
+        ChangeTheme(CurrentThemeDictionary, My.Forms.Form1.Controls)
     End Sub
 
     Private Sub Form1_Resize(sender As Object, e As EventArgs) Handles Me.Resize
@@ -1037,14 +1050,14 @@ namespace Application
         If Me.BufferToSearch.IsFlagSet(SearchBuffers.CS) Then
             selectionstart = Me.ConversionInput.SelectionStart
             Me.ConversionInput.SelectAll()
-            Me.ConversionInput.SelectionBackColor = Color.White
+            Me.ConversionInput.SelectionBackColor = DefaultColor.Background
             Me.ConversionInput.Select(selectionstart, 0)
             Me.ConversionInput.ScrollToCaret()
         End If
         If Me.BufferToSearch.IsFlagSet(SearchBuffers.VB) Then
             selectionstart = Me.ConversionOutput.SelectionStart
             Me.ConversionOutput.SelectAll()
-            Me.ConversionOutput.SelectionBackColor = Color.White
+            Me.ConversionOutput.SelectionBackColor = DefaultColor.Background
             Me.ConversionOutput.Select(selectionstart, 0)
             Me.ConversionOutput.ScrollToCaret()
         End If
@@ -1106,6 +1119,33 @@ namespace Application
     Private Sub TSFindMatchWholeWordCheckBox_Click(sender As Object, e As EventArgs) Handles TSFindMatchWholeWordCheckBox.Click
         My.Settings.TSFindMatchWholeWord = Me.TSFindMatchWholeWordCheckBox.Checked
 		My.Settings.Save()
+        My.Settings.Save()
+    End Sub
+
+    Private Sub TSThemeButton_Click(sender As Object, e As EventArgs) Handles TSThemeButton.Click
+        If Me.TSThemeButton.Text = "Light Mode" Then
+            Me.TSThemeButton.Text = "Dark Mode"
+            CurrentThemeDictionary = s_DarkModeColorDictionary
+        Else
+            Me.TSThemeButton.Text = "Light Mode"
+            CurrentThemeDictionary = s_LightModeColorDictionary
+        End If
+        DefaultColor = GetColorFromName(DefaultValue)
+        ChangeTheme(CurrentThemeDictionary, My.Forms.Form1.Controls)
+        If Me.ConversionInput.Text.Any Then
+            If Me.mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
+                Colorize(Me, GetClassifiedRanges(SourceCode:=Me.ConversionInput.Text, LanguageNames.CSharp), ConversionBuffer:=Me.ConversionInput, Lines:=Me.ConversionInput.Lines.Length)
+                Me.ConversionInput.Select(0, 0)
+            End If
+
+        End If
+        If Me.ConversionOutput.Text.Any Then
+            If Me.mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
+                Colorize(Me, GetClassifiedRanges(SourceCode:=Me.ConversionOutput.Text, LanguageNames.VisualBasic), ConversionBuffer:=Me.ConversionOutput, Lines:=Me.ConversionOutput.Lines.Length)
+                Me.ConversionOutput.Select(0, 0)
+            End If
+        End If
+        My.Settings.ColorMode = Me.TSThemeButton.Text
         My.Settings.Save()
     End Sub
 

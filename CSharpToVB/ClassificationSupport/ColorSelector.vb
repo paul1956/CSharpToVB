@@ -3,112 +3,61 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.IO
+Imports System.Runtime.CompilerServices
 
-Public Class ColorSelector
+Public Module ColorSelector
 
-    Public Shared ReadOnly s_colorMappingDictionary As New Dictionary(Of String, Color)(StringComparer.OrdinalIgnoreCase) From {
-         {"class name", Color.FromArgb(0, 128, 128)},
-         {"comment", Color.FromArgb(0, 100, 0)},
-         {"constant name", Color.Black},
-         {"default", Color.Black},
-         {"delegate name", Color.FromArgb(0, 128, 128)},
-         {"enum name", Color.FromArgb(0, 128, 128)},
-         {"enum member name", Color.FromArgb(0, 128, 128)},
-         {"error", Color.Red},
-         {"excluded code", Color.FromArgb(128, 128, 128)},
-         {"event name", Color.Black},
-         {"extension method name", Color.Black},
-         {"field name", Color.Black},
-         {"identifier", Color.Black},
-         {"interface name", Color.FromArgb(0, 128, 128)},
-         {"keyword", Color.FromArgb(0, 0, 255)},
-         {"keyword - control", Color.FromArgb(143, 8, 196)},
-         {"label name", Color.Black},
-         {"local name", Color.Black},
-         {"method name", Color.Black},
-         {"module name", Color.FromArgb(0, 128, 128)},
-         {"namespace name", Color.Black},
-         {"number", Color.Black},
-         {"operator", Color.Black},
-         {"operator - overloaded", Color.Black},
-         {"parameter name", Color.Black},
-         {"preprocessor keyword", Color.Gray},
-         {"preprocessor text", Color.Black},
-         {"property name", Color.Black},
-         {"punctuation", Color.Black},
-         {"regex - alternation", Color.FromArgb(5, 195, 186)},
-         {"regex - anchor", Color.FromArgb(255, 0, 193)},
-         {"regex - character class", Color.FromArgb(0, 115, 255)},
-         {"regex - comment", Color.FromArgb(0, 128, 0)},
-         {"regex - grouping", Color.FromArgb(5, 195, 186)},
-         {"regex - other escape", Color.FromArgb(158, 91, 113)},
-         {"regex - quantifier", Color.FromArgb(255, 0, 193)},
-         {"regex - self escaped character", Color.FromArgb(128, 0, 0)},
-         {"regex - text", Color.FromArgb(128, 0, 0)},
-         {"static symbol", Color.Black},
-         {"string - escape character", Color.DarkBlue},
-         {"string - verbatim", Color.FromArgb(128, 0, 0)},
-         {"string", Color.FromArgb(163, 21, 21)},
-         {"struct name", Color.FromArgb(43, 145, 175)},
-         {"text", Color.Black},
-         {"type parameter name", Color.DarkGray},
-         {"xml doc comment - attribute name", Color.FromArgb(128, 128, 128)},
-         {"xml doc comment - attribute quotes", Color.FromArgb(128, 128, 128)},
-         {"xml doc comment - attribute value", Color.FromArgb(128, 128, 128)},
-         {"xml doc comment - cdata section", Color.FromArgb(128, 128, 128)},
-         {"xml doc comment - comment", Color.FromArgb(128, 128, 128)},
-         {"xml doc comment - delimiter", Color.FromArgb(128, 128, 128)},
-         {"xml doc comment - entity reference", Color.FromArgb(0, 128, 0)},
-         {"xml doc comment - name", Color.FromArgb(128, 128, 128)},
-         {"xml doc comment - processing instruction", Color.FromArgb(128, 128, 128)},
-         {"xml doc comment - text", Color.FromArgb(0, 128, 0)},
-         {"xml literal - attribute name", Color.FromArgb(128, 128, 128)},
-         {"xml literal - attribute quotes", Color.FromArgb(128, 128, 128)},
-         {"xml literal - attribute value", Color.FromArgb(128, 128, 128)},
-         {"xml literal - cdata section", Color.FromArgb(128, 128, 128)},
-         {"xml literal - comment", Color.FromArgb(128, 128, 128)},
-         {"xml literal - delimiter", Color.FromArgb(100, 100, 185)},
-         {"xml literal - embedded expression", Color.FromArgb(128, 128, 128)},
-         {"xml literal - entity reference", Color.FromArgb(185, 100, 100)},
-         {"xml literal - name", Color.FromArgb(132, 70, 70)},
-         {"xml literal - processing instruction", Color.FromArgb(128, 128, 128)},
-         {"xml literal - text", Color.FromArgb(85, 85, 85)}
-     }
+    Friend s_DarkModeColorDictionary As New Dictionary(Of String, (Foreground As Color, Background As Color))(StringComparer.OrdinalIgnoreCase)
+    Friend s_LightModeColorDictionary As New Dictionary(Of String, (Foreground As Color, Background As Color))(StringComparer.OrdinalIgnoreCase)
+    Public ReadOnly _darkModeDictionaryFileName As String = "DarkModeColorDictionary.csv"
+    Public ReadOnly _lightModeDictionaryFileName As String = "LightModeColorDictionary.csv"
+    Friend Property DefaultColor As (Foreground As Color, Background As Color) = (Color.Black, Color.White)
 
-    Private Shared ReadOnly s_fullPath As String = Path.Combine(FileIO.SpecialDirectories.MyDocuments, "ColorDictionary.csv")
+    <Extension>
+    Private Function IsNotIdentical(filename As String, filename2 As String) As Boolean
+        Dim epsillon As Double = 2.0
+        Dim assetLastWriteTime As Date = File.GetLastWriteTime(filename)
+        Dim userDictionaryLastWriteTime As Date = File.GetLastWriteTime(filename2)
+        Dim totalSeconds As Double = (assetLastWriteTime - userDictionaryLastWriteTime).TotalSeconds
 
-    Public Sub New()
-        UpdateColorDictionaryFromFile(s_fullPath)
-    End Sub
-
-    Public Sub New(filePath As String)
-        UpdateColorDictionaryFromFile(filePath)
-    End Sub
-
-    Friend Shared Function GetColorFromName(Name As String) As Color
-        If String.IsNullOrWhiteSpace(Name) Then
-            Return s_colorMappingDictionary("default")
+        If Math.Abs(Math.Round(totalSeconds)) > epsillon Then
+            Return True
         End If
-        Dim returnValue As Color = Nothing
-        If s_colorMappingDictionary.TryGetValue(Name, returnValue) Then
+        Return False
+    End Function
+
+    Private Function MergeColorDictionary(FilePath As String, LastWriteTime As Date, ColorDictionary As Dictionary(Of String, (Foreground As Color, Background As Color))) As Dictionary(Of String, (Foreground As Color, Background As Color))
+        Dim tmpDictionary As New Dictionary(Of String, (Foreground As Color, Background As Color))(StringComparer.OrdinalIgnoreCase)
+        LoadColorDictionaryFromFile(FilePath, tmpDictionary)
+        For Each name As String In ColorDictionary.Keys
+            If Not tmpDictionary.ContainsKey(name) Then
+                tmpDictionary.Add(name, ColorDictionary(name))
+            End If
+        Next
+        WriteColorDictionaryToFile(FilePath, tmpDictionary)
+
+        File.SetLastWriteTime(FilePath, LastWriteTime)
+        Return tmpDictionary
+    End Function
+
+    Friend Function GetColorFromName(Name As String) As (Foreground As Color, Background As Color)
+        If String.IsNullOrWhiteSpace(Name) Then
+            Return DefaultColor
+        End If
+        Dim returnValue As (Foreground As Color, Background As Color) = Nothing
+        If My.Forms.Form1.CurrentThemeDictionary.TryGetValue(Name, returnValue) Then
             Return returnValue
         End If
         Debug.Print($"GetColorFromName missing({Name})")
-        Return s_colorMappingDictionary("error")
+        Return My.Forms.Form1.CurrentThemeDictionary("error")
     End Function
 
-    Public Shared Function GetColorNameList() As Dictionary(Of String, Color).KeyCollection
-        Return s_colorMappingDictionary.Keys
+    Public Function GetColorNameList() As Dictionary(Of String, (Foreground As Color, Background As Color)).KeyCollection
+        Return My.Forms.Form1.CurrentThemeDictionary.Keys
     End Function
 
-    Public Shared Sub SetColor(name As String, value As Color)
-        s_colorMappingDictionary(name) = value
-        WriteColorDictionaryToFile(s_fullPath)
-    End Sub
-
-    Public Shared Sub UpdateColorDictionaryFromFile(FPath As String)
+    Public Sub LoadColorDictionaryFromFile(FPath As String, ThemeDictionary As Dictionary(Of String, (Foreground As Color, Background As Color)))
         If Not File.Exists(FPath) Then
-            WriteColorDictionaryToFile(FPath)
             Exit Sub
         End If
         Dim fileStream As FileStream = File.OpenRead(FPath)
@@ -121,24 +70,53 @@ Public Class ColorSelector
             End If
             Dim splitLine() As String = line.Split(","c)
             Dim key As String = splitLine(0)
-            s_colorMappingDictionary(key) = Color.FromArgb(red:=Convert.ToInt32(splitLine(1), Globalization.CultureInfo.InvariantCulture),
-                                                           green:=Convert.ToInt32(splitLine(2), Globalization.CultureInfo.InvariantCulture),
-                                                           blue:=Convert.ToInt32(splitLine(3), Globalization.CultureInfo.InvariantCulture))
+            If Not ThemeDictionary.ContainsKey(key) Then
+                ThemeDictionary.Add(key, DefaultColor)
+            End If
+            ThemeDictionary(key) = (Color.FromArgb(red:=Convert.ToInt32(splitLine(1), Globalization.CultureInfo.InvariantCulture),
+                                                   green:=Convert.ToInt32(splitLine(2), Globalization.CultureInfo.InvariantCulture),
+                                                   blue:=Convert.ToInt32(splitLine(3), Globalization.CultureInfo.InvariantCulture)),
+                                    Color.FromArgb(red:=Convert.ToInt32(splitLine(4), Globalization.CultureInfo.InvariantCulture),
+                                                   green:=Convert.ToInt32(splitLine(5), Globalization.CultureInfo.InvariantCulture),
+                                                   blue:=Convert.ToInt32(splitLine(6), Globalization.CultureInfo.InvariantCulture)))
         End While
         sr.Close()
         fileStream.Close()
     End Sub
 
-    Public Shared Sub WriteColorDictionaryToFile()
-        WriteColorDictionaryToFile(s_fullPath)
+    Public Sub UpdateColorDictionariesFromFile()
+        Dim executableDirectoryPath As String = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "Assets")
+        Dim assetColorFile As String = Path.Combine(executableDirectoryPath, _lightModeDictionaryFileName)
+        Dim userColorFile As String = Path.Combine(FileIO.SpecialDirectories.MyDocuments, _lightModeDictionaryFileName)
+
+        If File.Exists(userColorFile) AndAlso assetColorFile.IsNotIdentical(userColorFile) Then
+            s_LightModeColorDictionary = MergeColorDictionary(userColorFile, File.GetLastAccessTime(assetColorFile), s_LightModeColorDictionary)
+        Else
+            LoadColorDictionaryFromFile(assetColorFile, s_LightModeColorDictionary)
+        End If
+        assetColorFile = Path.Combine(executableDirectoryPath, _darkModeDictionaryFileName)
+        userColorFile = Path.Combine(FileIO.SpecialDirectories.MyDocuments, _darkModeDictionaryFileName)
+        If File.Exists(userColorFile) AndAlso assetColorFile.IsNotIdentical(userColorFile) Then
+            s_DarkModeColorDictionary = MergeColorDictionary(userColorFile, File.GetLastWriteTime(assetColorFile), s_DarkModeColorDictionary)
+        Else
+            LoadColorDictionaryFromFile(assetColorFile, s_DarkModeColorDictionary)
+        End If
     End Sub
 
-    Public Shared Sub WriteColorDictionaryToFile(FPath As String)
+    Public Sub WriteColorDictionaryToFile()
+        Dim saveFilePath As String = Path.Combine(FileIO.SpecialDirectories.MyDocuments,
+                                                $"{If(My.Forms.Form1.TSThemeButton.Text = "Light Mode", "LightMode", "DarkMode")}ColorDictionary.csv")
+        If File.Exists(saveFilePath) Then
+            WriteColorDictionaryToFile(saveFilePath, My.Forms.Form1.CurrentThemeDictionary)
+        End If
+    End Sub
+
+    Public Sub WriteColorDictionaryToFile(FPath As String, ThemeDictionary As Dictionary(Of String, (Foreground As Color, Background As Color)))
         Using fileStream As FileStream = File.OpenWrite(FPath)
             Using sw As New StreamWriter(fileStream)
-                sw.WriteLine($"Key,R,G,B")
-                For Each kvp As KeyValuePair(Of String, Color) In s_colorMappingDictionary
-                    sw.WriteLine($"{kvp.Key},{kvp.Value.R},{kvp.Value.G},{kvp.Value.B}")
+                sw.WriteLine($"Key,ForegroundR,ForegroundG,ForegroundB,BackgroundR,BackgroundG,BackgroundB")
+                For Each kvp As KeyValuePair(Of String, (Foreground As Color, Background As Color)) In ThemeDictionary
+                    sw.WriteLine($"{kvp.Key},{kvp.Value.Foreground.R},{kvp.Value.Foreground.G},{kvp.Value.Foreground.B},{kvp.Value.Background.R},{kvp.Value.Background.G},{kvp.Value.Background.B}")
                 Next
                 sw.Flush()
                 sw.Close()
@@ -146,4 +124,4 @@ Public Class ColorSelector
         End Using
     End Sub
 
-End Class
+End Module

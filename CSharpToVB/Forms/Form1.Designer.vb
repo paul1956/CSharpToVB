@@ -103,6 +103,7 @@ Partial Class Form1
         Me.TSFindSeparator4 = New System.Windows.Forms.ToolStripSeparator()
         Me.TSFindClearHighlightsButton = New System.Windows.Forms.ToolStripButton()
         Me.TSFindSeparator5 = New System.Windows.Forms.ToolStripSeparator()
+        Me.TSThemeButton = New System.Windows.Forms.ToolStripButton()
         Me.SaveFileDialog1 = New System.Windows.Forms.SaveFileDialog()
         Me.ContextMenuStrip1 = New System.Windows.Forms.ContextMenuStrip(Me.components)
         Me.ContextMenuUndo = New System.Windows.Forms.ToolStripMenuItem()
@@ -614,8 +615,7 @@ Partial Class Form1
         '
         'TSFindToolStrip
         '
-        Me.TSFindToolStrip.BackColor = System.Drawing.Color.FromArgb(CType(CType(204, Byte), Integer), CType(CType(213, Byte), Integer), CType(CType(240, Byte), Integer))
-        Me.TSFindToolStrip.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.TSFindFindWhatComboBox, Me.TSFindSeparator1, Me.TSFindLookInLabel, Me.TSFindLookInComboBox, Me.TSFindSeparator2, Me.TSFindFindPreviousButton, Me.TSFindFindNextButton, Me.TSFindSeparator3, Me.TSFindMatchCaseCheckBox, Me.TSFindMatchWholeWordCheckBox, Me.TSFindSeparator4, Me.TSFindClearHighlightsButton, Me.TSFindSeparator5})
+        Me.TSFindToolStrip.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.TSFindFindWhatComboBox, Me.TSFindSeparator1, Me.TSFindLookInLabel, Me.TSFindLookInComboBox, Me.TSFindSeparator2, Me.TSFindFindPreviousButton, Me.TSFindFindNextButton, Me.TSFindSeparator3, Me.TSFindMatchCaseCheckBox, Me.TSFindMatchWholeWordCheckBox, Me.TSFindSeparator4, Me.TSFindClearHighlightsButton, Me.TSFindSeparator5, Me.TSThemeButton})
         Me.TSFindToolStrip.Location = New System.Drawing.Point(0, 24)
         Me.TSFindToolStrip.Name = "TSFindToolStrip"
         Me.TSFindToolStrip.Size = New System.Drawing.Size(1923, 25)
@@ -717,6 +717,15 @@ Partial Class Form1
         Me.TSFindSeparator5.Margin = New System.Windows.Forms.Padding(5, 0, 5, 0)
         Me.TSFindSeparator5.Name = "TSFindSeparator5"
         Me.TSFindSeparator5.Size = New System.Drawing.Size(6, 25)
+        '
+        'TSThemeButton
+        '
+        Me.TSThemeButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text
+        Me.TSThemeButton.ImageTransparentColor = System.Drawing.Color.Magenta
+        Me.TSThemeButton.Margin = New System.Windows.Forms.Padding(1, 0, 1, 0)
+        Me.TSThemeButton.Name = "TSThemeButton"
+        Me.TSThemeButton.Size = New System.Drawing.Size(77, 25)
+        Me.TSThemeButton.Text = "Light Mode"
         '
         'ContextMenuStrip1
         '
@@ -1148,4 +1157,5 @@ Partial Class Form1
     Friend WithEvents TSFindSeparator4 As ToolStripSeparator
     Friend WithEvents TSFindSeparator5 As ToolStripSeparator
     Friend WithEvents TSFindToolStrip As ToolStrip
+    Friend WithEvents TSThemeButton As ToolStripButton
 End Class

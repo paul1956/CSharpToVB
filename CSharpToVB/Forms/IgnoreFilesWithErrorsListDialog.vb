@@ -46,6 +46,7 @@ Public Class IgnoreFilesWithErrorsListDialog
         End If
         ' Initialize the button column.
         _fileToLoad = ""
+        ChangeTheme(My.Forms.Form1.CurrentThemeDictionary, Me.Controls)
     End Sub
 
     Private Sub OK_Button_Click(sender As Object, e As EventArgs) Handles OK_Button.Click

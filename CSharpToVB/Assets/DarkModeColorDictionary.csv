@@ -1,0 +1,99 @@
+Key,ForegroundR,ForegroundG,ForegroundB,BackgroundR,BackgroundG,BackgroundB
+default,255,255,255,30,30,30
+class name,0,128,128,18,32,42
+comment,0,100,0,18,32,42
+constant name,255,255,255,18,32,42
+keyword - control,143,8,196,18,32,42
+delegate name,0,128,128,18,32,42
+enum member name,0,128,128,18,32,42
+enum name,0,128,128,18,32,42
+error,216,80,80,18,32,42
+event name,220,220,220,18,32,42
+excluded code,128,128,128,18,32,42
+extension method name,220,220,170,18,32,42
+field name,220,220,220,18,32,42
+Function,141,141,207,18,32,42
+identifier,220,220,220,18,32,42
+interface name,0,128,128,18,32,42
+keyword,86,156,214,18,32,42
+label name,220,220,220,18,32,42
+local name,254,220,156,18,32,42
+method name,220,220,170,18,32,42
+module name,78,201,176,18,32,42
+namespace name,220,220,220,18,32,42
+number,181,206,168,18,32,42
+operator,180,180,180,18,32,42
+operator - overloaded,220,220,170,18,32,42
+parameter name,156,220,254,18,32,42
+preprocessor keyword,128,128,128,18,32,42
+preprocessor text,220,220,220,18,32,42
+property name,156,220,254,18,32,42
+punctuation,220,220,220,18,32,42
+regex - alternation,0,128,128,18,32,42
+regex - anchor,255,192,203,18,32,42
+regex - character class,0,0,255,18,32,42
+regex - comment,0,100,0,18,32,42
+regex - grouping,0,128,128,18,32,42
+regex - other escape,165,42,42,18,32,42
+regex - quantifier,255,192,203,18,32,42
+regex - self escaped character,139,0,0,18,32,42
+regex - text,139,0,0,18,32,42
+static symbol,95,149,250,18,32,42
+string - escape character,255,214,143,18,32,42
+string,163,21,21,18,32,42
+struct name,43,145,175,18,32,42
+text,220,220,220,18,32,42
+type parameter name,169,169,169,18,32,42
+string - verbatim,128,0,0,18,32,42
+xml doc comment - attribute name,128,128,128,18,32,42
+xml doc comment - attribute quotes,128,128,128,18,32,42
+xml doc comment - attribute value,128,128,128,18,32,42
+xml doc comment - cdata section,128,128,128,18,32,42
+xml doc comment - comment,128,128,128,18,32,42
+xml doc comment - delimiter,128,128,128,18,32,42
+xml doc comment - entity reference,0,128,0,18,32,42
+xml doc comment - name,128,128,128,18,32,42
+xml doc comment - processing instruction,128,128,128,18,32,42
+xml doc comment - text,0,128,0,18,32,42
+xml literal - attribute name,128,128,128,18,32,42
+xml literal - attribute quotes,128,128,128,18,32,42
+xml literal - attribute value,128,128,128,18,32,42
+xml literal - cdata section,128,128,128,18,32,42
+xml literal - comment,128,128,128,18,32,42
+xml literal - delimiter,100,100,185,18,32,42
+xml literal - embedded expression,128,128,128,18,32,42
+xml literal - entity reference,185,100,100,18,32,42
+xml literal - name,132,70,70,18,32,42
+xml literal - processing instruction,128,128,128,18,32,42
+xml literal - text,85,85,85,18,32,42
+Button,227,227,227,160,160,160
+CheckBox,227,227,227,160,160,160
+ComboBox,227,227,227,160,160,160
+ContextMenuStrip,227,227,227,160,160,160
+FloatingMenu,227,227,227,160,160,160
+FolderBrowserDialog,227,227,227,160,160,160
+Label,227,227,227,160,160,160
+LineNumbersForRichTextBox,227,227,227,160,160,160
+ListBox,227,227,227,160,160,160
+MenuStrip,227,227,227,160,160,160
+Panel,227,227,227,30,30,30
+PanelBoarderStyle,227,227,227,160,160,160
+ProgressBar,0,120,215,160,160,160
+RichTextBox,227,227,227,30,30,30
+SplitBar,227,227,227,160,160,160
+SplitContainer,227,227,227,30,30,30
+StatusBar,227,227,227,100,100,100
+TextBox,227,227,227,45,45,48
+TitleBar,227,227,227,160,160,160
+ToolBar,227,227,227,160,160,160
+ToolStrip,227,227,227,160,160,160
+ToolStripButton,227,227,227,160,160,160
+ToolStripCheckBox,109,109,109,160,160,160
+ToolStripComboBox,109,109,109,160,160,160
+ToolStripLabel,227,227,227,160,160,160
+ToolStripMenuItem,227,227,227,160,160,160
+ToolStripProgressBar,227,227,227,160,160,160
+ToolStripSeparator,227,227,227,160,160,160
+ToolStripStatusLabel,227,227,227,160,160,160
+ToolStripTextProgressBar,227,227,227,160,160,160
+ToolTip,227,227,227,160,160,160

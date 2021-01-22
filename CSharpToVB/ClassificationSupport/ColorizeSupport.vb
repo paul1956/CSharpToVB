@@ -6,13 +6,17 @@ Imports System.Text
 Imports System.Threading
 
 Imports CSharpToVBApp
+
 Imports CSharpToVBConverter
 Imports CSharpToVBConverter.ConversionResult
+
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Emit
+
 Imports ProgressReportLibrary
 
 Public Module ColorizeSupport
+
     Friend Sub Colorize(MainForm As Form1, FragmentRange As IEnumerable(Of Range), ConversionBuffer As RichTextBox)
         Dim currentChar As Integer = ConversionBuffer.SelectionStart
         Dim currentlength As Integer = ConversionBuffer.SelectionLength
@@ -22,7 +26,7 @@ Public Module ColorizeSupport
                     Continue For
                 End If
                 .Select(range.TextSpan.Start, range.TextSpan.Length)
-                .SelectionColor = ColorSelector.GetColorFromName(range.ClassificationType)
+                .SelectionColor = GetColorFromName(range.ClassificationType).Foreground
                 Exit For
                 Application.DoEvents()
             Next range
@@ -52,10 +56,11 @@ Public Module ColorizeSupport
 
             With ConversionBuffer
                 .Clear()
+                .BackColor = GetColorFromName(DefaultValue).Background
                 .Select(.TextLength, 0)
                 For Each range As Range In FragmentRange
                     .Select(.TextLength, 0)
-                    .SelectionColor = ColorSelector.GetColorFromName(range.ClassificationType)
+                    .SelectionColor = GetColorFromName(range.ClassificationType).Foreground
                     .AppendText(range.Text)
                     If range.Text.Contains(vbLf, StringComparison.OrdinalIgnoreCase) Then
                         MainForm.StatusStripConversionProgressBar.Increment(range.Text.Count(CType(vbLf, Char)))
@@ -72,7 +77,9 @@ Public Module ColorizeSupport
                         Dim errorCharactorPosition As Integer = dia.Location.GetLineSpan.StartLinePosition.Character
                         Dim length As Integer = dia.Location.GetLineSpan.EndLinePosition.Character - errorCharactorPosition
                         .Select(.GetFirstCharIndexFromLine(errorLine) + errorCharactorPosition, length)
-                        .SelectionColor = Color.Red
+                        Dim selectionColor As (Foreground As Color, Background As Color) = GetColorFromName("Error")
+                        .SelectionBackColor = selectionColor.Background
+                        .SelectionColor = selectionColor.Foreground
                         .Select(.TextLength, 0)
                     Next
                     .Select(.GetFirstCharIndexFromLine(failures(0).Location.GetLineSpan.StartLinePosition.Line), 0)
@@ -210,8 +217,9 @@ Public Module ColorizeSupport
                 Return filteredErrorCount = 0
             Case ResultTriState.Failure
                 If TypeOf MainForm._resultOfConversion.Exceptions(0) IsNot OperationCanceledException Then
-                    Dim selectionColor As Color = ColorSelector.GetColorFromName(ErrorValue)
-                    MainForm.ConversionOutput.SelectionColor = selectionColor
+                    Dim selectionColor As (Foreground As Color, Background As Color) = GetColorFromName(ErrorValue)
+                    MainForm.ConversionOutput.SelectionBackColor = selectionColor.Background
+                    MainForm.ConversionOutput.SelectionColor = selectionColor.Foreground
                     MainForm.ConversionOutput.Text = GetExceptionsAsString(MainForm._resultOfConversion.Exceptions)
                 End If
             Case ResultTriState.Ignore
