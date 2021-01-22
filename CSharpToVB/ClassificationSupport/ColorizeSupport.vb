@@ -26,7 +26,7 @@ Public Module ColorizeSupport
                     Continue For
                 End If
                 .Select(range.TextSpan.Start, range.TextSpan.Length)
-                .SelectionColor = GetColorFromName(range.ClassificationType).ForeGround
+                .SelectionColor = GetColorFromName(range.ClassificationType).Foreground
                 Exit For
                 Application.DoEvents()
             Next range
@@ -60,7 +60,7 @@ Public Module ColorizeSupport
                 .Select(.TextLength, 0)
                 For Each range As Range In FragmentRange
                     .Select(.TextLength, 0)
-                    .SelectionColor = GetColorFromName(range.ClassificationType).ForeGround
+                    .SelectionColor = GetColorFromName(range.ClassificationType).Foreground
                     .AppendText(range.Text)
                     If range.Text.Contains(vbLf, StringComparison.OrdinalIgnoreCase) Then
                         MainForm.StatusStripConversionProgressBar.Increment(range.Text.Count(CType(vbLf, Char)))
@@ -77,9 +77,9 @@ Public Module ColorizeSupport
                         Dim errorCharactorPosition As Integer = dia.Location.GetLineSpan.StartLinePosition.Character
                         Dim length As Integer = dia.Location.GetLineSpan.EndLinePosition.Character - errorCharactorPosition
                         .Select(.GetFirstCharIndexFromLine(errorLine) + errorCharactorPosition, length)
-                        Dim selectionColor As (ForeGround As Color, Background As Color) = GetColorFromName("Error")
+                        Dim selectionColor As (Foreground As Color, Background As Color) = GetColorFromName("Error")
                         .SelectionBackColor = selectionColor.Background
-                        .SelectionColor = selectionColor.ForeGround
+                        .SelectionColor = selectionColor.Foreground
                         .Select(.TextLength, 0)
                     Next
                     .Select(.GetFirstCharIndexFromLine(failures(0).Location.GetLineSpan.StartLinePosition.Line), 0)

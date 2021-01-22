@@ -1,4 +1,4 @@
-Key,ForeGroundR,ForeGroundG,ForeGroundB,BackgroundR,BackgroundG,BackgroundB
+Key,ForegroundR,ForegroundG,ForegroundB,BackgroundR,BackgroundG,BackgroundB
 default,255,255,255,30,30,30
 class name,0,128,128,18,32,42
 comment,0,100,0,18,32,42
