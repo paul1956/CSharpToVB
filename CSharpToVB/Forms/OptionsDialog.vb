@@ -5,8 +5,6 @@
 Imports System.IO
 
 Public Class OptionsDialog
-    Private ReadOnly _darkModeDictionaryFileName As String = "DarkModeColorDictionary.csv"
-    Private ReadOnly _lightModeDictionaryFileName As String = "LightModeColorDictionary.csv"
     Private _selectedColor As (Foreground As Color, Background As Color)
     Private _selectedColorName As String = DefaultValue
 
@@ -29,17 +27,17 @@ Public Class OptionsDialog
     Private Sub ItemColor_ComboBox_DrawItem(sender As Object, e As DrawItemEventArgs) Handles ItemColor_ComboBox.DrawItem
         If e.Index >= 0 Then
             Dim itemName As String = CType(sender, ComboBox).Items(e.Index).ToString()
-            Dim itemColor As (ForeGround As Color, Background As Color) = GetColorFromName(itemName)
+            Dim itemColor As (Foreground As Color, Background As Color) = GetColorFromName(itemName)
 
             Dim eBounds As Rectangle = e.Bounds
             Using b As Brush = New SolidBrush(DefaultColor.Background)
                 Dim pt As New Point(eBounds.X, eBounds.Top)
                 e.Graphics.FillRectangle(b, eBounds.X, eBounds.Y, eBounds.Width - 200, eBounds.Height)
-                TextRenderer.DrawText(e.Graphics, itemName, Me.Font, pt, DefaultColor.ForeGround, DefaultColor.Background)
+                TextRenderer.DrawText(e.Graphics, itemName, Me.Font, pt, DefaultColor.Foreground, DefaultColor.Background)
             End Using
             Using b As Brush = New SolidBrush(itemColor.Background)
                 e.Graphics.FillRectangle(b, eBounds.X + 250, eBounds.Y, eBounds.Width - 250, eBounds.Height)
-                TextRenderer.DrawText(e.Graphics, itemName, Me.Font, New Point(eBounds.X + 250, eBounds.Top), itemColor.ForeGround, itemColor.Background)
+                TextRenderer.DrawText(e.Graphics, itemName, Me.Font, New Point(eBounds.X + 250, eBounds.Top), itemColor.Foreground, itemColor.Background)
             End Using
         End If
     End Sub
@@ -95,7 +93,7 @@ Public Class OptionsDialog
 
         Me.ComboBoxCompare.SelectedItem = My.Settings.OptionCompare
         Me.ComboBoxExplicit.SelectedItem = My.Settings.OptionExplicit
-        Me.SampleTextBox.ForeColor = DefaultColor.ForeGround
+        Me.SampleTextBox.ForeColor = DefaultColor.Foreground
         Me.SampleTextBox.BackColor = DefaultColor.Background
 
         Me.ComboBoxInfer.SelectedItem = My.Settings.OptionInfer

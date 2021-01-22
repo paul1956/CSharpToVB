@@ -7,11 +7,11 @@ Imports System.Runtime.CompilerServices
 
 Public Module ColorSelector
 
-    Friend s_DarkModeColorDictionary As New Dictionary(Of String, (ForeGround As Color, Background As Color))(StringComparer.OrdinalIgnoreCase)
-    Friend s_LightModeColorDictionary As New Dictionary(Of String, (ForeGround As Color, Background As Color))(StringComparer.OrdinalIgnoreCase)
+    Friend s_DarkModeColorDictionary As New Dictionary(Of String, (Foreground As Color, Background As Color))(StringComparer.OrdinalIgnoreCase)
+    Friend s_LightModeColorDictionary As New Dictionary(Of String, (Foreground As Color, Background As Color))(StringComparer.OrdinalIgnoreCase)
     Public ReadOnly _darkModeDictionaryFileName As String = "DarkModeColorDictionary.csv"
     Public ReadOnly _lightModeDictionaryFileName As String = "LightModeColorDictionary.csv"
-    Friend Property DefaultColor As (ForeGround As Color, Background As Color) = (Color.Black, Color.White)
+    Friend Property DefaultColor As (Foreground As Color, Background As Color) = (Color.Black, Color.White)
 
     <Extension>
     Private Function IsNotIdentical(filename As String, filename2 As String) As Boolean
@@ -26,8 +26,8 @@ Public Module ColorSelector
         Return False
     End Function
 
-    Private Function MergeColorDictionary(FilePath As String, LastWriteTime As Date, ColorDictionary As Dictionary(Of String, (ForeGround As Color, Background As Color))) As Dictionary(Of String, (ForeGround As Color, Background As Color))
-        Dim tmpDictionary As New Dictionary(Of String, (ForeGround As Color, Background As Color))(StringComparer.OrdinalIgnoreCase)
+    Private Function MergeColorDictionary(FilePath As String, LastWriteTime As Date, ColorDictionary As Dictionary(Of String, (Foreground As Color, Background As Color))) As Dictionary(Of String, (Foreground As Color, Background As Color))
+        Dim tmpDictionary As New Dictionary(Of String, (Foreground As Color, Background As Color))(StringComparer.OrdinalIgnoreCase)
         LoadColorDictionaryFromFile(FilePath, tmpDictionary)
         For Each name As String In ColorDictionary.Keys
             If Not tmpDictionary.ContainsKey(name) Then
@@ -40,11 +40,11 @@ Public Module ColorSelector
         Return tmpDictionary
     End Function
 
-    Friend Function GetColorFromName(Name As String) As (ForeGround As Color, Background As Color)
+    Friend Function GetColorFromName(Name As String) As (Foreground As Color, Background As Color)
         If String.IsNullOrWhiteSpace(Name) Then
             Return DefaultColor
         End If
-        Dim returnValue As (ForeGround As Color, Background As Color) = Nothing
+        Dim returnValue As (Foreground As Color, Background As Color) = Nothing
         If My.Forms.Form1.CurrentThemeDictionary.TryGetValue(Name, returnValue) Then
             Return returnValue
         End If
@@ -52,11 +52,11 @@ Public Module ColorSelector
         Return My.Forms.Form1.CurrentThemeDictionary("error")
     End Function
 
-    Public Function GetColorNameList() As Dictionary(Of String, (ForeGround As Color, Background As Color)).KeyCollection
+    Public Function GetColorNameList() As Dictionary(Of String, (Foreground As Color, Background As Color)).KeyCollection
         Return My.Forms.Form1.CurrentThemeDictionary.Keys
     End Function
 
-    Public Sub LoadColorDictionaryFromFile(FPath As String, ThemeDictionary As Dictionary(Of String, (ForeGround As Color, Background As Color)))
+    Public Sub LoadColorDictionaryFromFile(FPath As String, ThemeDictionary As Dictionary(Of String, (Foreground As Color, Background As Color)))
         If Not File.Exists(FPath) Then
             Exit Sub
         End If
@@ -65,6 +65,9 @@ Public Module ColorSelector
         sr.ReadLine()
         While sr.Peek() <> -1
             Dim line As String = sr.ReadLine()
+            If Not line.Any Then
+                Continue While
+            End If
             Dim splitLine() As String = line.Split(","c)
             Dim key As String = splitLine(0)
             If Not ThemeDictionary.ContainsKey(key) Then
@@ -108,12 +111,12 @@ Public Module ColorSelector
         End If
     End Sub
 
-    Public Sub WriteColorDictionaryToFile(FPath As String, ThemeDictionary As Dictionary(Of String, (ForeGround As Color, Background As Color)))
+    Public Sub WriteColorDictionaryToFile(FPath As String, ThemeDictionary As Dictionary(Of String, (Foreground As Color, Background As Color)))
         Using fileStream As FileStream = File.OpenWrite(FPath)
             Using sw As New StreamWriter(fileStream)
-                sw.WriteLine($"Key,ForeGroundR,ForeGroundG,ForeGroundB,BackgroundR,BackgroundG,BackgroundB")
-                For Each kvp As KeyValuePair(Of String, (ForeGround As Color, Background As Color)) In ThemeDictionary
-                    sw.WriteLine($"{kvp.Key},{kvp.Value.ForeGround.R},{kvp.Value.ForeGround.G},{kvp.Value.ForeGround.B},{kvp.Value.Background.R},{kvp.Value.Background.G},{kvp.Value.Background.B}")
+                sw.WriteLine($"Key,ForegroundR,ForegroundG,ForegroundB,BackgroundR,BackgroundG,BackgroundB")
+                For Each kvp As KeyValuePair(Of String, (Foreground As Color, Background As Color)) In ThemeDictionary
+                    sw.WriteLine($"{kvp.Key},{kvp.Value.Foreground.R},{kvp.Value.Foreground.G},{kvp.Value.Foreground.B},{kvp.Value.Background.R},{kvp.Value.Background.G},{kvp.Value.Background.B}")
                 Next
                 sw.Flush()
                 sw.Close()

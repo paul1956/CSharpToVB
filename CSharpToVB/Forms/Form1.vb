@@ -27,7 +27,7 @@ Partial Public Class Form1
     Friend _requestToConvert As ConvertRequest
     Friend _resultOfConversion As ConversionResult
 
-    Public CurrentThemeDictionary As Dictionary(Of String, (ForeGround As Color, Background As Color))
+    Public CurrentThemeDictionary As Dictionary(Of String, (Foreground As Color, Background As Color))
     Public CurrentThemeName As String = "Light Mode"
 
     Public Sub New()
@@ -313,14 +313,8 @@ Partial Public Class Form1
             My.Settings.UpgradeRequired = False
             My.Settings.Save()
         End If
-
         If My.Settings.IgnoreFileList Is Nothing Then
             My.Settings.IgnoreFileList = New Specialized.StringCollection
-        End If
-
-        If My.Settings.TSFindMRU_Data Is Nothing Then
-            My.Settings.TSFindMRU_Data = New Specialized.StringCollection
-            My.Settings.Save()
         End If
 
         Me.UpdateLastFileMenu()
@@ -898,6 +892,10 @@ namespace Application
     End Sub
 
     Private Sub mnuOptionsAddFilesToIgnoreFilesEithErrorsList_Click(sender As Object, e As EventArgs) Handles mnuOptionsAddFilesToIgnoreFilesEithErrorsList.Click
+        If My.Settings.IgnoreFileList Is Nothing Then
+            My.Settings.IgnoreFileList = New Specialized.StringCollection
+        End If
+
         Dim srcFileNameWithPath As String = My.Settings.MRU_Data.Last
         If Not My.Settings.IgnoreFileList.Contains(srcFileNameWithPath) Then
             My.Settings.IgnoreFileList.Add(srcFileNameWithPath)

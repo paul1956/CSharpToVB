@@ -4,7 +4,7 @@
 
 Module ThemeSupport
 
-    Public Sub ChangeTheme(scheme As Dictionary(Of String, (ForeGround As Color, Background As Color)), container As Control.ControlCollection)
+    Public Sub ChangeTheme(scheme As Dictionary(Of String, (Foreground As Color, Background As Color)), container As Control.ControlCollection)
         For Each component As Control In container
             Dim isEnabled As Boolean = component.Enabled
             Dim isInToolStrip As Boolean = TypeOf component.Parent Is ToolStrip
@@ -57,7 +57,7 @@ Module ThemeSupport
         Next
     End Sub
 
-    Public Sub CheckAndSetColor(cont As Control, scheme As Dictionary(Of String, (ForeGround As Color, Background As Color)), ControlName As String, IsInToolStrip As Boolean, IsEnabled As Boolean)
+    Public Sub CheckAndSetColor(cont As Control, scheme As Dictionary(Of String, (Foreground As Color, Background As Color)), ControlName As String, IsInToolStrip As Boolean, IsEnabled As Boolean)
         If IsInToolStrip Then
             ControlName = $"ToolStrip{ControlName}"
         End If
@@ -75,7 +75,7 @@ Module ThemeSupport
         cont.Enabled = IsEnabled
     End Sub
 
-    Public Sub CheckAndSetColor(cont As ToolStripItem, scheme As Dictionary(Of String, (ForeGround As Color, Background As Color)), ControlName As String, IsInToolStrip As Boolean, IsEnabled As Boolean)
+    Public Sub CheckAndSetColor(cont As ToolStripItem, scheme As Dictionary(Of String, (Foreground As Color, Background As Color)), ControlName As String, IsInToolStrip As Boolean, IsEnabled As Boolean)
         If IsInToolStrip Then
             ControlName = $"ToolStrip{ControlName}"
         End If
