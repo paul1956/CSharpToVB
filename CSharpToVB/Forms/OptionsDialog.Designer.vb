@@ -292,6 +292,7 @@ Partial Class OptionsDialog
         '
         'UpdateBackground_Button
         '
+        Me.UpdateBackground_Button.Enabled = False
         Me.UpdateBackground_Button.Location = New System.Drawing.Point(315, 249)
         Me.UpdateBackground_Button.Name = "UpdateBackground_Button"
         Me.UpdateBackground_Button.Size = New System.Drawing.Size(158, 27)
@@ -308,8 +309,8 @@ Partial Class OptionsDialog
         Me.ResetThemeButton.Text = "Reset Theme"
         Me.ResetThemeButton.UseVisualStyleBackColor = True
         '
-        'TopLevelStatementsCheckBox
-        '
+        'CheckBoxTopLevelStatements
+>        '
         Me.CheckBoxTopLevelStatements.AutoSize = True
         Me.CheckBoxTopLevelStatements.Checked = True
         Me.CheckBoxTopLevelStatements.CheckState = System.Windows.Forms.CheckState.Checked

@@ -94,6 +94,7 @@ Friend Module MenuExtensions
         End If
 
         My.Settings.Save()
+
         ' show separator...
         If My.Settings.MRU_Data.Count > 0 Then
             MainForm.mnuFileLastFolder.Text = Path.GetDirectoryName(My.Settings.MRU_Data.Last)

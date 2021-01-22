@@ -55,6 +55,7 @@ Public Class OptionsDialog
         Me.Cursor = Cursors.WaitCursor
         Application.DoEvents()
         WriteColorDictionaryToFile()
+
         Me.Cursor = Cursors.Default
         My.Settings.EditorFont = MainForm.ConversionInput.Font
         My.Settings.EditorFontName = MainForm.ConversionInput.Font.Name
@@ -95,7 +96,6 @@ Public Class OptionsDialog
         Me.ComboBoxExplicit.SelectedItem = My.Settings.OptionExplicit
         Me.SampleTextBox.ForeColor = DefaultColor.Foreground
         Me.SampleTextBox.BackColor = DefaultColor.Background
-
         Me.ComboBoxInfer.SelectedItem = My.Settings.OptionInfer
         Me.ComboBoxStrict.SelectedItem = My.Settings.OptionStrict
         Me.CheckBoxCompare.Checked = My.Settings.OptionCompareIncludeInCode
@@ -126,6 +126,13 @@ Public Class OptionsDialog
             File.Delete(userColorFile)
         End If
         DefaultColor = MainForm.CurrentThemeDictionary(DefaultValue)
+    End Sub
+
+    Private Sub ResetThemeButton_Click(sender As Object, e As EventArgs) Handles ResetThemeButton.Click
+        If MessageBox.Show("You are about to reset the '{My.Forms.Form1.TSThemeButton.Text}' theme any customizations will be lost, are you sure?", "Confirm Theme Reset", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) <> DialogResult.OK Then
+            Exit Sub
+        End If
+        Dim executableDirectoryPath As String = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "Assets")
     End Sub
 
     Private Sub SelectEditorFontButton_Click(sender As Object, e As EventArgs) Handles SelectEditorFontButton.Click

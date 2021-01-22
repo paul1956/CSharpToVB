@@ -7,8 +7,8 @@
 '     the code is regenerated.
 ' </auto-generated>
 '------------------------------------------------------------------------------
-Namespace My
 
+Namespace My
 
     <Global.System.Runtime.CompilerServices.CompilerGeneratedAttribute(),
      Global.System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.8.1.0"),
@@ -19,7 +19,7 @@ Namespace My
         Private Shared defaultInstance As MySettings = CType(Global.System.Configuration.ApplicationSettingsBase.Synchronized(New MySettings()), MySettings)
 
 #Region "My.Settings Auto-Save Functionality"
-#If _MyType = "WindowsForms" Then
+#If _MYTYPE = "WindowsForms" Then
         Private Shared addedHandler As Boolean
 
         Private Shared addedHandlerLockObject As New Object
@@ -36,7 +36,7 @@ Namespace My
         Public Shared ReadOnly Property [Default]() As MySettings
             Get
 
-#If _MyType = "WindowsForms" Then
+#If _MYTYPE = "WindowsForms" Then
                 If Not addedHandler Then
                     SyncLock addedHandlerLockObject
                         If Not addedHandler Then
@@ -49,6 +49,7 @@ Namespace My
                 Return defaultInstance
             End Get
         End Property
+
 
         <Global.System.Configuration.UserScopedSettingAttribute(),
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
