@@ -292,7 +292,6 @@ Partial Class OptionsDialog
         '
         'UpdateBackground_Button
         '
-        Me.UpdateBackground_Button.Enabled = False
         Me.UpdateBackground_Button.Location = New System.Drawing.Point(315, 249)
         Me.UpdateBackground_Button.Name = "UpdateBackground_Button"
         Me.UpdateBackground_Button.Size = New System.Drawing.Size(158, 27)
@@ -315,7 +314,7 @@ Partial Class OptionsDialog
         Me.CheckBoxTopLevelStatements.Checked = True
         Me.CheckBoxTopLevelStatements.CheckState = System.Windows.Forms.CheckState.Checked
         Me.CheckBoxTopLevelStatements.Location = New System.Drawing.Point(336, 95)
-        Me.CheckBoxTopLevelStatements.Name = "TopLevelStatementsCheckBox"
+        Me.CheckBoxTopLevelStatements.Name = "CheckBoxTopLevelStatements"
         Me.CheckBoxTopLevelStatements.Size = New System.Drawing.Size(137, 19)
         Me.CheckBoxTopLevelStatements.TabIndex = 26
         Me.CheckBoxTopLevelStatements.Text = "Top Level Statements"

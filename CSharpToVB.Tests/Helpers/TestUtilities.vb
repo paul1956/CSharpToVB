@@ -53,7 +53,7 @@ Namespace ConvertDirectory.Tests
             Dim sb As New StringBuilder()
             For index As Integer = 0 To str.Length - 1
                 Dim ch As Char = str.Chars(index)
-                Dim possibleNewline As Integer = NewLine.GetDelimiterLength(ch, If(index + 1 < str.Length, str.Chars(index + 1), ControlChars.NullChar))
+                Dim possibleNewline As Integer = GetDelimiterLength(ch, If(index + 1 < str.Length, str.Chars(index + 1), ControlChars.NullChar))
                 If possibleNewline > 0 Then
                     sb.AppendLine()
                     If possibleNewline = 2 Then

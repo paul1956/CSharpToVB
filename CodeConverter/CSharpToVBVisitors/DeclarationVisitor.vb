@@ -199,7 +199,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Dim explicitMemberName As String = UndottedMemberName(memberInfo.Name)
                     Dim hasDuplicateNames As Boolean = memberNames(explicitMemberName).Count() > 1
                     If hasDuplicateNames Then
-                        id = Factory.Identifier(NameGenerator.GenerateUniqueName(explicitMemberName, Function(n) Not memberNames.Contains(n) AndAlso _addedNames.Add(n)))
+                        id = Factory.Identifier(GenerateUniqueName(explicitMemberName, Function(n) Not memberNames.Contains(n) AndAlso _addedNames.Add(n)))
                     End If
                 Else
                     Dim containingType As INamedTypeSymbol = memberInfo.ContainingType

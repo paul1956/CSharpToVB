@@ -113,7 +113,7 @@ Public Class OptionsDialog
         Dim executableDirectoryPath As String = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "Assets")
 
         Dim userColorFile As String
-        If My.Settings.ColorMode = "Light Mode" Then
+        If My.Settings.ColorMode.IsLightMode Then
             userColorFile = Path.Combine(FileIO.SpecialDirectories.MyDocuments, _lightModeDictionaryFileName)
             LoadColorDictionaryFromFile(Path.Combine(executableDirectoryPath, _lightModeDictionaryFileName), s_LightModeColorDictionary)
             MainForm.CurrentThemeDictionary = s_LightModeColorDictionary

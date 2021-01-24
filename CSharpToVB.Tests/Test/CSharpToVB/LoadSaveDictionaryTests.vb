@@ -12,16 +12,18 @@ Imports Xunit
 Namespace DictionaryLoadSave.Tests
 
     <TestClass()> Public NotInheritable Class LoadSaveDictionaryTests
+
         Private ReadOnly _testThemeMappingDictionary As New Dictionary(Of String, (ForeGround As Color, Background As Color))(StringComparer.OrdinalIgnoreCase) From {
                         {"default", (Color.White, Color.FromArgb(30, 30, 30))},
                         {"class name", (Color.FromArgb(0, 128, 128), Color.FromArgb(18, 32, 42))}}
+
         Private ReadOnly _resultDictionary As New Dictionary(Of String, (ForeGround As Color, Background As Color))(StringComparer.OrdinalIgnoreCase)
 
         <Fact>
         Public Sub VBDictionaryWriteTest()
             Dim filePath As String = Path.Combine(Path.GetTempPath, "TestColorDictionary.csv")
-            ColorSelector.WriteColorDictionaryToFile(filePath, _testThemeMappingDictionary)
-            ColorSelector.LoadColorDictionaryFromFile(filePath, _resultDictionary)
+            WriteColorDictionaryToFile(filePath, _testThemeMappingDictionary)
+            LoadColorDictionaryFromFile(filePath, _resultDictionary)
             Assert.Equal(_testThemeMappingDictionary.Count, _resultDictionary.Count)
             Assert.Equal(_testThemeMappingDictionary("default").ForeGround.ToArgb, _resultDictionary("default").ForeGround.ToArgb)
             Assert.Equal(_testThemeMappingDictionary("default").Background.ToArgb, _resultDictionary("default").Background.ToArgb)

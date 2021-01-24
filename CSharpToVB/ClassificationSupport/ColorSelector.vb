@@ -9,6 +9,8 @@ Public Module ColorSelector
 
     Friend s_DarkModeColorDictionary As New Dictionary(Of String, (Foreground As Color, Background As Color))(StringComparer.OrdinalIgnoreCase)
     Friend s_LightModeColorDictionary As New Dictionary(Of String, (Foreground As Color, Background As Color))(StringComparer.OrdinalIgnoreCase)
+    Public Const DarkModeStr As String = "Dark Mode"
+    Public Const LightModeStr As String = "Light Mode"
     Public ReadOnly _darkModeDictionaryFileName As String = "DarkModeColorDictionary.csv"
     Public ReadOnly _lightModeDictionaryFileName As String = "LightModeColorDictionary.csv"
     Friend Property DefaultColor As (Foreground As Color, Background As Color) = (Color.Black, Color.White)
@@ -50,6 +52,11 @@ Public Module ColorSelector
         End If
         Debug.Print($"GetColorFromName missing({Name})")
         Return My.Forms.Form1.CurrentThemeDictionary("error")
+    End Function
+
+    <Extension>
+    Friend Function IsLightMode(Text As String) As Boolean
+        Return Text = LightModeStr
     End Function
 
     Public Function GetColorNameList() As Dictionary(Of String, (Foreground As Color, Background As Color)).KeyCollection
@@ -105,7 +112,7 @@ Public Module ColorSelector
 
     Public Sub WriteColorDictionaryToFile()
         Dim saveFilePath As String = Path.Combine(FileIO.SpecialDirectories.MyDocuments,
-                                                $"{If(My.Forms.Form1.TSThemeButton.Text = "Light Mode", "LightMode", "DarkMode")}ColorDictionary.csv")
+                                                $"{If(IsLightMode(My.Forms.Form1.TSThemeButton.Text), "LightMode", "DarkMode")}ColorDictionary.csv")
         If File.Exists(saveFilePath) Then
             WriteColorDictionaryToFile(saveFilePath, My.Forms.Form1.CurrentThemeDictionary)
         End If

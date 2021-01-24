@@ -11,7 +11,7 @@ Namespace CodeConverter.Tests
     Friend Class TestWorkspace
         Inherits Workspace
 
-        Private Shared Shadows ReadOnly s_services As HostServices = Microsoft.CodeAnalysis.Host.Mef.MefHostServices.DefaultHost
+        Private Shared Shadows ReadOnly s_services As HostServices = Mef.MefHostServices.DefaultHost
 
         Public Sub New(Optional workspaceKind As String = "Test")
             MyBase.New(s_services, workspaceKind)

@@ -28,7 +28,6 @@ Partial Public Class Form1
     Friend _resultOfConversion As ConversionResult
 
     Public CurrentThemeDictionary As Dictionary(Of String, (Foreground As Color, Background As Color))
-    Public CurrentThemeName As String = "Light Mode"
 
     Public Sub New()
         Me.InitializeComponent()
@@ -412,11 +411,11 @@ Partial Public Class Form1
         Application.DoEvents()
         UpdateColorDictionariesFromFile()
         Me.CheckForUpdates(ReportResults:=False)
-        If My.Settings.ColorMode = "Light Mode" Then
-            Me.TSThemeButton.Text = "Light Mode"
+        If My.Settings.ColorMode.IsLightMode Then
+            Me.TSThemeButton.Text = LightModeStr
             CurrentThemeDictionary = s_LightModeColorDictionary
         Else
-            Me.TSThemeButton.Text = "Dark Mode"
+            Me.TSThemeButton.Text = DarkModeStr
             CurrentThemeDictionary = s_DarkModeColorDictionary
         End If
         DefaultColor = CurrentThemeDictionary(DefaultValue)
@@ -1123,11 +1122,11 @@ namespace Application
     End Sub
 
     Private Sub TSThemeButton_Click(sender As Object, e As EventArgs) Handles TSThemeButton.Click
-        If Me.TSThemeButton.Text = "Light Mode" Then
-            Me.TSThemeButton.Text = "Dark Mode"
+        If Me.TSThemeButton.Text.IsLightMode Then
+            Me.TSThemeButton.Text = DarkModeStr
             CurrentThemeDictionary = s_DarkModeColorDictionary
         Else
-            Me.TSThemeButton.Text = "Light Mode"
+            Me.TSThemeButton.Text = LightModeStr
             CurrentThemeDictionary = s_LightModeColorDictionary
         End If
         DefaultColor = GetColorFromName(DefaultValue)

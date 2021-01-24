@@ -73,16 +73,16 @@ Friend Module MenuExtensions
 
     <Extension>
     Friend Sub TSFindWhatMRUUpdateUI(dropDownItems As ToolStripComboBox)
-        If My.Settings.TSFindMRU_Data Is Nothing Then
-            My.Settings.TSFindMRU_Data = New Specialized.StringCollection
+        If My.Settings.TSFindWhatMRU_Data Is Nothing Then
+            My.Settings.TSFindWhatMRU_Data = New Specialized.StringCollection
             My.Settings.Save()
         End If
         ' clear MRU menu items...
         Dim mruToolStripItems As New List(Of ToolStripItem)
         dropDownItems.Items.Clear()
         ' display items (in reverse order so the most recent is on top)...
-        For iCounter As Integer = My.Settings.TSFindMRU_Data.Count - 1 To 0 Step -1
-            dropDownItems.Items.Add(My.Settings.TSFindMRU_Data(iCounter))
+        For iCounter As Integer = My.Settings.TSFindWhatMRU_Data.Count - 1 To 0 Step -1
+            dropDownItems.Items.Add(My.Settings.TSFindWhatMRU_Data(iCounter))
         Next
     End Sub
 

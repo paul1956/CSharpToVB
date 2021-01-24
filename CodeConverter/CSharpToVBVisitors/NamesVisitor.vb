@@ -76,7 +76,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
 
                     If formalParameterTypeOrNull IsNot Nothing Then
                         Return Factory.ObjectCreationExpression(CType(formalParameterTypeOrNull, VBS.TypeSyntax)) _
-                                    .WithArgumentList(ExpressionSyntaxExtensions.CreateArgList([addressOf]))
+                                    .WithArgumentList(CreateArgList([addressOf]))
                     End If
 
                     Return [addressOf]

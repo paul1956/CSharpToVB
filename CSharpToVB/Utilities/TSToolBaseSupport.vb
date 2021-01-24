@@ -20,7 +20,7 @@ Public Module TSToolBaseSupport
             Exit Sub
         End If
         MainForm._inColorize = True
-        mnuAddToMRU(My.Settings.TSFindMRU_Data, MainForm.TSFindFindWhatComboBox.Text)
+        mnuAddToMRU(My.Settings.TSFindWhatMRU_Data, MainForm.TSFindFindWhatComboBox.Text)
         My.Settings.Save()
         TSFindWhatMRUUpdateUI(MainForm.TSFindFindWhatComboBox)
         Dim prompt As String = ""

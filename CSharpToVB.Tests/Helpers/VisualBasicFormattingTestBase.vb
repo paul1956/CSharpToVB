@@ -70,7 +70,7 @@ Namespace ConvertDirectory.Tests
         Friend Function AssertFormatSpanAsync(markupCode As String, expected As String) As Task
             Dim code As String = Nothing
             Dim spans As ImmutableArray(Of TextSpan) = Nothing
-            MarkupTestFile.GetSpans(markupCode, code, spans)
+            GetSpans(markupCode, code, spans)
 
             Return Me.AssertFormatAsync(expected, code, spans)
         End Function

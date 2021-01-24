@@ -25,9 +25,9 @@
     <Product>CSharp To VB Converter</Product>
     <Copyright>Copyright (c) .NET Foundation and Contributors</Copyright>
     <PackageId>CSharp To VB Converter</PackageId>
-    <AssemblyVersion>5.0.1.1</AssemblyVersion>
-    <FileVersion>5.0.1.1</FileVersion>
-    <Version>5.0.1.1</Version>
+    <AssemblyVersion>5.0.1.2</AssemblyVersion>
+    <FileVersion>5.0.1.2</FileVersion>
+    <Version>5.0.1.2</Version>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
@@ -100,6 +100,7 @@
     <None Update="My Project\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
+      <CustomToolNamespace>My</CustomToolNamespace>
     </None>
   </ItemGroup>
 
