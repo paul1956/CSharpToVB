@@ -254,6 +254,10 @@ Partial Public Class Form1
         End If
     End Sub
 
+    Private Sub ConversionOutput_Enter(sender As Object, e As EventArgs) Handles ConversionOutput.Enter
+        Me.CurrentBuffer = CType(sender, RichTextBox)
+    End Sub
+
     Private Sub ConversionOutput_MouseEnter(sender As Object, e As EventArgs) Handles ConversionOutput.MouseEnter
         Me.CurrentBuffer = CType(sender, RichTextBox)
     End Sub
