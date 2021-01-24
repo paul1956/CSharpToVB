@@ -61,10 +61,6 @@
     <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
     <PackageReference Include="System.Reflection.Metadata" Version="5.0.0" />
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' != 'netcoreapp3.1'">
-    <Compile Remove="Forms\FrameworkSelectionDialog.Designer.vb" />
-    <Compile Remove="Forms\FrameworkSelectionDialog.vb" />
-  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CodeConverter\CodeConverter.vbproj" />
     <ProjectReference Include="..\ProgressReportLibrary\ProgressReportLibrary.vbproj" />
