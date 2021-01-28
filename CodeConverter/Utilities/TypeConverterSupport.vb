@@ -210,6 +210,7 @@ Namespace CSharpToVBConverter
                     If typeString.EndsWith("*", StringComparison.OrdinalIgnoreCase) Then
                         Return IntPtrType
                     End If
+                    isNullable = False
                     returnType = Factory.ParseTypeName(MakeVBSafeName(typeString))
             End Select
             If isNullable Then

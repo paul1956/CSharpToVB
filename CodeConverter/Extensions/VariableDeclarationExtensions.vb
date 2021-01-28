@@ -28,6 +28,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
         Friend Function RemodelVariableDeclaration(variableDeclaration As CSS.VariableDeclarationSyntax, Visitor As NodesVisitor, Model As SemanticModel, IsFieldDeclaration As Boolean, ByRef leadingTrivia As SyntaxTriviaList) As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax)
             Dim vbType As VBS.TypeSyntax
             Dim declarationType As VB.VisualBasicSyntaxNode = variableDeclaration.Type.Accept(Visitor)
+            Dim addNullableTypeSpecifier As Boolean = TypeOf variableDeclaration.Type Is CSS.NullableTypeSyntax AndAlso TypeOf declarationType IsNot VBS.NullableTypeSyntax
             Dim typeOrAddressOf As VB.VisualBasicSyntaxNode = declarationType.WithConvertedLeadingTriviaFrom(variableDeclaration.Type)
             Dim typeLeadingTrivia As SyntaxTriviaList = typeOrAddressOf.GetLeadingTrivia
 
@@ -153,7 +154,11 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     If csVarDeclaration.HasTrailingTrivia And dTrailingTrivia.ContainsCommentOrDirectiveTrivia Then
                         csCollectedCommentTrivia = csCollectedCommentTrivia.AddRange(dTrailingTrivia)
                     End If
-                    modifiedIdentifierList.Add(DirectCast(csVarDeclaration.Accept(Visitor), VBS.ModifiedIdentifierSyntax).WithTrailingTrivia(SpaceTrivia))
+                    Dim modifiedIdentifier As VBS.ModifiedIdentifierSyntax = DirectCast(csVarDeclaration.Accept(Visitor), VBS.ModifiedIdentifierSyntax)
+                    If addNullableTypeSpecifier Then
+                        modifiedIdentifier = Factory.ModifiedIdentifier(modifiedIdentifier.Identifier, QuestionToken, modifiedIdentifier.ArrayBounds, modifiedIdentifier.ArrayRankSpecifiers)
+                    End If
+                    modifiedIdentifierList.Add(modifiedIdentifier.WithTrailingTrivia(SpaceTrivia))
                 Next
                 Dim varDeclarator As VBS.VariableDeclaratorSyntax = Factory.VariableDeclarator(Factory.SeparatedList(modifiedIdentifierList), asClause:=Factory.SimpleAsClause(vbType), initializer:=Nothing)
                 vbDeclarators.Insert(0, varDeclarator.WithTrailingTrivia(csCollectedCommentTrivia.ConvertTriviaList()))

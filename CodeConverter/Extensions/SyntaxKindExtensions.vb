@@ -350,6 +350,9 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Case CS.SyntaxKind.ProtectedKeyword
                     Return ProtectedKeyword
                 Case CS.SyntaxKind.ReadOnlyKeyword
+                    If context = TokenContext.Struct Then
+                        Return EmptyToken
+                    End If
                     Return ReadOnlyKeyword
                 Case CS.SyntaxKind.OverrideKeyword
                     Return OverridesKeyword
