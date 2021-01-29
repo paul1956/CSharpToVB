@@ -7,10 +7,10 @@ Public NotInheritable Class NativeTypes
 
     Public Const OBJID_VSCROLL As Long = &HFFFFFFFB
 
-#Disable Warning IDE0049 ' Simplify Names
+    <CodeAnalysis.SuppressMessage("Style", "IDE0049:Simplify Names", Justification:="Compatibility with API")>
     Public Const WM_MOUSELEAVE As Int32 = &H2A3
+    <CodeAnalysis.SuppressMessage("Style", "IDE0049:Simplify Names", Justification:="Compatibility with API")>
     Public Const WM_MOUSEMOVE As Int32 = &H200
-#Enable Warning IDE0049 ' Simplify Names
 
     Public Const WM_NCRBUTTONDOWN As Integer = &HA4
 
