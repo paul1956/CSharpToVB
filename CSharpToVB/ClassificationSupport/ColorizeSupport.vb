@@ -56,7 +56,7 @@ Public Module ColorizeSupport
 
             With ConversionBuffer
                 .Clear()
-                .BackColor = GetColorFromName(DefaultValue).Background
+                .BackColor = GetColorFromName(ThemeDefaultColor).Background
                 .Select(.TextLength, 0)
                 For Each range As Range In FragmentRange
                     .Select(.TextLength, 0)
@@ -77,7 +77,7 @@ Public Module ColorizeSupport
                         Dim errorCharactorPosition As Integer = dia.Location.GetLineSpan.StartLinePosition.Character
                         Dim length As Integer = dia.Location.GetLineSpan.EndLinePosition.Character - errorCharactorPosition
                         .Select(.GetFirstCharIndexFromLine(errorLine) + errorCharactorPosition, length)
-                        Dim selectionColor As (Foreground As Color, Background As Color) = GetColorFromName("Error")
+                        Dim selectionColor As ColorDescriptor = GetColorFromName("Error")
                         .SelectionBackColor = selectionColor.Background
                         .SelectionColor = selectionColor.Foreground
                         .Select(.TextLength, 0)
@@ -217,13 +217,13 @@ Public Module ColorizeSupport
                 Return filteredErrorCount = 0
             Case ResultTriState.Failure
                 If TypeOf MainForm._resultOfConversion.Exceptions(0) IsNot OperationCanceledException Then
-                    Dim selectionColor As (Foreground As Color, Background As Color) = GetColorFromName(ErrorValue)
+                    Dim selectionColor As ColorDescriptor = GetColorFromName(ThemeErrorColor)
                     MainForm.ConversionOutput.SelectionBackColor = selectionColor.Background
                     MainForm.ConversionOutput.SelectionColor = selectionColor.Foreground
                     MainForm.ConversionOutput.Text = GetExceptionsAsString(MainForm._resultOfConversion.Exceptions)
                 End If
             Case ResultTriState.Ignore
-                MainForm.ConversionOutput.Text = ""
+                MainForm.ConversionOutput.Text = String.Empty
                 MainForm.LabelErrorCount.Text = "File Skipped"
         End Select
         Return MainForm._resultOfConversion.ResultStatus <> ResultTriState.Failure
