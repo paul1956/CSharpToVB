@@ -5,8 +5,8 @@
 Imports System.IO
 
 Public Class OptionsDialog
-    Private _selectedColor As (Foreground As Color, Background As Color)
-    Private _selectedColorName As String = DefaultValue
+    Private _selectedColor As ColorDescriptor
+    Private _selectedColorName As String = ThemeDefaultColor
 
     Public MainForm As Form1
 
@@ -27,7 +27,7 @@ Public Class OptionsDialog
     Private Sub ItemColor_ComboBox_DrawItem(sender As Object, e As DrawItemEventArgs) Handles ItemColor_ComboBox.DrawItem
         If e.Index >= 0 Then
             Dim itemName As String = CType(sender, ComboBox).Items(e.Index).ToString()
-            Dim itemColor As (Foreground As Color, Background As Color) = GetColorFromName(itemName)
+            Dim itemColor As ColorDescriptor = GetColorFromName(itemName)
 
             Dim eBounds As Rectangle = e.Bounds
             Using b As Brush = New SolidBrush(DefaultColor.Background)
@@ -90,7 +90,7 @@ Public Class OptionsDialog
         For Each name As String In GetColorNameList()
             Me.ItemColor_ComboBox.Items.Add(name)
         Next name
-        Me.ItemColor_ComboBox.SelectedIndex = Me.ItemColor_ComboBox.FindStringExact(DefaultValue)
+        Me.ItemColor_ComboBox.SelectedIndex = Me.ItemColor_ComboBox.FindStringExact(ThemeDefaultColor)
 
         Me.ComboBoxCompare.SelectedItem = My.Settings.OptionCompare
         Me.ComboBoxExplicit.SelectedItem = My.Settings.OptionExplicit
@@ -125,7 +125,7 @@ Public Class OptionsDialog
         If File.Exists(userColorFile) Then
             File.Delete(userColorFile)
         End If
-        DefaultColor = MainForm.CurrentThemeDictionary(DefaultValue)
+        DefaultColor = MainForm.CurrentThemeDictionary(ThemeDefaultColor)
     End Sub
 
     Private Sub SelectEditorFontButton_Click(sender As Object, e As EventArgs) Handles SelectEditorFontButton.Click
@@ -165,7 +165,7 @@ Public Class OptionsDialog
         Me.ColorDialog1.Color = _selectedColor.Background
         If Me.ColorDialog1.ShowDialog <> DialogResult.Cancel Then
             Me.SampleTextBox.BackColor = Me.ColorDialog1.Color
-            My.Forms.Form1.CurrentThemeDictionary(Me.ItemColor_ComboBox.Items(Me.ItemColor_ComboBox.SelectedIndex).ToString) = (Me.SampleTextBox.ForeColor, Me.SampleTextBox.BackColor)
+            My.Forms.Form1.CurrentThemeDictionary(Me.ItemColor_ComboBox.Items(Me.ItemColor_ComboBox.SelectedIndex).ToString) = New ColorDescriptor(Me.SampleTextBox.ForeColor, Me.SampleTextBox.BackColor)
             Application.DoEvents()
         End If
     End Sub
@@ -174,7 +174,7 @@ Public Class OptionsDialog
         Me.ColorDialog1.Color = _selectedColor.Foreground
         If Me.ColorDialog1.ShowDialog <> DialogResult.Cancel Then
             Me.SampleTextBox.ForeColor = Me.ColorDialog1.Color
-            My.Forms.Form1.CurrentThemeDictionary(Me.ItemColor_ComboBox.Items(Me.ItemColor_ComboBox.SelectedIndex).ToString) = (Me.SampleTextBox.ForeColor, Me.SampleTextBox.BackColor)
+            My.Forms.Form1.CurrentThemeDictionary(Me.ItemColor_ComboBox.Items(Me.ItemColor_ComboBox.SelectedIndex).ToString) = New ColorDescriptor(Me.SampleTextBox.ForeColor, Me.SampleTextBox.BackColor)
             Application.DoEvents()
         End If
     End Sub

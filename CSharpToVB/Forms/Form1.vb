@@ -27,7 +27,7 @@ Partial Public Class Form1
     Friend _requestToConvert As ConvertRequest
     Friend _resultOfConversion As ConversionResult
 
-    Public CurrentThemeDictionary As Dictionary(Of String, (Foreground As Color, Background As Color))
+    Public CurrentThemeDictionary As Dictionary(Of String, ColorDescriptor)
 
     Public Sub New()
         Me.InitializeComponent()
@@ -422,7 +422,7 @@ Partial Public Class Form1
             Me.TSThemeButton.Text = DarkModeStr
             CurrentThemeDictionary = s_DarkModeColorDictionary
         End If
-        DefaultColor = CurrentThemeDictionary(DefaultValue)
+        DefaultColor = CurrentThemeDictionary(ThemeDefaultColor)
         ChangeTheme(CurrentThemeDictionary, My.Forms.Form1.Controls)
     End Sub
 
@@ -1133,7 +1133,7 @@ namespace Application
             Me.TSThemeButton.Text = LightModeStr
             CurrentThemeDictionary = s_LightModeColorDictionary
         End If
-        DefaultColor = GetColorFromName(DefaultValue)
+        DefaultColor = GetColorFromName(ThemeDefaultColor)
         ChangeTheme(CurrentThemeDictionary, My.Forms.Form1.Controls)
         If Me.ConversionInput.Text.Any Then
             If Me.mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
