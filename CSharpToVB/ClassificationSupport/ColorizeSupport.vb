@@ -143,13 +143,25 @@ Public Module ColorizeSupport
         If Not My.Settings.IncludeTopLevelStmtProtoInCode AndAlso TextToCompile.Contains("Top Level Code boilerplate is included,") Then
             Dim filteredCode As New StringBuilder
             Dim skipNext As Boolean
+            Dim skipBlank As Boolean
             For Each e As IndexClass(Of String) In TextToCompile.SplitLines.WithIndex
                 Dim stmt As String = e.Value
+                If String.IsNullOrEmpty(stmt) Then
+                    If Not skipBlank Then
+                        filteredCode.AppendLine()
+                        skipBlank = True
+                    End If
+                    Continue For
+                End If
+                skipBlank = False
                 Select Case True
                     Case stmt.Trim.StartsWith("' Top Level Code boilerplate is included")
+                        skipBlank = True
                     Case stmt.Trim.StartsWith("Namespace Application")
                     Case stmt.Trim.StartsWith("NotInheritable Class Program")
                     Case stmt.Trim.StartsWith("Private Shared ")
+                    Case stmt.Trim.StartsWith("Public Shared ")
+                        skipBlank = True
                         skipNext = True
                     Case stmt.Trim.StartsWith("End Sub")
                     Case stmt.Trim.StartsWith("End Class")

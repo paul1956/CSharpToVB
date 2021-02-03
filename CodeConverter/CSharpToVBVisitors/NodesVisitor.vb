@@ -390,25 +390,26 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 End If
                 Dim fullElementList As New List(Of VBS.SimpleNameSyntax)
                 Dim parameterList As VBS.ParameterListSyntax = DirectCast(node.ParameterList?.Accept(Me), VBS.ParameterListSyntax)
-                'constructorStatements = constructorStatements.Add()
-                For Each e As IndexClass(Of VBS.ParameterSyntax) In parameterList.Parameters.WithIndex
-                    Dim assignmentStmt As VBS.AssignmentStatementSyntax
-                    Dim left As VBS.ExpressionSyntax
-                    Dim right As VBS.SimpleNameSyntax = Factory.IdentifierName(e.Value.Identifier.Identifier)
-                    If Not ContainsProperty(implementedMembers, right.Identifier.ToString) Then
-                        left = Factory.SimpleMemberAccessExpression(MeExpression, right)
+                If parameterList IsNot Nothing Then
+                    For Each e As IndexClass(Of VBS.ParameterSyntax) In parameterList.Parameters.WithIndex
+                        Dim assignmentStmt As VBS.AssignmentStatementSyntax
+                        Dim left As VBS.ExpressionSyntax
+                        Dim right As VBS.SimpleNameSyntax = Factory.IdentifierName(e.Value.Identifier.Identifier)
+                        If Not ContainsProperty(implementedMembers, right.Identifier.ToString) Then
+                            left = Factory.SimpleMemberAccessExpression(MeExpression, right)
 
-                        Dim propertyStatement As VBS.StatementSyntax = Factory.PropertyStatement(Nothing, PublicModifier, e.Value.Identifier.Identifier, Nothing, e.Value.AsClause, initializer:=Nothing, implementsClause:=Nothing).RemoveExtraLeadingEOL
-                        members.Add(propertyStatement)
-                        assignmentStmt = Factory.AssignmentStatement(VB.SyntaxKind.SimpleAssignmentStatement, left, EqualsToken, right)
-                        constructorStatements = constructorStatements.Add(assignmentStmt)
-                    End If
-                    fullElementList.Add(right)
-                Next
+                            Dim propertyStatement As VBS.StatementSyntax = Factory.PropertyStatement(Nothing, PublicModifier, e.Value.Identifier.Identifier, Nothing, e.Value.AsClause, initializer:=Nothing, implementsClause:=Nothing).RemoveExtraLeadingEOL
+                            members.Add(propertyStatement)
+                            assignmentStmt = Factory.AssignmentStatement(VB.SyntaxKind.SimpleAssignmentStatement, left, EqualsToken, right)
+                            constructorStatements = constructorStatements.Add(assignmentStmt)
+                        End If
+                        fullElementList.Add(right)
+                    Next
+                End If
                 members.Add(Factory.ConstructorBlock(Factory.SubNewStatement(attributeLists:=Nothing,
-                                                     modifiers:=Nothing,
-                                                     parameterList
-                                                    ).WithPrependedLeadingTrivia(CollectConvertedTokenTrivia(node.OpenBraceToken, GetLeading:=True, GetTrailing:=False)).WithTrailingEOL(), constructorStatements))
+                                                 modifiers:=Nothing,
+                                                 parameterList
+                                                ).WithPrependedLeadingTrivia(CollectConvertedTokenTrivia(node.OpenBraceToken, GetLeading:=True, GetTrailing:=False)).WithTrailingEOL(), constructorStatements))
 
                 ' Finalize Block
                 Dim myBaseInvocationExpr As VBS.InvocationExpressionSyntax
