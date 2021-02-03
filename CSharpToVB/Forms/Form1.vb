@@ -352,7 +352,7 @@ Partial Public Class Form1
             My.Settings.DefaultProjectDirectory = GetLatestVisualStudioProjectPath()
         End If
 
-        If My.Settings.EditorFont.Name <> My.Settings.EditorFontName Then
+        If My.Settings.EditorFont Is Nothing OrElse My.Settings.EditorFont.Name <> My.Settings.EditorFontName Then
             My.Settings.EditorFont = New Font("Consolas", 11.0!, FontStyle.Regular)
             My.Settings.EditorFontName = "Consolas"
         End If

@@ -3,13 +3,12 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.IO
-Imports System.Reflection
 Imports System.Runtime.CompilerServices
 
-Public Module ColorSelector
+Partial Public Module ColorSelector
 
-    Friend s_DarkModeColorDictionary As New Dictionary(Of String, ColorDescriptor)(StringComparer.OrdinalIgnoreCase)
-    Friend s_LightModeColorDictionary As New Dictionary(Of String, ColorDescriptor)(StringComparer.OrdinalIgnoreCase)
+    'Friend s_DarkModeColorDictionary As New Dictionary(Of String, ColorDescriptor)(StringComparer.OrdinalIgnoreCase)
+    'Friend s_LightModeColorDictionary As New Dictionary(Of String, ColorDescriptor)(StringComparer.OrdinalIgnoreCase)
     Public Const DarkModeStr As String = "Dark Mode"
     Public Const LightModeStr As String = "Light Mode"
     Public ReadOnly _darkModeDictionaryFileName As String = "DarkModeColorDictionary.csv"
@@ -98,15 +97,11 @@ Public Module ColorSelector
 
         If File.Exists(userColorFile) AndAlso assetColorFile.AreNotSame(userColorFile) Then
             s_LightModeColorDictionary = MergeColorDictionary(userColorFile, File.GetLastAccessTime(assetColorFile), s_LightModeColorDictionary)
-        Else
-            LoadColorDictionaryFromFile(assetColorFile, s_LightModeColorDictionary)
         End If
         assetColorFile = Path.Combine(executableDirectoryPath, _darkModeDictionaryFileName)
         userColorFile = Path.Combine(FileIO.SpecialDirectories.MyDocuments, _darkModeDictionaryFileName)
         If File.Exists(userColorFile) AndAlso assetColorFile.AreNotSame(userColorFile) Then
             s_DarkModeColorDictionary = MergeColorDictionary(userColorFile, File.GetLastWriteTime(assetColorFile), s_DarkModeColorDictionary)
-        Else
-            LoadColorDictionaryFromFile(assetColorFile, s_DarkModeColorDictionary)
         End If
     End Sub
 

@@ -41,7 +41,10 @@
     <WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="My Project\MySettingsProperty.vb" />
+    <Compile Remove="Extensions\ColorExtensions.vb" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\csvGenerator\csvGenerator.vbproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
@@ -84,6 +87,8 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <AdditionalFiles Include="Assets\DarkModeColorDictionary.csv" CsvLoadType="Startup" />
+    <AdditionalFiles Include="Assets\LightModeColorDictionary.csv" CsvLoadType="Startup" />
     <None Update="Assets\DarkModeColorDictionary.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -100,5 +105,6 @@
       <CustomToolNamespace>My</CustomToolNamespace>
     </None>
   </ItemGroup>
-
+  <!-- Manually reference the generator props because we locally reference the generator -->
+  <Import Project="..\csvGenerator\CsvGenerator.props" />
 </Project>
