@@ -565,10 +565,18 @@ Namespace CSharpToVBConverter.ToVisualBasic
 
                 If TypeOf node.Parent Is CSS.InitializerExpressionSyntax Then
                     If TypeOf node.Left Is CSS.ImplicitElementAccessSyntax Then
+                        Dim nodeRight As VB.VisualBasicSyntaxNode = node.Right.Accept(Me)
+                        If TypeOf nodeRight Is ObjectMemberInitializerSyntax Then
+                            Dim initializers As SeparatedSyntaxList(Of ExpressionSyntax)
+                            For Each field As NamedFieldInitializerSyntax In CType(nodeRight, ObjectMemberInitializerSyntax).Initializers
+                                initializers = initializers.Add(Factory.EqualsExpression(field.Name, field.Expression))
+                            Next
+                            nodeRight = Factory.CollectionInitializer(initializers)
+                        End If
                         Return Factory.CollectionInitializer(Factory.SeparatedList({CType(node.Left.Accept(Me), ExpressionSyntax),
-                                                                                   CType(node.Right.Accept(Me), ExpressionSyntax)})).WithConvertedTriviaFrom(node)
-                    End If
-                    If node.Parent.IsKind(CS.SyntaxKind.ObjectInitializerExpression) Then
+                                                                                   CType(nodeRight, ExpressionSyntax)})).WithConvertedTriviaFrom(node)
+                        End If
+                        If node.Parent.IsKind(CS.SyntaxKind.ObjectInitializerExpression) Then
                         Dim nodeRight As VB.VisualBasicSyntaxNode = node.Right.Accept(Me)
                         If TypeOf nodeRight Is ObjectMemberInitializerSyntax Then
                             Dim objectMemberInitializer As ObjectMemberInitializerSyntax = DirectCast(nodeRight, ObjectMemberInitializerSyntax)
