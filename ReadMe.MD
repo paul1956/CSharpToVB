@@ -8,6 +8,8 @@ page_type: Code Converter
 name: "CSharpToVB (Visual Basic)"
 description: "C# to VB Converter"
 ---
+[![Build status badge](https://github.com/paul1956/CSharpToVB/workflows/CI/badge.svg)](https://github.com/paul1956/CSharpToVB/workflows/CI/badge.svg "Build status")
+
 # C# to VB.Net Converter
 
 ## Requires
