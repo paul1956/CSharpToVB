@@ -5,22 +5,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-    <MyType>WindowsForms</MyType>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <UseWPF>true</UseWPF>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Include="..\CSharpToVB\ClassificationSupport\ClassificationNameStrings.vb" Link="ClassificationNameStrings.vb" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.2" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="3.9.0-3.final" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.VisualBasic" Version="10.4.0-preview.18571.3" />
-  </ItemGroup>
-
-  <PropertyGroup>
     <OptionStrict>On</OptionStrict>
     <OptionCompare>Text</OptionCompare>
     <OptionInfer>Off</OptionInfer>
@@ -28,12 +13,18 @@
     <AssemblyVersion>1.0.0.1</AssemblyVersion>
     <FileVersion>1.0.0.1</FileVersion>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\CSharpToVB\ClassificationSupport\ClassificationNameStrings.vb" Link="ClassificationNameStrings.vb" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.2" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="3.9.0-3.final" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.VisualBasic" Version="10.4.0-preview.18571.3" />
+  </ItemGroup>
 </Project>
