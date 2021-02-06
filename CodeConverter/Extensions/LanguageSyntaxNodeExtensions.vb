@@ -57,16 +57,20 @@ Namespace CSharpToVBConverter.ToVisualBasic
                             afterFirstTrivia = True
                             Continue For
                         End If
-                        finalLeadingTrivia = finalLeadingTrivia.Add(trivia)
+                        If Not afterEOL Then
+                            finalLeadingTrivia = finalLeadingTrivia.Add(trivia)
+                            afterEOL = True
+                        End If
                         afterWhiteSpace = False
                         If finalLeadingTrivia.Count = 1 OrElse nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
                             finalLeadingTrivia = finalLeadingTrivia.Add(SpaceTrivia)
                             finalLeadingTrivia = finalLeadingTrivia.Add(LineContinuation)
                             afterLineContinuation = True
+                            afterEOL = False
                         Else
                             afterLineContinuation = False
+                            afterEOL = True
                         End If
-                        afterEOL = True
                     Case VB.SyntaxKind.CommentTrivia
                         afterFirstTrivia = True
                         If Not afterLineContinuation OrElse afterEOL Then
@@ -77,21 +81,23 @@ Namespace CSharpToVBConverter.ToVisualBasic
                             afterLineContinuation = False
                         End If
                         finalLeadingTrivia = finalLeadingTrivia.Add(trivia)
-                        If Not nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                        If nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                            afterEOL = False
+                        Else
                             finalLeadingTrivia = finalLeadingTrivia.Add(VBEOLTrivia)
                             afterEOL = True
                         End If
                     Case VB.SyntaxKind.DisableWarningDirectiveTrivia, VB.SyntaxKind.EnableWarningDirectiveTrivia,
                      VB.SyntaxKind.IfDirectiveTrivia, VB.SyntaxKind.DisabledTextTrivia,
                    VB.SyntaxKind.ElseDirectiveTrivia, VB.SyntaxKind.EndIfDirectiveTrivia
-                        finalLeadingTrivia = finalLeadingTrivia.AddRange(DirectiveNotAllowedHere(trivia))
+                        finalLeadingTrivia = finalLeadingTrivia.AddRange(DirectiveNotAllowedHere(trivia, afterEOL))
                         afterFirstTrivia = True
-                        afterEOL = False
                         afterLineContinuation = False
-                        If nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) OrElse nextTrivia.IsNone Then
+                        If nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) OrElse afterEOL Then
                             Continue For
                         End If
                         finalLeadingTrivia = finalLeadingTrivia.Add(VBEOLTrivia)
+                        afterEOL = True
                     Case VB.SyntaxKind.LineContinuationTrivia
                         If Not afterLineContinuation Then
                             finalLeadingTrivia = finalLeadingTrivia.Add(trivia)
@@ -225,6 +231,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
             Dim afterLineContinuation As Boolean = False
             Dim finalLeadingTrivia As New SyntaxTriviaList
             Dim initialTriviaList As SyntaxTriviaList = NodesOrTokens(index).GetLeadingTrivia.ConvertTriviaList()
+            Dim afterEOL As Boolean
             For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
                 Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.index, LookaheadCount:=1)
 
@@ -256,13 +263,13 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Case VB.SyntaxKind.DisableWarningDirectiveTrivia, VB.SyntaxKind.EnableWarningDirectiveTrivia
                         Stop
                     Case VB.SyntaxKind.IfDirectiveTrivia
-                        finalLeadingTrivia = finalLeadingTrivia.AddRange(DirectiveNotAllowedHere(e.Value))
+                        finalLeadingTrivia = finalLeadingTrivia.AddRange(DirectiveNotAllowedHere(e.Value, afterEOL))
                     Case VB.SyntaxKind.DisabledTextTrivia
-                        finalLeadingTrivia = finalLeadingTrivia.AddRange(DirectiveNotAllowedHere(e.Value))
+                        finalLeadingTrivia = finalLeadingTrivia.AddRange(DirectiveNotAllowedHere(e.Value, afterEOL))
                     Case VB.SyntaxKind.ElseDirectiveTrivia
-                        finalLeadingTrivia = finalLeadingTrivia.AddRange(DirectiveNotAllowedHere(e.Value))
+                        finalLeadingTrivia = finalLeadingTrivia.AddRange(DirectiveNotAllowedHere(e.Value, afterEOL))
                     Case VB.SyntaxKind.EndIfDirectiveTrivia
-                        finalLeadingTrivia = finalLeadingTrivia.AddRange(DirectiveNotAllowedHere(e.Value))
+                        finalLeadingTrivia = finalLeadingTrivia.AddRange(DirectiveNotAllowedHere(e.Value, afterEOL))
                     Case Else
                         Stop
                 End Select
@@ -438,11 +445,11 @@ Namespace CSharpToVBConverter.ToVisualBasic
         End Function
 
         Friend Sub RestructureNodesAndSeparators(Of T As VB.VisualBasicSyntaxNode)(ByRef _OpenToken As SyntaxToken, ByRef items As List(Of T), ByRef separators As List(Of SyntaxToken), ByRef _CloseToken As SyntaxToken)
-            _OpenToken = _OpenToken.WithModifiedTokenTrivia(LeadingToken:=True, AfterEOL:=False, RequireTrailingSpace:=False)
+            _OpenToken = _OpenToken.WithModifiedTokenTrivia(LeadingToken:=True, AfterEOL:=False, RequireTrailingSpace:=False, FinalLeadingDirectiveNotAllowed:=False)
             For index As Integer = 0 To items.Count - 2
                 Dim newItem As T = items(index).AdjustNodeTrivia(SeparatorFollows:=True)
                 items(index) = newItem
-                Dim newSeparators As SyntaxToken = separators(index).WithModifiedTokenTrivia(LeadingToken:=False, AfterEOL:=False, RequireTrailingSpace:=False)
+                Dim newSeparators As SyntaxToken = separators(index).WithModifiedTokenTrivia(LeadingToken:=False, AfterEOL:=False, RequireTrailingSpace:=False, FinalLeadingDirectiveNotAllowed:=False)
                 separators(index) = newSeparators
             Next
             Dim lastItemEndsWithEOL As Boolean = False
@@ -451,7 +458,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 items(items.Count - 1) = newItem
                 lastItemEndsWithEOL = items.Last.HasTrailingTrivia AndAlso items.Last.GetTrailingTrivia.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia)
             End If
-            Dim newCloseToken As SyntaxToken = _CloseToken.WithModifiedTokenTrivia(LeadingToken:=False, AfterEOL:=lastItemEndsWithEOL, RequireTrailingSpace:=False)
+            Dim newCloseToken As SyntaxToken = _CloseToken.WithModifiedTokenTrivia(LeadingToken:=False, AfterEOL:=lastItemEndsWithEOL, RequireTrailingSpace:=False, FinalLeadingDirectiveNotAllowed:=True)
             _CloseToken = newCloseToken.RemoveExtraEOL
         End Sub
 
@@ -474,11 +481,12 @@ Namespace CSharpToVBConverter.ToVisualBasic
 
                         If nextTrivia.IsKind(VB.SyntaxKind.CommentTrivia) OrElse
                             nextTrivia.IsKind(VB.SyntaxKind.LineContinuationTrivia) Then
-                            finalTrailingTrivia = finalTrailingTrivia.Add(trivia)
-                            afterLinefeed = False
-                            afterComment = False
-                            afterWhiteSpace = True
                         End If
+                        finalTrailingTrivia = finalTrailingTrivia.Add(trivia)
+                        afterComment = False
+                        afterLineContinuation = False
+                        afterLinefeed = False
+                        afterWhiteSpace = True
                     Case VB.SyntaxKind.EndOfLineTrivia
                         If nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
                             Continue For
@@ -491,9 +499,9 @@ Namespace CSharpToVBConverter.ToVisualBasic
                             End If
                             finalTrailingTrivia = finalTrailingTrivia.Add(trivia)
                             afterComment = False
+                            afterLineContinuation = False
                             afterLinefeed = True
                             afterWhiteSpace = False
-                            afterLineContinuation = False
                         End If
                     Case VB.SyntaxKind.CommentTrivia
                         If Not afterWhiteSpace Then
@@ -517,6 +525,13 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         afterWhiteSpace = False
                         afterLineContinuation = True
                         finalTrailingTrivia = finalTrailingTrivia.Add(LineContinuation)
+                    Case VB.SyntaxKind.EndIfDirectiveTrivia
+                        finalTrailingTrivia = finalTrailingTrivia.Add(trivia)
+                        afterComment = False
+                        afterLineContinuation = False
+                        afterLinefeed = False
+                        afterWhiteSpace = False
+                        Stop
                     Case Else
                         Stop
                 End Select

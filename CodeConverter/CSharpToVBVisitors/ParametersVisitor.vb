@@ -319,18 +319,18 @@ Namespace CSharpToVBConverter.ToVisualBasic
 
                 Dim csSeparators As IEnumerable(Of SyntaxToken) = node.Parameters.GetSeparators
                 Dim openParenTokenWithTrivia As SyntaxToken = openParenToken.WithConvertedTriviaFrom(node.OpenParenToken)
-                Dim closeParenTokenWithTrivia As SyntaxToken = CloseParenToken.WithConvertedTriviaFrom(node.CloseParenToken)
                 Dim items As New List(Of VBS.ParameterSyntax)
                 Dim separators As New List(Of SyntaxToken)
                 Dim separatorCount As Integer = node.Parameters.Count - 1
                 For index As Integer = 0 To separatorCount
                     Dim itemWithTrivia As VBS.ParameterSyntax = DirectCast(node.Parameters(index).Accept(Me), VBS.ParameterSyntax)
                     itemWithTrivia = itemWithTrivia.RemoveModifier(VB.SyntaxKind.ByValKeyword)
-                    items.Add(itemWithTrivia.AdjustNodeTrivia(separatorCount > index))
+                    items.Add(itemWithTrivia) 'XXXX .AdjustNodeTrivia(separatorCount > index))
                     If separatorCount > index Then
                         separators.Add(CommaToken.WithConvertedTrailingTriviaFrom(csSeparators(index)))
                     End If
                 Next
+                Dim closeParenTokenWithTrivia As SyntaxToken = CloseParenToken.WithConvertedTriviaFrom(node.CloseParenToken)
                 RestructureNodesAndSeparators(openParenTokenWithTrivia, items, separators, closeParenTokenWithTrivia)
                 Return Factory.ParameterList(openParenTokenWithTrivia, Factory.SeparatedList(items, separators), closeParenTokenWithTrivia)
             End Function

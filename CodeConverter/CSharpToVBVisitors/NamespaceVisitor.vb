@@ -217,6 +217,21 @@ End Property
                     ElseIf statement.IsKind(VB.SyntaxKind.FunctionStatement) OrElse
                         statement.IsKind(VB.SyntaxKind.SubBlock) Then
                         Dim modifiers As List(Of SyntaxToken)
+                        If s_statementDictionary.ContainsKey(node) Then
+                            Dim index As Integer = s_statementDictionary(node)
+
+                            Dim insertionPoint As Integer = 0
+                            For Each stmtTuple As (index As Integer, statement As StatementSyntax, RemoveStatement As Boolean) In s_statementSupportTupleList
+                                If stmtTuple.index = index Then
+                                    members.Insert(insertionPoint, stmtTuple.statement)
+                                    insertionPoint += 1
+                                End If
+                            Next
+                        End If
+                        s_statementDictionary.Remove(node)
+                        If s_statementDictionary.Count = 0 Then
+                            s_statementSupportTupleList.Clear()
+                        End If
                         If TypeOf statement Is MethodBlockSyntax Then
                             Dim block As MethodBlockSyntax = CType(statement, MethodBlockSyntax)
                             modifiers = block.BlockStatement.Modifiers.ToList

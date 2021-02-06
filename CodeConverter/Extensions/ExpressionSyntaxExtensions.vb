@@ -17,7 +17,7 @@ Namespace CSharpToVBConverter
     Public Module ExpressionSyntaxExtensions
 
         <Extension>
-        Friend Function AdjustExpressionTrivia(Of T As VB.VisualBasicSyntaxNode)(Expression As T, AdjustLeading As Boolean) As T
+        Friend Function AdjustExpressionTrivia(Of T As VB.VisualBasicSyntaxNode)(Expression As T, AdjustLeading As Boolean, DirectiveNotAllowed As Boolean) As T
             If Expression Is Nothing Then
                 Throw New ArgumentNullException(NameOf(Expression))
             End If
@@ -26,6 +26,7 @@ Namespace CSharpToVBConverter
             Dim newLeadingTrivia As New SyntaxTriviaList
 
             If AdjustLeading Then
+                Dim afterEOL As Boolean
                 For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
                     Dim trivia As SyntaxTrivia = e.Value
                     Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.index, LookaheadCount:=1)
@@ -82,9 +83,19 @@ Namespace CSharpToVBConverter
                             End Select
                         Case VB.SyntaxKind.LineContinuationTrivia
                             newLeadingTrivia = newLeadingTrivia.Add(trivia)
+                        Case VB.SyntaxKind.DisabledTextTrivia
+                            If DirectiveNotAllowed Then
+                                newLeadingTrivia = newLeadingTrivia.AddRange(DirectiveNotAllowedHere(trivia, afterEOL))
+                            Else
+                                newLeadingTrivia = newLeadingTrivia.Add(trivia)
+                            End If
                         Case Else
                             If trivia.IsDirective Then
-                                newLeadingTrivia = newLeadingTrivia.Add(trivia)
+                                If DirectiveNotAllowed Then
+                                    newLeadingTrivia = newLeadingTrivia.AddRange(DirectiveNotAllowedHere(trivia, afterEOL))
+                                Else
+                                    newLeadingTrivia = newLeadingTrivia.Add(trivia)
+                                End If
                             Else
                                 Stop
                             End If

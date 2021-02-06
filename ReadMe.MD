@@ -65,6 +65,12 @@ Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpec
 Any changes to CSharpToVB application needs to change the version information in the project file **AND** in MyProject/AssemblyInfo.vb until Visual Studio is able to general file automatically for a WinForms application.
 
 ## What's New in this release
+  New in 5.0.1.5/5.0.1.0
+  - Fix comments in ConditionalExpressions
+  - Support additional places where directives are not allowed
+  - Don't allow TopLevelStatement(TLS) conversion when buffer does not contain TLS and only allow snippet conversion for TLS's.
+  - Add support for DLL definitions done as local functions
+
   New in 5.0.1.4/5.0.0.29
   - Improve InitializerExpressionSyntax conversion
 

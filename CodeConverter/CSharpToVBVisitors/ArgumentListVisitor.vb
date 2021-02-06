@@ -77,7 +77,12 @@ Namespace CSharpToVBConverter.ToVisualBasic
                             Throw UnexpectedValue("IndexExpression Parent.Parent not 'ElementAccessExpression'")
                         End Try
                     Else
-                        argumentWithTrivia = DirectCast(csExpression.Accept(Me).AdjustNodeTrivia(SeparatorFollows:=True), VBS.ExpressionSyntax)
+                        Dim visualBasicSyntaxNode As VB.VisualBasicSyntaxNode = csExpression.Accept(Me)
+                        If TypeOf visualBasicSyntaxNode Is VBS.LambdaExpressionSyntax Then
+                            argumentWithTrivia = DirectCast(visualBasicSyntaxNode, VBS.ExpressionSyntax)
+                        Else
+                            argumentWithTrivia = DirectCast(visualBasicSyntaxNode.AdjustNodeTrivia(SeparatorFollows:=True), VBS.ExpressionSyntax)
+                        End If
                         If argumentWithTrivia.IsKind(VB.SyntaxKind.AddressOfExpression) Then
                             argumentWithTrivia = CType(argumentWithTrivia, VBS.UnaryExpressionSyntax).Operand.WithTriviaFrom(argumentWithTrivia)
                         End If

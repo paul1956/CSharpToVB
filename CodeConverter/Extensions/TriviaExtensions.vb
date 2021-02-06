@@ -34,25 +34,21 @@ Namespace CSharpToVBConverter
         End Function
 
         <Extension>
-        Friend Function DirectiveNotAllowedHere(trivia As SyntaxTrivia) As SyntaxTriviaList
+        Friend Function DirectiveNotAllowedHere(trivia As SyntaxTrivia, ByRef AfterEOL As Boolean) As SyntaxTriviaList
             Dim newTriviaList As New SyntaxTriviaList
-            Dim leadingTriviaList As New SyntaxTriviaList
-            leadingTriviaList = leadingTriviaList.AddRange(SpaceLineContinueSpace)
 
             Dim triviaAsString As String = ""
 
             If trivia.IsKind(VB.SyntaxKind.DisabledTextTrivia) Then
-                newTriviaList = newTriviaList.AddRange(leadingTriviaList)
+                newTriviaList = newTriviaList.AddRange(SpaceLineContinueSpace)
                 newTriviaList = newTriviaList.Add(Factory.CommentTrivia($" ' TODO VB does not allow Disabled Text here, original text:"))
                 newTriviaList = newTriviaList.Add(VBEOLTrivia)
                 For Each triviaAsString In trivia.ToFullString.SplitLines()
-                    newTriviaList = newTriviaList.AddRange(leadingTriviaList)
+                    newTriviaList = newTriviaList.AddRange(SpaceLineContinueSpace)
                     newTriviaList = newTriviaList.Add(Factory.CommentTrivia($" ' {triviaAsString}".Replace("  ", " ", StringComparison.Ordinal).TrimEnd))
                     newTriviaList = newTriviaList.Add(VBEOLTrivia)
                 Next
-                If newTriviaList.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                    newTriviaList = newTriviaList.RemoveAt(newTriviaList.Count - 1)
-                End If
+                AfterEOL = newTriviaList.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia)
                 Return newTriviaList
             End If
 
@@ -76,6 +72,8 @@ Namespace CSharpToVBConverter
             newTriviaList = New SyntaxTriviaList
             newTriviaList = newTriviaList.AddRange(SpaceLineContinueSpace)
             newTriviaList = newTriviaList.Add(Factory.CommentTrivia($"{msg}{triviaAsString}".Replace("  ", " ", StringComparison.Ordinal).TrimEnd))
+            newTriviaList = newTriviaList.Add(VBEOLTrivia)
+            AfterEOL = True
             Return newTriviaList
         End Function
 

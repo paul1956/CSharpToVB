@@ -235,8 +235,11 @@ Namespace CSharpToVBConverter
                         afterLineContinuation = False
                         afterWhiteSpace = False
                     Case VB.SyntaxKind.EndIfDirectiveTrivia
-                        finalLeadingTrivia = finalLeadingTrivia.AddRange(DirectiveNotAllowedHere(trivia))
-                        finalLeadingTrivia = finalLeadingTrivia.Add(VBEOLTrivia)
+                        Dim afterEOL As Boolean
+                        finalLeadingTrivia = finalLeadingTrivia.AddRange(DirectiveNotAllowedHere(trivia, afterEOL))
+                        If Not afterEOL Then
+                            finalLeadingTrivia = finalLeadingTrivia.Add(VBEOLTrivia)
+                        End If
                         afterLineContinuation = False
                         afterWhiteSpace = False
                     Case Else
@@ -252,6 +255,10 @@ Namespace CSharpToVBConverter
                         finalTrailingTrivia = finalTrailingTrivia.Add(trivia)
                         afterWhiteSpace = True
                     Case VB.SyntaxKind.EndOfLineTrivia
+                        If e.IsLast AndAlso index < NodesOrTokens.Count - 1 AndAlso NodesOrTokens(index + 1).GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
+                            finalTrailingTrivia = finalTrailingTrivia.Add(SpaceTrivia)
+                            finalTrailingTrivia = finalTrailingTrivia.Add(LineContinuation)
+                        End If
                         finalTrailingTrivia = finalTrailingTrivia.Add(trivia)
                         afterWhiteSpace = False
                     Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
@@ -547,8 +554,9 @@ Namespace CSharpToVBConverter
         ''' <param name="AfterEOL"></param>
         ''' <returns></returns>
         ''' <param name="RequireTrailingSpace"></param>
+        ''' <param name="DeltaDirectiveCount"></param>
         <Extension>
-        Friend Function WithModifiedTokenTrivia(Token As SyntaxToken, LeadingToken As Boolean, AfterEOL As Boolean, RequireTrailingSpace As Boolean) As SyntaxToken
+        Friend Function WithModifiedTokenTrivia(Token As SyntaxToken, LeadingToken As Boolean, AfterEOL As Boolean, RequireTrailingSpace As Boolean, FinalLeadingDirectiveNotAllowed As Boolean) As SyntaxToken
             Dim afterWhiteSpace As Boolean = False
             Dim afterLineContinuation As Boolean = LeadingToken
             Dim initialTriviaList As SyntaxTriviaList
@@ -615,7 +623,7 @@ Namespace CSharpToVBConverter
                             afterWhiteSpace = False
                         Case VB.SyntaxKind.IfDirectiveTrivia, VB.SyntaxKind.DisabledTextTrivia
                             AfterEOL = False
-                            finalLeadingTrivia = finalLeadingTrivia.AddRange(DirectiveNotAllowedHere(e.Value))
+                            finalLeadingTrivia = finalLeadingTrivia.AddRange(DirectiveNotAllowedHere(e.Value, AfterEOL))
                             Select Case nextTrivia.RawKind
                                 Case VB.SyntaxKind.None
                                     finalLeadingTrivia = finalLeadingTrivia.Add(VBEOLTrivia)
@@ -628,22 +636,25 @@ Namespace CSharpToVBConverter
                             End Select
                         Case VB.SyntaxKind.EndIfDirectiveTrivia
                             If Token.LeadingTrivia.ContainsDirectiveTrivia(VB.SyntaxKind.IfDirectiveTrivia, VB.SyntaxKind.ElseIfDirectiveTrivia) Then
-                                finalLeadingTrivia = finalLeadingTrivia.AddRange(DirectiveNotAllowedHere(e.Value))
+                                finalLeadingTrivia = finalLeadingTrivia.AddRange(DirectiveNotAllowedHere(e.Value, AfterEOL))
                                 Select Case nextTrivia.RawKind
-                                    Case VB.SyntaxKind.None
-                                        finalLeadingTrivia = finalLeadingTrivia.Add(VBEOLTrivia)
-                                    Case VB.SyntaxKind.WhitespaceTrivia
-                                        finalLeadingTrivia = finalLeadingTrivia.Add(VBEOLTrivia)
-                                    Case VB.SyntaxKind.IfDirectiveTrivia, VB.SyntaxKind.DisabledTextTrivia, VB.SyntaxKind.EndIfDirectiveTrivia
+                                    Case VB.SyntaxKind.None,
+                                         VB.SyntaxKind.DisabledTextTrivia,
+                                         VB.SyntaxKind.EndIfDirectiveTrivia,
+                                         VB.SyntaxKind.IfDirectiveTrivia,
+                                         VB.SyntaxKind.WhitespaceTrivia
                                         finalLeadingTrivia = finalLeadingTrivia.Add(VBEOLTrivia)
                                     Case Else
                                         Stop
                                 End Select
                                 Continue For
                             End If
-                            AfterEOL = False
-                            finalTrailingTrivia = finalTrailingTrivia.Add(VBEOLTrivia)
-                            finalTrailingTrivia = finalTrailingTrivia.Add(e.Value)
+                            If FinalLeadingDirectiveNotAllowed Then
+                                finalLeadingTrivia = finalLeadingTrivia.AddRange(DirectiveNotAllowedHere(e.Value, AfterEOL))
+                            Else
+                                finalLeadingTrivia = finalLeadingTrivia.Add(e.Value)
+                                AfterEOL = False
+                            End If
                         Case Else
                             Stop
                     End Select

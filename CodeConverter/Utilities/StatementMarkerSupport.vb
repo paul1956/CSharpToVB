@@ -16,14 +16,15 @@ Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Namespace CSharpToVBConverter
 
     Public Module StatementMarker
-        Private ReadOnly s_statementDictionary As New Dictionary(Of CS.CSharpSyntaxNode, Integer)
-        Private ReadOnly s_statementSupportTupleList As New List(Of (index As Integer, statement As VB.VisualBasicSyntaxNode, RemoveStatement As StatementHandlingOption))
+        Friend ReadOnly s_statementDictionary As New Dictionary(Of CS.CSharpSyntaxNode, Integer)
+        Friend ReadOnly s_statementSupportTupleList As New List(Of (index As Integer, statement As VB.VisualBasicSyntaxNode, RemoveStatement As StatementHandlingOption))
         Private s_nextIndex As Integer
 
         Public Enum StatementHandlingOption
             PrependStatement ' Perpend original statement
             ReplaceStatement ' Replace original statement with new statement
             AppendEmptyStatement ' Append statement with empty statement which contains Directives or Comment
+            AddMethod ' Add a Method to a class
         End Enum
 
         Private Function CompareWithoutTrivia(Statement1 As VB.VisualBasicSyntaxNode, Statement2 As VB.VisualBasicSyntaxNode) As Boolean
@@ -168,7 +169,7 @@ Namespace CSharpToVBConverter
                 If t.index = index AndAlso TypeOf statement IsNot EmptyStatementSyntax AndAlso CompareWithoutTrivia(statement, t.statement) AndAlso t.StatementHandlingOption = StatementHandling Then
                     Exit Sub
                 End If
-                If t.index = index AndAlso EndsWithSimilarTrivia(statement.GetLeadingTrivia, t.statement.GetLeadingTrivia) Then
+                If t.index = index AndAlso (StatementHandling <> StatementHandlingOption.AddMethod) AndAlso EndsWithSimilarTrivia(statement.GetLeadingTrivia, t.statement.GetLeadingTrivia) Then
                     identicalTrivia = True
                 End If
             Next
@@ -229,7 +230,7 @@ Namespace CSharpToVBConverter
             Else
                 Dim csLeadingTrivia As SyntaxTriviaList = node.GetLeadingTrivia
                 If csLeadingTrivia.Any AndAlso csLeadingTrivia.First.IsKind(CS.SyntaxKind.WhitespaceTrivia) Then
-                    newTrailingTrivia.Add(csLeadingTrivia(0).ConvertTrivia())
+                    newTrailingTrivia.Add(Factory.Whitespace(csLeadingTrivia.Last.ToString))
                 End If
             End If
             Dim leadingSpace As SyntaxTrivia = New SyntaxTrivia

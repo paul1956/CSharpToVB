@@ -99,7 +99,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         statementWithIssue.AddMarker(statement, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
                     Else
                         dimToBeAdded = FactoryDimStatement(designationNameToken,
-                                                           Factory.SimpleAsClause(varType.AdjustExpressionTrivia(AdjustLeading:=False)),
+                                                           Factory.SimpleAsClause(varType.AdjustExpressionTrivia(AdjustLeading:=False, DirectiveNotAllowed:=false)),
                                                            Factory.EqualsValue(vbExpr)
                                                           ).WithTrailingTrivia(VBEOLTrivia)
                         statementWithIssue.AddMarker(dimToBeAdded, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)

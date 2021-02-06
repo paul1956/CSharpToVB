@@ -701,7 +701,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                                                                         initializer).WithConvertedLeadingTriviaFrom(arm).WithTrailingEOL
                                                                                        )
                             Dim armExpression As VBS.ExpressionSyntax = CType(arm.Expression.Accept(Me), VBS.ExpressionSyntax)
-                            Dim right As VBS.ExpressionSyntax = armExpression.AdjustExpressionTrivia(AdjustLeading:=True)
+                            Dim right As VBS.ExpressionSyntax = armExpression.AdjustExpressionTrivia(AdjustLeading:=True, DirectiveNotAllowed:=False)
                             If right.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
                                 equalsTokenWithTrivia = equalsTokenWithTrivia.WithTrailingTrivia(SpaceLineContinueEOL)
                             End If
@@ -710,7 +710,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                             caseClause = Factory.SingletonSeparatedList(Of VBS.CaseClauseSyntax)(Factory.SimpleCaseClause(Factory.EqualsExpression(tryCastExpr, Factory.TrueLiteralExpression(TrueKeyword))))
                         ElseIf pattern.Designation.IsKind(CS.SyntaxKind.DiscardDesignation) Then
                             Dim armExpression As VBS.ExpressionSyntax = CType(arm.Expression.Accept(Me), VBS.ExpressionSyntax)
-                            Dim right As VBS.ExpressionSyntax = armExpression.AdjustExpressionTrivia(AdjustLeading:=True)
+                            Dim right As VBS.ExpressionSyntax = armExpression.AdjustExpressionTrivia(AdjustLeading:=True, DirectiveNotAllowed:=False)
                             If right.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
                                 equalsTokenWithTrivia = equalsTokenWithTrivia.WithTrailingTrivia(SpaceLineContinueEOL)
                             End If
@@ -841,7 +841,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim modifiers As New SyntaxTokenList
                 Dim statements As New SyntaxList(Of VBS.StatementSyntax)
                 Dim variableITypeSymbol As (_Error As Boolean, _ITypeSymbol As ITypeSymbol) = node.Expression.DetermineType(_semanticModel)
-                Dim recordType As VBS.TypeSyntax = Nothing
+                Dim recordType As VBS.TypeSyntax = PredefinedTypeObject
                 Dim asClause As VBS.SimpleAsClauseSyntax = Nothing
                 If Not variableITypeSymbol._Error Then
                     recordType = variableITypeSymbol._ITypeSymbol.ConvertToType
@@ -865,19 +865,24 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim initializer As VBS.EqualsValueSyntax = Factory.EqualsValue(value)
                 statements = statements.Add(FactoryDimStatement(temp, asClause, initializer))
                 Dim withBlock As New SyntaxList(Of VBS.StatementSyntax)
-                For Each expression As CSS.AssignmentExpressionSyntax In node.Initializer.Expressions
-                    Dim vbExpression As VB.VisualBasicSyntaxNode = expression.Left.Accept(Me)
-                    Dim left As VBS.MemberAccessExpressionSyntax
-                    If TypeOf vbExpression Is VBS.MemberAccessExpressionSyntax Then
-                        left = CType(expression.Left.Accept(Me), VBS.MemberAccessExpressionSyntax)
-                    ElseIf TypeOf vbExpression Is VBS.NameSyntax Then
-                        Dim name As VBS.SimpleNameSyntax = CType(expression.Left.Accept(Me), VBS.SimpleNameSyntax)
-                        left = Factory.MemberAccessExpression(VB.SyntaxKind.SimpleMemberAccessExpression, DotToken, name)
+                For Each expression As CSS.ExpressionSyntax In node.Initializer.Expressions
+                    If TypeOf expression Is CSS.AssignmentExpressionSyntax Then
+                        Dim assignmentExpression As CSS.AssignmentExpressionSyntax = CType(expression, CSS.AssignmentExpressionSyntax)
+                        Dim vbExpression As VB.VisualBasicSyntaxNode = assignmentExpression.Left.Accept(Me)
+                        Dim left As VBS.MemberAccessExpressionSyntax
+                        If TypeOf vbExpression Is VBS.MemberAccessExpressionSyntax Then
+                            left = CType(vbExpression, VBS.MemberAccessExpressionSyntax)
+                        ElseIf TypeOf vbExpression Is VBS.NameSyntax Then
+                            Dim name As VBS.SimpleNameSyntax = CType(vbExpression, VBS.SimpleNameSyntax)
+                            left = Factory.MemberAccessExpression(VB.SyntaxKind.SimpleMemberAccessExpression, DotToken, name)
+                        Else
+                            Throw UnreachableException
+                        End If
+                        Dim right As VBS.ExpressionSyntax = CType(assignmentExpression.Right.Accept(Me), VBS.ExpressionSyntax)
+                        withBlock = withBlock.Add(Factory.SimpleAssignmentStatement(left, right))
                     Else
-                        Throw UnreachableException
+                        withBlock = withBlock.Add(Factory.ExpressionStatement(CType(expression.Accept(Me), VBS.ExpressionSyntax)))
                     End If
-                    Dim right As VBS.ExpressionSyntax = CType(expression.Right.Accept(Me), VBS.ExpressionSyntax)
-                    withBlock = withBlock.Add(Factory.SimpleAssignmentStatement(left, right))
                 Next
 
                 Dim withStatement As VBS.WithStatementSyntax = Factory.WithStatement(Factory.IdentifierName(temp))

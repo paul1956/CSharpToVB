@@ -26,6 +26,7 @@ Partial Public Class Form1
     Friend _inColorize As Boolean
     Friend _requestToConvert As ConvertRequest
     Friend _resultOfConversion As ConversionResult
+    Private _tlsEnable As Boolean
 
     Public CurrentThemeDictionary As Dictionary(Of String, ColorDescriptor)
 
@@ -251,6 +252,18 @@ Partial Public Class Form1
         Me.mnuFileSaveSnippet.Enabled = inputBufferInUse
         If Me.mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
             Colorize(Me, GetClassifiedRanges(Me.ConversionInput.Text, LanguageNames.CSharp), Me.ConversionInput)
+        End If
+        If Me.ConversionInput.Text.Any() Then
+            Dim selectionStart As Integer = Me.ConversionInput.SelectionStart
+            Dim selectionLength As Integer = Me.ConversionInput.SelectionLength
+
+            Dim keywordIndex As Integer = Me.ConversionInput.FindIndexOfAny("namespace", "internal static class")
+            _tlsEnable = True
+            If keywordIndex >= 0 Then
+                Dim firstCharIndexOfNamespaceLine As Integer = Me.ConversionInput.GetFirstCharIndexFromLine(Me.ConversionInput.GetLineFromCharIndex(keywordIndex))
+                _tlsEnable = keywordIndex <> firstCharIndexOfNamespaceLine
+            End If
+            Me.ConversionInput.Select(selectionStart, selectionLength)
         End If
     End Sub
 
@@ -546,10 +559,14 @@ Partial Public Class Form1
         Compile_Colorize(Me, Me.ConversionOutput.Text, preprocessorSymbols)
     End Sub
 
-    Private Sub mnuConvert_DropDownOpened(sender As Object, e As EventArgs) Handles mnuConvert.DropDownOpened
-        Dim any As Boolean = Me.ConversionInput.Text.Any
-        Me.mnuConvertConvertSnippet.Enabled = any
-        Me.mnuConvertConvertTopLevelStmts.Enabled = any
+    Private Sub mnuConvert_DropDownOpening(sender As Object, e As EventArgs) Handles mnuConvert.DropDownOpening
+        If Me.ConversionInput.Text.Any Then
+            Me.mnuConvertConvertSnippet.Enabled = Not _tlsEnable
+            Me.mnuConvertConvertTopLevelStmts.Enabled = _tlsEnable
+        Else
+            Me.mnuConvertConvertSnippet.Enabled = False
+            Me.mnuConvertConvertTopLevelStmts.Enabled = False
+        End If
     End Sub
 
     Private Sub mnuConvert_EnabledChanged(sender As Object, e As EventArgs) Handles mnuConvert.EnabledChanged

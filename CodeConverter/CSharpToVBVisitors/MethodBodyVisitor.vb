@@ -19,6 +19,7 @@ Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
+Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace CSharpToVBConverter.ToVisualBasic
 
@@ -456,7 +457,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                             statementLeadingTrivia = statementLeadingTrivia.AddRange(vbMemberAccessExpression.GetLeadingTrivia)
                             vbMemberAccessExpression = vbMemberAccessExpression.WithLeadingTrivia(SpaceTrivia)
                         Else
-                            vbMemberAccessExpression = vbMemberAccessExpression.AdjustExpressionTrivia(AdjustLeading:=True)
+                            vbMemberAccessExpression = vbMemberAccessExpression.AdjustExpressionTrivia(AdjustLeading:=True, DirectiveNotAllowed:=False)
                         End If
                         Dim handlerStatement As AddRemoveHandlerStatementSyntax
                         If node.IsKind(CS.SyntaxKind.AddAssignmentExpression) Then
@@ -1274,7 +1275,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                                 WithConvertedLeadingTriviaFrom(node.IfKeyword).
                                                 WithAppendedTrailingTrivia(ConvertTriviaList(openParenToken.LeadingTrivia)).
                                                 WithAppendedTrailingTrivia(ConvertTriviaList(openParenToken.TrailingTrivia))
-                    ifKeywordWithTrivia = ifKeywordWithTrivia.WithModifiedTokenTrivia(LeadingToken:=True, AfterEOL:=False, RequireTrailingSpace:=True)
+                    ifKeywordWithTrivia = ifKeywordWithTrivia.WithModifiedTokenTrivia(LeadingToken:=True, AfterEOL:=False, RequireTrailingSpace:=True, FinalLeadingDirectiveNotAllowed:=False)
 
                     Dim statementTrailingTrivia As SyntaxTriviaList
                     statementTrailingTrivia = CollectConvertedTokenTrivia(node.CloseParenToken, GetLeading:=True, GetTrailing:=True)
@@ -1464,12 +1465,13 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim kind As VB.SyntaxKind
                 Dim endblock As EndBlockStatementSyntax
                 Dim csBraces As (openBrace As SyntaxToken, closeBrace As SyntaxToken) = node.Body.GetBraces
+                Dim asClause As SimpleAsClauseSyntax = Nothing
 
                 Dim typeList As New List(Of TypeSyntax)
                 For Each parameter As ParameterSyntax In parameterList.Parameters
                     typeList.Add(parameter.AsClause.Type)
                 Next
-                Dim returnType As TypeSyntax
+                Dim returnType As TypeSyntax = Nothing
                 Dim modifiers As SyntaxTokenList = Factory.TokenList(ConvertModifiers(node.Modifiers, _nodesVisitor.IsModule, TokenContext.LocalFunction))
                 If node.DescendantNodes().OfType(Of CSS.YieldStatementSyntax).Any Then
                     modifiers = modifiers.Add(IteratorKeyword)
@@ -1486,21 +1488,36 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     lambdaHeader = Factory.FunctionLambdaHeader(attributeLists:=Nothing, modifiers, parameterList, Factory.SimpleAsClause(returnType))
                     endblock = Factory.EndFunctionStatement(EndKeyword.WithTrailingTrivia(SpaceTrivia), FunctionKeyword).WithConvertedTriviaFrom(csBraces.closeBrace)
                 End If
+                Dim nameToken As SyntaxToken = GenerateSafeVBToken(node.Identifier, node, _nodesVisitor._usedIdentifiers, _semanticModel)
                 Dim body As New SyntaxList(Of StatementSyntax)
                 If node.Body IsNot Nothing Then
                     body = ReplaceStatementsWithMarkedStatements(node, node.Body.Accept(Me))
-                Else
-                    If node.ExpressionBody?.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
+                ElseIf node.ExpressionBody IsNot Nothing Then
+                    If node.ExpressionBody.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
                         body = node.ExpressionBody.WithoutLeadingTrivia.GetExpressionBodyStatements(iSReturnVoid, _nodesVisitor)
                     Else
                         body = node.ExpressionBody.GetExpressionBodyStatements(iSReturnVoid, _nodesVisitor)
+                    End If
+                ElseIf node.AttributeLists.Count > 0 Then
+                    Dim attributes As New List(Of AttributeListSyntax)
+                    Dim returnAttributes As New SyntaxList(Of AttributeListSyntax)
+                    Dim finalTrailingDirective As New SyntaxTriviaList
+                    Dim functionStmtTrailingTrivia As SyntaxTriviaList
+                    _nodesVisitor.ConvertAndSplitAttributes(node.AttributeLists, attributes, returnAttributes, functionStmtTrailingTrivia)
+                    If TypeOf node Is CSS.LocalFunctionStatementSyntax Then
+                        Dim dllMethodStatement As MethodStatementSyntax = Factory.FunctionStatement(Factory.List(attributes), modifiers, nameToken, Nothing, parameterList, Factory.SimpleAsClause(returnType), Nothing, Nothing)
+                        Dim dllDecl As MethodBlockSyntax = Factory.MethodBlock(VB.SyntaxKind.FunctionBlock, dllMethodStatement, Factory.EndFunctionStatement.WithAppendedEOL)
+                        Dim classWithIssues As CSS.ClassDeclarationSyntax = node.GetAncestor(Of CSS.ClassDeclarationSyntax)()
+
+                        classWithIssues.AddMarker(dllDecl, StatementHandlingOption.AddMethod, True)
+                        Return Factory.SingletonList(Of StatementSyntax)(Factory.EmptyStatement())
+                    Else
+                        Stop
                     End If
                 End If
                 If TypeOf node.Parent Is CSS.GlobalStatementSyntax Then
                     Return body
                 End If
-                Dim nameToken As SyntaxToken = GenerateSafeVBToken(node.Identifier, node, _nodesVisitor._usedIdentifiers, _semanticModel)
-                Dim asClause As SimpleAsClauseSyntax = Nothing
                 If typeList.Any Then
                     Dim typeArguments As TypeArgumentListSyntax = FactoryTypeArgumentList(typeList)
                     Dim genericName As TypeSyntax = Factory.GenericName(Factory.Identifier(If(iSReturnVoid, "Action", "Func")), typeArguments)

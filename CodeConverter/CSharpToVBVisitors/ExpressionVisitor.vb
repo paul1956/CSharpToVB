@@ -575,8 +575,8 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         End If
                         Return Factory.CollectionInitializer(Factory.SeparatedList({CType(node.Left.Accept(Me), ExpressionSyntax),
                                                                                    CType(nodeRight, ExpressionSyntax)})).WithConvertedTriviaFrom(node)
-                        End If
-                        If node.Parent.IsKind(CS.SyntaxKind.ObjectInitializerExpression) Then
+                    End If
+                    If node.Parent.IsKind(CS.SyntaxKind.ObjectInitializerExpression) Then
                         Dim nodeRight As VB.VisualBasicSyntaxNode = node.Right.Accept(Me)
                         If TypeOf nodeRight Is ObjectMemberInitializerSyntax Then
                             Dim objectMemberInitializer As ObjectMemberInitializerSyntax = DirectCast(nodeRight, ObjectMemberInitializerSyntax)
@@ -860,8 +860,8 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Return Factory.InvocationExpression(
                     expression:=Factory.IdentifierName("__InlineAssignHelper"),
                     argumentList:=Factory.ArgumentList(Factory.SeparatedList((New ArgumentSyntax() {
-                                                                            Factory.SimpleArgument(CType(node.Left.Accept(Me), ExpressionSyntax)),
-                                                                            Factory.SimpleArgument(CType(node.Right.Accept(Me), ExpressionSyntax))
+                                                                            Factory.SimpleArgument(CType(node.Left.Accept(Me).WithoutTrailingTrivia, ExpressionSyntax)),
+                                                                            Factory.SimpleArgument(CType(node.Right.Accept(Me).WithoutTrailingTrivia, ExpressionSyntax))
                                                                                                        }))
                                                         )).WithConvertedTriviaFrom(node)
             End Function
@@ -914,11 +914,11 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     rightNode = node.Right.Accept(Me)
                     Select Case node.Kind
                         Case CS.SyntaxKind.CoalesceExpression
-                            leftExp = DirectCast(node.Left.Accept(Me), ExpressionSyntax).AdjustExpressionTrivia(AdjustLeading:=True)
+                            leftExp = DirectCast(node.Left.Accept(Me), ExpressionSyntax).AdjustExpressionTrivia(AdjustLeading:=True, DirectiveNotAllowed:=False)
                             Dim ifKeywordWithTrivia As SyntaxToken = IfKeyword
                             'Dim commaTokenWithTrivia As SyntaxToken = CommaToken
                             If TypeOf rightNode Is ExpressionSyntax Then
-                                rightExp = DirectCast(rightNode, ExpressionSyntax).AdjustExpressionTrivia(AdjustLeading:=True)
+                                rightExp = DirectCast(rightNode, ExpressionSyntax).AdjustExpressionTrivia(AdjustLeading:=True, DirectiveNotAllowed:=False)
                                 If leftExp.ContainsEOLTrivia OrElse leftExp.ContainsCommentOrDirectiveTrivia Then
                                     If leftExp.HasLeadingTrivia Then
                                         ifKeywordWithTrivia = ifKeywordWithTrivia.WithLeadingTrivia(leftExp.GetLeadingTrivia)
@@ -935,7 +935,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                 Dim lastLeadingTrivia As SyntaxTrivia = rightExp.GetLeadingTrivia.LastOrDefault
 
                                 If (Not (lastLeadingTrivia.IsWhitespace AndAlso Not lastLeadingTrivia.Span.IsEmpty)) AndAlso node.OperatorToken.LeadingTrivia.LastOrDefault.IsWhitespace Then
-                                    rightExp = rightExp.WithLeadingTrivia(node.OperatorToken.LeadingTrivia.Last.ConvertTrivia())
+                                    rightExp = rightExp.WithLeadingTrivia({node.OperatorToken.LeadingTrivia.Last}.ToSyntaxTriviaList.ConvertTriviaList())
                                 End If
 
                                 retExp = Factory.BinaryConditionalExpression(ifKeywordWithTrivia,
@@ -1009,7 +1009,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     End Select
 
                     ' Handle all other expressions here
-                    rightExp = DirectCast(rightNode, ExpressionSyntax).AdjustExpressionTrivia(AdjustLeading:=True)
+                    rightExp = DirectCast(rightNode, ExpressionSyntax).AdjustExpressionTrivia(AdjustLeading:=True, DirectiveNotAllowed:=True).RemoveExtraLeadingEOL
                     Dim leftTrailingTrivia As SyntaxTriviaList = leftNode.GetTrailingTrivia
                     If leftTrailingTrivia.ToList.Count = 1 AndAlso leftTrailingTrivia(0).ToString.Trim = "?" Then
                         Dim originalIdentifier As IdentifierNameSyntax = rightExp.DescendantNodes.
@@ -1020,7 +1020,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         Return rightExp.ReplaceNode(originalIdentifier, newIdentifierWithQuestionMark)
                     End If
 
-                    leftExp = CType(leftNode, ExpressionSyntax).AdjustExpressionTrivia(AdjustLeading:=True)
+                    leftExp = CType(leftNode, ExpressionSyntax).AdjustExpressionTrivia(AdjustLeading:=True, DirectiveNotAllowed:=False)
                     Dim isReferenceType As Boolean = IsReferenceComparison(node.Left, node.Right, _semanticModel)
                     operatorToken = GetOperatorToken(kind, isReferenceType).WithConvertedTriviaFrom(node.OperatorToken)
                     If operatorToken.HasLeadingTrivia Then
@@ -1379,7 +1379,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         itemWithTrivia = e.Value.Accept(Me).WithConvertedTriviaFrom(e.Value).RemoveExtraLeadingEOL.NormalizeWhitespaceEx(useDefaultCasing:=True, indentation:="    ")
                         Dim leadingTrivia As SyntaxTriviaList = e.Value.GetLeadingTrivia
                         If leadingTrivia.Any AndAlso leadingTrivia.Last.IsKind(CS.SyntaxKind.WhitespaceTrivia) Then
-                            itemWithTrivia = itemWithTrivia.WithPrependedLeadingTrivia(leadingTrivia.Last.ConvertTrivia())
+                            itemWithTrivia = itemWithTrivia.WithPrependedLeadingTrivia(Factory.Whitespace(leadingTrivia.Last.ToString))
                         End If
                         If TypeOf itemWithTrivia Is NamedFieldInitializerSyntax Then
                             namedFieldItems.Add(DirectCast(itemWithTrivia, NamedFieldInitializerSyntax))
@@ -1511,7 +1511,6 @@ Namespace CSharpToVBConverter.ToVisualBasic
                             Return Factory.ObjectMemberInitializer(withKeywordWithTrivia, openBraceTokenWithTrivia, Factory.SeparatedList(fields, separators), closeBraceTokenWithTrivia).WithConvertedTriviaFrom(node)
                         End If
                         RestructureNodesAndSeparators(openBraceTokenWithTrivia, exprs, separators, closeBraceTokenWithTrivia)
-
                         If exprs.Any Then
                             If Not exprs(exprLastIndex).ContainsEOLTrivia Then
                                 exprs(exprLastIndex) = exprs(exprLastIndex).WithAppendedEOL
@@ -1600,7 +1599,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
 
                 Dim vbEventExpression As ExpressionSyntax = DirectCast(node.Expression.Accept(Me), ExpressionSyntax).WithoutLeadingSystemDot
                 Dim argList As ArgumentListSyntax = DirectCast(node.ArgumentList.Accept(Me), ArgumentListSyntax)
-                Dim invocationExpression As InvocationExpressionSyntax = Factory.InvocationExpression(vbEventExpression.AdjustExpressionTrivia(AdjustLeading:=False), argList)
+                Dim invocationExpression As InvocationExpressionSyntax = Factory.InvocationExpression(vbEventExpression.AdjustExpressionTrivia(AdjustLeading:=False, DirectiveNotAllowed:=False), argList)
                 Dim objectCreationExpression As CSS.ObjectCreationExpressionSyntax = TryCast(node.Expression.DescendantNodesAndSelf().OfType(Of CSS.MemberAccessExpressionSyntax).FirstOrDefault?.Expression, CSS.ObjectCreationExpressionSyntax)
                 If objectCreationExpression IsNot Nothing Then
                     If TypeOf node.Parent Is CSS.ExpressionStatementSyntax AndAlso objectCreationExpression IsNot Nothing Then
@@ -1743,6 +1742,8 @@ Namespace CSharpToVBConverter.ToVisualBasic
                             Return NothingExpression
                         Case CS.SyntaxKind.ArrayInitializerExpression
                             Return NothingExpression
+                        Case CS.SyntaxKind.CastExpression
+                            Return NothingExpression
                         Case Else
                             Stop
                     End Select
@@ -1774,7 +1775,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 If TypeOf expression Is NewExpressionSyntax AndAlso TypeOf expression IsNot ArrayCreationExpressionSyntax Then
                     Dim expressionWithTrivia As ExpressionSyntax = CType(node.Expression.Accept(Me), ExpressionSyntax)
                     Return Me.WrapTypedNameIfNecessary(Factory.MemberAccessExpression(VB.SyntaxKind.SimpleMemberAccessExpression,
-                                                                                        expressionWithTrivia.AdjustExpressionTrivia(AdjustLeading:=True),
+                                                                                        expressionWithTrivia.AdjustExpressionTrivia(AdjustLeading:=True, DirectiveNotAllowed:=False),
                                                                                         DotToken,
                                                                                         CType(node.Name.Accept(Me), SimpleNameSyntax)
                                                                                         ),
