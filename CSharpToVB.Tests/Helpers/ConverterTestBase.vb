@@ -21,7 +21,8 @@ Namespace CodeConverter.Tests
 
     Public Class ConverterTestBase
 
-        Private Const OptionHeaderText As String = "Option Explicit Off
+        Private Const OptionHeaderText As String = "' To configure or remove Option's included in result, go to Options/Advanced Options...
+Option Explicit Off
 Option Infer On
 Option Strict Off
 
