@@ -18,7 +18,7 @@
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="EditorFont" Type="System.Drawing.Font" Scope="User">
-      <Value Profile="(Default)" />
+      <Value Profile="(Default)">Consolas, 11.25pt</Value>
     </Setting>
     <Setting Name="EditorFontName" Type="System.String" Scope="User">
       <Value Profile="(Default)">Consolas</Value>

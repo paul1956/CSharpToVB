@@ -169,6 +169,9 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         options = options.Add(Factory.OptionStatement(StrictToken, If(.OptionStrict = "On", OnToken, OffToken)).WithTrailingEOL)
                     End If
                 End With
+                If options.Any Then
+                    options = options.Replace(options(0), options(0).WithLeadingTrivia(Factory.CommentTrivia("' To configure or remove Option's included in result, go to Options/Advanced Options..."), VBEOLTrivia))
+                End If
                 _membersList = New SyntaxList(Of VBS.StatementSyntax)
                 For Each m As CSS.MemberDeclarationSyntax In node.Members
                     If _originalRequest.CancelToken.IsCancellationRequested Then

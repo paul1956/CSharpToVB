@@ -88,8 +88,8 @@ Namespace CSharpToVBConverter
                                                                      ifDirective.Condition.GetTrailingTrivia.ConvertTriviaList()).
                                                                      WithAppendedTriviaFromEndOfDirectiveToken(ifDirective.EndOfDirectiveToken))
                 Case CS.SyntaxKind.ElifDirectiveTrivia
-                    If t.Token.Parent.AncestorsAndSelf.OfType(Of CSS.InitializerExpressionSyntax).Any Then
-                        IgnoredIfDepth += 1
+                    If IgnoredIfDepth = 0 AndAlso t.Token.Parent.AncestorsAndSelf.OfType(Of CSS.InitializerExpressionSyntax).Any Then
+                        IgnoredIfDepth = 1
                     End If
                     Dim elIfDirective As CSS.ElifDirectiveTriviaSyntax = DirectCast(structuredTrivia, CSS.ElifDirectiveTriviaSyntax)
                     Dim expression1 As String = elIfDirective.Condition.ConvertDirectiveCondition

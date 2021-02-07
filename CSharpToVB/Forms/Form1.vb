@@ -366,7 +366,7 @@ Partial Public Class Form1
         End If
 
         If My.Settings.EditorFont Is Nothing OrElse My.Settings.EditorFont.Name <> My.Settings.EditorFontName Then
-            My.Settings.EditorFont = New Font("Consolas", 11.0!, FontStyle.Regular)
+            My.Settings.EditorFont = New Font("Consolas", 11.25!, FontStyle.Regular)
             My.Settings.EditorFontName = "Consolas"
         End If
         Me.ConversionInput.Font = My.Settings.EditorFont
