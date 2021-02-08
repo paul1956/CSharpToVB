@@ -547,5 +547,16 @@ Namespace CSharpToVBConverter
             Return returnList.RemoveAt(lineContIndex).RemoveAt(lineContIndex - 1)
         End Function
 
+        <Extension>
+        Friend Function WithLastLineContinuation(triviaList As SyntaxTriviaList) As SyntaxTriviaList
+            Dim eolIndex As Integer = triviaList.IndexOfLast(VB.SyntaxKind.EndOfLineTrivia)
+            Dim lastIndex As Integer = triviaList.Count - 1
+            If lastIndex = -1 OrElse eolIndex = -1 Then
+                triviaList = triviaList.AddRange(SpaceLineContinueEOL)
+                Return triviaList
+            End If
+            triviaList = triviaList.InsertRange(eolIndex, SpaceLineContinue)
+            Return triviaList
+        End Function
     End Module
 End Namespace

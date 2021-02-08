@@ -13,12 +13,12 @@
     <OptionStrict>On</OptionStrict>
     <RepositoryUrl>https://github.com/paul1956/CSharpToVB</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <Version>5.0.0</Version>
     <Copyright>Copyright (c) .NET Foundation and Contributors</Copyright>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-    <AssemblyVersion>5.0.0.8</AssemblyVersion>
-    <FileVersion>5.0.0.8</FileVersion>
+    <AssemblyVersion>5.0.0.9</AssemblyVersion>
+    <FileVersion>5.0.0.9</FileVersion>
+    <Version>5.0.0.9</Version>
     <Product>CSharp To VB Tests</Product>
   </PropertyGroup>
   <ItemGroup>

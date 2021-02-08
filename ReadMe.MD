@@ -65,9 +65,15 @@ Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpec
 Any changes to CSharpToVB application needs to change the version information in the project file **AND** in MyProject/AssemblyInfo.vb until Visual Studio is able to general file automatically for a WinForms application.
 
 ## What's New in this release
+  New in 5.0.2.1/5.0.1.3
+  - Make sure MethodStatements end in EOL
+  - Use ProfessionalRender for ContextStrip. MenuStrip and ToolStrip
+  - Don't convert .cs files that really contain VB code.
+  - Handle multi-line Attributes with comments
+
   New in 5.0.2.0/5.0.1.1
-  - Update default Font Setting
-  - Add help for removing Option statements from result.
+  - Update default Font Setting for conversion buffers
+  - Add helper for removing Option statements from result.
 
   New in 5.0.1.5/5.0.1.0
   - Fix comments in ConditionalExpressions
@@ -154,8 +160,8 @@ Any changes to CSharpToVB application needs to change the version information in
 ***Not all cases may be covered for new features so please provide feedback***
 
   New in 5.0.0.22/5.0.0.14
-
   - Fix translation of Nullable Strings and some complex strings
+  - Fix Roslyn Test where a .cs file only has VB code
 
   New in 5.0.0.22/5.0.0.13
   - Fix ArrowExpression conversion that were sometime being converted to Functions instead of Subs when returning void

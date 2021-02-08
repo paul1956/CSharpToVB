@@ -866,7 +866,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     blockStatements = Me.AdjustUsingsInNeeded(body.Value)
                     Return Factory.SubBlock(subOrFunctionStatement,
                                             blockStatements,
-                                            endSubOrFunction.WithPrependedLeadingTrivia(finalLeadingTrivia).RemoveExtraLeadingEOL.WithTrailingEOL.WithTrailingEOL)
+                                            endSubOrFunction.WithPrependedLeadingTrivia(finalLeadingTrivia).RemoveExtraLeadingEOL.WithTrailingEOL)
                 End If
                 If node.Body IsNot Nothing Then
                     endSubOrFunction = FactoryEndBlockStatement(VB.SyntaxKind.EndFunctionStatement, FunctionKeyword, finalTrailingTrivia).WithPrependedLeadingTrivia(finalLeadingTrivia)
@@ -953,7 +953,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                             asClause,
                                             handlesClause:=Nothing,
                                             implementsClauseOrNothing).
-                                            With(functionStmtLeadingTrivia, functionStmtTrailingTrivia)
+                                            With(functionStmtLeadingTrivia, functionStmtTrailingTrivia).WithTrailingEOL
                 If returnAttributes.Any AndAlso
                    (attributeLists.Count = 0 OrElse attributeLists(0).Attributes(0).Name.ToString = "Extension") AndAlso
                    node.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then

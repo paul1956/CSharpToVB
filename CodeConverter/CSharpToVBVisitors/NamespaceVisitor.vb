@@ -521,7 +521,20 @@ End Property
             Public Overrides Function VisitDelegateDeclaration(node As CSS.DelegateDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim identifier As SyntaxToken = GenerateSafeVBToken(node.Identifier, node, _usedIdentifiers, _semanticModel)
                 Dim methodInfo As INamedTypeSymbol = TryCast(ModelExtensions.GetDeclaredSymbol(_semanticModel, node), INamedTypeSymbol)
-                Dim attrLists As SyntaxList(Of AttributeListSyntax) = Factory.List(node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) DirectCast(a.Accept(Me), AttributeListSyntax)))
+                Dim listOfAttrLists As New List(Of AttributeListSyntax)
+                For Each e As IndexClass(Of CSS.AttributeListSyntax) In node.AttributeLists.WithIndex
+                    If e.IsFirst Then
+                        listOfAttrLists.Add(DirectCast(e.Value.Accept(Me), AttributeListSyntax))
+                    Else
+                        If e.Value.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
+                            listOfAttrLists(e.index - 1) = listOfAttrLists(e.index - 1).WithTrailingTrivia(listOfAttrLists(e.index - 1).GetLeadingTrivia.WithLastLineContinuation)
+                            listOfAttrLists.Add(DirectCast(e.Value.Accept(Me).WithPrependedLeadingTrivia(SpaceLineContinue.ToArray), AttributeListSyntax))
+                        Else
+                            listOfAttrLists.Add(DirectCast(e.Value.Accept(Me), AttributeListSyntax))
+                        End If
+                    End If
+                Next
+                Dim attrLists As SyntaxList(Of AttributeListSyntax) = Factory.List(listOfAttrLists)
                 Dim modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, Me.IsModule, TokenContext.Global).ToList
                 Dim typeParamList As TypeParameterListSyntax = DirectCast(node.TypeParameterList?.Accept(Me), TypeParameterListSyntax)?.WithoutTrailingTrivia
                 Dim paramList As ParameterListSyntax = DirectCast(node.ParameterList?.Accept(Me), ParameterListSyntax)?.WithoutTrailingTrivia
