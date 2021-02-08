@@ -32,7 +32,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         functionNameToken = Factory.Identifier("Group")
                     Else
                         keys = Factory.ExpressionRangeVariable(nameEquals, expression)
-                        functionNameToken = GenerateSafeVBToken(body.Continuation.Identifier, Node, _usedIdentifiers, _semanticModel)
+                        functionNameToken = GenerateSafeVBToken(body.Continuation.Identifier, Node, _semanticModel, _usedIdentifiers)
                     End If
                     Dim aggrationRange As VBS.AggregationRangeVariableSyntax = Factory.AggregationRangeVariable(Factory.FunctionAggregation(functionNameToken))
                     Yield Factory.GroupByClause(Factory.SingletonSeparatedList(items), Factory.SingletonSeparatedList(keys), Factory.SingletonSeparatedList(aggrationRange))
@@ -53,7 +53,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 If expression Is Nothing Then
                     Return Nothing
                 End If
-                Dim identifier As VBS.ModifiedIdentifierSyntax = Factory.ModifiedIdentifier(GenerateSafeVBToken(node.Identifier, node, _usedIdentifiers, _semanticModel))
+                Dim identifier As VBS.ModifiedIdentifierSyntax = Factory.ModifiedIdentifier(GenerateSafeVBToken(node.Identifier, node, _semanticModel, _usedIdentifiers))
                 Dim rangeVariableToken As VBS.CollectionRangeVariableSyntax = Factory.CollectionRangeVariable(identifier, expression)
                 Return Factory.FromClause(rangeVariableToken).WithConvertedTriviaFrom(node)
             End Function
@@ -63,7 +63,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Return Factory.GroupJoinClause(
                         Factory.SingletonSeparatedList(
                             Factory.CollectionRangeVariable(
-                                                            Factory.ModifiedIdentifier(GenerateSafeVBToken(node.Identifier, node, _usedIdentifiers, _semanticModel)
+                                                            Factory.ModifiedIdentifier(GenerateSafeVBToken(node.Identifier, node, _semanticModel, _usedIdentifiers)
                                                             ), If(node.Type Is Nothing, Nothing, Factory.SimpleAsClause(DirectCast(node.Type.Accept(Me), VBS.TypeSyntax))),
                                                                DirectCast(node.InExpression.Accept(Me), VBS.ExpressionSyntax))),
                         Factory.SingletonSeparatedList(
@@ -74,19 +74,19 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                                         ),
                         Factory.SingletonSeparatedList(
                                                         Factory.AggregationRangeVariable(
-                                                                                            Factory.VariableNameEquals(Factory.ModifiedIdentifier(GenerateSafeVBToken(node.Into.Identifier, node, _usedIdentifiers, _semanticModel))
+                                                                                            Factory.VariableNameEquals(Factory.ModifiedIdentifier(GenerateSafeVBToken(node.Into.Identifier, node, _semanticModel, _usedIdentifiers))
                                                                                             ),
                         Factory.GroupAggregation()))).WithConvertedTriviaFrom(node)
                 Else
                     Return Factory.SimpleJoinClause(
                         Factory.SingletonSeparatedList(Factory.CollectionRangeVariable(Factory.ModifiedIdentifier(GenerateSafeVBToken(node.Identifier,
                             node,
-                            _usedIdentifiers, _semanticModel)), If(node.Type Is Nothing, Nothing, Factory.SimpleAsClause(DirectCast(node.Type.Accept(Me), VBS.TypeSyntax))), DirectCast(node.InExpression.Accept(Me), VBS.ExpressionSyntax))), Factory.SingletonSeparatedList(Factory.JoinCondition(DirectCast(node.LeftExpression.Accept(Me), VBS.ExpressionSyntax), DirectCast(node.RightExpression.Accept(Me), VBS.ExpressionSyntax)))).WithConvertedTriviaFrom(node)
+                            _semanticModel, _usedIdentifiers)), If(node.Type Is Nothing, Nothing, Factory.SimpleAsClause(DirectCast(node.Type.Accept(Me), VBS.TypeSyntax))), DirectCast(node.InExpression.Accept(Me), VBS.ExpressionSyntax))), Factory.SingletonSeparatedList(Factory.JoinCondition(DirectCast(node.LeftExpression.Accept(Me), VBS.ExpressionSyntax), DirectCast(node.RightExpression.Accept(Me), VBS.ExpressionSyntax)))).WithConvertedTriviaFrom(node)
                 End If
             End Function
 
             Public Overrides Function VisitLetClause(node As CSS.LetClauseSyntax) As VB.VisualBasicSyntaxNode
-                Dim nameEquals As VBS.VariableNameEqualsSyntax = Factory.VariableNameEquals(Factory.ModifiedIdentifier(GenerateSafeVBToken(node.Identifier, node, _usedIdentifiers, _semanticModel)))
+                Dim nameEquals As VBS.VariableNameEqualsSyntax = Factory.VariableNameEquals(Factory.ModifiedIdentifier(GenerateSafeVBToken(node.Identifier, node, _semanticModel, _usedIdentifiers)))
                 Dim expression As VBS.ExpressionSyntax = DirectCast(node.Expression.Accept(Me), VBS.ExpressionSyntax)
                 Dim expressionRangeVariable As VBS.ExpressionRangeVariableSyntax = Factory.ExpressionRangeVariable(nameEquals, expression)
                 Return Factory.LetClause(Factory.SingletonSeparatedList(expressionRangeVariable)).WithConvertedTriviaFrom(node)

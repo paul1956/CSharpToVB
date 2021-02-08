@@ -409,7 +409,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim finalTrailingDirective As New SyntaxTriviaList
                 Me.ConvertAndSplitAttributes(node.AttributeLists, attributeLists, returnAttributes, finalTrailingDirective)
                 Dim modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, Me.IsModule, TokenContext.Member).ToList
-                Dim eventNameToken As SyntaxToken = GenerateSafeVBToken(node.Identifier, node, _usedIdentifiers, _semanticModel).WithTrailingTrivia(SpaceTrivia)
+                Dim eventNameToken As SyntaxToken = GenerateSafeVBToken(node.Identifier, node, _semanticModel, _usedIdentifiers).WithTrailingTrivia(SpaceTrivia)
                 Dim asClause As VBS.SimpleAsClauseSyntax = Factory.SimpleAsClause(attributeLists:=returnAttributes, DirectCast(node.Type.Accept(Me), VBS.TypeSyntax))
                 modifiers.Add(CustomKeyword)
                 Dim implementsClauseOrNothing As VBS.ImplementsClauseSyntax = If(declaredSymbol Is Nothing, Nothing, Me.CreateImplementsClauseSyntaxOrNull(declaredSymbol, eventNameToken))
@@ -621,7 +621,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 End If
                 _originalRequest.UsedStacks.Push(_usedIdentifiers)
 
-                Dim methodNameToken As SyntaxToken = GenerateSafeVBToken(node.Identifier, node, _usedIdentifiers, _semanticModel)
+                Dim methodNameToken As SyntaxToken = GenerateSafeVBToken(node.Identifier, node, _semanticModel, _usedIdentifiers)
 
                 Dim methodInfo As ISymbol = ModelExtensions.GetDeclaredSymbol(_semanticModel, node)
                 Dim possibleReturnVoid As Boolean? = methodInfo?.GetReturnType()?.SpecialType = SpecialType.System_Void
@@ -1073,7 +1073,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Dim propertyNameToken As SyntaxToken
                     Dim propertyStatement As VBS.PropertyStatementSyntax
                     If node.ExplicitInterfaceSpecifier Is Nothing Then
-                        propertyNameToken = GenerateSafeVBToken(node.Identifier, node, _usedIdentifiers, _semanticModel)
+                        propertyNameToken = GenerateSafeVBToken(node.Identifier, node, _semanticModel, _usedIdentifiers)
                         Dim propertySymbol As IPropertySymbol = CType(_semanticModel.GetDeclaredSymbol(node), IPropertySymbol)
                         implementsClauseOrNothing = If(propertySymbol Is Nothing, Nothing, Me.CreateImplementsClauseSyntaxOrNull(propertySymbol, propertyNameToken))
                     Else

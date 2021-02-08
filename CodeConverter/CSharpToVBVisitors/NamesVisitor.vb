@@ -109,7 +109,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 If node.Parent.IsKind(CS.SyntaxKind.ObjectCreationExpression) Then
                     Return Me.WrapTypedNameIfNecessary(Factory.GenericName(GenerateSafeVBToken(node.Identifier, node, _semanticModel, _usedIdentifiers, IsQualifiedName:=False, IsTypeName:=True).WithTrailingTrivia, typeArguments), node)
                 End If
-                Return Me.WrapTypedNameIfNecessary(Factory.GenericName(GenerateSafeVBToken(node.Identifier, node, _usedIdentifiers, _semanticModel).WithTrailingTrivia, typeArguments), node)
+                Return Me.WrapTypedNameIfNecessary(Factory.GenericName(GenerateSafeVBToken(node.Identifier, node, _semanticModel, _usedIdentifiers).WithTrailingTrivia, typeArguments), node)
             End Function
 
             Public Overrides Function VisitIdentifierName(node As CSS.IdentifierNameSyntax) As VB.VisualBasicSyntaxNode
@@ -128,7 +128,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         If parentAsMemberAccessExpr.Expression.IsKind(CS.SyntaxKind.IdentifierName) Then
                             Dim identifierExpr As CSS.IdentifierNameSyntax = DirectCast(parentAsMemberAccessExpr.Expression, CSS.IdentifierNameSyntax)
                             If identifierExpr.Identifier.ToString = node.Identifier.ToString Then
-                                Return Me.WrapTypedNameIfNecessary(Factory.IdentifierName(GenerateSafeVBToken(node.Identifier, node, _usedIdentifiers, _semanticModel)), node)
+                                Return Me.WrapTypedNameIfNecessary(Factory.IdentifierName(GenerateSafeVBToken(node.Identifier, node, _semanticModel, _usedIdentifiers)), node)
                             End If
                         End If
                     End If

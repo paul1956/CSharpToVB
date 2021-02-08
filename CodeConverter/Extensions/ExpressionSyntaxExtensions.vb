@@ -230,6 +230,8 @@ Namespace CSharpToVBConverter
                             Return (_Error:=True, PredefinedTypeObject)
                         ElseIf SymbolEqualityComparer.Default.Equals(typeInfo.Type, Model.Compilation.ObjectType) Then
                             Return (_Error:=False, PredefinedTypeObject)
+                        ElseIf typeInfo.Type.ToString.StartsWith("System.ValueTuple") Then
+                            Return (_Error:=False, Factory.ParseTypeName(typeInfo.Type.ToString.Replace("<", "(Of ").Replace(">", ")")))
                         End If
                     End If
                     Dim symbol As ISymbol = If(typeInfo.Type, symbolInfo.GetAnySymbol())

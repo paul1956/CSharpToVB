@@ -665,9 +665,9 @@ Namespace CSharpToVBConverter
         ''' </summary>
         ''' <param name="id"></param>
         ''' <returns></returns>
-        ''' <param name="Node"></param><param name="usedIdentifiers"></param>
-        ''' <param name="Model"></param>
-        Friend Function GenerateSafeVBToken(id As SyntaxToken, Node As CS.CSharpSyntaxNode, usedIdentifiers As Dictionary(Of String, SymbolTableEntry), Model As SemanticModel) As SyntaxToken
+        ''' <param name="Node"></param><param name="Model"></param>
+        ''' <param name="usedIdentifiers"></param>
+        Friend Function GenerateSafeVBToken(id As SyntaxToken, Node As CS.CSharpSyntaxNode, Model As SemanticModel, usedIdentifiers As Dictionary(Of String, SymbolTableEntry)) As SyntaxToken
             Return GenerateSafeVBToken(id, Node, Model, usedIdentifiers, IsQualifiedName:=False, IsTypeName:=False)
         End Function
 

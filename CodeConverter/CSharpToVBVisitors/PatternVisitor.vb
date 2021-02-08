@@ -39,7 +39,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim variableType As VBS.TypeSyntax = DirectCast(node.Type.Accept(Me), VBS.TypeSyntax)
 
                 Dim declarationToBeAdded As VBS.LocalDeclarationStatementSyntax =
-                    FactoryDimStatement(GenerateSafeVBToken(designation.Identifier, node, _usedIdentifiers, _semanticModel),
+                    FactoryDimStatement(GenerateSafeVBToken(designation.Identifier, node, _semanticModel, _usedIdentifiers),
                                    Factory.SimpleAsClause(variableType),
                                    Factory.EqualsValue(NothingExpression)
                                   ).WithLeadingTrivia(leadingTrivia)
@@ -62,7 +62,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Dim designationNameToken As SyntaxToken
                     If TypeOf declarationPattern.Designation Is CSS.SingleVariableDesignationSyntax Then
                         Dim designation As CSS.SingleVariableDesignationSyntax = DirectCast(declarationPattern.Designation, CSS.SingleVariableDesignationSyntax)
-                        designationNameToken = GenerateSafeVBToken(designation.Identifier, node, _usedIdentifiers, _semanticModel)
+                        designationNameToken = GenerateSafeVBToken(designation.Identifier, node, _semanticModel, _usedIdentifiers)
                     ElseIf TypeOf declarationPattern.Designation Is CSS.DiscardDesignationSyntax Then
                         designationNameToken = Factory.Identifier(node.GetUniqueVariableNameInScope("_1", _usedIdentifiers, _semanticModel))
                     End If
@@ -99,7 +99,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         statementWithIssue.AddMarker(statement, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
                     Else
                         dimToBeAdded = FactoryDimStatement(designationNameToken,
-                                                           Factory.SimpleAsClause(varType.AdjustExpressionTrivia(AdjustLeading:=False, DirectiveNotAllowed:=false)),
+                                                           Factory.SimpleAsClause(varType.AdjustExpressionTrivia(AdjustLeading:=False, DirectiveNotAllowed:=False)),
                                                            Factory.EqualsValue(vbExpr)
                                                           ).WithTrailingTrivia(VBEOLTrivia)
                         statementWithIssue.AddMarker(dimToBeAdded, StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
@@ -214,9 +214,9 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Throw UnreachableException
                 End If
                 Return Factory.IdentifierName(GenerateSafeVBToken(CS.SyntaxFactory.Identifier(designationIdentifier),
-                                                                  node,
-                                                                  _usedIdentifiers,
-                                                                  _semanticModel))
+                    node,
+                    _semanticModel,
+                    _usedIdentifiers))
             End Function
 
         End Class

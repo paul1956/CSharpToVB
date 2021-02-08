@@ -132,7 +132,6 @@ Public Module ColorizeSupport
                 End If
             Else
                 Colorize(MainForm, GetClassifiedRanges(TextToCompile, LanguageNames.VisualBasic), MainForm.ConversionOutput, TextToCompile.SplitLines.Length, MainForm._resultOfConversion.GetFilteredListOfFailures())
-                MainForm.ConversionOutput.Select(0, 0)
             End If
         End If
         MainForm.ConversionOutput.Visible = True
