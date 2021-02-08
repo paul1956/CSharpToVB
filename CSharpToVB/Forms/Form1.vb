@@ -4,35 +4,34 @@
 
 Imports System.ComponentModel
 Imports System.IO
-Imports System.Net
 Imports System.Reflection
 Imports System.Text
 Imports System.Threading
 Imports CSharpToVBApp
 Imports CSharpToVBConverter
 Imports Microsoft.CodeAnalysis
-Imports Microsoft.VisualBasic.ApplicationServices
 Imports Microsoft.VisualBasic.FileIO
 Imports ProgressReportLibrary
 
 Partial Public Class Form1
-    Private Const ProjectGitHubURL As String = "https://github.com/paul1956/CSharpToVB/"
     Private Shared ReadOnly s_snippetFileWithPath As String = Path.Combine(SpecialDirectories.MyDocuments, "CSharpToVBLastSnippet.RTF")
     Private ReadOnly _frameworkTypeList As New List(Of ToolStripMenuItem)
     Private ReadOnly _frameworkVersionList As New Dictionary(Of String, (item As ToolStripMenuItem, Parent As ToolStripMenuItem))
     Private _currentBuffer As Control
+    Private _tlsEnable As Boolean
     Friend _cancellationTokenSource As CancellationTokenSource
     Friend _doNotFailOnError As Boolean
     Friend _inColorize As Boolean
     Friend _requestToConvert As ConvertRequest
     Friend _resultOfConversion As ConversionResult
-    Private _tlsEnable As Boolean
-
+    Public Const ProjectGitHubURL As String = "https://github.com/paul1956/CSharpToVB/"
     Public CurrentThemeDictionary As Dictionary(Of String, ColorDescriptor)
 
     Public Sub New()
         Me.InitializeComponent()
     End Sub
+
+    Friend Property BufferToSearch As SearchBuffers = SearchBuffers.CS
 
     Private Property CurrentBuffer As Control
         Get
@@ -45,18 +44,6 @@ Partial Public Class Form1
             End If
         End Set
     End Property
-
-    Friend Property BufferToSearch As SearchBuffers = SearchBuffers.CS
-
-    Private Shared Function IsNewerVersion(LatestVersionStrings() As String, AppVersion As Version, ConverterVersion As Version) As Boolean
-        If Not (String.IsNullOrWhiteSpace(LatestVersionStrings(0)) OrElse LatestVersionStrings(0) = AppVersion.ToString) Then
-            Return True
-        End If
-        If LatestVersionStrings.Length = 1 Then
-            Return False
-        End If
-        Return LatestVersionStrings(1) <> ConverterVersion.ToString
-    End Function
 
     Private Sub ButtonStop_Click(sender As Object, e As EventArgs) Handles ButtonStopConversion.Click
         Me.ButtonStopConversion.Visible = False
@@ -75,63 +62,6 @@ Partial Public Class Form1
 
     Private Sub ButtonStop_VisibleChanged(sender As Object, e As EventArgs) Handles ButtonStopConversion.VisibleChanged
         LocalUseWaitCursor(Me, WaitCursorEnable:=Me.ButtonStopConversion.Visible)
-    End Sub
-
-    Private Sub CheckForUpdates(ReportResults As Boolean)
-        Try
-            Dim request As WebRequest = WebRequest.Create($"{ProjectGitHubURL}blob/master/ReadMe.MD")
-            request.Timeout = 4000
-            Dim response As WebResponse = request.GetResponse()
-            Using reader As New StreamReader(response.GetResponseStream())
-                Dim line As String
-                Dim index As Integer = -1
-                Do
-                    line = reader.ReadLine
-                    If line Is Nothing Then
-                        Exit Do
-                    End If
-                    If line.Contains("What's New in this release", StringComparison.Ordinal) Then
-                        Exit Do
-                    End If
-                Loop
-                Do
-                    line = reader.ReadLine
-                    If line Is Nothing Then
-                        Exit Do
-                    End If
-                    index = line.IndexOf("New in ", StringComparison.OrdinalIgnoreCase)
-                    Exit Do
-                Loop
-                If index < 0 Then
-                    Exit Sub
-                End If
-                Dim versionStr As String = line.Substring(index + "New In ".Length)
-
-                index = versionStr.IndexOf("<"c)
-                If index > 0 Then
-                    versionStr = versionStr.Substring(0, index)
-                End If
-                Dim gitHubVersion() As String = versionStr.Split("/")
-                Dim codeConverterInfo As New AssemblyInfo(GetType(CodeWithOptions).Assembly)
-                If IsNewerVersion(gitHubVersion, My.Application.Info.Version, codeConverterInfo.Version) Then
-                    Me.StatusStripUpdateAvailable.Visible = True
-                    If ReportResults Then
-                        If MsgBox("There is a newer version available, do you want to install now?", MsgBoxStyle.YesNo, "Updates Available") = MsgBoxResult.Yes Then
-                            Me.OpenURLInBrowser(ProjectGitHubURL)
-                        End If
-                    End If
-                Else
-                    Me.StatusStripUpdateAvailable.Visible = False
-                    If ReportResults Then
-                        MsgBox("You are running latest version", MsgBoxStyle.OkOnly, "No Updates Available")
-                    End If
-                End If
-            End Using
-        Catch ex As Exception
-            If ReportResults Then
-                MsgBox("Failed while checking for new  version: " + ex.Message, MsgBoxStyle.Information, "Version Check Failed")
-            End If
-        End Try
     End Sub
 
     Private Sub ContextMenuCopy_Click(sender As Object, e As EventArgs) Handles ContextMenuCopy.Click
@@ -285,41 +215,6 @@ Partial Public Class Form1
         Me.SetSearchControls()
     End Sub
 
-    Private Async Function ConvertSnippetOfTopLevelStmt(sourceCode As String) As Task
-        SetButtonStopAndCursor(MeForm:=Me, StopButton:=Me.ButtonStopConversion, StopButtonVisible:=True)
-        Me.ListBoxErrorList.Items.Clear()
-        Me.ListBoxFileList.Items.Clear()
-        Me.LineNumbersForConversionOutput.Visible = False
-        Me.StatusStripCurrentFileName.Text = ""
-        Me.ResizeRichTextBuffers()
-        If _cancellationTokenSource IsNot Nothing Then
-            _cancellationTokenSource.Dispose()
-        End If
-        _cancellationTokenSource = New CancellationTokenSource
-
-        _requestToConvert = New ConvertRequest(My.Settings.SkipAutoGenerated, New Progress(Of ProgressReport)(AddressOf Me.StatusStripConversionProgressBar.Update), _cancellationTokenSource.Token) With
-                {
-                .SourceCode = sourceCode
-                }
-
-        Dim dontDisplayLineNumbers As Boolean = Await Convert_Compile_ColorizeAsync(Me,
-                                                                                    _requestToConvert,
-                                                                                    New List(Of String) From {My.Settings.Framework},
-                                                                                    New List(Of KeyValuePair(Of String, Object)) From {KeyValuePair.Create(Of String, Object)(My.Settings.Framework, True)},
-                                                                                    SharedReferences.CSharpReferences(Assembly.Load("System.Windows.Forms").Location,
-                                                                                    OptionalReference:=Nothing).ToArray,
-                                                                                    _cancellationTokenSource.Token
-                                                                                   ).ConfigureAwait(True)
-        If _requestToConvert.CancelToken.IsCancellationRequested Then
-            MsgBox($"Conversion canceled.",
-                       MsgBoxStyle.OkOnly Or MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground,
-                       Title:="C# to Visual Basic")
-            Me.StatusStripConversionProgressBar.Clear()
-        End If
-        SetButtonStopAndCursor(MeForm:=Me, StopButton:=Me.ButtonStopConversion, StopButtonVisible:=False)
-        Me.LineNumbersForConversionOutput.Visible = (Not dontDisplayLineNumbers) OrElse My.Settings.ShowDestinationLineNumbers
-    End Function
-
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles Me.Load
         Me.SplitContainer1.SplitterDistance = Me.SplitContainer1.Height - (Me.ListBoxErrorList.Height + 20)
 
@@ -427,7 +322,7 @@ Partial Public Class Form1
         Me.TSFindMatchWholeWordCheckBox.Checked = My.Settings.TSFindMatchWholeWord
         Application.DoEvents()
         UpdateColorDictionariesFromFile()
-        Me.CheckForUpdates(ReportResults:=False)
+        CheckForUpdates(Me, ReportResults:=False)
         If My.Settings.ColorMode.IsLightMode Then
             Me.TSThemeButton.Text = LightModeStr
             CurrentThemeDictionary = s_LightModeColorDictionary
@@ -880,11 +775,11 @@ namespace Application
     End Sub
 
     Private Sub mnuHelpCheckForUpdatesMenuItem_Click(sender As Object, e As EventArgs) Handles mnuHelpCheckForUpdatesMenuItem.Click
-        Me.CheckForUpdates(ReportResults:=True)
+        CheckForUpdates(Me, ReportResults:=True)
     End Sub
 
     Private Sub mnuHelpReportIssueMenuItem_Click(sender As Object, e As EventArgs) Handles mnuHelpReportIssueMenuItem.Click
-        Me.OpenURLInBrowser($"{ProjectGitHubURL}issues")
+        OpenURLInBrowser($"{ProjectGitHubURL}issues")
     End Sub
 
     Private Sub mnuOptionDefaultFramework_CheckedChanged(sender As Object, e As EventArgs) Handles mnuOptionsDefaultFramework.CheckedChanged
@@ -1016,20 +911,6 @@ namespace Application
         My.Settings.Save()
     End Sub
 
-    Private Sub OpenURLInBrowser(webAddress As String)
-        Try
-            'Devices.Mouse.OverrideCursor = Cursors.AppStarting
-            Me.Cursor = Cursors.AppStarting
-            launchBrowser(webAddress)
-        Catch ex As Exception
-            Stop
-            Throw
-        Finally
-            Me.Cursor = Cursors.AppStarting
-            'Devices.Mouse.OverrideCursor = Nothing
-        End Try
-    End Sub
-
     Private Sub SplitContainer1_SplitterMoved(sender As Object, e As SplitterEventArgs) Handles SplitContainer1.SplitterMoved
         Me.ListBoxFileList.Height = Me.SplitContainer1.Panel2.ClientSize.Height
         Me.ListBoxErrorList.Height = Me.SplitContainer1.Panel2.ClientSize.Height
@@ -1042,7 +923,7 @@ namespace Application
     End Sub
 
     Private Sub StatusStripUpdateAvailable_Click(sender As Object, e As EventArgs) Handles StatusStripUpdateAvailable.Click
-        Me.OpenURLInBrowser(ProjectGitHubURL)
+        OpenURLInBrowser(ProjectGitHubURL)
     End Sub
 
     Protected Overrides Sub OnLoad(e As EventArgs)
@@ -1172,7 +1053,7 @@ namespace Application
 
 #Region "Form Support Routines"
 
-    Private Sub ResizeRichTextBuffers()
+    Friend Sub ResizeRichTextBuffers()
         Dim lineNumberInputWidth As Integer = If(Me.LineNumbersForConversionInput.Visible AndAlso Me.ConversionInput.TextLength > 0, Me.LineNumbersForConversionInput.Width, 0)
         Dim lineNumberOutputWidth As Integer = If(Me.LineNumbersForConversionOutput.Visible AndAlso Me.ConversionOutput.TextLength > 0, Me.LineNumbersForConversionOutput.Width, 0)
         Dim halfClientWidth As Integer = Me.ClientSize.Width \ 2
@@ -1188,34 +1069,6 @@ namespace Application
         Me.StatusStripCurrentFileName.Width = halfClientWidth
     End Sub
 
-    Friend Sub UpdateProgress(progressStr As String)
-        Me.ProjectConversionInitProgressLabel.Text = progressStr
-        If progressStr.Any Then
-            Me.ConversionInput.Text = ""
-            Me.ConversionOutput.Text = ""
-            Me.ProjectConversionInitProgressLabel.Visible = True
-            Me.ProjectConversionInitProgressLabel.Left = Math.Max((Me.ConversionInput.Width \ 2) - (Me.ProjectConversionInitProgressLabel.Width \ 2), 0)
-            Me.ProjectConversionInitProgressLabel.Top = (Me.ConversionInput.Height \ 2) - (Me.ProjectConversionInitProgressLabel.Height \ 2)
-
-            Me.ProjectConversionInitProgressBar.Visible = True
-            Me.ProjectConversionInitProgressBar.Left = Math.Max((Me.ConversionInput.Width \ 2) - (Me.ProjectConversionInitProgressBar.Width \ 2), 0)
-            Me.ProjectConversionInitProgressBar.Top = Me.ProjectConversionInitProgressLabel.Bottom + 5
-        Else
-            Me.ProjectConversionInitProgressLabel.Visible = False
-            Me.ProjectConversionInitProgressBar.Visible = False
-        End If
-        Application.DoEvents()
-    End Sub
-
-    Friend Sub UpdateProgressLabels(progressStr As String)
-        If Me.InvokeRequired Then
-            Me.Invoke(Sub()
-                          Me.UpdateProgress(progressStr)
-                      End Sub)
-        Else
-            Me.UpdateProgress(progressStr)
-        End If
-    End Sub
 
 #End Region
 

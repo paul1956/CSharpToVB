@@ -4,6 +4,7 @@
 
 Imports System.Globalization
 Imports System.IO
+Imports System.Runtime.CompilerServices
 Imports System.Threading
 Imports Buildalyzer
 Imports Buildalyzer.Workspaces
@@ -11,6 +12,16 @@ Imports CSharpToVBConverter
 Imports Microsoft.CodeAnalysis
 
 Public Module ProcessProjectUtilities
+    <Extension>
+    Friend Sub UpdateProgressLabels(MainForm As Form1, progressStr As String)
+        If MainForm.InvokeRequired Then
+            MainForm.Invoke(Sub()
+                                MainForm.UpdateProgress(progressStr)
+                            End Sub)
+        Else
+            MainForm.UpdateProgress(progressStr)
+        End If
+    End Sub
 
     Friend Function CSharpReferences(fileReferences As IEnumerable(Of String), projectReferences As IEnumerable(Of String)) As List(Of MetadataReference)
         Dim referenceList As New List(Of MetadataReference)
@@ -90,7 +101,7 @@ Public Module ProcessProjectUtilities
     ''' <returns>Error String to be Displayed and list of products processed</returns>
     Friend Async Function ProcessProjectAsync(MainForm As Form1, TaskProjectAnalyzer As IProjectAnalyzer, SolutionRoot As String, processedProjects As Integer, totalProjects As Integer, cancelToken As CancellationTokenSource) As Task(Of (ErrorPrompt As String, ProjectsToBeAdded As List(Of String)))
         Application.DoEvents()
-        MainForm.UpdateProgressLabels("Getting Analyzer Results")
+        UpdateProgressLabels(MainForm, "Getting Analyzer Results")
         Dim taskResults As Task(Of IAnalyzerResults) = GetResultsAsync(CType(TaskProjectAnalyzer, ProjectAnalyzer))
         While Not taskResults.IsCompleted
             If cancelToken.IsCancellationRequested Then
