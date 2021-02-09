@@ -548,7 +548,9 @@ Namespace CSharpToVBConverter
                                         Throw UnexpectedValue($"{nextTrivia.RawKind}")
                                 End Select
                             Case VB.SyntaxKind.EndOfLineTrivia
+#Disable Warning CA1826 ' Do not use Enumerable methods on indexable collections
                                 If Not (nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) OrElse newTrailingTrivia.LastOrDefault.IsKind(VB.SyntaxKind.EndOfLineTrivia)) Then
+#Enable Warning CA1826 ' Do not use Enumerable methods on indexable collections
                                     newTrailingTrivia = newTrailingTrivia.Add(e.Value)
                                 End If
                             Case VB.SyntaxKind.LineContinuationTrivia

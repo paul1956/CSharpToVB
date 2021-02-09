@@ -298,7 +298,9 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     If foundEOL Then
                         parameterTrailingTrivia = parameterTrailingTrivia.Add(VBEOLTrivia)
                     End If
+#Disable Warning CA1826 ' Do not use Enumerable methods on indexable collections
                     returnType = returnType.WithLeadingTrivia(If(returnType.GetLeadingTrivia.FirstOrDefault.FullWidth > 0, Nothing, SpaceTrivia)).WithoutTrailingTrivia
+#Enable Warning CA1826 ' Do not use Enumerable methods on indexable collections
                     asClause = Factory.SimpleAsClause(returnType).WithTrailingTrivia(parameterTrailingTrivia)
                 Else
                     identifier = identifier.WithTrailingTrivia(parameterTrailingTrivia)

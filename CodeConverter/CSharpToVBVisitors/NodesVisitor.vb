@@ -138,7 +138,9 @@ Namespace CSharpToVBConverter.ToVisualBasic
             End Function
 
             Public Overrides Function VisitCompilationUnit(node As CSS.CompilationUnitSyntax) As VB.VisualBasicSyntaxNode
+#Disable Warning CA1826 ' Do not use Enumerable methods on indexable collections
                 If node.GetLeadingTrivia.FirstOrDefault.IsKind(CS.SyntaxKind.SingleLineCommentTrivia) Then
+#Enable Warning CA1826 ' Do not use Enumerable methods on indexable collections
                     VBHeaderLeadingTrivia = node.GetLeadingTrivia.GetDocumentBanner
                 End If
                 For Each [using] As CSS.UsingDirectiveSyntax In node.Usings
@@ -238,7 +240,9 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     If options.Any Then
                         If VBHeaderLeadingTrivia.Any Then
                             options = options.Replace(options.First, options.First.WithLeadingTrivia(VBHeaderLeadingTrivia.Add(VBEOLTrivia)))
-                            If AllImports.Any AndAlso Not AllImports.First.GetLeadingTrivia.FirstOrDefault.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+#Disable Warning CA1826 ' Do not use Enumerable methods on indexable collections
+                            If AllImports.Any AndAlso Not AllImports(0).GetLeadingTrivia.FirstOrDefault.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+#Enable Warning CA1826 ' Do not use Enumerable methods on indexable collections
                                 options = options.Replace(options.Last, options.Last.WithAppendedEOL)
                             End If
                         End If
@@ -247,7 +251,9 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     If listOfAttributes.Any AndAlso listOfAttributes(0).GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
                         options = options.Replace(options(0), options(0).WithLeadingTrivia(VBHeaderLeadingTrivia.Add(VBEOLTrivia)))
                         listOfAttributes(0) = listOfAttributes(0).WithUniqueLeadingTrivia(VBHeaderLeadingTrivia)
-                        If Not listOfAttributes.First.GetLeadingTrivia.FirstOrDefault.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+#Disable Warning CA1826 ' Do not use Enumerable methods on indexable collections
+                        If Not listOfAttributes(0).GetLeadingTrivia.FirstOrDefault.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+#Enable Warning CA1826 ' Do not use Enumerable methods on indexable collections
                             options = options.Replace(options.Last, options.Last.WithAppendedEOL)
                         End If
                     ElseIf _membersList.Any AndAlso
@@ -256,7 +262,9 @@ Namespace CSharpToVBConverter.ToVisualBasic
 
                         options = options.Replace(options(0), options(0).WithLeadingTrivia(VBHeaderLeadingTrivia))
                         _membersList = _membersList.Replace(_membersList(0), _membersList(0).WithUniqueLeadingTrivia(VBHeaderLeadingTrivia))
+#Disable Warning CA1826 ' Do not use Enumerable methods on indexable collections
                         If Not _membersList(0).GetLeadingTrivia.FirstOrDefault.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+#Enable Warning CA1826 ' Do not use Enumerable methods on indexable collections
                             options = options.Replace(options.Last, options.Last.WithAppendedEOL)
                         End If
                     Else

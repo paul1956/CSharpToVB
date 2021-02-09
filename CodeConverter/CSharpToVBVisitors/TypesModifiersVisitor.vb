@@ -115,9 +115,12 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Function(t As CSS.TypeOfExpressionSyntax)
                         Return IntPtrType
                     End Function,
-                    Function(__ As SyntaxNode) As VB.VisualBasicSyntaxNode
-                        Throw New NotImplementedException($"{__.GetType().FullName} not implemented!")
-                    End Function
+                    Function(m As CSS.ArrayTypeSyntax)
+                        Return IntPtrType
+                    End Function,
+                   Function(__ As SyntaxNode) As VB.VisualBasicSyntaxNode
+                       Throw New NotImplementedException($"{__.GetType().FullName} not implemented!")
+                   End Function
                     )
 
             End Function

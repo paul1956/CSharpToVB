@@ -88,7 +88,7 @@ Public Module Compile
             Try
                 compileResult = compilation.Emit(ms)
                 compileSuccess = True
-            Finally
+            Catch
                 ' Ignore fatal compiler errors
             End Try
         End Using

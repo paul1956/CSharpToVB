@@ -101,7 +101,9 @@ Namespace CSharpToVBConverter.ToVisualBasic
                             newTrailingTrivia = newTrailingTrivia.AddRange(ConvertTriviaList(node.Else.Statement.GetBraces.Item1.TrailingTrivia))
                         End If
                         Dim elseStatement As ElseStatementSyntax = Factory.ElseStatement(ElseKeyword.WithConvertedLeadingTriviaFrom(node.Else.ElseKeyword)).WithTrailingTrivia(newTrailingTrivia)
+#Disable Warning CA1826 ' Do not use Enumerable methods on indexable collections
                         If statements.Any AndAlso statements.LastOrDefault.GetTrailingTrivia.LastOrDefault.IsEndOfLine AndAlso openBraceLeadingTrivia.FirstOrDefault.IsEndOfLine Then
+#Enable Warning CA1826 ' Do not use Enumerable methods on indexable collections
                             openBraceLeadingTrivia = openBraceLeadingTrivia.RemoveAt(0)
                         End If
                         elseBlock = Factory.ElseBlock(elseStatement, statements).WithPrependedLeadingTrivia(openBraceLeadingTrivia).WithAppendedTrailingTrivia(CloseBraceTrailingTrivia)

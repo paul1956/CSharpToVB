@@ -731,7 +731,9 @@ Namespace CSharpToVBConverter
             Else
                 finalTrailingTrivia = finalTrailingTrivia.AddRange(Token.TrailingTrivia)
             End If
+#Disable Warning CA1826 ' Do not use Enumerable methods on indexable collections
             If RequireTrailingSpace AndAlso Not finalTrailingTrivia.FirstOrDefault.IsWhitespaceOrEndOfLine Then
+#Enable Warning CA1826 ' Do not use Enumerable methods on indexable collections
                 finalTrailingTrivia = finalTrailingTrivia.Insert(0, SpaceTrivia)
             End If
             Return Token.With(finalLeadingTrivia, finalTrailingTrivia)

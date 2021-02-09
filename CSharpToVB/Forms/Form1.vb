@@ -188,7 +188,7 @@ Partial Public Class Form1
             Dim selectionLength As Integer = Me.ConversionInput.SelectionLength
 
             Dim keywordIndex As Integer = Me.ConversionInput.FindIndexOfAny("namespace", "internal static class")
-            _tlsEnable = True
+            _tlsEnable = Me.ConversionInput.Text(0) <> "/"
             If keywordIndex >= 0 Then
                 Dim firstCharIndexOfNamespaceLine As Integer = Me.ConversionInput.GetFirstCharIndexFromLine(Me.ConversionInput.GetLineFromCharIndex(keywordIndex))
                 _tlsEnable = keywordIndex <> firstCharIndexOfNamespaceLine

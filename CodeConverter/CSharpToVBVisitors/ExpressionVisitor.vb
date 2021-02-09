@@ -932,9 +932,10 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                         rightExp = rightExp.WithLeadingTrivia(stmtTrivia.Last)
                                     End If
                                 End If
+#Disable Warning CA1826 ' Do not use Enumerable methods on indexable collections
                                 Dim lastLeadingTrivia As SyntaxTrivia = rightExp.GetLeadingTrivia.LastOrDefault
-
                                 If (Not (lastLeadingTrivia.IsWhitespace AndAlso Not lastLeadingTrivia.Span.IsEmpty)) AndAlso node.OperatorToken.LeadingTrivia.LastOrDefault.IsWhitespace Then
+#Enable Warning CA1826 ' Do not use Enumerable methods on indexable collections
                                     rightExp = rightExp.WithLeadingTrivia({node.OperatorToken.LeadingTrivia.Last}.ToSyntaxTriviaList.ConvertTriviaList())
                                 End If
 
@@ -1836,7 +1837,9 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 End If
                 operatorTrailingTrivia = New SyntaxTriviaList
 
+#Disable Warning CA1826 ' Do not use Enumerable methods on indexable collections
                 If expressionTrailingTrivia.LastOrDefault.IsKind(VB.SyntaxKind.EndOfLineTrivia) AndAlso Not expressionTrailingTrivia.ContainsCommentOrDirectiveTrivia Then
+#Enable Warning CA1826 ' Do not use Enumerable methods on indexable collections
                     expressionTrailingTrivia = expressionTrailingTrivia.InsertRange(expressionTrailingTrivia.Count - 1, SpaceLineContinue)
                     expression = expression.WithTrailingTrivia(expressionTrailingTrivia)
                     operatorToken = operatorToken.AdjustTokenLeadingTrivia()
