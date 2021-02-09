@@ -502,6 +502,8 @@ Namespace CSharpToVBConverter
                             End If
                             newTrailingTrivia = newTrailingTrivia.Add(trailingTrivia(0))
                             ' EOL added below
+                        Case VB.SyntaxKind.EndIfDirectiveTrivia
+                            newTrailingTrivia = newTrailingTrivia.Add(trailingTrivia(0))
                         Case Else
                             Stop
                             Throw UnexpectedValue($"{trailingTrivia(0).RawKind}")

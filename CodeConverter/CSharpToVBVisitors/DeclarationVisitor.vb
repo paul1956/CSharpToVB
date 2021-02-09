@@ -1077,7 +1077,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         Dim propertySymbol As IPropertySymbol = CType(_semanticModel.GetDeclaredSymbol(node), IPropertySymbol)
                         implementsClauseOrNothing = If(propertySymbol Is Nothing, Nothing, Me.CreateImplementsClauseSyntaxOrNull(propertySymbol, propertyNameToken))
                     Else
-                        propertyNameToken = Factory.Identifier($"{idString}_{identifierValueText}")
+                        propertyNameToken = Factory.Identifier($"{idString.Replace("[", "").Replace("]", "")}_{identifierValueText}")
                         implementsClauseOrNothing = Factory.ImplementsClause(interfaceMembers)
                     End If
                     propertyNameToken = propertyNameToken.WithTrailingTrivia(SpaceTrivia)
