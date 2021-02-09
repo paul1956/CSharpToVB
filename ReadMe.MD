@@ -66,6 +66,9 @@ Any changes to CSharpToVB application needs to change the version information in
 
 ## What's New in this release
   New in 5.0.2.3/5.0.1.5
+  - Fix Attributes in Enum list
+
+  New in 5.0.2.3/5.0.1.5
   - Ignore CA1826 for OrDefault extensions
   - Update IntPtr Arrays in TypeSyntax
   - Prevent application crash when compiler crashes

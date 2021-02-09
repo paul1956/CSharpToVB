@@ -645,7 +645,18 @@ End Property
 
             Public Overrides Function VisitEnumMemberDeclaration(node As CSS.EnumMemberDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim initializer As ExpressionSyntax = DirectCast(node.EqualsValue?.Value.Accept(Me), ExpressionSyntax)
-                Return Factory.EnumMemberDeclaration(Factory.List(node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) DirectCast(a.Accept(Me), AttributeListSyntax))), GenerateSafeVBToken(node.Identifier, node, _semanticModel, _usedIdentifiers), initializer:=If(initializer Is Nothing, Nothing, Factory.EqualsValue(initializer))).WithConvertedTriviaFrom(node)
+                Dim attributeLists As New SyntaxList(Of AttributeListSyntax)
+                For Each e As IndexClass(Of CSS.AttributeListSyntax) In node.AttributeLists.WithIndex
+                    Dim attributeList As AttributeListSyntax = DirectCast(e.Value.Accept(Me), AttributeListSyntax)
+                    If e.IsFirst AndAlso Not attributeList.ContainsCommentOrDirectiveTrivia Then
+                        attributeList = attributeList.WithPrependedLeadingTrivia(VBEOLTrivia)
+                    End If
+                    If Not e.IsLast Then
+                        attributeList = attributeList.WithTrailingTrivia(attributeList.GetTrailingTrivia.WithLastLineContinuation)
+                    End If
+                    attributeLists = attributeLists.Add(attributeList)
+                Next
+                Return Factory.EnumMemberDeclaration(attributeLists, GenerateSafeVBToken(node.Identifier, node, _semanticModel, _usedIdentifiers), initializer:=If(initializer Is Nothing, Nothing, Factory.EqualsValue(initializer))).WithConvertedTriviaFrom(node)
             End Function
 
             Public Overrides Function VisitExplicitInterfaceSpecifier(node As CSS.ExplicitInterfaceSpecifierSyntax) As VB.VisualBasicSyntaxNode
