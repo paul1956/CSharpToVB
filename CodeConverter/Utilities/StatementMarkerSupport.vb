@@ -225,8 +225,8 @@ Namespace CSharpToVBConverter
             Dim newLeadingTrivia As New List(Of SyntaxTrivia)
             Dim newTrailingTrivia As New List(Of SyntaxTrivia)
             If CommentOutOriginalStatements Then
-                node.GetLeadingTrivia.ConvertTriviaList()
-                node.GetTrailingTrivia.ConvertTriviaList()
+                newLeadingTrivia = node.GetLeadingTrivia.ConvertTriviaList().ToList
+                newTrailingTrivia = node.GetTrailingTrivia.ConvertTriviaList().ToList
             Else
                 Dim csLeadingTrivia As SyntaxTriviaList = node.GetLeadingTrivia
                 If csLeadingTrivia.Any AndAlso csLeadingTrivia.First.IsKind(CS.SyntaxKind.WhitespaceTrivia) Then
