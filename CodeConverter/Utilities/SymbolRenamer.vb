@@ -38,7 +38,9 @@ Namespace CSharpToVBConverter
                 Case = SymbolKind.Field
                     baseForNewName = name & "Field"
                 Case Else
+#Disable Warning CA1308 ' Normalize strings to uppercase
                     baseForNewName = $"{declaration.Kind.ToString().ToLowerInvariant()(0)}{Char.ToUpperInvariant(name.Chars(index:=0))}{name.Substring(startIndex:=1)}"
+#Enable Warning CA1308 ' Normalize strings to uppercase
             End Select
 
             Return baseForNewName
@@ -73,7 +75,9 @@ Namespace CSharpToVBConverter
 
         <Extension>
         Private Function GetUnqualifiedMethodSignature(methodSymbol As IMethodSymbol, caseSensitiveName As Boolean) As (Name As String, TypeParameterCount As Integer, ParameterTypes As String)
-            Return (If(caseSensitiveName, methodSymbol.Name, methodSymbol.Name.ToLowerInvariant()), methodSymbol.TypeParameters.Length, GetParameterSignature(methodSymbol))
+#Disable Warning CA1308 ' Normalize strings to uppercase
+            Return (Name:=If(caseSensitiveName, methodSymbol.Name, methodSymbol.Name.ToLowerInvariant()), TypeParameterCount:=methodSymbol.TypeParameters.Length, ParameterTypes:=GetParameterSignature(methodSymbol))
+#Enable Warning CA1308 ' Normalize strings to uppercase
         End Function
 
         Friend Function GetName(m As ISymbol) As String

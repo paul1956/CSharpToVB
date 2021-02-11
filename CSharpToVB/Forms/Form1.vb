@@ -191,7 +191,7 @@ Partial Public Class Form1
             _tlsEnable = Me.ConversionInput.Text(0) <> "/"
             If keywordIndex >= 0 Then
                 Dim firstCharIndexOfNamespaceLine As Integer = Me.ConversionInput.GetFirstCharIndexFromLine(Me.ConversionInput.GetLineFromCharIndex(keywordIndex))
-                _tlsEnable = keywordIndex <> firstCharIndexOfNamespaceLine
+                _tlsEnable = keywordIndex = firstCharIndexOfNamespaceLine
             End If
             Me.ConversionInput.Select(selectionStart, selectionLength)
         End If

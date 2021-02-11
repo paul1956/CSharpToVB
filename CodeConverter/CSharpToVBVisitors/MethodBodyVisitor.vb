@@ -834,7 +834,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     End If
                     If node.CloseBraceToken.HasLeadingTrivia OrElse node.OpenBraceToken.HasTrailingTrivia Then
                         If stmtList.Any Then
-                            If isSubBlock Then
+                            If isSubBlock AndAlso ifStatement IsNot Nothing Then
                                 ifStatement = ifStatement.WithTrailingTrivia(ConvertTriviaList(node.OpenBraceToken.LeadingTrivia)).WithTrailingTrivia(ConvertTriviaList(node.OpenBraceToken.TrailingTrivia))
                             Else
                                 stmtList = stmtList.Replace(stmtList.Last, stmtList.Last.WithAppendedTrailingTrivia(ConvertTriviaList(node.OpenBraceToken.LeadingTrivia)).WithAppendedTrailingTrivia(ConvertTriviaList(node.OpenBraceToken.TrailingTrivia)))
@@ -844,7 +844,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         End If
                     End If
                     stmtList = _nodesVisitor.AdjustUsingsInNeeded(stmtList)
-                    If Not isSubBlock Then
+                    If Not isSubBlock OrElse ifStatement Is Nothing Then
                         Return stmtList
                     Else
                         Dim newStmtList As New SyntaxList(Of StatementSyntax)
