@@ -191,7 +191,7 @@ Partial Public Class Form1
             _tlsEnable = Me.ConversionInput.Text(0) <> "/"
             If keywordIndex >= 0 Then
                 Dim firstCharIndexOfNamespaceLine As Integer = Me.ConversionInput.GetFirstCharIndexFromLine(Me.ConversionInput.GetLineFromCharIndex(keywordIndex))
-                _tlsEnable = keywordIndex = firstCharIndexOfNamespaceLine
+                _tlsEnable = keywordIndex <> firstCharIndexOfNamespaceLine
             End If
             Me.ConversionInput.Select(selectionStart, selectionLength)
         End If
@@ -456,7 +456,7 @@ Partial Public Class Form1
 
     Private Sub mnuConvert_DropDownOpening(sender As Object, e As EventArgs) Handles mnuConvert.DropDownOpening
         If Me.ConversionInput.Text.Any Then
-            Me.mnuConvertConvertSnippet.Enabled = Not _tlsEnable
+            Me.mnuConvertConvertSnippet.Enabled = True ' For now always enable, Not _tlsEnable
             Me.mnuConvertConvertTopLevelStmts.Enabled = _tlsEnable
         Else
             Me.mnuConvertConvertSnippet.Enabled = False
