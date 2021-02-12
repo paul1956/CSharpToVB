@@ -16,40 +16,40 @@ Namespace CSharpToVBConverter
     Friend Module SyntaxTriviaListExtensions
 
         <Extension>
-        Private Function ConvertTrivia(t As SyntaxTrivia) As SyntaxTrivia
+        Private Function ConvertTrivia(trivia As SyntaxTrivia) As SyntaxTrivia
 
 #Region "Non-structured trivia"
 
-            Select Case t.RawKind
+            Select Case trivia.RawKind
                 Case CS.SyntaxKind.WhitespaceTrivia
-                    Return Factory.WhitespaceTrivia(t.ToString)
+                    Return Factory.WhitespaceTrivia(trivia.ToString)
                 Case CS.SyntaxKind.EndOfLineTrivia
                     Return VBEOLTrivia
                 Case CS.SyntaxKind.None
                     Return Nothing
                 Case CS.SyntaxKind.SingleLineCommentTrivia
-                    If t.ToFullString.EndsWith("*/", StringComparison.Ordinal) Then
-                        Return Factory.CommentTrivia($"'{ReplaceLeadingSlashes(t.ToFullString.Substring(startIndex:=2, t.ToFullString.Length - 4))}")
+                    If trivia.ToFullString.EndsWith("*/", StringComparison.Ordinal) Then
+                        Return Factory.CommentTrivia($"'{ReplaceLeadingSlashes(trivia.ToFullString.Substring(startIndex:=2, trivia.ToFullString.Length - 4))}")
                     End If
-                    Return Factory.CommentTrivia($"'{ReplaceLeadingSlashes(t.ToFullString.Substring(startIndex:=2))}")
+                    Return Factory.CommentTrivia($"'{ReplaceLeadingSlashes(trivia.ToFullString.Substring(startIndex:=2))}")
                 Case CS.SyntaxKind.MultiLineCommentTrivia
-                    If t.ToFullString.EndsWith("*/", StringComparison.Ordinal) Then
-                        Return Factory.CommentTrivia($"'{ReplaceLeadingSlashes(t.ToFullString.Substring(startIndex:=2, t.ToFullString.Length - 4)).Replace(vbLf, "", StringComparison.Ordinal)}")
+                    If trivia.ToFullString.EndsWith("*/", StringComparison.Ordinal) Then
+                        Return Factory.CommentTrivia($"'{ReplaceLeadingSlashes(trivia.ToFullString.Substring(startIndex:=2, trivia.ToFullString.Length - 4)).Replace(vbLf, "", StringComparison.Ordinal)}")
                     End If
-                    Return Factory.CommentTrivia($"'{ReplaceLeadingSlashes(t.ToFullString.Substring(startIndex:=2)).Replace(vbLf, newValue:="", StringComparison.Ordinal)}")
+                    Return Factory.CommentTrivia($"'{ReplaceLeadingSlashes(trivia.ToFullString.Substring(startIndex:=2)).Replace(vbLf, newValue:="", StringComparison.Ordinal)}")
 
                 Case CS.SyntaxKind.DocumentationCommentExteriorTrivia
-                    Return Factory.SyntaxTrivia(VB.SyntaxKind.CommentTrivia, t.ToString.Replace("///", "'''"))
+                    Return Factory.SyntaxTrivia(VB.SyntaxKind.CommentTrivia, trivia.ToString.Replace("///", "'''"))
                 Case CS.SyntaxKind.DisabledTextTrivia
                     If IgnoredIfDepth > 0 Then
-                        Return Factory.DisabledTextTrivia(t.ToString.WithoutNewLines(" "c))
+                        Return Factory.DisabledTextTrivia(trivia.ToString.WithoutNewLines(" "c))
                     End If
-                    Return Factory.DisabledTextTrivia(t.ToString.Replace(vbLf, vbCrLf, StringComparison.Ordinal))
+                    Return Factory.DisabledTextTrivia(trivia.ToString.Replace(vbLf, vbCrLf, StringComparison.Ordinal))
                 Case CS.SyntaxKind.PreprocessingMessageTrivia
-                    Return Factory.CommentTrivia($" ' {t}")
+                    Return Factory.CommentTrivia($" ' {trivia}")
 
             End Select
-            If Not t.HasStructure Then
+            If Not trivia.HasStructure Then
                 Stop
             End If
 
@@ -57,10 +57,10 @@ Namespace CSharpToVBConverter
 
 #Region "Start of Structured trivia"
 
-            Dim structuredTrivia As CSS.StructuredTriviaSyntax = DirectCast(t.GetStructure, CSS.StructuredTriviaSyntax)
-            Debug.Assert(structuredTrivia IsNot Nothing, $"Found new type of non structured trivia {t.RawKind}")
+            Dim structuredTrivia As CSS.StructuredTriviaSyntax = DirectCast(trivia.GetStructure, CSS.StructuredTriviaSyntax)
+            Debug.Assert(structuredTrivia IsNot Nothing, $"Found new type of non structured trivia {trivia.RawKind}")
 
-            Select Case t.RawKind
+            Select Case trivia.RawKind
                 Case CS.SyntaxKind.DefineDirectiveTrivia
                     Dim defineDirective As CSS.DefineDirectiveTriviaSyntax = DirectCast(structuredTrivia, CSS.DefineDirectiveTriviaSyntax)
                     Dim name As SyntaxToken = Factory.Identifier(defineDirective.Name.ValueText)
@@ -77,7 +77,7 @@ Namespace CSharpToVBConverter
                                         )
 
                 Case CS.SyntaxKind.IfDirectiveTrivia
-                    If t.Token.Parent?.AncestorsAndSelf.OfType(Of CSS.InitializerExpressionSyntax).Any Then
+                    If trivia.Token.Parent?.AncestorsAndSelf.OfType(Of CSS.InitializerExpressionSyntax).Any Then
                         IgnoredIfDepth += 1
                     End If
                     Dim ifDirective As CSS.IfDirectiveTriviaSyntax = DirectCast(structuredTrivia, CSS.IfDirectiveTriviaSyntax)
@@ -88,14 +88,14 @@ Namespace CSharpToVBConverter
                                                                      ifDirective.Condition.GetTrailingTrivia.ConvertTriviaList()).
                                                                      WithAppendedTriviaFromEndOfDirectiveToken(ifDirective.EndOfDirectiveToken))
                 Case CS.SyntaxKind.ElifDirectiveTrivia
-                    If IgnoredIfDepth = 0 AndAlso t.Token.Parent.AncestorsAndSelf.OfType(Of CSS.InitializerExpressionSyntax).Any Then
+                    If IgnoredIfDepth = 0 AndAlso trivia.Token.Parent.AncestorsAndSelf.OfType(Of CSS.InitializerExpressionSyntax).Any Then
                         IgnoredIfDepth = 1
                     End If
                     Dim elIfDirective As CSS.ElifDirectiveTriviaSyntax = DirectCast(structuredTrivia, CSS.ElifDirectiveTriviaSyntax)
                     Dim expression1 As String = elIfDirective.Condition.ConvertDirectiveCondition
 
                     Dim ifOrElseIfKeyword As SyntaxToken
-                    If t.IsKind(CS.SyntaxKind.ElifDirectiveTrivia) Then
+                    If trivia.IsKind(CS.SyntaxKind.ElifDirectiveTrivia) Then
                         ifOrElseIfKeyword = ElseIfKeyword
                     Else
                         ifOrElseIfKeyword = IfKeyword
@@ -106,7 +106,7 @@ Namespace CSharpToVBConverter
                                                                      elIfDirective.Condition.GetTrailingTrivia.ConvertTriviaList()).
                                                                      WithAppendedTriviaFromEndOfDirectiveToken(elIfDirective.EndOfDirectiveToken))
                 Case CS.SyntaxKind.LineDirectiveTrivia
-                    Return Factory.CommentTrivia($"' TODO: Check VB does not support Line Directive trivia, Original Directive {t}")
+                    Return Factory.CommentTrivia($"' TODO: Check VB does not support Line Directive trivia, Original Directive {trivia}")
                 Case CS.SyntaxKind.ElseDirectiveTrivia
                     Return Factory.Trivia(Factory.ElseDirectiveTrivia.
                                                         NormalizeWhitespace.
@@ -193,13 +193,13 @@ Namespace CSharpToVBConverter
                     Stop
                     'VB.SyntaxKind.ExternalSourceDirectiveTrivia
                 Case Else
-                    Debug.WriteLine(CType(t.RawKind, VB.SyntaxKind).ToString)
+                    Debug.WriteLine(CType(trivia.RawKind, VB.SyntaxKind).ToString)
                     Stop
             End Select
 
 #End Region
 
-            Throw New NotImplementedException($"t.Kind({CType(t.RawKind, VB.SyntaxKind)}) Is unknown")
+            Throw New NotImplementedException($"t.Kind({CType(trivia.RawKind, VB.SyntaxKind)}) Is unknown")
         End Function
 
         Private Function RemoveLeadingSpacesAndStar(line As String) As String
@@ -419,11 +419,12 @@ Namespace CSharpToVBConverter
                             If IgnoredIfDepth > 0 Then
                                 IgnoredIfDepth -= 1
                                 newTriviaList.Add(Factory.CommentTrivia($"' TODO VB does not allow directives here, original statement {trivia.ToFullString.WithoutNewLines(" "c)}"))
-                            End If
-                            Dim endIfDirective As CSS.EndIfDirectiveTriviaSyntax = DirectCast(structuredTrivia, CSS.EndIfDirectiveTriviaSyntax)
-                            newTriviaList.Add(Factory.Trivia(Factory.EndIfDirectiveTrivia.WithConvertedTrailingTriviaFrom(endIfDirective.EndIfKeyword).
+                            Else
+                                Dim endIfDirective As CSS.EndIfDirectiveTriviaSyntax = DirectCast(structuredTrivia, CSS.EndIfDirectiveTriviaSyntax)
+                                newTriviaList.Add(Factory.Trivia(Factory.EndIfDirectiveTrivia.WithConvertedTrailingTriviaFrom(endIfDirective.EndIfKeyword).
                                                                 WithAppendedTriviaFromEndOfDirectiveToken(endIfDirective.EndOfDirectiveToken))
                                         )
+                            End If
                         Case CS.SyntaxKind.ErrorDirectiveTrivia
                             Dim structuredTrivia As CSS.StructuredTriviaSyntax = DirectCast(trivia.GetStructure, CSS.StructuredTriviaSyntax)
                             Dim errorDirective As CSS.ErrorDirectiveTriviaSyntax = DirectCast(structuredTrivia, CSS.ErrorDirectiveTriviaSyntax)
