@@ -100,6 +100,9 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         Dim item As VBS.AttributeListSyntax = DirectCast(attrList.Accept(Me), VBS.AttributeListSyntax).RemoveExtraLeadingEOL
                         If firstAttribuate Then
                             firstAttribuate = False
+                            If Not e.IsLast Then
+                                item = item.WithTrailingTrivia(item.GetTrailingTrivia.WithLastLineContinuation)
+                            End If
                         Else
                             Dim itemLeadingTrivia As SyntaxTriviaList = item.GetLeadingTrivia
                             If itemLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
@@ -107,9 +110,15 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                 Dim firstComment As Boolean = True
                                 Dim needWhiteSpace As Boolean = True
                                 Dim needLineContinuation As Boolean = True
+                                Dim leadingIndex As Integer = 0
                                 For Each vbSyntaxTrivia As SyntaxTrivia In itemLeadingTrivia
+                                    Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(itemLeadingTrivia, leadingIndex, LookaheadCount:=1)
                                     Select Case vbSyntaxTrivia.RawKind
                                         Case VB.SyntaxKind.WhitespaceTrivia
+                                            If nextTrivia.IsKind(VB.SyntaxKind.CommentTrivia) Then
+                                                newLeadingTrivia = newLeadingTrivia.AddRange(SpaceLineContinue)
+                                                firstComment = False
+                                            End If
                                             newLeadingTrivia = newLeadingTrivia.Add(vbSyntaxTrivia)
                                             needWhiteSpace = False
                                         Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
@@ -177,6 +186,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                             Stop
                                             needWhiteSpace = True
                                     End Select
+                                    leadingIndex += 1
                                 Next
                                 item = item.WithLeadingTrivia(newLeadingTrivia)
                             End If

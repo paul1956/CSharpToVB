@@ -65,7 +65,11 @@ Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpec
 Any changes to CSharpToVB application needs to change the version information in the project file **AND** in MyProject/AssemblyInfo.vb until Visual Studio is able to general file automatically for a WinForms application.
 
 ## What's New in this release
-  New in 5.0.2.3/5.0.1.5
+  New in 5.0.2.3/5.0.1.7
+  - Improve handling of empty CSS.BlockSyntax
+  - Add update code coverage showing increase in Method coverage to 90%
+
+  New in 5.0.2.3/5.0.1.6
   - Fix Attributes in Enum list
 
   New in 5.0.2.3/5.0.1.5
@@ -251,14 +255,14 @@ Any changes to CSharpToVB application needs to change the version information in
 +------------------+--------+--------+--------+
 | Module           | Line   | Branch | Method |
 +------------------+--------+--------+--------+
-| VB.CodeConverter | 72.41% | 63.47% | 85.86% |
+| VB.CodeConverter | 82.24% | 74.75% | 90.7%  |
 +------------------+--------+--------+--------+
 
 +---------+--------+--------+--------+
 |         | Line   | Branch | Method |
 +---------+--------+--------+--------+
-| Total   | 72.41% | 63.47% | 85.86% |
+| Total   | 82.24% | 74.75% | 90.7%  |
 +---------+--------+--------+--------+
-| Average | 72.41% | 63.47% | 85.86% |
+| Average | 82.24% | 74.75% | 90.7%  |
 +---------+--------+--------+--------+
 ```
