@@ -10,14 +10,14 @@ Imports Microsoft.Win32
 
 Friend Module BrowserUtilities
 
-    Private Function IsNewerVersion(LatestVersionStrings() As String, AppVersion As Version, ConverterVersion As Version) As Boolean
-        If Not (String.IsNullOrWhiteSpace(LatestVersionStrings(0)) OrElse LatestVersionStrings(0) = AppVersion.ToString) Then
+    Private Function IsNewerVersion(gitHubVersions() As String, AppVersion As Version, ConverterVersion As Version) As Boolean
+        If Not (String.IsNullOrWhiteSpace(gitHubVersions(0)) OrElse Version.Parse(gitHubVersions(0)) > Version.Parse(AppVersion.ToString)) Then
             Return True
         End If
-        If LatestVersionStrings.Length = 1 Then
+        If gitHubVersions.Length = 1 Then
             Return False
         End If
-        Return LatestVersionStrings(1) <> ConverterVersion.ToString
+        Return Version.Parse(gitHubVersions(1)) > Version.Parse(ConverterVersion.ToString)
     End Function
 
     Friend Sub CheckForUpdates(MainForm As Form1, ReportResults As Boolean)
