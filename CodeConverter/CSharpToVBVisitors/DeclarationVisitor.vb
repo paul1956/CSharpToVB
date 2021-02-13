@@ -777,9 +777,8 @@ Namespace CSharpToVBConverter.ToVisualBasic
                         If csNodeLeadingTrivia.Any Then
                             newModifierLeadingTrivia = newModifierLeadingTrivia.AddRange(modifiers(0).LeadingTrivia)
                             newModifierLeadingTrivia = newModifierLeadingTrivia.AddRange(csNodeLeadingTrivia.ConvertTriviaList())
-#Disable Warning CA1826 ' Do not use Enumerable methods on indexable collections
+
                             If Not newModifierLeadingTrivia.FirstOrDefault.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-#Enable Warning CA1826 ' Do not use Enumerable methods on indexable collections
                                 newModifierLeadingTrivia = newModifierLeadingTrivia.Insert(0, VBEOLTrivia)
                             End If
                             modifiers(0) = modifiers(0).WithLeadingTrivia(newModifierLeadingTrivia)
