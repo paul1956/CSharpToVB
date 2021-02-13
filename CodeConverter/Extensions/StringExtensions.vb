@@ -66,11 +66,6 @@ Namespace CSharpToVBConverter
             Return expressionBuilder.ToString.TrimEnd("_"c)
         End Function
 
-        <Extension>
-        Public Function GetWhiteSpaceTrivia(length As Integer) As SyntaxTrivia
-            Return If(length = 0, SpaceTrivia, Factory.WhitespaceTrivia(StrDup(length, " "c)))
-        End Function
-
         ' String isn't IEnumerable<char> in the current Portable profile.
         <Extension>
         Friend Function Last(arg As String) As Char
@@ -97,14 +92,6 @@ Namespace CSharpToVBConverter
         Friend Function RemoveBrackets(input As String) As String
             Return input.Replace("["c, "", StringComparison.Ordinal).
                          Replace("]"c, "", StringComparison.Ordinal)
-        End Function
-
-        <Extension>
-        Friend Function TrimStart(input As String, TrimString As String) As String
-            If Not input.StartsWith(TrimString, StringComparison.OrdinalIgnoreCase) Then
-                Return input
-            End If
-            Return input.Substring(TrimString.Length)
         End Function
 
         <Extension>

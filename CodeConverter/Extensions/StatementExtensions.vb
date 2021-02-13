@@ -6,6 +6,7 @@ Imports System.Runtime.CompilerServices
 Imports System.Runtime.InteropServices
 Imports CSharpToVBConverter.ToVisualBasic
 Imports Microsoft.CodeAnalysis
+Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
@@ -13,6 +14,35 @@ Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 Namespace CSharpToVBConverter
 
     Public Module StatementExtensions
+
+        <Extension>
+        Friend Function ContainsConditionalDirective(argumentList As CSS.ArgumentListSyntax) As Boolean
+            If argumentList.Arguments.Count = 0 Then
+                Return False
+            End If
+            For Each e As IndexClass(Of CSS.ArgumentSyntax) In argumentList.Arguments.WithIndex
+                For Each t As SyntaxTrivia In e.Value.GetLeadingTrivia
+                    Select Case t.RawKind
+                        Case CS.SyntaxKind.DisabledTextTrivia,
+                             CS.SyntaxKind.ElifDirectiveTrivia,
+                             CS.SyntaxKind.ElseDirectiveTrivia,
+                             CS.SyntaxKind.EndIfDirectiveTrivia,
+                             CS.SyntaxKind.IfDirectiveTrivia
+                            Return True
+                        Case CS.SyntaxKind.NullableDirectiveTrivia
+                            Return False
+                        Case CS.SyntaxKind.EndOfLineTrivia,
+                             CS.SyntaxKind.SingleLineCommentTrivia,
+                             CS.SyntaxKind.WhitespaceTrivia
+                            ' ignore
+                        Case Else
+                            Debug.WriteLine($"Unknown TriviaKind {CS.CSharpExtensions.Kind(t)} in ContainsConditionalDirective")
+                            Stop
+                    End Select
+                Next
+            Next
+            Return False
+        End Function
 
         <Extension>
         Friend Function ContainsName(ImportList As List(Of VBS.ImportsStatementSyntax), ImportName As String) As Boolean

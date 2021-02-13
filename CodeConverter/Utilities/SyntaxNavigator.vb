@@ -108,11 +108,7 @@ Namespace CSharpToVBConverter
             Return Nothing
         End Function
 
-        Friend Function GetNextToken(current As SyntaxToken, predicate As Func(Of SyntaxToken, Boolean), stepInto As Func(Of SyntaxTrivia, Boolean)) As SyntaxToken
-            Return Me.GetNextToken(current, predicate, stepInto IsNot Nothing, stepInto)
-        End Function
-
-        Friend Function GetNextToken(current As SyntaxTrivia, predicate As Func(Of SyntaxToken, Boolean), stepInto As Func(Of SyntaxTrivia, Boolean)) As SyntaxToken
+        Private Function GetNextToken(current As SyntaxTrivia, predicate As Func(Of SyntaxToken, Boolean), stepInto As Func(Of SyntaxTrivia, Boolean)) As SyntaxToken
             Dim returnNext As Boolean = False
             ' look inside leading trivia for current & next
             Dim token As SyntaxToken = Me.GetNextToken(current, current.Token.LeadingTrivia, predicate, stepInto, returnNext)
@@ -134,7 +130,7 @@ Namespace CSharpToVBConverter
             Return Me.GetNextToken(current.Token, predicate, False, stepInto)
         End Function
 
-        Friend Function GetNextToken(node As SyntaxNode, predicate As Func(Of SyntaxToken, Boolean), stepInto As Func(Of SyntaxTrivia, Boolean)) As SyntaxToken
+        Private Function GetNextToken(node As SyntaxNode, predicate As Func(Of SyntaxToken, Boolean), stepInto As Func(Of SyntaxTrivia, Boolean)) As SyntaxToken
             While node.Parent IsNot Nothing
                 ' walk forward in parent's child list until we find ourselves and then return the
                 ' next token
@@ -168,6 +164,10 @@ Namespace CSharpToVBConverter
             End If
 
             Return Nothing
+        End Function
+
+        Friend Function GetNextToken(current As SyntaxToken, predicate As Func(Of SyntaxToken, Boolean), stepInto As Func(Of SyntaxTrivia, Boolean)) As SyntaxToken
+            Return Me.GetNextToken(current, predicate, stepInto IsNot Nothing, stepInto)
         End Function
 
         Friend Function GetNextToken(current As SyntaxToken, predicate As Func(Of SyntaxToken, Boolean), searchInsideCurrentTokenTrailingTrivia As Boolean, stepInto As Func(Of SyntaxTrivia, Boolean)) As SyntaxToken

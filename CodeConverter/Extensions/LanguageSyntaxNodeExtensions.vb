@@ -18,6 +18,11 @@ Namespace CSharpToVBConverter.ToVisualBasic
     Public Module LanguageSyntaxNodeExtensions
         Public Property IgnoredIfDepth As Integer
 
+        <Extension>
+        Private Function GetWhiteSpaceTrivia(length As Integer) As SyntaxTrivia
+            Return If(length = 0, SpaceTrivia, Factory.WhitespaceTrivia(StrDup(length, " "c)))
+        End Function
+
         ''' <summary>
         ''' This function is used where a Token is Followed by a Node followed by a Token
         ''' in the middle of a statement where VB does not allow Directives

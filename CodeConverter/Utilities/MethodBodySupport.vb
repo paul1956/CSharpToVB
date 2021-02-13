@@ -8,8 +8,6 @@ Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.CSharp
 Imports Microsoft.CodeAnalysis.VisualBasic
 
-Imports CS = Microsoft.CodeAnalysis.CSharp
-
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 
 Namespace CSharpToVBConverter.ToVisualBasic
@@ -20,21 +18,6 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                 OfType(Of CSS.SimpleNameSyntax)().
                                 Any(Function(name As CSS.SimpleNameSyntax) name.Identifier.ValueText = localFunctionSymbol.Name AndAlso
                                 SymbolEqualityComparer.Default.Equals(_semanticModel.GetSymbolInfo(name).Symbol, localFunctionSymbol))
-        End Function
-
-        <Extension>
-        Friend Function GetPossibleEventName(expression As CSS.ExpressionSyntax) As String
-            Dim ident As CSS.IdentifierNameSyntax = TryCast(expression, CSS.IdentifierNameSyntax)
-            If ident IsNot Nothing Then Return ident.Identifier.Text
-
-            If TypeOf expression Is CSS.ParenthesizedExpressionSyntax Then
-                expression = DirectCast(expression, CSS.ParenthesizedExpressionSyntax).Expression
-            Else
-                Return Nothing
-            End If
-            Dim fre As CSS.MemberAccessExpressionSyntax = TryCast(expression, CSS.MemberAccessExpressionSyntax)
-            If fre IsNot Nothing AndAlso fre.Expression.IsKind(CS.SyntaxKind.ThisExpression) Then Return fre.Name.Identifier.Text
-            Return Nothing
         End Function
 
         <Extension>

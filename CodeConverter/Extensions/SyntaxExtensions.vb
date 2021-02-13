@@ -17,11 +17,6 @@ Namespace CSharpToVBConverter
             Return node IsNot Nothing AndAlso node.Parent.IsKind(kind)
         End Function
 
-        <Extension>
-        Friend Function StartsWithSystemDot(Expression As SyntaxNode) As Boolean
-            Return Expression.ToString.StartsWith("System.", StringComparison.Ordinal)
-        End Function
-
         ''' <summary>
         ''' Creates a new syntax node with all whitespace and end of line trivia replaced with
         ''' regularly formatted trivia.        ''' </summary>

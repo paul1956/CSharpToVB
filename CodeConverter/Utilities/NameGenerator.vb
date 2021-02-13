@@ -6,6 +6,18 @@ Namespace CSharpToVBConverter
 
     Friend Module NameGenerator
 
+        ''' <summary>
+        ''' Ensures that any 'names' is unique and does not collide with any other name.  Names that
+        ''' are marked as IsFixed can not be touched.  This does mean that if there are two names
+        ''' that are the same, and both are fixed that you will end up with non-unique names at the
+        ''' end.
+        ''' </summary>
+        Private Function EnsureUniqueness(names As IList(Of String), isFixed As IList(Of Boolean), Optional canUse As Func(Of String, Boolean) = Nothing) As IList(Of String)
+            Dim copy As List(Of String) = names.ToList()
+            EnsureUniquenessInPlace(copy, isFixed, canUse)
+            Return copy
+        End Function
+
         Private Sub EnsureUniquenessInPlace(names As IList(Of String), isFixed As IList(Of Boolean), canUse As Func(Of String, Boolean))
             canUse = If(canUse, Function(s As String) True)
 
@@ -25,6 +37,23 @@ Namespace CSharpToVBConverter
                 i += 1
             Loop
         End Sub
+
+        Private Function GenerateUniqueName(baseName As String, extension As String, canUse As Func(Of String, Boolean)) As String
+            If Not String.IsNullOrEmpty(extension) AndAlso Not extension.StartsWith(".", StringComparison.OrdinalIgnoreCase) Then
+                extension = "." & extension
+            End If
+
+            Dim name As String = baseName & extension
+            Dim index As Integer = 1
+
+            ' Check for collisions
+            Do While Not canUse(name)
+                name = baseName & index & extension
+                index += 1
+            Loop
+
+            Return name
+        End Function
 
         Private Function GetCollisionIndices(names As IList(Of String), name As String, Optional isCaseSensitive As Boolean = True) As List(Of Integer)
             Dim comparer As StringComparer = If(isCaseSensitive, StringComparer.Ordinal, StringComparer.OrdinalIgnoreCase)
@@ -54,18 +83,6 @@ Namespace CSharpToVBConverter
         End Sub
 
         ''' <summary>
-        ''' Ensures that any 'names' is unique and does not collide with any other name.  Names that
-        ''' are marked as IsFixed can not be touched.  This does mean that if there are two names
-        ''' that are the same, and both are fixed that you will end up with non-unique names at the
-        ''' end.
-        ''' </summary>
-        Friend Function EnsureUniqueness(names As IList(Of String), isFixed As IList(Of Boolean), Optional canUse As Func(Of String, Boolean) = Nothing) As IList(Of String)
-            Dim copy As List(Of String) = names.ToList()
-            EnsureUniquenessInPlace(copy, isFixed, canUse)
-            Return copy
-        End Function
-
-        ''' <summary>
         ''' Transforms baseName into a name that does not conflict with any name in 'reservedNames'
         ''' </summary>
         Friend Function EnsureUniqueness(baseName As String, _usedIdentifiers As Dictionary(Of String, SymbolTableEntry), reservedNames As IEnumerable(Of String)) As String
@@ -86,23 +103,6 @@ Namespace CSharpToVBConverter
 
         Friend Function GenerateUniqueName(baseName As String, canUse As Func(Of String, Boolean)) As String
             Return GenerateUniqueName(baseName, String.Empty, canUse)
-        End Function
-
-        Friend Function GenerateUniqueName(baseName As String, extension As String, canUse As Func(Of String, Boolean)) As String
-            If Not String.IsNullOrEmpty(extension) AndAlso Not extension.StartsWith(".", StringComparison.OrdinalIgnoreCase) Then
-                extension = "." & extension
-            End If
-
-            Dim name As String = baseName & extension
-            Dim index As Integer = 1
-
-            ' Check for collisions
-            Do While Not canUse(name)
-                name = baseName & index & extension
-                index += 1
-            Loop
-
-            Return name
         End Function
 
     End Module

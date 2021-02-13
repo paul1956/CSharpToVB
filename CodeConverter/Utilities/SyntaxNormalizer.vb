@@ -101,6 +101,21 @@ Namespace CSharpToVBConverter
             Return False
         End Function
 
+        ''' <summary>
+        ''' Returns the token after this token in the syntax tree.
+        ''' </summary>
+        ''' <param name="predicate">Delegate applied to each token.  The token is returned if the predicate returns
+        ''' true.</param>
+        ''' <param name="stepInto">Delegate applied to trivia.  If this delegate is present then trailing trivia is
+        ''' included in the search.</param>
+        Private Shared Function GetNextToken(Token As SyntaxToken, predicate As Func(Of SyntaxToken, Boolean), Optional stepInto As Func(Of SyntaxTrivia, Boolean) = Nothing) As SyntaxToken
+            If Token = Nothing Then
+                Return Nothing
+            End If
+
+            Return SyntaxNavigator.s_instance.GetNextToken(Token, predicate, stepInto)
+        End Function
+
         Private Shared Function IsLastTokenOnLine(token As SyntaxToken) As Boolean
             Return (token.HasTrailingTrivia AndAlso token.TrailingTrivia.Last.IsKind(SyntaxKind.ColonTrivia)) OrElse
                 (token.Parent IsNot Nothing AndAlso token.Parent.GetLastToken() = token)
@@ -406,10 +421,10 @@ Namespace CSharpToVBConverter
         End Function
 
         Private Sub AddLinebreaksAfterElementsIfNeeded(Of TNode As SyntaxNode)(
-                                                    list As SyntaxList(Of TNode),
-            linebreaksBetweenElements As Integer,
-            linebreaksAfterLastElement As Integer
-        )
+                                                            list As SyntaxList(Of TNode),
+                    linebreaksBetweenElements As Integer,
+                    linebreaksAfterLastElement As Integer
+                )
             Dim lastElementIndex As Integer = list.Count - 1
             For elementIndex As Integer = 0 To lastElementIndex
                 Dim listElement As TNode = list(elementIndex)
@@ -477,9 +492,9 @@ Namespace CSharpToVBConverter
         End Function
 
         Private Function GetNextRelevantToken(token As SyntaxToken) As SyntaxToken
-            Dim nextToken As SyntaxToken = token.GetNextToken(Function(t As SyntaxToken)
-                                                                  Return Not t.IsKind(SyntaxKind.None)
-                                                              End Function, Function(t As SyntaxTrivia) False)
+            Dim nextToken As SyntaxToken = GetNextToken(token, Function(t As SyntaxToken)
+                                                                   Return Not t.IsKind(SyntaxKind.None)
+                                                               End Function, Function(t As SyntaxTrivia) False)
 
             If _consideredSpan.Contains(nextToken.FullSpan) Then
                 Return nextToken

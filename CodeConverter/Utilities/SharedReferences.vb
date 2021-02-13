@@ -73,6 +73,13 @@ Namespace CSharpToVBConverter
 
         End Sub
 
+        <Extension>
+        Private Function GetAssemblyLocation(type As Type) As String
+            Dim asm As Assembly = type.GetTypeInfo().Assembly
+            Dim locationProperty As PropertyInfo = asm.GetType().GetRuntimeProperties().Single(Function(p As PropertyInfo) p.Name = "Location")
+            Return CStr(locationProperty.GetValue(asm))
+        End Function
+
         Private Function HasMetadataIsAssembly(sourcePath As String) As (HasMetadata As Boolean, IsAssembly As Boolean)
             Using assemblyStream As New FileStream(sourcePath, FileMode.Open, FileAccess.Read, FileShare.Delete Or FileShare.Read)
                 Try
@@ -88,13 +95,6 @@ Namespace CSharpToVBConverter
 
                 Return (False, False)
             End Using
-        End Function
-
-        <Extension>
-        Friend Function GetAssemblyLocation(type As Type) As String
-            Dim asm As Assembly = type.GetTypeInfo().Assembly
-            Dim locationProperty As PropertyInfo = asm.GetType().GetRuntimeProperties().Single(Function(p As PropertyInfo) p.Name = "Location")
-            Return CStr(locationProperty.GetValue(asm))
         End Function
 
         Public Function CSharpReferences(WindowsFormsLocation As String, OptionalReference As IReadOnlyList(Of MetadataReference)) As List(Of MetadataReference)

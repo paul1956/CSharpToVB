@@ -295,22 +295,6 @@ Namespace CSharpToVBConverter
             Return Factory.InterpolatedStringTextToken(tokenStr, tokenStr)
         End Function
 
-        ''' <summary>
-        ''' Returns the token after this token in the syntax tree.
-        ''' </summary>
-        ''' <param name="predicate">Delegate applied to each token.  The token is returned if the predicate returns
-        ''' true.</param>
-        ''' <param name="stepInto">Delegate applied to trivia.  If this delegate is present then trailing trivia is
-        ''' included in the search.</param>
-        <Extension>
-        Friend Function GetNextToken(Token As SyntaxToken, predicate As Func(Of SyntaxToken, Boolean), Optional stepInto As Func(Of SyntaxTrivia, Boolean) = Nothing) As SyntaxToken
-            If Token = Nothing Then
-                Return Nothing
-            End If
-
-            Return SyntaxNavigator.s_instance.GetNextToken(Token, predicate, stepInto)
-        End Function
-
         Friend Function GetSymbolTableEntry(csIdentifier As SyntaxToken, BaseVBIdent As String, _usedIdentifiers As Dictionary(Of String, SymbolTableEntry), Node As CS.CSharpSyntaxNode, Model As SemanticModel, IsQualifiedNameOrTypeName As Boolean, isField As Boolean) As (IdentToken As SyntaxToken, MeNeeded As Boolean)
             If _usedIdentifiers.ContainsKey(BaseVBIdent) Then
                 Dim symbolTableEntry As SymbolTableEntry = _usedIdentifiers(BaseVBIdent)

@@ -17,6 +17,11 @@ Namespace CSharpToVBConverter
     Public Module ExpressionSyntaxExtensions
 
         <Extension>
+        Private Function StartsWithSystemDot(Expression As SyntaxNode) As Boolean
+            Return Expression.ToString.StartsWith("System.", StringComparison.Ordinal)
+        End Function
+
+        <Extension>
         Friend Function AdjustExpressionTrivia(Of T As VB.VisualBasicSyntaxNode)(Expression As T, AdjustLeading As Boolean, DirectiveNotAllowed As Boolean) As T
             If Expression Is Nothing Then
                 Throw New ArgumentNullException(NameOf(Expression))
