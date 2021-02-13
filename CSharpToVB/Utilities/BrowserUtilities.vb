@@ -11,7 +11,7 @@ Imports Microsoft.Win32
 Friend Module BrowserUtilities
 
     Private Function IsNewerVersion(gitHubVersions() As String, AppVersion As Version, ConverterVersion As Version) As Boolean
-        If Not (String.IsNullOrWhiteSpace(gitHubVersions(0)) OrElse Version.Parse(gitHubVersions(0)) > Version.Parse(AppVersion.ToString)) Then
+        If String.IsNullOrWhiteSpace(gitHubVersions(0)) OrElse Version.Parse(gitHubVersions(0)) > Version.Parse(AppVersion.ToString) Then
             Return True
         End If
         If gitHubVersions.Length = 1 Then
