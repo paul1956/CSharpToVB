@@ -24,7 +24,7 @@ Namespace CSharpToVBConverter
         ''' <param name="InitialTriviaList"></param>
         ''' <param name="TriviaListToMerge"></param>
         ''' <returns></returns>
-        Friend Function AdjustMergedStatementTrailingTrivia(InitialTriviaList As SyntaxTriviaList, TriviaListToMerge As SyntaxTriviaList) As SyntaxTriviaList
+        Private Function AdjustMergedStatementTrailingTrivia(InitialTriviaList As SyntaxTriviaList, TriviaListToMerge As SyntaxTriviaList) As SyntaxTriviaList
             Dim inputTrivia As SyntaxTriviaList = InitialTriviaList
             inputTrivia = inputTrivia.AddRange(TriviaListToMerge)
             Dim foundEOL As Boolean = False

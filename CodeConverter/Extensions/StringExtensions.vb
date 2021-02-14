@@ -13,22 +13,6 @@ Namespace CSharpToVBConverter
     Public Module StringExtensions
 
         <Extension>
-        Friend Function ContainsAny(s As String, comparisonType As StringComparison, ParamArray StringArray() As String) As Boolean
-            If String.IsNullOrWhiteSpace(s) Then
-                Return False
-            End If
-            If StringArray Is Nothing OrElse StringArray.Length = 0 Then
-                Return False
-            End If
-            For Each str As String In StringArray
-                If s.Contains(str, comparisonType) Then
-                    Return True
-                End If
-            Next
-            Return False
-        End Function
-
-        <Extension>
         Friend Function ConvertCondition(condition As String) As String
             Return condition.
                     Replace("==", "=", StringComparison.Ordinal).

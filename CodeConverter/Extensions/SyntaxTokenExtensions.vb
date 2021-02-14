@@ -4,7 +4,6 @@
 
 Imports System.Runtime.CompilerServices
 Imports CSharpToVBConverter.ToVisualBasic
-Imports CSharpToVBConverter.ToVisualBasic.AttributeAndModifierSupport
 Imports Microsoft.CodeAnalysis
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
@@ -13,6 +12,90 @@ Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
 Namespace CSharpToVBConverter
     Public Module SyntaxTokenExtensions
+
+        <Extension>
+        Private Function GetScopingBlock(Node As CS.CSharpSyntaxNode) As CS.CSharpSyntaxNode
+            Dim blocknode As CS.CSharpSyntaxNode = Node
+            While blocknode IsNot Nothing
+
+                If TypeOf blocknode Is CSS.BlockSyntax Then
+                    Return CType(blocknode.Parent, CS.CSharpSyntaxNode)
+                End If
+                If TypeOf blocknode Is CSS.EventDeclarationSyntax Then
+                    Return blocknode
+                End If
+
+                If TypeOf blocknode Is CSS.NamespaceDeclarationSyntax Then
+                    Return blocknode
+                End If
+
+                If TypeOf blocknode Is CSS.PropertyDeclarationSyntax Then
+                    Return blocknode
+                End If
+
+                If TypeOf blocknode Is CSS.MethodDeclarationSyntax Then
+                    Return blocknode
+                End If
+
+                If TypeOf blocknode Is CSS.ClassDeclarationSyntax Then
+                    Return blocknode
+                End If
+
+                If TypeOf blocknode Is CSS.ConversionOperatorDeclarationSyntax Then
+                    Return blocknode
+                End If
+
+                If TypeOf blocknode Is CSS.ConstructorDeclarationSyntax Then
+                    Return blocknode
+                End If
+
+                If TypeOf blocknode Is CSS.EnumDeclarationSyntax Then
+                    Return blocknode
+                End If
+
+                If TypeOf blocknode Is CSS.StructDeclarationSyntax Then
+                    Return blocknode
+                End If
+
+                If TypeOf blocknode Is CSS.UsingDirectiveSyntax Then
+                    Return blocknode
+                End If
+
+                If TypeOf blocknode Is CSS.UsingStatementSyntax Then
+                    Return CType(blocknode.Parent, CS.CSharpSyntaxNode)
+                End If
+                blocknode = CType(blocknode.Parent, CS.CSharpSyntaxNode)
+
+            End While
+            Return GetStatementwithIssues(Node)
+        End Function
+
+        Private Function GetSymbolTableEntry(csIdentifier As SyntaxToken, BaseVBIdent As String, _usedIdentifiers As Dictionary(Of String, SymbolTableEntry), Node As CS.CSharpSyntaxNode, Model As SemanticModel, IsQualifiedNameOrTypeName As Boolean, isField As Boolean) As (IdentToken As SyntaxToken, MeNeeded As Boolean)
+            If _usedIdentifiers.ContainsKey(BaseVBIdent) Then
+                Dim symbolTableEntry As SymbolTableEntry = _usedIdentifiers(BaseVBIdent)
+                Return (Factory.Identifier(symbolTableEntry.Name).WithConvertedTriviaFrom(csIdentifier), symbolTableEntry.isProperty)
+            End If
+            For Each ident As KeyValuePair(Of String, SymbolTableEntry) In _usedIdentifiers
+                If String.Compare(ident.Key, BaseVBIdent, ignoreCase:=False, Globalization.CultureInfo.InvariantCulture) = 0 Then
+                    ' We have an exact match keep looking
+                    Return (Factory.Identifier(ident.Key), ident.Value.isProperty)
+                End If
+                If String.Compare(ident.Key, BaseVBIdent, ignoreCase:=True, Globalization.CultureInfo.InvariantCulture) = 0 Then
+                    ' If we are here we have seen the variable in a different case so fix it
+                    Dim uniqueName As String = BaseVBIdent.GetNewUniqueName(_usedIdentifiers, IsQualifiedNameOrTypeName, Node.GetScopingBlock, Model)
+                    If _usedIdentifiers(ident.Key).IsType Then
+                        _usedIdentifiers.Add(BaseVBIdent, New SymbolTableEntry(uniqueName, IsType:=False, isField))
+                    Else
+                        _usedIdentifiers.Add(BaseVBIdent, New SymbolTableEntry(uniqueName, IsQualifiedNameOrTypeName, isField))
+                    End If
+                    Dim symbolTableEntry As SymbolTableEntry = _usedIdentifiers(BaseVBIdent)
+                    Return (Factory.Identifier(symbolTableEntry.Name).WithConvertedTriviaFrom(csIdentifier), symbolTableEntry.isProperty)
+                End If
+            Next
+            Dim newIdentifier As String = BaseVBIdent
+            _usedIdentifiers.Add(BaseVBIdent, New SymbolTableEntry(newIdentifier, IsQualifiedNameOrTypeName, isField))
+            Return (Factory.Identifier(newIdentifier), False)
+        End Function
 
         <Extension>
         Private Function RestructureModifierLeadingTrivia(Modifier As SyntaxToken, i As Integer, ByRef LeadingTriviaNotHandled As Boolean, ByRef statementLeadingTrivia As SyntaxTriviaList, ByRef statementTrailingTrivia As SyntaxTriviaList) As SyntaxTriviaList
@@ -275,51 +358,12 @@ Namespace CSharpToVBConverter
         End Function
 
         <Extension>
-        Friend Function ConvertModifier(CSToken As SyntaxToken, IsModule As Boolean, context As TokenContext, ByRef FoundVisibility As Boolean) As SyntaxToken
-            If CSToken.Language <> "C#" Then
-                Throw New ArgumentException($"Invalid language {CSToken.Language}, for parameter,", NameOf(CSToken))
-            End If
-            Dim token As SyntaxToken = CS.CSharpExtensions.Kind(CSToken).GetVisibilityKeyword(IsModule, context, FoundVisibility)
-            If token.IsKind(VB.SyntaxKind.EmptyToken) Then
-                Return EmptyToken.WithConvertedLeadingTriviaFrom(CSToken)
-            End If
-            Return token.WithConvertedTriviaFrom(CSToken)
-        End Function
-
-        <Extension>
         Friend Function ConvertToInterpolatedStringTextToken(Token As SyntaxToken) As SyntaxToken
             If Token.Language <> "C#" Then
                 Throw New ArgumentException($"Invalid language {Token.Language}, for parameter", NameOf(Token))
             End If
             Dim tokenStr As String = ConvertCSharpEscapes(Token.ValueText)
             Return Factory.InterpolatedStringTextToken(tokenStr, tokenStr)
-        End Function
-
-        Friend Function GetSymbolTableEntry(csIdentifier As SyntaxToken, BaseVBIdent As String, _usedIdentifiers As Dictionary(Of String, SymbolTableEntry), Node As CS.CSharpSyntaxNode, Model As SemanticModel, IsQualifiedNameOrTypeName As Boolean, isField As Boolean) As (IdentToken As SyntaxToken, MeNeeded As Boolean)
-            If _usedIdentifiers.ContainsKey(BaseVBIdent) Then
-                Dim symbolTableEntry As SymbolTableEntry = _usedIdentifiers(BaseVBIdent)
-                Return (Factory.Identifier(symbolTableEntry.Name).WithConvertedTriviaFrom(csIdentifier), symbolTableEntry.isProperty)
-            End If
-            For Each ident As KeyValuePair(Of String, SymbolTableEntry) In _usedIdentifiers
-                If String.Compare(ident.Key, BaseVBIdent, ignoreCase:=False, Globalization.CultureInfo.InvariantCulture) = 0 Then
-                    ' We have an exact match keep looking
-                    Return (Factory.Identifier(ident.Key), ident.Value.isProperty)
-                End If
-                If String.Compare(ident.Key, BaseVBIdent, ignoreCase:=True, Globalization.CultureInfo.InvariantCulture) = 0 Then
-                    ' If we are here we have seen the variable in a different case so fix it
-                    Dim uniqueName As String = BaseVBIdent.GetNewUniqueName(_usedIdentifiers, IsQualifiedNameOrTypeName, Node.GetScopingBlock, Model)
-                    If _usedIdentifiers(ident.Key).IsType Then
-                        _usedIdentifiers.Add(BaseVBIdent, New SymbolTableEntry(uniqueName, IsType:=False, isField))
-                    Else
-                        _usedIdentifiers.Add(BaseVBIdent, New SymbolTableEntry(uniqueName, IsQualifiedNameOrTypeName, isField))
-                    End If
-                    Dim symbolTableEntry As SymbolTableEntry = _usedIdentifiers(BaseVBIdent)
-                    Return (Factory.Identifier(symbolTableEntry.Name).WithConvertedTriviaFrom(csIdentifier), symbolTableEntry.isProperty)
-                End If
-            Next
-            Dim newIdentifier As String = BaseVBIdent
-            _usedIdentifiers.Add(BaseVBIdent, New SymbolTableEntry(newIdentifier, IsQualifiedNameOrTypeName, isField))
-            Return (Factory.Identifier(newIdentifier), False)
         End Function
 
         <Extension>

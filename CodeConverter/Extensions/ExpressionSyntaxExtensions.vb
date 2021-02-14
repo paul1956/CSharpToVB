@@ -17,6 +17,11 @@ Namespace CSharpToVBConverter
     Public Module ExpressionSyntaxExtensions
 
         <Extension>
+        Private Function CreateVbArgList(Of T As VBS.ExpressionSyntax)(argExpressions As IEnumerable(Of T)) As VBS.ArgumentListSyntax
+            Return Factory.ArgumentList(Factory.SeparatedList(argExpressions.Select(Function(e) CType(Factory.SimpleArgument(e), VBS.ArgumentSyntax))))
+        End Function
+
+        <Extension>
         Private Function StartsWithSystemDot(Expression As SyntaxNode) As Boolean
             Return Expression.ToString.StartsWith("System.", StringComparison.Ordinal)
         End Function
@@ -179,11 +184,6 @@ Namespace CSharpToVBConverter
 
         Friend Function CreateArgList(Of T As VBS.ExpressionSyntax)(ParamArray args() As T) As VBS.ArgumentListSyntax
             Return CreateVbArgList(args)
-        End Function
-
-        <Extension>
-        Friend Function CreateVbArgList(Of T As VBS.ExpressionSyntax)(argExpressions As IEnumerable(Of T)) As VBS.ArgumentListSyntax
-            Return Factory.ArgumentList(Factory.SeparatedList(argExpressions.Select(Function(e) CType(Factory.SimpleArgument(e), VBS.ArgumentSyntax))))
         End Function
 
         <Extension>

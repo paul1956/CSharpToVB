@@ -14,6 +14,83 @@ Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 Namespace CSharpToVBConverter.ToVisualBasic
     Friend Module VariableDeclarationExtensions
 
+        <Extension>
+        Private Function WithModifiedNodeTrailingTrivia(Of T As VB.VisualBasicSyntaxNode)(Node As T, SeparatorFollows As Boolean) As T
+            Dim afterComment As Boolean = False
+            Dim afterLinefeed As Boolean = False
+            Dim afterWhiteSpace As Boolean = False
+            Dim finalTrailingTrivia As SyntaxTriviaList
+            Dim initialTriviaList As SyntaxTriviaList = Node.GetTrailingTrivia
+            For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
+                Dim trivia As SyntaxTrivia = e.Value
+                Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.index, LookaheadCount:=1)
+                Dim afterLineContinuation As Boolean = False
+                Select Case trivia.RawKind
+                    Case VB.SyntaxKind.WhitespaceTrivia
+                        If nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                            Continue For
+                        End If
+
+                        If nextTrivia.IsKind(VB.SyntaxKind.CommentTrivia) OrElse
+                            nextTrivia.IsKind(VB.SyntaxKind.LineContinuationTrivia) Then
+                        End If
+                        finalTrailingTrivia = finalTrailingTrivia.Add(trivia)
+                        afterComment = False
+                        afterLineContinuation = False
+                        afterLinefeed = False
+                        afterWhiteSpace = True
+                    Case VB.SyntaxKind.EndOfLineTrivia
+                        If nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                            Continue For
+                        End If
+                        If Not afterLinefeed Then
+                            If Not (afterComment OrElse afterLineContinuation) Then
+                                If SeparatorFollows Then
+                                    finalTrailingTrivia = finalTrailingTrivia.AddRange(SpaceLineContinue)
+                                End If
+                            End If
+                            finalTrailingTrivia = finalTrailingTrivia.Add(trivia)
+                            afterComment = False
+                            afterLineContinuation = False
+                            afterLinefeed = True
+                            afterWhiteSpace = False
+                        End If
+                    Case VB.SyntaxKind.CommentTrivia
+                        If Not afterWhiteSpace Then
+                            finalTrailingTrivia = finalTrailingTrivia.Add(SpaceTrivia)
+                        End If
+                        If Not afterLineContinuation Then
+                            finalTrailingTrivia = finalTrailingTrivia.AddRange({LineContinuation, SpaceTrivia})
+                        End If
+                        finalTrailingTrivia = finalTrailingTrivia.Add(trivia)
+                        If Not nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                            finalTrailingTrivia = finalTrailingTrivia.Add(VBEOLTrivia)
+                            afterLineContinuation = False
+                            afterLinefeed = True
+                        End If
+                        afterComment = True
+                        afterWhiteSpace = False
+                    Case VB.SyntaxKind.LineContinuationTrivia
+                        If finalTrailingTrivia.Last.IsKind(VB.SyntaxKind.LineContinuationTrivia) Then
+                            Continue For
+                        End If
+                        afterWhiteSpace = False
+                        afterLineContinuation = True
+                        finalTrailingTrivia = finalTrailingTrivia.Add(LineContinuation)
+                    Case VB.SyntaxKind.EndIfDirectiveTrivia
+                        finalTrailingTrivia = finalTrailingTrivia.Add(trivia)
+                        afterComment = False
+                        afterLineContinuation = False
+                        afterLinefeed = False
+                        afterWhiteSpace = False
+                        Stop
+                    Case Else
+                        Stop
+                End Select
+            Next
+            Return Node.WithTrailingTrivia(finalTrailingTrivia)
+        End Function
+
         ''' <summary>
         ''' Converts C# VariableDeclaration to VB List(Of VariableDeclaratorSyntax)
         ''' </summary>

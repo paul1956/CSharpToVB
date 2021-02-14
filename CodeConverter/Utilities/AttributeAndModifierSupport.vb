@@ -2,6 +2,7 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
+Imports System.Runtime.CompilerServices
 Imports Microsoft.CodeAnalysis
 
 Imports CS = Microsoft.CodeAnalysis.CSharp
@@ -26,6 +27,34 @@ Namespace CSharpToVBConverter.ToVisualBasic
             [Property]
             LocalFunction
         End Enum
+
+        <Extension>
+        Private Function ContainsAny(s As String, comparisonType As StringComparison, ParamArray StringArray() As String) As Boolean
+            If String.IsNullOrWhiteSpace(s) Then
+                Return False
+            End If
+            If StringArray Is Nothing OrElse StringArray.Length = 0 Then
+                Return False
+            End If
+            For Each str As String In StringArray
+                If s.Contains(str, comparisonType) Then
+                    Return True
+                End If
+            Next
+            Return False
+        End Function
+
+        <Extension>
+        Private Function ConvertModifier(CSToken As SyntaxToken, IsModule As Boolean, context As TokenContext, ByRef FoundVisibility As Boolean) As SyntaxToken
+            If CSToken.Language <> "C#" Then
+                Throw New ArgumentException($"Invalid language {CSToken.Language}, for parameter,", NameOf(CSToken))
+            End If
+            Dim token As SyntaxToken = CS.CSharpExtensions.Kind(CSToken).GetVisibilityKeyword(IsModule, context, FoundVisibility)
+            If token.IsKind(VB.SyntaxKind.EmptyToken) Then
+                Return EmptyToken.WithConvertedLeadingTriviaFrom(CSToken)
+            End If
+            Return token.WithConvertedTriviaFrom(CSToken)
+        End Function
 
         Private Function CSharpDefaultVisibility(context As TokenContext) As SyntaxToken
             Select Case context

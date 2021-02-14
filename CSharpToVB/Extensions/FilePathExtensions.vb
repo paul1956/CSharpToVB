@@ -7,8 +7,49 @@ Imports System.Runtime.CompilerServices
 Imports System.Threading
 Imports CSharpToVBConverter
 Imports Microsoft.CodeAnalysis
+Imports CS = Microsoft.CodeAnalysis.CSharp
+Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
 Public Module FilePathExtensions
+
+    <Extension>
+    Private Function IsComment(trivia As SyntaxTrivia) As Boolean
+        Return trivia.IsSingleLineComment OrElse trivia.IsMultiLineComment
+    End Function
+
+    <Extension>
+    Private Function IsDocComment(trivia As SyntaxTrivia) As Boolean
+        Return trivia.IsSingleLineDocComment() OrElse trivia.IsMultiLineDocComment()
+    End Function
+
+    <Extension>
+    Private Function IsMultiLineComment(trivia As SyntaxTrivia) As Boolean
+        Return trivia.IsKind(CS.SyntaxKind.MultiLineCommentTrivia) OrElse
+                trivia.IsKind(CS.SyntaxKind.DocumentationCommentExteriorTrivia) OrElse
+                trivia.IsKind(CS.SyntaxKind.MultiLineDocumentationCommentTrivia)
+    End Function
+
+    <Extension>
+    Private Function IsMultiLineDocComment(trivia As SyntaxTrivia) As Boolean
+        Return trivia.IsKind(CS.SyntaxKind.MultiLineDocumentationCommentTrivia)
+    End Function
+
+    <Extension>
+    Private Function IsRegularOrDocComment(trivia As SyntaxTrivia) As Boolean
+        Return trivia.IsSingleLineComment() OrElse trivia.IsMultiLineComment() OrElse trivia.IsDocComment()
+    End Function
+
+    <Extension>
+    Private Function IsSingleLineComment(trivia As SyntaxTrivia) As Boolean
+        Return trivia.IsKind(CS.SyntaxKind.SingleLineCommentTrivia) OrElse
+                trivia.IsKind(CS.SyntaxKind.SingleLineDocumentationCommentTrivia) OrElse
+                trivia.IsKind(VB.SyntaxKind.CommentTrivia)
+    End Function
+
+    <Extension>
+    Private Function IsSingleLineDocComment(trivia As SyntaxTrivia) As Boolean
+        Return trivia.IsKind(CS.SyntaxKind.SingleLineDocumentationCommentTrivia)
+    End Function
 
     <Extension>
     Friend Function GetFileCount(DirPath As String, SourceLanguageExtension As String, SkipBinAndObjFolders As Boolean, SkipTestResourceFiles As Boolean, Optional Depth As Integer = 0) As Long

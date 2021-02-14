@@ -16,7 +16,7 @@ Namespace CSharpToVBConverter
     Public Module StatementExtensions
 
         <Extension>
-        Friend Function ContainsConditionalDirective(argumentList As CSS.ArgumentListSyntax) As Boolean
+        Private Function ContainsConditionalDirective(argumentList As CSS.ArgumentListSyntax) As Boolean
             If argumentList.Arguments.Count = 0 Then
                 Return False
             End If

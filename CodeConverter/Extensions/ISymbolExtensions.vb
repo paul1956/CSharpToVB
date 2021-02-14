@@ -47,23 +47,6 @@ Namespace CSharpToVBConverter
         End Function
 
         <Extension>
-        Friend Function GetOverriddenMember(symbol As ISymbol) As ISymbol
-            Select Case True
-                Case TypeOf symbol Is IMethodSymbol
-                    Dim method As IMethodSymbol = CType(symbol, IMethodSymbol)
-                    Return method.OverriddenMethod
-                Case TypeOf symbol Is IPropertySymbol
-                    Dim [property] As IPropertySymbol = CType(symbol, IPropertySymbol)
-                    Return [property].OverriddenProperty
-                Case TypeOf symbol Is IEventSymbol
-                    Dim [event] As IEventSymbol = CType(symbol, IEventSymbol)
-                    Return [event].OverriddenEvent
-            End Select
-
-            Return Nothing
-        End Function
-
-        <Extension>
         Friend Function GetReturnType(symbol As ISymbol) As ITypeSymbol
             If symbol Is Nothing Then
                 Throw New ArgumentNullException(NameOf(symbol))
@@ -94,35 +77,6 @@ Namespace CSharpToVBConverter
             Return Nothing
         End Function
 
-        ''' <summary>
-        ''' Checks if 'symbol' is accessible from within 'within'.
-        ''' </summary>
-        <Extension>
-        Friend Function IsAccessibleWithin(symbol As ISymbol, within As ISymbol, Optional throughTypeOpt As ITypeSymbol = Nothing) As Boolean
-            Dim isIAssembly As Boolean = TypeOf within Is IAssemblySymbol
-            Dim assembly As IAssemblySymbol = If(isIAssembly, CType(within, IAssemblySymbol), Nothing)
-            If isIAssembly Then
-                Return symbol.IsAccessibleWithin(assembly, throughTypeOpt)
-            Else
-                Dim isINamedType As Boolean = TypeOf within Is INamedTypeSymbol
-                Dim namedType As INamedTypeSymbol = If(isINamedType, CType(within, INamedTypeSymbol), Nothing)
-                If isINamedType Then
-                    Return symbol.IsAccessibleWithin(namedType, throughTypeOpt)
-                Else
-                    Throw New ArgumentException($"TypeOf {NameOf(within)} is not {NameOf(INamedTypeSymbol)}")
-                End If
-            End If
-        End Function
-
-        <Extension>
-        Friend Function IsDefinedInSource(symbol As ISymbol) As Boolean
-            If symbol Is Nothing Then
-                Throw New ArgumentNullException(NameOf(symbol))
-            End If
-
-            Return symbol.Locations.Any(Function(loc) loc.IsInSource)
-        End Function
-
         <Extension>
         Friend Function IsInterfaceType(symbol As ISymbol) As Boolean
             If symbol Is Nothing OrElse TryCast(symbol, ITypeSymbol) Is Nothing Then
@@ -137,14 +91,6 @@ Namespace CSharpToVBConverter
                 Return False
             End If
             Return symbol.Kind = kind
-        End Function
-
-        <Extension>
-        Friend Function MatchesKind(symbol As ISymbol, ParamArray kinds() As SymbolKind) As Boolean
-            If symbol Is Nothing Then
-                Return False
-            End If
-            Return kinds.Contains(symbol.Kind)
         End Function
 
     End Module
