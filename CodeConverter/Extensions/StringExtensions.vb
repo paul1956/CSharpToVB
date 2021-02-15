@@ -4,8 +4,6 @@
 
 Imports System.Runtime.CompilerServices
 Imports System.Text
-Imports Microsoft.CodeAnalysis
-Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
 Namespace CSharpToVBConverter

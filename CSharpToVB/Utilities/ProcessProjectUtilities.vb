@@ -12,6 +12,7 @@ Imports CSharpToVBConverter
 Imports Microsoft.CodeAnalysis
 
 Public Module ProcessProjectUtilities
+
     <Extension>
     Friend Sub UpdateProgressLabels(MainForm As Form1, progressStr As String)
         If MainForm.InvokeRequired Then

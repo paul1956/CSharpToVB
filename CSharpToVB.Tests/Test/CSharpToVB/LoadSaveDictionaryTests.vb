@@ -50,6 +50,7 @@ Namespace DictionaryLoadSave.Tests
             Assert.Equal(NameOf(XmlDocComment_EntityReference), ClassificationStringToName("xml doc comment - entity reference"))
 
         End Sub
+
         <Fact>
         Public Sub ClassificationNameToStringTest()
             Assert.Equal(ClassificationNameToString(NameOf(ThemeDefaultColor)), "default")

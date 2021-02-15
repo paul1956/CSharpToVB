@@ -4,14 +4,12 @@
 
 Imports System.ComponentModel
 Imports System.IO
-Imports System.Reflection
 Imports System.Text
 Imports System.Threading
 Imports CSharpToVBApp
 Imports CSharpToVBConverter
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.VisualBasic.FileIO
-Imports ProgressReportLibrary
 
 Partial Public Class Form1
     Private Shared ReadOnly s_snippetFileWithPath As String = Path.Combine(SpecialDirectories.MyDocuments, "CSharpToVBLastSnippet.RTF")
@@ -1068,7 +1066,6 @@ namespace Application
         Me.ListBoxErrorList.Width = halfClientWidth
         Me.StatusStripCurrentFileName.Width = halfClientWidth
     End Sub
-
 
 #End Region
 

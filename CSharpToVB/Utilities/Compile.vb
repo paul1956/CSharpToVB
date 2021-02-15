@@ -3,6 +3,7 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Collections.Immutable
+Imports System.Diagnostics.CodeAnalysis
 Imports System.IO
 Imports System.Reflection
 
@@ -16,11 +17,22 @@ Imports Microsoft.CodeAnalysis.VisualBasic
 
 Public Module Compile
 
+    Private Function FilterDiagnostics(Diags As ImmutableArray(Of Diagnostic), Severity As DiagnosticSeverity) As List(Of Diagnostic)
+        Dim filteredDiagnostics As New List(Of Diagnostic)
+        For Each diag As Diagnostic In Diags
+            If diag.Location.IsInSource = True AndAlso diag.Severity >= Severity Then
+                filteredDiagnostics.Add(diag)
+            End If
+        Next
+        Return filteredDiagnostics.OrderBy(Function(x As Diagnostic) x.Location.GetLineSpan.StartLinePosition.Line).ThenBy(Function(x As Diagnostic) x.Location.GetLineSpan.StartLinePosition.Character).ToList
+    End Function
+
     ''' <summary>
     ''' Compile C# code
     ''' </summary>
     ''' <param name="StringToBeCompiled">String To Be Compiled</param>
     ''' <returns>Tuple(CompileSuccess, EmitResult)CompileSuccess is true unless compiler crashes</returns>
+    <ExcludeFromCodeCoverage>
     Public Function CompileCSharpString(StringToBeCompiled As String) As (Success As Boolean, EmitResult)
         If String.IsNullOrEmpty(StringToBeCompiled) Then
             Return (True, Nothing)
@@ -94,16 +106,6 @@ Public Module Compile
         End Using
         ResultOfConversion.SetFilteredListOfFailures(FilterDiagnostics(Diags:=compilation.GetParseDiagnostics(), Severity:=SeverityToReport))
         Return (compileSuccess, compileResult)
-    End Function
-
-    Private Function FilterDiagnostics(Diags As ImmutableArray(Of Diagnostic), Severity As DiagnosticSeverity) As List(Of Diagnostic)
-        Dim filteredDiagnostics As New List(Of Diagnostic)
-        For Each diag As Diagnostic In Diags
-            If diag.Location.IsInSource = True AndAlso diag.Severity >= Severity Then
-                filteredDiagnostics.Add(diag)
-            End If
-        Next
-        Return filteredDiagnostics.OrderBy(Function(x As Diagnostic) x.Location.GetLineSpan.StartLinePosition.Line).ThenBy(Function(x As Diagnostic) x.Location.GetLineSpan.StartLinePosition.Character).ToList
     End Function
 
 End Module

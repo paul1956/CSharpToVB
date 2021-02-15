@@ -189,13 +189,6 @@ Public Module ConvertProjectFileUtilities
         End Try
     End Sub
 
-    Friend Function CreateDirectoryIfNonexistent(SolutionRoot As String) As String
-        If Not Directory.Exists(SolutionRoot) Then
-            Directory.CreateDirectory(SolutionRoot)
-        End If
-        Return SolutionRoot
-    End Function
-
     Friend Function DestinationFilePath(SourceDocumentFileNameWithPath As String, SolutionRoot As String) As String
         If String.IsNullOrWhiteSpace(SolutionRoot) Then
             Return String.Empty

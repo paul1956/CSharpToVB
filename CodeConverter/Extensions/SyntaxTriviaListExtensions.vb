@@ -559,5 +559,6 @@ Namespace CSharpToVBConverter
             triviaList = triviaList.InsertRange(eolIndex, SpaceLineContinue)
             Return triviaList
         End Function
+
     End Module
 End Namespace

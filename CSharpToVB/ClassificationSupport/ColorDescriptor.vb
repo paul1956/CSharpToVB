@@ -38,4 +38,5 @@ Public Structure ColorDescriptor
     Public Shared Operator <>(left As ColorDescriptor, right As ColorDescriptor) As Boolean
         Return Not left = right
     End Operator
+
 End Structure

@@ -3,7 +3,6 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Text
-Imports System.Threading
 
 Imports CSharpToVBApp
 
@@ -13,9 +12,48 @@ Imports CSharpToVBConverter.ConversionResult
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Emit
 
-Imports ProgressReportLibrary
-
 Public Module ColorizeSupport
+
+    Private Function FilterOutTopLevelStatementCode(TextToCompile As String) As String
+        If Not My.Settings.IncludeTopLevelStmtProtoInCode AndAlso TextToCompile.Contains("Top Level Code boilerplate is included,") Then
+            Dim filteredCode As New StringBuilder
+            Dim skipNext As Boolean
+            Dim skipBlank As Boolean
+            For Each e As IndexClass(Of String) In TextToCompile.SplitLines.WithIndex
+                Dim stmt As String = e.Value
+                If String.IsNullOrEmpty(stmt) Then
+                    If Not skipBlank Then
+                        filteredCode.AppendLine()
+                        skipBlank = True
+                    End If
+                    Continue For
+                End If
+                skipBlank = False
+                Select Case True
+                    Case stmt.Trim.StartsWith("' Top Level Code boilerplate is included")
+                        skipBlank = True
+                    Case stmt.Trim.StartsWith("Namespace Application")
+                    Case stmt.Trim.StartsWith("NotInheritable Class Program")
+                    Case stmt.Trim.StartsWith("Private Shared ")
+                    Case stmt.Trim.StartsWith("Public Shared ")
+                        skipBlank = True
+                        skipNext = True
+                    Case stmt.Trim.StartsWith("End Sub")
+                    Case stmt.Trim.StartsWith("End Class")
+                    Case stmt.Trim.StartsWith("End Namespace")
+                    Case stmt.StartsWith("            ")
+                        filteredCode.AppendLine(stmt.Substring(12))
+                    Case skipNext
+                        skipNext = False
+                    Case Else
+                        filteredCode.AppendLine(stmt)
+                End Select
+            Next
+            TextToCompile = filteredCode.ToString
+        End If
+
+        Return TextToCompile
+    End Function
 
     Friend Sub Colorize(MainForm As Form1, FragmentRange As IEnumerable(Of Range), ConversionBuffer As RichTextBox)
         Dim currentChar As Integer = ConversionBuffer.SelectionStart
@@ -137,107 +175,5 @@ Public Module ColorizeSupport
         MainForm.ConversionOutput.Visible = True
         Application.DoEvents()
     End Sub
-
-    Private Function FilterOutTopLevelStatementCode(TextToCompile As String) As String
-        If Not My.Settings.IncludeTopLevelStmtProtoInCode AndAlso TextToCompile.Contains("Top Level Code boilerplate is included,") Then
-            Dim filteredCode As New StringBuilder
-            Dim skipNext As Boolean
-            Dim skipBlank As Boolean
-            For Each e As IndexClass(Of String) In TextToCompile.SplitLines.WithIndex
-                Dim stmt As String = e.Value
-                If String.IsNullOrEmpty(stmt) Then
-                    If Not skipBlank Then
-                        filteredCode.AppendLine()
-                        skipBlank = True
-                    End If
-                    Continue For
-                End If
-                skipBlank = False
-                Select Case True
-                    Case stmt.Trim.StartsWith("' Top Level Code boilerplate is included")
-                        skipBlank = True
-                    Case stmt.Trim.StartsWith("Namespace Application")
-                    Case stmt.Trim.StartsWith("NotInheritable Class Program")
-                    Case stmt.Trim.StartsWith("Private Shared ")
-                    Case stmt.Trim.StartsWith("Public Shared ")
-                        skipBlank = True
-                        skipNext = True
-                    Case stmt.Trim.StartsWith("End Sub")
-                    Case stmt.Trim.StartsWith("End Class")
-                    Case stmt.Trim.StartsWith("End Namespace")
-                    Case stmt.StartsWith("            ")
-                        filteredCode.AppendLine(stmt.Substring(12))
-                    Case skipNext
-                        skipNext = False
-                    Case Else
-                        filteredCode.AppendLine(stmt)
-                End Select
-            Next
-            TextToCompile = filteredCode.ToString
-        End If
-
-        Return TextToCompile
-    End Function
-
-    Friend Async Function Convert_Compile_ColorizeAsync(
-        MainForm As Form1,
-        RequestToConvert As ConvertRequest,
-        CSPreprocessorSymbols As List(Of String),
-        VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)),
-        OptionalReferences() As MetadataReference, CancelToken As CancellationToken) As Task(Of Boolean)
-        Dim uiContext As SynchronizationContext = SynchronizationContext.Current
-
-        Dim reportException As Action(Of Exception) =
-            Sub(ex As Exception)
-                ' Use the Windows Forms synchronization context in order to call MsgBox from the UI thread.
-                uiContext.Post(Function(state) MsgBox(ex.Message,
-                                                      MsgBoxStyle.OkOnly Or MsgBoxStyle.Critical Or MsgBoxStyle.MsgBoxSetForeground,
-                                                      "Stack Overflow"), state:=Nothing)
-            End Sub
-
-        Dim defaultVBOptions As New DefaultVBOptions
-        With My.Settings
-            defaultVBOptions = New DefaultVBOptions(.OptionCompare, .OptionCompareIncludeInCode, .OptionExplicit, .OptionExplicitIncludeInCode, .OptionInfer, .OptionInferIncludeInCode, .OptionStrict, .OptionStrictIncludeInCode)
-        End With
-        ' The System.Progress class invokes the callback on the UI thread. It does this because we create the
-        ' System.Progress object on the main thread. During creation, it reads SynchronizationContext.Current so
-        ' that it knows how to get back to the main thread to invoke the callback there no matter what thread calls
-        ' IProgress.Report.
-        Dim progress As New Progress(Of ProgressReport)(AddressOf MainForm.StatusStripConversionProgressBar.Update)
-        MainForm._resultOfConversion = Await Task.Run(Function() ConvertInputRequest(RequestToConvert,
-                                                                                     defaultVBOptions,
-                                                                                     CSPreprocessorSymbols,
-                                                                                     VBPreprocessorSymbols,
-                                                                                     OptionalReferences,
-                                                                                     reportException,
-                                                                                     progress,
-                                                                                     CancelToken)
-                                                                                    ).ConfigureAwait(True)
-
-        If MainForm._resultOfConversion Is Nothing Then
-            MainForm.mnuFileSaveAs.Enabled = False
-            Return False
-        Else
-            MainForm.mnuFileSaveAs.Enabled = MainForm._resultOfConversion.ResultStatus = ResultTriState.Success
-        End If
-        Select Case MainForm._resultOfConversion.ResultStatus
-            Case ResultTriState.Success
-                Compile_Colorize(MainForm, MainForm._resultOfConversion.ConvertedCode, VBPreprocessorSymbols)
-                Dim filteredErrorCount As Integer = MainForm._resultOfConversion.GetFilteredListOfFailures().Count
-                MainForm.LabelErrorCount.Text = $"Number of Errors: {filteredErrorCount}"
-                Return filteredErrorCount = 0
-            Case ResultTriState.Failure
-                If TypeOf MainForm._resultOfConversion.Exceptions(0) IsNot OperationCanceledException Then
-                    Dim selectionColor As ColorDescriptor = GetColorFromName(ThemeErrorColor)
-                    MainForm.ConversionOutput.SelectionBackColor = selectionColor.Background
-                    MainForm.ConversionOutput.SelectionColor = selectionColor.Foreground
-                    MainForm.ConversionOutput.Text = GetExceptionsAsString(MainForm._resultOfConversion.Exceptions)
-                End If
-            Case ResultTriState.Ignore
-                MainForm.ConversionOutput.Text = String.Empty
-                MainForm.LabelErrorCount.Text = "File Skipped"
-        End Select
-        Return MainForm._resultOfConversion.ResultStatus <> ResultTriState.Failure
-    End Function
 
 End Module

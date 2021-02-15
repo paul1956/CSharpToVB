@@ -9,16 +9,16 @@ Imports System.Globalization
 ''' </summary>
 ''' <remarks></remarks>
 <Serializable()>
-    Public Class MalformedLineException
-        Inherits Exception
+Public Class MalformedLineException
+    Inherits Exception
 
-        ''' <summary>
-        '''  Creates a new exception with no properties set
-        ''' </summary>
-        ''' <remarks></remarks>
-        Public Sub New()
-            MyBase.New()
-        End Sub
+    ''' <summary>
+    '''  Creates a new exception with no properties set
+    ''' </summary>
+    ''' <remarks></remarks>
+    Public Sub New()
+        MyBase.New()
+    End Sub
 
     ''' <summary>
     '''  Creates a new exception, setting Message and LineNumber
@@ -124,4 +124,4 @@ Imports System.Globalization
     ' Name of property used for serialization
     Private Const LINE_NUMBER_PROPERTY As String = "LineNumber"
 
-    End Class
+End Class

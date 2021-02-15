@@ -14,6 +14,7 @@ Public NotInheritable Class AnalyzerAdditionalFile
     Public Sub New(path As String)
         _path = path
     End Sub
+
     Public Overrides ReadOnly Property Path As String
         Get
             Return _path
@@ -24,4 +25,5 @@ Public NotInheritable Class AnalyzerAdditionalFile
         Dim info As FileInfo = New FileInfo(Me.Path)
         Return SourceText.From(File.ReadAllText(Me.Path))
     End Function
+
 End Class

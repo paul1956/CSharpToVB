@@ -2,15 +2,94 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
+Imports System.Diagnostics.CodeAnalysis
+Imports System.Globalization
 Imports System.IO
 Imports System.Reflection
 Imports System.Runtime.CompilerServices
+Imports System.Text
 Imports System.Threading
 Imports CSharpToVBConverter
+Imports CSharpToVBConverter.ConversionResult
 Imports Microsoft.CodeAnalysis
 Imports ProgressReportLibrary
 
 Friend Module ProcessFileUtilities
+
+    Private Async Function Convert_Compile_ColorizeAsync(
+        MainForm As Form1,
+        RequestToConvert As ConvertRequest,
+        CSPreprocessorSymbols As List(Of String),
+        VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)),
+        OptionalReferences() As MetadataReference, CancelToken As CancellationToken) As Task(Of Boolean)
+        Dim uiContext As SynchronizationContext = SynchronizationContext.Current
+
+        Dim reportException As Action(Of Exception) =
+            Sub(ex As Exception)
+                ' Use the Windows Forms synchronization context in order to call MsgBox from the UI thread.
+                uiContext.Post(Function(state) MsgBox(ex.Message,
+                                                      MsgBoxStyle.OkOnly Or MsgBoxStyle.Critical Or MsgBoxStyle.MsgBoxSetForeground,
+                                                      "Stack Overflow"), state:=Nothing)
+            End Sub
+
+        Dim defaultVBOptions As New DefaultVBOptions
+        With My.Settings
+            defaultVBOptions = New DefaultVBOptions(.OptionCompare, .OptionCompareIncludeInCode, .OptionExplicit, .OptionExplicitIncludeInCode, .OptionInfer, .OptionInferIncludeInCode, .OptionStrict, .OptionStrictIncludeInCode)
+        End With
+        ' The System.Progress class invokes the callback on the UI thread. It does this because we create the
+        ' System.Progress object on the main thread. During creation, it reads SynchronizationContext.Current so
+        ' that it knows how to get back to the main thread to invoke the callback there no matter what thread calls
+        ' IProgress.Report.
+        Dim progress As New Progress(Of ProgressReport)(AddressOf MainForm.StatusStripConversionProgressBar.Update)
+        MainForm._resultOfConversion = Await Task.Run(Function() ConvertInputRequest(RequestToConvert,
+                                                                                     defaultVBOptions,
+                                                                                     CSPreprocessorSymbols,
+                                                                                     VBPreprocessorSymbols,
+                                                                                     OptionalReferences,
+                                                                                     reportException,
+                                                                                     progress,
+                                                                                     CancelToken)
+                                                                                    ).ConfigureAwait(True)
+
+        If MainForm._resultOfConversion Is Nothing Then
+            MainForm.mnuFileSaveAs.Enabled = False
+            Return False
+        Else
+            MainForm.mnuFileSaveAs.Enabled = MainForm._resultOfConversion.ResultStatus = ResultTriState.Success
+        End If
+        Select Case MainForm._resultOfConversion.ResultStatus
+            Case ResultTriState.Success
+                Compile_Colorize(MainForm, MainForm._resultOfConversion.ConvertedCode, VBPreprocessorSymbols)
+                Dim filteredErrorCount As Integer = MainForm._resultOfConversion.GetFilteredListOfFailures().Count
+                MainForm.LabelErrorCount.Text = $"Number of Errors: {filteredErrorCount}"
+                Return filteredErrorCount = 0
+            Case ResultTriState.Failure
+                If TypeOf MainForm._resultOfConversion.Exceptions(0) IsNot OperationCanceledException Then
+                    Dim selectionColor As ColorDescriptor = GetColorFromName(ThemeErrorColor)
+                    MainForm.ConversionOutput.SelectionBackColor = selectionColor.Background
+                    MainForm.ConversionOutput.SelectionColor = selectionColor.Foreground
+                    MainForm.ConversionOutput.Text = GetExceptionsAsString(MainForm._resultOfConversion.Exceptions)
+                End If
+            Case ResultTriState.Ignore
+                MainForm.ConversionOutput.Text = String.Empty
+                MainForm.LabelErrorCount.Text = "File Skipped"
+        End Select
+        Return MainForm._resultOfConversion.ResultStatus <> ResultTriState.Failure
+    End Function
+
+    <ExcludeFromCodeCoverage>
+    Private Function GetExceptionsAsString(Exceptions As IReadOnlyList(Of Exception)) As String
+        If Exceptions Is Nothing OrElse Not Exceptions.Any Then
+            Return String.Empty
+        End If
+
+        Dim builder As New StringBuilder()
+        For index As Integer = 0 To Exceptions.Count - 1
+            builder.AppendFormat(CultureInfo.InvariantCulture, "----- Exception {0} Of {1} -----" & Environment.NewLine, index + 1, Exceptions.Count)
+            builder.AppendLine(Exceptions(index).ToString())
+        Next index
+        Return builder.ToString()
+    End Function
 
     <Extension>
     Friend Async Function ConvertSnippetOfTopLevelStmt(MainForm As Form1, SourceCode As String) As Task

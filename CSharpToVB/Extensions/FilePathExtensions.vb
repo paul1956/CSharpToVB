@@ -12,6 +12,13 @@ Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
 Public Module FilePathExtensions
 
+    Private Function CreateDirectoryIfNonexistent(SolutionRoot As String) As String
+        If Not Directory.Exists(SolutionRoot) Then
+            Directory.CreateDirectory(SolutionRoot)
+        End If
+        Return SolutionRoot
+    End Function
+
     <Extension>
     Private Function IsComment(trivia As SyntaxTrivia) As Boolean
         Return trivia.IsSingleLineComment OrElse trivia.IsMultiLineComment
