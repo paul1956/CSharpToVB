@@ -207,11 +207,11 @@ Public Module ConvertProjectFileUtilities
 
     Public Function ConvertProjectFile(sourceFilePath As String, ProjectSavePath As String) As String
         If String.IsNullOrWhiteSpace(sourceFilePath) Then
-            Throw New ArgumentException($"'{NameOf(sourceFilePath)}' cannot be null or whitespace", NameOf(sourceFilePath))
+            Throw New ArgumentException($"'{sourceFilePath}' cannot be null or whitespace", NameOf(sourceFilePath))
         End If
 
         If String.IsNullOrWhiteSpace(ProjectSavePath) Then
-            Throw New ArgumentException($"'{NameOf(ProjectSavePath)}' cannot be null or whitespace", NameOf(sourceFilePath))
+            Throw New ArgumentException($"'{ProjectSavePath}' cannot be null or whitespace", NameOf(sourceFilePath))
         End If
 
         Dim xmlDoc As New XmlDocument With {
@@ -228,7 +228,7 @@ Public Module ConvertProjectFileUtilities
             isDocument = False
         End If
         If root.Attributes.Count = 0 OrElse Not root.Attributes(0).Value.StartsWith("Microsoft.NET.Sdk", StringComparison.OrdinalIgnoreCase) Then
-            MsgBox("Project {sourceFilePath} is not an SDK project, the project file will not be converted!", MsgBoxStyle.Information, "Project Coversion Issue")
+            MsgBox($"Project {sourceFilePath} is not an SDK project, the project file will not be converted!", MsgBoxStyle.Information, "Project Coversion Issue")
             Return ""
         End If
         Dim basePath As String = DestinationFilePath(sourceFilePath, ProjectSavePath)

@@ -284,10 +284,10 @@ Public Module ProcessProjectUtilities
                         MainForm._cancellationTokenSource).ConfigureAwait(True)
                     If results.resultsString.Length = 0 Then
                         If MainForm._cancellationTokenSource.Token.IsCancellationRequested Then
-                            prompt = $"Conversion canceled, {processedProjects} of {totalProjects} projects completed successfully."
+                            prompt = $"Conversion canceled, files in {processedProjects} of {totalProjects} projects completed successfully."
                             Exit For
                         Else
-                            prompt = $"Conversion completed, {totalProjects} projects completed successfully."
+                            prompt = $"Conversion completed, files in {totalProjects} projects completed successfully."
                         End If
                     Else
                         prompt = $"Conversion canceled because {results}, {processedProjects} of {totalProjects} projects completed successfully."
