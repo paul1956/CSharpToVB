@@ -13,8 +13,7 @@ description: "C# to VB Converter"
 # C# to VB.Net Converter
 
 ## Requires
-- Visual Studio 2019 Version 16.9 Preview 4 to support Visual Basic Code Generation
-- Visual Studio 2019 Version 16.8 support can be found in branch "Support16.8"
+- Visual Studio 2019 Version 16.8
 - .NET Core 5.0 to use the converter
 
 ## License
