@@ -14,7 +14,7 @@ description: "C# to VB Converter"
 
 ## Requires
 - Visual Studio 2019 Version 16.9 Preview 4 to support Visual Basic Code Generation
-- Visual Studio 2019 Version 16.8.0 can be used IF Assets Csv_LightModeColorDictionary.vb and Csv_DarkModeColorDictionary.vb are included in project
+- Visual Studio 2019 Version 16.8 support can be found in branch "Support16.8"
 - .NET Core 5.0 to use the converter
 
 ## License
