@@ -560,7 +560,7 @@ End Class")
             DoSomething()
         End If
 
-        If s1 Is object2 Then
+        If s1 = object2 Then
             DoSomething()
         End If
 
@@ -568,7 +568,7 @@ End Class")
             DoSomething()
         End If
 
-        If object1 Is s2 Then
+        If object1 = s2 Then
             DoSomething()
         End If
 

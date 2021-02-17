@@ -305,7 +305,7 @@ Namespace CSharpToVBConverter
         Friend Function IsReferenceComparison(Expression1 As CSS.ExpressionSyntax, Expression2 As CSS.ExpressionSyntax, Model As SemanticModel) As Boolean
             Dim typeSymbol1 As (IsRefType As Boolean, IsString As Boolean) = IsReferenceTypeOrString(Expression1, Model)
             Dim typeSymbol2 As (IsRefType As Boolean, IsString As Boolean) = IsReferenceTypeOrString(Expression2, Model)
-            Return typeSymbol1.IsRefType AndAlso typeSymbol2.IsRefType AndAlso Not (typeSymbol1.IsString AndAlso typeSymbol2.IsString)
+            Return typeSymbol1.IsRefType AndAlso typeSymbol2.IsRefType AndAlso Not (typeSymbol1.IsString OrElse typeSymbol2.IsString)
         End Function
 
         <Extension>
