@@ -595,7 +595,7 @@ static class Program
 }", "Module Program
 
     Private Sub Main(args As String())
-        Dim x As Action(Of String) = CType(AddressOf (Sub(__) Environment.[Exit](0)), Action(Of String))
+        Dim x As Action(Of String) = CType(Sub() Environment.[Exit](0), Action(Of String))
     End Sub
 
 End Module")

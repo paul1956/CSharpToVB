@@ -56,7 +56,7 @@ Module TestClass
         Return node
     End Function
     Public Function Convert(node As Object) As Object
-        Return node.TypeSwitch(New Func(Of String, Object)(AddressOf ConvertString), New Func(Of Integer, Object)(AddressOf ConvertInt), Function(__) As Object
+        Return node.TypeSwitch(New Func(Of String, Object)(AddressOf ConvertString), New Func(Of Integer, Object)(AddressOf ConvertInt), Function() As Object
                                                                                                                                              Throw New NotImplementedException($""Conversion for '{node.[GetType]()}' not implemented"")
                                                                                                                                          End Function)
     End Function

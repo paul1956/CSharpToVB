@@ -83,7 +83,9 @@ Namespace CSharpToVBConverter
             ' We need to not only implement the specified interface, but also everything it
             ' inherits from.
             CancelToken.ThrowIfCancellationRequested()
+#Disable Warning RS1024 ' Compare symbols correctly
             Dim interfacesToImplement As New List(Of INamedTypeSymbol)(interfaces.SelectMany(Function(i As INamedTypeSymbol) i.GetAllInterfacesIncludingThis()).Distinct())
+#Enable Warning RS1024 ' Compare symbols correctly
 
             ' However, there's no need to re-implement any interfaces that our base types already
             ' implement.  By definition they must contain all the necessary methods.
