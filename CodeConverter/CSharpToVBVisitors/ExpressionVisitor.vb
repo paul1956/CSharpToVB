@@ -98,7 +98,9 @@ Namespace CSharpToVBConverter.ToVisualBasic
                             vbNodes.Add(DirectCast(parameters(index).Accept(Me), ParameterSyntax))
                             vbSeparators.Add(CommaToken.WithConvertedTriviaFrom(csSeparators(index)))
                         Next
-                        vbNodes.Add(DirectCast(parameters.Last.Accept(Me), ParameterSyntax))
+                        If parameters.Last.Identifier.ValueText <> "_" Then
+                            vbNodes.Add(DirectCast(parameters.Last.Accept(Me), ParameterSyntax))
+                        End If
                     End If
 
                     Dim isErrorType As Boolean = True
@@ -1146,6 +1148,8 @@ Namespace CSharpToVBConverter.ToVisualBasic
                             ElseIf node.Type.DetermineType(_semanticModel)._ITypeSymbol.IsDelegateType Then
                                 If expr.IsKind(VB.SyntaxKind.AddressOfExpression) Then
                                     cTypeExpression = Factory.CTypeExpression(expr, DirectCast(typeOrAddressOf, TypeSyntax))
+                                ElseIf expr.IsKind(VB.SyntaxKind.ParenthesizedExpression) Then
+                                    cTypeExpression = Factory.CTypeExpression(CType(expr, ParenthesizedExpressionSyntax).Expression, DirectCast(typeOrAddressOf, TypeSyntax))
                                 Else
                                     cTypeExpression = Factory.CTypeExpression(Factory.AddressOfExpression(expr), DirectCast(typeOrAddressOf, TypeSyntax))
                                 End If
