@@ -15,7 +15,6 @@
     <RepositoryType>git</RepositoryType>
     <Copyright>Copyright (c) .NET Foundation and Contributors</Copyright>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
-    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <AssemblyVersion>5.0.0.10</AssemblyVersion>
     <FileVersion>5.0.0.10</FileVersion>
     <Version>5.0.0.10</Version>
