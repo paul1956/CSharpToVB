@@ -60,7 +60,9 @@ Namespace CSharpToVBConverter
                     Return 0
                 End If
 
+#Disable Warning RS1024 ' Compare symbols correctly
                 Return x.GetHashCode
+#Enable Warning RS1024 ' Compare symbols correctly
             End Function
 
         End Class

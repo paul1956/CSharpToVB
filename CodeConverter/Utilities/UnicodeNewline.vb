@@ -371,7 +371,10 @@ Namespace CSharpToVBConverter
         ''' <returns>String with Unicode NewLines replaced with SubstituteChar</returns>
         <Extension>
         Public Function WithoutNewLines(text As String, Optional SubstituteChar As Char = ControlChars.NullChar) As String
-            Contracts.Contract.Requires(text IsNot Nothing)
+            If text Is Nothing Then
+                Throw New ArgumentNullException(NameOf(text))
+            End If
+
             Dim sb As New StringBuilder()
             Dim length As Integer = Nothing
             Dim type As UnicodeNewline = Nothing

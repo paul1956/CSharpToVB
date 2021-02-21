@@ -24,7 +24,10 @@ Namespace ConvertDirectory.Tests
 
         Public Shared ReadOnly Property EnableRoslynTests() As Boolean
             Get
-                Return Directory.Exists(GetRoslynRootDirectory)
+                If Debugger.IsAttached Then
+                    Environment.SetEnvironmentVariable("EnableRoslynTests", "True")
+                End If
+                Return Directory.Exists(GetRoslynRootDirectory) AndAlso Environment.GetEnvironmentVariable("EnableRoslynTests") IsNot Nothing
             End Get
         End Property
 

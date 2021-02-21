@@ -649,10 +649,8 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim vbStatements As New List(Of VBS.StatementSyntax)
                 Dim visitor As New MethodBodyVisitor(_semanticModel, Me)
                 Dim finalLeadingTrivia As New SyntaxTriviaList
-                Dim finalTrailingTrivia As New SyntaxTriviaList
                 If node.Body IsNot Nothing Then
                     finalLeadingTrivia = CollectConvertedTokenTrivia(node.Body.CloseBraceToken, GetLeading:=True, GetTrailing:=False)
-                    finalTrailingTrivia = CollectConvertedTokenTrivia(node.Body.CloseBraceToken, GetLeading:=False, GetTrailing:=True)
                 End If
                 For Each e As IndexClass(Of CSS.LocalFunctionStatementSyntax) In node.DescendantNodes().OfType(Of CSS.LocalFunctionStatementSyntax).WithIndex
                     Dim localFunction As CSS.LocalFunctionStatementSyntax = e.Value
@@ -830,7 +828,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
 
                 If isReturnVoid Then
                     If node.Body IsNot Nothing Then
-                        endSubOrFunction = FactoryEndBlockStatement(VB.SyntaxKind.EndSubStatement, SubKeyword, finalTrailingTrivia)
+                        endSubOrFunction = FactoryEndBlockStatement(VB.SyntaxKind.EndSubStatement, SubKeyword, CollectConvertedTokenTrivia(node.Body.CloseBraceToken, GetLeading:=False, GetTrailing:=True))
                     ElseIf node.ExpressionBody IsNot Nothing Then
                         endSubOrFunction = FactoryEndBlockStatement(VB.SyntaxKind.EndSubStatement, SubKeyword, CollectConvertedTokenTrivia(node.ExpressionBody.GetBraces.Item2, GetLeading:=True, GetTrailing:=True))
                     Else
@@ -880,7 +878,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                             endSubOrFunction.WithPrependedLeadingTrivia(finalLeadingTrivia).RemoveExtraLeadingEOL.WithTrailingEOL)
                 End If
                 If node.Body IsNot Nothing Then
-                    endSubOrFunction = FactoryEndBlockStatement(VB.SyntaxKind.EndFunctionStatement, FunctionKeyword, finalTrailingTrivia).WithPrependedLeadingTrivia(finalLeadingTrivia)
+                    endSubOrFunction = FactoryEndBlockStatement(VB.SyntaxKind.EndFunctionStatement, FunctionKeyword, CollectConvertedTokenTrivia(node.Body.CloseBraceToken, GetLeading:=False, GetTrailing:=True)).WithPrependedLeadingTrivia(finalLeadingTrivia)
                 Else
                     endSubOrFunction = FactoryEndBlockStatement(VB.SyntaxKind.EndFunctionStatement, FunctionKeyword, New SyntaxTriviaList)
                 End If

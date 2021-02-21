@@ -47,7 +47,9 @@ Namespace CSharpToVBConverter
             End Function
 
             Private Shared Function CombineHashCodes(x As IPreprocessingSymbol, currentHash As Integer) As Integer
+#Disable Warning RS1024 ' Compare symbols correctly
                 Return CodeRefactoringHash.Combine(x.GetHashCode(), currentHash)
+#Enable Warning RS1024 ' Compare symbols correctly
             End Function
 
             Private Function CombineAnonymousTypeHashCode(x As INamedTypeSymbol, currentHash As Integer) As Integer
@@ -122,7 +124,9 @@ Namespace CSharpToVBConverter
             End Function
 
             Private Function CombineHashCodes(x As IParameterSymbol, currentHash As Integer) As Integer
+#Disable Warning RS1024 ' Compare symbols correctly
                 Return CodeRefactoringHash.Combine(x.GetHashCode, CodeRefactoringHash.Combine(x.Name, Me.GetHashCode(x.Type, Me.GetHashCode(x.ContainingSymbol, currentHash))))
+#Enable Warning RS1024 ' Compare symbols correctly
             End Function
 
             Private Function CombineHashCodes(x As IPointerTypeSymbol, currentHash As Integer) As Integer
