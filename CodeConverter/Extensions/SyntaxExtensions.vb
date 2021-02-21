@@ -34,7 +34,10 @@ Namespace CSharpToVBConverter
                                                                   Optional eol As String = vbCrLf,
                                                                   Optional PreserveCRLF As Boolean = False
                                                                   ) As TNode
-            Contracts.Contract.Requires(node IsNot Nothing)
+            If node Is Nothing Then
+                Throw New ArgumentNullException(NameOf(node))
+            End If
+
             Return DirectCast(SyntaxNormalizer.Normalize(node, indentation, eol, useElasticTrivia:=False, useDefaultCasing, PreserveCRLF), TNode)
         End Function
 

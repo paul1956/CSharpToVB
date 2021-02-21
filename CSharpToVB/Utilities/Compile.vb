@@ -65,7 +65,10 @@ Public Module Compile
     ''' <param name="ResultOfConversion"></param>
     ''' <returns>Tuple(CompileSuccess, EmitResult)CompileSuccess is true unless compiler crashes</returns>
     Public Function CompileVisualBasicString(StringToBeCompiled As String, VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)), SeverityToReport As DiagnosticSeverity, ByRef ResultOfConversion As ConversionResult) As (CompileSuccess As Boolean, EmitResult)
-        Contracts.Contract.Requires(ResultOfConversion IsNot Nothing)
+        If ResultOfConversion Is Nothing Then
+            Throw New ArgumentNullException(NameOf(ResultOfConversion))
+        End If
+
         If String.IsNullOrWhiteSpace(StringToBeCompiled) Then
             ResultOfConversion.SetFilteredListOfFailures(New List(Of Diagnostic))
             ResultOfConversion.ResultStatus = ResultTriState.Success
