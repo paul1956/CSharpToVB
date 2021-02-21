@@ -65,6 +65,10 @@ Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpec
 Any changes to CSharpToVB application needs to change the version information in the project file **AND** in MyProject/AssemblyInfo.vb until Visual Studio is able to general file automatically for a WinForms application.
 
 ## What's New in this release
+  New in 5.0.2.6/5.0.1.11
+ - Fix conversion of Lambda functions with multiple discard parameters
+ - Update Roslyn Tests to only run if Environment variable "EnableRoslynTests" is set to "True"
+
   New in 5.0.2.6/5.0.1.10
  - Fix conversion of Lambda functions with discard parameter
 

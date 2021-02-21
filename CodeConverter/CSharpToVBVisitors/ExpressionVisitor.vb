@@ -98,7 +98,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                             vbNodes.Add(DirectCast(parameters(index).Accept(Me), ParameterSyntax))
                             vbSeparators.Add(CommaToken.WithConvertedTriviaFrom(csSeparators(index)))
                         Next
-                        If parameters.Last.Identifier.ValueText <> "_" Then
+                        If parameters.Last.Identifier.ValueText <> "_" OrElse parameters.Count > 1 Then
                             vbNodes.Add(DirectCast(parameters.Last.Accept(Me), ParameterSyntax))
                         End If
                     End If
