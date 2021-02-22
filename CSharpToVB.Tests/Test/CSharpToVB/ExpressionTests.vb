@@ -424,6 +424,7 @@ End Class")
     End Property
 
     Public Bar As Integer
+
 End Class")
         End Sub
 
@@ -650,6 +651,7 @@ End Class")
     End Property
 
     Public Bar As String
+
 End Class")
         End Sub
 

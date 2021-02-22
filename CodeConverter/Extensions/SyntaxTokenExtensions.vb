@@ -126,7 +126,6 @@ Namespace CSharpToVBConverter
             Dim newLeadingTrivia As New SyntaxTriviaList
             Dim initialTrivia As SyntaxTriviaList = Token.LeadingTrivia
             Dim newTrailingTrivia As New SyntaxTriviaList
-            'Debug.WriteLine($"Leading  Token({sourceLineNumber}) In :{Token.ToFullString}")
 
             For Each e As IndexClass(Of SyntaxTrivia) In initialTrivia.WithIndex
                 Dim nextTrivia As SyntaxTrivia = initialTrivia.GetForwardTriviaOrDefault(e.index, LookaheadCount:=1)
@@ -136,6 +135,8 @@ Namespace CSharpToVBConverter
                             Case VB.SyntaxKind.CommentTrivia,
                              VB.SyntaxKind.DocumentationCommentTrivia
                                 newLeadingTrivia = newLeadingTrivia.AddRange(SpaceLineContinue)
+                                newLeadingTrivia = newLeadingTrivia.Add(e.Value)
+                            Case VB.SyntaxKind.LineContinuationTrivia
                                 newLeadingTrivia = newLeadingTrivia.Add(e.Value)
                             Case VB.SyntaxKind.WhitespaceTrivia
                             Case VB.SyntaxKind.None
@@ -161,9 +162,6 @@ Namespace CSharpToVBConverter
                     Case VB.SyntaxKind.LineContinuationTrivia
                         newLeadingTrivia = newLeadingTrivia.Add(e.Value)
                     Case VB.SyntaxKind.IfDirectiveTrivia, VB.SyntaxKind.ElseDirectiveTrivia, VB.SyntaxKind.ElseIfDirectiveTrivia, VB.SyntaxKind.DisabledTextTrivia
-                        If e.IsFirst Then
-                            newTrailingTrivia = newTrailingTrivia.Add(VBEOLTrivia)
-                        End If
                         newTrailingTrivia = newTrailingTrivia.Add(e.Value)
                     Case Else
                         Stop
@@ -657,7 +655,10 @@ Namespace CSharpToVBConverter
                                     finalLeadingTrivia = finalLeadingTrivia.Add(VBEOLTrivia)
                                 Case VB.SyntaxKind.WhitespaceTrivia
                                     finalLeadingTrivia = finalLeadingTrivia.Add(VBEOLTrivia)
-                                Case VB.SyntaxKind.IfDirectiveTrivia, VB.SyntaxKind.DisabledTextTrivia, VB.SyntaxKind.EndIfDirectiveTrivia
+                                Case VB.SyntaxKind.EndOfLineTrivia,
+                                     VB.SyntaxKind.IfDirectiveTrivia,
+                                     VB.SyntaxKind.DisabledTextTrivia,
+                                     VB.SyntaxKind.EndIfDirectiveTrivia
                                     finalLeadingTrivia = finalLeadingTrivia.Add(VBEOLTrivia)
                                 Case Else
                                     Stop
@@ -667,6 +668,7 @@ Namespace CSharpToVBConverter
                                 finalLeadingTrivia = finalLeadingTrivia.AddRange(DirectiveNotAllowedHere(e.Value, AfterEOL))
                                 Select Case nextTrivia.RawKind
                                     Case VB.SyntaxKind.None,
+                                         VB.SyntaxKind.EndOfLineTrivia,
                                          VB.SyntaxKind.DisabledTextTrivia,
                                          VB.SyntaxKind.EndIfDirectiveTrivia,
                                          VB.SyntaxKind.IfDirectiveTrivia,

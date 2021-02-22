@@ -155,6 +155,7 @@ Namespace CSharpToVBConverter
         Public ReadOnly IfKeyword As SyntaxToken = Factory.Token(SyntaxKind.IfKeyword)
         Public ReadOnly InKeyword As SyntaxToken = Factory.Token(SyntaxKind.InKeyword)
         Public ReadOnly IntegerKeyword As SyntaxToken = Factory.Token(SyntaxKind.IntegerKeyword)
+        Public ReadOnly ImplementsKeyword As SyntaxToken = Factory.Token(SyntaxKind.ImplementsKeyword)
         Public ReadOnly InterfaceKeyword As SyntaxToken = Factory.Token(SyntaxKind.InterfaceKeyword)
         Public ReadOnly IsKeyword As SyntaxToken = Factory.Token(SyntaxKind.IsKeyword)
         Public ReadOnly IsNotKeyword As SyntaxToken = Factory.Token(SyntaxKind.IsNotKeyword)

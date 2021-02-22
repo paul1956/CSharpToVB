@@ -65,6 +65,11 @@ Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpec
 Any changes to CSharpToVB application needs to change the version information in the project file **AND** in MyProject/AssemblyInfo.vb until Visual Studio is able to general file automatically for a WinForms application.
 
 ## What's New in this release
+  New in 5.0.2.7/5.0.1.12
+  - Fix Search to correctly put found text at top of visible window.
+  - Speed up Trivia Conversion.
+  - Improve Handling of Conditional Directives, using Comments where necessary 
+
   New in 5.0.2.6/5.0.1.11
  - Fix conversion of Lambda functions with multiple discard parameters
  - Update Roslyn Tests to only run if Environment variable "EnableRoslynTests" is set to "True"
@@ -277,14 +282,14 @@ Any changes to CSharpToVB application needs to change the version information in
 +------------------+--------+--------+--------+
 | Module           | Line   | Branch | Method |
 +------------------+--------+--------+--------+
-| VB.CodeConverter | 82.58% | 75.14% | 91.38% |
+| VB.CodeConverter | 82.45% | 75.06% | 91.37% |
 +------------------+--------+--------+--------+
 
 +---------+--------+--------+--------+
 |         | Line   | Branch | Method |
 +---------+--------+--------+--------+
-| Total   | 82.58% | 75.14% | 91.38% |
+| Total   | 82.45% | 75.06% | 91.37% |
 +---------+--------+--------+--------+
-| Average | 82.58% | 75.14% | 91.38% |
+| Average | 82.45% | 75.06% | 91.37% |
 +---------+--------+--------+--------+
 ```
