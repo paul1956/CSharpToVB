@@ -16,7 +16,7 @@ Namespace ProjectFile.Tests
         <Fact>
         Public Shared Sub ConvertClassProjectFileTest()
 
-            Dim _originalProjectFile As XElement =
+            Dim originalProjectFile As XElement =
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
@@ -59,7 +59,7 @@ Namespace ProjectFile.Tests
     </ItemGroup>
 </Project>
 
-            Dim _expectedProjectFile As XElement =
+            Dim expectedProjectFile As XElement =
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
@@ -102,7 +102,7 @@ Namespace ProjectFile.Tests
             Dim sourceXmlDoc As New XmlDocument With {
                                 .PreserveWhitespace = True
                             }
-            sourceXmlDoc.LoadXml(_originalProjectFile.ToString)
+            sourceXmlDoc.LoadXml(originalProjectFile.ToString)
             Dim tempDirectory As String = Path.GetTempPath() & "Test" & Guid.NewGuid().ToString()
             Dim sourceDirectory As String = Path.Combine(tempDirectory, "Source")
             Dim destinationDirectory As String = Path.Combine(tempDirectory, "Source_vb")
@@ -115,7 +115,7 @@ Namespace ProjectFile.Tests
                 sourceXmlDoc.Save(originalProjectFileName)
                 Assert.False(ConvertProjectFile(originalProjectFileName, destinationDirectory).Any)
                 Dim resultXmlDoc As String = File.ReadAllText(destinationProjectFileName)
-                Assert.Equal(_expectedProjectFile.ToString, resultXmlDoc)
+                Assert.Equal(expectedProjectFile.ToString, resultXmlDoc)
             Finally
                 If Directory.Exists(tempDirectory) Then
                     Directory.Delete(tempDirectory, recursive:=True)
@@ -1595,7 +1595,7 @@ EndGlobal
         <Fact>
         Public Shared Sub ConvertWebProjectFileTest()
 
-            Dim _originalProjectFile As XElement =
+            Dim originalProjectFile As XElement =
         <Project Sdk="Microsoft.NET.Sdk.Web">
             <PropertyGroup>
                 <TargetFramework>netcoreapp3.1</TargetFramework>
@@ -1633,7 +1633,7 @@ EndGlobal
             </ItemGroup>
         </Project>
 
-            Dim _expectedProjectFile As XElement =
+            Dim expectedProjectFile As XElement =
         <Project Sdk="Microsoft.NET.Sdk.Web">
             <PropertyGroup>
                 <TargetFramework>netcoreapp3.1</TargetFramework>
@@ -1673,7 +1673,7 @@ EndGlobal
             Dim sourceXmlDoc As New XmlDocument With {
                                 .PreserveWhitespace = True
                             }
-            sourceXmlDoc.LoadXml(_originalProjectFile.ToString)
+            sourceXmlDoc.LoadXml(originalProjectFile.ToString)
             Dim tempDirectory As String = Path.GetTempPath() & "Test" & Guid.NewGuid().ToString()
             Dim sourceDirectory As String = Path.Combine(tempDirectory, "Source")
             Dim destinationDirectory As String = Path.Combine(tempDirectory, "Source_vb")
@@ -1686,7 +1686,7 @@ EndGlobal
                 sourceXmlDoc.Save(originalProjectFileName)
                 Assert.False(ConvertProjectFile(originalProjectFileName, destinationDirectory).Any)
                 Dim resultXmlDoc As String = File.ReadAllText(destinationProjectFileName)
-                Assert.Equal(_expectedProjectFile.ToString, resultXmlDoc)
+                Assert.Equal(expectedProjectFile.ToString, resultXmlDoc)
             Finally
                 If Directory.Exists(tempDirectory) Then
                     Directory.Delete(tempDirectory, recursive:=True)
@@ -1698,7 +1698,7 @@ EndGlobal
         <Fact>
         Public Shared Sub ConvertWinFormsProjectFileTest()
 
-            Dim _originalProjectFile As XElement =
+            Dim originalProjectFile As XElement =
 <Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 
     <PropertyGroup>
@@ -1716,7 +1716,7 @@ EndGlobal
     </ItemGroup>
 
 </Project>
-            Dim _expectedProjectFile As XElement =
+            Dim expectedProjectFile As XElement =
 <Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 
     <PropertyGroup>
@@ -1737,7 +1737,7 @@ EndGlobal
             Dim sourceXmlDoc As New XmlDocument With {
                                 .PreserveWhitespace = True
                             }
-            sourceXmlDoc.LoadXml(_originalProjectFile.ToString)
+            sourceXmlDoc.LoadXml(originalProjectFile.ToString)
             Dim tempDirectory As String = Path.GetTempPath() & "Test" & Guid.NewGuid().ToString()
             Dim sourceDirectory As String = Path.Combine(tempDirectory, "Source")
             Dim destinationDirectory As String = Path.Combine(tempDirectory, "Source_vb")
@@ -1750,7 +1750,7 @@ EndGlobal
                 sourceXmlDoc.Save(originalProjectFileName)
                 Assert.False(ConvertProjectFile(originalProjectFileName, destinationDirectory).Any)
                 Dim resultXmlDoc As String = File.ReadAllText(destinationProjectFileName)
-                Assert.Equal(_expectedProjectFile.ToString, resultXmlDoc)
+                Assert.Equal(expectedProjectFile.ToString, resultXmlDoc)
             Finally
                 If Directory.Exists(tempDirectory) Then
                     Directory.Delete(tempDirectory, recursive:=True)
