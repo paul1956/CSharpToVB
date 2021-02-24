@@ -47,67 +47,79 @@ End Function
             '    End Function
             '"
 
-            Private Shared Function FilterLeadingTrivia(initialTriviaList As SyntaxTriviaList, ByRef newLeadingingTrivia As SyntaxTriviaList) As SyntaxTriviaList
-                Dim replacementTrailingTrivia As SyntaxTriviaList
+            Private Shared Function FilterLeadingTrivia(initialTriviaList As SyntaxTriviaList, ByRef MovedLeadingTrivia As SyntaxTriviaList) As SyntaxTriviaList
+                If Not initialTriviaList.ContainsDirectiveTrivia Then
+                    Return initialTriviaList
+                End If
+                Dim replacementLeadingTrivia As SyntaxTriviaList
+                Dim foundSpace As Boolean = False
+                Dim useReplacementLeadingTrivia As Boolean = True
                 For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
-                    Dim triviaComment As SyntaxTrivia = Factory.CommentTrivia("This directive was moved from leading statement trivia")
                     Dim trivia As SyntaxTrivia = e.Value
                     Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.index, LookaheadCount:=1)
-                    Dim foundSpace As Boolean = False
-                    Dim useReplacementTrailingTrivia As Boolean = True
                     Select Case trivia.RawKind
                         Case VB.SyntaxKind.WhitespaceTrivia
                             If nextTrivia.IsKind(VB.SyntaxKind.None) OrElse nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
                                 Continue For
                             End If
-                            If useReplacementTrailingTrivia Then
-                                replacementTrailingTrivia = replacementTrailingTrivia.Add(SpaceTrivia)
+                            If useReplacementLeadingTrivia Then
+                                replacementLeadingTrivia = replacementLeadingTrivia.Add(trivia)
                             Else
-                                newLeadingingTrivia = newLeadingingTrivia.Add(SpaceTrivia)
+                                MovedLeadingTrivia = MovedLeadingTrivia.Add(trivia)
                             End If
                             foundSpace = True
                         Case VB.SyntaxKind.EndOfLineTrivia
                             foundSpace = False
                         Case VB.SyntaxKind.IfDirectiveTrivia, VB.SyntaxKind.ElseIfDirectiveTrivia, VB.SyntaxKind.ElseDirectiveTrivia, VB.SyntaxKind.EndIfDirectiveTrivia, VB.SyntaxKind.DisabledTextTrivia
                             If e.IsFirst Then
-                                newLeadingingTrivia = newLeadingingTrivia.Add(VBEOLTrivia)
+                                MovedLeadingTrivia = MovedLeadingTrivia.Add(VBEOLTrivia)
                             End If
-                            newLeadingingTrivia = newLeadingingTrivia.Add(trivia)
+                            MovedLeadingTrivia = MovedLeadingTrivia.Add(trivia)
                             If nextTrivia.IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
-                                newLeadingingTrivia = newLeadingingTrivia.Add(VBEOLTrivia)
-                                newLeadingingTrivia = newLeadingingTrivia.Add(nextTrivia)
+                                MovedLeadingTrivia = MovedLeadingTrivia.Add(VBEOLTrivia)
+                                MovedLeadingTrivia = MovedLeadingTrivia.Add(nextTrivia)
                                 e.MoveNext()
                             End If
-                            useReplacementTrailingTrivia = True
+                            useReplacementLeadingTrivia = False
                         Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
-                            If useReplacementTrailingTrivia Then
+                            If useReplacementLeadingTrivia Then
                                 If Not foundSpace Then
-                                    replacementTrailingTrivia = replacementTrailingTrivia.Add(SpaceTrivia)
+                                    replacementLeadingTrivia = replacementLeadingTrivia.Add(SpaceTrivia)
                                 End If
-                                replacementTrailingTrivia = replacementTrailingTrivia.AddRange(LineContinueSpace)
-                                replacementTrailingTrivia = replacementTrailingTrivia.Add(trivia)
+                                replacementLeadingTrivia = replacementLeadingTrivia.AddRange(LineContinueSpace)
+                                replacementLeadingTrivia = replacementLeadingTrivia.Add(trivia)
                             Else
                                 If Not foundSpace Then
-                                    newLeadingingTrivia = newLeadingingTrivia.Add(SpaceTrivia)
+                                    MovedLeadingTrivia = MovedLeadingTrivia.Add(SpaceTrivia)
                                 End If
-                                newLeadingingTrivia = newLeadingingTrivia.AddRange(LineContinueSpace)
-                                newLeadingingTrivia = newLeadingingTrivia.Add(trivia)
+                                MovedLeadingTrivia = MovedLeadingTrivia.AddRange(LineContinueSpace)
+                                MovedLeadingTrivia = MovedLeadingTrivia.Add(trivia)
                             End If
+                        Case VB.SyntaxKind.LineContinuationTrivia
+                            If Not foundSpace Then
+                                replacementLeadingTrivia = replacementLeadingTrivia.Add(SpaceTrivia)
+                            End If
+                            replacementLeadingTrivia = replacementLeadingTrivia.Add(trivia)
+                            foundSpace = False
                         Case Else
                             Stop
                     End Select
                 Next
 
-                Return replacementTrailingTrivia
+                Return replacementLeadingTrivia
             End Function
 
             Private Shared Function FilterTrailingTrivia(initialTriviaList As SyntaxTriviaList, ByRef newTrailingTrivia As SyntaxTriviaList) As SyntaxTriviaList
+                If Not initialTriviaList.ContainsDirectiveTrivia Then
+                    Return initialTriviaList
+                End If
                 Dim replacementTrailingTrivia As SyntaxTriviaList
                 For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
                     Dim trivia As SyntaxTrivia = e.Value
                     Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.index, LookaheadCount:=1)
                     Dim foundSpace As Boolean = False
-                    Dim useReplacementTrailingTrivia As Boolean = True
+                    Dim foundLineContinuation As Boolean = False
+                    Dim useReplacementTrailingTrivia As Boolean = False
                     Select Case trivia.RawKind
                         Case VB.SyntaxKind.WhitespaceTrivia
                             If nextTrivia.IsKind(VB.SyntaxKind.None) OrElse nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
@@ -120,6 +132,11 @@ End Function
                             End If
                             foundSpace = True
                         Case VB.SyntaxKind.EndOfLineTrivia
+                            If useReplacementTrailingTrivia Then
+                                replacementTrailingTrivia = replacementTrailingTrivia.Add(trivia)
+                            Else
+                                newTrailingTrivia = newTrailingTrivia.Add(trivia)
+                            End If
                             foundSpace = False
                         Case VB.SyntaxKind.IfDirectiveTrivia, VB.SyntaxKind.ElseIfDirectiveTrivia, VB.SyntaxKind.ElseDirectiveTrivia, VB.SyntaxKind.EndIfDirectiveTrivia, VB.SyntaxKind.DisabledTextTrivia
                             If e.IsFirst Then
@@ -144,9 +161,16 @@ End Function
                                 If Not foundSpace Then
                                     newTrailingTrivia = newTrailingTrivia.Add(SpaceTrivia)
                                 End If
-                                newTrailingTrivia = newTrailingTrivia.AddRange(LineContinueSpace)
+                                If Not foundLineContinuation Then
+                                    newTrailingTrivia = newTrailingTrivia.AddRange(LineContinueSpace)
+                                End If
                                 newTrailingTrivia = newTrailingTrivia.Add(trivia)
+                                foundLineContinuation = False
                             End If
+                        Case VB.SyntaxKind.LineContinuationTrivia
+                            replacementTrailingTrivia = replacementTrailingTrivia.Add(trivia)
+                            foundLineContinuation = True
+                            foundSpace = False
                         Case Else
                             Stop
                     End Select
@@ -173,6 +197,7 @@ End Function
                             Exit Sub
                         End If
                         Dim classOrInterfaceSymbol As ISymbol = ModelExtensions.GetSymbolInfo(_semanticModel, classOrInterface).Symbol
+                        Dim typesHaveComments As Boolean = False
                         If classOrInterfaceSymbol?.IsInterfaceType() Then
                             Dim typeSyntaxList As New List(Of TypeSyntax)
 
@@ -180,7 +205,10 @@ End Function
                             For Each e As IndexClass(Of CSS.BaseTypeSyntax) In _Type.BaseList?.Types.WithIndex
                                 Dim item1 As TypeSyntax = DirectCast(e.Value.Type.Accept(Me), TypeSyntax)
                                 item1 = item1.WithLeadingTrivia(FilterLeadingTrivia(item1.GetLeadingTrivia, MovedFinalTrivia))
-                                item1 = item1.WithTrailingTrivia(FilterTrailingTrivia(item1.GetLeadingTrivia, MovedFinalTrivia))
+                                item1 = item1.WithTrailingTrivia(FilterTrailingTrivia(item1.GetTrailingTrivia, MovedFinalTrivia))
+                                If item1.ContainsCommentOrDirectiveTrivia Then
+                                    typesHaveComments = True
+                                End If
                                 If e.IsLast Then
                                     item1 = item1.WithTrailingEOL
                                 End If
@@ -215,7 +243,11 @@ End Function
                             typeSyntaxArray = typeSyntaxList.ToArray()
                         End If
                         If typeSyntaxArray.Any Then
-                            [implements].Add(Factory.ImplementsStatement(typeSyntaxArray))
+                            Dim implKeyword As SyntaxToken = ImplementsKeyword
+                            If typesHaveComments Then
+                                implKeyword = implKeyword.WithTrailingTrivia(SpaceLineContinueEOL)
+                            End If
+                            [implements].Add(Factory.ImplementsStatement(implKeyword, Factory.SeparatedList(typeSyntaxArray)))
                             Dim implementsClauses As IEnumerable(Of CSS.TypeSyntax) = _Type.BaseList?.Types.Skip(startImplementsIndex).Select(Function(t As CSS.BaseTypeSyntax) t.Type)
                             For Each implementsClause As CSS.TypeSyntax In implementsClauses
                                 Dim classOrStructDecl As SyntaxNode = Nothing
@@ -307,6 +339,8 @@ End Function
 
                 Dim finalTrailingTrivia As SyntaxTriviaList
 
+                Dim id As SyntaxToken = GenerateSafeVBToken(node.Identifier, node, _semanticModel, _usedIdentifiers).WithConvertedTriviaFrom(node.Identifier)
+                id = AdjustTokenLeadingTrivia(id)
                 Me.ConvertBaseList(node, [inherits], [implements], finalTrailingTrivia, _originalRequest.ImplementedMembers)
                 Dim staticMethodCount As Integer = 0
                 Dim methodCount As Integer = 0
@@ -395,8 +429,6 @@ End Function
                     End If
                 Next
 
-                Dim id As SyntaxToken = GenerateSafeVBToken(node.Identifier, node, _semanticModel, _usedIdentifiers).WithConvertedTriviaFrom(node.Identifier)
-                id = AdjustTokenLeadingTrivia(id)
 
                 members.AddRange(Me.PatchInlineHelpers(node, Me.IsModule))
 
@@ -425,13 +457,12 @@ End Function
 
                     moduleStmt = DirectCast(PrependStatementWithMarkedStatementTrivia(node, moduleStmt), ModuleStatementSyntax)
                     Dim endModule As EndBlockStatementSyntax = FactoryEndBlockStatement(VB.SyntaxKind.EndModuleStatement, ModuleKeyword, CollectConvertedTokenTrivia(node.CloseBraceToken, GetLeading:=True, GetTrailing:=True))
-                    Dim moduleBlock As ModuleBlockSyntax = Factory.ModuleBlock(
-                                                                                    moduleStmt,
-                                                                                    Factory.List([inherits]),
-                                                                                    Factory.List([implements]),
-                                                                                    Factory.List(members),
-                                                                                    endModule
-                                                                                    ).WithAppendedTrailingTrivia(node.GetTrailingTrivia.ConvertTriviaList())
+                    Dim moduleBlock As ModuleBlockSyntax = Factory.ModuleBlock(moduleStmt,
+                                                                               Factory.List([inherits]),
+                                                                               Factory.List([implements]),
+                                                                               Factory.List(members),
+                                                                               endModule
+                                                                               ).WithAppendedTrailingTrivia(node.GetTrailingTrivia.ConvertTriviaList())
                     SyncLock _originalRequest.UsedStacks
                         _isModuleStack.Pop()
                         If _originalRequest.UsedStacks.Count > 0 Then
@@ -504,7 +535,9 @@ End Function
                             End If
                         End If
                     End If
-                    Dim endClass As EndBlockStatementSyntax = FactoryEndBlockStatement(VB.SyntaxKind.EndClassStatement, ClassKeyWord, CollectConvertedTokenTrivia(node.CloseBraceToken, GetLeading:=True, GetTrailing:=True))
+                    Dim endClass As EndBlockStatementSyntax = FactoryEndBlockStatement(VB.SyntaxKind.EndClassStatement,
+                                                                                       ClassKeyWord,
+                                                                                       node.CloseBraceToken.TrailingTrivia.ConvertTriviaList).WithLeadingTrivia(node.CloseBraceToken.LeadingTrivia.ConvertTriviaList)
                     Dim classBlock As ClassBlockSyntax = Factory.ClassBlock(
                                                                                 classStmt.WithTrailingEOL,
                                                                                 Factory.List([inherits]),

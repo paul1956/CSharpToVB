@@ -74,16 +74,16 @@ Public Module TSToolBaseSupport
             Return False
         End If
         SearchBuffer.SelectionStart = findIndex
-        SearchBuffer.ScrollToCaret()
         SearchBuffer.SelectionBackColor = Color.Orange
         ' Find the end index. End Index = number of characters in textbox
         SearchBuffer.SelectionLength = MainForm.TSFindFindWhatComboBox.Text.Length
         ' Highlight the search string
         SearchBuffer.Select(SearchBuffer.SelectionStart, SearchBuffer.SelectionLength)
-        Application.DoEvents()
         ' mark the start position after the position of
         ' last search string
         SearchBuffer.SelectionStart = If(SearchForward, SearchBuffer.SelectionStart + SearchBuffer.SelectionLength, SearchBuffer.SelectionStart)
+        SearchBuffer.ScrollToCaret()
+        Application.DoEvents()
         Return True
     End Function
 

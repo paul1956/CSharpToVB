@@ -15,9 +15,9 @@
     <RepositoryType>git</RepositoryType>
     <Copyright>Copyright (c) .NET Foundation and Contributors</Copyright>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
-    <AssemblyVersion>5.0.0.11</AssemblyVersion>
-    <FileVersion>5.0.0.11</FileVersion>
-    <Version>5.0.0.11</Version>
+    <AssemblyVersion>5.0.0.13</AssemblyVersion>
+    <FileVersion>5.0.0.13</FileVersion>
+    <Version>5.0.0.13</Version>
     <Product>CSharp To VB Tests</Product>
   </PropertyGroup>
   <ItemGroup>

@@ -4,6 +4,7 @@
 
 Imports System.Runtime.CompilerServices
 Imports Microsoft.CodeAnalysis
+Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
@@ -16,7 +17,7 @@ Namespace CSharpToVBConverter
         ''' <param name="node"></param>
         ''' <returns></returns>
         <Extension>
-        Friend Function RemoveDirectiveTrivia(node As VBS.ArgumentSyntax, ByRef foundEOL As Boolean) As VBS.ArgumentSyntax
+        Friend Function ConvertDirectiveToComment(node As VBS.ArgumentSyntax, ByRef foundEOL As Boolean) As VBS.ArgumentSyntax
             Dim newLeadingTrivia As SyntaxTriviaList
             Dim newTrailingTrivia As SyntaxTriviaList
             For Each trivia As SyntaxTrivia In node.GetLeadingTrivia
@@ -34,7 +35,8 @@ Namespace CSharpToVBConverter
                          VB.SyntaxKind.ElseDirectiveTrivia,
                          VB.SyntaxKind.ElseIfDirectiveTrivia,
                          VB.SyntaxKind.EndIfDirectiveTrivia
-                        ' skip
+                        newLeadingTrivia = newLeadingTrivia.Add(Factory.CommentTrivia($" ' TODO VB does not allow directives here, original statement {trivia.ToFullString.WithoutNewLines(" "c)}"))
+                        foundEOL = False
                     Case Else
                         Stop
                 End Select
@@ -55,7 +57,8 @@ Namespace CSharpToVBConverter
                          VB.SyntaxKind.ElseDirectiveTrivia,
                          VB.SyntaxKind.ElseIfDirectiveTrivia,
                          VB.SyntaxKind.EndIfDirectiveTrivia
-                        ' skip
+                        newTrailingTrivia = newTrailingTrivia.Add(Factory.CommentTrivia($" ' TODO VB does not allow directives here, original statement {trivia.ToFullString.WithoutNewLines(" "c)}"))
+                        foundEOL = False
                     Case Else
                         Stop
                 End Select
