@@ -1609,8 +1609,9 @@ Namespace ConvertDirectory.Tests
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
-        <Fact>
+        <SkippableFact>
         Public Async Function EditorFeaturesCSharpTestQuickInfoConvertAsync() As Task
+            Skip.IfNot(EnableRoslynTests)
             Assert.True(Await Me.TestProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "EditorFeatures", "CSharpTest", "QuickInfo")).ConfigureAwait(True), $"Failing file {_lastFileProcessed}")
         End Function
 
@@ -2817,8 +2818,9 @@ Namespace ConvertDirectory.Tests
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
-        <Fact>
+        <SkippableFact>
         Public Async Function ScriptingCoreTestDesktopConvertAsync() As Task
+            Skip.IfNot(EnableRoslynTests)
             Assert.True(Await Me.TestProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Scripting", "CoreTest.Desktop")).ConfigureAwait(True), $"Failing file {_lastFileProcessed}")
         End Function
 
@@ -2871,8 +2873,9 @@ Namespace ConvertDirectory.Tests
         End Function
 
         <Trait("Category", "SkipWhenLiveUnitTesting")>
-        <Fact>
+        <SkippableFact>
         Public Async Function TestPerftestshelloworldConvertAsync() As Task
+            Skip.IfNot(EnableRoslynTests)
             Assert.True(Await Me.TestProcessDirectoryAsync(Path.Combine(GetRoslynRootDirectory(), "src", "Test", "Perf", "tests", "helloworld")).ConfigureAwait(True), $"Failing file {_lastFileProcessed}")
         End Function
 
