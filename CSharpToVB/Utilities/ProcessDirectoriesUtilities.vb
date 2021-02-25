@@ -59,9 +59,8 @@ Public Module ProcessDirectoriesUtilities
         End If
         ' Process the list of files found in the directory.
         Try
-            Dim directoryList As String() = Directory.GetFiles(path:=SourceDirectory, searchPattern:=$"*.{SourceLanguageExtension}")
 
-            For Each sourcePathWithFileName As String In directoryList
+            For Each sourcePathWithFileName As String In Directory.EnumerateFiles(path:=SourceDirectory, searchPattern:=$"*.{SourceLanguageExtension}")
                 Stats.FilesProcessed += 1
                 If Stats.LastFileNameWithPath.Length = 0 OrElse Stats.LastFileNameWithPath = sourcePathWithFileName Then
                     Stats.LastFileNameWithPath = ""

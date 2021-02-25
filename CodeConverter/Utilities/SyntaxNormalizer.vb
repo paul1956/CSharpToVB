@@ -48,7 +48,7 @@ Namespace CSharpToVBConverter
             _consideredSpan = consideredSpan
             _indentWhitespace = indentWhitespace
             _useElasticTrivia = useElasticTrivia
-            _eolTrivia = If(useElasticTrivia, SyntaxFactory.ElasticEndOfLine(eolWhitespace), SyntaxFactory.EndOfLine(eolWhitespace))
+            _eolTrivia = If(useElasticTrivia, Factory.ElasticEndOfLine(eolWhitespace), Factory.EndOfLine(eolWhitespace))
             _useDefaultCasing = useDefaultCasing
             _usePreserveCRLF = usePreserveCRLF
             _afterLineBreak = True
@@ -468,7 +468,7 @@ Namespace CSharpToVBConverter
 
             For index As Integer = _indentations.Count To count
                 Dim text As String = If(index = 0, "", _indentations(index - 1).ToString() & _indentWhitespace)
-                _indentations.Add(If(_useElasticTrivia, SyntaxFactory.ElasticWhitespace(text), SyntaxFactory.Whitespace(text)))
+                _indentations.Add(If(_useElasticTrivia, Factory.ElasticWhitespace(text), Factory.Whitespace(text)))
             Next
 
             Return _indentations(count)
@@ -600,7 +600,7 @@ Namespace CSharpToVBConverter
                     End If
                     If trivia.IsKind(SyntaxKind.LineContinuationTrivia) Then
                         If Not _afterIndentation Then
-                            currentTriviaList = currentTriviaList.Add(SyntaxFactory.WhitespaceTrivia(Space(minLeadingSpaces)))
+                            currentTriviaList = currentTriviaList.Add(Factory.WhitespaceTrivia(Space(minLeadingSpaces)))
                         End If
                         currentTriviaList = currentTriviaList.Add(LineContinuation)
                         If isTrailing Then
@@ -649,20 +649,20 @@ Namespace CSharpToVBConverter
                         _afterIndentation = False
                     End If
                     Dim needExtraSpace As Boolean = _isInStructuredTrivia AndAlso
-                                SyntaxFactory.DocumentationCommentExteriorTrivia(SyntaxFacts.GetText(SyntaxKind.DocumentationCommentExteriorTrivia)).ToString = trivia.ToString
+                                Factory.DocumentationCommentExteriorTrivia(SyntaxFacts.GetText(SyntaxKind.DocumentationCommentExteriorTrivia)).ToString = trivia.ToString
                     If trivia.HasStructure Then
                         Dim structuredTrivia As SyntaxTrivia = Me.VisitStructuredTrivia(trivia)
                         currentTriviaList = currentTriviaList.Add(structuredTrivia)
                     Else
                         ' in structured trivia, the XML doc ''' token contains leading whitespace as text
                         If trivia.IsKind(SyntaxKind.DocumentationCommentExteriorTrivia) OrElse needExtraSpace Then
-                            trivia = SyntaxFactory.DocumentationCommentExteriorTrivia(SyntaxFacts.GetText(SyntaxKind.DocumentationCommentExteriorTrivia))
+                            trivia = Factory.DocumentationCommentExteriorTrivia(SyntaxFacts.GetText(SyntaxKind.DocumentationCommentExteriorTrivia))
                         End If
                         If trivia.IsKind(SyntaxKind.EndOfLineTrivia) Then
                             ' Skip it if was already handled
                         Else
                             If isTrailing Then
-                                currentTriviaList = currentTriviaList.Add(SyntaxFactory.WhitespaceTrivia(Space(minLeadingSpaces)))
+                                currentTriviaList = currentTriviaList.Add(Factory.WhitespaceTrivia(Space(minLeadingSpaces)))
                                 minLeadingSpaces = 0
                             End If
                             currentTriviaList = currentTriviaList.Add(trivia)
@@ -714,11 +714,11 @@ Namespace CSharpToVBConverter
                 End If
 
                 If currentTriviaList.Count = 0 Then
-                    Return If(_useElasticTrivia, SyntaxFactory.TriviaList(SyntaxFactory.ElasticMarker), Nothing)
+                    Return If(_useElasticTrivia, Factory.TriviaList(Factory.ElasticMarker), Nothing)
                 ElseIf currentTriviaList.Count = 1 Then
-                    Return SyntaxFactory.TriviaList(currentTriviaList.First())
+                    Return Factory.TriviaList(currentTriviaList.First())
                 Else
-                    Return SyntaxFactory.TriviaList(currentTriviaList)
+                    Return Factory.TriviaList(currentTriviaList)
                 End If
             Finally
             End Try
@@ -1436,7 +1436,7 @@ Namespace CSharpToVBConverter
             Try
                 Dim newToken As SyntaxToken
                 If _useDefaultCasing AndAlso token.IsKeyword() Then
-                    newToken = SyntaxFactory.Token(token.Kind)
+                    newToken = Factory.Token(token.Kind)
                 Else
                     newToken = token
                 End If

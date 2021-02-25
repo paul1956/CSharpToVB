@@ -16,6 +16,7 @@
           <!--<IncludeDirectory>../dir1/,../dir2/,</IncludeDirectory>-->
           <SingleHit>false</SingleHit>
           <UseSourceLink>false</UseSourceLink>
+          <SkipAutoProps>true</SkipAutoProps>
         </Configuration>
       </DataCollector>
     </DataCollectors>

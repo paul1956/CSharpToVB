@@ -63,7 +63,7 @@ Public Module FilePathExtensions
         Dim totalFilesToProcess As Long = 0L
 
         Try
-            For Each subdirectory As String In Directory.GetDirectories(DirPath)
+            For Each subdirectory As String In Directory.EnumerateDirectories(DirPath)
                 If SkipTestResourceFiles AndAlso
                         (subdirectory.EndsWith("Test\Resources", StringComparison.OrdinalIgnoreCase) OrElse
                          subdirectory.EndsWith("Setup\Templates", StringComparison.OrdinalIgnoreCase)) Then
@@ -77,7 +77,7 @@ Public Module FilePathExtensions
                 End If
                 totalFilesToProcess += subdirectory.GetFileCount(SourceLanguageExtension, SkipBinAndObjFolders, SkipTestResourceFiles, Depth + 1)
             Next
-            For Each file As String In Directory.GetFiles(path:=DirPath, searchPattern:=$"*.{SourceLanguageExtension}")
+            For Each file As String In Directory.EnumerateDirectories(path:=DirPath, searchPattern:=$"*.{SourceLanguageExtension}")
                 If Not ParseCSharpSource(file, New List(Of String)).
                     GetRoot.SyntaxTree.IsGeneratedCode(Function(t As SyntaxTrivia) As Boolean
                                                            Return t.IsComment OrElse t.IsRegularOrDocComment

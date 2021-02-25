@@ -43,7 +43,7 @@ Namespace CSharpToVBConverter
             AddReferences(s_referencePath, location)
 
             'SystemReferences
-            For Each dllPath As String In Directory.GetFiles(s_frameworkDirectory, "*.dll")
+            For Each dllPath As String In Directory.EnumerateFiles(s_frameworkDirectory, "*.dll")
                 If dllPath.EndsWith("System.EnterpriseServices.Wrapper.dll", StringComparison.Ordinal) Then
                     Continue For
                 End If

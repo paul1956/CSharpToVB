@@ -2110,7 +2110,7 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                                                              OneExpression).WithConvertedTriviaFrom(node)
                         End If
                     Else
-                        Dim operatorName As VB.Syntax.IdentifierNameSyntax = If(kind = VB.SyntaxKind.AddAssignmentStatement, IncrementIdentifier, DecrementIdentifier)
+                        Dim operatorName As IdentifierNameSyntax = If(kind = VB.SyntaxKind.AddAssignmentStatement, IncrementIdentifier, DecrementIdentifier)
                         Dim mathExpr As MemberAccessExpressionSyntax = Factory.MemberAccessExpression(VB.SyntaxKind.SimpleMemberAccessExpression, InterlockedIdentifier, DotToken, operatorName)
                         Return Factory.InvocationExpression(mathExpr,
                                                               Factory.ArgumentList(Factory.SeparatedList(

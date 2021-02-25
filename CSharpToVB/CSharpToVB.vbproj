@@ -11,6 +11,7 @@
     <OptionExplicit>On</OptionExplicit>
     <OptionInfer>Off</OptionInfer>
     <OptionStrict>On</OptionStrict>
+    <UseDataCollector/>
   </PropertyGroup>
   <PropertyGroup>
     <AssemblyName>CSharpToVBApp</AssemblyName>
