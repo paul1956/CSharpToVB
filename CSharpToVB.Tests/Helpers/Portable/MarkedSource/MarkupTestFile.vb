@@ -37,7 +37,6 @@ Namespace Roslyn.Test.Utilities
         Private Const PositionString As String = "$$"
         Private Const SpanStartString As String = "[|"
         Private Const SpanEndString As String = "|]"
-        Private Const NamedSpanStartString As String = "{|"
         Private Const NamedSpanEndString As String = "|}"
 
         Private ReadOnly s_namedSpanStartRegex As Regex = New Regex("\{\| ([-_.A-Za-z0-9\+]+) \:",
@@ -73,74 +72,6 @@ Namespace Roslyn.Test.Utilities
                     ' No more markup to process.
                     Exit While
                 End If
-                Dim orderedMatches As List(Of Tuple(Of Integer, String)) = SortMatches(matches)
-                If orderedMatches.Count >= 2 AndAlso
-                spanStartStack.Count > 0 AndAlso
-                matches(0).Item1 = matches(1).Item1 - 1 Then
-                    ' We have a slight ambiguity with cases like these:
-                    '
-                    ' [|]    [|}
-                    '
-                    ' Is it starting a new match, or ending an existing match.  As a workaround, we
-                    ' special case these and consider it ending a match if we have something on the
-                    ' stack already.
-                    If (matches(0).Item2 = SpanStartString AndAlso matches(1).Item2 = SpanEndString AndAlso spanStartStack.Peek().Item2.Length = 0) OrElse
-                    (matches(0).Item2 = SpanStartString AndAlso matches(1).Item2 = NamedSpanEndString AndAlso spanStartStack.Peek().Item2.Length <> 0) Then
-                        orderedMatches.RemoveAt(0)
-                    End If
-                End If
-
-                ' Order the matches by their index
-                Dim firstMatch As Tuple(Of Integer, String) = orderedMatches.First()
-
-                Dim matchIndexInInput As Integer = firstMatch.Item1
-                Dim matchString As String = firstMatch.Item2
-
-                Dim matchIndexInOutput As Integer = matchIndexInInput - inputOutputOffset
-                outputBuilder.Append(input.Substring(currentIndexInInput, matchIndexInInput - currentIndexInInput))
-
-                currentIndexInInput = matchIndexInInput + matchString.Length
-                inputOutputOffset += matchString.Length
-
-                Select Case matchString.Substring(0, 2)
-                    Case PositionString
-                        If position.HasValue Then
-                            Throw New ArgumentException(String.Format(Globalization.CultureInfo.CurrentCulture, "Saw multiple occurrences of {0}", PositionString))
-                        End If
-
-                        position = matchIndexInOutput
-
-                    Case SpanStartString
-                        spanStartStack.Push(Tuple.Create(matchIndexInOutput, String.Empty))
-
-                    Case SpanEndString
-                        If spanStartStack.Count = 0 Then
-                            Throw New ArgumentException(String.Format(Globalization.CultureInfo.CurrentCulture, "Saw {0} without matching {1}", SpanEndString, SpanStartString))
-                        End If
-
-                        If spanStartStack.Peek().Item2.Length > 0 Then
-                            Throw New ArgumentException(String.Format(Globalization.CultureInfo.CurrentCulture, "Saw {0} without matching {1}", NamedSpanStartString, NamedSpanEndString))
-                        End If
-
-                        PopSpan(spanStartStack, tempSpans, matchIndexInOutput)
-
-                    Case NamedSpanStartString
-                        Dim name As String = namedSpanStartMatch.Groups(1).Value
-                        spanStartStack.Push(Tuple.Create(matchIndexInOutput, name))
-
-                    Case NamedSpanEndString
-                        If spanStartStack.Count = 0 Then
-                            Throw New ArgumentException(String.Format(Globalization.CultureInfo.CurrentCulture, "Saw {0} without matching {1}", NamedSpanEndString, NamedSpanStartString))
-                        End If
-
-                        If spanStartStack.Peek().Item2.Length = 0 Then
-                            Throw New ArgumentException(String.Format(Globalization.CultureInfo.CurrentCulture, "Saw {0} without matching {1}", SpanStartString, SpanEndString))
-                        End If
-
-                        PopSpan(spanStartStack, tempSpans, matchIndexInOutput)
-                    Case Else
-                        Throw New InvalidOperationException()
-                End Select
             End While
 
             If spanStartStack.Count > 0 Then
@@ -158,30 +89,6 @@ Namespace Roslyn.Test.Utilities
                                            End Function)
         End Sub
 
-        Private Function SortMatches(matches As List(Of Tuple(Of Integer, String))) As List(Of Tuple(Of Integer, String))
-            Dim sortedMatches As New List(Of Tuple(Of Integer, String))
-            Select Case matches.Count
-                Case 0
-                Case 1
-                    sortedMatches.Add(matches(0))
-                Case Else
-
-            End Select
-            sortedMatches.Add(matches(0))
-
-            Dim max As Integer = matches.Count - 1
-            For loop1 As Integer = 1 To max
-                For loop2 As Integer = 0 To max - loop1
-                    If sortedMatches(loop2).Item1 > sortedMatches(loop2 + 1).Item1 Then
-                        Dim tmp As Tuple(Of Integer, String) = sortedMatches(loop2)
-                        sortedMatches(loop2) = sortedMatches(loop2 + 1)
-                        sortedMatches(loop2 + 1) = tmp
-                    End If
-                Next loop2
-            Next loop1
-            Return sortedMatches
-        End Function
-
         Private Function GetOrAdd(Of K, V)(Dictionary As IDictionary(Of K, V), key As K, [function] As Func(Of K, V)) As V
             Dim value As V = Nothing
             If Not Dictionary.TryGetValue(key, value) Then
@@ -191,16 +98,6 @@ Namespace Roslyn.Test.Utilities
 
             Return value
         End Function
-
-        Private Sub PopSpan(
-            spanStartStack As Stack(Of Tuple(Of Integer, String)),
-            spans As IDictionary(Of String, List(Of TextSpan)),
-            finalIndex As Integer)
-            Dim spanStartTuple As Tuple(Of Integer, String) = spanStartStack.Pop()
-
-            Dim span As TextSpan = TextSpan.FromBounds(spanStartTuple.Item1, finalIndex)
-            GetOrAdd(spans, spanStartTuple.Item2, Function(__ As String) New List(Of TextSpan)).Add(span)
-        End Sub
 
         Private Sub AddMatch(input As String, value As String, currentIndex As Integer, matches As List(Of Tuple(Of Integer, String)))
             Dim index As Integer = input.IndexOf(value, currentIndex, StringComparison.Ordinal)
@@ -233,48 +130,9 @@ Namespace Roslyn.Test.Utilities
                                              End Function)
         End Sub
 
-        Public Sub GetSpans(input As String, <Out> ByRef output As String, <Out> ByRef spans As IDictionary(Of String, ImmutableArray(Of TextSpan)))
-            Dim cursorPositionOpt As Integer?
-            Call GetPositionAndSpans(input, output, cursorPositionOpt, spans)
-        End Sub
-
-        Public Sub GetPositionAndSpans(input As String, <Out> ByRef output As String, <Out> ByRef cursorPosition As Integer, <Out> ByRef spans As ImmutableArray(Of TextSpan))
-            Dim pos As Integer? = Nothing
-            GetPositionAndSpans(input, output, pos, spans)
-            cursorPosition = pos.Value
-        End Sub
-
-        Public Sub GetPosition(input As String, <Out> ByRef output As String, <Out> ByRef cursorPosition As Integer?)
-            Dim spans As ImmutableArray(Of TextSpan) = Nothing
-            Call GetPositionAndSpans(input, output, cursorPosition, spans)
-        End Sub
-
-        Public Sub GetPosition(input As String, <Out> ByRef output As String, <Out> ByRef cursorPosition As Integer)
-            Dim spans As ImmutableArray(Of TextSpan) = Nothing
-            Call GetPositionAndSpans(input, output, cursorPosition, spans)
-        End Sub
-
-        Public Sub GetPositionAndSpan(input As String, <Out> ByRef output As String, <Out> ByRef cursorPosition As Integer?, <Out> ByRef textSpan As TextSpan?)
-            Dim spans As ImmutableArray(Of TextSpan) = Nothing
-            GetPositionAndSpans(input, output, cursorPosition, spans)
-            textSpan = If(spans.Length = 0, Nothing, CType(spans.[Single](), TextSpan?))
-        End Sub
-
-        Public Sub GetPositionAndSpan(input As String, <Out> ByRef output As String, <Out> ByRef cursorPosition As Integer, <Out> ByRef textSpan As TextSpan)
-            Dim spans As ImmutableArray(Of TextSpan) = Nothing
-            GetPositionAndSpans(input, output, cursorPosition, spans)
-            textSpan = spans.[Single]()
-        End Sub
-
         Public Sub GetSpans(input As String, <Out> ByRef output As String, <Out> ByRef spans As ImmutableArray(Of TextSpan))
             Dim pos As Integer? = Nothing
             GetPositionAndSpans(input, output, pos, spans)
-        End Sub
-
-        Public Sub GetSpan(input As String, <Out> ByRef output As String, <Out> ByRef textSpan As TextSpan)
-            Dim spans As ImmutableArray(Of TextSpan) = Nothing
-            GetSpans(input, output, spans)
-            textSpan = spans.[Single]()
         End Sub
 
     End Module

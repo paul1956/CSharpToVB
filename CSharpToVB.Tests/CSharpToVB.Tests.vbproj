@@ -19,7 +19,7 @@
     <FileVersion>5.0.0.13</FileVersion>
     <Version>5.0.0.13</Version>
     <Product>CSharp To VB Tests</Product>
-    <UseDataCollector/>
+    <UseDataCollector />
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="3.0.3">
