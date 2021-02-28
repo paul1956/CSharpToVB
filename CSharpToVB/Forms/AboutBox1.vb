@@ -18,7 +18,7 @@ Public NotInheritable Class AboutBox1
         Me.LabelCopyright.Text = My.Application.Info.Copyright
         Me.LabelCompanyName.Text = $"Developer {My.Application.Info.CompanyName}"
         Dim codeConverterInfo As New AssemblyInfo(GetType(CSharpToVBConverter.CodeWithOptions).Assembly)
-        Dim hashLibrary As New AssemblyInfo(GetType(HashLibrary.CodeRefactoringHash).Assembly)
+        Dim hashLibrary As New AssemblyInfo(GetType(CSharpToVB.PooledObjects.ObjectPool(Of String)).Assembly)
         Dim progressReportLibrary As New AssemblyInfo(GetType(ProgressReportLibrary.ProgressReport).Assembly)
         Me.TextBoxDescription.Text = $"{My.Application.Info.Description}
 

@@ -91,6 +91,31 @@ Namespace CSharpToVBConverter.ToVisualBasic
                                             ).WithConvertedTriviaFrom(node)
             End Function
 
+            Private Function CreateImplementsClauseSyntaxOrNull(memberInfo As ISymbol, ByRef id As SyntaxToken) As VBS.ImplementsClauseSyntax
+                Dim originalId As SyntaxToken = id
+                Dim explicitImplementors As ImmutableArray(Of ISymbol) = memberInfo.ExplicitInterfaceImplementations()
+                If explicitImplementors.Any() Then
+                    Dim memberNames As ILookup(Of String, ISymbol) = memberInfo.ContainingType.GetMembers().ToLookup(Function(s) UndottedMemberName(s.Name), StringComparer.OrdinalIgnoreCase)
+                    Dim explicitMemberName As String = UndottedMemberName(memberInfo.Name)
+                    Dim hasDuplicateNames As Boolean = memberNames(explicitMemberName).Count() > 1
+                    If hasDuplicateNames Then
+                        id = Factory.Identifier(GenerateUniqueName(explicitMemberName, Function(n) Not memberNames.Contains(n) AndAlso _addedNames.Add(n)))
+                    End If
+                Else
+                    Dim containingType As INamedTypeSymbol = memberInfo.ContainingType
+                    Dim baseClassesAndInterfaces As IEnumerable(Of INamedTypeSymbol) = containingType.GetAllBaseClassesAndInterfaces(True)
+                    explicitImplementors = baseClassesAndInterfaces.Except({containingType}) _
+                        .SelectMany(Function(t) t.GetMembers().Where(Function(m) memberInfo.Name.EndsWith(m.Name, StringComparison.Ordinal))) _
+                        .Where(Function(m As ISymbol) As Boolean
+                                   Dim bool? As Boolean = containingType.FindImplementationForInterfaceMember(m)?.Equals(memberInfo, SymbolEqualityComparer.Default) = True
+                                   Return bool.HasValue AndAlso CBool(bool)
+                               End Function) _
+                        .ToImmutableArray()
+                End If
+
+                Return If(Not explicitImplementors.Any(), Nothing, CreateImplementsClauseSyntax(explicitImplementors, originalId))
+            End Function
+
             Friend Sub ConvertAndSplitAttributes(attributeLists As SyntaxList(Of CSS.AttributeListSyntax), <Out> ByRef attributes As List(Of VBS.AttributeListSyntax), <Out> ByRef returnAttributes As SyntaxList(Of VBS.AttributeListSyntax), ByRef FinalDirectiveTrivia As SyntaxTriviaList)
                 Dim retAttr As List(Of VBS.AttributeListSyntax) = New List(Of VBS.AttributeListSyntax)()
                 Dim firstAttribuate As Boolean = True
@@ -200,61 +225,6 @@ Namespace CSharpToVBConverter.ToVisualBasic
 
                 returnAttributes = Factory.List(retAttr)
             End Sub
-
-            Private Function CreateImplementsClauseSyntaxOrNull(memberInfo As ISymbol, ByRef id As SyntaxToken) As VBS.ImplementsClauseSyntax
-                Dim originalId As SyntaxToken = id
-                Dim explicitImplementors As ImmutableArray(Of ISymbol) = memberInfo.ExplicitInterfaceImplementations()
-                If explicitImplementors.Any() Then
-                    Dim memberNames As ILookup(Of String, ISymbol) = memberInfo.ContainingType.GetMembers().ToLookup(Function(s) UndottedMemberName(s.Name), StringComparer.OrdinalIgnoreCase)
-                    Dim explicitMemberName As String = UndottedMemberName(memberInfo.Name)
-                    Dim hasDuplicateNames As Boolean = memberNames(explicitMemberName).Count() > 1
-                    If hasDuplicateNames Then
-                        id = Factory.Identifier(GenerateUniqueName(explicitMemberName, Function(n) Not memberNames.Contains(n) AndAlso _addedNames.Add(n)))
-                    End If
-                Else
-                    Dim containingType As INamedTypeSymbol = memberInfo.ContainingType
-                    Dim baseClassesAndInterfaces As IEnumerable(Of INamedTypeSymbol) = containingType.GetAllBaseClassesAndInterfaces(True)
-                    explicitImplementors = baseClassesAndInterfaces.Except({containingType}) _
-                        .SelectMany(Function(t) t.GetMembers().Where(Function(m) memberInfo.Name.EndsWith(m.Name, StringComparison.Ordinal))) _
-                        .Where(Function(m As ISymbol) As Boolean
-                                   Dim bool? As Boolean = containingType.FindImplementationForInterfaceMember(m)?.Equals(memberInfo, SymbolEqualityComparer.Default) = True
-                                   Return bool.HasValue AndAlso CBool(bool)
-                               End Function) _
-                        .ToImmutableArray()
-                End If
-
-                Return If(Not explicitImplementors.Any(), Nothing, CreateImplementsClauseSyntax(explicitImplementors, originalId))
-            End Function
-
-            Friend Shared Function GetFullyQualifiedNameSyntax(symbol As INamespaceOrTypeSymbol, Optional allowGlobalPrefix As Boolean = True) As VBS.NameSyntax
-                Select Case True
-                    Case TypeOf symbol Is ITypeSymbol
-                        Dim typeSyntax As VBS.TypeSyntax = CType(symbol, ITypeSymbol).ConvertToType.GetElementType
-                        If TypeOf typeSyntax Is VBS.PredefinedTypeSyntax Then
-                            typeSyntax = Factory.IdentifierName($"[{symbol}]")
-                        End If
-                        Dim nullableType As VBS.NullableTypeSyntax = TryCast(typeSyntax, VBS.NullableTypeSyntax)
-                        If nullableType IsNot Nothing Then
-                            typeSyntax = nullableType.ElementType
-                        End If
-
-                        Dim nameSyntax1 As VBS.NameSyntax = CType(typeSyntax, VBS.NameSyntax)
-                        If allowGlobalPrefix Then
-                            Return nameSyntax1
-                        End If
-                        Dim globalNameNode As VBS.GlobalNameSyntax = nameSyntax1.DescendantNodes().OfType(Of VBS.GlobalNameSyntax)().FirstOrDefault()
-                        If globalNameNode IsNot Nothing Then
-                            nameSyntax1 = nameSyntax1.ReplaceNodes(TryCast(globalNameNode.Parent, VBS.QualifiedNameSyntax).Yield(), Function(orig, rewrite) orig.Right)
-                        End If
-
-                        Return nameSyntax1
-                    Case TypeOf symbol Is INamespaceSymbol
-                        Dim ns As INamespaceSymbol = CType(symbol, INamespaceSymbol)
-                        Return Factory.ParseName(ns.GetFullMetadataName())
-                    Case Else
-                        Throw New NotImplementedException($"Fully qualified name for {symbol.[GetType]().FullName} not implemented")
-                End Select
-            End Function
 
             Public Function AdjustUsingsInNeeded(blockStatements As SyntaxList(Of VBS.StatementSyntax)) As SyntaxList(Of VBS.StatementSyntax)
                 If Me.NeedEndUsings > 0 Then
@@ -642,8 +612,6 @@ Namespace CSharpToVBConverter.ToVisualBasic
                 Dim functionStmtTrailingTrivia As New SyntaxTriviaList
                 Me.ConvertAndSplitAttributes(node.AttributeLists, attributeLists, returnAttributes, functionStmtTrailingTrivia)
                 Dim parameterList As VBS.ParameterListSyntax = DirectCast(node.ParameterList?.Accept(Me), VBS.ParameterListSyntax)
-
-                parameterList = parameterList.RelocateDirectivesInTrailingTrivia(functionStmtTrailingTrivia)
 
                 Dim functionStmtLeadingTrivia As SyntaxTriviaList
                 Dim vbStatements As New List(Of VBS.StatementSyntax)

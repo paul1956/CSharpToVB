@@ -1912,10 +1912,10 @@ Namespace CSharpToVBConverter.ToVisualBasic
                     Dim foundEOL As Boolean = False
 
                     For index As Integer = 0 To argumentList.Arguments.Count - 2
-                        newArgList.Add(argumentList.Arguments(index).ConvertDirectiveToComment(foundEOL))
+                        newArgList.Add(argumentList.Arguments(index))
                         newSeparatorList.Add(argumentList.Arguments.GetSeparator(index).RemoveDirectiveTrivia(foundEOL))
                     Next
-                    newArgList.Add(argumentList.Arguments(argumentList.Arguments.Count - 1).ConvertDirectiveToComment(foundEOL))
+                    newArgList.Add(argumentList.Arguments(argumentList.Arguments.Count - 1))
                     argumentList = argumentList.WithArguments(Factory.SeparatedList(newArgList, newSeparatorList))
                 End If
                 If argumentList?.Arguments.Count = 0 Then

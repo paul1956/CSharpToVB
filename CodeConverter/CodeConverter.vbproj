@@ -8,7 +8,7 @@
     <OptionInfer>On</OptionInfer>
     <OptionStrict>On</OptionStrict>
     <AssemblyName>VB.CodeConverter</AssemblyName>
-    <UseDataCollector/>
+    <UseDataCollector />
   </PropertyGroup>
   <PropertyGroup>
     <NeutralLanguage>en-US</NeutralLanguage>

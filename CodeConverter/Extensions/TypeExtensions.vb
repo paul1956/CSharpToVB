@@ -3,54 +3,12 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Runtime.CompilerServices
-Imports System.Text
 Imports Microsoft.CodeAnalysis
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace CSharpToVBConverter
 
     Public Module TypeExtensions
-
-        ''' <summary>
-        ''' TODO: Eradicate this in favor of CommonConversions.GetFullyQualifiedNameSyntax
-        ''' Gets the full name of the metadata.
-        ''' In case symbol is not INamedTypeSymbol it returns raw MetadataName
-        ''' Example: Generic type returns T1, T2...
-        ''' </summary>
-        ''' <returns>The full metadata name.</returns>
-        ''' <param name="symbol">Symbol.</param>
-        <Extension>
-        Private Function GetFullMetadataName(symbol As ITypeSymbol) As String
-            Dim isIArrayType As Boolean = TypeOf symbol Is IArrayTypeSymbol
-            Dim ats As IArrayTypeSymbol = CType(symbol, IArrayTypeSymbol)
-            If isIArrayType Then
-                Return GetFullMetadataName(ats.ElementType) & "[" & New String(Enumerable.Repeat(","c, ats.Rank - 1).ToArray()) & "]"
-
-            End If
-            'This is for compatibility with NR5 reflection name in case of generic types like T1, T2...
-            Dim namedTypeSymbol As INamedTypeSymbol = TryCast(symbol, INamedTypeSymbol)
-            Return If(namedTypeSymbol IsNot Nothing, GetFullMetadataName(namedTypeSymbol), symbol.MetadataName)
-        End Function
-
-        ''' <summary>
-        ''' TODO: Eradicate this in favor of CommonConversions.GetFullyQualifiedNameSyntax
-        ''' Gets the full MetadataName(ReflectionName in NR5).
-        ''' Example: Namespace1.Namespace2.Classs1+NestedClassWithTwoGenericTypes`2+NestedClassWithoutGenerics
-        ''' </summary>
-        ''' <returns>The full metadata name.</returns>
-        ''' <param name="symbol">Symbol.</param>
-        <Extension>
-        Private Function GetFullMetadataName(symbol As INamedTypeSymbol) As String
-            Dim fullName As StringBuilder = New StringBuilder(symbol.MetadataName)
-            Dim parentType As INamedTypeSymbol = symbol.ContainingType
-            While parentType IsNot Nothing
-                fullName.Insert(0, "+"c)
-                fullName.Insert(0, parentType.MetadataName)
-                parentType = parentType.ContainingType
-            End While
-
-            Return GetFullMetadataName(symbol.ContainingNamespace, fullName)
-        End Function
 
         ''' <summary>
         ''' Gets all base classes and interfaces.
@@ -79,20 +37,6 @@ Namespace CSharpToVBConverter
                 typeSyntax = CType(typeSyntax, VBS.ArrayTypeSyntax).ElementType
             End If
             Return typeSyntax
-        End Function
-
-        <Extension>
-        Friend Function GetFullMetadataName(ns As INamespaceSymbol, Optional sb As StringBuilder = Nothing) As String
-            sb = If(sb, New StringBuilder)
-            While ns IsNot Nothing AndAlso Not ns.IsGlobalNamespace
-                If sb.Length > 0 Then
-                    sb.Insert(0, "."c)
-                End If
-                sb.Insert(0, ns.MetadataName)
-                ns = ns.ContainingNamespace
-            End While
-
-            Return sb.ToString()
         End Function
 
     End Module

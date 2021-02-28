@@ -1,7 +1,7 @@
 echo %time%
 Set MANUAL_TESTS=
 Set EnableRoslynTests="True"
-
+echo %EnableRoslynTests%
 dotnet --list-sdks --roll-forward
 Rem dotnet test --collect:"XPlat Code Coverage" --settings coverletArgs.runsettings
 Rem JSON
