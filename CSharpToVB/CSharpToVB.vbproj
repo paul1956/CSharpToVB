@@ -11,7 +11,7 @@
     <OptionExplicit>On</OptionExplicit>
     <OptionInfer>Off</OptionInfer>
     <OptionStrict>On</OptionStrict>
-    <UseDataCollector/>
+    <UseDataCollector />
   </PropertyGroup>
   <PropertyGroup>
     <AssemblyName>CSharpToVBApp</AssemblyName>
@@ -77,6 +77,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CodeConverter\CodeConverter.vbproj" />
+    <ProjectReference Include="..\ObjectPoolLibrary\ObjectPoolLibrary.csproj" />
     <ProjectReference Include="..\ProgressReportLibrary\ProgressReportLibrary.vbproj" />
   </ItemGroup>
   <ItemGroup>

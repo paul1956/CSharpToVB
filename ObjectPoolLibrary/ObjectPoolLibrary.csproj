@@ -12,7 +12,7 @@
     <AssemblyVersion>1.0.0.2</AssemblyVersion>
     <FileVersion>1.0.0.2</FileVersion>
     <Version>1.0.0.2</Version>
-    <Product>Hash Library</Product>
+    <Product>ObjectPool Library</Product>
     <UseDataCollector/>
   </PropertyGroup>
 

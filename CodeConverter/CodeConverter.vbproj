@@ -37,7 +37,7 @@
     <PackageReference Include="System.Reflection.Metadata" Version="5.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\HashLibrary\HashLibrary.csproj" />
+    <ProjectReference Include="..\ObjectPoolLibrary\ObjectPoolLibrary.csproj" />
     <ProjectReference Include="..\ProgressReportLibrary\ProgressReportLibrary.vbproj" />
   </ItemGroup>
 </Project>
