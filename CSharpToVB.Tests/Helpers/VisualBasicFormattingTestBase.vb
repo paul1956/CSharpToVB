@@ -3,11 +3,11 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Collections.Immutable
+Imports Helpers
 
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Options
 Imports Microsoft.CodeAnalysis.Text
-Imports Microsoft.CodeAnalysis.UnitTests.Formatting
 Imports Microsoft.CodeAnalysis.VisualBasic
 
 Imports Roslyn.Test.Utilities

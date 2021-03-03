@@ -4,7 +4,7 @@
 
 Imports System.Diagnostics.CodeAnalysis
 Imports System.Threading
-Imports CSharpToVBConverter.ToVisualBasic
+Imports CSharpToVBConverter.CSharpToVBVisitors
 Imports Microsoft.CodeAnalysis
 Imports ProgressReportLibrary
 Imports CS = Microsoft.CodeAnalysis.CSharp
@@ -27,7 +27,7 @@ Namespace CSharpToVBConverter
             Throw New ArgumentException($"{language} not supported!")
         End Function
 
-        Public Function ConvertInputRequest(RequestToConvert As ConvertRequest, DefaultVBOptions As DefaultVBOptions, CSPreprocessorSymbols As List(Of String), VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)), OptionalReferences() As MetadataReference, ReportException As Action(Of Exception), mProgress As IProgress(Of ProgressReport), CancelToken As CancellationToken) As ConversionResult
+        Public Function ConvertInputRequest(RequestToConvert As ConvertRequest, DefaultVBOptions As DefaultVbOptions, CSPreprocessorSymbols As List(Of String), VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)), OptionalReferences() As MetadataReference, ReportException As Action(Of Exception), mProgress As IProgress(Of ProgressReport), CancelToken As CancellationToken) As ConversionResult
             Dim fromLanguage As String = LanguageNames.CSharp
             Dim toLanguage As String = LanguageNames.VisualBasic
             Dim codeWithOptions As CodeWithOptions = New CodeWithOptions(RequestToConvert).SetFromLanguageVersion(GetDefaultVersionForLanguage("cs")).SetToLanguageVersion(GetDefaultVersionForLanguage("vb"))
@@ -105,7 +105,7 @@ Namespace CSharpToVBConverter
         <ExcludeFromCodeCoverage>
         <Obsolete("Don't use this routine any more. Use the new one instead to specify what 'Options' to include in output, use 'New DefaultVBOptions' to get the legacy behavior.")>
         Public Function ConvertInputRequest(RequestToConvert As ConvertRequest, CSPreprocessorSymbols As List(Of String), VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)), OptionalReferences() As MetadataReference, ReportException As Action(Of Exception), mProgress As IProgress(Of ProgressReport), CancelToken As CancellationToken) As ConversionResult
-            Return ConvertInputRequest(RequestToConvert, New DefaultVBOptions, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences, ReportException, mProgress, CancelToken)
+            Return ConvertInputRequest(RequestToConvert, New DefaultVbOptions, CSPreprocessorSymbols, VBPreprocessorSymbols, OptionalReferences, ReportException, mProgress, CancelToken)
         End Function
 
     End Module

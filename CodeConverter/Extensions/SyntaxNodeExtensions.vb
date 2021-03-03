@@ -5,7 +5,7 @@
 Imports System.Runtime.CompilerServices
 Imports System.Runtime.InteropServices
 Imports System.Threading
-Imports CSharpToVBConverter.ToVisualBasic
+Imports CSharpToVBConverter.CSharpToVBVisitors
 
 Imports Microsoft.CodeAnalysis
 

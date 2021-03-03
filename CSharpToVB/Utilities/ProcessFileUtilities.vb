@@ -32,9 +32,9 @@ Friend Module ProcessFileUtilities
                                                       "Stack Overflow"), state:=Nothing)
             End Sub
 
-        Dim defaultVBOptions As New DefaultVBOptions
+        Dim defaultVBOptions As New DefaultVbOptions
         With My.Settings
-            defaultVBOptions = New DefaultVBOptions(.OptionCompare, .OptionCompareIncludeInCode, .OptionExplicit, .OptionExplicitIncludeInCode, .OptionInfer, .OptionInferIncludeInCode, .OptionStrict, .OptionStrictIncludeInCode)
+            defaultVBOptions = New DefaultVbOptions(.OptionCompare, .OptionCompareIncludeInCode, .OptionExplicit, .OptionExplicitIncludeInCode, .OptionInfer, .OptionInferIncludeInCode, .OptionStrict, .OptionStrictIncludeInCode)
         End With
         ' The System.Progress class invokes the callback on the UI thread. It does this because we create the
         ' System.Progress object on the main thread. During creation, it reads SynchronizationContext.Current so

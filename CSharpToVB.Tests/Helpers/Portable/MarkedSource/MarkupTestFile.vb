@@ -39,7 +39,7 @@ Namespace Roslyn.Test.Utilities
         Private Const SpanEndString As String = "|]"
         Private Const NamedSpanEndString As String = "|}"
 
-        Private ReadOnly s_namedSpanStartRegex As Regex = New Regex("\{\| ([-_.A-Za-z0-9\+]+) \:",
+        Private ReadOnly SNamedSpanStartRegex As Regex = New Regex("\{\| ([-_.A-Za-z0-9\+]+) \:",
             RegexOptions.Multiline Or RegexOptions.IgnorePatternWhitespace)
 
         Private Sub Parse(
@@ -63,7 +63,7 @@ Namespace Roslyn.Test.Utilities
                 AddMatch(input, SpanEndString, currentIndexInInput, matches)
                 AddMatch(input, NamedSpanEndString, currentIndexInInput, matches)
 
-                Dim namedSpanStartMatch As Match = s_namedSpanStartRegex.Match(input, currentIndexInInput)
+                Dim namedSpanStartMatch As Match = SNamedSpanStartRegex.Match(input, currentIndexInInput)
                 If namedSpanStartMatch.Success Then
                     matches.Add(Tuple.Create(namedSpanStartMatch.Index, namedSpanStartMatch.Value))
                 End If
@@ -89,11 +89,11 @@ Namespace Roslyn.Test.Utilities
                                            End Function)
         End Sub
 
-        Private Function GetOrAdd(Of K, V)(Dictionary As IDictionary(Of K, V), key As K, [function] As Func(Of K, V)) As V
-            Dim value As V = Nothing
-            If Not Dictionary.TryGetValue(key, value) Then
+        Private Function GetOrAdd(Of TK, TV)(dictionary As IDictionary(Of TK, TV), key As TK, [function] As Func(Of TK, TV)) As TV
+            Dim value As TV = Nothing
+            If Not dictionary.TryGetValue(key, value) Then
                 value = [function](key)
-                Dictionary.Add(key, value)
+                dictionary.Add(key, value)
             End If
 
             Return value

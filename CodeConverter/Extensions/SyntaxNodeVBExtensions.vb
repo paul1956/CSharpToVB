@@ -3,7 +3,7 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Runtime.CompilerServices
-Imports CSharpToVBConverter.ToVisualBasic
+Imports CSharpToVBConverter.CSharpToVBVisitors
 
 Imports Microsoft.CodeAnalysis
 

@@ -1,18 +1,15 @@
 ﻿' Licensed to the .NET Foundation under one or more agreements.
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
-
 Imports System.Threading
-
+Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Formatting
 Imports Microsoft.CodeAnalysis.Options
 Imports Microsoft.CodeAnalysis.Text
-
 Imports Roslyn.Test.Utilities
-
 Imports Xunit
 
-Namespace Microsoft.CodeAnalysis.UnitTests.Formatting
+Namespace Helpers
 
     '<UseExportProvider>
     Public MustInherit Class FormattingTestBase
@@ -22,7 +19,7 @@ Namespace Microsoft.CodeAnalysis.UnitTests.Formatting
             code As String,
             spans As IEnumerable(Of TextSpan),
             language As String,
-            Optional ChangedOptionSet As Dictionary(Of OptionKey, Object) = Nothing,
+            Optional changedOptionSet As Dictionary(Of OptionKey, Object) = Nothing,
             Optional treeCompare As Boolean = True,
             Optional parseOptions As ParseOptions = Nothing) As Task
             Using workspace As AdhocWorkspace = New AdhocWorkspace()
@@ -36,8 +33,8 @@ Namespace Microsoft.CodeAnalysis.UnitTests.Formatting
                 Dim tree As SyntaxTree = Await doc.GetSyntaxTreeAsync().ConfigureAwait(False)
 
                 Dim options As OptionSet = workspace.Options
-                If ChangedOptionSet IsNot Nothing Then
-                    For Each entry As KeyValuePair(Of OptionKey, Object) In ChangedOptionSet
+                If changedOptionSet IsNot Nothing Then
+                    For Each entry As KeyValuePair(Of OptionKey, Object) In changedOptionSet
                         options = options.WithChangedOption(entry.Key, entry.Value)
                     Next
                 End If
@@ -70,9 +67,9 @@ Namespace Microsoft.CodeAnalysis.UnitTests.Formatting
 
         Protected MustOverride Function ParseCompilation(text As String, parseOptions As ParseOptions) As SyntaxNode
 
-        Friend Shared Sub AssertFormat(workspace As Workspace, expected As String, root As SyntaxNode, spans As IEnumerable(Of TextSpan), OptionSet As OptionSet, SourceText As SourceText)
-            Dim result As IList(Of TextChange) = Formatter.GetFormattedTextChanges(root, spans, workspace, OptionSet)
-            AssertResult(expected, SourceText, result)
+        Friend Shared Sub AssertFormat(workspace As Workspace, expected As String, root As SyntaxNode, spans As IEnumerable(Of TextSpan), optionSet As OptionSet, sourceText As SourceText)
+            Dim result As IList(Of TextChange) = Formatter.GetFormattedTextChanges(root, spans, workspace, optionSet)
+            AssertResult(expected, sourceText, result)
         End Sub
 
         Friend Shared Sub AssertResult(expected As String, sourceText As SourceText, result As IList(Of TextChange))

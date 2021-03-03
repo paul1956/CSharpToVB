@@ -5,7 +5,7 @@
 Imports Microsoft.CodeAnalysis
 Imports CS = Microsoft.CodeAnalysis.CSharp
 
-Namespace CSharpToVBConverter.ToVisualBasic
+Namespace CSharpToVBConverter.CSharpToVBVisitors
 
     Friend NotInheritable Class CommonConversions
         Private ReadOnly _semanticModel As SemanticModel
