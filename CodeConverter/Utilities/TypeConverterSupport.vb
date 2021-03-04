@@ -4,9 +4,9 @@
 
 Imports System.Runtime.CompilerServices
 Imports System.Text
-Imports CSharpToVBConverter.CSharpToVBVisitors
-
+Imports Extensions
 Imports Microsoft.CodeAnalysis
+Imports SupportClasses
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
@@ -14,7 +14,7 @@ Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace CSharpToVBConverter
+Namespace Utilities
 
     Public Module TypeConverterSupport
 
@@ -32,42 +32,42 @@ Namespace CSharpToVBConverter
         ''' <summary>
         ''' Extract String
         ''' </summary>
-        ''' <param name="CSNamedTypeString">Source String</param>
-        ''' <param name="CommaIndex">End index or -1 if no end</param>
-        ''' <param name="CurrentIndex">Start of Substring</param>
-        ''' <returns>Substring from StartIndex to CommaIndex or end if CommanIndex = -1</returns>
+        ''' <param name="csNamedTypeString">Source String</param>
+        ''' <param name="commaIndex">End index or -1 if no end</param>
+        ''' <param name="currentIndex">Start of Substring</param>
+        ''' <returns>Substring from StartIndex to CommaIndex or end if CommandIndex = -1</returns>
         <Extension>
-        Private Function ExtractSafeName(CSNamedTypeString As String, CommaIndex As Integer, CurrentIndex As Integer) As String
+        Private Function ExtractSafeName(csNamedTypeString As String, commaIndex As Integer, currentIndex As Integer) As String
             Dim length As Integer
-            Dim start As Integer = CurrentIndex
-            If CommaIndex < 0 Then
-                length = CSNamedTypeString.Length - CurrentIndex - 1
-                start = CurrentIndex + 1
+            Dim start As Integer = currentIndex
+            If commaIndex < 0 Then
+                length = csNamedTypeString.Length - currentIndex - 1
+                start = currentIndex + 1
             Else
-                length = CommaIndex - CurrentIndex
+                length = commaIndex - currentIndex
             End If
             If length <= 0 Then
                 Return ""
             End If
-            Return MakeVBSafeName(CSNamedTypeString.Substring(start, length).Trim)
+            Return MakeVbSafeName(csNamedTypeString.Substring(start, length).Trim)
         End Function
 
-        Private Function ExtractTupleWithName(SourceString As String, IncludeName As Boolean, typeStringBuilder As StringBuilder, ElementList As List(Of String), currentIndex As Integer) As Integer
-            SourceString = SourceString.Substring(0, SourceString.Length - 1)
-            If currentIndex < SourceString.Length - 1 AndAlso SourceString.Chars(currentIndex) <> "," Then
+        Private Function ExtractTupleWithName(sourceString As String, includeName As Boolean, typeStringBuilder As StringBuilder, elementList As List(Of String), currentIndex As Integer) As Integer
+            sourceString = sourceString.Substring(0, sourceString.Length - 1)
+            If currentIndex < sourceString.Length - 1 AndAlso sourceString.Chars(currentIndex) <> "," Then
                 currentIndex += 1
             End If
-            Dim commaIndex As Integer = SourceString.IndexOf(",", currentIndex, StringComparison.OrdinalIgnoreCase)
+            Dim commaIndex As Integer = sourceString.IndexOf(",", currentIndex, StringComparison.OrdinalIgnoreCase)
             Dim typePart As String = ConvertToType(typeStringBuilder.ToString).ToString
             Dim name As String = ""
-            If IncludeName Then
-                name = SourceString.ExtractSafeName(commaIndex, currentIndex)
-                currentIndex = If(commaIndex = -1, SourceString.Length - 1, commaIndex)
+            If includeName Then
+                name = sourceString.ExtractSafeName(commaIndex, currentIndex)
+                currentIndex = If(commaIndex = -1, sourceString.Length - 1, commaIndex)
             End If
             If name.Any Then
-                ElementList.Add($"{name} As {typePart}")
+                elementList.Add($"{name} As {typePart}")
             Else
-                ElementList.Add(typePart)
+                elementList.Add(typePart)
             End If
             Return currentIndex
         End Function
@@ -137,10 +137,10 @@ Namespace CSharpToVBConverter
         End Function
 
         <Extension>
-        Friend Function ConvertITypeSymbolToType(_ITypeSymbol As ITypeSymbol) As VBS.TypeSyntax
-            Dim type As VBS.TypeSyntax = _ITypeSymbol.ConvertToType
+        Friend Function ConvertITypeSymbolToType(iTypeSymbol As ITypeSymbol) As VBS.TypeSyntax
+            Dim type As VBS.TypeSyntax = iTypeSymbol.ConvertToType
             If type.IsKind(VB.SyntaxKind.ArrayType) Then
-                If DirectCast(_ITypeSymbol, IArrayTypeSymbol).ElementType.TypeKind = Microsoft.CodeAnalysis.TypeKind.Array Then
+                If DirectCast(iTypeSymbol, IArrayTypeSymbol).ElementType.TypeKind = TypeKind.Array Then
                     Return type.NormalizeWhitespace
                 End If
                 Dim elementType As VBS.TypeSyntax = DirectCast(type, VBS.ArrayTypeSyntax).ElementType
@@ -149,24 +149,26 @@ Namespace CSharpToVBConverter
                 End If
                 Return Nothing
             End If
-            If TypeOf type Is VBS.QualifiedNameSyntax Then
-                Dim rightNode As VBS.SimpleNameSyntax = DirectCast(type, VBS.QualifiedNameSyntax).Right
+            Dim qualifiedNameSyntax As VBS.QualifiedNameSyntax = TryCast(type, VBS.QualifiedNameSyntax)
+            Dim genericName As VBS.GenericNameSyntax
+            If qualifiedNameSyntax IsNot Nothing Then
+                Dim rightNode As VBS.SimpleNameSyntax = qualifiedNameSyntax.Right
                 If TypeOf rightNode Is VBS.IdentifierNameSyntax Then
-                    Return ConvertTypeITypeSymbolFromInterfaceToType(_ITypeSymbol)
+                    Return iTypeSymbol.ConvertTypeITypeSymbolFromInterfaceToType()
                 End If
-                Dim genericName As VBS.GenericNameSyntax = DirectCast(rightNode, VBS.GenericNameSyntax)
+                genericName = DirectCast(rightNode, VBS.GenericNameSyntax)
                 If genericName.TypeArgumentList.Arguments.Count = 1 Then
                     Return genericName.TypeArgumentList.Arguments(0)
                 Else
                     Return Factory.ParseTypeName(genericName.TypeArgumentList.Arguments.ToString & ")")
                 End If
             End If
-            If TypeOf type Is VBS.GenericNameSyntax Then
-                Dim genericdName As VBS.GenericNameSyntax = CType(type, VBS.GenericNameSyntax)
-                If genericdName.TypeArgumentList.Arguments.Count = 1 Then
+            genericName = TryCast(type, VBS.GenericNameSyntax)
+            If genericName IsNot Nothing Then
+                If genericName.TypeArgumentList.Arguments.Count = 1 Then
                     Return type
                 Else
-                    Return ConvertTypeITypeSymbolFromInterfaceToType(_ITypeSymbol)
+                    Return iTypeSymbol.ConvertTypeITypeSymbolFromInterfaceToType()
                 End If
             End If
             If TypeOf type Is VBS.IdentifierNameSyntax Then
@@ -211,7 +213,7 @@ Namespace CSharpToVBConverter
                         Return IntPtrType
                     End If
                     isNullable = False
-                    returnType = Factory.ParseTypeName(MakeVBSafeName(typeString))
+                    returnType = Factory.ParseTypeName(MakeVbSafeName(typeString))
             End Select
             If isNullable Then
                 Return Factory.NullableType(returnType)
@@ -219,102 +221,34 @@ Namespace CSharpToVBConverter
             Return returnType
         End Function
 
-        Friend Function ConvertStringToTypeArgumentList(TypeString As String) As VBS.TypeArgumentListSyntax
-            Dim commaIndex As Integer
-            Dim currentIndex As Integer
-            Dim openParenCount As Integer = 0
-            Dim possibleTypes As String = TypeString
-            Dim typeList As New List(Of VBS.TypeSyntax)
-            While possibleTypes.Any
-                If possibleTypes.Chars(0) = "(" Then
-                    Dim typeStrings As New List(Of String)
-                    For currentIndex = 0 To possibleTypes.Length - 1
-                        Select Case possibleTypes.Substring(currentIndex, 1)
-                            Case "("
-                                openParenCount += 1
-                            Case ")"
-                                openParenCount -= 1
-                                commaIndex = currentIndex + 1
-                            Case ","
-                                If openParenCount = 0 Then
-                                    commaIndex = currentIndex
-                                    Exit For
-                                End If
-                        End Select
-                    Next
-                    typeList.Add(ConvertToType(possibleTypes.Substring(0, commaIndex)).WithLeadingTrivia(SpaceTrivia))
-                    If commaIndex + 1 < possibleTypes.Length Then
-                        possibleTypes = possibleTypes.Substring(commaIndex + 1).Trim
-                    Else
-                        Exit While
-                    End If
-                Else
-                    While possibleTypes.Any
-                        ' Type
-                        commaIndex = possibleTypes.IndexOf(",", StringComparison.Ordinal)
-                        Dim firstOpenParen As Integer = possibleTypes.IndexOf("(", StringComparison.Ordinal)
-                        If commaIndex = -1 OrElse firstOpenParen = -1 Then
-                            commaIndex = possibleTypes.Length
-                        ElseIf commaIndex > firstOpenParen Then
-                            openParenCount = 0
-                            For currentIndex = firstOpenParen To possibleTypes.Length - 1
-                                Select Case possibleTypes.Substring(currentIndex, 1)
-                                    Case "("
-                                        openParenCount += 1
-                                    Case ")"
-                                        openParenCount -= 1
-                                        commaIndex = currentIndex + 1
-                                    Case ","
-                                        If openParenCount = 0 Then
-                                            commaIndex = currentIndex
-                                            Exit For
-                                        End If
-                                End Select
-                            Next
-                        End If
-                        typeList.Add(ConvertToType(possibleTypes.Substring(0, commaIndex)).WithLeadingTrivia(SpaceTrivia))
-                        If commaIndex + 1 < possibleTypes.Length Then
-                            possibleTypes = possibleTypes.Substring(commaIndex + 1).Trim
-                        Else
-                            possibleTypes = ""
-                            Exit While
-                        End If
-                    End While
-                End If
-            End While
-            Dim typeArguemntList As VBS.TypeArgumentListSyntax = FactoryTypeArgumentList(typeList)
-            Return FactoryTypeArgumentList(typeList)
-
-        End Function
-
         <Extension>
-        Friend Function ConvertToType(PossibleTupleType As ITypeSymbol) As VBS.TypeSyntax
-            If PossibleTupleType.IsKind(SymbolKind.ArrayType) Then
-                Dim elementType As VBS.TypeSyntax = DirectCast(PossibleTupleType, IArrayTypeSymbol).ElementType.ConvertToType
+        Friend Function ConvertToType(possibleTupleType As ITypeSymbol) As VBS.TypeSyntax
+            If possibleTupleType.IsKind(SymbolKind.ArrayType) Then
+                Dim elementType As VBS.TypeSyntax = DirectCast(possibleTupleType, IArrayTypeSymbol).ElementType.ConvertToType
                 If TypeOf elementType Is VBS.ArrayTypeSyntax Then
                     Return elementType
                 End If
                 Return Factory.ArrayType(elementType)
             End If
-            If PossibleTupleType.IsTupleType Then
+            If possibleTupleType.IsTupleType Then
                 Dim tupleElementList As New List(Of VBS.TupleElementSyntax)
-                For Each tupleElement As IFieldSymbol In DirectCast(PossibleTupleType, INamedTypeSymbol).TupleElements
+                For Each tupleElement As IFieldSymbol In DirectCast(possibleTupleType, INamedTypeSymbol).TupleElements
                     tupleElementList.Add(tupleElement.ConvertIFieldToTupleElement)
                 Next
                 Return Factory.TupleType(tupleElementList.ToArray)
             End If
-            If PossibleTupleType.Name = "Tuple" Then
+            If possibleTupleType.Name = "Tuple" Then
                 Dim tupleElementList As New List(Of VBS.TypeSyntax)
-                For Each tupleElement As ITypeSymbol In DirectCast(PossibleTupleType, INamedTypeSymbol).TypeArguments
+                For Each tupleElement As ITypeSymbol In DirectCast(possibleTupleType, INamedTypeSymbol).TypeArguments
                     tupleElementList.Add(tupleElement.ConvertToType)
                 Next
                 Return Factory.GenericName("Tuple", FactoryTypeArgumentList(tupleElementList))
             End If
-            Return ConvertToType(PossibleTupleType.ToString)
+            Return ConvertToType(possibleTupleType.ToString)
         End Function
 
-        Friend Function ConvertToType(TypeAsCSString As String, Optional AllowArray As Boolean = True) As VBS.TypeSyntax
-            Dim typeString As String = TypeAsCSString.Trim
+        Friend Function ConvertToType(typeAsCsString As String, Optional allowArray As Boolean = True) As VBS.TypeSyntax
+            Dim typeString As String = typeAsCsString.Trim
             Dim isNullable As Boolean = typeString.Last = "?"c AndAlso Not s_referenceTypes.Contains(typeString.RemoveBrackets.TrimEnd("?"c), StringComparer.OrdinalIgnoreCase)
             If Not isNullable Then
                 typeString = typeString.TrimEnd("?"c)
@@ -340,7 +274,7 @@ Namespace CSharpToVBConverter
                                 End If
                         End Select
                     Next
-                    If AllowArray AndAlso isArray Then
+                    If allowArray AndAlso isArray Then
                         arrayRank = typeString.Substring(indexOfBracket).
                                             Replace("[", "(", StringComparison.Ordinal).
                                             Replace("]", ")", StringComparison.Ordinal).
@@ -373,7 +307,6 @@ Namespace CSharpToVBConverter
                                 If openParenCount = 0 Then
                                     Exit For
                                 End If
-                            Case Else
                         End Select
                     Next
                     Dim possibleTypes As String = typeString.Substring(0, indexOfTypeEnd).Trim
@@ -401,12 +334,12 @@ Namespace CSharpToVBConverter
                             Next
                             Dim baseType As String = possibleTypes.Substring(0, endIndex)
                             While endIndex + 1 < possibleTypes.Length AndAlso possibleTypes.Chars(endIndex) = "["
-                                If AllowArray Then
+                                If allowArray Then
                                     baseType &= "[]"
                                 End If
                                 endIndex += 2
                             End While
-                            typeList.Add(baseType.ConvertCSStringToName)
+                            typeList.Add(baseType.ConvertCsStringToName)
                             possibleTypes = possibleTypes.Substring(endIndex).Trim
                             If possibleTypes.Any Then
                                 possibleTypes = possibleTypes.TrimStart(","c).Trim
@@ -461,8 +394,8 @@ Namespace CSharpToVBConverter
                         Return Factory.NullableType(genericNameSyntax)
                     End If
                     Return genericNameSyntax
-                ElseIf TypeAsCSString.Chars(0) = "(" Then
-                    Return TypeAsCSString.ConvertCSStringToName
+                ElseIf typeAsCsString.Chars(0) = "(" Then
+                    Return typeAsCsString.ConvertCsStringToName
                 End If
                 retType = ConvertSimpleTypeToType(typeString)
                 If arrayRank.Any Then
@@ -475,8 +408,8 @@ Namespace CSharpToVBConverter
         End Function
 
         <Extension>
-        Friend Function ConvertCSStringToName(CSNamedTypeStringIn As String) As VBS.TypeSyntax
-            Dim csNamedTypeString As String = CSNamedTypeStringIn
+        Friend Function ConvertCsStringToName(csNamedTypeStringIn As String) As VBS.TypeSyntax
+            Dim csNamedTypeString As String = csNamedTypeStringIn
             Dim isArray As Boolean = False
             Dim nullable As Boolean = False
             If csNamedTypeString.EndsWith("?", StringComparison.Ordinal) Then
@@ -488,7 +421,7 @@ Namespace CSharpToVBConverter
                 csNamedTypeString = csNamedTypeString.Substring(0, csNamedTypeString.Length - 2).Trim
             End If
 
-            Dim elementList As List(Of String) = csNamedTypeString.ConvertTypeTupleToTypeStrings(IncludeName:=True)
+            Dim elementList As List(Of String) = csNamedTypeString.ConvertTypeTupleToTypeStrings(includeName:=True)
             Dim builder As New StringBuilder
             builder.Append("("c)
             For Each e As IndexClass(Of String) In elementList.WithIndex
@@ -533,45 +466,45 @@ Namespace CSharpToVBConverter
         End Function
 
         <Extension>
-        Friend Function ConvertIFieldToTupleElement(TupleElement As IFieldSymbol) As VBS.TupleElementSyntax
-            If TupleElement.Type Is Nothing Then
-                Return Factory.NamedTupleElement(TupleElement.Name.ToString(Globalization.CultureInfo.InvariantCulture))
+        Friend Function ConvertIFieldToTupleElement(tupleElement As IFieldSymbol) As VBS.TupleElementSyntax
+            If tupleElement.Type Is Nothing Then
+                Return Factory.NamedTupleElement(tupleElement.Name.ToString(Globalization.CultureInfo.InvariantCulture))
             End If
-            Dim asClause As VBS.SimpleAsClauseSyntax = Factory.SimpleAsClause(AsKeyword.With(SpaceTrivia, SpaceTrivia), New SyntaxList(Of VBS.AttributeListSyntax), TupleElement.Type.ConvertToType)
-            Return Factory.NamedTupleElement(Factory.Identifier(MakeVBSafeName(TupleElement.Name)), asClause)
+            Dim asClause As VBS.SimpleAsClauseSyntax = Factory.SimpleAsClause(AsKeyword.With(SpaceTrivia, SpaceTrivia), New SyntaxList(Of VBS.AttributeListSyntax), tupleElement.Type.ConvertToType)
+            Return Factory.NamedTupleElement(Factory.Identifier(MakeVbSafeName(tupleElement.Name)), asClause)
         End Function
 
         <Extension>
-        Friend Function ConvertTypeTupleToTypeStrings(CSharpNamedTypeString As String, IncludeName As Boolean) As List(Of String)
-            If CSharpNamedTypeString(0) <> "(" OrElse
-                    CSharpNamedTypeString.Last <> ")" Then
+        Friend Function ConvertTypeTupleToTypeStrings(cSharpNamedTypeString As String, includeName As Boolean) As List(Of String)
+            If cSharpNamedTypeString(0) <> "(" OrElse
+                    cSharpNamedTypeString.Last <> ")" Then
                 Stop
             End If
             Dim currentChar As String
-            Dim openLT As Integer
+            Dim openLt As Integer
             Dim commaIndex As Integer
             Dim openParen As Integer
             Dim typeString As New StringBuilder
             Dim elementList As New List(Of String)
 
-            For currentIndex As Integer = 1 To CSharpNamedTypeString.Length - 2
-                currentChar = CSharpNamedTypeString(currentIndex)
+            For currentIndex As Integer = 1 To cSharpNamedTypeString.Length - 2
+                currentChar = cSharpNamedTypeString(currentIndex)
                 Select Case currentChar
                     Case "<"
-                        openLT = 1
+                        openLt = 1
                         typeString.Append(currentChar)
-                        While openLT <> 0
+                        While openLt <> 0
                             currentIndex += 1
-                            currentChar = CSharpNamedTypeString(currentIndex)
+                            currentChar = cSharpNamedTypeString(currentIndex)
                             Select Case currentChar
                                 Case ">"
-                                    openLT -= 1
+                                    openLt -= 1
                                     typeString.Append(">"c)
-                                    If openLT = 0 Then
+                                    If openLt = 0 Then
                                         Exit While
                                     End If
                                 Case "<"
-                                    openLT += 1
+                                    openLt += 1
                                     typeString.Append("<"c)
                                 Case "["
                                     typeString.Append("("c)
@@ -581,9 +514,9 @@ Namespace CSharpToVBConverter
                                     typeString.Append(currentChar)
                             End Select
                         End While
-                        If currentIndex + 1 >= CSharpNamedTypeString.Length - 1 OrElse Not ".[?".Contains(CSharpNamedTypeString(currentIndex + 1), StringComparison.OrdinalIgnoreCase) Then
-                            currentIndex = ExtractTupleWithName(CSharpNamedTypeString, IncludeName, typeString, elementList, currentIndex)
-                            commaIndex = CSharpNamedTypeString.IndexOf(",", currentIndex, StringComparison.OrdinalIgnoreCase)
+                        If currentIndex + 1 >= cSharpNamedTypeString.Length - 1 OrElse Not ".[?".Contains(cSharpNamedTypeString(currentIndex + 1), StringComparison.OrdinalIgnoreCase) Then
+                            currentIndex = ExtractTupleWithName(cSharpNamedTypeString, includeName, typeString, elementList, currentIndex)
+                            commaIndex = cSharpNamedTypeString.IndexOf(",", currentIndex, StringComparison.OrdinalIgnoreCase)
                             typeString.Clear()
                             If commaIndex < 0 Then
                                 Exit For
@@ -591,8 +524,8 @@ Namespace CSharpToVBConverter
                             currentIndex = commaIndex + 1
                         End If
                     Case " " ' variable name
-                        currentIndex = ExtractTupleWithName(CSharpNamedTypeString, IncludeName, typeString, elementList, currentIndex)
-                        commaIndex = CSharpNamedTypeString.IndexOf(",", currentIndex, StringComparison.OrdinalIgnoreCase)
+                        currentIndex = ExtractTupleWithName(cSharpNamedTypeString, includeName, typeString, elementList, currentIndex)
+                        commaIndex = cSharpNamedTypeString.IndexOf(",", currentIndex, StringComparison.OrdinalIgnoreCase)
                         typeString.Clear()
                         If commaIndex < 0 Then
                             Exit For
@@ -601,11 +534,10 @@ Namespace CSharpToVBConverter
                     Case ","
                         elementList.Add(ConvertToType(typeString.ToString).ToString)
                         typeString.Clear()
-                        currentIndex += If(CSharpNamedTypeString(currentIndex + 1) = " ", 1, 0)
+                        currentIndex += If(cSharpNamedTypeString(currentIndex + 1) = " ", 1, 0)
                     Case ")"
-                        currentIndex = ExtractTupleWithName(CSharpNamedTypeString, IncludeName, typeString, elementList, currentIndex)
-                        Dim typePart As String = ConvertToType(typeString.ToString).ToString
-                        If CSharpNamedTypeString.IndexOf(",", currentIndex + 1, StringComparison.OrdinalIgnoreCase) = -1 Then
+                        currentIndex = ExtractTupleWithName(cSharpNamedTypeString, includeName, typeString, elementList, currentIndex)
+                        If cSharpNamedTypeString.IndexOf(",", currentIndex + 1, StringComparison.OrdinalIgnoreCase) = -1 Then
                             Exit For
                         End If
                         Continue For
@@ -615,7 +547,7 @@ Namespace CSharpToVBConverter
                         typeString.Append("("c)
                         While openParen <> 0
                             currentIndex += 1
-                            currentChar = CSharpNamedTypeString(currentIndex)
+                            currentChar = cSharpNamedTypeString(currentIndex)
                             Select Case currentChar
                                 Case ")"
                                     openParen -= 1
@@ -627,7 +559,7 @@ Namespace CSharpToVBConverter
                                     If openParen > 0 Then
                                         typeString.Append(currentChar)
                                     Else
-                                        currentIndex = ExtractTupleWithName(CSharpNamedTypeString, IncludeName, typeString, elementList, currentIndex)
+                                        currentIndex = ExtractTupleWithName(cSharpNamedTypeString, includeName, typeString, elementList, currentIndex)
                                     End If
                                 Case "("
                                     openParen += 1
@@ -638,14 +570,14 @@ Namespace CSharpToVBConverter
                         End While
                         If isSubTuple Then
                             Dim subTupleList As New List(Of String)
-                            subTupleList.AddRange(typeString.ToString.ConvertTypeTupleToTypeStrings(IncludeName))
+                            subTupleList.AddRange(typeString.ToString.ConvertTypeTupleToTypeStrings(includeName))
                             elementList.Add($"({subTupleList.ToArray.JoinLines(", ")})")
                             typeString.Clear()
                         Else
                             elementList.Add(ConvertToType(typeString.ToString).ToString)
                             typeString.Clear()
                         End If
-                        commaIndex = CSharpNamedTypeString.IndexOf(",", currentIndex + 1, StringComparison.OrdinalIgnoreCase)
+                        commaIndex = cSharpNamedTypeString.IndexOf(",", currentIndex + 1, StringComparison.OrdinalIgnoreCase)
                         currentIndex += 2
                         If commaIndex < 0 Then
                             Exit For
@@ -665,33 +597,33 @@ Namespace CSharpToVBConverter
         ''' </summary>
         ''' <param name="id"></param>
         ''' <returns></returns>
-        ''' <param name="Node"></param><param name="Model"></param>
+        ''' <param name="node"></param><param name="model"></param>
         ''' <param name="usedIdentifiers"></param>
-        Friend Function GenerateSafeVBToken(id As SyntaxToken, Node As CS.CSharpSyntaxNode, Model As SemanticModel, usedIdentifiers As Dictionary(Of String, SymbolTableEntry)) As SyntaxToken
-            Return GenerateSafeVBToken(id, Node, Model, usedIdentifiers, IsQualifiedName:=False, IsTypeName:=False)
+        Friend Function GenerateSafeVbToken(id As SyntaxToken, node As CS.CSharpSyntaxNode, model As SemanticModel, usedIdentifiers As Dictionary(Of String, SymbolTableEntry)) As SyntaxToken
+            Return GenerateSafeVbToken(id, node, model, usedIdentifiers, isQualifiedName:=False, isTypeName:=False)
         End Function
 
         ''' <summary>
         ''' Returns Safe VB Name
         ''' </summary>
         ''' <param name="id">Original Variable Name</param>
-        ''' <param name="Node"></param>
-        ''' <param name="Model"></param>
+        ''' <param name="node"></param>
+        ''' <param name="model"></param>
         ''' <param name="usedIdentifiers"></param>
-        ''' <param name="IsQualifiedName">True if name is part of a Qualified Name and should not be renamed</param>
+        ''' <param name="isQualifiedName">True if name is part of a Qualified Name and should not be renamed</param>
         ''' <returns></returns>
-        ''' <param name="IsTypeName"></param>
-        Friend Function GenerateSafeVBToken(id As SyntaxToken, Node As CS.CSharpSyntaxNode, Model As SemanticModel, usedIdentifiers As Dictionary(Of String, SymbolTableEntry), IsQualifiedName As Boolean, IsTypeName As Boolean) As SyntaxToken
-            If Node Is Nothing Then
-                Throw New ArgumentNullException(NameOf(Node))
+        ''' <param name="isTypeName"></param>
+        Friend Function GenerateSafeVbToken(id As SyntaxToken, node As CS.CSharpSyntaxNode, model As SemanticModel, usedIdentifiers As Dictionary(Of String, SymbolTableEntry), isQualifiedName As Boolean, isTypeName As Boolean) As SyntaxToken
+            If node Is Nothing Then
+                Throw New ArgumentNullException(NameOf(node))
             End If
 
             Dim keywordKind As VB.SyntaxKind = VB.SyntaxFacts.GetKeywordKind(id.ValueText)
-            If IsTypeName Then
-                IsQualifiedName = True
+            If isTypeName Then
+                isQualifiedName = True
             Else
                 If VB.SyntaxFacts.IsPredefinedType(keywordKind) Then
-                    Return id.MakeIdentifierUnique(Node, usedIdentifiers, Model, IsBracketNeeded:=True, IsQualifiedNameOrTypeName:=IsQualifiedName)
+                    Return id.MakeIdentifierUnique(node, usedIdentifiers, model, isBracketNeeded:=True, isQualifiedNameOrTypeName:=isQualifiedName)
                 End If
             End If
 
@@ -704,20 +636,21 @@ Namespace CSharpToVBConverter
                     If TypeOf memberAccessExpression.Expression IsNot CSS.GenericNameSyntax Then
                         bracketNeeded = memberAccessExpression.Expression.ToString.Equals(id.ToString, StringComparison.Ordinal)
                     End If
+                    ' ReSharper disable once VBUseFirstInstead
                 ElseIf id.Parent.AncestorsAndSelf().OfType(Of CSS.UsingDirectiveSyntax).FirstOrDefault().IsKind(CS.SyntaxKind.UsingDirective) Then
                     id = Factory.Token(keywordKind).WithTriviaFrom(id)
                     bracketNeeded = False
                 End If
-                Return id.MakeIdentifierUnique(Node, usedIdentifiers, Model, bracketNeeded, IsQualifiedNameOrTypeName:=IsQualifiedName)
+                Return id.MakeIdentifierUnique(node, usedIdentifiers, model, bracketNeeded, isQualifiedNameOrTypeName:=isQualifiedName)
             End If
 
             If id.Parent?.IsParentKind(CS.SyntaxKind.Parameter) Then
                 Dim param As CSS.ParameterSyntax = DirectCast(id.Parent.Parent, CSS.ParameterSyntax)
                 Dim methodDeclaration As CSS.MethodDeclarationSyntax = TryCast(param.Parent?.Parent, CSS.MethodDeclarationSyntax)
-                IsQualifiedName = methodDeclaration Is Nothing OrElse String.Compare(methodDeclaration.Identifier.ValueText, id.ValueText, ignoreCase:=True, Globalization.CultureInfo.InvariantCulture) = 0
-                IsQualifiedName = IsQualifiedName Or String.Compare(param.Type.ToString, id.ValueText, ignoreCase:=False, Globalization.CultureInfo.InvariantCulture) = 0
+                isQualifiedName = methodDeclaration Is Nothing OrElse String.Compare(methodDeclaration.Identifier.ValueText, id.ValueText, ignoreCase:=True, Globalization.CultureInfo.InvariantCulture) = 0
+                isQualifiedName = isQualifiedName Or String.Compare(param.Type.ToString, id.ValueText, ignoreCase:=False, Globalization.CultureInfo.InvariantCulture) = 0
             End If
-            Return id.MakeIdentifierUnique(Node, usedIdentifiers, Model, IsBracketNeeded:=False, IsQualifiedNameOrTypeName:=IsQualifiedName)
+            Return id.MakeIdentifierUnique(node, usedIdentifiers, model, isBracketNeeded:=False, isQualifiedNameOrTypeName:=isQualifiedName)
         End Function
 
     End Module

@@ -6,7 +6,7 @@ Imports System.Runtime.CompilerServices
 Imports System.Text
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
-Namespace CSharpToVBConverter
+Namespace Extensions
 
     Public Module StringExtensions
 

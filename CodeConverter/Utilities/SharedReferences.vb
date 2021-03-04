@@ -10,7 +10,7 @@ Imports System.Runtime.CompilerServices
 
 Imports Microsoft.CodeAnalysis
 
-Namespace CSharpToVBConverter
+Namespace Utilities
 
     Public Module SharedReferences
         Private ReadOnly s_cSharpReferences As New List(Of MetadataReference)
@@ -18,23 +18,23 @@ Namespace CSharpToVBConverter
         Private ReadOnly s_referencePath As New List(Of String)
         Private ReadOnly s_visualBasicReferences As New List(Of MetadataReference)
 
-        Private Sub AddReferences(L As List(Of String), FileNameWithPath As String)
-            If L.Contains(FileNameWithPath) Then
+        Private Sub AddReferences(l As List(Of String), fileNameWithPath As String)
+            If l.Contains(fileNameWithPath) Then
                 Exit Sub
             End If
-            Dim hasMetadataOrIsAssembly As (HasMetadata As Boolean, IsAssembly As Boolean) = HasMetadataIsAssembly(FileNameWithPath)
+            Dim hasMetadataOrIsAssembly As (HasMetadata As Boolean, IsAssembly As Boolean) = HasMetadataIsAssembly(fileNameWithPath)
 
             If Not hasMetadataOrIsAssembly.HasMetadata Then
                 Exit Sub
             End If
-            L.Add(FileNameWithPath)
+            l.Add(fileNameWithPath)
             If hasMetadataOrIsAssembly.IsAssembly Then
-                s_cSharpReferences.Add(MetadataReference.CreateFromFile(FileNameWithPath))
+                s_cSharpReferences.Add(MetadataReference.CreateFromFile(fileNameWithPath))
             End If
-            s_visualBasicReferences.Add(MetadataReference.CreateFromFile(FileNameWithPath))
+            s_visualBasicReferences.Add(MetadataReference.CreateFromFile(fileNameWithPath))
         End Sub
 
-        Private Sub BuildReferenceList(WindowsFormsLocation As String)
+        Private Sub BuildReferenceList(windowsFormsLocation As String)
             If s_referencePath.Any Then
                 Exit Sub
             End If
@@ -67,8 +67,8 @@ Namespace CSharpToVBConverter
             s_visualBasicReferences.Add(MetadataReference.CreateFromFile(location))
 
             ' Windows Forms
-            If Not String.IsNullOrWhiteSpace(WindowsFormsLocation) Then
-                AddReferences(s_referencePath, WindowsFormsLocation)
+            If Not String.IsNullOrWhiteSpace(windowsFormsLocation) Then
+                AddReferences(s_referencePath, windowsFormsLocation)
             End If
 
         End Sub
@@ -97,21 +97,21 @@ Namespace CSharpToVBConverter
             End Using
         End Function
 
-        Public Function CSharpReferences(WindowsFormsLocation As String, OptionalReference As IReadOnlyList(Of MetadataReference)) As List(Of MetadataReference)
+        Public Function CSharpReferences(windowsFormsLocation As String, optionalReference As IReadOnlyList(Of MetadataReference)) As List(Of MetadataReference)
 
-            If WindowsFormsLocation Is Nothing Then
-                WindowsFormsLocation = ""
+            If windowsFormsLocation Is Nothing Then
+                windowsFormsLocation = ""
             End If
             Try
                 SyncLock s_referencePath
                     If Not s_cSharpReferences.Any Then
-                        BuildReferenceList(WindowsFormsLocation)
+                        BuildReferenceList(windowsFormsLocation)
                     End If
-                    If OptionalReference IsNot Nothing Then
+                    If optionalReference IsNot Nothing Then
                         ' Optional References
                         Dim tempList As New List(Of MetadataReference)
                         tempList.AddRange(s_cSharpReferences)
-                        tempList.AddRange(OptionalReference)
+                        tempList.AddRange(optionalReference)
                         Return tempList
                     End If
                     Return s_cSharpReferences
@@ -119,37 +119,33 @@ Namespace CSharpToVBConverter
             Catch ex As OperationCanceledException
                 Throw
             Catch ex As Exception
-                Stop
                 Throw
             End Try
-            Return Nothing
         End Function
 
-        Public Function VisualBasicReferences(WindowsFormsLocation As String, Optional OptionalReference As IReadOnlyList(Of MetadataReference) = Nothing) As List(Of MetadataReference)
+        Public Function VisualBasicReferences(windowsFormsLocation As String, Optional optionalReference As IReadOnlyList(Of MetadataReference) = Nothing) As List(Of MetadataReference)
             Try
-                If WindowsFormsLocation Is Nothing Then
-                    WindowsFormsLocation = ""
+                If windowsFormsLocation Is Nothing Then
+                    windowsFormsLocation = ""
                 End If
                 SyncLock s_referencePath
                     If Not s_visualBasicReferences.Any Then
-                        BuildReferenceList(WindowsFormsLocation)
+                        BuildReferenceList(windowsFormsLocation)
                     End If
-                    If OptionalReference IsNot Nothing Then
+                    If optionalReference IsNot Nothing Then
                         ' Optional References
                         Dim tempList As New List(Of MetadataReference)
                         tempList.AddRange(s_visualBasicReferences)
-                        tempList.AddRange(OptionalReference)
+                        tempList.AddRange(optionalReference)
                         Return tempList
                     End If
-                    Return s_visualBasicReferences
                 End SyncLock
             Catch ex As OperationCanceledException
                 Stop
             Catch ex As Exception
-                Stop
                 Throw
             End Try
-            Return Nothing
+            Return s_visualBasicReferences
         End Function
 
     End Module

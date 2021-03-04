@@ -6,7 +6,7 @@ Imports System.Collections.Immutable
 Imports System.Runtime.CompilerServices
 Imports Microsoft.CodeAnalysis
 
-Namespace CSharpToVBConverter
+Namespace Extensions
     Friend Module SymbolExtensions
 
         ''' <summary>

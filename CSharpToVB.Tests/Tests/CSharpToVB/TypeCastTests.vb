@@ -56,13 +56,13 @@ End Module")
 "class TestClass
 {
     void Test() {
-        char CR = (char)0xD;
+        char Cr = (char)0xD;
     }
 }",
 "Class TestClass
 
     Private Sub Test()
-        Dim CR As Char = ChrW(&HD)
+        Dim Cr As Char = ChrW(&HD)
     End Sub
 End Class")
         End Sub

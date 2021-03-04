@@ -8,16 +8,18 @@ Imports System.Text
 Public Module ClassificationNameStrings
 
 #Region "Special names"
-
+#Disable Warning InconsistentNaming
     Public Const FunctionKeyword As String = "function"
     Public Const NumericLiteral As String = "number"
     Public Const String_VerbatimLiteral As String = "string - verbatim"
     Public Const StringLiteral As String = "string"
     Public Const ThemeDefaultColor As String = "default"
     Public Const ThemeErrorColor As String = "error"
+#Enable Warning InconsistentNaming
 
 #End Region
 
+#Disable Warning InconsistentNaming
     Public Const [Operator] As String = "operator"
     Public Const Button As String = "Button"
     Public Const CheckBox As String = "CheckBox"
@@ -112,10 +114,11 @@ Public Module ClassificationNameStrings
     Public Const XmlLiteral_Name As String = "xml literal - name"
     Public Const XmlLiteral_ProcessingInstruction As String = "xml literal - processing instruction"
     Public Const XmlLiteral_Text As String = "xml literal - text"
+#Enable Warning InconsistentNaming
 
-    Public Function ClassificationNameToString(ClassificationName As String) As String
+    Public Function ClassificationNameToString(classificationName As String) As String
         Dim name As New StringBuilder
-        Select Case ClassificationName
+        Select Case classificationName
             Case "FunctionKeyword"
                 Return "function"
             Case "NumericLiteral"
@@ -127,11 +130,11 @@ Public Module ClassificationNameStrings
             Case "ThemeErrorColor"
                 Return "error"
         End Select
-        If ClassificationName.EndsWith("Literal", StringComparison.InvariantCulture) Then
-            ClassificationName = ClassificationName.Replace("Literal", "")
+        If classificationName.EndsWith("Literal", StringComparison.InvariantCulture) Then
+            classificationName = classificationName.Replace("Literal", "")
         End If
-        For i As Integer = 0 To ClassificationName.Length - 1
-            Dim c As Char = ClassificationName.Chars(i)
+        For i As Integer = 0 To classificationName.Length - 1
+            Dim c As Char = classificationName.Chars(i)
             If i = 0 Then
                 name.Append(Char.ToLower(c))
             Else
@@ -149,9 +152,9 @@ Public Module ClassificationNameStrings
     End Function
 
     <Extension>
-    Public Function ClassificationStringToName(ClassificationString As String) As String
+    Public Function ClassificationStringToName(classificationString As String) As String
         Dim name As New StringBuilder
-        Select Case ClassificationString
+        Select Case classificationString
             Case "default"
                 Return "ThemeDefaultColor"
             Case "error"
@@ -167,7 +170,7 @@ Public Module ClassificationNameStrings
             Case "string"
                 Return "StringLiteral"
         End Select
-        Dim nameSplit() As String = ClassificationString.Split(" "c)
+        Dim nameSplit() As String = classificationString.Split(" "c)
         For Each element As String In nameSplit
             If element = "-" Then
                 name.Append("_"c)

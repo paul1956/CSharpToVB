@@ -407,7 +407,7 @@ End Module")
         End Sub
 
         <Fact>
-        Public Shared Sub CSharpToVbPartialClassOmitedModifier()
+        Public Shared Sub CSharpToVbPartialClassOmittedModifier()
             TestConversionCSharpToVisualBasic(
 "public partial class Entities {
 }

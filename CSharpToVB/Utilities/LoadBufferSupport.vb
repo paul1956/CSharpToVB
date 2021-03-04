@@ -3,72 +3,72 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.IO
-Imports CSharpToVBConverter
 Imports Microsoft.CodeAnalysis
+Imports Utilities
 
 Friend Module LoadBufferSupport
 
-    Friend Function LoadInputBufferFromStream(MainForm As Form1, Path As String) As Integer
-        If Not File.Exists(Path) Then
+    Public Function LoadInputBufferFromStream(mainForm As Form1, path As String) As Integer
+        If Not File.Exists(path) Then
             Return 0
         End If
-        MainForm.ConversionInput.Visible = False
-        LocalUseWaitCursor(MainForm, WaitCursorEnable:=True)
+        mainForm.ConversionInput.Visible = False
+        LocalUseWaitCursor(mainForm, waitCursorEnable:=True)
         Dim sourceText As String
-        Using myFileStream As FileStream = File.OpenRead(Path)
+        Using myFileStream As FileStream = File.OpenRead(path)
             sourceText = myFileStream.GetFileTextFromStream()
         End Using
 
         Dim lines() As String = sourceText.SplitLines
-        If MainForm.mnuOptionsColorizeSource.Checked Then
-            Colorize(MainForm, GetClassifiedRanges(lines.Join(vbCrLf), LanguageNames.CSharp), MainForm.ConversionInput, lines.Length)
-            MainForm.ConversionInput.Select(0, 0)
+        If mainForm.mnuOptionsColorizeSource.Checked Then
+            Colorize(mainForm, GetClassifiedRanges(lines.Join(vbCrLf), LanguageNames.CSharp), mainForm.ConversionInput, lines.Length)
+            mainForm.ConversionInput.Select(0, 0)
         Else
-            MainForm.ConversionInput.Text = lines.Join(vbCrLf)
+            mainForm.ConversionInput.Text = lines.Join(vbCrLf)
         End If
-        MainForm.ConversionInput.Visible = True
-        If MainForm.mnuViewShowSourceLineNumbers.Checked Then
-            MainForm.LineNumbersForConversionInput.Visible = False
+        mainForm.ConversionInput.Visible = True
+        If mainForm.mnuViewShowSourceLineNumbers.Checked Then
+            mainForm.LineNumbersForConversionInput.Visible = False
             Application.DoEvents()
-            MainForm.LineNumbersForConversionInput.Visible = True
+            mainForm.LineNumbersForConversionInput.Visible = True
             Application.DoEvents()
         End If
-        LocalUseWaitCursor(MainForm, WaitCursorEnable:=False)
+        LocalUseWaitCursor(mainForm, waitCursorEnable:=False)
         Return lines.Length
     End Function
 
-    Friend Sub LoadOutputBufferFromStream(MainForm As Form1, Path As String)
-        LocalUseWaitCursor(MainForm, WaitCursorEnable:=True)
+    Friend Sub LoadOutputBufferFromStream(mainForm As Form1, path As String)
+        LocalUseWaitCursor(mainForm, waitCursorEnable:=True)
         Dim sourceText As String
-        Using myFileStream As FileStream = File.OpenRead(Path)
+        Using myFileStream As FileStream = File.OpenRead(path)
             sourceText = myFileStream.GetFileTextFromStream()
         End Using
 
         Dim lines() As String = sourceText.SplitLines
-        If MainForm.mnuOptionsColorizeSource.Checked Then
-            Colorize(MainForm, GetClassifiedRanges(lines.Join(vbCrLf), LanguageNames.VisualBasic), MainForm.ConversionOutput, lines.Length)
-            MainForm.ConversionOutput.Select(0, 0)
+        If mainForm.mnuOptionsColorizeSource.Checked Then
+            Colorize(mainForm, GetClassifiedRanges(lines.Join(vbCrLf), LanguageNames.VisualBasic), mainForm.ConversionOutput, lines.Length)
+            mainForm.ConversionOutput.Select(0, 0)
         Else
-            MainForm.ConversionOutput.Text = lines.Join(vbCrLf)
+            mainForm.ConversionOutput.Text = lines.Join(vbCrLf)
         End If
-        LocalUseWaitCursor(MainForm, WaitCursorEnable:=False)
+        LocalUseWaitCursor(mainForm, waitCursorEnable:=False)
     End Sub
 
-    Friend Sub OpenSourceFile(MainForm As Form1, Path As String)
-        Dim lines As Integer = LoadInputBufferFromStream(MainForm, Path)
+    Friend Sub OpenSourceFile(mainForm As Form1, path As String)
+        Dim lines As Integer = LoadInputBufferFromStream(mainForm, path)
         If lines = 0 Then
-            MainForm.mnuConvertConvertSnippet.Enabled = False
-            MainForm.mnuConvertConvertTopLevelStmts.Enabled = False
-            If My.Settings.MRU_Data.Contains(Path) Then
-                My.Settings.MRU_Data.Remove(Path)
+            mainForm.mnuConvertConvertSnippet.Enabled = False
+            mainForm.mnuConvertConvertTopLevelStmts.Enabled = False
+            If My.Settings.MRU_Data.Contains(path) Then
+                My.Settings.MRU_Data.Remove(path)
             End If
         Else
-            MainForm.mnuConvertConvertSnippet.Enabled = True
-            MainForm.mnuConvertConvertTopLevelStmts.Enabled = True
-            My.Settings.MRU_Data.mnuAddToMRU(Path)
+            mainForm.mnuConvertConvertSnippet.Enabled = True
+            mainForm.mnuConvertConvertTopLevelStmts.Enabled = True
+            My.Settings.MRU_Data.MnuAddToMru(path)
         End If
-        MainForm.mnuFile.DropDownItems.FileMenuMRUUpdateUI(AddressOf MainForm.mnu_MRUList_Click)
-        MainForm.UpdateLastFileMenu()
+        mainForm.mnuFile.DropDownItems.FileMenuMruUpdateUi(AddressOf mainForm.mnu_MRUList_Click)
+        mainForm.UpdateLastFileMenu()
     End Sub
 
 End Module

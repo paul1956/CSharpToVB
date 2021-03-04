@@ -2,8 +2,9 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
+Imports Extensions
 Imports Microsoft.CodeAnalysis
-
+Imports Utilities
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
@@ -17,7 +18,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
         Partial Friend Class NodesVisitor
             Inherits CS.CSharpSyntaxVisitor(Of VB.VisualBasicSyntaxNode)
 
-            Private Function VisitCSArguments(OpenToken As SyntaxToken, csArguments As SeparatedSyntaxList(Of CSS.ArgumentSyntax), CloseToken As SyntaxToken) As VB.VisualBasicSyntaxNode
+            Private Function VisitCsArguments(openToken As SyntaxToken, csArguments As SeparatedSyntaxList(Of CSS.ArgumentSyntax), closeToken As SyntaxToken) As VB.VisualBasicSyntaxNode
                 If csArguments.Count = 0 Then
                     Return Factory.ArgumentList(Factory.SeparatedList(csArguments.Select(Function(a As CSS.ArgumentSyntax) DirectCast(a.Accept(Me), VBS.ArgumentSyntax))))
                 End If
@@ -25,14 +26,13 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Dim separators As New List(Of SyntaxToken)
                 For Each e As IndexClass(Of CSS.ArgumentSyntax) In csArguments.WithIndex
                     Dim argument As VBS.ArgumentSyntax = DirectCast(e.Value.Accept(Me), VBS.ArgumentSyntax)
-                    Dim csOperation As Operations.IArgumentOperation = CType(_semanticModel.GetOperation(e.Value), Operations.IArgumentOperation)
                     vbNodeList.Add(argument.AdjustNodeTrivia(SeparatorFollows:=Not e.IsLast))
                     If Not e.IsLast Then
                         separators.Add(CommaToken.WithConvertedTrailingTriviaFrom(csArguments.GetSeparators()(e.index)))
                     End If
                 Next
-                Dim openParenTokenWithTrivia As SyntaxToken = openParenToken.WithConvertedTriviaFrom(OpenToken)
-                Dim closeParenTokenWithTrivia As SyntaxToken = CloseParenToken.WithConvertedTriviaFrom(CloseToken)
+                Dim openParenTokenWithTrivia As SyntaxToken = openParenToken.WithConvertedTriviaFrom(openToken)
+                Dim closeParenTokenWithTrivia As SyntaxToken = CloseParenToken.WithConvertedTriviaFrom(closeToken)
                 RestructureNodesAndSeparators(openParenTokenWithTrivia, vbNodeList, separators, closeParenTokenWithTrivia)
                 Return Factory.ArgumentList(openParenTokenWithTrivia,
                                               Factory.SeparatedList(vbNodeList, separators),
@@ -60,8 +60,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                             Dim ifBlock As VBS.SingleLineIfStatementSyntax = Factory.SingleLineIfStatement(condition,
                                                                                                               vbStatements,
                                                                                                               elseClause:=Nothing)
-                            GetStatementwithIssues(node).AddMarker(ifBlock, StatementHandlingOption.PrependStatement, AllowDuplicates:=False)
-                            ' TODO remove conversion of trivia
+                            GetStatementWithIssues(node).AddMarker(ifBlock, StatementHandlingOption.PrependStatement, allowDuplicates:=False)
                             argumentWithTrivia = DirectCast(csBinaryExpression.Left.Accept(Me).WithConvertedTriviaFrom(csBinaryExpression.Left).AdjustNodeTrivia(SeparatorFollows:=True), VBS.ExpressionSyntax)
                         Else
                             argumentWithTrivia = DirectCast(csExpression.Accept(Me).AdjustNodeTrivia(SeparatorFollows:=True), VBS.ExpressionSyntax)
@@ -70,10 +69,9 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         Try
                             Dim elementAccessExpression As CSS.ElementAccessExpressionSyntax = CType(node.Parent.Parent, CSS.ElementAccessExpressionSyntax)
                             Dim offsetFromLength As VBS.ExpressionSyntax = CType(CType(csExpression, CSS.PrefixUnaryExpressionSyntax).Operand.Accept(Me), VBS.ExpressionSyntax)
-                            Dim identName As VBS.IdentifierNameSyntax = Factory.IdentifierName(MakeVBSafeName(elementAccessExpression.Expression.ToString))
+                            Dim identName As VBS.IdentifierNameSyntax = Factory.IdentifierName(MakeVbSafeName(elementAccessExpression.Expression.ToString))
                             argumentWithTrivia = Factory.BinaryExpression(VB.SyntaxKind.SubtractExpression, identName, MinusToken, right:=offsetFromLength)
                         Catch ex As Exception
-                            Stop
                             Throw UnexpectedValue("IndexExpression Parent.Parent not 'ElementAccessExpression'")
                         End Try
                     Else
@@ -89,9 +87,9 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     End If
 
                     If TypeOf node.Parent Is CSS.BracketedArgumentListSyntax Then
-                        Dim typeinf As TypeInfo = _semanticModel.GetTypeInfo(csExpression)
-                        If Not SymbolEqualityComparer.Default.Equals(typeinf.ConvertedType, typeinf.Type) Then
-                            If typeinf.Type?.SpecialType = SpecialType.System_Char Then '
+                        Dim typeInf As TypeInfo = _semanticModel.GetTypeInfo(csExpression)
+                        If Not SymbolEqualityComparer.Default.Equals(typeInf.ConvertedType, typeInf.Type) Then
+                            If typeInf.Type?.SpecialType = SpecialType.System_Char Then '
                                 argumentWithTrivia = Factory.ParseExpression($"ChrW({argumentWithTrivia.WithoutTrivia})").WithTriviaFrom(argumentWithTrivia)
                             End If
                         End If
@@ -111,16 +109,15 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                      VB.SyntaxKind.ElseIfDirectiveTrivia, VB.SyntaxKind.EndIfDirectiveTrivia
                                     newLeadingTrivia = newLeadingTrivia.Add(trivia)
                                 Case VB.SyntaxKind.DisableWarningDirectiveTrivia
-                                    GetStatementwithIssues(node).AddMarker(Factory.EmptyStatement.WithLeadingTrivia(trivia), StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
+                                    GetStatementWithIssues(node).AddMarker(Factory.EmptyStatement.WithLeadingTrivia(trivia), StatementHandlingOption.PrependStatement, allowDuplicates:=True)
                                 Case VB.SyntaxKind.EnableWarningDirectiveTrivia
-                                    GetStatementwithIssues(node).AddMarker(Factory.EmptyStatement.WithLeadingTrivia(trivia), StatementHandlingOption.AppendEmptyStatement, AllowDuplicates:=True)
+                                    GetStatementWithIssues(node).AddMarker(Factory.EmptyStatement.WithLeadingTrivia(trivia), StatementHandlingOption.AppendEmptyStatement, allowDuplicates:=True)
                                 Case VB.SyntaxKind.LineContinuationTrivia
                                     If newLeadingTrivia.Last.IsKind(VB.SyntaxKind.LineContinuationTrivia) Then
                                         Continue For
                                     End If
                                     newLeadingTrivia = newLeadingTrivia.Add(LineContinuation)
                                 Case Else
-                                    Stop
                                     Throw UnexpectedValue(trivia.RawKind, "trivia.RawKind")
                             End Select
                         Next
@@ -129,7 +126,6 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Catch ex As OperationCanceledException
                     Throw
                 Catch ex As Exception
-                    Stop
                     Throw
                 End Try
                 argumentWithTrivia = argumentWithTrivia.WithLeadingTrivia(newLeadingTrivia).WithTrailingTrivia(SpaceTrivia)
@@ -143,11 +139,11 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             End Function
 
             Public Overrides Function VisitArgumentList(node As CSS.ArgumentListSyntax) As VB.VisualBasicSyntaxNode
-                Return Me.VisitCSArguments(node.OpenParenToken, node.Arguments, node.CloseParenToken)
+                Return Me.VisitCsArguments(node.OpenParenToken, node.Arguments, node.CloseParenToken)
             End Function
 
             Public Overrides Function VisitBracketedArgumentList(node As CSS.BracketedArgumentListSyntax) As VB.VisualBasicSyntaxNode
-                Return Me.VisitCSArguments(node.OpenBracketToken, node.Arguments, node.CloseBracketToken)
+                Return Me.VisitCsArguments(node.OpenBracketToken, node.Arguments, node.CloseBracketToken)
             End Function
 
             Public Overrides Function VisitOmittedTypeArgument(node As CSS.OmittedTypeArgumentSyntax) As VB.VisualBasicSyntaxNode

@@ -7,7 +7,7 @@ Imports System.Threading
 Imports Microsoft.CodeAnalysis
 Imports ProgressReportLibrary
 
-Namespace CSharpToVBConverter
+Namespace SupportClasses
 
     Public Class ConvertRequest
 

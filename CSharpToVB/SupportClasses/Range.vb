@@ -16,8 +16,8 @@ Public Class Range
     End Sub
 
     Public Sub New(classifiedSpan As ClassifiedSpan, text As String)
-        _ClassifiedSpan = classifiedSpan
-        _Text = text
+        Me.ClassifiedSpan = classifiedSpan
+        Me.Text = text
     End Sub
 
     Public ReadOnly Property ClassificationType As String

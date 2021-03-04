@@ -5,6 +5,7 @@ Imports System.IO
 Imports Xunit
 
 Namespace Tests.ConvertDirectories
+
     <TestClass()>
     Public Class FastTests
 

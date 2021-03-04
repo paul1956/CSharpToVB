@@ -3,36 +3,38 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Runtime.CompilerServices
-Imports CSharpToVBConverter
+Imports Extensions
 
-Public Module TSToolBaseSupport
+Public Module TsToolBaseSupport
 
+#Disable Warning InconsistentNaming
     <Flags>
     Public Enum SearchBuffers
         CS = 1
         VB = 2
         Both = CS Or VB
     End Enum
+#Enable Warning InconsistentNaming
 
     <Extension>
-    Friend Sub DoFind(MainForm As Form1, SearchForward As Boolean)
-        If MainForm.TSFindFindWhatComboBox.Text = "Search..." Then
+    Friend Sub DoFind(mainForm As Form1, searchForward As Boolean)
+        If mainForm.TSFindFindWhatComboBox.Text = "Search..." Then
             Exit Sub
         End If
-        MainForm._inColorize = True
-        mnuAddToMRU(My.Settings.TSFindWhatMRU_Data, MainForm.TSFindFindWhatComboBox.Text)
+        mainForm._inColorize = True
+        My.Settings.TSFindWhatMRU_Data.MnuAddToMru(mainForm.TSFindFindWhatComboBox.Text)
         My.Settings.Save()
-        TSFindWhatMRUUpdateUI(MainForm.TSFindFindWhatComboBox)
+        mainForm.TSFindFindWhatComboBox.TsFindWhatMruUpdateUi()
         Dim prompt As String = ""
-        If MainForm.BufferToSearch.IsFlagSet(SearchBuffers.CS) AndAlso Not FindTextInBuffer(MainForm, MainForm.ConversionInput, SearchForward) Then
-            prompt = $"'{MainForm.TSFindFindWhatComboBox.Text}' not found in C# code!"
+        If mainForm.BufferToSearch.IsFlagSet(SearchBuffers.CS) AndAlso Not FindTextInBuffer(mainForm, mainForm.ConversionInput, searchForward) Then
+            prompt = $"'{mainForm.TSFindFindWhatComboBox.Text}' not found in C# code!"
         End If
 
-        If MainForm.BufferToSearch.IsFlagSet(SearchBuffers.VB) AndAlso Not FindTextInBuffer(MainForm, MainForm.ConversionOutput, SearchForward) Then
+        If mainForm.BufferToSearch.IsFlagSet(SearchBuffers.VB) AndAlso Not FindTextInBuffer(mainForm, mainForm.ConversionOutput, searchForward) Then
             If prompt.Any Then
-                prompt = $"'{MainForm.TSFindFindWhatComboBox.Text}' not found in C# or Visual Basic code!"
+                prompt = $"'{mainForm.TSFindFindWhatComboBox.Text}' not found in C# or Visual Basic code!"
             Else
-                prompt = $"'{MainForm.TSFindFindWhatComboBox.Text}' not found in Visual Basic code!"
+                prompt = $"'{mainForm.TSFindFindWhatComboBox.Text}' not found in Visual Basic code!"
             End If
         End If
 
@@ -41,84 +43,84 @@ Public Module TSToolBaseSupport
                    MsgBoxStyle.OkOnly Or MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground,
                    "Text Not Found!")
         End If
-        MainForm._inColorize = False
+        mainForm._inColorize = False
     End Sub
 
     ''' <summary>
     ''' Look in SearchBuffer for text and highlight it
     ''' No error is displayed if not found
     ''' </summary>
-    ''' <param name="MainForm"></param>
-    ''' <param name="SearchBuffer"></param>
+    ''' <param name="mainForm"></param>
+    ''' <param name="searchBuffer"></param>
     ''' <returns>True if found, False is not found</returns>
-    ''' <param name="SearchForward"></param>
-    Friend Function FindTextInBuffer(MainForm As Form1, SearchBuffer As RichTextBox, SearchForward As Boolean) As Boolean
-        If SearchBuffer.SelectionStart >= SearchBuffer.Text.Length - 1 OrElse SearchBuffer.SelectionStart < 0 Then
-            SearchBuffer.SelectionStart = If(SearchForward, 0, SearchBuffer.Text.Length - 1)
-            SearchBuffer.SelectionLength = 0
+    ''' <param name="searchForward"></param>
+    Friend Function FindTextInBuffer(mainForm As Form1, searchBuffer As RichTextBox, searchForward As Boolean) As Boolean
+        If searchBuffer.SelectionStart >= searchBuffer.Text.Length - 1 OrElse searchBuffer.SelectionStart < 0 Then
+            searchBuffer.SelectionStart = If(searchForward, 0, searchBuffer.Text.Length - 1)
+            searchBuffer.SelectionLength = 0
         End If
-        Dim findFrom As Integer = SearchBuffer.SelectionStart
-        Dim findTo As Integer = SearchBuffer.TextLength - 1
-        Dim options As RichTextBoxFinds = If(MainForm.TSFindMatchCaseCheckBox.Checked, RichTextBoxFinds.MatchCase, RichTextBoxFinds.None)
-        options = options Or If(MainForm.TSFindMatchWholeWordCheckBox.Checked, RichTextBoxFinds.WholeWord, RichTextBoxFinds.None)
-        If Not SearchForward Then
+        Dim findFrom As Integer = searchBuffer.SelectionStart
+        Dim findTo As Integer = searchBuffer.TextLength - 1
+        Dim options As RichTextBoxFinds = If(mainForm.TSFindMatchCaseCheckBox.Checked, RichTextBoxFinds.MatchCase, RichTextBoxFinds.None)
+        options = options Or If(mainForm.TSFindMatchWholeWordCheckBox.Checked, RichTextBoxFinds.WholeWord, RichTextBoxFinds.None)
+        If Not searchForward Then
             options = options Or RichTextBoxFinds.Reverse
             findTo = findFrom
             findFrom = 0
         End If
-        Dim findIndex As Integer = SearchBuffer.Find(MainForm.TSFindFindWhatComboBox.Text, findFrom, findTo, options)
+        Dim findIndex As Integer = searchBuffer.Find(mainForm.TSFindFindWhatComboBox.Text, findFrom, findTo, options)
 
         If findIndex < 0 Then
-            SearchBuffer.SelectionStart = If(SearchForward, 0, MainForm.TSFindFindWhatComboBox.Text.Length - 1)
-            SearchBuffer.SelectionLength = 0
+            searchBuffer.SelectionStart = If(searchForward, 0, mainForm.TSFindFindWhatComboBox.Text.Length - 1)
+            searchBuffer.SelectionLength = 0
             Return False
         End If
-        SearchBuffer.SelectionStart = findIndex
-        SearchBuffer.SelectionBackColor = Color.Orange
-        ' Find the end index. End Index = number of characters in textbox
-        SearchBuffer.SelectionLength = MainForm.TSFindFindWhatComboBox.Text.Length
+        searchBuffer.SelectionStart = findIndex
+        searchBuffer.SelectionBackColor = Color.Orange
+        ' Find the end index. End Index = number of characters in TextBox
+        searchBuffer.SelectionLength = mainForm.TSFindFindWhatComboBox.Text.Length
         ' Highlight the search string
-        SearchBuffer.Select(SearchBuffer.SelectionStart, SearchBuffer.SelectionLength)
+        searchBuffer.Select(searchBuffer.SelectionStart, searchBuffer.SelectionLength)
         ' mark the start position after the position of
         ' last search string
-        SearchBuffer.SelectionStart = If(SearchForward, SearchBuffer.SelectionStart + SearchBuffer.SelectionLength, SearchBuffer.SelectionStart)
-        SearchBuffer.ScrollToCaret()
+        searchBuffer.SelectionStart = If(searchForward, searchBuffer.SelectionStart + searchBuffer.SelectionLength, searchBuffer.SelectionStart)
+        searchBuffer.ScrollToCaret()
         Application.DoEvents()
         Return True
     End Function
 
     <Extension>
-    Friend Function SetSearchControls(MainForm As Form1, Optional ReturnInputInUse As Boolean = False) As Boolean
+    Friend Function SetSearchControls(mainForm As Form1, Optional returnInputInUse As Boolean = False) As Boolean
         Dim inputBufferInUse As Boolean
         Dim outputBufferInUse As Boolean
-        inputBufferInUse = MainForm.ConversionInput.Text.Any
-        MainForm.mnuConvertConvertSnippet.Enabled = inputBufferInUse
-        MainForm.mnuConvertConvertTopLevelStmts.Enabled = inputBufferInUse
-        outputBufferInUse = MainForm.ConversionOutput.Text.Any
-        Dim enableFind As Boolean = (inputBufferInUse Or outputBufferInUse) And MainForm.TSFindFindWhatComboBox.Text.Any
-        MainForm.TSFindClearHighlightsButton.Enabled = enableFind
-        MainForm.TSFindFindNextButton.Enabled = enableFind
-        MainForm.TSFindFindPreviousButton.Enabled = enableFind
-        MainForm.TSFindMatchCaseCheckBox.Enabled = enableFind
-        MainForm.TSFindMatchWholeWordCheckBox.Enabled = enableFind
-        Dim selectedIndex As Integer = MainForm.TSFindLookInComboBox.SelectedIndex
-        If MainForm.TSFindLookInComboBox.Items.Count > 0 AndAlso MainForm.mnuConvert.Enabled Then
+        inputBufferInUse = mainForm.ConversionInput.Text.Any
+        mainForm.mnuConvertConvertSnippet.Enabled = inputBufferInUse
+        mainForm.mnuConvertConvertTopLevelStmts.Enabled = inputBufferInUse
+        outputBufferInUse = mainForm.ConversionOutput.Text.Any
+        Dim enableFind As Boolean = (inputBufferInUse Or outputBufferInUse) And mainForm.TSFindFindWhatComboBox.Text.Any
+        mainForm.TSFindClearHighlightsButton.Enabled = enableFind
+        mainForm.TSFindFindNextButton.Enabled = enableFind
+        mainForm.TSFindFindPreviousButton.Enabled = enableFind
+        mainForm.TSFindMatchCaseCheckBox.Enabled = enableFind
+        mainForm.TSFindMatchWholeWordCheckBox.Enabled = enableFind
+        Dim selectedIndex As Integer = mainForm.TSFindLookInComboBox.SelectedIndex
+        If mainForm.TSFindLookInComboBox.Items.Count > 0 AndAlso mainForm.mnuConvert.Enabled Then
             If inputBufferInUse AndAlso outputBufferInUse Then
-                MainForm.TSFindLookInComboBox.DropDownStyle = ComboBoxStyle.DropDown
-                MainForm.TSFindLookInComboBox.SelectedIndex = selectedIndex
+                mainForm.TSFindLookInComboBox.DropDownStyle = ComboBoxStyle.DropDown
+                mainForm.TSFindLookInComboBox.SelectedIndex = selectedIndex
             ElseIf inputBufferInUse Then
-                MainForm.TSFindLookInComboBox.DropDownStyle = ComboBoxStyle.Simple
+                mainForm.TSFindLookInComboBox.DropDownStyle = ComboBoxStyle.Simple
             ElseIf outputBufferInUse Then
-                MainForm.TSFindLookInComboBox.DropDownStyle = ComboBoxStyle.Simple
-                MainForm.TSFindLookInComboBox.SelectedIndex = 1
+                mainForm.TSFindLookInComboBox.DropDownStyle = ComboBoxStyle.Simple
+                mainForm.TSFindLookInComboBox.SelectedIndex = 1
             Else
-                MainForm.TSFindLookInComboBox.DropDownStyle = ComboBoxStyle.Simple
-                MainForm.TSFindLookInComboBox.SelectedIndex = 0
+                mainForm.TSFindLookInComboBox.DropDownStyle = ComboBoxStyle.Simple
+                mainForm.TSFindLookInComboBox.SelectedIndex = 0
             End If
-            MainForm.TSFindMatchCaseCheckBox.Enabled = enableFind
-            MainForm.TSFindMatchWholeWordCheckBox.Enabled = enableFind
+            mainForm.TSFindMatchCaseCheckBox.Enabled = enableFind
+            mainForm.TSFindMatchWholeWordCheckBox.Enabled = enableFind
         End If
-        Return If(ReturnInputInUse, inputBufferInUse, outputBufferInUse)
+        Return If(returnInputInUse, inputBufferInUse, outputBufferInUse)
     End Function
 
 End Module

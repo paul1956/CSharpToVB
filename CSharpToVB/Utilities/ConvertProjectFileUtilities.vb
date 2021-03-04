@@ -7,7 +7,7 @@ Imports System.Xml
 
 Public Module ConvertProjectFileUtilities
 
-    Private ProjectsToBeAdded As String = ""
+    Private _projectsToBeAdded As String = ""
 
     Private ReadOnly s_compileChildNodeIgnoreList As New List(Of String)(
                 {"AutoGen", "DesignTime", "DesignTimeSharedInput",
@@ -63,7 +63,6 @@ Public Module ConvertProjectFileUtilities
              "GenerateAssemblyInfo",
              "GenerateDependencyFile",
              "GenerateDocumentationFile",
-             "GenerateDocumentionFile",
              "GenerateMicrosoftCodeAnalysisCommitHashAttribute",
              "GeneratePerformanceSensitiveAttribute",
              "GeneratePkgDefFile",
@@ -141,77 +140,76 @@ Public Module ConvertProjectFileUtilities
          "VSCTCompile", "VsdConfigXmlFiles",
          "VSIXSourceItem", "#whitespace"})
 
-    Private Function ChangeExtension(AttributeValue As String, OldExtension As String, NewExtension As String) As String
-        Return If(AttributeValue.EndsWith($".{OldExtension}", StringComparison.OrdinalIgnoreCase),
-               Path.ChangeExtension(AttributeValue, NewExtension),
-               AttributeValue)
+    Private Function ChangeExtension(attributeValue As String, oldExtension As String, newExtension As String) As String
+        Return If(attributeValue.EndsWith($".{oldExtension}", StringComparison.OrdinalIgnoreCase),
+               Path.ChangeExtension(attributeValue, newExtension),
+               attributeValue)
     End Function
 
-    Private Sub ConvertProtoNode(ProjectSavePath As String, SourceFilePath As String, xmlNode As XmlNode, TargetFramework As String)
+    Private Sub ConvertProtoNode(projectSavePath As String, sourceFilePath As String, xmlNode As XmlNode, targetFramework As String)
         Dim basePath As String = New Uri(xmlNode.BaseURI).LocalPath
-        If basePath <> SourceFilePath Then
+        If basePath <> sourceFilePath Then
             Stop
         End If
 
-        Dim protoSourcePath As String = Path.Combine(Directory.GetParent(SourceFilePath).Parent.FullName, "Proto")
+        Dim protoSourcePath As String = Path.Combine(Directory.GetParent(sourceFilePath).Parent.FullName, "Proto")
 
         If Not Directory.Exists(protoSourcePath) Then
             Exit Sub
         End If
-        Dim protoDestinationPath As String = Path.Combine(Directory.GetParent(ProjectSavePath).FullName, "Proto")
+        Dim protoDestinationPath As String = Path.Combine(Directory.GetParent(projectSavePath).FullName, "Proto")
         If Not Directory.Exists(protoDestinationPath) Then
             Directory.CreateDirectory(protoDestinationPath)
-            Dim csProtoPath As String = Path.Combine(Directory.GetParent(ProjectSavePath).FullName, "CSProto")
+            Dim csProtoPath As String = Path.Combine(Directory.GetParent(projectSavePath).FullName, "CSProto")
             Directory.CreateDirectory(csProtoPath)
-            File.WriteAllText(Path.Combine(csProtoPath, "CSProto.csproj"), s_cSProjectFile.ToString.Replace("__TargetFramework__", TargetFramework, StringComparison.Ordinal))
+            File.WriteAllText(Path.Combine(csProtoPath, "CSProto.csproj"), s_cSProjectFile.ToString.Replace("__TargetFramework__", targetFramework, StringComparison.Ordinal))
         End If
         For Each fileName As String In Directory.GetFiles(protoSourcePath)
             File.Copy(fileName, Path.Combine(protoDestinationPath, Path.GetFileName(fileName)), overwrite:=True)
         Next
     End Sub
 
-    Private Sub CopyFile(ProjectSavePath As String, SourceFilePath As String, PartialPathWithFileName As String)
-        If String.IsNullOrWhiteSpace(ProjectSavePath) OrElse
-                String.IsNullOrWhiteSpace(SourceFilePath) OrElse
-                String.IsNullOrWhiteSpace(PartialPathWithFileName) Then
+    Private Sub CopyFile(projectSavePath As String, sourceFilePath As String, partialPathWithFileName As String)
+        If String.IsNullOrWhiteSpace(projectSavePath) OrElse
+                String.IsNullOrWhiteSpace(sourceFilePath) OrElse
+                String.IsNullOrWhiteSpace(partialPathWithFileName) Then
             Exit Sub
         End If
         Try
-            Dim destFileNameWithPath As String = Path.Combine(ProjectSavePath, PartialPathWithFileName)
+            Dim destFileNameWithPath As String = Path.Combine(projectSavePath, partialPathWithFileName)
             If destFileNameWithPath.IndexOfAny(Path.GetInvalidPathChars()) = -1 Then
                 Exit Sub
             End If
             Directory.CreateDirectory(Path.GetDirectoryName(destFileNameWithPath))
-            File.Copy(Path.Combine(New FileInfo(SourceFilePath).Directory.FullName, PartialPathWithFileName), destFileNameWithPath, overwrite:=True)
+            File.Copy(Path.Combine(New FileInfo(sourceFilePath).Directory.FullName, partialPathWithFileName), destFileNameWithPath, overwrite:=True)
         Catch ex As Exception
-            Stop
             Throw
         End Try
     End Sub
 
-    Friend Function DestinationFilePath(SourceDocumentFileNameWithPath As String, SolutionRoot As String) As String
-        If String.IsNullOrWhiteSpace(SolutionRoot) Then
+    Friend Function DestinationFilePath(sourceDocumentFileNameWithPath As String, solutionRoot As String) As String
+        If String.IsNullOrWhiteSpace(solutionRoot) Then
             Return String.Empty
         End If
-        If SourceDocumentFileNameWithPath.Contains($".{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase) Then
+        If sourceDocumentFileNameWithPath.Contains($".{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase) Then
             Stop
         End If
-        Dim basePath As String = SolutionRoot.Substring(0, SolutionRoot.Length - 3)
-        Dim subpathFromProject As String = Path.GetDirectoryName(SourceDocumentFileNameWithPath).Replace(basePath, "", StringComparison.OrdinalIgnoreCase).Trim(Path.DirectorySeparatorChar)
-        Dim pathToSaveDirectory As String = Path.Combine(SolutionRoot, subpathFromProject)
+        Dim basePath As String = solutionRoot.Substring(0, solutionRoot.Length - 3)
+        Dim subPathFromProject As String = Path.GetDirectoryName(sourceDocumentFileNameWithPath).Replace(basePath, "", StringComparison.OrdinalIgnoreCase).Trim(Path.DirectorySeparatorChar)
+        Dim pathToSaveDirectory As String = Path.Combine(solutionRoot, subPathFromProject)
         If Not Directory.Exists(pathToSaveDirectory) Then
             Directory.CreateDirectory(pathToSaveDirectory)
         End If
         Return pathToSaveDirectory
     End Function
 
-    Public Function ConvertProjectFile(sourceFilePath As String, ProjectSavePath As String) As String
+    Public Function ConvertProjectFile(sourceFilePath As String, projectSavePath As String) As String
         If String.IsNullOrWhiteSpace(sourceFilePath) Then
             Throw New ArgumentException($"'{sourceFilePath}' cannot be null or whitespace", NameOf(sourceFilePath))
         End If
 
-        If String.IsNullOrWhiteSpace(ProjectSavePath) Then
-            Throw New ArgumentException($"'{ProjectSavePath}' cannot be null or whitespace", NameOf(sourceFilePath))
+        If String.IsNullOrWhiteSpace(projectSavePath) Then
+            Throw New ArgumentException($"'{projectSavePath}' cannot be null or whitespace", NameOf(sourceFilePath))
         End If
 
         Dim xmlDoc As New XmlDocument With {
@@ -228,16 +226,15 @@ Public Module ConvertProjectFileUtilities
             isDocument = False
         End If
         If root.Attributes.Count = 0 OrElse Not root.Attributes(0).Value.StartsWith("Microsoft.NET.Sdk", StringComparison.OrdinalIgnoreCase) Then
-            MsgBox($"Project {sourceFilePath} is not an SDK project, the project file will not be converted!", MsgBoxStyle.Information, "Project Coversion Issue")
+            MsgBox($"Project {sourceFilePath} is not an SDK project, the project file will not be converted!", MsgBoxStyle.Information, "Project Conversion Issue")
             Return ""
         End If
-        Dim basePath As String = DestinationFilePath(sourceFilePath, ProjectSavePath)
+        Dim basePath As String = DestinationFilePath(sourceFilePath, projectSavePath)
 
         Dim nodesToBeRemoved As New List(Of (PropertyIndex As Integer, ChildIndex As Integer))
         If isDocument Then
-            Dim isDesktopProject As Boolean = xmlDoc.DocumentElement.Attributes(0).Value = "Microsoft.NET.Sdk.WindowsDesktop"
-            Dim leadingXMLSpace As XmlNode = xmlDoc.CreateDocumentFragment()
-            leadingXMLSpace.InnerXml = "    "
+            Dim leadingXmlSpace As XmlNode = xmlDoc.CreateDocumentFragment()
+            leadingXmlSpace.InnerXml = "    "
             Dim targetFramework As String = String.Empty
             If xmlDoc.DocumentElement.HasChildNodes Then
                 For index As Integer = 0 To xmlDoc.DocumentElement.ChildNodes.Count - 1
@@ -348,7 +345,7 @@ Public Module ConvertProjectFileUtilities
                                         xmlDoc.DocumentElement.ChildNodes(index).ChildNodes(childIndex).Attributes(0).Value = xmlNode.Attributes(0).Value.Replace(".csproj", ".vbproj", StringComparison.OrdinalIgnoreCase)
                                     Case "Protobuf"
                                         ConvertProtoNode(basePath, sourceFilePath, xmlNode, targetFramework)
-                                        ProjectsToBeAdded = $"Project(""{{9A19103F-16F7-4668-BE54-9A1E7A4F7556}}"") = ""CSProto"", ""CSProto\CSProto.csproj"", ""{{{Guid.NewGuid.ToString.ToUpperInvariant}}}""{vbCrLf}EndProject{vbCrLf}"
+                                        _projectsToBeAdded = $"Project(""{{9A19103F-16F7-4668-BE54-9A1E7A4F7556}}"") = ""CSProto"", ""CSProto\CSProto.csproj"", ""{{{Guid.NewGuid.ToString.ToUpperInvariant}}}""{vbCrLf}EndProject{vbCrLf}"
                                         Dim elem As XmlElement = xmlDoc.CreateElement("ProjectReference")
                                         elem.SetAttribute("Include", "..\CSProto\CSProto.csproj")
                                         Dim y As XmlNode = xmlDoc.GetElementsByTagName("Protobuf")(0)
@@ -372,9 +369,8 @@ Public Module ConvertProjectFileUtilities
                 End If
             End If
         Else
-            Dim isDesktopProject As Boolean = xmlDoc.FirstChild.Attributes(0).Value = "Microsoft.NET.Sdk.WindowsDesktop"
-            Dim leadingXMLSpace As XmlNode = xmlDoc.CreateDocumentFragment()
-            leadingXMLSpace.InnerXml = "    "
+            Dim leadingXmlSpace As XmlNode = xmlDoc.CreateDocumentFragment()
+            leadingXmlSpace.InnerXml = "    "
 
             If xmlDoc.FirstChild.HasChildNodes Then
                 For index As Integer = 0 To xmlDoc.FirstChild.ChildNodes.Count - 1
@@ -498,7 +494,7 @@ Public Module ConvertProjectFileUtilities
         If Not String.IsNullOrWhiteSpace(basePath) Then
             xmlDoc.Save(Path.Combine(basePath, Path.GetFileName(sourceFilePath).Replace(".csproj", ".vbproj", StringComparison.OrdinalIgnoreCase)))
         End If
-        Return ProjectsToBeAdded
+        Return _projectsToBeAdded
     End Function
 
 End Module

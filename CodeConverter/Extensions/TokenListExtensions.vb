@@ -6,23 +6,23 @@ Imports System.Runtime.CompilerServices
 Imports Microsoft.CodeAnalysis
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
-Namespace CSharpToVBConverter
+Namespace Extensions
     Friend Module TokenListExtensions
 
         <Extension>
-        Friend Function Contains(Tokens As SyntaxTokenList, Kind As CSharp.SyntaxKind) As Boolean
-            Return Tokens.Contains(Function(m As SyntaxToken) m.IsKind(Kind))
+        Friend Function Contains(tokens As SyntaxTokenList, kind As CSharp.SyntaxKind) As Boolean
+            Return tokens.Contains(Function(m As SyntaxToken) m.IsKind(kind))
         End Function
 
         <Extension>
-        Friend Function Contains(Tokens As IEnumerable(Of SyntaxToken), ParamArray Kind() As VB.SyntaxKind) As Boolean
-            Return Tokens.Contains(Function(m As SyntaxToken) m.IsKind(Kind))
+        Friend Function Contains(tokens As IEnumerable(Of SyntaxToken), ParamArray kind() As VB.SyntaxKind) As Boolean
+            Return tokens.Contains(Function(m As SyntaxToken) m.IsKind(kind))
         End Function
 
         <Extension>
-        Friend Function IndexOf(Tokens As IEnumerable(Of SyntaxToken), Kind As VB.SyntaxKind) As Integer
-            For i As Integer = 0 To Tokens.Count - 1
-                If Tokens(i).IsKind(Kind) Then
+        Friend Function IndexOf(tokens As IEnumerable(Of SyntaxToken), kind As VB.SyntaxKind) As Integer
+            For i As Integer = 0 To tokens.Count - 1
+                If tokens(i).IsKind(kind) Then
                     Return i
                 End If
             Next

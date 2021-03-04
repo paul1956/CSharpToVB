@@ -6,20 +6,20 @@ Imports Microsoft.CodeAnalysis
 
 Imports CS = Microsoft.CodeAnalysis.CSharp
 
-Namespace CSharpToVBConverter
+Namespace SupportClasses
 
     Public Class CodeWithOptions
 
-        Friend Sub New(RequestToConvert As ConvertRequest)
-            If RequestToConvert Is Nothing Then
-                Throw New ArgumentNullException(NameOf(RequestToConvert))
+        Friend Sub New(requestToConvert As ConvertRequest)
+            If requestToConvert Is Nothing Then
+                Throw New ArgumentNullException(NameOf(requestToConvert))
             End If
-            Me.Text = RequestToConvert.SourceCode
+            Me.Text = requestToConvert.SourceCode
             Me.FromLanguage = LanguageNames.CSharp
             Me.ToLanguage = LanguageNames.VisualBasic
             Me.FromLanguageVersion = CS.LanguageVersion.Latest
             Me.ToLanguageVersion = VisualBasic.LanguageVersion.Latest
-            Me.Request = RequestToConvert
+            Me.Request = requestToConvert
         End Sub
 
         Friend Property FromLanguage As String

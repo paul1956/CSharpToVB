@@ -6,7 +6,7 @@ Imports System.Runtime.CompilerServices
 Imports Microsoft.CodeAnalysis
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace CSharpToVBConverter
+Namespace Extensions
 
     Public Module TypeExtensions
 
@@ -33,8 +33,9 @@ Namespace CSharpToVBConverter
 
         <Extension>
         Friend Function GetElementType(typeSyntax As VBS.TypeSyntax) As VBS.TypeSyntax
-            If TypeOf typeSyntax Is VBS.ArrayTypeSyntax Then
-                typeSyntax = CType(typeSyntax, VBS.ArrayTypeSyntax).ElementType
+            Dim arrayTypeSyntax As VBS.ArrayTypeSyntax = TryCast(typeSyntax, VBS.ArrayTypeSyntax)
+            If arrayTypeSyntax IsNot Nothing Then
+                typeSyntax = arrayTypeSyntax.ElementType
             End If
             Return typeSyntax
         End Function

@@ -78,7 +78,7 @@ Public Class OptionsDialog
         Me.FontDialog1.Font = My.Settings.EditorFont
 
         Me.ProjectDirectoryList.Items.Add(New MyListItem("Projects", GetLatestVisualStudioProjectPath))
-        Me.ProjectDirectoryList.Items.Add(New MyListItem("Repos", GetAlternetVisualStudioProjectsPath))
+        Me.ProjectDirectoryList.Items.Add(New MyListItem("Repos", GetAlternateVisualStudioProjectsPath))
         Me.ProjectDirectoryList.SelectedIndex = 0
         For index As Integer = 0 To Me.ProjectDirectoryList.Items.Count - 1
             If CType(Me.ProjectDirectoryList.Items(index), MyListItem).Value = My.Settings.DefaultProjectDirectory Then
@@ -114,12 +114,12 @@ Public Class OptionsDialog
 
         Dim userColorFile As String
         If My.Settings.ColorMode.IsLightMode Then
-            userColorFile = Path.Combine(FileIO.SpecialDirectories.MyDocuments, _lightModeDictionaryFileName)
-            LoadColorDictionaryFromFile(Path.Combine(executableDirectoryPath, _lightModeDictionaryFileName), s_LightModeColorDictionary)
+            userColorFile = Path.Combine(FileIO.SpecialDirectories.MyDocuments, LightModeDictionaryFileName)
+            LoadColorDictionaryFromFile(Path.Combine(executableDirectoryPath, LightModeDictionaryFileName), s_LightModeColorDictionary)
             MainForm.CurrentThemeDictionary = s_LightModeColorDictionary
         Else
-            userColorFile = Path.Combine(FileIO.SpecialDirectories.MyDocuments, _darkModeDictionaryFileName)
-            LoadColorDictionaryFromFile(Path.Combine(executableDirectoryPath, _darkModeDictionaryFileName), s_DarkModeColorDictionary)
+            userColorFile = Path.Combine(FileIO.SpecialDirectories.MyDocuments, DarkModeDictionaryFileName)
+            LoadColorDictionaryFromFile(Path.Combine(executableDirectoryPath, DarkModeDictionaryFileName), s_DarkModeColorDictionary)
             MainForm.CurrentThemeDictionary = s_DarkModeColorDictionary
         End If
         If File.Exists(userColorFile) Then

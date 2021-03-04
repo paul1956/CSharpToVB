@@ -7,7 +7,7 @@ Imports System.Runtime.CompilerServices
 Imports System.Threading
 Imports Microsoft.CodeAnalysis
 
-Namespace CSharpToVBConverter
+Namespace Extensions
     Public Module INamedTypeSymbolExtensons
 
         Private Function GetAbstractClassesToImplement(abstractClasses As IEnumerable(Of INamedTypeSymbol)) As ImmutableArray(Of INamedTypeSymbol)

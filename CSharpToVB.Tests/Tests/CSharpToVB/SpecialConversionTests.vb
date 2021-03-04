@@ -299,10 +299,10 @@ End Class")
             TestConversionCSharpToVisualBasic(
                 "class Test
 {
-    public int CR = 0x0D * 0b1;
+    public int Cr = 0x0D * 0b1;
 }", "Class Test
 
-    Public CR As Integer = &H0D * &B00000000000000000000000000000001
+    Public Cr As Integer = &H0D * &B00000000000000000000000000000001
 End Class")
         End Sub
 

@@ -3,9 +3,9 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Diagnostics.CodeAnalysis
-
+Imports Extensions
 Imports Microsoft.CodeAnalysis
-
+Imports Utilities
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
@@ -14,10 +14,10 @@ Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace CSharpToVBConverter.CSharpToVBVisitors
 
-    Friend Class XMLVisitor
+    Friend Class XmlVisitor
         Inherits CS.CSharpSyntaxVisitor(Of VB.VisualBasicSyntaxNode)
 
-        Private Shared Function GetVBOperatorToken(op As String) As SyntaxToken
+        Private Shared Function GetVbOperatorToken(op As String) As SyntaxToken
             Select Case op
                 Case "=="
                     Return EqualsToken
@@ -59,8 +59,6 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     Return NotKeyword
                 Case "~"
                     Return NotKeyword
-                Case Else
-
             End Select
 
             Throw New ArgumentOutOfRangeException(NameOf(op))
@@ -124,11 +122,11 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
         End Function
 
         Public Overrides Function VisitOperatorMemberCref(node As CSS.OperatorMemberCrefSyntax) As VB.VisualBasicSyntaxNode
-            Return Factory.CrefOperatorReference(GetVBOperatorToken(node.OperatorToken.ValueText).WithLeadingTrivia(SpaceTrivia))
+            Return Factory.CrefOperatorReference(GetVbOperatorToken(node.OperatorToken.ValueText).WithLeadingTrivia(SpaceTrivia))
         End Function
 
         Public Overrides Function VisitPredefinedType(node As CSS.PredefinedTypeSyntax) As VB.VisualBasicSyntaxNode
-            Dim token As SyntaxToken = CS.CSharpExtensions.Kind(node.Keyword).GetTypeToken(context:=TokenContext.XMLComment)
+            Dim token As SyntaxToken = CS.CSharpExtensions.Kind(node.Keyword).GetTypeToken(context:=TokenContext.XmlComment)
             Select Case token.RawKind
                 Case VB.SyntaxKind.EmptyToken
                     Return Factory.ParseTypeName(node.ToString)
@@ -139,9 +137,9 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             End Select
         End Function
 
-        Public Overrides Function VisitQualifiedCref(QualifiedCref As CSS.QualifiedCrefSyntax) As VB.VisualBasicSyntaxNode
-            Dim identifierOrTypeName As VB.VisualBasicSyntaxNode = QualifiedCref.Container.Accept(Me)
-            Dim value As VBS.CrefReferenceSyntax = DirectCast(QualifiedCref.Member.Accept(Me), VBS.CrefReferenceSyntax)
+        Public Overrides Function VisitQualifiedCref(qualifiedCref As CSS.QualifiedCrefSyntax) As VB.VisualBasicSyntaxNode
+            Dim identifierOrTypeName As VB.VisualBasicSyntaxNode = qualifiedCref.Container.Accept(Me)
+            Dim value As VBS.CrefReferenceSyntax = DirectCast(qualifiedCref.Member.Accept(Me), VBS.CrefReferenceSyntax)
             Dim identifier As VBS.NameSyntax = If(TypeOf identifierOrTypeName Is VBS.NameSyntax, DirectCast(identifierOrTypeName, VBS.NameSyntax), Factory.IdentifierName(identifierOrTypeName.ToString))
             Dim qualifiedNameSyntax As VBS.QualifiedNameSyntax = Factory.QualifiedName(left:=identifier,
                                                                                        DotToken,

@@ -6,10 +6,11 @@ Imports System.ComponentModel
 Imports System.IO
 Imports System.Text
 Imports System.Threading
-Imports CSharpToVBApp
-Imports CSharpToVBConverter
+Imports Extensions
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.VisualBasic.FileIO
+Imports SupportClasses
+Imports Utilities
 
 Partial Public Class Form1
     Private Shared ReadOnly s_snippetFileWithPath As String = Path.Combine(SpecialDirectories.MyDocuments, "CSharpToVBLastSnippet.RTF")
@@ -50,16 +51,16 @@ Partial Public Class Form1
     End Sub
 
     Private Sub ButtonStop_MouseEnter(sender As Object, e As EventArgs) Handles ButtonStopConversion.MouseEnter
-        LocalUseWaitCursor(Me, WaitCursorEnable:=False)
+        LocalUseWaitCursor(Me, waitCursorEnable:=False)
     End Sub
 
     Private Sub ButtonStop_MouseLeave(sender As Object, e As EventArgs) Handles ButtonStopConversion.MouseLeave
         Me.ButtonStopConversion.BackColor = SystemColors.Control
-        LocalUseWaitCursor(Me, WaitCursorEnable:=Me.ButtonStopConversion.Visible)
+        LocalUseWaitCursor(Me, waitCursorEnable:=Me.ButtonStopConversion.Visible)
     End Sub
 
     Private Sub ButtonStop_VisibleChanged(sender As Object, e As EventArgs) Handles ButtonStopConversion.VisibleChanged
-        LocalUseWaitCursor(Me, WaitCursorEnable:=Me.ButtonStopConversion.Visible)
+        LocalUseWaitCursor(Me, waitCursorEnable:=Me.ButtonStopConversion.Visible)
     End Sub
 
     Private Sub ContextMenuCopy_Click(sender As Object, e As EventArgs) Handles ContextMenuCopy.Click
@@ -227,10 +228,10 @@ Partial Public Class Form1
         End If
 
         Me.UpdateLastFileMenu()
-        Me.TSFindFindWhatComboBox.TSFindWhatMRUUpdateUI()
+        Me.TSFindFindWhatComboBox.TsFindWhatMruUpdateUi()
 
         ' display MRU if there are any items to display...
-        Me.mnuFile.DropDownItems.FileMenuMRUUpdateUI(AddressOf Me.mnu_MRUList_Click)
+        Me.mnuFile.DropDownItems.FileMenuMruUpdateUi(AddressOf Me.mnu_MRUList_Click)
 
         Me.mnuOptionsColorizeSource.Checked = My.Settings.ColorizeInput
         Me.mnuOptionsColorizeResult.Checked = My.Settings.ColorizeOutput
@@ -320,7 +321,7 @@ Partial Public Class Form1
         Me.TSFindMatchWholeWordCheckBox.Checked = My.Settings.TSFindMatchWholeWord
         Application.DoEvents()
         UpdateColorDictionariesFromFile()
-        CheckForUpdates(Me, ReportResults:=False)
+        CheckForUpdates(Me, reportResults:=False)
         If My.Settings.ColorMode.IsLightMode Then
             Me.TSThemeButton.Text = LightModeStr
             CurrentThemeDictionary = s_LightModeColorDictionary
@@ -517,7 +518,7 @@ namespace Application
                     Exit Sub
                 End If
                 sourceFolderName = .SelectedPath
-                Dim fullFolderPath As (SolutionRoot As String, ProjectRelativePath As String) = Me.GetSavePath(.SelectedPath, PromptIfDirExsits:=True)
+                Dim fullFolderPath As (SolutionRoot As String, ProjectRelativePath As String) = Me.GetSavePath(.SelectedPath, promptIfDirExists:=True)
                 solutionSavePath = Path.Combine(fullFolderPath.SolutionRoot, fullFolderPath.ProjectRelativePath)
             End With
         End Using
@@ -544,11 +545,11 @@ namespace Application
         If Await ProcessFilesAsync(Me,
                                    sourceFolderName,
                                    solutionSavePath,
-                                   SourceLanguageExtension:="cs",
+                                   sourceLanguageExtension:="cs",
                                    stats,
-                                   CancelToken:=_cancellationTokenSource.Token
+                                   cancelToken:=_cancellationTokenSource.Token
                                   ).ConfigureAwait(True) Then
-            stats.ElapasedTimer.Stop()
+            stats.s_elapsedTimer.Stop()
             If _cancellationTokenSource.Token.IsCancellationRequested Then
                 prompt = $"Conversion canceled, {stats.FilesProcessed} files completed successfully."
             Else
@@ -559,13 +560,13 @@ namespace Application
                 Application.DoEvents()
             End If
         Else
-            stats.ElapasedTimer.Stop()
+            stats.s_elapsedTimer.Stop()
             prompt = "Conversion stopped."
         End If
         MsgBox(prompt,
                MsgBoxStyle.OkOnly Or MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground,
                Title:="Convert C# To Visual Basic")
-        Dim elapsed As TimeSpan = stats.ElapasedTimer.Elapsed
+        Dim elapsed As TimeSpan = stats.s_elapsedTimer.Elapsed
         Me.StatusStripElapasedTimeLabel.Text = $"Elapsed Time - {elapsed.Hours}: {elapsed.Minutes}:{elapsed.Seconds}.{elapsed.Milliseconds}"
         Me.mnuConvertConvertFolder.Enabled = True
 
@@ -659,7 +660,7 @@ namespace Application
         Dim folderName As String = CType(sender, ToolStripMenuItem).Text
         If Directory.Exists(folderName) Then
             Dim srcLanguageExtension As String = "cs"
-            Dim fullFolderPath As (SolutionRoot As String, ProjectRelativePath As String) = Me.GetSavePath(folderName, PromptIfDirExsits:=True)
+            Dim fullFolderPath As (SolutionRoot As String, ProjectRelativePath As String) = Me.GetSavePath(folderName, promptIfDirExists:=True)
             Dim targetSavePath As String = Path.Combine(fullFolderPath.SolutionRoot, fullFolderPath.ProjectRelativePath)
             If String.IsNullOrWhiteSpace(targetSavePath) Then
                 Exit Sub
@@ -773,11 +774,11 @@ namespace Application
     End Sub
 
     Private Sub mnuHelpCheckForUpdatesMenuItem_Click(sender As Object, e As EventArgs) Handles mnuHelpCheckForUpdatesMenuItem.Click
-        CheckForUpdates(Me, ReportResults:=True)
+        CheckForUpdates(Me, reportResults:=True)
     End Sub
 
     Private Sub mnuHelpReportIssueMenuItem_Click(sender As Object, e As EventArgs) Handles mnuHelpReportIssueMenuItem.Click
-        OpenURLInBrowser($"{ProjectGitHubURL}issues")
+        OpenUrlInBrowser($"{ProjectGitHubURL}issues")
     End Sub
 
     Private Sub mnuOptionDefaultFramework_CheckedChanged(sender As Object, e As EventArgs) Handles mnuOptionsDefaultFramework.CheckedChanged
@@ -921,7 +922,7 @@ namespace Application
     End Sub
 
     Private Sub StatusStripUpdateAvailable_Click(sender As Object, e As EventArgs) Handles StatusStripUpdateAvailable.Click
-        OpenURLInBrowser(ProjectGitHubURL)
+        OpenUrlInBrowser(ProjectGitHubURL)
     End Sub
 
     Protected Overrides Sub OnLoad(e As EventArgs)
@@ -964,11 +965,11 @@ namespace Application
     End Sub
 
     Private Sub TSFindFindNextButton_Click(sender As Object, e As EventArgs) Handles TSFindFindNextButton.Click
-        Me.DoFind(SearchForward:=True)
+        Me.DoFind(searchForward:=True)
     End Sub
 
     Private Sub TSFindFindPreviousButton_Click(sender As Object, e As EventArgs) Handles TSFindFindPreviousButton.Click
-        Me.DoFind(SearchForward:=False)
+        Me.DoFind(searchForward:=False)
     End Sub
 
     Private Sub TSFindFindWhatComboBox_Click(sender As Object, e As EventArgs) Handles TSFindFindWhatComboBox.Click
@@ -1032,14 +1033,14 @@ namespace Application
         ChangeTheme(CurrentThemeDictionary, My.Forms.Form1.Controls)
         If Me.ConversionInput.Text.Any Then
             If Me.mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
-                Colorize(Me, GetClassifiedRanges(SourceCode:=Me.ConversionInput.Text, LanguageNames.CSharp), ConversionBuffer:=Me.ConversionInput, Lines:=Me.ConversionInput.Lines.Length)
+                Colorize(Me, GetClassifiedRanges(sourceCode:=Me.ConversionInput.Text, LanguageNames.CSharp), conversionBuffer:=Me.ConversionInput, lines:=Me.ConversionInput.Lines.Length)
                 Me.ConversionInput.Select(0, 0)
             End If
 
         End If
         If Me.ConversionOutput.Text.Any Then
             If Me.mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
-                Colorize(Me, GetClassifiedRanges(SourceCode:=Me.ConversionOutput.Text, LanguageNames.VisualBasic), ConversionBuffer:=Me.ConversionOutput, Lines:=Me.ConversionOutput.Lines.Length)
+                Colorize(Me, GetClassifiedRanges(sourceCode:=Me.ConversionOutput.Text, LanguageNames.VisualBasic), conversionBuffer:=Me.ConversionOutput, lines:=Me.ConversionOutput.Lines.Length)
                 Me.ConversionOutput.Select(0, 0)
             End If
         End If

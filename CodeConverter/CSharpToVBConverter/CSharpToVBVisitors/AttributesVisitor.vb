@@ -2,10 +2,13 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
+Imports Extensions
 Imports Microsoft.CodeAnalysis
-
+Imports Utilities
 Imports CS = Microsoft.CodeAnalysis.CSharp
+
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
+
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
@@ -55,8 +58,9 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         name = CType(item, VBS.SimpleArgumentSyntax).NameColonEquals.Name
                     End If
                     If nameRequiredIndex > 0 AndAlso Not item.IsNamed Then
-                        If TypeOf node.Parent Is CSS.AttributeSyntax Then
-                            Dim possibleMethodInfo As SymbolInfo = _semanticModel.GetSymbolInfo(CType(node.Parent, CSS.AttributeSyntax))
+                        Dim attributeSyntax = TryCast(node.Parent, CSS.AttributeSyntax)
+                        If attributeSyntax IsNot Nothing Then
+                            Dim possibleMethodInfo As SymbolInfo = _semanticModel.GetSymbolInfo(attributeSyntax)
                             If possibleMethodInfo.CandidateSymbols.Length = 1 Then
                                 Dim method As IMethodSymbol = CType(possibleMethodInfo.CandidateSymbols(0), IMethodSymbol)
                                 name = Factory.IdentifierName(method.Parameters(e.index).Name)
@@ -71,22 +75,22 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     End If
                     If item.HasLeadingTrivia Then
                         Dim initialTriviaList As SyntaxTriviaList = item.GetLeadingTrivia
-                        For i1 As Integer = 0 To initialTriviaList.Count - 1
-                            Dim trivia As SyntaxTrivia = initialTriviaList(i1)
-                            Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, i1, LookaheadCount:=1)
+                        For Each e1 As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex()
+                            Dim trivia As SyntaxTrivia = e1.Value
+                            Dim nextTrivia As SyntaxTrivia = initialTriviaList.GetForwardTriviaOrDefault(e1.index, lookaheadCount:=1)
                             If trivia.IsComment Then
                                 newTrailingTrivia = newTrailingTrivia.Add(trivia)
                                 If nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                                    i1 += 1
+                                    e1.MoveNext()
                                 End If
                             Else
                                 If trivia.IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
                                     Select Case nextTrivia.RawKind
                                         Case VB.SyntaxKind.EndOfLineTrivia
-                                            i1 += 2
+                                            e1.MoveNext()
+                                            e1.MoveNext()
                                         Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.None
                                         Case Else
-                                            Stop
                                             localLeadingTrivia = localLeadingTrivia.Add(trivia)
                                     End Select
                                 Else
@@ -114,13 +118,13 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             Public Overrides Function VisitAttributeList(node As CSS.AttributeListSyntax) As VB.VisualBasicSyntaxNode
                 Dim csSeparators As IEnumerable(Of SyntaxToken) = node.Attributes.GetSeparators
                 Dim lessThanTokenWithTrivia As SyntaxToken = LessThanToken.WithConvertedTriviaFrom(node.OpenBracketToken)
-                Dim greaterThenTokenWithTrivia As SyntaxToken = GreaterThanToken.WithTrailingTrivia(node.CloseBracketToken.TrailingTrivia.ConvertTriviaList()).AdjustTokenTrailingTrivia(RemoveTrailingLineContinuation:=True)
+                Dim greaterThenTokenWithTrivia As SyntaxToken = GreaterThanToken.WithTrailingTrivia(node.CloseBracketToken.TrailingTrivia.ConvertTriviaList()).AdjustTokenTrailingTrivia(removeTrailingLineContinuation:=True)
                 Dim attributeList As New List(Of VBS.AttributeSyntax)
                 Dim separators As New List(Of SyntaxToken)
                 Dim separatorCount As Integer = node.Attributes.Count - 1
                 For index As Integer = 0 To separatorCount
                     Dim e As CSS.AttributeSyntax = node.Attributes(index)
-                    attributeList.Add(DirectCast(e.Accept(Me), VBS.AttributeSyntax).RemoveExtraLeadingEOL)
+                    attributeList.Add(DirectCast(e.Accept(Me), VBS.AttributeSyntax).RemoveExtraLeadingEol)
                     If separatorCount > index Then
                         separators.Add(CommaToken.WithConvertedTrailingTriviaFrom(csSeparators(index)))
                     End If

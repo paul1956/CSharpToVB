@@ -1,31 +1,31 @@
 ﻿' Licensed to the .NET Foundation under one or more agreements.
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
-
+Imports Extensions
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Formatting
 Imports Microsoft.CodeAnalysis.Options
 Imports Microsoft.CodeAnalysis.Text
-
+Imports Utilities
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
-Namespace CSharpToVBConverter
+Namespace SupportClasses
 
     Public Class ConversionResult
 
         Private _filteredListOfFailures As List(Of Diagnostic)
 
-        Friend Sub New(ConvertedTree As SyntaxNode, InputLanguage As String, OutputLanguage As String, VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)))
+        Friend Sub New(convertedTree As SyntaxNode, inputLanguage As String, outputLanguage As String, vbPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)))
             Me.Exceptions = New List(Of Exception)
-            Me.SourceLanguage = InputLanguage
+            Me.SourceLanguage = inputLanguage
             Me.ResultStatus = ResultTriState.Success
-            Me.TargetLanguage = OutputLanguage
+            Me.TargetLanguage = outputLanguage
             Using workspace As New AdhocWorkspace()
-                Dim project As Project = workspace.CurrentSolution.AddProject("Project", "Project.dll", OutputLanguage).WithParseOptions(GetVBParseOptions(VBPreprocessorSymbols))
-                Dim syntaxTree As SyntaxTree = project.AddDocument("Document", ConvertedTree).GetSyntaxTreeAsync().Result
+                Dim project As Project = workspace.CurrentSolution.AddProject("Project", "Project.dll", outputLanguage).WithParseOptions(GetVbParseOptions(vbPreprocessorSymbols))
+                Dim syntaxTree As SyntaxTree = project.AddDocument("Document", convertedTree).GetSyntaxTreeAsync().Result
                 Dim root As SyntaxNode = syntaxTree.GetRootAsync().GetAwaiter.GetResult
                 Try
-                    Me.ConvertedCode = WorkspaceFormat(workspace, root, spans:=Nothing, workspace.Options, project.AddDocument("Document", ConvertedTree).GetTextAsync().GetAwaiter.GetResult)
+                    Me.ConvertedCode = WorkspaceFormat(workspace, root, spans:=Nothing, workspace.Options, project.AddDocument("Document", convertedTree).GetTextAsync().GetAwaiter.GetResult)
                     Me.ConvertedTree = DirectCast(root, VB.VisualBasicSyntaxNode)
                     Exit Sub
                 Catch ex As Exception
@@ -35,7 +35,7 @@ Namespace CSharpToVBConverter
                 Dim tree As SyntaxTree = VB.VisualBasicSyntaxTree.ParseText(root.NormalizeWhitespaceEx(useDefaultCasing:=True).ToFullString)
                 Dim root1 As SyntaxNode = tree.GetRootAsync().GetAwaiter.GetResult
                 Try
-                    Me.ConvertedCode = WorkspaceFormat(workspace, root1, spans:=Nothing, workspace.Options, project.AddDocument("Document", ConvertedTree).GetTextAsync().GetAwaiter.GetResult)
+                    Me.ConvertedCode = WorkspaceFormat(workspace, root1, spans:=Nothing, workspace.Options, project.AddDocument("Document", convertedTree).GetTextAsync().GetAwaiter.GetResult)
                     Me.ConvertedTree = DirectCast(root1, VB.VisualBasicSyntaxNode)
                 Catch ex As Exception
                     Me.ConvertedCode = DirectCast(root, VB.VisualBasicSyntaxNode).ToFullString
@@ -92,8 +92,8 @@ Namespace CSharpToVBConverter
             Return _filteredListOfFailures
         End Function
 
-        Public Sub SetFilteredListOfFailures(AutoPropertyValue As List(Of Diagnostic))
-            _filteredListOfFailures = AutoPropertyValue
+        Public Sub SetFilteredListOfFailures(autoPropertyValue As List(Of Diagnostic))
+            _filteredListOfFailures = autoPropertyValue
         End Sub
 
     End Class

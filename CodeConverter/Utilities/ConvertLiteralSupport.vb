@@ -4,6 +4,7 @@
 
 Imports System.Runtime.CompilerServices
 Imports CSharpToVBConverter.CSharpToVBVisitors.CSharpConverter
+Imports Extensions
 Imports Microsoft.CodeAnalysis
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
@@ -11,43 +12,43 @@ Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace CSharpToVBConverter
+Namespace Utilities
 
     Public Module ConvertLiteralSupport
 
-        Private Function Binary(Value As Byte) As String
-            Return $"&B{Convert.ToString(Value, toBase:=2).PadLeft(totalWidth:=8, "0"c)}"
+        Private Function Binary(value As Byte) As String
+            Return $"&B{Convert.ToString(value, 2).PadLeft(8, "0"c)}"
         End Function
 
-        Private Function Binary(Value As SByte) As String
-            Return $"&B{Convert.ToString(Value, toBase:=2).PadLeft(totalWidth:=8, "0"c)}"
+        Private Function Binary(value As SByte) As String
+            Return $"&B{Convert.ToString(value, 2).PadLeft(8, "0"c)}"
         End Function
 
-        Private Function Binary(Value As Short) As String
-            Return $"&B{Convert.ToString(Value, toBase:=2).PadLeft(totalWidth:=16, "0"c)}"
+        Private Function Binary(value As Short) As String
+            Return $"&B{Convert.ToString(value, 2).PadLeft(16, "0"c)}"
         End Function
 
-        Private Function Binary(Value As UShort) As String
-            Return $"&B{Convert.ToString(Value, toBase:=2).PadLeft(totalWidth:=16, "0"c)}"
+        Private Function Binary(value As UShort) As String
+            Return $"&B{Convert.ToString(value, 2).PadLeft(16, "0"c)}"
         End Function
 
-        Private Function Binary(Value As Integer) As String
-            Return $"&B{Convert.ToString(Value, toBase:=2).PadLeft(totalWidth:=32, "0"c)}"
+        Private Function Binary(value As Integer) As String
+            Return $"&B{Convert.ToString(value, 2).PadLeft(32, "0"c)}"
         End Function
 
-        Private Function Binary(Value As UInteger) As String
-            Return $"&B{Convert.ToString(Value, toBase:=2).PadLeft(totalWidth:=32, "0"c)}UI"
+        Private Function Binary(value As UInteger) As String
+            Return $"&B{Convert.ToString(value, 2).PadLeft(32, "0"c)}UI"
         End Function
 
-        Private Function Binary(Value As Long) As String
-            Return $"&B{Convert.ToString(Value, toBase:=2).PadLeft(totalWidth:=64, "0"c)}"
+        Private Function Binary(value As Long) As String
+            Return $"&B{Convert.ToString(value, 2).PadLeft(64, "0"c)}"
         End Function
 
-        Private Function GetTypeCharacters(TokenAString As String) As String
+        Private Function GetTypeCharacters(tokenAString As String) As String
             Dim typeChars As String = ""
-            For i As Integer = TokenAString.Length - 1 To 0 Step -1
-                If Char.IsLetter(TokenAString.Chars(i)) Then
-                    typeChars = TokenAString.Chars(i) & typeChars
+            For i As Integer = tokenAString.Length - 1 To 0 Step -1
+                If Char.IsLetter(tokenAString.Chars(i)) Then
+                    typeChars = tokenAString.Chars(i) & typeChars
                 Else
                     Exit For
                 End If
@@ -64,7 +65,7 @@ Namespace CSharpToVBConverter
             If typeChars.Length = 0 Then
                 Return tokenAString
             End If
-            Dim newType As String = ""
+            Dim newType As String
             Select Case typeChars.ToUpperInvariant
                 Case "F"
                     newType = "F"
@@ -79,16 +80,15 @@ Namespace CSharpToVBConverter
                 Case "U", "UL", "LU"
                     newType = "UL"
                 Case Else
-                    Stop
+                    Throw UnexpectedValue(typeChars.ToUpperInvariant)
             End Select
             Return tokenAString.Replace(typeChars, newType, StringComparison.OrdinalIgnoreCase)
         End Function
 
-        Friend Function ConvertCSharpEscapes(TokenString As String) As String
+        Friend Function ConvertCSharpEscapes(tokenString As String) As String
             Dim buffer As String
             Try
-                'Dim unescape1 As String = RegexParser.Unescape(TokenString)
-                buffer = TokenString.
+                buffer = tokenString.
                         Replace("\r\n", "{vbCrLf}", StringComparison.Ordinal).
                         Replace("\'", "'", StringComparison.Ordinal).
                         Replace("\0", "{ChrW(0)}", StringComparison.Ordinal).
@@ -103,42 +103,38 @@ Namespace CSharpToVBConverter
                         Replace("\""", Quote, StringComparison.Ordinal).
                         Replace("\\", "\", StringComparison.Ordinal).
                         Replace(Quote, DoubleQuote, StringComparison.Ordinal).NormalizeLineEndings
-                ' TODO Remove comment
-                '_Buffer = _Buffer.Replace("{", "{{", StringComparison.Ordinal).
-                '                    Replace("}", "}}", StringComparison.Ordinal)
                 If buffer.Contains(UnicodeOpenQuote, StringComparison.Ordinal) Then
-                    buffer = buffer.ConverUnicodeQuotes(UnicodeOpenQuote)
+                    buffer = buffer.ConvertUnicodeQuotes(UnicodeOpenQuote)
                 End If
                 If buffer.Contains(UnicodeCloseQuote, StringComparison.Ordinal) Then
-                    buffer = buffer.ConverUnicodeQuotes(UnicodeCloseQuote)
+                    buffer = buffer.ConvertUnicodeQuotes(UnicodeCloseQuote)
                 End If
-                If buffer.Contains(UnicodeFullWidthQuoationMark, StringComparison.Ordinal) Then
-                    buffer = buffer.ConverUnicodeQuotes(UnicodeFullWidthQuoationMark)
+                If buffer.Contains(UnicodeFullWidthQuotationMark, StringComparison.Ordinal) Then
+                    buffer = buffer.ConvertUnicodeQuotes(UnicodeFullWidthQuotationMark)
                 End If
 
-                TokenString = buffer
+                tokenString = buffer
             Catch ex As OperationCanceledException
                 Throw
             Catch ex As Exception
-                Stop
                 Throw
             End Try
-            Return TokenString
+            Return tokenString
         End Function
 
         <Extension>
-        Friend Function ConverUnicodeQuotes(TokenString As String, UnicodeQuote As String) As String
-            TokenString = TokenString.Replace(UnicodeQuote & UnicodeQuote, ChrW(0), StringComparison.Ordinal)
-            TokenString = TokenString.Replace(UnicodeQuote, UnicodeQuote & UnicodeQuote, StringComparison.Ordinal)
-            Return TokenString.Replace(ChrW(0), UnicodeQuote & UnicodeQuote, StringComparison.Ordinal)
+        Friend Function ConvertUnicodeQuotes(tokenString As String, unicodeQuote As String) As String
+            tokenString = tokenString.Replace(unicodeQuote & unicodeQuote, ChrW(0), StringComparison.Ordinal)
+            tokenString = tokenString.Replace(unicodeQuote, unicodeQuote & unicodeQuote, StringComparison.Ordinal)
+            Return tokenString.Replace(ChrW(0), unicodeQuote & unicodeQuote, StringComparison.Ordinal)
         End Function
 
-        Friend Function GetLiteralExpression(value As Object, Token As SyntaxToken, _NodesVisitor As NodesVisitor) As VBS.ExpressionSyntax
-            Select Case Token.RawKind
+        Friend Function GetLiteralExpression(value As Object, token As SyntaxToken, nodesVisitor As NodesVisitor) As VBS.ExpressionSyntax
+            Select Case token.RawKind
                 Case CS.SyntaxKind.NumericLiteralToken
-                    Dim tokenToString As String = Token.ToString
+                    Dim tokenToString As String = token.ToString
                     If tokenToString.StartsWith("0x", StringComparison.OrdinalIgnoreCase) Then
-                        Dim hexValueString As String = $"&H{tokenToString.Substring(startIndex:=2)}".Replace("ul", "", StringComparison.OrdinalIgnoreCase).Replace("u", "", StringComparison.OrdinalIgnoreCase).Replace("l", "", StringComparison.OrdinalIgnoreCase)
+                        Dim hexValueString As String = $"&H{tokenToString.Substring(2)}".Replace("ul", "", StringComparison.OrdinalIgnoreCase).Replace("u", "", StringComparison.OrdinalIgnoreCase).Replace("l", "", StringComparison.OrdinalIgnoreCase)
                         If TypeOf value Is Integer Then Return Factory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, Factory.Literal(hexValueString, CInt(value)))
                         If TypeOf value Is SByte Then Return Factory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, Factory.Literal(hexValueString, CSByte(value)))
                         If TypeOf value Is Short Then Return Factory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, Factory.Literal(hexValueString, CShort(value)))
@@ -160,7 +156,7 @@ Namespace CSharpToVBConverter
                         Throw UnreachableException
                     End If
 
-                    Dim valueText As String = TranslateTypeCharacter(Token)
+                    Dim valueText As String = TranslateTypeCharacter(token)
                     If TypeOf value Is Integer Then Return Factory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, Factory.Literal(valueText, CInt(value)))
                     If TypeOf value Is Byte Then Return Factory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, Factory.Literal(valueText, CByte(value)))
                     If TypeOf value Is SByte Then Return Factory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, Factory.Literal(valueText, CSByte(value)))
@@ -179,19 +175,19 @@ Namespace CSharpToVBConverter
                     If TypeOf value Is Decimal Then Return Factory.LiteralExpression(VB.SyntaxKind.NumericLiteralExpression, Factory.Literal(valueText, CDec(value)))
                     Throw UnreachableException
                 Case CS.SyntaxKind.StringLiteralToken
-                    If TypeOf value Is String Then
-                        Dim strValue As String = DirectCast(value, String)
+                    Dim strValue As String = TryCast(value, String)
+                    If strValue IsNot Nothing Then
                         If strValue.Contains("\", StringComparison.Ordinal) Then
                             strValue = ConvertCSharpEscapes(strValue)
                         End If
                         If strValue.Contains(UnicodeOpenQuote, StringComparison.Ordinal) Then
-                            strValue = strValue.ConverUnicodeQuotes(UnicodeOpenQuote)
+                            strValue = strValue.ConvertUnicodeQuotes(UnicodeOpenQuote)
                         End If
                         If strValue.Contains(UnicodeCloseQuote, StringComparison.Ordinal) Then
-                            strValue = strValue.ConverUnicodeQuotes(UnicodeCloseQuote)
+                            strValue = strValue.ConvertUnicodeQuotes(UnicodeCloseQuote)
                         End If
-                        If strValue.Contains(UnicodeFullWidthQuoationMark, StringComparison.Ordinal) Then
-                            strValue = strValue.ConverUnicodeQuotes(UnicodeFullWidthQuoationMark)
+                        If strValue.Contains(UnicodeFullWidthQuotationMark, StringComparison.Ordinal) Then
+                            strValue = strValue.ConvertUnicodeQuotes(UnicodeFullWidthQuotationMark)
                         End If
                         If strValue.Length = 0 Then
                             Return DoubleQuoteExpression
@@ -226,7 +222,7 @@ Namespace CSharpToVBConverter
                         Return Factory.LiteralExpression(VB.SyntaxKind.CharacterLiteralExpression, Factory.Literal($"{UnicodeCloseQuote}{UnicodeCloseQuote}"))
                     End If
                     If Token.Text.StartsWith("'\u", StringComparison.OrdinalIgnoreCase) Then
-                        Return Factory.ParseExpression($"ChrW(&H{Token.Text.RemoveAll("'").Substring(startIndex:=2)})")
+                        Return Factory.ParseExpression($"ChrW(&H{token.Text.RemoveAll("'").Substring(2)})")
                     End If
                     Return Factory.LiteralExpression(VB.SyntaxKind.CharacterLiteralExpression, Factory.Literal(CChar(value)))
                 Case CS.SyntaxKind.DefaultKeyword
@@ -236,16 +232,16 @@ Namespace CSharpToVBConverter
                         Token.Parent.GetAncestor(Of CSS.ArrowExpressionClauseSyntax) IsNot Nothing Then
                         Dim propertyDeclaration As CSS.PropertyDeclarationSyntax = Token.Parent.GetAncestor(Of CSS.PropertyDeclarationSyntax)
                         If propertyDeclaration IsNot Nothing Then
-                            returnType = DirectCast(propertyDeclaration.Type.Accept(_NodesVisitor), VBS.TypeSyntax)
+                            returnType = DirectCast(propertyDeclaration.Type.Accept(nodesVisitor), VBS.TypeSyntax)
                             Return Factory.CTypeExpression(NothingExpression, returnType)
                         End If
                         If methodStatement IsNot Nothing Then
-                            returnType = DirectCast(methodStatement.ReturnType.Accept(_NodesVisitor), VBS.TypeSyntax)
+                            returnType = DirectCast(methodStatement.ReturnType.Accept(nodesVisitor), VBS.TypeSyntax)
                             Return Factory.CTypeExpression(NothingExpression, returnType)
                         End If
                         Dim operatorStatement As CSS.ConversionOperatorDeclarationSyntax = Token.Parent.GetAncestor(Of CSS.ConversionOperatorDeclarationSyntax)
                         If operatorStatement IsNot Nothing Then
-                            returnType = DirectCast(operatorStatement.Type.Accept(_NodesVisitor), VBS.TypeSyntax)
+                            returnType = DirectCast(operatorStatement.Type.Accept(nodesVisitor), VBS.TypeSyntax)
                             Return Factory.CTypeExpression(NothingExpression, returnType)
                         End If
                         Throw UnreachableException
@@ -254,7 +250,7 @@ Namespace CSharpToVBConverter
                     If equalsValue IsNot Nothing Then
                         Dim parameter As CSS.ParameterSyntax = Token.Parent.GetAncestor(Of CSS.ParameterSyntax)
                         If parameter IsNot Nothing Then
-                            returnType = DirectCast(parameter.Type.Accept(_NodesVisitor), VBS.TypeSyntax)
+                            returnType = DirectCast(parameter.Type.Accept(nodesVisitor), VBS.TypeSyntax)
                             Return Factory.CTypeExpression(NothingExpression, returnType)
                         End If
                         Throw UnreachableException
@@ -271,7 +267,6 @@ Namespace CSharpToVBConverter
                                 If structAncestor IsNot Nothing Then
                                     Return Factory.CTypeExpression(NothingExpression, Factory.ParseTypeName(structAncestor.Identifier.ValueText))
                                 End If
-                                Stop
                                 Return NothingExpression
                             End If
 
@@ -280,14 +275,14 @@ Namespace CSharpToVBConverter
                                 Return NothingExpression
                             End If
 
-                            If TypeOf assignmentExpression.Left Is CSS.TupleExpressionSyntax Then
-                                Dim tuple As CSS.TupleExpressionSyntax = DirectCast(assignmentExpression.Left, CSS.TupleExpressionSyntax)
-                                Dim parent As SyntaxNode = assignmentExpression.Parent
+                            Dim tuple As CSS.TupleExpressionSyntax = TryCast(assignmentExpression.Left, CSS.TupleExpressionSyntax)
+                            If tuple IsNot Nothing Then
+                                'Dim parent As SyntaxNode = assignmentExpression.Parent
                                 ' This could be better if I could figure out the Type
                                 Return NothingExpression
                             End If
 
-                            Dim idString As String = ""
+                            Dim idString As String
                             If TypeOf assignmentExpression.Left Is CSS.IdentifierNameSyntax Then
                                 idString = DirectCast(assignmentExpression.Left, CSS.IdentifierNameSyntax).Identifier.ValueText
                             ElseIf TypeOf assignmentExpression.Left Is CSS.MemberAccessExpressionSyntax Then
@@ -295,11 +290,11 @@ Namespace CSharpToVBConverter
                             ElseIf TypeOf assignmentExpression.Left Is CSS.ElementAccessExpressionSyntax Then
                                 idString = DirectCast(assignmentExpression.Left, CSS.ElementAccessExpressionSyntax).Expression.ToString
                             Else
-                                Stop
+                                Throw UnreachableException()
                             End If
                             For Each p As CSS.ParameterSyntax In methodStatement.ParameterList.Parameters
                                 If p.Identifier.ValueText = idString Then
-                                    returnType = DirectCast(p.Type.Accept(_NodesVisitor), VBS.TypeSyntax)
+                                    returnType = DirectCast(p.Type.Accept(nodesVisitor), VBS.TypeSyntax)
                                     Return Factory.CTypeExpression(NothingExpression, returnType)
                                 End If
                             Next
@@ -314,9 +309,8 @@ Namespace CSharpToVBConverter
                     End If
                     Return NothingExpression
                 Case CS.SyntaxKind.ArgListKeyword
-                    Return Factory.IdentifierName("__Arglist")
+                    Return Factory.IdentifierName("__ArgList")
             End Select
-            Stop
             Return NothingExpression
         End Function
 

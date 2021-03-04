@@ -4,23 +4,23 @@
 
 Imports System.IO
 Imports System.Net
-Imports CSharpToVBConverter
 Imports Microsoft.VisualBasic.ApplicationServices
 Imports Microsoft.Win32
+Imports SupportClasses
 
 Friend Module BrowserUtilities
 
-    Private Function IsNewerVersion(gitHubVersions() As String, AppVersion As Version, ConverterVersion As Version) As Boolean
-        If String.IsNullOrWhiteSpace(gitHubVersions(0)) OrElse Version.Parse(gitHubVersions(0)) > Version.Parse(AppVersion.ToString) Then
+    Private Function IsNewerVersion(gitHubVersions() As String, appVersion As Version, converterVersion As Version) As Boolean
+        If String.IsNullOrWhiteSpace(gitHubVersions(0)) OrElse Version.Parse(gitHubVersions(0)) > Version.Parse(appVersion.ToString) Then
             Return True
         End If
         If gitHubVersions.Length = 1 Then
             Return False
         End If
-        Return Version.Parse(gitHubVersions(1)) > Version.Parse(ConverterVersion.ToString)
+        Return Version.Parse(gitHubVersions(1)) > Version.Parse(converterVersion.ToString)
     End Function
 
-    Private Sub launchBrowser(url As String)
+    Private Sub LaunchBrowser(url As String)
         Using userChoiceKey As RegistryKey = Registry.CurrentUser.OpenSubKey("Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice")
             If userChoiceKey Is Nothing Then
                 Exit Sub
@@ -34,13 +34,13 @@ Friend Module BrowserUtilities
                 Exit Sub
             End If
             Dim msgResult As MsgBoxResult = MsgBoxResult.Ok
-            Dim browserPath As String = "%ProgramFiles(x86)%\Internet Explorer\iexplore.exe"
+            Dim browserPath As String = "%ProgramFiles(x86)%\Internet Explorer\iExplore.exe"
             If progIdValue.Contains("chrome", StringComparison.OrdinalIgnoreCase) Then
                 browserPath = "%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe"
-            ElseIf progIdValue.Contains("firefox", StringComparison.OrdinalIgnoreCase) Then
-                browserPath = "C:\Program Files\Mozilla Firefox\firefox.exe"
-            ElseIf progIdValue.Contains("msedgehtm", StringComparison.OrdinalIgnoreCase) Then
-                browserPath = "%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe"
+            ElseIf progIdValue.Contains("Firefox", StringComparison.OrdinalIgnoreCase) Then
+                browserPath = "C:\Program Files\Mozilla Firefox\Firefox.exe"
+            ElseIf progIdValue.Contains("msEdgeHtm", StringComparison.OrdinalIgnoreCase) Then
+                browserPath = "%ProgramFiles(x86)%\Microsoft\Edge\Application\msEdge.exe"
                 'ElseIf progIdValue.Contains("opera", StringComparison.OrdinalIgnoreCase) Then
                 '    browserPath = "opera.exe"
             Else
@@ -54,7 +54,7 @@ Friend Module BrowserUtilities
         End Using
     End Sub
 
-    Friend Sub CheckForUpdates(MainForm As Form1, ReportResults As Boolean)
+    Friend Sub CheckForUpdates(mainForm As Form1, reportResults As Boolean)
         Try
             Dim request As WebRequest = WebRequest.Create($"{Form1.ProjectGitHubURL}blob/master/ReadMe.MD")
             request.Timeout = 4000
@@ -91,33 +91,32 @@ Friend Module BrowserUtilities
                 Dim gitHubVersion() As String = versionStr.Split("/")
                 Dim codeConverterInfo As New AssemblyInfo(GetType(CodeWithOptions).Assembly)
                 If IsNewerVersion(gitHubVersion, My.Application.Info.Version, codeConverterInfo.Version) Then
-                    MainForm.StatusStripUpdateAvailable.Visible = True
-                    If ReportResults Then
+                    mainForm.StatusStripUpdateAvailable.Visible = True
+                    If reportResults Then
                         If MsgBox("There is a newer version available, do you want to install now?", MsgBoxStyle.YesNo, "Updates Available") = MsgBoxResult.Yes Then
-                            OpenURLInBrowser(Form1.ProjectGitHubURL)
+                            OpenUrlInBrowser(Form1.ProjectGitHubURL)
                         End If
                     End If
                 Else
-                    MainForm.StatusStripUpdateAvailable.Visible = False
-                    If ReportResults Then
+                    mainForm.StatusStripUpdateAvailable.Visible = False
+                    If reportResults Then
                         MsgBox("You are running latest version", MsgBoxStyle.OkOnly, "No Updates Available")
                     End If
                 End If
             End Using
         Catch ex As Exception
-            If ReportResults Then
+            If reportResults Then
                 MsgBox("Failed while checking for new  version: " + ex.Message, MsgBoxStyle.Information, "Version Check Failed")
             End If
         End Try
     End Sub
 
-    Friend Sub OpenURLInBrowser(webAddress As String)
+    Friend Sub OpenUrlInBrowser(webAddress As String)
         Try
             'Devices.Mouse.OverrideCursor = Cursors.AppStarting
             Form1.Cursor = Cursors.AppStarting
-            launchBrowser(webAddress)
+            LaunchBrowser(webAddress)
         Catch ex As Exception
-            Stop
             Throw
         Finally
             Form1.Cursor = Cursors.AppStarting

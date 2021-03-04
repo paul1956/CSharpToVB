@@ -1578,7 +1578,7 @@ EndGlobal
                 Using sw As New StreamWriter(originalSolutionFileName)
                     sw.Write(originalSolutionFile)
                 End Using
-                ConvertSolutionFile(originalSolutionFileName, destinationDirectory, New List(Of String), Testing:=True)
+                ConvertSolutionFile(originalSolutionFileName, destinationDirectory, New List(Of String), testing:=True)
                 Assert.True(File.Exists(destinationSolutionFileName))
                 Assert.Equal(originalSolutionFile.Length, New FileInfo(destinationSolutionFileName).Length)
             Finally

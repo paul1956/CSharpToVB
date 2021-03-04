@@ -1,11 +1,11 @@
 ﻿' Licensed to the .NET Foundation under one or more agreements.
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
-
+Imports Extensions
 Imports Microsoft.CodeAnalysis
 Imports CS = Microsoft.CodeAnalysis.CSharp
 
-Namespace CSharpToVBConverter.CSharpToVBVisitors
+Namespace SupportClasses
 
     Friend NotInheritable Class CommonConversions
         Private ReadOnly _semanticModel As SemanticModel

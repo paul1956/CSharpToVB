@@ -2,8 +2,9 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
+Imports Extensions
 Imports Microsoft.CodeAnalysis
-
+Imports Utilities
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
@@ -70,8 +71,8 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
 
             Public Overrides Function VisitNullableType(node As CSS.NullableTypeSyntax) As VB.VisualBasicSyntaxNode
                 Dim elementType As VB.VisualBasicSyntaxNode = node.ElementType.Accept(Me)
-                If TypeOf elementType Is VBS.ArrayTypeSyntax Then
-                    Dim arrayType As VBS.ArrayTypeSyntax = DirectCast(elementType, VBS.ArrayTypeSyntax)
+                Dim arrayType As VBS.ArrayTypeSyntax = TryCast(elementType, VBS.ArrayTypeSyntax)
+                If arrayType IsNot Nothing Then
                     Dim arrayElementType As VBS.TypeSyntax = arrayType.ElementType
                     Dim elementTypeStr As String = arrayElementType.ToString
                     If elementTypeStr.EndsWith("?"c, StringComparison.OrdinalIgnoreCase) Then
@@ -164,12 +165,12 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     End If
                 End If
                 Return Factory.TypeParameter(variance,
-                                             GenerateSafeVBToken(node.Identifier,
+                                             GenerateSafeVbToken(node.Identifier,
                                                                  node,
                                                                  _semanticModel,
                                                                  _usedIdentifiers,
-                                                                 IsQualifiedName:=False,
-                                                                 IsTypeName:=True),
+                                                                 isQualifiedName:=False,
+                                                                 isTypeName:=True),
                                             typeParameterConstraintClause).WithConvertedTriviaFrom(node)
             End Function
 

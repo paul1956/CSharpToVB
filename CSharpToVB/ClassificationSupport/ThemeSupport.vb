@@ -14,8 +14,9 @@ Module ThemeSupport
             ElseIf TypeOf component Is MenuStrip Then
                 ChangeTheme(scheme, component.Controls)
                 For Each dropDownItem As Object In CType(component, MenuStrip).Items
-                    If TypeOf dropDownItem Is ToolStripMenuItem Then
-                        CheckAndSetColor(CType(dropDownItem, ToolStripMenuItem), scheme, "MenuItem", True, isEnabled)
+                    Dim stripMenuItem As ToolStripMenuItem = TryCast(dropDownItem, ToolStripMenuItem)
+                    If stripMenuItem IsNot Nothing Then
+                        CheckAndSetColor(stripMenuItem, scheme, "MenuItem", True, isEnabled)
                     End If
                 Next
                 CheckAndSetColor(component, scheme, "MenuStrip", isInToolStrip, isEnabled)
@@ -57,14 +58,14 @@ Module ThemeSupport
         Next
     End Sub
 
-    Public Sub CheckAndSetColor(cont As Control, scheme As Dictionary(Of String, ColorDescriptor), ControlName As String, IsInToolStrip As Boolean, IsEnabled As Boolean)
-        If IsInToolStrip Then
-            ControlName = $"ToolStrip{ControlName}"
+    Public Sub CheckAndSetColor(cont As Control, scheme As Dictionary(Of String, ColorDescriptor), controlName As String, isInToolStrip As Boolean, isEnabled As Boolean)
+        If isInToolStrip Then
+            controlName = $"ToolStrip{controlName}"
         End If
-        If Not IsEnabled Then
+        If Not isEnabled Then
             cont.Enabled = True
         End If
-        Dim colors As ColorDescriptor = scheme(ControlName)
+        Dim colors As ColorDescriptor = scheme(controlName)
 
         If cont.BackColor <> colors.Background Then
             cont.BackColor = colors.Background
@@ -72,22 +73,23 @@ Module ThemeSupport
         If cont.ForeColor <> colors.Foreground Then
             cont.ForeColor = colors.Foreground
         End If
-        cont.Enabled = IsEnabled
+        cont.Enabled = isEnabled
     End Sub
 
-    Public Sub CheckAndSetColor(cont As ToolStripItem, scheme As Dictionary(Of String, ColorDescriptor), ControlName As String, IsInToolStrip As Boolean, IsEnabled As Boolean)
-        If IsInToolStrip Then
-            ControlName = $"ToolStrip{ControlName}"
+    Public Sub CheckAndSetColor(cont As ToolStripItem, scheme As Dictionary(Of String, ColorDescriptor), controlName As String, isInToolStrip As Boolean, isEnabled As Boolean)
+        If isInToolStrip Then
+            controlName = $"ToolStrip{controlName}"
         End If
-        If Not IsEnabled Then
+        If Not isEnabled Then
             cont.Enabled = True
         End If
-        Dim colors As ColorDescriptor = scheme(ControlName)
+        Dim colors As ColorDescriptor = scheme(controlName)
 
-        If TypeOf cont Is ToolStripMenuItem Then
-            For Each item As ToolStripItem In CType(cont, ToolStripMenuItem).DropDownItems
+        Dim toolStripItem As ToolStripMenuItem = TryCast(cont, ToolStripMenuItem)
+        If toolStripItem IsNot Nothing Then
+            For Each item As ToolStripItem In toolStripItem.DropDownItems
                 If TypeOf item Is ToolStripMenuItem Then
-                    CheckAndSetColor(CType(item, ToolStripMenuItem), scheme, "MenuItem", True, IsEnabled)
+                    CheckAndSetColor(CType(item, ToolStripMenuItem), scheme, "MenuItem", True, isEnabled)
                 ElseIf TypeOf item Is ToolStripSeparator Then
                     If item.BackColor <> colors.Background Then
                         item.BackColor = colors.Background
@@ -121,7 +123,7 @@ Module ThemeSupport
         If cont.ForeColor <> colors.Foreground Then
             cont.ForeColor = colors.Foreground
         End If
-        cont.Enabled = IsEnabled
+        cont.Enabled = isEnabled
     End Sub
 
 End Module

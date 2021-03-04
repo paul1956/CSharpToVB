@@ -3,13 +3,14 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Runtime.CompilerServices
+Imports Extensions
 Imports Microsoft.CodeAnalysis
 
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace CSharpToVBConverter.CSharpToVBVisitors
+Namespace Utilities
 
     Public Module AttributeAndModifierSupport
 
@@ -22,21 +23,21 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             Local
             [New]
             [Readonly]
-            XMLComment
+            XmlComment
             Struct
             [Property]
             LocalFunction
         End Enum
 
         <Extension>
-        Private Function ContainsAny(s As String, comparisonType As StringComparison, ParamArray StringArray() As String) As Boolean
+        Private Function ContainsAny(s As String, comparisonType As StringComparison, ParamArray stringArray() As String) As Boolean
             If String.IsNullOrWhiteSpace(s) Then
                 Return False
             End If
-            If StringArray Is Nothing OrElse StringArray.Length = 0 Then
+            If stringArray Is Nothing OrElse stringArray.Length = 0 Then
                 Return False
             End If
-            For Each str As String In StringArray
+            For Each str As String In stringArray
                 If s.Contains(str, comparisonType) Then
                     Return True
                 End If
@@ -45,15 +46,12 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
         End Function
 
         <Extension>
-        Private Function ConvertModifier(CSToken As SyntaxToken, IsModule As Boolean, context As TokenContext, ByRef FoundVisibility As Boolean) As SyntaxToken
-            If CSToken.Language <> "C#" Then
-                Throw New ArgumentException($"Invalid language {CSToken.Language}, for parameter,", NameOf(CSToken))
-            End If
-            Dim token As SyntaxToken = CS.CSharpExtensions.Kind(CSToken).GetVisibilityKeyword(IsModule, context, FoundVisibility)
+        Private Function ConvertModifier(csToken As SyntaxToken, isModule As Boolean, context As TokenContext, ByRef foundVisibility As Boolean) As SyntaxToken
+            Dim token As SyntaxToken = CS.CSharpExtensions.Kind(csToken).GetVisibilityKeyword(isModule, context, foundVisibility)
             If token.IsKind(VB.SyntaxKind.EmptyToken) Then
-                Return EmptyToken.WithConvertedLeadingTriviaFrom(CSToken)
+                Return EmptyToken.WithConvertedLeadingTriviaFrom(csToken)
             End If
-            Return token.WithConvertedTriviaFrom(CSToken)
+            Return token.WithConvertedTriviaFrom(csToken)
         End Function
 
         Private Function CSharpDefaultVisibility(context As TokenContext) As SyntaxToken
@@ -85,7 +83,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     (context = TokenContext.VariableOrConst AndAlso token.IsKind(CS.SyntaxKind.ConstKeyword))
         End Function
 
-        Friend Iterator Function ConvertModifiers(csModifiers As IEnumerable(Of SyntaxToken), IsModule As Boolean, Context As TokenContext) As IEnumerable(Of SyntaxToken)
+        Friend Iterator Function ConvertModifiers(csModifiers As IEnumerable(Of SyntaxToken), isModule As Boolean, context As TokenContext) As IEnumerable(Of SyntaxToken)
             Dim foundVisibility As Boolean = False
             Dim newLeadingTrivia As New SyntaxTriviaList
             Dim firstModifier As Boolean = True
@@ -93,17 +91,17 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 newLeadingTrivia = newLeadingTrivia.AddRange(csModifiers(0).LeadingTrivia.ConvertTriviaList())
             End If
 
-            If Context <> TokenContext.Local AndAlso Context <> TokenContext.InterfaceOrModule AndAlso Context <> TokenContext.Class Then
+            If context <> TokenContext.Local AndAlso context <> TokenContext.InterfaceOrModule AndAlso context <> TokenContext.Class Then
                 Dim visibility As Boolean = False
                 For Each token As SyntaxToken In csModifiers
-                    If IsVisibility(token, Context) Then
+                    If IsVisibility(token, context) Then
                         visibility = True
                         Exit For
                     End If
                 Next
 
-                If Not visibility AndAlso Context = TokenContext.Member Then
-                    Dim defaultVisibility As SyntaxToken = CSharpDefaultVisibility(Context)
+                If Not visibility AndAlso context = TokenContext.Member Then
+                    Dim defaultVisibility As SyntaxToken = CSharpDefaultVisibility(context)
                     If firstModifier Then
                         Yield defaultVisibility.WithLeadingTrivia(newLeadingTrivia)
                         newLeadingTrivia = New SyntaxTriviaList
@@ -120,7 +118,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 If e.IsFirst AndAlso Not firstModifier Then
                     csModifier = csModifier.WithLeadingTrivia(CS.SyntaxFactory.Space)
                 End If
-                Dim vbModifier As SyntaxToken = csModifier.ConvertModifier(IsModule, Context, foundVisibility)
+                Dim vbModifier As SyntaxToken = csModifier.ConvertModifier(isModule, context, foundVisibility)
                 Dim newTrailingTrivia As New SyntaxTriviaList
 
                 ' If there is only empty Token then attach leading trivia to it otherwise ignore
@@ -152,11 +150,10 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     Continue For
                 End If
 
-                If IgnoreInContext(csModifier, Context) Then
+                If IgnoreInContext(csModifier, context) Then
                     If firstModifier Then
                         vbModifier = vbModifier.WithLeadingTrivia(newLeadingTrivia)
                         firstModifier = False
-                        newLeadingTrivia = New SyntaxTriviaList
                     End If
                     Yield vbModifier
                     newLeadingTrivia = New SyntaxTriviaList
@@ -181,29 +178,28 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
 
         End Function
 
-        Friend Function RestructureAttributeList(vbAttributeLists As SyntaxList(Of VBS.AttributeListSyntax), attributeLists As List(Of VBS.AttributeListSyntax), ByRef NewAttributeLeadingTrivia As SyntaxTriviaList, ByRef statementLeadingTrivia As SyntaxTriviaList, ByRef statementTrailingTrivia As SyntaxTriviaList) As Boolean
+        Friend Function RestructureAttributeList(vbAttributeLists As SyntaxList(Of VBS.AttributeListSyntax), attributeLists As List(Of VBS.AttributeListSyntax), ByRef newAttributeLeadingTrivia As SyntaxTriviaList, ByRef statementLeadingTrivia As SyntaxTriviaList, ByRef statementTrailingTrivia As SyntaxTriviaList) As Boolean
             Dim foundDirective As Boolean = False
             Dim foundTheory As Boolean = False
             Dim isTheoryOrInlineData As Boolean
             For Each e As IndexClass(Of VBS.AttributeListSyntax) In vbAttributeLists.WithIndex
-                Dim attributeList As VBS.AttributeListSyntax = e.Value.RemoveExtraLeadingEOL
+                Dim attributeList As VBS.AttributeListSyntax = e.Value.RemoveExtraLeadingEol
                 isTheoryOrInlineData = attributeList.Attributes.FirstOrDefault.ToString.ContainsAny(StringComparison.OrdinalIgnoreCase, "Theory", "InlineData")
                 If isTheoryOrInlineData Then
                     foundTheory = True
                 End If
-                Dim newAttributLeadingTrivia As New SyntaxTriviaList
                 If e.IsFirst Then
                     statementLeadingTrivia = statementLeadingTrivia.AddRange(attributeList.GetLeadingTrivia)
                     If statementLeadingTrivia.Any AndAlso statementLeadingTrivia.Last.IsWhitespaceOrEndOfLine Then
-                        NewAttributeLeadingTrivia = NewAttributeLeadingTrivia.Add(attributeList.GetLeadingTrivia.Last)
+                        newAttributeLeadingTrivia = newAttributeLeadingTrivia.Add(attributeList.GetLeadingTrivia.Last)
                     Else
-                        NewAttributeLeadingTrivia = NewAttributeLeadingTrivia.Add(SpaceTrivia)
+                        newAttributeLeadingTrivia = newAttributeLeadingTrivia.Add(SpaceTrivia)
                     End If
                 Else
                     RelocateAttributeDirectiveDisabledTrivia(e.Value.GetLeadingTrivia, foundDirective, isTheoryOrInlineData, statementLeadingTrivia, statementTrailingTrivia)
                 End If
-                Dim newAttributeTrailingTrivia As SyntaxTriviaList = RelocateDirectiveDisabledTrivia(e.Value.GetTrailingTrivia, statementTrailingTrivia, RemoveEOL:=False)
-                attributeLists.Add(attributeList.With(NewAttributeLeadingTrivia, newAttributeTrailingTrivia))
+                Dim newAttributeTrailingTrivia As SyntaxTriviaList = RelocateDirectiveDisabledTrivia(e.Value.GetTrailingTrivia, statementTrailingTrivia, removeEol:=False)
+                attributeLists.Add(attributeList.With(newAttributeLeadingTrivia, newAttributeTrailingTrivia))
             Next
             Return foundTheory
         End Function

@@ -7,7 +7,7 @@ Imports System.Diagnostics.CodeAnalysis
 Imports System.Reflection
 Imports System.Runtime.CompilerServices
 
-Namespace CSharpToVBConverter
+Namespace Extensions
 
     ''' <summary>
     ''' This code is currently not used but is left here for future purposes

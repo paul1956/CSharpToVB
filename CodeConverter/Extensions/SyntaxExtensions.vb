@@ -3,12 +3,11 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Runtime.CompilerServices
-
 Imports Microsoft.CodeAnalysis
-
+Imports Utilities
 Imports CS = Microsoft.CodeAnalysis.CSharp
 
-Namespace CSharpToVBConverter
+Namespace Extensions
 
     Public Module SyntaxExtensions
 

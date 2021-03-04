@@ -6,7 +6,7 @@ Imports System.Runtime.CompilerServices
 Imports System.Runtime.InteropServices
 Imports System.Text
 
-Namespace CSharpToVBConverter
+Namespace Utilities
 
     Public Enum UnicodeNewline
         Unknown
@@ -216,23 +216,23 @@ Namespace CSharpToVBConverter
         End Function
 
         <Extension>
-        Friend Function JoinLines(Lines As String(), Delimiter As String) As String
-            Return String.Join(separator:=Delimiter, values:=Lines)
+        Friend Function JoinLines(lines As String(), delimiter As String) As String
+            Return String.Join(separator:=delimiter, lines)
         End Function
 
         <Extension>
-        Friend Function NormalizeLineEndings(Lines As String, Optional Delimiter As String = vbCrLf) As String
-            Return Lines.SplitLines.JoinLines(Delimiter)
+        Friend Function NormalizeLineEndings(lines As String, Optional delimiter As String = vbCrLf) As String
+            Return lines.SplitLines.JoinLines(delimiter)
         End Function
 
         ''' <summary>
         ''' Replace Unicode NewLines with ControlChars.NullChar or Specified Character
         ''' </summary>
         ''' <param name="text">Source Test</param>
-        ''' <param name="SubstituteChar">Default is vbNullChar</param>
+        ''' <param name="substituteChar">Default is vbNullChar</param>
         ''' <returns>String with Unicode NewLines replaced with SubstituteChar</returns>
         <Extension>
-        Public Function WithoutNewLines(text As String, Optional SubstituteChar As Char = ControlChars.NullChar) As String
+        Public Function WithoutNewLines(text As String, Optional substituteChar As Char = ControlChars.NullChar) As String
             If text Is Nothing Then
                 Throw New ArgumentNullException(NameOf(text))
             End If
@@ -245,7 +245,7 @@ Namespace CSharpToVBConverter
                 Dim ch As Char = text.Chars(index)
                 ' Do not delete the next line
                 Dim j As Integer = index
-                If TryGetDelimiterLengthAndType(ch, length, type, Function() If(j < text.Length - 1, text.Chars(j + 1), SubstituteChar)) Then
+                If TryGetDelimiterLengthAndType(ch, length, type, Function() If(j < text.Length - 1, text.Chars(j + 1), substituteChar)) Then
                     index += length - 1
                     Continue For
                 End If

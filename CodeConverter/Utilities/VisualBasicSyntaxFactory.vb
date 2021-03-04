@@ -5,13 +5,15 @@
 ' DO NOT REORDER DOCUMENT Tokens must be defined BEFORE they are used, the #If is require to prevent code cleanup
 #If True Then
 
+Imports Extensions
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.VisualBasic
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 
-Namespace CSharpToVBConverter
+Namespace Utilities
+#Disable Warning InconsistentNaming
 
     Public Module VisualBasicSyntaxFactory
 
@@ -23,7 +25,7 @@ Namespace CSharpToVBConverter
         Public Const UnicodeCloseQuote As Char = ChrW(&H201D)
         Public Const UnicodeDoubleOpenQuote As String = UnicodeOpenQuote & UnicodeOpenQuote
         Public Const UnicodeDoubleCloseQuote As String = UnicodeCloseQuote & UnicodeCloseQuote
-        Public Const UnicodeFullWidthQuoationMark As Char = ChrW(&HFF02)
+        Public Const UnicodeFullWidthQuotationMark As Char = ChrW(&HFF02)
 
 #Region "Runtime Service Names"
 
@@ -65,7 +67,6 @@ Namespace CSharpToVBConverter
         Public ReadOnly LessThanToken As SyntaxToken = Factory.Token(SyntaxKind.LessThanToken)
         Public ReadOnly MinusEqualsToken As SyntaxToken = Factory.Token(SyntaxKind.MinusEqualsToken)
         Public ReadOnly MinusToken As SyntaxToken = Factory.Token(SyntaxKind.MinusToken)
-        Public ReadOnly NullableToken As SyntaxToken = Factory.Token(SyntaxKind.QuestionToken)
         Public ReadOnly OpenBraceToken As SyntaxToken = Factory.Token(SyntaxKind.OpenBraceToken)
         Public ReadOnly openParenToken As SyntaxToken = Factory.Token(SyntaxKind.OpenParenToken)
         Public ReadOnly PlusEqualsToken As SyntaxToken = Factory.Token(SyntaxKind.PlusEqualsToken)
@@ -107,7 +108,6 @@ Namespace CSharpToVBConverter
         Public ReadOnly AssemblyKeyword As SyntaxToken = Factory.Token(SyntaxKind.AssemblyKeyword)
         Public ReadOnly AsyncKeyword As SyntaxToken = Factory.Token(SyntaxKind.AsyncKeyword)
         Public ReadOnly AwaitKeyword As SyntaxToken = Factory.Token(SyntaxKind.AwaitKeyword)
-        Public ReadOnly BlockKeyword As SyntaxToken = Factory.Token(SyntaxKind.OperatorKeyword)
         Public ReadOnly BooleanKeyword As SyntaxToken = Factory.Token(SyntaxKind.BooleanKeyword)
         Public ReadOnly ByRefKeyword As SyntaxToken = Factory.Token(SyntaxKind.ByRefKeyword)
         Public ReadOnly ByteKeyword As SyntaxToken = Factory.Token(SyntaxKind.ByteKeyword)
@@ -134,7 +134,6 @@ Namespace CSharpToVBConverter
         Public ReadOnly CULngKeyword As SyntaxToken = Factory.Token(SyntaxKind.CULngKeyword)
         Public ReadOnly CUShortKeyword As SyntaxToken = Factory.Token(SyntaxKind.CUShortKeyword)
         Public ReadOnly CustomKeyword As SyntaxToken = Factory.Token(SyntaxKind.CustomKeyword)
-        Public ReadOnly DateKeyword As SyntaxToken = Factory.Token(SyntaxKind.DateKeyword)
         Public ReadOnly DecimalKeyword As SyntaxToken = Factory.Token(SyntaxKind.DecimalKeyword)
         Public ReadOnly DefaultKeyword As SyntaxToken = Factory.Token(SyntaxKind.DefaultKeyword)
         Public ReadOnly DimKeyword As SyntaxToken = Factory.Token(SyntaxKind.DimKeyword)
@@ -145,7 +144,6 @@ Namespace CSharpToVBConverter
         Public ReadOnly EndKeyword As SyntaxToken = Factory.Token(SyntaxKind.EndKeyword)
         Public ReadOnly EnumKeyword As SyntaxToken = Factory.Token(SyntaxKind.EnumKeyword)
         Public ReadOnly ExternalChecksumKeyword As SyntaxToken = Factory.Token(SyntaxKind.ExternalChecksumKeyword)
-        Public ReadOnly ExternalSourceKeyword As SyntaxToken = Factory.Token(SyntaxKind.ExternalSourceKeyword)
         Public ReadOnly FalseKeyword As SyntaxToken = Factory.Token(SyntaxKind.FalseKeyword)
         Public ReadOnly ForKeyword As SyntaxToken = Factory.Token(SyntaxKind.ForKeyword)
         Public ReadOnly FriendKeyword As SyntaxToken = Factory.Token(SyntaxKind.FriendKeyword)
@@ -178,6 +176,7 @@ Namespace CSharpToVBConverter
         Public ReadOnly NotOverridableKeyword As SyntaxToken = Factory.Token(SyntaxKind.NotOverridableKeyword)
         Public ReadOnly ObjectKeyword As SyntaxToken = Factory.Token(SyntaxKind.ObjectKeyword)
         Public ReadOnly OfKeyword As SyntaxToken = Factory.Token(SyntaxKind.OfKeyword)
+        Public ReadOnly OperatorKeyword As SyntaxToken = Factory.Token(SyntaxKind.OperatorKeyword)
         Public ReadOnly OptionalKeyword As SyntaxToken = Factory.Token(SyntaxKind.OptionalKeyword)
         Public ReadOnly OrElseKeyword As SyntaxToken = Factory.Token(SyntaxKind.OrElseKeyword)
         Public ReadOnly OrKeyword As SyntaxToken = Factory.Token(SyntaxKind.OrKeyword)
@@ -211,7 +210,6 @@ Namespace CSharpToVBConverter
         Public ReadOnly TrueKeyword As SyntaxToken = Factory.Token(SyntaxKind.TrueKeyword)
         Public ReadOnly TryCastKeyword As SyntaxToken = Factory.Token(SyntaxKind.TryCastKeyword)
         Public ReadOnly TryKeyword As SyntaxToken = Factory.Token(SyntaxKind.TryKeyword)
-        Public ReadOnly TypeKeyword As SyntaxToken = Factory.Token(SyntaxKind.TypeKeyword)
         Public ReadOnly UIntegerKeyword As SyntaxToken = Factory.Token(SyntaxKind.UIntegerKeyword)
         Public ReadOnly ULongKeyword As SyntaxToken = Factory.Token(SyntaxKind.ULongKeyword)
         Public ReadOnly UShortKeyword As SyntaxToken = Factory.Token(SyntaxKind.UShortKeyword)
@@ -228,7 +226,6 @@ Namespace CSharpToVBConverter
 
 #Region "Types"
 
-        Public ReadOnly HandleRefType As TypeSyntax = Factory.ParseTypeName("HandleRefType")
         Public ReadOnly IntPtrType As TypeSyntax = Factory.ParseTypeName("IntPtr")
 
 #Region "Predefined Types"
@@ -236,15 +233,12 @@ Namespace CSharpToVBConverter
         Public ReadOnly PredefinedTypeBoolean As TypeSyntax = Factory.PredefinedType(BooleanKeyword)
         Public ReadOnly PredefinedTypeByte As TypeSyntax = Factory.PredefinedType(ByteKeyword)
         Public ReadOnly PredefinedTypeChar As TypeSyntax = Factory.PredefinedType(CharKeyword)
-        Public ReadOnly PredefinedTypeDate As TypeSyntax = Factory.PredefinedType(DateKeyword)
         Public ReadOnly PredefinedTypeDecimal As TypeSyntax = Factory.PredefinedType(DecimalKeyword)
         Public ReadOnly PredefinedTypeDouble As TypeSyntax = Factory.PredefinedType(DoubleKeyword)
         Public ReadOnly PredefinedTypeInteger As TypeSyntax = Factory.PredefinedType(IntegerKeyword)
-        Public ReadOnly PredefinedTypeLong As TypeSyntax = Factory.PredefinedType(LongKeyword)
         Public ReadOnly PredefinedTypeObject As TypeSyntax = Factory.PredefinedType(ObjectKeyword)
         Public ReadOnly PredefinedTypeSByte As TypeSyntax = Factory.PredefinedType(SByteKeyword)
         Public ReadOnly PredefinedTypeShort As TypeSyntax = Factory.PredefinedType(ShortKeyword)
-        Public ReadOnly PredefinedTypeSingle As TypeSyntax = Factory.PredefinedType(SingleKeyword)
         Public ReadOnly PredefinedTypeString As TypeSyntax = Factory.PredefinedType(StringKeyword)
         Public ReadOnly PredefinedTypeUInteger As TypeSyntax = Factory.PredefinedType(UIntegerKeyword)
         Public ReadOnly PredefinedTypeULong As TypeSyntax = Factory.PredefinedType(ULongKeyword)
@@ -258,7 +252,7 @@ Namespace CSharpToVBConverter
 
         Public ReadOnly LineContinuation As SyntaxTrivia = Factory.LineContinuationTrivia("_")
         Public ReadOnly SpaceTrivia As SyntaxTrivia = Factory.Space
-        Public ReadOnly VBEOLTrivia As SyntaxTrivia = Factory.EndOfLineTrivia(vbCrLf)
+        Public ReadOnly VbEolTrivia As SyntaxTrivia = Factory.EndOfLineTrivia(vbCrLf)
 
 #Region "Lists"
 
@@ -275,7 +269,7 @@ Namespace CSharpToVBConverter
         Public ReadOnly SpaceLineContinueEOL As New List(Of SyntaxTrivia) From {
             SpaceTrivia,
             LineContinuation,
-            VBEOLTrivia
+            VbEolTrivia
             }
 
         Public ReadOnly SpaceLineContinueSpace As New List(Of SyntaxTrivia) From {
@@ -312,7 +306,6 @@ Namespace CSharpToVBConverter
 
         Public ReadOnly DimModifier As SyntaxTokenList = Factory.TokenList(DimKeyword.WithTrailingTrivia(SpaceTrivia))
         Public ReadOnly FriendModifier As SyntaxTokenList = Factory.TokenList(FriendKeyword)
-        Public ReadOnly PrivateModifier As SyntaxTokenList = Factory.TokenList(PrivateKeyword)
         Public ReadOnly ProtectedModifier As SyntaxTokenList = Factory.TokenList(ProtectedKeyword)
         Public ReadOnly PublicModifier As SyntaxTokenList = Factory.TokenList(PublicKeyword)
 
@@ -333,7 +326,7 @@ Namespace CSharpToVBConverter
         End Function
 
         Friend Function FactoryDimStatement(Declarators As SeparatedSyntaxList(Of VariableDeclaratorSyntax)) As LocalDeclarationStatementSyntax
-            Return Factory.LocalDeclarationStatement(DimModifier, Declarators).WithTrailingEOL
+            Return Factory.LocalDeclarationStatement(DimModifier, Declarators).WithTrailingEol
         End Function
 
         Friend Function FactoryDimStatement(Name As String, asClause As AsClauseSyntax, initializer As EqualsValueSyntax) As LocalDeclarationStatementSyntax
@@ -347,12 +340,12 @@ Namespace CSharpToVBConverter
             Return FactoryDimStatement(declarator)
         End Function
 
-        Friend Function FactoryEndBlockStatement(EndBlockKind As SyntaxKind, BlockKeyword As SyntaxToken, finaltrivia As SyntaxTriviaList) As EndBlockStatementSyntax
-            Return Factory.EndBlockStatement(EndBlockKind, EndKeyword.WithTrailingTrivia(SpaceTrivia), BlockKeyword).WithAppendedTrailingTrivia(finaltrivia).WithTrailingEOL
+        Friend Function FactoryEndBlockStatement(EndBlockKind As SyntaxKind, BlockKeyword As SyntaxToken, finalTrivia As SyntaxTriviaList) As EndBlockStatementSyntax
+            Return Factory.EndBlockStatement(EndBlockKind, EndKeyword.WithTrailingTrivia(SpaceTrivia), BlockKeyword).WithAppendedTrailingTrivia(finalTrivia).WithTrailingEol
         End Function
 
-        Public ReadOnly FactoryImportComilierServices As ImportsStatementSyntax = Factory.ImportsStatement(Factory.SingletonSeparatedList(Of ImportsClauseSyntax)(Factory.SimpleImportsClause(Factory.IdentifierName(CompilerServices)))).WithAppendedEOL
-        Public ReadOnly FactoryImportInteropServices As ImportsStatementSyntax = Factory.ImportsStatement(Factory.SingletonSeparatedList(Of ImportsClauseSyntax)(Factory.SimpleImportsClause(Factory.IdentifierName(InteropServices)))).WithAppendedEOL
+        Public ReadOnly FactoryImportCompilerServices As ImportsStatementSyntax = Factory.ImportsStatement(Factory.SingletonSeparatedList(Of ImportsClauseSyntax)(Factory.SimpleImportsClause(Factory.IdentifierName(CompilerServices)))).WithAppendedEol
+        Public ReadOnly FactoryImportInteropServices As ImportsStatementSyntax = Factory.ImportsStatement(Factory.SingletonSeparatedList(Of ImportsClauseSyntax)(Factory.SimpleImportsClause(Factory.IdentifierName(InteropServices)))).WithAppendedEol
 
         Friend Function FactoryTypeArgumentList(DictionaryTypeElement As List(Of TypeSyntax)) As TypeArgumentListSyntax
             Return Factory.TypeArgumentList(openParenToken, OfKeyword.WithTrailingTrivia(SpaceTrivia), Factory.SeparatedList(DictionaryTypeElement), CloseParenToken)
@@ -372,6 +365,7 @@ Namespace CSharpToVBConverter
         Public ReadOnly AsObject As SimpleAsClauseSyntax = Factory.SimpleAsClause(PredefinedTypeObject)
 
 #End If
+#Enable Warning InconsistentNaming
 
     End Module
 End Namespace

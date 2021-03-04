@@ -6,13 +6,13 @@ Imports System.IO
 Imports System.Reflection
 Imports System.Threading
 Imports CSharpToVBApp
-Imports CSharpToVBConverter
-Imports CSharpToVBConverter.ConversionResult
 
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Emit
+Imports SupportClasses
 
 Imports Xunit
+
 Namespace Tests.ConvertDirectories
 
     Public Module TestSupport
@@ -37,11 +37,11 @@ Namespace Tests.ConvertDirectories
                     .SourceCode = fs.GetFileTextFromStream()
                 }
 
-                Dim resultOfConversion As ConversionResult = ConvertInputRequest(requestToConvert, New DefaultVbOptions, csPreprocessorSymbols, vbPreprocessorSymbols, CSharpReferences(Assembly.Load("System.Windows.Forms").Location, optionalReferences).ToArray, ReportException:=Nothing, mProgress:=Nothing, CancelToken:=CancellationToken.None)
-                If resultOfConversion.ResultStatus = ResultTriState.Failure Then
+                Dim resultOfConversion As ConversionResult = Utilities.ConvertInputRequest(requestToConvert, New DefaultVbOptions, csPreprocessorSymbols, vbPreprocessorSymbols, Utilities.CSharpReferences(Assembly.Load("System.Windows.Forms").Location, optionalReferences).ToArray, reportException:=Nothing, mProgress:=Nothing, cancelToken:=CancellationToken.None)
+                If resultOfConversion.ResultStatus = ConversionResult.ResultTriState.Failure Then
                     Return Task.FromResult(False)
                 End If
-                Dim compileResult As (CompileSuccess As Boolean, EmitResult As EmitResult) = CompileVisualBasicString(StringToBeCompiled:=resultOfConversion.ConvertedCode, vbPreprocessorSymbols, DiagnosticSeverity.Error, resultOfConversion)
+                Dim compileResult As (CompileSuccess As Boolean, EmitResult As EmitResult) = CompileVisualBasicString(stringToBeCompiled:=resultOfConversion.ConvertedCode, vbPreprocessorSymbols, DiagnosticSeverity.Error, resultOfConversion)
                 If Not compileResult.CompileSuccess OrElse resultOfConversion.GetFilteredListOfFailures().Any Then
                     Dim msg As String = If(compileResult.CompileSuccess, resultOfConversion.GetFilteredListOfFailures()(0).GetMessage, "Fatal Compile error")
                     Throw New ApplicationException($"{pathWithFileName} failed to compile with error :{vbCrLf}{msg}")
@@ -52,7 +52,8 @@ Namespace Tests.ConvertDirectories
         End Function
 
         Public Async Function TestProcessDirectoryAsync(sourceDirectory As String) As Task(Of Boolean)
-            Return Await ProcessDirectoryAsync(MainForm:=Nothing, sourceDirectory, TargetDirectory:="", StopButton:=Nothing, ListBoxFileList:=Nothing, SourceLanguageExtension:="cs", New ProcessingStats(""), AddressOf TestProcessFileAsync, CancellationToken.None).ConfigureAwait(continueOnCapturedContext:=True)
+            Return Await ProcessDirectoryAsync(mainForm:=Nothing, sourceDirectory, targetDirectory:="", stopButton:=Nothing, listBoxFileList:=Nothing, sourceLanguageExtension:="cs", New ProcessingStats(""), AddressOf TestProcessFileAsync, CancellationToken.None).ConfigureAwait(continueOnCapturedContext:=True)
         End Function
+
     End Module
 End Namespace

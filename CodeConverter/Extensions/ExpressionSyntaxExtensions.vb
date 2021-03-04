@@ -3,9 +3,9 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Runtime.CompilerServices
-Imports CSharpToVBConverter
 Imports CSharpToVBConverter.CSharpToVBVisitors.CSharpConverter
 Imports Microsoft.CodeAnalysis
+Imports Utilities
 
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
@@ -13,7 +13,7 @@ Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace CSharpToVBConverter
+Namespace Extensions
     Public Module ExpressionSyntaxExtensions
 
         <Extension>
@@ -39,7 +39,7 @@ Namespace CSharpToVBConverter
                 Dim afterEOL As Boolean
                 For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
                     Dim trivia As SyntaxTrivia = e.Value
-                    Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.index, LookaheadCount:=1)
+                    Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.index, lookaheadCount:=1)
 
                     Select Case trivia.RawKind
                         Case VB.SyntaxKind.WhitespaceTrivia
@@ -51,7 +51,7 @@ Namespace CSharpToVBConverter
                                     newLeadingTrivia = newLeadingTrivia.Add(SpaceTrivia)
                                     newLeadingTrivia = newLeadingTrivia.Add(LineContinuation)
                                     e.MoveNext()
-                                    nextTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.index, LookaheadCount:=1)
+                                    nextTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.index, lookaheadCount:=1)
                                     If nextTrivia.IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
                                         newLeadingTrivia = newLeadingTrivia.Add(If(trivia.Span.Length > nextTrivia.Span.Length, trivia, nextTrivia))
                                         e.MoveNext()
@@ -83,7 +83,7 @@ Namespace CSharpToVBConverter
                                     e.MoveNext()
                                 Case VB.SyntaxKind.None
                                     newLeadingTrivia = newLeadingTrivia.Add(trivia)
-                                    newLeadingTrivia = newLeadingTrivia.Add(VBEOLTrivia)
+                                    newLeadingTrivia = newLeadingTrivia.Add(VbEolTrivia)
                                 Case VB.SyntaxKind.EndOfLineTrivia
                                     newLeadingTrivia = newLeadingTrivia.Add(trivia)
                                 Case VB.SyntaxKind.EndOfLineTrivia
@@ -118,7 +118,7 @@ Namespace CSharpToVBConverter
             Dim newTrailingTrivia As New SyntaxTriviaList
 
             For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
-                Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.index, LookaheadCount:=1)
+                Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.index, lookaheadCount:=1)
                 Select Case e.Value.RawKind
                     Case VB.SyntaxKind.WhitespaceTrivia
                         Select Case nextTrivia.RawKind
@@ -157,7 +157,7 @@ Namespace CSharpToVBConverter
                         End Select
                     Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
                         newTrailingTrivia = newTrailingTrivia.Add(e.Value)
-                        newTrailingTrivia = newTrailingTrivia.Add(VBEOLTrivia)
+                        newTrailingTrivia = newTrailingTrivia.Add(VbEolTrivia)
                         If nextTrivia.IsEndOfLine Then
                             e.MoveNext()
                         End If
@@ -250,7 +250,7 @@ Namespace CSharpToVBConverter
                                 Return (_Error:=True, PredefinedTypeObject)
                             End If
                             If type.ToString.StartsWith("(", StringComparison.Ordinal) Then
-                                Return (_Error:=False, type.ToString.ConvertCSStringToName)
+                                Return (_Error:=False, type.ToString.ConvertCsStringToName)
                             End If
                         End If
 
@@ -285,7 +285,7 @@ Namespace CSharpToVBConverter
                         TypeOf expressionBody Is VBS.AddRemoveHandlerStatementSyntax OrElse
                         TypeOf expressionBody Is VBS.RaiseEventStatementSyntax OrElse
                         TypeOf expressionBody Is VBS.ThrowStatementSyntax Then
-                statement = DirectCast(expressionBody, VBS.StatementSyntax).WithTrailingEOL
+                statement = DirectCast(expressionBody, VBS.StatementSyntax).WithTrailingEol
             ElseIf ArrowExpressionClause.Parent.IsKind(CS.SyntaxKind.SetAccessorDeclaration) OrElse IsReturnVoid Then
                 If TypeOf expressionBody Is VBS.ObjectCreationExpressionSyntax Then
                     statement = FactoryDimStatement("tempVar", Factory.AsNewClause(CType(expressionBody, VBS.NewExpressionSyntax)), Nothing).WithPrependedLeadingTrivia(leadingComments)
@@ -298,7 +298,7 @@ Namespace CSharpToVBConverter
                 statement = Factory.ReturnStatement(DirectCast(expressionBody.WithLeadingTrivia(SpaceTrivia), VBS.ExpressionSyntax)) _
                                         .WithLeadingTrivia(leadingComments)
             End If
-            Return ReplaceOneStatementWithMarkedStatements(ArrowExpressionClause, statement.WithTrailingEOL)
+            Return ReplaceOneStatementWithMarkedStatements(ArrowExpressionClause, statement.WithTrailingEol)
         End Function
 
         <Extension>

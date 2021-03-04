@@ -11,7 +11,7 @@ Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace CSharpToVBConverter
+Namespace Extensions
     Friend Module BlockExtensions
 
         <Extension>

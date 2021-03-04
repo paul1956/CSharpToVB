@@ -8,13 +8,13 @@ Imports System.Runtime.CompilerServices
 Friend Module MenuExtensions
 
     Private Sub FileMenuMRUList_MouseDown(sender As Object, e As MouseEventArgs)
-        If e.Button = Windows.Forms.MouseButtons.Right Then
+        If e.Button = MouseButtons.Right Then
             Clipboard.SetText(text:=CType(sender, ToolStripMenuItem).Text)
         End If
     End Sub
 
     <Extension>
-    Friend Sub FileMenuMRUUpdateUI(dropDownItems As ToolStripItemCollection, ClickEvent As EventHandler)
+    Friend Sub FileMenuMruUpdateUi(dropDownItems As ToolStripItemCollection, clickEvent As EventHandler)
         ' clear MRU menu items...
         Dim mruToolStripItems As New List(Of ToolStripItem)
         ' create a temporary collection containing every MRU menu item
@@ -28,7 +28,7 @@ Friend Module MenuExtensions
         Next
         ' iterate through list and remove each from menu...
         For Each mruToolStripItem As ToolStripItem In mruToolStripItems
-            RemoveHandler mruToolStripItem.Click, ClickEvent
+            RemoveHandler mruToolStripItem.Click, clickEvent
             RemoveHandler mruToolStripItem.MouseDown, AddressOf FileMenuMRUList_MouseDown
             dropDownItems.Remove(mruToolStripItem)
             mruToolStripItem.Dispose()
@@ -43,7 +43,7 @@ Friend Module MenuExtensions
                 .Tag = "MRU:" & sPath
             }
             ' hook into the click event handler so we can open the file later...
-            AddHandler clsItem.Click, ClickEvent
+            AddHandler clsItem.Click, clickEvent
             AddHandler clsItem.MouseDown, AddressOf FileMenuMRUList_MouseDown
             ' insert into DropDownItems list...
             dropDownItems.Insert(dropDownItems.Count - 10, clsItem)
@@ -52,33 +52,32 @@ Friend Module MenuExtensions
     End Sub
 
     <Extension>
-    Friend Function IndexOf(ContextMenu As ContextMenuStrip, Text As String, Optional searchAllChildren As Boolean = False) As Integer
-        Return ContextMenu.Items.IndexOf(ContextMenu.Items.Find(Text, searchAllChildren)(0))
+    Friend Function IndexOf(contextMenu As ContextMenuStrip, text As String, Optional searchAllChildren As Boolean = False) As Integer
+        Return contextMenu.Items.IndexOf(contextMenu.Items.Find(text, searchAllChildren)(0))
     End Function
 
     <Extension>
-    Friend Sub mnuAddToMRU(mru_Data As Specialized.StringCollection, Text As String)
+    Friend Sub MnuAddToMru(mruData As Specialized.StringCollection, text As String)
         ' remove the item from the collection if exists so that we can
         ' re-add it to the beginning...
-        If mru_Data.Contains(Text) Then
-            mru_Data.Remove(Text)
+        If mruData.Contains(text) Then
+            mruData.Remove(text)
         End If
         ' add to MRU list..
-        mru_Data.Add(Text)
+        mruData.Add(text)
         ' make sure there are only ever 5 items...
-        While mru_Data.Count > 5
-            mru_Data.RemoveAt(0)
+        While mruData.Count > 5
+            mruData.RemoveAt(0)
         End While
     End Sub
 
     <Extension>
-    Friend Sub TSFindWhatMRUUpdateUI(dropDownItems As ToolStripComboBox)
+    Friend Sub TsFindWhatMruUpdateUi(dropDownItems As ToolStripComboBox)
         If My.Settings.TSFindWhatMRU_Data Is Nothing Then
             My.Settings.TSFindWhatMRU_Data = New Specialized.StringCollection
             My.Settings.Save()
         End If
         ' clear MRU menu items...
-        Dim mruToolStripItems As New List(Of ToolStripItem)
         dropDownItems.Items.Clear()
         ' display items (in reverse order so the most recent is on top)...
         For iCounter As Integer = My.Settings.TSFindWhatMRU_Data.Count - 1 To 0 Step -1
@@ -87,7 +86,7 @@ Friend Module MenuExtensions
     End Sub
 
     <Extension>
-    Friend Sub UpdateLastFileMenu(MainForm As Form1)
+    Friend Sub UpdateLastFileMenu(mainForm As Form1)
         ' load MRU...
         If My.Settings.MRU_Data Is Nothing Then
             My.Settings.MRU_Data = New Specialized.StringCollection
@@ -97,14 +96,14 @@ Friend Module MenuExtensions
 
         ' show separator...
         If My.Settings.MRU_Data.Count > 0 Then
-            MainForm.mnuFileLastFolder.Text = Path.GetDirectoryName(My.Settings.MRU_Data.Last)
-            MainForm.mnuFileLastFolder.Visible = True
-            MainForm.mnuFileSep1.Visible = True
-            MainForm.mnuFileSep2.Visible = True
+            mainForm.mnuFileLastFolder.Text = Path.GetDirectoryName(My.Settings.MRU_Data.Last)
+            mainForm.mnuFileLastFolder.Visible = True
+            mainForm.mnuFileSep1.Visible = True
+            mainForm.mnuFileSep2.Visible = True
         Else
-            MainForm.mnuFileLastFolder.Visible = False
-            MainForm.mnuFileSep1.Visible = False
-            MainForm.mnuFileSep2.Visible = False
+            mainForm.mnuFileLastFolder.Visible = False
+            mainForm.mnuFileSep1.Visible = False
+            mainForm.mnuFileSep2.Visible = False
         End If
     End Sub
 

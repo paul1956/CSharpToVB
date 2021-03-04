@@ -1,8 +1,10 @@
 ﻿' Licensed to the .NET Foundation under one or more agreements.
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
+Imports Extensions
+Imports SupportClasses
 
-Namespace CSharpToVBConverter
+Namespace Utilities
 
     Friend Module NameGenerator
 
@@ -85,10 +87,10 @@ Namespace CSharpToVBConverter
         ''' <summary>
         ''' Transforms baseName into a name that does not conflict with any name in 'reservedNames'
         ''' </summary>
-        Friend Function EnsureUniqueness(baseName As String, _usedIdentifiers As Dictionary(Of String, SymbolTableEntry), reservedNames As IEnumerable(Of String)) As String
+        Friend Function EnsureUniqueness(baseName As String, usedIdentifiers As Dictionary(Of String, SymbolTableEntry), reservedNames As IEnumerable(Of String)) As String
             Dim names As List(Of String) = New List(Of String) From {baseName}
             Dim isFixed As List(Of Boolean) = New List(Of Boolean) From {False}
-            For Each s As SymbolTableEntry In _usedIdentifiers.Values
+            For Each s As SymbolTableEntry In usedIdentifiers.Values
                 names.Add(s.Name)
             Next
             For Each s As String In reservedNames.Distinct

@@ -1,29 +1,37 @@
 ﻿' Licensed to the .NET Foundation under one or more agreements.
 ' The .NET Foundation licenses this file to you under the MIT license.
 
-Friend Enum vbErrors
+Friend Enum VbErrors
+#Disable Warning InconsistentNaming
     None = 0
     ReturnWOGoSub = 3
     IllegalFuncCall = 5
     Overflow = 6
     OutOfMemory = 7
     OutOfBounds = 9
-    ArrayLocked = 10
+
+    '    ArrayLocked = 10
     DivByZero = 11
+
     TypeMismatch = 13
     OutOfStrSpace = 14
-    ExprTooComplex = 16
-    CantContinue = 17
-    UserInterrupt = 18
+
+    'ExprTooComplex = 16
+    'CantContinue = 17
+    'UserInterrupt = 18
     ResumeWOErr = 20
+
     OutOfStack = 28
-    UNDONE = 29
-    UndefinedProc = 35
-    TooManyClients = 47
+
+    'UNDONE = 29
+    'UndefinedProc = 35
+    'TooManyClients = 47
     DLLLoadErr = 48
-    DLLBadCallingConv = 49
-    InternalError = 51
+
+    'DLLBadCallingConv = 49
+    'InternalError = 51
     BadFileNameOrNumber = 52
+
     FileNotFound = 53
     BadFileMode = 54
     FileAlreadyOpen = 55
@@ -41,118 +49,133 @@ Friend Enum vbErrors
     PathFileAccess = 75
     PathNotFound = 76
     ObjNotSet = 91
-    IllegalFor = 92
-    BadPatStr = 93
+
+    'IllegalFor = 92
+    'BadPatStr = 93
     CantUseNull = 94
-    UserDefined = 95
-    AdviseLimit = 96
-    BadCallToFriendFunction = 97
-    CantPassPrivateObject = 98
-    DLLCallException = 99
+
+    'UserDefined = 95
+    'AdviseLimit = 96
+    'BadCallToFriendFunction = 97
+    'CantPassPrivateObject = 98
+    'DLLCallException = 99
     DoesntImplementICollection = 100
+
     Abort = 287
-    InvalidFileFormat = 321
-    CantCreateTmpFile = 322
-    InvalidResourceFormat = 325
-    InvalidPropertyValue = 380
-    InvalidPropertyArrayIndex = 381
-    SetNotSupportedAtRuntime = 382
-    SetNotSupported = 383
-    NeedPropertyArrayIndex = 385
-    SetNotPermitted = 387
-    GetNotSupportedAtRuntime = 393
-    GetNotSupported = 394
+
+    'InvalidFileFormat = 321
+    'CantCreateTmpFile = 322
+    'InvalidResourceFormat = 325
+    'InvalidPropertyValue = 380
+    'InvalidPropertyArrayIndex = 381
+    'SetNotSupportedAtRuntime = 382
+    'SetNotSupported = 383
+    'NeedPropertyArrayIndex = 385
+    'SetNotPermitted = 387
+    'GetNotSupportedAtRuntime = 393
+    'GetNotSupported = 394
     PropertyNotFound = 422
-    NoSuchControlOrProperty = 423
-    NotObject = 424
+
+    'NoSuchControlOrProperty = 423
+    'NotObject = 424
     CantCreateObject = 429
-    OLENotSupported = 430
+
+    'OLENotSupported = 430
     OLEFileNotFound = 432
+
     OLENoPropOrMethod = 438
-    OLEAutomationError = 440
-    LostTLB = 442
-    OLENoDefault = 443
-    ActionNotSupported = 445
+
+    'OLEAutomationError = 440
+    'LostTLB = 442
+    'OLENoDefault = 443
+    'ActionNotSupported = 445
     NamedArgsNotSupported = 446
-    LocaleSettingNotSupported = 447
+
+    'LocaleSettingNotSupported = 447
     NamedParamNotFound = 448
+
     ParameterNotOptional = 449
-    FuncArityMismatch = 450
-    NotEnum = 451
-    InvalidOrdinal = 452
-    InvalidDllFunctionName = 453
-    CodeResourceNotFound = 454
-    CodeResourceLockError = 455
-    DuplicateKey = 457
-    InvalidTypeLibVariable = 458
-    ObjDoesNotSupportEvents = 459
-    InvalidClipboardFormat = 460
-    IdentNotMember = 461
+
+    'FuncArityMismatch = 450
+    'NotEnum = 451
+    'InvalidOrdinal = 452
+    'InvalidDllFunctionName = 453
+    'CodeResourceNotFound = 454
+    'CodeResourceLockError = 455
+    'DuplicateKey = 457
+    'InvalidTypeLibVariable = 458
+    'ObjDoesNotSupportEvents = 459
+    'InvalidClipboardFormat = 460
+    'IdentNotMember = 461
     ServerNotFound = 462
-    ObjNotRegistered = 463
-    InvalidPicture = 481
-    PrinterError = 482
-    CantSaveFileToTemp = 735
-    SearchTextNotFound = 744
+
+    'ObjNotRegistered = 463
+    'InvalidPicture = 481
+    'PrinterError = 482
+    'CantSaveFileToTemp = 735
+    'SearchTextNotFound = 744
     ReplacementsTooLong = 746
 
-    NotYetImplemented = 32768
-    FileNotFoundWithName = 40243
-    CantFindDllEntryPoint = 59201
+    'NotYetImplemented = 32768
+    'FileNotFoundWithName = 40243
+    'CantFindDllEntryPoint = 59201
 
-    SeekErr = 32771
-    ReadFault = 32772
-    WriteFault = 32773
-    BadFunctionId = 32774
-    FileLockViolation = 32775
-    ShareRequired = 32789
-    BufferTooSmall = 32790
-    InvDataRead = 32792
-    UnsupFormat = 32793
-    RegistryAccess = 32796
-    LibNotRegistered = 32797
-    Usage = 32799
-    UndefinedType = 32807
-    QualifiedNameDisallowed = 32808
-    InvalidState = 32809
-    WrongTypeKind = 32810
-    ElementNotFound = 32811
-    AmbiguousName = 32812
-    ModNameConflict = 32813
-    UnknownLcid = 32814
-    BadModuleKind = 35005
-    NoContainingLib = 35009
-    BadTypeId = 35010
-    BadLibId = 35011
+    'SeekErr = 32771
+    'ReadFault = 32772
+    'WriteFault = 32773
+    'BadFunctionId = 32774
+    'FileLockViolation = 32775
+    'ShareRequired = 32789
+    'BufferTooSmall = 32790
+    'InvDataRead = 32792
+    'UnsupFormat = 32793
+    'RegistryAccess = 32796
+    'LibNotRegistered = 32797
+    'Usage = 32799
+    'UndefinedType = 32807
+    'QualifiedNameDisallowed = 32808
+    'InvalidState = 32809
+    'WrongTypeKind = 32810
+    'ElementNotFound = 32811
+    'AmbiguousName = 32812
+    'ModNameConflict = 32813
+    'UnknownLcid = 32814
+    'BadModuleKind = 35005
+    'NoContainingLib = 35009
+    'BadTypeId = 35010
+    'BadLibId = 35011
     Eof = 35012
-    SizeTooBig = 35013
-    ExpectedFuncNotModule = 35015
-    ExpectedFuncNotRecord = 35016
-    ExpectedFuncNotProject = 35017
-    ExpectedFuncNotVar = 35018
-    ExpectedTypeNotProj = 35019
-    UnsuitableFuncPropMatch = 35020
-    BrokenLibRef = 35021
-    UnsupportedTypeLibFeature = 35022
-    ModuleAsType = 35024
-    InvalidTypeInfoKind = 35025
-    InvalidTypeLibFunction = 35026
-    OperationNotAllowedInDll = 40035
-    CompileError = 40036
-    CantEvalWatch = 40037
-    MissingVbaTypeLib = 40038
-    UserReset = 40040
-    MissingEndBrack = 40041
-    IncorrectTypeChar = 40042
-    InvalidNumLit = 40043
-    IllegalChar = 40044
-    IdTooLong = 40045
-    StatementTooComplex = 40046
-    ExpectedTokens = 40047
-    InconsistentPropFuncs = 40067
-    CircularType = 40068
+
+    'SizeTooBig = 35013
+    'ExpectedFuncNotModule = 35015
+    'ExpectedFuncNotRecord = 35016
+    'ExpectedFuncNotProject = 35017
+    'ExpectedFuncNotVar = 35018
+    'ExpectedTypeNotProj = 35019
+    'UnsuitableFuncPropMatch = 35020
+    'BrokenLibRef = 35021
+    'UnsupportedTypeLibFeature = 35022
+    'ModuleAsType = 35024
+    'InvalidTypeInfoKind = 35025
+    'InvalidTypeLibFunction = 35026
+    'OperationNotAllowedInDll = 40035
+    'CompileError = 40036
+    'CantEvalWatch = 40037
+    'MissingVbaTypeLib = 40038
+    'UserReset = 40040
+    'MissingEndBrack = 40041
+    'IncorrectTypeChar = 40042
+    'InvalidNumLit = 40043
+    'IllegalChar = 40044
+    'IdTooLong = 40045
+    'StatementTooComplex = 40046
+    'ExpectedTokens = 40047
+    'InconsistentPropFuncs = 40067
+    'CircularType = 40068
     AccessViolation = &H80004003 'This is E_POINTER.  This is what VB6 returns from err.Number when calling into a .NET assembly that throws an AccessViolation
-    LastTrappable = ReplacementsTooLong
+
+    'LastTrappable = ReplacementsTooLong
+#Enable Warning InconsistentNaming
 End Enum
 
 ' Implements error utilities for Basic
@@ -161,9 +184,6 @@ Friend NotInheritable Class ExceptionUtils
     ' Prevent creation.
     Private Sub New()
     End Sub
-
-    Friend Const DISP_E_UNKNOWNNAME As Integer = &H80020006I
-    Friend Const DISP_E_NOTACOLLECTION As Integer = &H80020011I
 
     Friend Shared Function VbMakeExceptionEx(number As Integer, sMsg As String) As Exception
         Dim vBDefinedError As Boolean
@@ -175,200 +195,135 @@ Friend NotInheritable Class ExceptionUtils
 
     End Function
 
-    Friend Shared Function BuildException(Number As Integer, Description As String, ByRef VBDefinedError As Boolean) As Exception
+    Friend Shared Function BuildException(number As Integer, description As String, ByRef vbDefinedError As Boolean) As Exception
 
-        VBDefinedError = True
+        vbDefinedError = True
 
-        Select Case Number
+        Select Case number
 
-            Case vbErrors.None
+            Case VbErrors.None
 
-            Case vbErrors.ReturnWOGoSub,
-                vbErrors.ResumeWOErr,
-                vbErrors.CantUseNull,
-                vbErrors.DoesntImplementICollection
-                Return New InvalidOperationException(Description)
+            Case VbErrors.ReturnWOGoSub,
+                VbErrors.ResumeWOErr,
+                VbErrors.CantUseNull,
+                VbErrors.DoesntImplementICollection
+                Return New InvalidOperationException(description)
 
-            Case vbErrors.IllegalFuncCall,
-                vbErrors.NamedParamNotFound,
-                vbErrors.NamedArgsNotSupported,
-                vbErrors.ParameterNotOptional
-                Return New ArgumentException(Description)
+            Case VbErrors.IllegalFuncCall,
+                VbErrors.NamedParamNotFound,
+                VbErrors.NamedArgsNotSupported,
+                VbErrors.ParameterNotOptional
+                Return New ArgumentException(description)
 
-            Case vbErrors.OLENoPropOrMethod
-                Return New MissingMemberException(Description)
+            Case VbErrors.OLENoPropOrMethod
+                Return New MissingMemberException(description)
 
-            Case vbErrors.Overflow
-                Return New OverflowException(Description)
+            Case VbErrors.Overflow
+                Return New OverflowException(description)
 
-            Case vbErrors.OutOfMemory, vbErrors.OutOfStrSpace
-                Return New OutOfMemoryException(Description)
+            Case VbErrors.OutOfMemory, VbErrors.OutOfStrSpace
+                Return New OutOfMemoryException(description)
 
-            Case vbErrors.OutOfBounds
-                Return New IndexOutOfRangeException(Description)
+            Case VbErrors.OutOfBounds
+                Return New IndexOutOfRangeException(description)
 
-            Case vbErrors.DivByZero
-                Return New DivideByZeroException(Description)
+            Case VbErrors.DivByZero
+                Return New DivideByZeroException(description)
 
-            Case vbErrors.TypeMismatch
-                Return New InvalidCastException(Description)
+            Case VbErrors.TypeMismatch
+                Return New InvalidCastException(description)
 
-            Case vbErrors.OutOfStack
-                Return New StackOverflowException(Description)
+            Case VbErrors.OutOfStack
+                Return New StackOverflowException(description)
 
-            Case vbErrors.DLLLoadErr
-                Return New TypeLoadException(Description)
+            Case VbErrors.DLLLoadErr
+                Return New TypeLoadException(description)
 
-            Case vbErrors.FileNotFound
-                Return New IO.FileNotFoundException(Description)
+            Case VbErrors.FileNotFound
+                Return New IO.FileNotFoundException(description)
 
-            Case vbErrors.EndOfFile
-                Return New IO.EndOfStreamException(Description)
+            Case VbErrors.EndOfFile
+                Return New IO.EndOfStreamException(description)
 
-            Case vbErrors.IOError,
-                vbErrors.BadFileNameOrNumber,
-                vbErrors.BadFileMode,
-                vbErrors.FileAlreadyOpen,
-                vbErrors.FileAlreadyExists,
-                vbErrors.BadRecordLen,
-                vbErrors.DiskFull,
-                vbErrors.BadRecordNum,
-                vbErrors.TooManyFiles,
-                vbErrors.DevUnavailable,
-                vbErrors.PermissionDenied,
-                vbErrors.DiskNotReady,
-                vbErrors.DifferentDrive,
-                vbErrors.PathFileAccess
-                Return New IO.IOException(Description)
+            Case VbErrors.IOError,
+                VbErrors.BadFileNameOrNumber,
+                VbErrors.BadFileMode,
+                VbErrors.FileAlreadyOpen,
+                VbErrors.FileAlreadyExists,
+                VbErrors.BadRecordLen,
+                VbErrors.DiskFull,
+                VbErrors.BadRecordNum,
+                VbErrors.TooManyFiles,
+                VbErrors.DevUnavailable,
+                VbErrors.PermissionDenied,
+                VbErrors.DiskNotReady,
+                VbErrors.DifferentDrive,
+                VbErrors.PathFileAccess
+                Return New IO.IOException(description)
 
-            Case vbErrors.PathNotFound,
-                vbErrors.OLEFileNotFound
-                Return New IO.FileNotFoundException(Description)
+            Case VbErrors.PathNotFound,
+                VbErrors.OLEFileNotFound
+                Return New IO.FileNotFoundException(description)
 
-            Case vbErrors.ObjNotSet
-                Return New NullReferenceException(Description)
+            Case VbErrors.ObjNotSet
+                Return New NullReferenceException(description)
 
-            Case vbErrors.PropertyNotFound
-                Return New MissingFieldException(Description)
+            Case VbErrors.PropertyNotFound
+                Return New MissingFieldException(description)
 
-            Case vbErrors.CantCreateObject,
-                vbErrors.ServerNotFound
-                Return New Exception(Description)
+            Case VbErrors.CantCreateObject,
+                VbErrors.ServerNotFound
+                Return New Exception(description)
 
-            Case vbErrors.AccessViolation
+            Case VbErrors.AccessViolation
                 Return New AccessViolationException() 'We never want a custom description here.  Use the localized message that comes for free inside the exception
 
             Case Else
                 'Fall below to default
-                VBDefinedError = False
-                Return New Exception(Description)
+                vbDefinedError = False
+                Return New Exception(description)
         End Select
 
-        VBDefinedError = False
-        Return New Exception(Description)
+        vbDefinedError = False
+        Return New Exception(description)
 
     End Function
 
     ''' <summary>
     ''' Return a new instance of ArgumentException with the message from resource file and the Exception.ArgumentName property set.
     ''' </summary>
-    ''' <param name="ArgumentName">The name of the argument (parameter). Not localized.</param>
-    ''' <param name="ResourceID">The resource ID. Use CompilerServices.ResID.xxx</param>
-    ''' <param name="PlaceHolders">Strings that will replace place holders in the resource string, if any.</param>
+    ''' <param name="argumentName">The name of the argument (parameter). Not localized.</param>
+    ''' <param name="resourceId">The resource ID. Use CompilerServices.ResID.xxx</param>
+    ''' <param name="placeHolders">Strings that will replace place holders in the resource string, if any.</param>
     ''' <returns>A new instance of ArgumentException.</returns>
     ''' <remarks>This is the preferred way to construct an argument exception.</remarks>
-    Friend Shared Function GetArgumentExceptionWithArgName(ArgumentName As String,
-                                                           ResourceID As String,
-                                                           ParamArray PlaceHolders() As String) As ArgumentException
+    Friend Shared Function GetArgumentExceptionWithArgName(argumentName As String,
+                                                           resourceId As String,
+                                                           ParamArray placeHolders() As String) As ArgumentException
 
-        Return New ArgumentException(String.Format(ResourceID, PlaceHolders), ArgumentName)
+        Return New ArgumentException(String.Format(resourceId, placeHolders), argumentName)
     End Function
 
     ''' <summary>
     ''' Return a new instance of ArgumentNullException with message: "Argument cannot be Nothing."
     ''' </summary>
-    ''' <param name="ArgumentName">The name of the argument (parameter). Not localized.</param>
+    ''' <param name="argumentName">The name of the argument (parameter). Not localized.</param>
     ''' <returns>A new instance of ArgumentNullException.</returns>
-    Friend Shared Function GetArgumentNullException(ArgumentName As String) As ArgumentNullException
+    Friend Shared Function GetArgumentNullException(argumentName As String) As ArgumentNullException
 
-        Return New ArgumentNullException(ArgumentName, "Argument Null Exception")
-    End Function
-
-    ''' <summary>
-    ''' Return a new instance of ArgumentNullException with the message from resource file.
-    ''' </summary>
-    ''' <param name="ArgumentName">The name of the argument (parameter). Not localized.</param>
-    ''' <param name="ResourceID">The resource ID. Use CompilerServices.ResID.xxx</param>
-    ''' <param name="PlaceHolders">Strings that will replace place holders in the resource string, if any.</param>
-    ''' <returns>A new instance of ArgumentNullException.</returns>
-    Friend Shared Function GetArgumentNullException(ArgumentName As String,
-                                                    ResourceID As String,
-                                                    ParamArray PlaceHolders() As String) As ArgumentNullException
-
-        Return New ArgumentNullException(ArgumentName, String.Format(ResourceID, PlaceHolders))
-    End Function
-
-    ''' <summary>
-    ''' Return a new instance of IO.DirectoryNotFoundException with the message from resource file.
-    ''' </summary>
-    ''' <param name="ResourceID">The resource ID. Use CompilerServices.ResID.xxx</param>
-    ''' <param name="PlaceHolders">Strings that will replace place holders in the resource string, if any.</param>
-    ''' <returns>A new instance of IO.DirectoryNotFoundException.</returns>
-    Friend Shared Function GetDirectoryNotFoundException(ResourceID As String,
-                                                         ParamArray PlaceHolders() As String) As IO.DirectoryNotFoundException
-
-        Return New IO.DirectoryNotFoundException(String.Format(ResourceID,
-                                                               PlaceHolders))
-    End Function
-
-    ''' <summary>
-    ''' Return a new instance of IO.FileNotFoundException with the message from resource file.
-    ''' </summary>
-    ''' <param name="FileName">The file name (path) of the not found file.</param>
-    ''' <param name="ResourceID">The resource ID. Use CompilerServices.ResID.xxx</param>
-    ''' <param name="PlaceHolders">Strings that will replace place holders in the resource string, if any.</param>
-    ''' <returns>A new instance of IO.FileNotFoundException.</returns>
-    Friend Shared Function GetFileNotFoundException(FileName As String,
-                                                    ResourceID As String,
-                                                    ParamArray PlaceHolders() As String) As IO.FileNotFoundException
-
-        Return New IO.FileNotFoundException(String.Format(ResourceID, PlaceHolders), FileName)
+        Return New ArgumentNullException(argumentName, "Argument Null Exception")
     End Function
 
     ''' <summary>
     ''' Return a new instance of InvalidOperationException with the message from resource file.
     ''' </summary>
-    ''' <param name="ResourceID">The resource ID. Use CompilerServices.ResID.xxx</param>
-    ''' <param name="PlaceHolders">Strings that will replace place holders in the resource string, if any.</param>
+    ''' <param name="resourceId">The resource ID. Use CompilerServices.ResID.xxx</param>
+    ''' <param name="placeHolders">Strings that will replace place holders in the resource string, if any.</param>
     ''' <returns>A new instance of InvalidOperationException.</returns>
-    Friend Shared Function GetInvalidOperationException(ResourceID As String,
-                                                        ParamArray PlaceHolders() As String) As InvalidOperationException
+    Friend Shared Function GetInvalidOperationException(resourceId As String,
+                                                        ParamArray placeHolders() As String) As InvalidOperationException
 
-        Return New InvalidOperationException(String.Format(ResourceID, PlaceHolders))
-    End Function
-
-    ''' <summary>
-    ''' Return a new instance of IO.IOException with the message from resource file.
-    ''' </summary>
-    ''' <param name="ResourceID">The resource ID. Use CompilerServices.ResID.xxx</param>
-    ''' <param name="PlaceHolders">Strings that will replace place holders in the resource string, if any.</param>
-    ''' <returns>A new instance of IO.IOException.</returns>
-    Friend Shared Function GetIOException(ResourceID As String, ParamArray PlaceHolders() As String) As IO.IOException
-
-        Return New IO.IOException(String.Format(ResourceID, PlaceHolders))
-    End Function
-
-    ''' <summary>
-    ''' Return a new instance of Win32Exception with the message from resource file and the last Win32 error.
-    ''' </summary>
-    ''' <param name="ResourceID">The resource ID. Use CompilerServices.ResID.xxx</param>
-    ''' <param name="PlaceHolders">Strings that will replace place holders in the resource string, if any.</param>
-    ''' <returns>A new instance of Win32Exception.</returns>
-    ''' <remarks>There is no way to exclude the Win32 error so this function will call Marshal.GetLastWin32Error all the time.</remarks>
-
-    Friend Shared Function GetWin32Exception(ResourceID As String, ParamArray PlaceHolders() As String) As ComponentModel.Win32Exception
-
-        Return New ComponentModel.Win32Exception(Runtime.InteropServices.Marshal.GetLastWin32Error(), String.Format(ResourceID, PlaceHolders))
+        Return New InvalidOperationException(String.Format(resourceId, placeHolders))
     End Function
 
 End Class

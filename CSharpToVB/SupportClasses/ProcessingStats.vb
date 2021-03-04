@@ -4,13 +4,13 @@
 
 Public NotInheritable Class ProcessingStats
 
-    Public Sub New(LastFileNameWithPath As String)
-        Me.LastFileNameWithPath = LastFileNameWithPath
-        ElapasedTimer = New Stopwatch
-        ElapasedTimer.Start()
+    Public Sub New(lastFileNameWithPath As String)
+        Me.LastFileNameWithPath = lastFileNameWithPath
+        s_elapsedTimer = New Stopwatch
+        s_elapsedTimer.Start()
     End Sub
 
-    Public ReadOnly ElapasedTimer As Stopwatch
+    Public ReadOnly s_elapsedTimer As Stopwatch
     Public Property FilesProcessed As Long
     Public Property LastFileNameWithPath As String
     Public Property TotalFilesToProcess As Long

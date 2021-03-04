@@ -17,7 +17,7 @@ Public Module ConvertSolutionFileUtilities
             {"9A19103F-16F7-4668-BE54-9A1E7A4F7556", "778DAE3C-4631-46EA-AA77-85C1314464D9"}, ' C# (forces use of SDK project system
             {"FAE04EC0-301F-11D3-BF4B-00C04F79EFBC", "F184B08F-C81C-45F6-A57F-5ABD9991F28F"}, ' C#, Windows (C#)
             {"8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942", ""}, ' C++, Windows (Visual C++)
-            {"13B669BE-BB05-4DDF-9536-439F39A36129", ""}, ' CPS barebones project
+            {"13B669BE-BB05-4DDF-9536-439F39A36129", ""}, ' CPS bare-bones project
             {"A9ACE9BB-CECE-4E62-9AA4-C7E7C5BD2124", ""}, ' Database
             {"4F174C21-8C12-11D0-8340-0000F80270F8", ""}, ' Database (other project types)
             {"C8D11400-126E-41CD-887F-60BD40844F9E", ""}, ' Database
@@ -83,27 +83,27 @@ Public Module ConvertSolutionFileUtilities
                 "MinimumVisualStudioVersion ="
                 }
 
-    Private Function GetGuid(CurrentLine As String, First As Boolean) As String
+    Private Function GetGuid(currentLine As String, first As Boolean) As String
         Dim start As Integer
         Dim len As Integer
-        If First Then
-            start = CurrentLine.IndexOf("{", StringComparison.OrdinalIgnoreCase) + 1
-            len = CurrentLine.IndexOf("}", StringComparison.OrdinalIgnoreCase) - start
+        If first Then
+            start = currentLine.IndexOf("{", StringComparison.OrdinalIgnoreCase) + 1
+            len = currentLine.IndexOf("}", StringComparison.OrdinalIgnoreCase) - start
         Else
-            start = CurrentLine.LastIndexOf("{", StringComparison.OrdinalIgnoreCase) + 1
-            len = CurrentLine.LastIndexOf("}", StringComparison.OrdinalIgnoreCase) - start
+            start = currentLine.LastIndexOf("{", StringComparison.OrdinalIgnoreCase) + 1
+            len = currentLine.LastIndexOf("}", StringComparison.OrdinalIgnoreCase) - start
         End If
         If start > 0 Then
-            Return CurrentLine.Substring(start, len).ToUpperInvariant
+            Return currentLine.Substring(start, len).ToUpperInvariant
         End If
         Return String.Empty
     End Function
 
-    Private Function GetNextTextLine(SR As StreamReader) As String
+    Private Function GetNextTextLine(sr As TextReader) As String
         While True
-            Dim aLine As String = SR.ReadLine()
+            Dim aLine As String = sr.ReadLine()
             If aLine Is Nothing Then
-                Return Nothing
+                Exit While
             End If
             If aLine.Length > 0 Then
                 Return aLine
@@ -112,60 +112,60 @@ Public Module ConvertSolutionFileUtilities
         Return Nothing
     End Function
 
-    Public Sub ConvertSolutionFile(SolutionFilePath As String, saveSolutionRoot As String, ProjectsToBeAdded As List(Of String), Optional Testing As Boolean = False)
-        If String.IsNullOrWhiteSpace(SolutionFilePath) Then
-            Throw New ArgumentException($"'{NameOf(SolutionFilePath)}' cannot be null or whitespace", NameOf(SolutionFilePath))
+    Public Sub ConvertSolutionFile(solutionFilePath As String, saveSolutionRoot As String, projectsToBeAdded As List(Of String), Optional testing As Boolean = False)
+        If String.IsNullOrWhiteSpace(solutionFilePath) Then
+            Throw New ArgumentException($"'{NameOf(solutionFilePath)}' cannot be null or whitespace", NameOf(solutionFilePath))
         End If
 
         If String.IsNullOrEmpty(saveSolutionRoot) Then
             Throw New ArgumentException($"'{NameOf(saveSolutionRoot)}' cannot be null or empty", NameOf(saveSolutionRoot))
         End If
 
-        If ProjectsToBeAdded Is Nothing Then
-            Throw New ArgumentNullException(NameOf(ProjectsToBeAdded))
+        If projectsToBeAdded Is Nothing Then
+            Throw New ArgumentNullException(NameOf(projectsToBeAdded))
         End If
 
-        If Not File.Exists(SolutionFilePath) Then
+        If Not File.Exists(solutionFilePath) Then
             Throw New IOException($"Destination directory file name missing in {NameOf(ConvertSolutionFile)}")
         End If
 
         Dim sb As New StringBuilder
-        Using sr As New StreamReader(SolutionFilePath)
+        Using sr As New StreamReader(solutionFilePath)
             ' Process File header
             Dim currentLine As String
             For Each headerLine As String In s_headerLines
                 currentLine = GetNextTextLine(sr)
                 If String.IsNullOrEmpty(currentLine) OrElse Not currentLine?.StartsWith(headerLine, StringComparison.Ordinal) Then
-                    Throw New Exception($"Error: Invalid solution header line '{currentLine}' does not start with '{headerLine}', while converting '{SolutionFilePath}'")
+                    Throw New Exception($"Error: Invalid solution header line '{currentLine}' does not start with '{headerLine}', while converting '{solutionFilePath}'")
                 End If
                 sb.AppendLine(currentLine)
             Next
             ' Process File body
             '   Process Projects
-            Dim projectsGUIDMap As New Dictionary(Of String, String)
+            Dim projectsGuidMap As New Dictionary(Of String, String)
             currentLine = GetNextTextLine(sr)
             If currentLine Is Nothing Then
-                Throw New IOException($"Premature EOF in solution file '{SolutionFilePath}'")
+                Throw New IOException($"Premature EOF in solution file '{solutionFilePath}'")
             End If
             While currentLine.StartsWith("Project(""{", StringComparison.Ordinal)
-                Dim oldProjectTypeGUID As String = GetGuid(currentLine, First:=True)
+                Dim oldProjectTypeGuid As String = GetGuid(currentLine, first:=True)
                 Dim newProjectTypeGuid As String = Nothing
-                If Not s_guidMappingDictionary.TryGetValue(oldProjectTypeGUID, newProjectTypeGuid) Then
-                    Throw New Exception($"Error: Unknown Project Type GUID {oldProjectTypeGUID}, while converting '{SolutionFilePath}'")
+                If Not s_guidMappingDictionary.TryGetValue(oldProjectTypeGuid, newProjectTypeGuid) Then
+                    Throw New Exception($"Error: Unknown Project Type GUID {oldProjectTypeGuid}, while converting '{solutionFilePath}'")
                 End If
-                Dim oldProjectGUID As String = GetGuid(currentLine, First:=False)
+                Dim oldProjectGuid As String = GetGuid(currentLine, first:=False)
                 Dim newProjectGuid As String
                 Dim projectConverted As Boolean = newProjectTypeGuid.Length <> 0
                 If projectConverted Then
                     newProjectGuid = Guid.NewGuid.ToString
                 Else
-                    newProjectTypeGuid = oldProjectTypeGUID
-                    newProjectGuid = oldProjectGUID
+                    newProjectTypeGuid = oldProjectTypeGuid
+                    newProjectGuid = oldProjectGuid
                 End If
-                projectsGUIDMap.Add(oldProjectGUID, newProjectGuid)
+                projectsGuidMap.Add(oldProjectGuid, newProjectGuid)
                 If projectConverted Then
-                    sb.AppendLine(currentLine.Replace(oldProjectTypeGUID, newProjectTypeGuid, StringComparison.OrdinalIgnoreCase) _
-                                             .Replace(oldProjectGUID, newProjectGuid, StringComparison.OrdinalIgnoreCase) _
+                    sb.AppendLine(currentLine.Replace(oldProjectTypeGuid, newProjectTypeGuid, StringComparison.OrdinalIgnoreCase) _
+                                             .Replace(oldProjectGuid, newProjectGuid, StringComparison.OrdinalIgnoreCase) _
                                              .Replace(".csproj", ".vbproj", StringComparison.OrdinalIgnoreCase))
                 Else
                     sb.AppendLine(currentLine)
@@ -178,9 +178,9 @@ Public Module ConvertSolutionFileUtilities
                         Dim trimmedCurrentLine As String = currentLine.Trim(" "c, CChar(vbTab))
                         While currentLine.Length > 0 AndAlso trimmedCurrentLine <> "EndProjectSection"
                             Dim endIndex As Integer = trimmedCurrentLine.IndexOf(" = ", StringComparison.OrdinalIgnoreCase)
-                            If Not Testing Then
+                            If Not testing Then
                                 Dim fileName As String = trimmedCurrentLine.Substring(0, endIndex)
-                                Dim sourceFileFullPath As String = Path.Combine(Path.GetDirectoryName(SolutionFilePath), fileName)
+                                Dim sourceFileFullPath As String = Path.Combine(Path.GetDirectoryName(solutionFilePath), fileName)
                                 If File.Exists(sourceFileFullPath) Then
                                     FileIO.FileSystem.CopyFile(sourceFileFullPath, Path.Combine(saveSolutionRoot, fileName), overwrite:=True)
                                 End If
@@ -195,12 +195,11 @@ Public Module ConvertSolutionFileUtilities
                         sb.AppendLine(currentLine)
                         currentLine = GetNextTextLine(sr)
                         While currentLine.Length > 0 AndAlso currentLine.Trim(" "c, CChar(vbTab)) <> "EndProjectSection"
-                            oldProjectTypeGUID = GetGuid(currentLine, First:=False)
-                            If String.IsNullOrWhiteSpace(oldProjectTypeGUID) Then
-                                Stop
+                            oldProjectTypeGuid = GetGuid(currentLine, first:=False)
+                            If String.IsNullOrWhiteSpace(oldProjectTypeGuid) Then
                                 sb.AppendLine(currentLine)
                             Else
-                                sb.AppendLine(currentLine.Replace(oldProjectTypeGUID, projectsGUIDMap(oldProjectTypeGUID), StringComparison.OrdinalIgnoreCase))
+                                sb.AppendLine(currentLine.Replace(oldProjectTypeGuid, projectsGuidMap(oldProjectTypeGuid), StringComparison.OrdinalIgnoreCase))
                             End If
                             currentLine = GetNextTextLine(sr)
                         End While
@@ -208,18 +207,17 @@ Public Module ConvertSolutionFileUtilities
                         currentLine = GetNextTextLine(sr)
                     Case "EndProject"
                     Case Else
-                        Throw New Exception($"Unknown Project Section Type: {currentLine.Trim(" "c, CChar(vbTab))}, while converting '{SolutionFilePath}'")
+                        Throw New Exception($"Unknown Project Section Type: {currentLine.Trim(" "c, CChar(vbTab))}, while converting '{solutionFilePath}'")
                 End Select
                 sb.AppendLine(currentLine)
                 currentLine = GetNextTextLine(sr)
             End While
-            For Each project As String In ProjectsToBeAdded
+            For Each project As String In projectsToBeAdded
                 sb.Append(project)
             Next
             '   Process Global
             If Not currentLine = "Global" Then
-                Stop
-                Throw New Exception($"""Global"" section missing, while converting '{SolutionFilePath}'")
+                Throw New Exception($"""Global"" section missing, while converting '{solutionFilePath}'")
             End If
             sb.AppendLine(currentLine)
             currentLine = GetNextTextLine(sr)
@@ -242,12 +240,12 @@ Public Module ConvertSolutionFileUtilities
                         sb.AppendLine(currentLine)
                         currentLine = GetNextTextLine(sr)
                         While (Not String.IsNullOrEmpty(currentLine)) AndAlso Not currentLine.Contains("EndGlobalSection", StringComparison.OrdinalIgnoreCase)
-                            Dim oldGUID As String = GetGuid(currentLine, First:=True)
-                            If String.IsNullOrWhiteSpace(oldGUID) Then
+                            Dim oldGuid As String = GetGuid(currentLine, first:=True)
+                            If String.IsNullOrWhiteSpace(oldGuid) Then
                                 Stop
                                 sb.AppendLine(currentLine)
                             Else
-                                sb.AppendLine(currentLine.Replace(oldGUID, projectsGUIDMap(oldGUID), StringComparison.OrdinalIgnoreCase))
+                                sb.AppendLine(currentLine.Replace(oldGuid, projectsGuidMap(oldGuid), StringComparison.OrdinalIgnoreCase))
                             End If
                             currentLine = GetNextTextLine(sr)
                         End While
@@ -256,11 +254,11 @@ Public Module ConvertSolutionFileUtilities
                         sb.AppendLine(currentLine)
                         currentLine = GetNextTextLine(sr)
                         While (Not String.IsNullOrEmpty(currentLine)) AndAlso Not currentLine.Contains("EndGlobalSection", StringComparison.OrdinalIgnoreCase)
-                            Dim oldGUID As String = GetGuid(currentLine, First:=True)
-                            If currentLine.Contains("SolutionGuid", StringComparison.OrdinalIgnoreCase) OrElse String.IsNullOrWhiteSpace(oldGUID) Then
+                            Dim oldGuid As String = GetGuid(currentLine, first:=True)
+                            If currentLine.Contains("SolutionGuid", StringComparison.OrdinalIgnoreCase) OrElse String.IsNullOrWhiteSpace(oldGuid) Then
                                 sb.AppendLine(currentLine)
                             Else
-                                sb.AppendLine(currentLine.Replace(oldGUID, projectsGUIDMap(oldGUID), StringComparison.OrdinalIgnoreCase))
+                                sb.AppendLine(currentLine.Replace(oldGuid, projectsGuidMap(oldGuid), StringComparison.OrdinalIgnoreCase))
                             End If
                             currentLine = GetNextTextLine(sr)
                         End While
@@ -274,19 +272,19 @@ Public Module ConvertSolutionFileUtilities
                         sb.AppendLine(currentLine)
                         currentLine = GetNextTextLine(sr)
                         While (Not String.IsNullOrEmpty(currentLine)) AndAlso Not currentLine.Contains("EndGlobalSection", StringComparison.OrdinalIgnoreCase)
-                            Dim oldGUID As String = GetGuid(currentLine, First:=True)
-                            If String.IsNullOrWhiteSpace(oldGUID) Then
+                            Dim oldGuid As String = GetGuid(currentLine, first:=True)
+                            If String.IsNullOrWhiteSpace(oldGuid) Then
                                 Stop
                                 sb.AppendLine(currentLine)
                             Else
-                                currentLine = currentLine.Replace(oldGUID, projectsGUIDMap(oldGUID), StringComparison.OrdinalIgnoreCase)
+                                currentLine = currentLine.Replace(oldGuid, projectsGuidMap(oldGuid), StringComparison.OrdinalIgnoreCase)
                             End If
-                            oldGUID = GetGuid(currentLine, First:=False)
-                            If String.IsNullOrWhiteSpace(oldGUID) Then
+                            oldGuid = GetGuid(currentLine, first:=False)
+                            If String.IsNullOrWhiteSpace(oldGuid) Then
                                 Stop
                                 sb.AppendLine(currentLine)
                             Else
-                                sb.AppendLine(currentLine.Replace(oldGUID, projectsGUIDMap(oldGUID), StringComparison.OrdinalIgnoreCase))
+                                sb.AppendLine(currentLine.Replace(oldGuid, projectsGuidMap(oldGuid), StringComparison.OrdinalIgnoreCase))
                             End If
                             currentLine = GetNextTextLine(sr)
                         End While
@@ -295,7 +293,7 @@ Public Module ConvertSolutionFileUtilities
                         Stop
                 End Select
                 If String.IsNullOrEmpty(currentLine) Then
-                    Throw New IOException($"Premature EOF in solution file '{SolutionFilePath}'")
+                    Throw New IOException($"Premature EOF in solution file '{solutionFilePath}'")
                 End If
                 sb.AppendLine(currentLine)
                 currentLine = GetNextTextLine(sr)
@@ -304,10 +302,10 @@ Public Module ConvertSolutionFileUtilities
             currentLine = GetNextTextLine(sr)
 
             If Not String.IsNullOrWhiteSpace(currentLine) Then
-                Throw New IOException($"Premature EOF in solution file '{SolutionFilePath}'")
+                Throw New IOException($"Premature EOF in solution file '{solutionFilePath}'")
             End If
         End Using
-        Using sw As New StreamWriter(Path.Combine(saveSolutionRoot, Path.GetFileName(SolutionFilePath)))
+        Using sw As New StreamWriter(Path.Combine(saveSolutionRoot, Path.GetFileName(solutionFilePath)))
             sw.Write(sb.ToString)
         End Using
     End Sub

@@ -57,7 +57,7 @@ End Namespace]]>.Value
         '  Return (compilationDiagnostics, "")
         'End If
 
-        Dim generator1 As ISourceGenerator = New SourceGenerator.CsvGenerator
+        Dim generator1 As ISourceGenerator = New CsvGenerator
 
         Dim iaGenerator = {generator1}.ToImmutableArray
         'Dim iaGenerator = New ImmutableArray(Of ISourceGenerator) From {generator1}

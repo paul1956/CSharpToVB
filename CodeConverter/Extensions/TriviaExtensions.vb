@@ -4,51 +4,30 @@
 
 Imports System.Runtime.CompilerServices
 Imports Microsoft.CodeAnalysis
+Imports Utilities
 Imports CS = Microsoft.CodeAnalysis.CSharp
-Imports CSFactory = Microsoft.CodeAnalysis.CSharp.SyntaxFactory
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
-Namespace CSharpToVBConverter
+Namespace Extensions
     Public Module TriviaExtensions
 
         <Extension>
-        Friend Function AdjustWhitespace(trivia As SyntaxTrivia, nextTrivia As SyntaxTrivia, afterLineContinue As Boolean) As SyntaxTrivia
-            If trivia.Span.Length = nextTrivia.Span.Length Then
-                Return trivia
-            End If
-            Dim lineContinueOffset As Integer = If(afterLineContinue, 2, 0)
-            If trivia.Span.Length > nextTrivia.Span.Length Then
-                Return Factory.Whitespace(New String(" "c, Math.Max(trivia.FullWidth - lineContinueOffset, 1)))
-            End If
-            Return Factory.Whitespace(New String(" "c, Math.Max(nextTrivia.FullWidth - lineContinueOffset, 1)))
-        End Function
-
-        <Extension>
-        Friend Function AppendWhitespace(FirstTrivia As SyntaxTrivia, Width As Integer) As SyntaxTrivia
-            If FirstTrivia.Language = "C#" Then
-                Return CSFactory.Whitespace(StrDup(Math.Max(FirstTrivia.FullWidth + Width, 1), " "c))
-            Else
-                Return Factory.Whitespace(StrDup(Math.Max(FirstTrivia.FullWidth + Width, 1), " "c))
-            End If
-        End Function
-
-        <Extension>
-        Friend Function DirectiveNotAllowedHere(trivia As SyntaxTrivia, ByRef AfterEOL As Boolean) As SyntaxTriviaList
+        Friend Function DirectiveNotAllowedHere(trivia As SyntaxTrivia, ByRef afterEol As Boolean) As SyntaxTriviaList
             Dim newTriviaList As New SyntaxTriviaList
 
-            Dim triviaAsString As String = ""
+            Dim triviaAsString As String
 
             If trivia.IsKind(VB.SyntaxKind.DisabledTextTrivia) Then
                 newTriviaList = newTriviaList.AddRange(SpaceLineContinueSpace)
                 newTriviaList = newTriviaList.Add(Factory.CommentTrivia($" ' TODO VB does not allow Disabled Text here, original text:"))
-                newTriviaList = newTriviaList.Add(VBEOLTrivia)
+                newTriviaList = newTriviaList.Add(VbEolTrivia)
                 For Each triviaAsString In trivia.ToFullString.SplitLines()
                     newTriviaList = newTriviaList.AddRange(SpaceLineContinueSpace)
                     newTriviaList = newTriviaList.Add(Factory.CommentTrivia($" ' {triviaAsString}".Replace("  ", " ", StringComparison.Ordinal).TrimEnd))
-                    newTriviaList = newTriviaList.Add(VBEOLTrivia)
+                    newTriviaList = newTriviaList.Add(VbEolTrivia)
                 Next
-                AfterEOL = newTriviaList.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia)
+                afterEol = newTriviaList.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia)
                 Return newTriviaList
             End If
 
@@ -66,14 +45,14 @@ Namespace CSharpToVBConverter
                 Case VB.SyntaxKind.EnableWarningDirectiveTrivia
                     triviaAsString = $"#Enable Warning Directive {trivia.ToFullString.Substring("#Enable Warning".Length).Trim.WithoutNewLines(" "c)}"
                 Case Else
-                    Stop
+                    Throw UnexpectedValue(trivia.RawKind.ToString())
             End Select
             Const msg As String = " ' TODO VB does not allow directives here, original directive: "
             newTriviaList = New SyntaxTriviaList
             newTriviaList = newTriviaList.AddRange(SpaceLineContinueSpace)
             newTriviaList = newTriviaList.Add(Factory.CommentTrivia($"{msg}{triviaAsString}".Replace("  ", " ", StringComparison.Ordinal).TrimEnd))
-            newTriviaList = newTriviaList.Add(VBEOLTrivia)
-            AfterEOL = True
+            newTriviaList = newTriviaList.Add(VbEolTrivia)
+            afterEol = True
             Return newTriviaList
         End Function
 

@@ -7,27 +7,27 @@ Imports Microsoft.CodeAnalysis
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
-Namespace CSharpToVBConverter
+Namespace Utilities
 
     Public Module ParseUtilities
 
-        Private Function GetCSharpParseOptions(CSPreprocessorSymbols As List(Of String)) As CS.CSharpParseOptions
+        Private Function GetCSharpParseOptions(csPreprocessorSymbols As List(Of String)) As CS.CSharpParseOptions
             Return New CS.CSharpParseOptions(CS.LanguageVersion.Latest,
                                              DocumentationMode.Parse,
                                              SourceCodeKind.Script,
-                                             CSPreprocessorSymbols)
+                                             csPreprocessorSymbols)
         End Function
 
-        Friend Function GetVBParseOptions(VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object))) As VB.VisualBasicParseOptions
+        Friend Function GetVbParseOptions(vbPreprocessorSymbols As List(Of KeyValuePair(Of String, Object))) As VB.VisualBasicParseOptions
             Return New VB.VisualBasicParseOptions(VB.LanguageVersion.Latest,
                                                   DocumentationMode.Diagnose,
                                                   SourceCodeKind.Regular,
-                                                  VBPreprocessorSymbols)
+                                                  vbPreprocessorSymbols)
         End Function
 
-        Public Function ParseCSharpSource(SourceText As String, CSPreprocessorSymbols As List(Of String)) As SyntaxTree
-            Return CS.SyntaxFactory.ParseSyntaxTree(Text.SourceText.From(SourceText),
-                                                    GetCSharpParseOptions(CSPreprocessorSymbols)
+        Public Function ParseCSharpSource(sourceText As String, csPreprocessorSymbols As List(Of String)) As SyntaxTree
+            Return CS.SyntaxFactory.ParseSyntaxTree(Text.SourceText.From(sourceText),
+                                                    GetCSharpParseOptions(csPreprocessorSymbols)
                                                    )
         End Function
 

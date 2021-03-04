@@ -4,22 +4,23 @@
 
 Imports System.Runtime.CompilerServices
 Imports System.Text
-Imports CSharpToVBConverter.CSharpToVBVisitors
+Imports Extensions
 Imports Microsoft.CodeAnalysis
+Imports SupportClasses
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace CSharpToVBConverter
+Namespace Utilities
 
     Public Module IdentifierSupport
 
-        Friend Sub CreateDesignationName(ListOfVariables As List(Of VBS.ModifiedIdentifierSyntax), ByRef sBuilder As StringBuilder)
+        Friend Sub CreateDesignationName(listOfVariables As List(Of VBS.ModifiedIdentifierSyntax), ByRef sBuilder As StringBuilder)
             sBuilder.Append("TupleTempVar")
-            For j As Integer = 0 To ListOfVariables.Count - 1
-                Dim v As VBS.ModifiedIdentifierSyntax = ListOfVariables(j)
+            For j As Integer = 0 To listOfVariables.Count - 1
+                Dim v As VBS.ModifiedIdentifierSyntax = listOfVariables(j)
                 If v.Identifier.ValueText = "_" Then
                     sBuilder.Append($"_Discard{j}")
                 Else
@@ -29,46 +30,46 @@ Namespace CSharpToVBConverter
         End Sub
 
         <Extension>
-        Friend Function GetNewUniqueName(ConvertedIdentifier As String, _usedIdentifiers As Dictionary(Of String, SymbolTableEntry), IsType As Boolean, Node As CS.CSharpSyntaxNode, Model As SemanticModel) As String
-            If IsType Then
-                Return ConvertedIdentifier
+        Friend Function GetNewUniqueName(convertedIdentifier As String, usedIdentifiers As Dictionary(Of String, SymbolTableEntry), isType As Boolean, node As CS.CSharpSyntaxNode, model As SemanticModel) As String
+            If isType Then
+                Return convertedIdentifier
             End If
 
-            ConvertedIdentifier = ConvertedIdentifier.RemoveBrackets
+            convertedIdentifier = convertedIdentifier.RemoveBrackets
 
-            Dim uniqueID As String = GetUniqueVariableNameInScope(Node, ConvertedIdentifier, _usedIdentifiers, Model)
-            If VB.SyntaxFacts.GetKeywordKind(uniqueID) = VB.SyntaxKind.None Then
-                Return uniqueID
+            Dim uniqueId As String = node.GetUniqueVariableNameInScope(convertedIdentifier, usedIdentifiers, model)
+            If VB.SyntaxFacts.GetKeywordKind(uniqueId) = VB.SyntaxKind.None Then
+                Return uniqueId
             End If
 
-            Return $"[{uniqueID}]"
+            Return $"[{uniqueId}]"
         End Function
 
-        Friend Function IsSpecialReservedWord(ID As String) As Boolean
-            If ID.Equals("Alias", StringComparison.OrdinalIgnoreCase) OrElse
-                    ID.Equals("CType", StringComparison.OrdinalIgnoreCase) OrElse
-                    ID.Equals("End", StringComparison.OrdinalIgnoreCase) OrElse
-                    ID.Equals("Error", StringComparison.OrdinalIgnoreCase) OrElse
-                    ID.Equals("Event", StringComparison.OrdinalIgnoreCase) OrElse
-                    ID.Equals("Imports", StringComparison.OrdinalIgnoreCase) OrElse
-                    ID.Equals("Module", StringComparison.OrdinalIgnoreCase) OrElse
-                    ID.Equals("Option", StringComparison.OrdinalIgnoreCase) OrElse
-                    ID.Equals("Optional", StringComparison.OrdinalIgnoreCase) Then
+        Friend Function IsSpecialReservedWord(id As String) As Boolean
+            If id.Equals("Alias", StringComparison.OrdinalIgnoreCase) OrElse
+                    id.Equals("CType", StringComparison.OrdinalIgnoreCase) OrElse
+                    id.Equals("End", StringComparison.OrdinalIgnoreCase) OrElse
+                    id.Equals("Error", StringComparison.OrdinalIgnoreCase) OrElse
+                    id.Equals("Event", StringComparison.OrdinalIgnoreCase) OrElse
+                    id.Equals("Imports", StringComparison.OrdinalIgnoreCase) OrElse
+                    id.Equals("Module", StringComparison.OrdinalIgnoreCase) OrElse
+                    id.Equals("Option", StringComparison.OrdinalIgnoreCase) OrElse
+                    id.Equals("Optional", StringComparison.OrdinalIgnoreCase) Then
                 Return True
             End If
             Return False
         End Function
 
         ''' <summary>
-        ''' If Name is an VB Reserved word surround with []
+        ''' If id is an VB Reserved word surround with []
         ''' </summary>
-        ''' <param name="Name"></param>
-        Friend Function MakeVBSafeName(Id As String) As String
-            If IsSpecialReservedWord(Id) OrElse
-                VB.SyntaxFacts.IsKeywordKind(VB.SyntaxFacts.GetKeywordKind(Id)) Then
-                Return $"[{Id}]"
+        ''' <param name="id"></param>
+        Friend Function MakeVbSafeName(id As String) As String
+            If IsSpecialReservedWord(id) OrElse
+                VB.SyntaxFacts.IsKeywordKind(VB.SyntaxFacts.GetKeywordKind(id)) Then
+                Return $"[{id}]"
             End If
-            Return Id
+            Return id
         End Function
 
         Friend Function ProcessVariableDesignation(node As CSS.ParenthesizedVariableDesignationSyntax) As List(Of VBS.ModifiedIdentifierSyntax)
@@ -78,7 +79,7 @@ Namespace CSharpToVBConverter
                 If e.Value.RawKind = CS.SyntaxKind.DiscardDesignation Then
                     vbVariableDeclarator = Factory.ModifiedIdentifier("_")
                 Else
-                    vbVariableDeclarator = Factory.ModifiedIdentifier(MakeVBSafeName(e.Value.ToString))
+                    vbVariableDeclarator = Factory.ModifiedIdentifier(MakeVbSafeName(e.Value.ToString))
                 End If
                 vbVariables.Add(vbVariableDeclarator)
             Next

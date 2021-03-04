@@ -3,8 +3,8 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Runtime.CompilerServices
-Imports CSharpToVBConverter
 Imports Microsoft.Win32
+Imports Utilities
 
 Friend Module TargetFrameworkUtilities
 
@@ -36,40 +36,40 @@ Friend Module TargetFrameworkUtilities
         Return "No 4.5 or later version detected"
     End Function
 
-    Private Function MapNameToFramework(Base As String, Separator As String, Name As String) As String
-        Dim nameSplit() As String = Name.Split(".")
+    Private Function MapNameToFramework(base As String, separator As String, name As String) As String
+        Dim nameSplit() As String = name.Split(".")
         Dim minor As String = nameSplit(1)
-        Return $"{If(CInt(nameSplit(0)) >= 5, "NET", Base) }{nameSplit(0)}{Separator}{minor}"
+        Return $"{If(CInt(nameSplit(0)) >= 5, "NET", base) }{nameSplit(0)}{separator}{minor}"
     End Function
 
     <Extension>
-    Friend Sub AddDropDownMenuItem(DropDownItems As ToolStripItemCollection, ItemName As String)
-        DropDownItems.Add(New ToolStripMenuItem With {
+    Friend Sub AddDropDownMenuItem(dropDownItems As ToolStripItemCollection, itemName As String)
+        dropDownItems.Add(New ToolStripMenuItem With {
             .AutoSize = True,
             .CheckOnClick = True,
             .ImageScaling = ToolStripItemImageScaling.None,
-            .Name = $"{ItemName}ToolStripMenuItem",
-            .Text = ItemName
+            .Name = $"{itemName}ToolStripMenuItem",
+            .Text = itemName
         })
     End Sub
 
     ''' <summary>
     ''' Converts a framework name from Project File format to Compile time variable
     ''' </summary>
-    ''' <param name="Framework"></param>
+    ''' <param name="framework"></param>
     ''' <returns></returns>
-    Friend Function FrameworkNameToConstant(Framework As String) As String
-        If Framework = "netcoreapp5.0" Then
+    Friend Function FrameworkNameToConstant(framework As String) As String
+        If framework = "netcoreapp5.0" Then
             Return "NET5_0"
         End If
-        Return Framework.ToUpperInvariant.Replace(".", "_", StringComparison.OrdinalIgnoreCase)
+        Return framework.ToUpperInvariant.Replace(".", "_", StringComparison.OrdinalIgnoreCase)
     End Function
 
     Friend Function GetAllCoreVersions() As List(Of String)
         Dim versions As New List(Of String)
-        Dim dotnetVersions As String() = RunCommand("Dotnet", "--list-sdks", ShowWindow:=False)
+        Dim dotnetVersions As String() = RunCommand("Dotnet", "--list-sdks", showWindow:=False)
         For Each e As String In dotnetVersions
-            Dim item As String = MapNameToFramework("NETCOREAPP", Separator:="_", e.Split(" ")(0))
+            Dim item As String = MapNameToFramework("NETCOREAPP", separator:="_", e.Split(" ")(0))
             If versions.Contains(item) Then
                 Continue For
             End If
@@ -97,7 +97,7 @@ Friend Module TargetFrameworkUtilities
                         Dim sp As String = versionKey.GetValue("SP", "").ToString()
 
                         If Not String.IsNullOrEmpty(name) Then
-                            versions.Add(MapNameToFramework("NET", Separator:="", name))
+                            versions.Add(MapNameToFramework("NET", separator:="", name))
                             Continue For
                         End If
                         For Each subKeyName As String In versionKey.GetSubKeyNames()
@@ -108,12 +108,12 @@ Friend Module TargetFrameworkUtilities
                             End If
                             Dim install As String = subKey.GetValue("Install", "").ToString()
                             If String.IsNullOrEmpty(install) Then  ' No install info; it must be later.
-                                versions.Add(MapNameToFramework("NET", Separator:="", name))
+                                versions.Add(MapNameToFramework("NET", separator:="", name))
                             Else
                                 If Not String.IsNullOrEmpty(sp) AndAlso install = "1" Then
-                                    versions.Add(MapNameToFramework("NET", Separator:="", name))
+                                    versions.Add(MapNameToFramework("NET", separator:="", name))
                                 ElseIf install = "1" Then
-                                    versions.Add(MapNameToFramework("NET", Separator:="", name))
+                                    versions.Add(MapNameToFramework("NET", separator:="", name))
                                 End If
                             End If
                         Next
@@ -132,14 +132,14 @@ Friend Module TargetFrameworkUtilities
     ''' <summary>
     ''' Run a Windows command and return pipes text result to caller
     ''' </summary>
-    ''' <param name="Command"></param>
-    ''' <param name="Args"></param>
-    ''' <param name="ShowWindow"></param>
+    ''' <param name="command"></param>
+    ''' <param name="args"></param>
+    ''' <param name="showWindow"></param>
     ''' <returns>Array of text lines returned by Command</returns>
-    Friend Function RunCommand(Command As String, Args As String, Optional ShowWindow As Boolean = True) As String()
+    Friend Function RunCommand(command As String, args As String, Optional showWindow As Boolean = True) As String()
         Dim oProcess As New Process()
-        Dim oStartInfo As New ProcessStartInfo(Command, Args) With {
-            .CreateNoWindow = Not ShowWindow,
+        Dim oStartInfo As New ProcessStartInfo(command, args) With {
+            .CreateNoWindow = Not showWindow,
             .RedirectStandardOutput = True,
             .UseShellExecute = False
         }

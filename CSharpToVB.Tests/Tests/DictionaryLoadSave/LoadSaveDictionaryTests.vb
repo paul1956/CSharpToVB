@@ -4,7 +4,7 @@
 Imports System.Drawing
 Imports System.IO
 Imports CSharpToVBApp
-Imports CSharpToVBConverter
+Imports Utilities
 Imports Xunit
 
 Namespace Tests.DictionaryLoadSave
@@ -32,20 +32,18 @@ Namespace Tests.DictionaryLoadSave
 
         <Fact>
         Public Sub ClassificationStringToNameTest()
-            Assert.Equal(NameOf(ThemeDefaultColor), ClassificationStringToName("default"))
-            Assert.Equal(NameOf(ThemeErrorColor), ClassificationStringToName("error"))
-            Assert.Equal(NameOf(NumericLiteral), ClassificationStringToName("number"))
-            Assert.Equal(NameOf(String_VerbatimLiteral), ClassificationStringToName("string - verbatim"))
-            Assert.Equal(NameOf(StringLiteral), ClassificationStringToName("string"))
+            Assert.Equal(NameOf(ThemeDefaultColor), "default".ClassificationStringToName())
+            Assert.Equal(NameOf(ThemeErrorColor), "error".ClassificationStringToName())
+            Assert.Equal(NameOf(NumericLiteral), "number".ClassificationStringToName())
+            Assert.Equal(NameOf(String_VerbatimLiteral), "string - verbatim".ClassificationStringToName())
+            Assert.Equal(NameOf(StringLiteral), "string".ClassificationStringToName())
 
-            Assert.Equal(NameOf(Comment), ClassificationStringToName("comment"))
-            Assert.Equal(NameOf(ExcludedCode), ClassificationStringToName("excluded code"))
-            Assert.Equal(NameOf(Identifier), ClassificationStringToName("identifier"))
-            Assert.Equal(NameOf(Keyword), ClassificationStringToName("keyword"))
-            Assert.Equal(NameOf(ClassificationNameStrings.FunctionKeyword), ClassificationStringToName("Function"))
-            Assert.Equal(NameOf(Keyword_Control), ClassificationStringToName("keyword - control"))
-            Assert.Equal($"[{NameOf([Operator])}]", ClassificationStringToName("operator"))
-            Assert.Equal(NameOf(XmlDocComment_EntityReference), ClassificationStringToName("xml doc comment - entity reference"))
+            Assert.Equal(NameOf(Comment), "comment".ClassificationStringToName())
+            Assert.Equal(NameOf(ExcludedCode), "excluded code".ClassificationStringToName())
+            Assert.Equal(NameOf(Identifier), "identifier".ClassificationStringToName())
+            Assert.Equal(NameOf(Keyword), "keyword".ClassificationStringToName())
+            Assert.Equal(NameOf(ClassificationNameStrings.FunctionKeyword), "Function".ClassificationStringToName())
+            Assert.Equal($"[{NameOf([Operator])}]", "operator".ClassificationStringToName())
 
         End Sub
 
@@ -62,13 +60,12 @@ Namespace Tests.DictionaryLoadSave
             Assert.Equal(ClassificationNameToString(NameOf(Identifier)), "identifier")
             Assert.Equal(ClassificationNameToString(NameOf(Keyword)), "keyword")
             Assert.Equal(ClassificationNameToString(NameOf(ClassificationNameStrings.FunctionKeyword)), "function")
-            Assert.Equal(ClassificationNameToString(NameOf(Keyword_Control)), "keyword - control")
             Assert.Equal(ClassificationNameToString(NameOf([Operator])), "operator")
 
         End Sub
 
         <Fact>
-        Public Shared Sub VbTestRenoveNewLine()
+        Public Shared Sub VbTestRemoveNewLine()
             Dim originalString As String = "This is a 2 Line
 String"
             Assert.Equal(originalString.WithoutNewLines, "This is a 2 LineString")

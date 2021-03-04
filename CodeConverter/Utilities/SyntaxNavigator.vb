@@ -5,7 +5,7 @@
 Imports CSharpToVB.PooledObjects
 Imports Microsoft.CodeAnalysis
 
-Namespace CSharpToVBConverter
+Namespace Utilities
 
     Friend NotInheritable Class SyntaxNavigator
 
@@ -117,7 +117,7 @@ Namespace CSharpToVBConverter
             End If
 
             ' consider containing token if current trivia was in the leading trivia
-            If returnNext AndAlso (predicate Is Nothing OrElse predicate = Function(t As SyntaxToken) True OrElse predicate(current.Token)) Then
+            If returnNext AndAlso (predicate Is Nothing OrElse predicate.Equals(Function(t As SyntaxToken) True OrElse predicate(current.Token))) Then
                 Return current.Token
             End If
 
@@ -181,7 +181,7 @@ Namespace CSharpToVBConverter
                     End If
                 End If
 
-                ' walk forward in parent's child list until we find ourself
+                ' walk forward in parent's child list until we find our self
                 ' and then return the next token
                 Dim returnNext As Boolean = False
                 For Each child As SyntaxNodeOrToken In current.Parent.ChildNodesAndTokens()

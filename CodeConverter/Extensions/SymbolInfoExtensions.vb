@@ -6,7 +6,7 @@ Imports System.Runtime.CompilerServices
 
 Imports Microsoft.CodeAnalysis
 
-Namespace CSharpToVBConverter
+Namespace Extensions
 
     Public Module SymbolInfoExtensions
 

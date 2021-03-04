@@ -4,11 +4,15 @@
 
 Imports System.Collections.Immutable
 Imports System.Runtime.InteropServices
+Imports Extensions
 Imports Microsoft.CodeAnalysis
+Imports SupportClasses
+Imports Utilities
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
+
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace CSharpToVBConverter.CSharpToVBVisitors
@@ -22,13 +26,14 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
 
             Private Shared Function CreateImplementsClauseSyntax(implementors As IEnumerable(Of ISymbol), id As SyntaxToken) As VBS.ImplementsClauseSyntax
                 Return Factory.ImplementsClause(implementors.Select(Function(x)
-                                                                        Dim fullyQualifiedName As VBS.NameSyntax = GetFullyQualifiedNameSyntax(TryCast(x.ContainingSymbol, INamedTypeSymbol))
-                                                                        If TypeOf fullyQualifiedName Is VBS.QualifiedNameSyntax Then
-                                                                            Dim left As String = CType(fullyQualifiedName, VBS.QualifiedNameSyntax).Left.ToString
+                                                                        Dim fullyQualifiedName As VBS.NameSyntax = TryCast(x.ContainingSymbol, INamedTypeSymbol).GetFullyQualifiedNameSyntax()
+                                                                        Dim qualifiedNameSyntax As VBS.QualifiedNameSyntax = TryCast(fullyQualifiedName, VBS.QualifiedNameSyntax)
+                                                                        If qualifiedNameSyntax IsNot Nothing Then
+                                                                            Dim left As String = qualifiedNameSyntax.Left.ToString
                                                                             If left.StartsWith("System.", StringComparison.Ordinal) Then
                                                                                 left = left.WithoutLeadingSystemDot
                                                                                 If left.Any Then
-                                                                                    fullyQualifiedName = Factory.QualifiedName(Factory.IdentifierName(left), CType(fullyQualifiedName, VBS.QualifiedNameSyntax).Right)
+                                                                                    fullyQualifiedName = Factory.QualifiedName(Factory.IdentifierName(left), qualifiedNameSyntax.Right)
                                                                                 End If
                                                                             End If
                                                                         End If
@@ -36,11 +41,11 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                                                     End Function).ToArray())
             End Function
 
-            Private Shared Function UndottedMemberName(n As String) As String
+            Private Shared Function MemberNameWithoutDots(n As String) As String
                 Return n.Split("."c).Last().RemoveBrackets
             End Function
 
-            Private Function ConvertAccessor(node As CSS.AccessorDeclarationSyntax, IsModule As Boolean, ByRef isIterator As Boolean) As VBS.AccessorBlockSyntax
+            Private Function ConvertAccessor(node As CSS.AccessorDeclarationSyntax, localIsModule As Boolean, ByRef isIterator As Boolean) As VBS.AccessorBlockSyntax
                 Dim blockKind As VB.SyntaxKind
                 Dim stmt As VBS.AccessorStatementSyntax
                 Dim statements As SyntaxList(Of VBS.StatementSyntax) = Factory.List(Of VBS.StatementSyntax)()
@@ -48,12 +53,12 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Dim visitor As MethodBodyVisitor = New MethodBodyVisitor(_semanticModel, Me)
                 If node.Body IsNot Nothing Then
                     statements = node.Body.GetBodyStatements(visitor)
-                    isIterator = visitor.IsInterator
+                    isIterator = visitor.IsIterator
                 ElseIf node.ExpressionBody IsNot Nothing Then
                     statements = node.ExpressionBody.GetExpressionBodyStatements(False, Me)
                 End If
                 Dim attributes As SyntaxList(Of VBS.AttributeListSyntax) = Factory.List(node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))
-                Dim modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, IsModule, TokenContext.Local).ToList
+                Dim modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, localIsModule, TokenContext.Local).ToList
                 Dim parent As CSS.BasePropertyDeclarationSyntax = DirectCast(node.Parent.Parent, CSS.BasePropertyDeclarationSyntax)
                 Dim valueParam As VBS.ParameterSyntax
                 Dim endStmt As VBS.EndBlockStatementSyntax
@@ -85,8 +90,8 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         Throw New NotSupportedException()
                 End Select
                 Return Factory.AccessorBlock(blockKind,
-                                             stmt.WithConvertedTriviaFrom(node.Body.GetBraces.Item1).WithTrailingEOL,
-                                             Me.AdjustUsingsInNeeded(statements),
+                                             stmt.WithConvertedTriviaFrom(node.Body.GetBraces.Item1).WithTrailingEol,
+                                             Me.AdjustUsingIfNeeded(statements),
                                              endStmt.WithConvertedTriviaFrom(node.Body.GetBraces.Item2)
                                             ).WithConvertedTriviaFrom(node)
             End Function
@@ -95,8 +100,8 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Dim originalId As SyntaxToken = id
                 Dim explicitImplementors As ImmutableArray(Of ISymbol) = memberInfo.ExplicitInterfaceImplementations()
                 If explicitImplementors.Any() Then
-                    Dim memberNames As ILookup(Of String, ISymbol) = memberInfo.ContainingType.GetMembers().ToLookup(Function(s) UndottedMemberName(s.Name), StringComparer.OrdinalIgnoreCase)
-                    Dim explicitMemberName As String = UndottedMemberName(memberInfo.Name)
+                    Dim memberNames As ILookup(Of String, ISymbol) = memberInfo.ContainingType.GetMembers().ToLookup(Function(s) MemberNameWithoutDots(s.Name), StringComparer.OrdinalIgnoreCase)
+                    Dim explicitMemberName As String = MemberNameWithoutDots(memberInfo.Name)
                     Dim hasDuplicateNames As Boolean = memberNames(explicitMemberName).Count() > 1
                     If hasDuplicateNames Then
                         id = Factory.Identifier(GenerateUniqueName(explicitMemberName, Function(n) Not memberNames.Contains(n) AndAlso _addedNames.Add(n)))
@@ -116,15 +121,16 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Return If(Not explicitImplementors.Any(), Nothing, CreateImplementsClauseSyntax(explicitImplementors, originalId))
             End Function
 
-            Friend Sub ConvertAndSplitAttributes(attributeLists As SyntaxList(Of CSS.AttributeListSyntax), <Out> ByRef attributes As List(Of VBS.AttributeListSyntax), <Out> ByRef returnAttributes As SyntaxList(Of VBS.AttributeListSyntax), ByRef FinalDirectiveTrivia As SyntaxTriviaList)
+            Friend Function ConvertAndSplitAttributes(csAttributeLists As SyntaxList(Of CSS.AttributeListSyntax), <Out> ByRef returnAttributes As SyntaxList(Of VBS.AttributeListSyntax), ByRef finalDirectiveTrivia As SyntaxTriviaList) As List(Of VBS.AttributeListSyntax)
+                Dim attributeLists As New List(Of VBS.AttributeListSyntax)
                 Dim retAttr As List(Of VBS.AttributeListSyntax) = New List(Of VBS.AttributeListSyntax)()
-                Dim firstAttribuate As Boolean = True
-                For Each e As IndexClass(Of CSS.AttributeListSyntax) In attributeLists.WithIndex
+                Dim firstAttribute As Boolean = True
+                For Each e As IndexClass(Of CSS.AttributeListSyntax) In csAttributeLists.WithIndex
                     Dim attrList As CSS.AttributeListSyntax = e.Value
                     If attrList.Target Is Nothing OrElse Not attrList.Target.Identifier.IsKind(CS.SyntaxKind.ReturnKeyword) Then
-                        Dim item As VBS.AttributeListSyntax = DirectCast(attrList.Accept(Me), VBS.AttributeListSyntax).RemoveExtraLeadingEOL
-                        If firstAttribuate Then
-                            firstAttribuate = False
+                        Dim item As VBS.AttributeListSyntax = DirectCast(attrList.Accept(Me), VBS.AttributeListSyntax).RemoveExtraLeadingEol
+                        If firstAttribute Then
+                            firstAttribute = False
                             If Not e.IsLast Then
                                 item = item.WithTrailingTrivia(item.GetTrailingTrivia.WithLastLineContinuation)
                             End If
@@ -137,7 +143,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                 Dim needLineContinuation As Boolean = True
                                 Dim leadingIndex As Integer = 0
                                 For Each vbSyntaxTrivia As SyntaxTrivia In itemLeadingTrivia
-                                    Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(itemLeadingTrivia, leadingIndex, LookaheadCount:=1)
+                                    Dim nextTrivia As SyntaxTrivia = itemLeadingTrivia.GetForwardTriviaOrDefault(leadingIndex, lookaheadCount:=1)
                                     Select Case vbSyntaxTrivia.RawKind
                                         Case VB.SyntaxKind.WhitespaceTrivia
                                             If nextTrivia.IsKind(VB.SyntaxKind.CommentTrivia) Then
@@ -195,7 +201,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                             End If
                                             newLeadingTrivia = newLeadingTrivia.Add(Factory.CommentTrivia($"Directive not allowed here {vbSyntaxTrivia}"))
                                         Case VB.SyntaxKind.EndIfDirectiveTrivia
-                                            FinalDirectiveTrivia = FinalDirectiveTrivia.Add(vbSyntaxTrivia)
+                                            finalDirectiveTrivia = finalDirectiveTrivia.Add(vbSyntaxTrivia)
                                         Case VB.SyntaxKind.EndOfLineTrivia
                                             If needWhiteSpace Then
                                                 needWhiteSpace = False
@@ -208,7 +214,6 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                             End If
                                             newLeadingTrivia = newLeadingTrivia.Add(vbSyntaxTrivia)
                                         Case Else
-                                            Stop
                                             needWhiteSpace = True
                                     End Select
                                     leadingIndex += 1
@@ -216,22 +221,24 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                 item = item.WithLeadingTrivia(newLeadingTrivia)
                             End If
                         End If
-                        attributes.Add(item)
+                        attributeLists.Add(item)
                     Else
-                        ' Remove trailing CRLF from return attributes
+                        ' Remove trailing CrLf from return attributes
                         retAttr.Add(DirectCast(attrList.Accept(Me).With({SpaceTrivia}, {SpaceTrivia}), VBS.AttributeListSyntax))
                     End If
                 Next
 
                 returnAttributes = Factory.List(retAttr)
-            End Sub
+                Return attributeLists
+            End Function
 
-            Public Function AdjustUsingsInNeeded(blockStatements As SyntaxList(Of VBS.StatementSyntax)) As SyntaxList(Of VBS.StatementSyntax)
-                If Me.NeedEndUsings > 0 Then
-                    For i As Integer = 1 To Me.NeedEndUsings
+            Public Function AdjustUsingIfNeeded(blockStatements As SyntaxList(Of VBS.StatementSyntax)) As SyntaxList(Of VBS.StatementSyntax)
+                If Me.NeededEndUsingCount > 0 Then
+                    ' ReSharper disable once RedundantAssignment
+                    For i As Integer = 1 To Me.NeededEndUsingCount
                         blockStatements = blockStatements.Add(Factory.EndUsingStatement)
                     Next
-                    Me.NeedEndUsings = 0
+                    Me.NeededEndUsingCount = 0
                 End If
 
                 Return blockStatements
@@ -276,22 +283,22 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     Factory.SubNewStatement(attrs,
                                             Factory.TokenList(modifiers),
                                             parameterList
-                                           ).WithTrailingEOL _
+                                           ).WithTrailingEol _
                                             .RestructureAttributesAndModifiers(attrs.Any, modifiers.Any)
 
-                Dim endSubStmt As VBS.EndBlockStatementSyntax = Factory.EndSubStatement(EndKeyword.WithTrailingTrivia(SpaceTrivia), SubKeyword).WithTrailingEOL
+                Dim endSubStmt As VBS.EndBlockStatementSyntax = Factory.EndSubStatement(EndKeyword.WithTrailingTrivia(SpaceTrivia), SubKeyword).WithTrailingEol
                 Dim statements As New SyntaxList(Of VBS.StatementSyntax)
-                Dim csCloseBrace As SyntaxToken = CSCloseBraceToken
+                Dim csCloseBrace As SyntaxToken
                 If node.Body IsNot Nothing Then
                     csCloseBrace = node.Body.CloseBraceToken
                     For Each e As IndexClass(Of CSS.StatementSyntax) In node.Body.Statements.WithIndex
                         If TypeOf e.Value Is CSS.LocalFunctionStatementSyntax Then
-                            statements = statements.AddRange(ReplaceOneStatementWithMarkedStatements(e.Value, Factory.EmptyStatement(), RemoveStatement:=True))
+                            statements = statements.AddRange(ReplaceOneStatementWithMarkedStatements(e.Value, Factory.EmptyStatement(), removeStatement:=True))
                         Else
                             statements = statements.AddRange(e.Value.Accept(New MethodBodyVisitor(_semanticModel, Me)))
                         End If
                     Next
-                    statements = Me.AdjustUsingsInNeeded(statements)
+                    statements = Me.AdjustUsingIfNeeded(statements)
                     endSubStmt = Factory.EndSubStatement(EndKeyword.WithTrailingTrivia(SpaceTrivia), SubKeyword).WithConvertedTriviaFrom(csCloseBrace)
                     If node.Body.OpenBraceToken.LeadingTrivia.ContainsCommentOrDirectiveTrivia Then
                         Dim trivia As SyntaxTriviaList = node.Body.OpenBraceToken.LeadingTrivia.ConvertTriviaList()
@@ -322,26 +329,26 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
 
                 simpleMemberAccessExpr = Factory.SimpleMemberAccessExpression(meOrMyExpr, Factory.IdentifierName("New"))
                 Return Factory.ExpressionStatement(Factory.InvocationExpression(simpleMemberAccessExpr, argumentList)).
-                                             RestructureArguments(node.ArgumentList).WithConvertedTrailingTriviaFrom(node).WithTrailingEOL
+                                             RestructureArguments(node.ArgumentList).WithConvertedTrailingTriviaFrom(node).WithTrailingEol
             End Function
 
             ''' <summary>
             ''' Creates a new object initialized to a meaningful value.
             ''' </summary>
-            ''' <param name="value"></param>
+            ''' <param name="node"></param>
+            ''' <returns></returns>
             Public Overrides Function VisitConversionOperatorDeclaration(node As CSS.ConversionOperatorDeclarationSyntax) As VB.VisualBasicSyntaxNode
-                Dim attributeLists As New List(Of VBS.AttributeListSyntax)
                 Dim returnAttributes As SyntaxList(Of VBS.AttributeListSyntax) = Nothing
                 Dim finalTrailingDirective As New SyntaxTriviaList
-                Me.ConvertAndSplitAttributes(node.AttributeLists, attributeLists, returnAttributes, finalTrailingDirective)
+                Dim attributeLists As List(Of VBS.AttributeListSyntax) = Me.ConvertAndSplitAttributes(node.AttributeLists, returnAttributes, finalTrailingDirective)
                 Dim parameterList As VBS.ParameterListSyntax = DirectCast(node.ParameterList?.Accept(Me), VBS.ParameterListSyntax).
-                                                                    WithRestructuredingEOLTrivia
+                                                                    WithRestructuredEolTrivia
                 Dim modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, Me.IsModule, TokenContext.Member).ToList
                 Dim visitor As New MethodBodyVisitor(_semanticModel, Me)
                 modifiers.Add(If(node.ImplicitOrExplicitKeyword.ValueText = "explicit", NarrowingKeyword, WideningKeyword))
                 Dim type As VBS.TypeSyntax = DirectCast(node.Type.Accept(Me), VBS.TypeSyntax).With({SpaceTrivia}, {SpaceTrivia})
                 Dim asClause As VBS.SimpleAsClauseSyntax = Factory.SimpleAsClause(Nothing, type)
-                Dim operatorStatement As VBS.OperatorStatementSyntax = Factory.OperatorStatement(Factory.List(attributeLists), Factory.TokenList(modifiers), CTypeKeyword, parameterList, asClause).WithTrailingEOL
+                Dim operatorStatement As VBS.OperatorStatementSyntax = Factory.OperatorStatement(Factory.List(attributeLists), Factory.TokenList(modifiers), CTypeKeyword, parameterList, asClause).WithTrailingEol
                 If finalTrailingDirective.Any Then
                     operatorStatement = operatorStatement.WithAppendedTrailingTrivia(finalTrailingDirective)
                 End If
@@ -357,8 +364,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     Factory.OperatorBlock(operatorStatement,
                                           body,
                                           FactoryEndBlockStatement(VB.SyntaxKind.EndOperatorStatement,
-                                                                   BlockKeyword,
-                                                                   CollectConvertedTokenTrivia(node.Body.GetBraces.Item2, GetLeading:=True, GetTrailing:=True))).WithConvertedTriviaFrom(node))
+                                                                   OperatorKeyword, node.Body.GetBraces.Item2.CollectConvertedTokenTrivia(getLeading:=True, getTrailing:=True))).WithConvertedTriviaFrom(node))
             End Function
 
             Public Overrides Function VisitDestructorDeclaration(node As CSS.DestructorDeclarationSyntax) As VB.VisualBasicSyntaxNode
@@ -384,12 +390,11 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
 
             Public Overrides Function VisitEventDeclaration(node As CSS.EventDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim declaredSymbol As ISymbol = _semanticModel.GetDeclaredSymbol(node)
-                Dim attributeLists As New List(Of VBS.AttributeListSyntax)
                 Dim returnAttributes As SyntaxList(Of VBS.AttributeListSyntax) = Nothing
                 Dim finalTrailingDirective As New SyntaxTriviaList
-                Me.ConvertAndSplitAttributes(node.AttributeLists, attributeLists, returnAttributes, finalTrailingDirective)
+                Dim attributeLists As List(Of VBS.AttributeListSyntax) = Me.ConvertAndSplitAttributes(node.AttributeLists, returnAttributes, finalTrailingDirective)
                 Dim modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, Me.IsModule, TokenContext.Member).ToList
-                Dim eventNameToken As SyntaxToken = GenerateSafeVBToken(node.Identifier, node, _semanticModel, _usedIdentifiers).WithTrailingTrivia(SpaceTrivia)
+                Dim eventNameToken As SyntaxToken = GenerateSafeVbToken(node.Identifier, node, _semanticModel, _usedIdentifiers).WithTrailingTrivia(SpaceTrivia)
                 Dim asClause As VBS.SimpleAsClauseSyntax = Factory.SimpleAsClause(attributeLists:=returnAttributes, DirectCast(node.Type.Accept(Me), VBS.TypeSyntax))
                 modifiers.Add(CustomKeyword)
                 Dim implementsClauseOrNothing As VBS.ImplementsClauseSyntax = If(declaredSymbol Is Nothing, Nothing, Me.CreateImplementsClauseSyntaxOrNull(declaredSymbol, eventNameToken))
@@ -398,7 +403,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                                                               eventNameToken,
                                                                               parameterList:=Nothing,
                                                                               asClause,
-                                                                              implementsClauseOrNothing).WithTrailingEOL
+                                                                              implementsClauseOrNothing).WithTrailingEol
                 If finalTrailingDirective.Any Then
                     stmt = stmt.WithAppendedTrailingTrivia(finalTrailingDirective)
                 End If
@@ -422,12 +427,11 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             Public Overrides Function VisitEventFieldDeclaration(node As CSS.EventFieldDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim decl As CSS.VariableDeclaratorSyntax = node.Declaration.Variables.Single()
                 Dim declaredSymbol As ISymbol = _semanticModel.GetDeclaredSymbol(decl)
-                Dim id As SyntaxToken = Factory.Identifier(MakeVBSafeName(node.Declaration.Variables.Single().Identifier.ValueText))
+                Dim id As SyntaxToken = Factory.Identifier(MakeVbSafeName(node.Declaration.Variables.Single().Identifier.ValueText))
                 Dim implementsClauseOrNothing As VBS.ImplementsClauseSyntax = If(declaredSymbol Is Nothing, Nothing, Me.CreateImplementsClauseSyntaxOrNull(declaredSymbol, id))
                 Dim returnAttributes As New SyntaxList(Of VBS.AttributeListSyntax)
-                Dim attributeList As New List(Of VBS.AttributeListSyntax)
                 Dim finalTrailingDirective As New SyntaxTriviaList
-                Me.ConvertAndSplitAttributes(node.AttributeLists, attributeList, returnAttributes, finalTrailingDirective)
+                Dim attributeList As List(Of VBS.AttributeListSyntax) = Me.ConvertAndSplitAttributes(node.AttributeLists, returnAttributes, finalTrailingDirective)
                 If finalTrailingDirective.Any Then
                     Stop
                 End If
@@ -435,14 +439,14 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                      Factory.TokenList(ConvertModifiers(node.Modifiers, Me.IsModule, TokenContext.Member)),
                                                     id,
                                                     parameterList:=Nothing,
-                                                    Factory.SimpleAsClause(attributeLists:=Nothing, DirectCast(node.Declaration.Type.Accept(Me), VBS.TypeSyntax)).WithTrailingEOL,
+                                                    Factory.SimpleAsClause(attributeLists:=Nothing, DirectCast(node.Declaration.Type.Accept(Me), VBS.TypeSyntax)).WithTrailingEol,
                                                     implementsClauseOrNothing).WithConvertedTriviaFrom(node)
             End Function
 
             Public Overrides Function VisitFieldDeclaration(node As CSS.FieldDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim typeInf As TypeInfo = _semanticModel.GetTypeInfo(node.Declaration.Type)
                 Dim variableOrConstOrReadonly As TokenContext = TokenContext.VariableOrConst
-                If typeInf.ConvertedType IsNot Nothing AndAlso typeInf.ConvertedType.TypeKind = Microsoft.CodeAnalysis.TypeKind.Class Then
+                If typeInf.ConvertedType IsNot Nothing AndAlso typeInf.ConvertedType.TypeKind = TypeKind.Class Then
                     For Each e As IndexClass(Of CSS.VariableDeclaratorSyntax) In node.Declaration.Variables.WithIndex
                         If e.Value.Initializer IsNot Nothing AndAlso e.Value.Initializer.Value.IsKind(CS.SyntaxKind.NullLiteralExpression) Then
                             variableOrConstOrReadonly = TokenContext.Readonly
@@ -484,22 +488,21 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Else
                     modifierList(0) = modifierList(0).WithLeadingTrivia(newLeadingTrivia)
                 End If
-                Dim declarators As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) = node.Declaration.RemodelVariableDeclaration(Me, _semanticModel, IsFieldDeclaration:=True, newLeadingTrivia)
+                Dim declarators As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) = node.Declaration.RemodelVariableDeclaration(Me, _semanticModel, isFieldDeclaration:=True, newLeadingTrivia)
                 Dim fieldDeclaration As VBS.FieldDeclarationSyntax
                 Dim modifiers As SyntaxTokenList = Factory.TokenList(modifierList)
                 fieldDeclaration = Factory.FieldDeclaration(attributes, modifiers, declarators).WithLeadingTrivia(newLeadingTrivia)
                 fieldDeclaration = AddSpecialCommentToField(node, fieldDeclaration)
                 Return fieldDeclaration.RestructureAttributesAndModifiers(attributes.Any, modifiers.Any).
-                    WithMergedTrailingTrivia(node.SemicolonToken.CollectConvertedTokenTrivia(GetLeading:=True, GetTrailing:=True)).WithTrailingEOL
+                    WithMergedTrailingTrivia(node.SemicolonToken.CollectConvertedTokenTrivia(getLeading:=True, getTrailing:=True)).WithTrailingEol
             End Function
 
             Public Overrides Function VisitIndexerDeclaration(node As CSS.IndexerDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim declaredSymbol As IPropertySymbol = TryCast(_semanticModel.GetDeclaredSymbol(node), IPropertySymbol)
                 Dim id As SyntaxToken = Factory.Identifier("item")
-                Dim attributeLists As New List(Of VBS.AttributeListSyntax)
                 Dim returnAttributes As SyntaxList(Of VBS.AttributeListSyntax) = Nothing
                 Dim finalTrailingDirective As New SyntaxTriviaList
-                Me.ConvertAndSplitAttributes(node.AttributeLists, attributeLists, returnAttributes, finalTrailingDirective)
+                Dim attributeLists As List(Of VBS.AttributeListSyntax) = Me.ConvertAndSplitAttributes(node.AttributeLists, returnAttributes, finalTrailingDirective)
                 Dim accessors As New List(Of VBS.AccessorBlockSyntax)()
                 Dim isIterator As Boolean = False
                 If node.AccessorList IsNot Nothing Then
@@ -557,16 +560,16 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     modifiers.Add(IteratorKeyword)
                 End If
                 Dim implementsClauseOrNothing As VBS.ImplementsClauseSyntax = If(declaredSymbol Is Nothing, Nothing, Me.CreateImplementsClauseSyntaxOrNull(declaredSymbol, id))
-                Dim parameterList As VBS.ParameterListSyntax = DirectCast(node.ParameterList?.Accept(Me), VBS.ParameterListSyntax).WithRestructuredingEOLTrivia
+                Dim parameterList As VBS.ParameterListSyntax = DirectCast(node.ParameterList?.Accept(Me), VBS.ParameterListSyntax).WithRestructuredEolTrivia
                 Dim nodeType As VBS.TypeSyntax = DirectCast(node.Type.Accept(Me), VBS.TypeSyntax)
                 Dim asClause As VBS.SimpleAsClauseSyntax = Factory.SimpleAsClause(returnAttributes, nodeType.WithLeadingTrivia(SpaceTrivia))
                 Dim stmt As VBS.PropertyStatementSyntax = Factory.PropertyStatement(Factory.List(attributeLists),
                                                                                     Factory.TokenList(modifiers),
                                                                                     id,
                                                                                     parameterList,
-                                                                                    asClause.WithTrailingEOL,
+                                                                                    asClause.WithTrailingEol,
                                                                                     initializer:=Nothing,
-                                                                                    implementsClauseOrNothing).WithTrailingEOL
+                                                                                    implementsClauseOrNothing).WithTrailingEol
                 If finalTrailingDirective.Any Then
                     stmt = stmt.WithAppendedTrailingTrivia(finalTrailingDirective)
                 End If
@@ -593,24 +596,23 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
 
             Public Overrides Function VisitMethodDeclaration(node As CSS.MethodDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 If node.Modifiers.Contains(CS.SyntaxKind.UnsafeKeyword) Then
-                    Return FlagUnsupportedStatements(node, "unsafe Functions", CommentOutOriginalStatements:=True)
+                    Return FlagUnsupportedStatements(node, "unsafe Functions", commentOutOriginalStatements:=True)
                 End If
 
                 If node.ReturnType IsNot Nothing AndAlso TypeOf node.ReturnType Is CSS.RefTypeSyntax Then
-                    Return FlagUnsupportedStatements(node, "ref return Functions", CommentOutOriginalStatements:=True)
+                    Return FlagUnsupportedStatements(node, "ref return Functions", commentOutOriginalStatements:=True)
                 End If
                 _originalRequest.UsedStacks.Push(_usedIdentifiers)
 
-                Dim methodNameToken As SyntaxToken = GenerateSafeVBToken(node.Identifier, node, _semanticModel, _usedIdentifiers)
+                Dim methodNameToken As SyntaxToken = GenerateSafeVbToken(node.Identifier, node, _semanticModel, _usedIdentifiers)
 
-                Dim methodInfo As ISymbol = ModelExtensions.GetDeclaredSymbol(_semanticModel, node)
+                Dim methodInfo As ISymbol = _semanticModel.GetDeclaredSymbol(node)
                 Dim possibleReturnVoid As Boolean? = methodInfo?.GetReturnType()?.SpecialType = SpecialType.System_Void
                 Dim isReturnVoid As Boolean = If(possibleReturnVoid, False)
                 Dim containingType As INamedTypeSymbol = methodInfo?.ContainingType
-                Dim attributeLists As New List(Of VBS.AttributeListSyntax)
                 Dim returnAttributes As SyntaxList(Of VBS.AttributeListSyntax) = Nothing
                 Dim functionStmtTrailingTrivia As New SyntaxTriviaList
-                Me.ConvertAndSplitAttributes(node.AttributeLists, attributeLists, returnAttributes, functionStmtTrailingTrivia)
+                Dim attributeLists As List(Of VBS.AttributeListSyntax) = Me.ConvertAndSplitAttributes(node.AttributeLists, returnAttributes, functionStmtTrailingTrivia)
                 Dim parameterList As VBS.ParameterListSyntax = DirectCast(node.ParameterList?.Accept(Me), VBS.ParameterListSyntax)
 
                 Dim functionStmtLeadingTrivia As SyntaxTriviaList
@@ -618,7 +620,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Dim visitor As New MethodBodyVisitor(_semanticModel, Me)
                 Dim finalLeadingTrivia As New SyntaxTriviaList
                 If node.Body IsNot Nothing Then
-                    finalLeadingTrivia = CollectConvertedTokenTrivia(node.Body.CloseBraceToken, GetLeading:=True, GetTrailing:=False)
+                    finalLeadingTrivia = node.Body.CloseBraceToken.CollectConvertedTokenTrivia(getLeading:=True, getTrailing:=False)
                 End If
                 For Each e As IndexClass(Of CSS.LocalFunctionStatementSyntax) In node.DescendantNodes().OfType(Of CSS.LocalFunctionStatementSyntax).WithIndex
                     Dim localFunction As CSS.LocalFunctionStatementSyntax = e.Value
@@ -685,7 +687,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Else
                     modifiers = ConvertModifiers(node.Modifiers, Me.IsModule, If(containingType?.IsInterfaceType() = True, TokenContext.Local, TokenContext.Member)).ToList
                 End If
-                If visitor.IsInterator And Not isReturnVoid Then
+                If visitor.IsIterator And Not isReturnVoid Then
                     modifiers.Add(IteratorKeyword)
                 End If
                 If node.ParameterList.Parameters.Any AndAlso node.ParameterList.Parameters(0).Modifiers.Any(CS.SyntaxKind.ThisKeyword) Then
@@ -699,10 +701,9 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         modifiers(0) = modifiers(0).WithLeadingTrivia(SpaceTrivia)
                     End If
                     attributeLists.Insert(0, Factory.AttributeList(Factory.SingletonSeparatedList(ExtensionAttribute)).WithPrependedLeadingTrivia(newLeadingTrivia))
-                    newLeadingTrivia = New SyntaxTriviaList
                     If Not DirectCast(node.SyntaxTree, CS.CSharpSyntaxTree).HasUsingDirective(CompilerServices) Then
-                        If Not AllImports.ContainsName(CompilerServices) Then
-                            AllImports.Add(FactoryImportComilierServices)
+                        If Not s_allImports.ContainsName(CompilerServices) Then
+                            s_allImports.Add(FactoryImportCompilerServices)
                         End If
                     End If
                 End If
@@ -745,7 +746,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                             newModifierLeadingTrivia = newModifierLeadingTrivia.AddRange(csNodeLeadingTrivia.ConvertTriviaList())
 
                             If Not newModifierLeadingTrivia.FirstOrDefault.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                                newModifierLeadingTrivia = newModifierLeadingTrivia.Insert(0, VBEOLTrivia)
+                                newModifierLeadingTrivia = newModifierLeadingTrivia.Insert(0, VbEolTrivia)
                             End If
                             modifiers(0) = modifiers(0).WithLeadingTrivia(newModifierLeadingTrivia)
                         End If
@@ -792,13 +793,13 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     End If
                 End If
                 Dim endSubOrFunction As VBS.EndBlockStatementSyntax
-                Dim blockStatements As New SyntaxList(Of VBS.StatementSyntax)
+                Dim blockStatements As SyntaxList(Of VBS.StatementSyntax)
 
                 If isReturnVoid Then
                     If node.Body IsNot Nothing Then
-                        endSubOrFunction = FactoryEndBlockStatement(VB.SyntaxKind.EndSubStatement, SubKeyword, CollectConvertedTokenTrivia(node.Body.CloseBraceToken, GetLeading:=False, GetTrailing:=True))
+                        endSubOrFunction = FactoryEndBlockStatement(VB.SyntaxKind.EndSubStatement, SubKeyword, node.Body.CloseBraceToken.CollectConvertedTokenTrivia(getLeading:=False, getTrailing:=True))
                     ElseIf node.ExpressionBody IsNot Nothing Then
-                        endSubOrFunction = FactoryEndBlockStatement(VB.SyntaxKind.EndSubStatement, SubKeyword, CollectConvertedTokenTrivia(node.ExpressionBody.GetBraces.Item2, GetLeading:=True, GetTrailing:=True))
+                        endSubOrFunction = FactoryEndBlockStatement(VB.SyntaxKind.EndSubStatement, SubKeyword, node.ExpressionBody.GetBraces.Item2.CollectConvertedTokenTrivia(getLeading:=True, getTrailing:=True))
                     Else
                         endSubOrFunction = Factory.EndSubStatement(EndKeyword.WithTrailingTrivia(SpaceTrivia), SubKeyword)
                     End If
@@ -807,7 +808,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         methodNameToken = methodNameToken.WithTrailingTrivia(SpaceTrivia)
                     End If
                     If attributeLists.Any AndAlso attributeLists.Last.GetTrailingTrivia.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                        If modifiers.Any AndAlso modifiers(0).LeadingTrivia.ContainsEOLTrivia Then
+                        If modifiers.Any AndAlso modifiers(0).LeadingTrivia.ContainsEolTrivia Then
                             If modifiers(0).LeadingTrivia(0).IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
                                 modifiers(0) = modifiers(0).WithLeadingTrivia(modifiers(0).LeadingTrivia.RemoveAt(0))
                             End If
@@ -824,7 +825,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                                                         implementsClauseOrNothing)
                     subOrFunctionStatement = DirectCast(methodStmt.
                                                     With(functionStmtLeadingTrivia, functionStmtTrailingTrivia).
-                                                    WithTrailingEOL.
+                                                    WithTrailingEol.
                                                     RestructureAttributesAndModifiers(attributeLists.Any, modifiers.Any), VBS.MethodStatementSyntax)
                     SyncLock _originalRequest.UsedStacks
                         If _originalRequest.UsedStacks.Count > 0 Then
@@ -836,17 +837,17 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         If modifiers.Contains(Function(t As SyntaxToken) t.IsKind(VB.SyntaxKind.PartialKeyword)) Then
                             Return Factory.SubBlock(subOrFunctionStatement,
                                                     statements:=Nothing,
-                                                    endSubOrFunction.With(functionStmtLeadingTrivia, functionStmtTrailingTrivia).WithPrependedLeadingTrivia(finalLeadingTrivia).RemoveExtraLeadingEOL.WithTrailingEOL.WithTrailingEOL)
+                                                    endSubOrFunction.With(functionStmtLeadingTrivia, functionStmtTrailingTrivia).WithPrependedLeadingTrivia(finalLeadingTrivia).RemoveExtraLeadingEol.WithTrailingEol.WithTrailingEol)
                         End If
                         Return subOrFunctionStatement
                     End If
-                    blockStatements = Me.AdjustUsingsInNeeded(body.Value)
+                    blockStatements = Me.AdjustUsingIfNeeded(body.Value)
                     Return Factory.SubBlock(subOrFunctionStatement,
                                             blockStatements,
-                                            endSubOrFunction.WithPrependedLeadingTrivia(finalLeadingTrivia).RemoveExtraLeadingEOL.WithTrailingEOL)
+                                            endSubOrFunction.WithPrependedLeadingTrivia(finalLeadingTrivia).RemoveExtraLeadingEol.WithTrailingEol)
                 End If
                 If node.Body IsNot Nothing Then
-                    endSubOrFunction = FactoryEndBlockStatement(VB.SyntaxKind.EndFunctionStatement, FunctionKeyword, CollectConvertedTokenTrivia(node.Body.CloseBraceToken, GetLeading:=False, GetTrailing:=True)).WithPrependedLeadingTrivia(finalLeadingTrivia)
+                    endSubOrFunction = FactoryEndBlockStatement(VB.SyntaxKind.EndFunctionStatement, FunctionKeyword, node.Body.CloseBraceToken.CollectConvertedTokenTrivia(getLeading:=False, getTrailing:=True)).WithPrependedLeadingTrivia(finalLeadingTrivia)
                 Else
                     endSubOrFunction = FactoryEndBlockStatement(VB.SyntaxKind.EndFunctionStatement, FunctionKeyword, New SyntaxTriviaList)
                 End If
@@ -861,9 +862,9 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     ElseIf type.ToString = "[Enum]" Then
                         type = Factory.ParseTypeName("System.Enum")
                     ElseIf type.ToString.StartsWith("[", StringComparison.Ordinal) Then
-                        Dim strs As String() = type.ToString.Split({"["c, "]"}, StringSplitOptions.RemoveEmptyEntries)
-                        If Not (IsSpecialReservedWord(strs(0)) OrElse
-                                VB.SyntaxFacts.IsKeywordKind(VB.SyntaxFacts.GetKeywordKind(strs(0)))) Then
+                        Dim typeSplit As String() = type.ToString.Split({"["c, "]"c}, StringSplitOptions.RemoveEmptyEntries)
+                        If Not (IsSpecialReservedWord(typeSplit(0)) OrElse
+                                VB.SyntaxFacts.IsKeywordKind(VB.SyntaxFacts.GetKeywordKind(typeSplit(0)))) Then
                             type = Factory.ParseTypeName(type.ToString().RemoveBrackets)
                         End If
                     End If
@@ -888,7 +889,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     Dim fixedModifierLeadingTrivia As SyntaxTriviaList
                     For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
                         Dim t As SyntaxTrivia = e.Value
-                        Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.index, LookaheadCount:=1)
+                        Dim nextTrivia As SyntaxTrivia = initialTriviaList.GetForwardTriviaOrDefault(e.index, lookaheadCount:=1)
                         Select Case t.RawKind
                             Case VB.SyntaxKind.WhitespaceTrivia
                                 If nextTrivia.IsComment Then
@@ -915,7 +916,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     modifiers(0) = modifiers(0).WithLeadingTrivia(fixedModifierLeadingTrivia)
                 End If
                 If attributeLists.Any AndAlso attributeLists.Last.GetTrailingTrivia.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                    If modifiers.Any AndAlso modifiers(0).LeadingTrivia.ContainsEOLTrivia Then
+                    If modifiers.Any AndAlso modifiers(0).LeadingTrivia.ContainsEolTrivia Then
                         If modifiers(0).LeadingTrivia(0).IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
                             modifiers(0) = modifiers(0).WithLeadingTrivia(modifiers(0).LeadingTrivia.RemoveAt(0))
                         End If
@@ -930,7 +931,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                             asClause,
                                             handlesClause:=Nothing,
                                             implementsClauseOrNothing).
-                                            With(functionStmtLeadingTrivia, functionStmtTrailingTrivia).WithTrailingEOL
+                                            With(functionStmtLeadingTrivia, functionStmtTrailingTrivia).WithTrailingEol
                 If returnAttributes.Any AndAlso
                    (attributeLists.Count = 0 OrElse attributeLists(0).Attributes(0).Name.ToString = "Extension") AndAlso
                    node.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
@@ -945,32 +946,30 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     Return subOrFunctionStatement
                 End If
 
-                Dim blockvalue As List(Of VBS.StatementSyntax) = body.Value.ToList
-                If blockvalue.Any AndAlso movedModifierLeadingTrivia.Any Then
-                    blockvalue(0) = blockvalue(0).WithPrependedLeadingTrivia(movedModifierLeadingTrivia)
+                Dim blockValue As List(Of VBS.StatementSyntax) = body.Value.ToList
+                If blockValue.Any AndAlso movedModifierLeadingTrivia.Any Then
+                    blockValue(0) = blockValue(0).WithPrependedLeadingTrivia(movedModifierLeadingTrivia)
                 End If
-                blockStatements = blockStatements.AddRange(blockvalue)
-                blockStatements = Me.AdjustUsingsInNeeded(body.Value)
+                blockStatements = Me.AdjustUsingIfNeeded(body.Value)
                 Return Factory.FunctionBlock(subOrFunctionStatement,
                                              blockStatements,
-                                             endSubOrFunction.RemoveExtraLeadingEOL.WithTrailingEOL)
+                                             endSubOrFunction.RemoveExtraLeadingEol.WithTrailingEol)
             End Function
 
             Public Overrides Function VisitOperatorDeclaration(node As CSS.OperatorDeclarationSyntax) As VB.VisualBasicSyntaxNode
-                Dim attributeLists As New List(Of VBS.AttributeListSyntax)
                 Dim returnAttributes As SyntaxList(Of VBS.AttributeListSyntax) = Nothing
                 Dim finalTrailingDirective As New SyntaxTriviaList
-                Me.ConvertAndSplitAttributes(node.AttributeLists, attributeLists, returnAttributes, finalTrailingDirective)
+                Dim attributeLists As List(Of VBS.AttributeListSyntax) = Me.ConvertAndSplitAttributes(node.AttributeLists, returnAttributes, finalTrailingDirective)
                 Dim visitor As New MethodBodyVisitor(_semanticModel, Me)
-                Dim body As New SyntaxList(Of VBS.StatementSyntax)
+                Dim body As SyntaxList(Of VBS.StatementSyntax)
                 If node.Body IsNot Nothing Then
                     body = Factory.List(node.Body.Statements.SelectMany(Function(s As CSS.StatementSyntax) s.Accept(visitor)))
                 ElseIf node.ExpressionBody IsNot Nothing Then
                     body = node.ExpressionBody.GetExpressionBodyStatements(False, Me)
                 Else
-                    Stop
+                    Throw UnreachableException
                 End If
-                Dim parameterList As VBS.ParameterListSyntax = DirectCast(node.ParameterList?.Accept(Me), VBS.ParameterListSyntax).WithRestructuredingEOLTrivia
+                Dim parameterList As VBS.ParameterListSyntax = DirectCast(node.ParameterList?.Accept(Me), VBS.ParameterListSyntax).WithRestructuredEolTrivia
                 Dim modifiers As SyntaxTokenList = Factory.TokenList(ConvertModifiers(node.Modifiers, Me.IsModule, TokenContext.Member))
                 Dim lSyntaxKind As CS.SyntaxKind = CS.CSharpExtensions.Kind(node.OperatorToken)
 
@@ -981,12 +980,12 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Dim firstParameterIsString As Boolean = _semanticModel.GetTypeInfo(firstParam.Type).ConvertedType.SpecialType = SpecialType.System_String
                 Select Case lSyntaxKind
                     Case CS.SyntaxKind.MinusMinusToken
-                        Return Factory.EmptyStatement.WithLeadingTrivia(node.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=False, "C# -- operator not available in VB")).WithPrependedLeadingTrivia(node.GetLeadingTrivia.ConvertTriviaList()).WithConvertedTrailingTriviaFrom(node)
+                        Return Factory.EmptyStatement.WithLeadingTrivia(node.CheckCorrectnessLeadingTrivia(attemptToPortMade:=False, "C# -- operator not available in VB")).WithPrependedLeadingTrivia(node.GetLeadingTrivia.ConvertTriviaList()).WithConvertedTrailingTriviaFrom(node)
                     Case CS.SyntaxKind.PercentToken
                         Dim stmt As VBS.OperatorStatementSyntax = Factory.OperatorStatement(Factory.List(attributeLists), modifiers, ModKeyword, parameterList, Factory.SimpleAsClause(returnAttributes, DirectCast(node.ReturnType.Accept(Me), VBS.TypeSyntax)))
                         Return Factory.OperatorBlock(stmt, body).WithConvertedTriviaFrom(node)
                     Case CS.SyntaxKind.PlusPlusToken
-                        Return Factory.EmptyStatement.WithLeadingTrivia(node.CheckCorrectnessLeadingTrivia(AttemptToPortMade:=False, "C# ++ operator not available in VB")).WithPrependedLeadingTrivia(node.GetLeadingTrivia.ConvertTriviaList()).WithConvertedTrailingTriviaFrom(node)
+                        Return Factory.EmptyStatement.WithLeadingTrivia(node.CheckCorrectnessLeadingTrivia(attemptToPortMade:=False, "C# ++ operator not available in VB")).WithPrependedLeadingTrivia(node.GetLeadingTrivia.ConvertTriviaList()).WithConvertedTrailingTriviaFrom(node)
                     Case Else
                         Dim operatorToken As SyntaxToken = lSyntaxKind.GetComparisonOperatorToken(firstParameterIsString)
                         Dim stmt As VBS.OperatorStatementSyntax = Factory.OperatorStatement(Factory.List(attributeLists), Factory.TokenList(modifiers), operatorToken, parameterList, Factory.SimpleAsClause(returnAttributes, DirectCast(node.ReturnType.Accept(Me), VBS.TypeSyntax)))
@@ -998,10 +997,10 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             End Function
 
             Public Overrides Function VisitPropertyDeclaration(node As CSS.PropertyDeclarationSyntax) As VB.VisualBasicSyntaxNode
-                Dim savedNeedEndUsings As Integer = Me.NeedEndUsings
+                Dim savedNeedEndUsingCount As Integer = Me.NeededEndUsingCount
                 Try
 
-                    Me.NeedEndUsings = 0
+                    Me.NeededEndUsingCount = 0
                     Dim csAccessors As New List(Of CSS.AccessorDeclarationSyntax)
                     If node.AccessorList IsNot Nothing Then
                         csAccessors.AddRange(node.AccessorList.Accessors)
@@ -1015,7 +1014,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         typeNode = Factory.PredefinedType(ObjectKeyword).WithTriviaFrom(typeNode)
                     End If
                     Dim closingNodeBraces As SyntaxToken = node.GetBraces.Item2
-                    Dim endPropertyStatement As VBS.EndBlockStatementSyntax = FactoryEndBlockStatement(VB.SyntaxKind.EndPropertyStatement, PropertyKeyword, CollectConvertedTokenTrivia(closingNodeBraces, GetLeading:=True, GetTrailing:=True))
+                    Dim endPropertyStatement As VBS.EndBlockStatementSyntax = FactoryEndBlockStatement(VB.SyntaxKind.EndPropertyStatement, PropertyKeyword, closingNodeBraces.CollectConvertedTokenTrivia(getLeading:=True, getTrailing:=True))
 
                     Dim typeLeadingTrivia As New SyntaxTriviaList
                     typeLeadingTrivia = typeLeadingTrivia.AddRange(node.Type.GetLeadingTrivia.ConvertTriviaList())
@@ -1026,21 +1025,21 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     Dim interfaceMembers As SeparatedSyntaxList(Of VBS.QualifiedNameSyntax)
                     If node.ExplicitInterfaceSpecifier IsNot Nothing Then
                         node.ExplicitInterfaceSpecifier.Accept(Me).TypeSwitch(
-                        Sub(ExplicitInterfaceIdentifier As VBS.QualifiedNameSyntax)
-                            idString = ExplicitInterfaceIdentifier.Right.ToString
+                        Sub(explicitInterfaceIdentifier As VBS.QualifiedNameSyntax)
+                            idString = explicitInterfaceIdentifier.Right.ToString
                             Dim openParenIndex As Integer = idString.IndexOf("(", StringComparison.Ordinal)
                             If openParenIndex > 0 Then
                                 idString = idString.Substring(startIndex:=0, openParenIndex)
                             End If
-                            interfaceMembers = interfaceMembers.Add(Factory.QualifiedName(ExplicitInterfaceIdentifier, simpleName))
+                            interfaceMembers = interfaceMembers.Add(Factory.QualifiedName(explicitInterfaceIdentifier, simpleName))
                         End Sub,
-                        Sub(GenericName As VBS.GenericNameSyntax)
-                            idString = GenericName.Identifier.ToString
-                            interfaceMembers = interfaceMembers.Add(Factory.QualifiedName(GenericName, simpleName))
+                        Sub(genericName As VBS.GenericNameSyntax)
+                            idString = genericName.Identifier.ToString
+                            interfaceMembers = interfaceMembers.Add(Factory.QualifiedName(genericName, simpleName))
                         End Sub,
-                        Sub(IdentifierName As VBS.IdentifierNameSyntax)
-                            idString = IdentifierName.Identifier.ToString
-                            interfaceMembers = interfaceMembers.Add(Factory.QualifiedName(IdentifierName, simpleName))
+                        Sub(identifierName As VBS.IdentifierNameSyntax)
+                            idString = identifierName.Identifier.ToString
+                            interfaceMembers = interfaceMembers.Add(Factory.QualifiedName(identifierName, simpleName))
                         End Sub,
                         Sub(__ As SyntaxNode)
                             Throw New NotImplementedException($"{__.GetType().FullName} not implemented!")
@@ -1050,7 +1049,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     Dim propertyNameToken As SyntaxToken
                     Dim propertyStatement As VBS.PropertyStatementSyntax
                     If node.ExplicitInterfaceSpecifier Is Nothing Then
-                        propertyNameToken = GenerateSafeVBToken(node.Identifier, node, _semanticModel, _usedIdentifiers)
+                        propertyNameToken = GenerateSafeVbToken(node.Identifier, node, _semanticModel, _usedIdentifiers)
                         Dim propertySymbol As IPropertySymbol = CType(_semanticModel.GetDeclaredSymbol(node), IPropertySymbol)
                         implementsClauseOrNothing = If(propertySymbol Is Nothing, Nothing, Me.CreateImplementsClauseSyntaxOrNull(propertySymbol, propertyNameToken))
                     Else
@@ -1058,10 +1057,9 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         implementsClauseOrNothing = Factory.ImplementsClause(interfaceMembers)
                     End If
                     propertyNameToken = propertyNameToken.WithTrailingTrivia(SpaceTrivia)
-                    Dim attributes As New List(Of VBS.AttributeListSyntax)
                     Dim returnAttributes As SyntaxList(Of VBS.AttributeListSyntax) = Nothing
                     Dim finalTrailingDirective As New SyntaxTriviaList
-                    Me.ConvertAndSplitAttributes(node.AttributeLists, attributes, returnAttributes, finalTrailingDirective)
+                    Dim attributes As List(Of VBS.AttributeListSyntax) = Me.ConvertAndSplitAttributes(node.AttributeLists, returnAttributes, finalTrailingDirective)
                     If finalTrailingDirective.Any Then
                         Stop
                     End If
@@ -1079,7 +1077,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                             Case TypeOf exprSyntaxNode Is VBS.ThrowStatementSyntax
                                 statements = Factory.SingletonList(Of VBS.StatementSyntax)(DirectCast(exprSyntaxNode, VBS.ThrowStatementSyntax).WithConvertedTriviaFrom(node.ExpressionBody))
                             Case TypeOf exprSyntaxNode Is VBS.SingleLineIfStatementSyntax
-                                Dim ifStatement As VBS.SingleLineIfStatementSyntax = DirectCast(exprSyntaxNode, VBS.SingleLineIfStatementSyntax).WithTrailingEOL
+                                Dim ifStatement As VBS.SingleLineIfStatementSyntax = DirectCast(exprSyntaxNode, VBS.SingleLineIfStatementSyntax).WithTrailingEol
                                 Dim retStmt As VBS.ReturnStatementSyntax = Factory.ReturnStatement(DirectCast(ifStatement.Condition, VBS.BinaryExpressionSyntax).Left).
                                                 WithLeadingTrivia(ifStatement.Condition.GetLeadingTrivia)
                                 retStmt = retStmt.RelocateDirectivesInLeadingTrivia
@@ -1088,7 +1086,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                                    })
                                 statements = ReplaceStatementsWithMarkedStatements(node, statementList)
                             Case TypeOf exprSyntaxNode Is VBS.AssignmentStatementSyntax
-                                Dim assignmentStmt As VBS.AssignmentStatementSyntax = DirectCast(exprSyntaxNode, VBS.AssignmentStatementSyntax).WithTrailingEOL
+                                Dim assignmentStmt As VBS.AssignmentStatementSyntax = DirectCast(exprSyntaxNode, VBS.AssignmentStatementSyntax).WithTrailingEol
                                 Dim retStmt As VBS.ReturnStatementSyntax = Factory.ReturnStatement(assignmentStmt.Left.WithoutLeadingTrivia).
                                                 WithLeadingTrivia(assignmentStmt.GetLeadingTrivia)
                                 retStmt = retStmt.RelocateDirectivesInLeadingTrivia
@@ -1115,12 +1113,11 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                 retStmt = retStmt.RelocateDirectivesInLeadingTrivia
                                 statements = ReplaceOneStatementWithMarkedStatements(node.ExpressionBody, retStmt)
                             Case Else
-                                Stop
                                 Throw UnreachableException
                         End Select
-                        statements = Me.AdjustUsingsInNeeded(statements)
+                        statements = Me.AdjustUsingIfNeeded(statements)
                         accessors.Add(Factory.AccessorBlock(VB.SyntaxKind.GetAccessorBlock,
-                                                        Factory.GetAccessorStatement.WithTrailingEOL,
+                                                        Factory.GetAccessorStatement.WithTrailingEol,
                                                         statements,
                                                         Factory.EndGetStatement(EndKeyword.WithTrailingTrivia(SpaceTrivia), GetKeyword)))
                     Else
@@ -1145,7 +1142,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                         propertyStatementLeadingTrivia = propertyStatementLeadingTrivia.AddRange(setModifiers(0).LeadingTrivia)
                                         setModifiers(0) = setModifiers(0).WithoutTrivia
                                     End If
-                                    Dim newVariableToken As SyntaxToken = Factory.Identifier($"_{Char.ToLower(identifierValueText.Chars(0), Globalization.CultureInfo.InvariantCulture)}{identifierValueText.Substring(startIndex:=1)}")
+                                    Dim newVariableToken As SyntaxToken = Factory.Identifier($"_{Char.ToLower(identifierValueText.Chars(0), Globalization.CultureInfo.InvariantCulture)}{identifierValueText.Substring(1)}")
                                     Dim newModifiedIdentifier As VBS.ModifiedIdentifierSyntax = Factory.ModifiedIdentifier(newVariableToken)
                                     Dim declarators As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) =
                                                         Factory.SingletonSeparatedList(
@@ -1154,19 +1151,19 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                                                 asClause,
                                                                 initializer:=Nothing)
                                                         )
-                                    Dim dimStatement As VBS.StatementSyntax = Factory.LocalDeclarationStatement(Factory.TokenList(PrivateKeyword.WithTrailingTrivia(SpaceTrivia)), declarators).WithConvertedLeadingTriviaFrom(node).WithTrailingEOL
-                                    Dim stmtWithIssues As CS.CSharpSyntaxNode = GetStatementwithIssues(node)
-                                    stmtWithIssues.AddMarker(dimStatement, StatementHandlingOption.PrependStatement, AllowDuplicates:=False)
+                                    Dim dimStatement As VBS.StatementSyntax = Factory.LocalDeclarationStatement(Factory.TokenList(PrivateKeyword.WithTrailingTrivia(SpaceTrivia)), declarators).WithConvertedLeadingTriviaFrom(node).WithTrailingEol
+                                    Dim stmtWithIssues As CS.CSharpSyntaxNode = GetStatementWithIssues(node)
+                                    stmtWithIssues.AddMarker(dimStatement, StatementHandlingOption.PrependStatement, allowDuplicates:=False)
                                     Dim stmt As VBS.AccessorStatementSyntax = Factory.GetAccessorStatement(Nothing, Factory.TokenList(getModifiers), parameterList:=Nothing)
-                                    Dim body As SyntaxList(Of VBS.StatementSyntax) = Factory.SingletonList(Of VBS.StatementSyntax)(Factory.ReturnStatement(Factory.IdentifierName(newVariableToken)).WithTrailingEOL)
-                                    accessors.Add(Factory.AccessorBlock(VB.SyntaxKind.GetAccessorBlock, stmt.WithTrailingEOL, body, Factory.EndGetStatement(EndKeyword.WithTrailingTrivia(SpaceTrivia), GetKeyword).WithTrailingEOL))
+                                    Dim body As SyntaxList(Of VBS.StatementSyntax) = Factory.SingletonList(Of VBS.StatementSyntax)(Factory.ReturnStatement(Factory.IdentifierName(newVariableToken)).WithTrailingEol)
+                                    accessors.Add(Factory.AccessorBlock(VB.SyntaxKind.GetAccessorBlock, stmt.WithTrailingEol, body, Factory.EndGetStatement(EndKeyword.WithTrailingTrivia(SpaceTrivia), GetKeyword).WithTrailingEol))
 
                                     stmt = Factory.SetAccessorStatement(Nothing,
                                                                     Factory.TokenList(setModifiers),
                                                                     Factory.ParameterList(Factory.SingletonSeparatedList(Factory.Parameter(ValueModifiedIdentifier).WithAsClause(asClause))))
                                     Dim valueExpression As VBS.ExpressionSyntax = Factory.ParseExpression(newVariableToken.ValueText)
-                                    body = Factory.SingletonList(Of VBS.StatementSyntax)(Factory.SimpleAssignmentStatement(valueExpression, Factory.IdentifierName(ValueModifiedIdentifier.Identifier)).WithTrailingEOL)
-                                    accessors.Add(Factory.AccessorBlock(VB.SyntaxKind.SetAccessorBlock, stmt.WithTrailingEOL, body, Factory.EndSetStatement(EndKeyword.WithTrailingTrivia(SpaceTrivia), SetKeyword).WithTrailingEOL))
+                                    body = Factory.SingletonList(Of VBS.StatementSyntax)(Factory.SimpleAssignmentStatement(valueExpression, Factory.IdentifierName(ValueModifiedIdentifier.Identifier)).WithTrailingEol)
+                                    accessors.Add(Factory.AccessorBlock(VB.SyntaxKind.SetAccessorBlock, stmt.WithTrailingEol, body, Factory.EndSetStatement(EndKeyword.WithTrailingTrivia(SpaceTrivia), SetKeyword).WithTrailingEol))
 
                                     propertyStatement = Factory.PropertyStatement(Factory.List(attributes),
                                                                               Factory.TokenList(ConvertModifiers(csModifiers, localIsModule, context)),
@@ -1175,10 +1172,10 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                                                               asClause,
                                                                               initializer:=Nothing,
                                                                               implementsClause:=Nothing)
-                                    Return Factory.PropertyBlock(propertyStatement.WithPrependedLeadingTrivia(propertyStatementLeadingTrivia).WithTrailingEOL,
+                                    Return Factory.PropertyBlock(propertyStatement.WithPrependedLeadingTrivia(propertyStatementLeadingTrivia).WithTrailingEol,
                                                              Factory.List(accessors),
                                                              endPropertyStatement.WithConvertedTrailingTriviaFrom(node)).
-                                        RestructureAttributesAndModifiers(attributes.Any, HasModifiers:=True)
+                                        RestructureAttributesAndModifiers(attributes.Any, hasModifiers:=True)
 
                                 End If
 
@@ -1195,7 +1192,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     If node.AccessorList IsNot Nothing AndAlso csAccessors.Count = 1 Then
                         Select Case csAccessors(0).Keyword.RawKind
                             Case CS.SyntaxKind.GetKeyword
-                                csModifiers = csModifiers.Add(CSReadOnlyKeyword)
+                                csModifiers = csModifiers.Add(CsReadOnlyKeyword)
                             Case CS.SyntaxKind.SetKeyword
                                 isWriteOnly = True
                             Case Else
@@ -1228,25 +1225,25 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     Else
                         keyword = PropertyKeyword
                         If typeLeadingTrivia.Any Then
-                            typeLeadingTrivia = typeLeadingTrivia.Insert(0, VBEOLTrivia)
+                            typeLeadingTrivia = typeLeadingTrivia.Insert(0, VbEolTrivia)
                         End If
                     End If
-                    Dim prependedTrivia As SyntaxTriviaList = DedupLeadingTrivia(node, keyword, attributes, modifiers)
+                    Dim prependedTrivia As SyntaxTriviaList = node.DedupLeadingTrivia(keyword, attributes, modifiers)
                     If attributes.Any AndAlso modifiers.Any AndAlso modifiers(0).LeadingTrivia.ContainsCommentTrivia Then
-                        Dim attriuteTrailingTrivia As SyntaxTriviaList = attributes.Last.GetTrailingTrivia
-                        If attriuteTrailingTrivia.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                            If attriuteTrailingTrivia.Count = 1 Then
-                                attriuteTrailingTrivia = attriuteTrailingTrivia.InsertRange(0, SpaceLineContinue)
-                            ElseIf attriuteTrailingTrivia(attriuteTrailingTrivia.Count - 2).IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
-                                attriuteTrailingTrivia = attriuteTrailingTrivia.InsertRange(attriuteTrailingTrivia.Count - 2, SpaceLineContinue)
+                        Dim attributeTrailingTrivia As SyntaxTriviaList = attributes.Last.GetTrailingTrivia
+                        If attributeTrailingTrivia.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                            If attributeTrailingTrivia.Count = 1 Then
+                                attributeTrailingTrivia = attributeTrailingTrivia.InsertRange(0, SpaceLineContinue)
+                            ElseIf attributeTrailingTrivia(attributeTrailingTrivia.Count - 2).IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
+                                attributeTrailingTrivia = attributeTrailingTrivia.InsertRange(attributeTrailingTrivia.Count - 2, SpaceLineContinue)
                             Else
-                                attriuteTrailingTrivia = attriuteTrailingTrivia.InsertRange(0, SpaceLineContinue)
+                                attributeTrailingTrivia = attributeTrailingTrivia.InsertRange(0, SpaceLineContinue)
                             End If
                         Else
                             Stop
                         End If
                         modifiers(0) = modifiers(0).AdjustTokenLeadingTrivia()
-                        attributes(attributes.Count - 1) = attributes.Last.WithTrailingTrivia(attriuteTrailingTrivia)
+                        attributes(attributes.Count - 1) = attributes.Last.WithTrailingTrivia(attributeTrailingTrivia)
                     End If
                     propertyStatement = Factory.PropertyStatement(Factory.List(attributes),
                                                                 Factory.TokenList(modifiers),
@@ -1254,9 +1251,9 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                                                 propertyNameToken.WithTrailingTrivia(SpaceTrivia),
                                                                 parameterList:=Nothing,
                                                                 asClause,
-                                                                initializer.WithTrailingEOL,
+                                                                initializer.WithTrailingEol,
                                                                 implementsClauseOrNothing
-                                                                ).WithPrependedLeadingTrivia(prependedTrivia).WithTrailingEOL
+                                                                ).WithPrependedLeadingTrivia(prependedTrivia).WithTrailingEol
                     Dim stmtList As SyntaxList(Of VBS.StatementSyntax) = ReplaceOneStatementWithMarkedStatements(node, propertyStatement)
                     Dim addedLeadingTrivia As New SyntaxTriviaList
                     Select Case stmtList.Count
@@ -1266,8 +1263,6 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                             End If
                         Case 2
                             addedLeadingTrivia = addedLeadingTrivia.AddRange(stmtList(0).GetLeadingTrivia)
-                        Case Else
-
                     End Select
                     If node.AccessorList IsNot Nothing Then
                         Dim bodyOrExpressionBodyIsNothing As Boolean = True
@@ -1279,29 +1274,29 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         Next
                         If bodyOrExpressionBodyIsNothing Then
                             If addedLeadingTrivia.Any Then
-                                Return propertyStatement.WithLeadingTrivia(addedLeadingTrivia).WithConvertedTrailingTriviaFrom(node).WithTrailingEOL
+                                Return propertyStatement.WithLeadingTrivia(addedLeadingTrivia).WithConvertedTrailingTriviaFrom(node).WithTrailingEol
                             End If
-                            Return propertyStatement.WithConvertedTriviaFrom(node).WithTrailingEOL
+                            Return propertyStatement.WithConvertedTriviaFrom(node).WithTrailingEol
                         End If
                     End If
                     If addedLeadingTrivia.Any Then
-                        Return Factory.PropertyBlock(propertyStatement.WithLeadingTrivia(addedLeadingTrivia).WithTrailingEOL, Factory.List(accessors))
+                        Return Factory.PropertyBlock(propertyStatement.WithLeadingTrivia(addedLeadingTrivia).WithTrailingEol, Factory.List(accessors))
                     End If
 
-                    Dim accessorOpenBraceTrivia As SyntaxTriviaList = CollectConvertedTokenTrivia(node.AccessorList.GetBraces.Item1, GetLeading:=True, GetTrailing:=True)
-                    Dim accessorClosingBraceTrivia As SyntaxTriviaList = CollectConvertedTokenTrivia(node.AccessorList.GetBraces.Item2, GetLeading:=True, GetTrailing:=True)
+                    Dim accessorOpenBraceTrivia As SyntaxTriviaList = node.AccessorList.GetBraces.Item1.CollectConvertedTokenTrivia(getLeading:=True, getTrailing:=True)
+                    Dim accessorClosingBraceTrivia As SyntaxTriviaList = node.AccessorList.GetBraces.Item2.CollectConvertedTokenTrivia(getLeading:=True, getTrailing:=True)
 
                     endPropertyStatement = Factory.EndPropertyStatement(EndKeyword.WithTrailingTrivia(SpaceTrivia), PropertyKeyword).
                                 WithConvertedTriviaFrom(closingNodeBraces).
-                                WithPrependedLeadingTrivia(accessorClosingBraceTrivia).WithTrailingEOL
-                    accessors(0) = accessors(0).WithPrependedLeadingTrivia(accessorOpenBraceTrivia).WithTrailingEOL
-                    Return Factory.PropertyBlock(propertyStatement.WithTrailingEOL,
+                                WithPrependedLeadingTrivia(accessorClosingBraceTrivia).WithTrailingEol
+                    accessors(0) = accessors(0).WithPrependedLeadingTrivia(accessorOpenBraceTrivia).WithTrailingEol
+                    Return Factory.PropertyBlock(propertyStatement.WithTrailingEol,
                                                Factory.List(accessors),
-                                               endPropertyStatement.WithTrailingEOL).
+                                               endPropertyStatement.WithTrailingEol).
                                         WithAppendedTrailingTrivia(typeLeadingTrivia).
-                                        RestructureAttributesAndModifiers(attributes.Any, modifiers.Any).NormalizeWhitespaceEx(useDefaultCasing:=True).WithTrailingEOL
+                                        RestructureAttributesAndModifiers(attributes.Any, modifiers.Any).NormalizeWhitespaceEx(useDefaultCasing:=True).WithTrailingEol
                 Finally
-                    Me.NeedEndUsings = savedNeedEndUsings
+                    Me.NeededEndUsingCount = savedNeedEndUsingCount
                 End Try
             End Function
 

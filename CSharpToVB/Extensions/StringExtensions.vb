@@ -4,8 +4,6 @@
 
 Imports System.Runtime.CompilerServices
 
-Imports Microsoft.CodeAnalysis
-
 Public Module StringExtensions
 
     <Extension()>

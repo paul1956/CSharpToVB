@@ -7,9 +7,9 @@ Imports System.Runtime.CompilerServices
 Module RichTextBoxExtensions
 
     <Extension>
-    Public Function FindIndexOfAny(RTB As RichTextBox, ParamArray strings() As String) As Integer
+    Public Function FindIndexOfAny(rtb As RichTextBox, ParamArray strings() As String) As Integer
         For Each s As String In strings
-            Dim keywordIndex As Integer = RTB.Find(s)
+            Dim keywordIndex As Integer = rtb.Find(s)
             If keywordIndex >= 0 Then
                 Return keywordIndex
             End If

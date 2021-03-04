@@ -3,23 +3,20 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Text
-
-Imports CSharpToVBApp
-
-Imports CSharpToVBConverter
-Imports CSharpToVBConverter.ConversionResult
-
+Imports Extensions
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Emit
+Imports SupportClasses.ConversionResult
+Imports Utilities
 
 Public Module ColorizeSupport
 
-    Private Function FilterOutTopLevelStatementCode(TextToCompile As String) As String
-        If Not My.Settings.IncludeTopLevelStmtProtoInCode AndAlso TextToCompile.Contains("Top Level Code boilerplate is included,") Then
+    Private Function FilterOutTopLevelStatementCode(textToCompile As String) As String
+        If Not My.Settings.IncludeTopLevelStmtProtoInCode AndAlso textToCompile.Contains("Top Level Code boilerplate is included,") Then
             Dim filteredCode As New StringBuilder
             Dim skipNext As Boolean
             Dim skipBlank As Boolean
-            For Each e As IndexClass(Of String) In TextToCompile.SplitLines.WithIndex
+            For Each e As IndexClass(Of String) In textToCompile.SplitLines.WithIndex
                 Dim stmt As String = e.Value
                 If String.IsNullOrEmpty(stmt) Then
                     If Not skipBlank Then
@@ -49,72 +46,73 @@ Public Module ColorizeSupport
                         filteredCode.AppendLine(stmt)
                 End Select
             Next
-            TextToCompile = filteredCode.ToString
+            textToCompile = filteredCode.ToString
         End If
 
-        Return TextToCompile
+        Return textToCompile
     End Function
 
-    Friend Sub Colorize(MainForm As Form1, FragmentRange As IEnumerable(Of Range), ConversionBuffer As RichTextBox)
-        Dim currentChar As Integer = ConversionBuffer.SelectionStart
-        Dim currentlength As Integer = ConversionBuffer.SelectionLength
-        With ConversionBuffer
-            For Each range As Range In FragmentRange
+    Friend Sub Colorize(mainForm As Form1, fragmentRange As IEnumerable(Of Range), conversionBuffer As RichTextBox)
+        Dim currentChar As Integer = conversionBuffer.SelectionStart
+        Dim currentLength As Integer = conversionBuffer.SelectionLength
+        With conversionBuffer
+            For Each range As Range In fragmentRange
                 If currentChar < range.TextSpan.Start Then
                     Continue For
                 End If
                 .Select(range.TextSpan.Start, range.TextSpan.Length)
                 .SelectionColor = GetColorFromName(range.ClassificationType).Foreground
-                Exit For
                 Application.DoEvents()
+                Exit For
             Next range
-            .Select(currentChar, currentlength)
+            .Select(currentChar, currentLength)
         End With
     End Sub
 
-    Friend Sub Colorize(MainForm As Form1, FragmentRange As IEnumerable(Of Range), ConversionBuffer As RichTextBox, Lines As Integer, Optional failures As IEnumerable(Of Diagnostic) = Nothing)
-        If MainForm._inColorize Then
+    Friend Sub Colorize(mainForm As Form1, fragmentRange As IEnumerable(Of Range), conversionBuffer As RichTextBox, lines As Integer, Optional failures As IEnumerable(Of Diagnostic) = Nothing)
+        If mainForm._inColorize Then
             Exit Sub
         End If
         Try ' Prevent crash when exiting
-            MainForm._inColorize = True
-            If ConversionBuffer.Visible Then
-                ConversionBuffer.Visible = False
+            mainForm._inColorize = True
+            If conversionBuffer.Visible Then
+                conversionBuffer.Visible = False
             End If
+            Dim dias As IEnumerable(Of Diagnostic) = If(TryCast(failures, Diagnostic()), failures.ToArray())
             If failures Is Nothing Then
-                MainForm.ListBoxErrorList.Enabled = False
+                mainForm.ListBoxErrorList.Enabled = False
             Else
-                MainForm.ListBoxErrorList.Enabled = True
-                For Each dia As Diagnostic In failures
-                    MainForm.ListBoxErrorList.Items.Add($"{dia.Id} Line = {dia.Location.GetLineSpan.StartLinePosition.Line + 1} {dia.GetMessage}")
+                mainForm.ListBoxErrorList.Enabled = True
+                For Each dia As Diagnostic In dias
+                    mainForm.ListBoxErrorList.Items.Add($"{dia.Id} Line = {dia.Location.GetLineSpan.StartLinePosition.Line + 1} {dia.GetMessage}")
                 Next
             End If
 
-            MainForm.StatusStripConversionProgressBar.Maximum = Lines
+            mainForm.StatusStripConversionProgressBar.Maximum = lines
 
-            With ConversionBuffer
+            With conversionBuffer
                 .Clear()
                 .BackColor = GetColorFromName(ThemeDefaultColor).Background
                 .Select(.TextLength, 0)
-                For Each range As Range In FragmentRange
+                For Each range As Range In fragmentRange
                     .Select(.TextLength, 0)
                     .SelectionColor = GetColorFromName(range.ClassificationType).Foreground
                     .AppendText(range.Text)
                     If range.Text.Contains(vbLf, StringComparison.OrdinalIgnoreCase) Then
-                        MainForm.StatusStripConversionProgressBar.Increment(range.Text.Count(CType(vbLf, Char)))
+                        mainForm.StatusStripConversionProgressBar.Increment(range.Text.Count(CType(vbLf, Char)))
                         Application.DoEvents()
                     End If
-                    If MainForm._requestToConvert?.CancelToken.IsCancellationRequested Then
+                    If mainForm._requestToConvert?.CancelToken.IsCancellationRequested Then
                         Exit Sub
                     End If
                     Application.DoEvents()
                 Next range
                 If failures?.Count > 0 Then
-                    For Each dia As Diagnostic In failures
+                    For Each dia As Diagnostic In dias
                         Dim errorLine As Integer = dia.Location.GetLineSpan.StartLinePosition.Line
-                        Dim errorCharactorPosition As Integer = dia.Location.GetLineSpan.StartLinePosition.Character
-                        Dim length As Integer = dia.Location.GetLineSpan.EndLinePosition.Character - errorCharactorPosition
-                        .Select(.GetFirstCharIndexFromLine(errorLine) + errorCharactorPosition, length)
+                        Dim errorCharacterPosition As Integer = dia.Location.GetLineSpan.StartLinePosition.Character
+                        Dim length As Integer = dia.Location.GetLineSpan.EndLinePosition.Character - errorCharacterPosition
+                        .Select(.GetFirstCharIndexFromLine(errorLine) + errorCharacterPosition, length)
                         Dim selectionColor As ColorDescriptor = GetColorFromName("Error")
                         .SelectionBackColor = selectionColor.Background
                         .SelectionColor = selectionColor.Foreground
@@ -125,54 +123,54 @@ Public Module ColorizeSupport
                 End If
             End With
             If failures?.Count > 0 Then
-                MainForm.LineNumbersForConversionInput.Visible = True
-                MainForm.LineNumbersForConversionOutput.Visible = True
+                mainForm.LineNumbersForConversionInput.Visible = True
+                mainForm.LineNumbersForConversionOutput.Visible = True
             End If
-            MainForm.StatusStripConversionProgressBar.Clear()
+            mainForm.StatusStripConversionProgressBar.Clear()
         Catch ex As OperationCanceledException
         Catch ex As Exception
             Stop
         Finally
-            ConversionBuffer.Visible = True
-            ConversionBuffer.Refresh()
+            conversionBuffer.Visible = True
+            conversionBuffer.Refresh()
             Application.DoEvents()
-            MainForm._inColorize = False
+            mainForm._inColorize = False
         End Try
     End Sub
 
-    Friend Sub Compile_Colorize(MainForm As Form1, TextToCompile As String, VBPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)))
-        Dim compileResult As (Success As Boolean, EmitResult As EmitResult) = CompileVisualBasicString(TextToCompile, VBPreprocessorSymbols, DiagnosticSeverity.Error, MainForm._resultOfConversion)
+    Friend Sub Compile_Colorize(mainForm As Form1, textToCompile As String, vbPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)))
+        Dim compileResult As (Success As Boolean, EmitResult As EmitResult) = CompileVisualBasicString(textToCompile, vbPreprocessorSymbols, DiagnosticSeverity.Error, mainForm._resultOfConversion)
 
-        MainForm.LabelErrorCount.Text = $"Number Of Errors:  {MainForm._resultOfConversion.GetFilteredListOfFailures().Count}"
+        mainForm.LabelErrorCount.Text = $"Number Of Errors:  {mainForm._resultOfConversion.GetFilteredListOfFailures().Count}"
         If Not My.Settings.IncludeTopLevelStmtProtoInCode Then
-            MainForm._inColorize = True
+            mainForm._inColorize = True
 
-            MainForm._inColorize = False
+            mainForm._inColorize = False
         End If
 
         If compileResult.Success AndAlso compileResult.EmitResult.Success Then
-            TextToCompile = FilterOutTopLevelStatementCode(TextToCompile)
+            textToCompile = FilterOutTopLevelStatementCode(textToCompile)
             If My.Settings.ColorizeOutput Then
-                Colorize(MainForm, GetClassifiedRanges(TextToCompile, LanguageNames.VisualBasic), MainForm.ConversionOutput, TextToCompile.SplitLines.Length)
-                MainForm.ConversionOutput.Select(0, 0)
+                Colorize(mainForm, GetClassifiedRanges(textToCompile, LanguageNames.VisualBasic), mainForm.ConversionOutput, textToCompile.SplitLines.Length)
+                mainForm.ConversionOutput.Select(0, 0)
             Else
-                MainForm.ConversionOutput.Text = TextToCompile
+                mainForm.ConversionOutput.Text = textToCompile
             End If
         Else
-            If Not MainForm._resultOfConversion.GetFilteredListOfFailures().Any Then
-                TextToCompile = FilterOutTopLevelStatementCode(TextToCompile)
-                MainForm._resultOfConversion.ResultStatus = ResultTriState.Success
+            If Not mainForm._resultOfConversion.GetFilteredListOfFailures().Any Then
+                textToCompile = FilterOutTopLevelStatementCode(textToCompile)
+                mainForm._resultOfConversion.ResultStatus = ResultTriState.Success
                 If My.Settings.ColorizeOutput Then
-                    Colorize(MainForm, GetClassifiedRanges(TextToCompile, LanguageNames.VisualBasic), MainForm.ConversionOutput, TextToCompile.SplitLines.Length, MainForm._resultOfConversion.GetFilteredListOfFailures())
-                    MainForm.ConversionOutput.Select(0, 0)
+                    Colorize(mainForm, GetClassifiedRanges(textToCompile, LanguageNames.VisualBasic), mainForm.ConversionOutput, textToCompile.SplitLines.Length, mainForm._resultOfConversion.GetFilteredListOfFailures())
+                    mainForm.ConversionOutput.Select(0, 0)
                 Else
-                    MainForm.ConversionOutput.Text = TextToCompile
+                    mainForm.ConversionOutput.Text = textToCompile
                 End If
             Else
-                Colorize(MainForm, GetClassifiedRanges(TextToCompile, LanguageNames.VisualBasic), MainForm.ConversionOutput, TextToCompile.SplitLines.Length, MainForm._resultOfConversion.GetFilteredListOfFailures())
+                Colorize(mainForm, GetClassifiedRanges(textToCompile, LanguageNames.VisualBasic), mainForm.ConversionOutput, textToCompile.SplitLines.Length, mainForm._resultOfConversion.GetFilteredListOfFailures())
             End If
         End If
-        MainForm.ConversionOutput.Visible = True
+        mainForm.ConversionOutput.Visible = True
         Application.DoEvents()
     End Sub
 

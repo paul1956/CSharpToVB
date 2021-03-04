@@ -5,7 +5,7 @@
 Imports System.Diagnostics.CodeAnalysis
 Imports System.Runtime.CompilerServices
 
-Namespace CSharpToVBConverter
+Namespace Utilities
 
     <ExcludeFromCodeCoverage>
     Public Module ExceptionUtilities

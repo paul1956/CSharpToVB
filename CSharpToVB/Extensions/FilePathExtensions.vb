@@ -5,19 +5,19 @@
 Imports System.IO
 Imports System.Runtime.CompilerServices
 Imports System.Threading
-Imports CSharpToVBConverter
+Imports Extensions
 Imports Microsoft.CodeAnalysis
+Imports Utilities
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
 Public Module FilePathExtensions
 
-    Private Function CreateDirectoryIfNonexistent(SolutionRoot As String) As String
-        If Not Directory.Exists(SolutionRoot) Then
-            Directory.CreateDirectory(SolutionRoot)
+    Private Sub CreateDirectoryIfNonexistent(solutionRoot As String)
+        If Not Directory.Exists(solutionRoot) Then
+            Directory.CreateDirectory(solutionRoot)
         End If
-        Return SolutionRoot
-    End Function
+    End Sub
 
     <Extension>
     Private Function IsComment(trivia As SyntaxTrivia) As Boolean
@@ -59,25 +59,25 @@ Public Module FilePathExtensions
     End Function
 
     <Extension>
-    Friend Function GetFileCount(DirPath As String, SourceLanguageExtension As String, SkipBinAndObjFolders As Boolean, SkipTestResourceFiles As Boolean, Optional Depth As Integer = 0) As Long
+    Friend Function GetFileCount(dirPath As String, sourceLanguageExtension As String, skipBinAndObjFolders As Boolean, skipTestResourceFiles As Boolean, Optional depth As Integer = 0) As Long
         Dim totalFilesToProcess As Long = 0L
 
         Try
-            For Each subdirectory As String In Directory.EnumerateDirectories(DirPath)
-                If SkipTestResourceFiles AndAlso
-                        (subdirectory.EndsWith("Test\Resources", StringComparison.OrdinalIgnoreCase) OrElse
-                         subdirectory.EndsWith("Setup\Templates", StringComparison.OrdinalIgnoreCase)) Then
+            For Each subDirectory As String In Directory.EnumerateDirectories(dirPath)
+                If skipTestResourceFiles AndAlso
+                        (subDirectory.EndsWith("Test\Resources", StringComparison.OrdinalIgnoreCase) OrElse
+                         subDirectory.EndsWith("Setup\Templates", StringComparison.OrdinalIgnoreCase)) Then
                     Continue For
                 End If
-                Dim subdirectoryName As String = Path.GetFileName(subdirectory)
-                If SkipBinAndObjFolders AndAlso (subdirectoryName = "bin" OrElse
-                    subdirectoryName = "obj" OrElse
-                    subdirectoryName = "g") Then
+                Dim subDirectoryName As String = Path.GetFileName(subDirectory)
+                If skipBinAndObjFolders AndAlso (subDirectoryName = "bin" OrElse
+                    subDirectoryName = "obj" OrElse
+                    subDirectoryName = "g") Then
                     Continue For
                 End If
-                totalFilesToProcess += subdirectory.GetFileCount(SourceLanguageExtension, SkipBinAndObjFolders, SkipTestResourceFiles, Depth + 1)
+                totalFilesToProcess += subDirectory.GetFileCount(sourceLanguageExtension, skipBinAndObjFolders, skipTestResourceFiles, depth + 1)
             Next
-            For Each file As String In Directory.EnumerateDirectories(path:=DirPath, searchPattern:=$"*.{SourceLanguageExtension}")
+            For Each file As String In Directory.EnumerateDirectories(path:=dirPath, searchPattern:=$"*.{sourceLanguageExtension}")
                 If Not ParseCSharpSource(file, New List(Of String)).
                     GetRoot.SyntaxTree.IsGeneratedCode(Function(t As SyntaxTrivia) As Boolean
                                                            Return t.IsComment OrElse t.IsRegularOrDocComment
@@ -90,7 +90,6 @@ Public Module FilePathExtensions
         Catch ua As UnauthorizedAccessException
             ' Ignore
         Catch ex As Exception
-            Stop
             Throw
         End Try
 
@@ -100,36 +99,36 @@ Public Module FilePathExtensions
     ''' <summary>
     ''' To work with Git we need to create a new folder tree from the parent of this project
     ''' </summary>
-    ''' <param name="MyForm"></param>
-    ''' <param name="DirOrFileToBeTranslated"></param>
+    ''' <param name="myForm"></param>
+    ''' <param name="dirOrFileToBeTranslated"></param>
     ''' <returns></returns>
-    ''' <param name="PromptIfDirExsits"></param>
+    ''' <param name="promptIfDirExists"></param>
     <Extension>
-    Friend Function GetSavePath(MyForm As Form1, DirOrFileToBeTranslated As String, PromptIfDirExsits As Boolean) As (SolutionRoot As String, ProjectRelativePath As String)
-        Debug.Assert(Directory.GetDirectoryRoot(DirOrFileToBeTranslated) <> DirOrFileToBeTranslated, $"{DirOrFileToBeTranslated} does Not exist")
-        Dim sourceRoot As String = DirOrFileToBeTranslated
+    Friend Function GetSavePath(myForm As Form1, dirOrFileToBeTranslated As String, promptIfDirExists As Boolean) As (SolutionRoot As String, ProjectRelativePath As String)
+        Debug.Assert(Directory.GetDirectoryRoot(dirOrFileToBeTranslated) <> dirOrFileToBeTranslated, $"{dirOrFileToBeTranslated} does Not exist")
+        Dim sourceRoot As String = dirOrFileToBeTranslated
         Dim currentDirectory As String = sourceRoot
-        Dim systemtRootDirectory As String = Directory.GetDirectoryRoot(currentDirectory)
-        If File.Exists(DirOrFileToBeTranslated) Then
-            sourceRoot = Directory.GetParent(DirOrFileToBeTranslated).FullName
+        Dim systemRootDirectory As String = Directory.GetDirectoryRoot(currentDirectory)
+        If File.Exists(dirOrFileToBeTranslated) Then
+            sourceRoot = Directory.GetParent(dirOrFileToBeTranslated).FullName
             currentDirectory = sourceRoot
-            DirOrFileToBeTranslated = sourceRoot
+            dirOrFileToBeTranslated = sourceRoot
         End If
-        Debug.Assert(Directory.Exists(sourceRoot), $"{DirOrFileToBeTranslated} does Not exist")
+        Debug.Assert(Directory.Exists(sourceRoot), $"{dirOrFileToBeTranslated} does Not exist")
 
-        While systemtRootDirectory <> currentDirectory
+        While systemRootDirectory <> currentDirectory
             If Directory.GetFiles(currentDirectory, "*.sln").Any Then
                 sourceRoot = Directory.GetParent(currentDirectory).FullName
                 Exit While
             End If
             currentDirectory = Directory.GetParent(currentDirectory).FullName
         End While
-        If systemtRootDirectory = currentDirectory Then
-            Dim defaultRoot As String = Directory.GetParent(DirOrFileToBeTranslated).FullName
+        If systemRootDirectory = currentDirectory Then
+            Dim defaultRoot As String = Directory.GetParent(dirOrFileToBeTranslated).FullName
             sourceRoot = defaultRoot
         End If
         ' At this point Solution Directory is the remainder of the path from SolutionRoot
-        Dim pathFromSolutionRoot As List(Of String) = DirOrFileToBeTranslated.Replace(sourceRoot, "", StringComparison.OrdinalIgnoreCase) _
+        Dim pathFromSolutionRoot As List(Of String) = dirOrFileToBeTranslated.Replace(sourceRoot, "", StringComparison.OrdinalIgnoreCase) _
                                                                     .Trim(Path.DirectorySeparatorChar) _
                                                                     .Split(Path.DirectorySeparatorChar).ToList
         pathFromSolutionRoot(0) = pathFromSolutionRoot(0) & "_vb"
@@ -140,10 +139,10 @@ Public Module FilePathExtensions
             MsgBox($"A file exists at {solutionRoot} this Is a fatal error the program will exit",
                    MsgBoxStyle.OkOnly Or MsgBoxStyle.Critical Or MsgBoxStyle.MsgBoxSetForeground,
                    "Fatal Error")
-            MyForm.Close()
+            myForm.Close()
             End
         End If
-        If PromptIfDirExsits AndAlso Directory.Exists(solutionRoot) Then
+        If promptIfDirExists AndAlso Directory.Exists(solutionRoot) Then
             Select Case MsgBox($"The converted project will be save to {solutionRoot} a directory which already exists. To use it And overwrite existing files select Yes. Selecting No will delete existing content, Selecting Cancel will stop conversion. , ",
                                MsgBoxStyle.YesNoCancel Or MsgBoxStyle.Question Or MsgBoxStyle.MsgBoxSetForeground,
                                "Target Directory Save Options")

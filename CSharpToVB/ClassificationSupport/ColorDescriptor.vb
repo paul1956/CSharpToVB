@@ -3,8 +3,8 @@
 ' See the LICENSE file in the project root for more information.
 
 Public Structure ColorDescriptor
-    Public Foreground As Color
-    Public Background As Color
+    Public Property Foreground As Color
+    Public Property Background As Color
 
     Public Sub New(foreground As Color, background As Color)
         Me.Foreground = foreground
@@ -17,18 +17,18 @@ Public Structure ColorDescriptor
         End If
 
         Dim other As ColorDescriptor = DirectCast(obj, ColorDescriptor)
-        Return Foreground.A = other.Foreground.A AndAlso
-                Foreground.R = other.Foreground.R AndAlso
-                Foreground.G = other.Foreground.G AndAlso
-                Foreground.B = other.Foreground.B AndAlso
-                Background.A = other.Background.A AndAlso
-                Background.R = other.Background.R AndAlso
-                Background.G = other.Background.G AndAlso
-                Background.B = other.Background.B
+        Return Me.Foreground.A = other.Foreground.A AndAlso
+            Me.Foreground.R = other.Foreground.R AndAlso
+            Me.Foreground.G = other.Foreground.G AndAlso
+            Me.Foreground.B = other.Foreground.B AndAlso
+            Me.Background.A = other.Background.A AndAlso
+            Me.Background.R = other.Background.R AndAlso
+            Me.Background.G = other.Background.G AndAlso
+            Me.Background.B = other.Background.B
     End Function
 
     Public Overrides Function GetHashCode() As Integer
-        Return HashCode.Combine(Foreground, Background)
+        Return HashCode.Combine(Me.Foreground, Me.Background)
     End Function
 
     Public Shared Operator =(left As ColorDescriptor, right As ColorDescriptor) As Boolean

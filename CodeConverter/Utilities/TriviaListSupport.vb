@@ -1,57 +1,57 @@
 ﻿' Licensed to the .NET Foundation under one or more agreements.
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
-
+Imports Extensions
 Imports Microsoft.CodeAnalysis
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
-Namespace CSharpToVBConverter.CSharpToVBVisitors
+Namespace Utilities
 
     Public Module TriviaListSupport
 
         ''' <summary>
         ''' Compare 2 trivia Lists and see if they both end with the same SyntaxKinds
         ''' </summary>
-        ''' <param name="NodeLeadingTrivia"></param>
+        ''' <param name="nodeLeadingTrivia"></param>
         ''' <param name="leadingTrivia"></param>
         ''' <returns>True if leadingTrivia ends with the same trivia kinds as NodeLeadingTrivia</returns>
-        Friend Function EndsWithSimilarTrivia(NodeLeadingTrivia As SyntaxTriviaList, leadingTrivia As SyntaxTriviaList) As Boolean
-            If NodeLeadingTrivia.Count > leadingTrivia.Count Then
+        Friend Function EndsWithSimilarTrivia(nodeLeadingTrivia As SyntaxTriviaList, leadingTrivia As SyntaxTriviaList) As Boolean
+            If nodeLeadingTrivia.Count > leadingTrivia.Count Then
                 Return False
             End If
-            If (Not leadingTrivia.ContainsCommentOrDirectiveTrivia) OrElse (Not NodeLeadingTrivia.ContainsCommentOrDirectiveTrivia) Then
+            If (Not leadingTrivia.ContainsCommentOrDirectiveTrivia) OrElse (Not nodeLeadingTrivia.ContainsCommentOrDirectiveTrivia) Then
                 Return False
             End If
 
-            For index As Integer = 1 To NodeLeadingTrivia.Count
-                If leadingTrivia(leadingTrivia.Count - index).RawKind <> NodeLeadingTrivia(NodeLeadingTrivia.Count - index).RawKind Then
+            For index As Integer = 1 To nodeLeadingTrivia.Count
+                If leadingTrivia(leadingTrivia.Count - index).RawKind <> nodeLeadingTrivia(nodeLeadingTrivia.Count - index).RawKind Then
                     Return False
                 End If
             Next
             Return True
         End Function
 
-        Friend Sub RelocateAttributeDirectiveDisabledTrivia(TriviaList As SyntaxTriviaList, FoundDirective As Boolean, IsTheory As Boolean, ByRef statementLeadingTrivia As SyntaxTriviaList, ByRef statementTrailingTrivia As SyntaxTriviaList)
-            If IsTheory Then
+        Friend Sub RelocateAttributeDirectiveDisabledTrivia(triviaList As SyntaxTriviaList, ByRef foundDirective As Boolean, isTheory As Boolean, ByRef statementLeadingTrivia As SyntaxTriviaList, ByRef statementTrailingTrivia As SyntaxTriviaList)
+            If isTheory Then
                 Exit Sub
             End If
-            For Each t As SyntaxTrivia In TriviaList
+            For Each t As SyntaxTrivia In triviaList
                 If Not (t.IsDirective OrElse t.IsKind(VB.SyntaxKind.DisabledTextTrivia,
                                                            VB.SyntaxKind.RegionDirectiveTrivia,
                                                            VB.SyntaxKind.EndRegionDirectiveTrivia)) Then
                     Continue For
                 End If
-                If FoundDirective Then
+                If foundDirective Then
                     If statementTrailingTrivia.Count = 0 Then
-                        statementTrailingTrivia.Add(VBEOLTrivia)
+                        statementTrailingTrivia.Add(VbEolTrivia)
                     End If
                     statementTrailingTrivia.Add(t)
                 Else
                     If t.IsDirective Then
                         statementLeadingTrivia = statementLeadingTrivia.Add(t)
-                        FoundDirective = True
+                        foundDirective = True
                     Else
                         statementTrailingTrivia = statementTrailingTrivia.Add(t)
                     End If
@@ -59,33 +59,33 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             Next
         End Sub
 
-        Friend Function RelocateDirectiveDisabledTrivia(TriviaList As SyntaxTriviaList, ByRef StatementTrivia As SyntaxTriviaList, RemoveEOL As Boolean) As SyntaxTriviaList
+        Friend Function RelocateDirectiveDisabledTrivia(triviaList As SyntaxTriviaList, ByRef statementTrivia As SyntaxTriviaList, removeEol As Boolean) As SyntaxTriviaList
             Dim newTrivia As New SyntaxTriviaList
             Dim foundDirective As Boolean = False
-            For Each t As SyntaxTrivia In TriviaList
+            For Each t As SyntaxTrivia In triviaList
                 If Not (foundDirective OrElse t.IsDirective OrElse t.IsSkippedOrDisabledTrivia) Then
-                    If t.IsEndOfLine AndAlso RemoveEOL Then
+                    If t.IsEndOfLine AndAlso removeEol Then
                         newTrivia = newTrivia.Add(SpaceTrivia)
                     Else
                         newTrivia = newTrivia.Add(t)
                     End If
                 Else
                     If t.IsDirective Then
-                        StatementTrivia = StatementTrivia.Add(VBEOLTrivia)
-                        StatementTrivia = StatementTrivia.Add(t)
+                        statementTrivia = statementTrivia.Add(VbEolTrivia)
+                        statementTrivia = statementTrivia.Add(t)
                         foundDirective = True
                     Else
-                        StatementTrivia = StatementTrivia.Add(t)
+                        statementTrivia = statementTrivia.Add(t)
                     End If
                 End If
             Next
             Return newTrivia
         End Function
 
-        Friend Function RelocateLeadingCommentTrivia(TriviaList As SyntaxTriviaList, ByRef statementLeadingTrivia As SyntaxTriviaList) As SyntaxTriviaList
+        Friend Function RelocateLeadingCommentTrivia(triviaList As SyntaxTriviaList, ByRef statementLeadingTrivia As SyntaxTriviaList) As SyntaxTriviaList
             Dim newLeadingTrivia As New SyntaxTriviaList
             Dim foundComment As Boolean = False
-            For Each t As SyntaxTrivia In TriviaList
+            For Each t As SyntaxTrivia In triviaList
                 If Not (foundComment OrElse t.IsComment) Then
                     If t.IsEndOfLine Then
                         newLeadingTrivia = newLeadingTrivia.Add(SpaceTrivia)
@@ -94,7 +94,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     End If
                 Else
                     If t.IsComment Then
-                        statementLeadingTrivia = statementLeadingTrivia.Add(VBEOLTrivia)
+                        statementLeadingTrivia = statementLeadingTrivia.Add(VbEolTrivia)
                         statementLeadingTrivia = statementLeadingTrivia.Add(t)
                         foundComment = True
                     Else
@@ -105,9 +105,9 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             Return newLeadingTrivia
         End Function
 
-        Friend Function TranslateTokenList(ChildTokens As IEnumerable(Of SyntaxToken)) As SyntaxTokenList
+        Friend Function TranslateTokenList(childTokens As IEnumerable(Of SyntaxToken)) As SyntaxTokenList
             Dim newTokenList As New SyntaxTokenList
-            For Each token As SyntaxToken In ChildTokens
+            For Each token As SyntaxToken In childTokens
                 Dim newLeadingTriviaList As New SyntaxTriviaList
                 Dim newTrailingTriviaList As New SyntaxTriviaList
 

@@ -1,19 +1,20 @@
 ﻿' Licensed to the .NET Foundation under one or more agreements.
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
-
 Imports System.Runtime.CompilerServices
 Imports System.Threading
 Imports CSharpToVBConverter.CSharpToVBVisitors.CSharpConverter
 Imports Microsoft.CodeAnalysis
 Imports ProgressReportLibrary
+Imports SupportClasses
+Imports Utilities
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Namespace CSharpToVBConverter.CSharpToVBVisitors
+Namespace Extensions
 
     Public Module LanguageSyntaxNodeExtensions
         Public Property IgnoredIfDepth As Integer
@@ -39,7 +40,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             Dim initialTriviaList As SyntaxTriviaList = Node.GetLeadingTrivia
             For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
                 Dim trivia As SyntaxTrivia = e.Value
-                Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.index, LookaheadCount:=1)
+                Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.index, lookaheadCount:=1)
                 Select Case trivia.RawKind
                     Case VB.SyntaxKind.WhitespaceTrivia
                         If nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) OrElse afterLineContinuation Then
@@ -89,7 +90,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         If nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
                             afterEOL = False
                         Else
-                            finalLeadingTrivia = finalLeadingTrivia.Add(VBEOLTrivia)
+                            finalLeadingTrivia = finalLeadingTrivia.Add(VbEolTrivia)
                             afterEOL = True
                         End If
                     Case VB.SyntaxKind.DisableWarningDirectiveTrivia, VB.SyntaxKind.EnableWarningDirectiveTrivia,
@@ -101,7 +102,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         If nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) OrElse afterEOL Then
                             Continue For
                         End If
-                        finalLeadingTrivia = finalLeadingTrivia.Add(VBEOLTrivia)
+                        finalLeadingTrivia = finalLeadingTrivia.Add(VbEolTrivia)
                         afterEOL = True
                     Case VB.SyntaxKind.LineContinuationTrivia
                         If Not afterLineContinuation Then
@@ -117,7 +118,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         If nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) OrElse nextTrivia.IsNone Then
                             Continue For
                         End If
-                        finalLeadingTrivia = finalLeadingTrivia.Add(VBEOLTrivia)
+                        finalLeadingTrivia = finalLeadingTrivia.Add(VbEolTrivia)
                     Case Else
                         Stop
                 End Select
@@ -130,7 +131,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             Dim finalTrailingTriviaList As New SyntaxTriviaList
             For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
                 Dim trivia As SyntaxTrivia = e.Value
-                Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.index, LookaheadCount:=1)
+                Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.index, lookaheadCount:=1)
                 Select Case trivia.RawKind
                     Case VB.SyntaxKind.WhitespaceTrivia
                         If nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
@@ -175,7 +176,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         End If
                         finalTrailingTriviaList = finalTrailingTriviaList.Add(trivia)
                         If Not nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                            finalTrailingTriviaList = finalTrailingTriviaList.Add(VBEOLTrivia)
+                            finalTrailingTriviaList = finalTrailingTriviaList.Add(VbEolTrivia)
                             afterLineContinuation = False
                             afterLinefeed = True
                         End If
@@ -238,7 +239,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             Dim initialTriviaList As SyntaxTriviaList = NodesOrTokens(index).GetLeadingTrivia.ConvertTriviaList()
             Dim afterEOL As Boolean
             For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
-                Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.index, LookaheadCount:=1)
+                Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.index, lookaheadCount:=1)
 
                 Select Case e.Value.RawKind
                     Case VB.SyntaxKind.WhitespaceTrivia
@@ -263,7 +264,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         End If
                         finalLeadingTrivia = finalLeadingTrivia.AddRange({LineContinuation, e.Value})
                         If Not nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
-                            finalLeadingTrivia = finalLeadingTrivia.Add(VBEOLTrivia)
+                            finalLeadingTrivia = finalLeadingTrivia.Add(VbEolTrivia)
                         End If
                     Case VB.SyntaxKind.DisableWarningDirectiveTrivia, VB.SyntaxKind.EnableWarningDirectiveTrivia
                         Stop
@@ -389,15 +390,15 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         Stop
                 End Select
             Next
-            Return statement.With(newLeadingTrivia, newTrailingTrivia).WithTrailingEOL
+            Return statement.With(newLeadingTrivia, newTrailingTrivia).WithTrailingEol
         End Function
 
         Friend Sub RestructureNodesAndSeparators(Of T As VB.VisualBasicSyntaxNode)(ByRef _OpenToken As SyntaxToken, ByRef items As List(Of T), ByRef separators As List(Of SyntaxToken), ByRef _CloseToken As SyntaxToken)
-            _OpenToken = _OpenToken.WithModifiedTokenTrivia(LeadingToken:=True, AfterEOL:=False, RequireTrailingSpace:=False, FinalLeadingDirectiveNotAllowed:=False)
+            _OpenToken = _OpenToken.WithModifiedTokenTrivia(leadingToken:=True, afterEol:=False, requireTrailingSpace:=False, finalLeadingDirectiveNotAllowed:=False)
             For index As Integer = 0 To items.Count - 2
                 Dim newItem As T = items(index).AdjustNodeTrivia(SeparatorFollows:=True)
                 items(index) = newItem
-                Dim newSeparators As SyntaxToken = separators(index).WithModifiedTokenTrivia(LeadingToken:=False, AfterEOL:=False, RequireTrailingSpace:=False, FinalLeadingDirectiveNotAllowed:=False)
+                Dim newSeparators As SyntaxToken = separators(index).WithModifiedTokenTrivia(leadingToken:=False, afterEol:=False, requireTrailingSpace:=False, finalLeadingDirectiveNotAllowed:=False)
                 separators(index) = newSeparators
             Next
             Dim lastItemEndsWithEOL As Boolean = False
@@ -406,25 +407,25 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 items(items.Count - 1) = newItem
                 lastItemEndsWithEOL = items.Last.HasTrailingTrivia AndAlso items.Last.GetTrailingTrivia.Last.IsKind(VB.SyntaxKind.EndOfLineTrivia)
             End If
-            Dim newCloseToken As SyntaxToken = _CloseToken.WithModifiedTokenTrivia(LeadingToken:=False, AfterEOL:=lastItemEndsWithEOL, RequireTrailingSpace:=False, FinalLeadingDirectiveNotAllowed:=True)
-            _CloseToken = newCloseToken.RemoveExtraEOL
+            Dim newCloseToken As SyntaxToken = _CloseToken.WithModifiedTokenTrivia(leadingToken:=False, afterEol:=lastItemEndsWithEOL, requireTrailingSpace:=False, finalLeadingDirectiveNotAllowed:=True)
+            _CloseToken = newCloseToken.RemoveExtraEol
         End Sub
 
         ''' <summary>
         ''' Entry Point for converting source and new applications
         ''' </summary>
-        ''' <param name="SourceTree"></param>
+        ''' <param name="sourceTree"></param>
         ''' <param name="SkipAutoGenerated"></param>
         ''' <param name="DefaultVBOptions"></param>
         ''' <param name="pSemanticModel"></param>
         ''' <returns></returns>
         <Extension>
-        Public Function DoConversion(SourceTree As CS.CSharpSyntaxNode, pSemanticModel As SemanticModel, DefaultVBOptions As DefaultVbOptions, SkipAutoGenerated As Boolean, ReportException As Action(Of Exception), Progress As IProgress(Of ProgressReport), CancelToken As CancellationToken) As VB.VisualBasicSyntaxNode
+        Public Function DoConversion(sourceTree As CS.CSharpSyntaxNode, pSemanticModel As SemanticModel, DefaultVBOptions As DefaultVbOptions, SkipAutoGenerated As Boolean, ReportException As Action(Of Exception), Progress As IProgress(Of ProgressReport), CancelToken As CancellationToken) As VB.VisualBasicSyntaxNode
             IgnoredIfDepth = 0
             Dim visualBasicSyntaxNode1 As VB.VisualBasicSyntaxNode
             SyncLock s_thisLock
                 ClearMarker()
-                visualBasicSyntaxNode1 = SourceTree?.Accept(New NodesVisitor(New ConvertRequest(SkipAutoGenerated, Progress, CancelToken), pSemanticModel, DefaultVBOptions, ReportException))
+                visualBasicSyntaxNode1 = sourceTree?.Accept(New NodesVisitor(New ConvertRequest(SkipAutoGenerated, Progress, CancelToken), pSemanticModel, DefaultVBOptions, ReportException))
             End SyncLock
             Return visualBasicSyntaxNode1
         End Function

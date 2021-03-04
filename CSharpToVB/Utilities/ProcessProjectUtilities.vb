@@ -8,23 +8,12 @@ Imports System.Runtime.CompilerServices
 Imports System.Threading
 Imports Buildalyzer
 Imports Buildalyzer.Workspaces
-Imports CSharpToVBConverter
+Imports Extensions
 Imports Microsoft.CodeAnalysis
 
 Public Module ProcessProjectUtilities
 
-    <Extension>
-    Friend Sub UpdateProgressLabels(MainForm As Form1, progressStr As String)
-        If MainForm.InvokeRequired Then
-            MainForm.Invoke(Sub()
-                                MainForm.UpdateProgress(progressStr)
-                            End Sub)
-        Else
-            MainForm.UpdateProgress(progressStr)
-        End If
-    End Sub
-
-    Friend Function CSharpReferences(fileReferences As IEnumerable(Of String), projectReferences As IEnumerable(Of String)) As List(Of MetadataReference)
+    Private Function CSharpMetaDataReferences(fileReferences As IEnumerable(Of String), projectReferences As IEnumerable(Of String)) As List(Of MetadataReference)
         Dim referenceList As New List(Of MetadataReference)
         For Each dllPath As String In fileReferences
             If dllPath.EndsWith("System.EnterpriseServices.Wrapper.dll", StringComparison.Ordinal) Then
@@ -35,8 +24,8 @@ Public Module ProcessProjectUtilities
             End If
             referenceList.Add(MetadataReference.CreateFromFile(dllPath))
         Next
-        For Each proj_Path As String In projectReferences
-            referenceList.Add(MetadataReference.CreateFromFile(proj_Path))
+        For Each projPath As String In projectReferences
+            referenceList.Add(MetadataReference.CreateFromFile(projPath))
         Next
         Return referenceList
     End Function
@@ -44,17 +33,18 @@ Public Module ProcessProjectUtilities
     ''' <summary>
     ''' If debugger is attached return all frameworks if not ask user to pick one
     ''' </summary>
-    ''' <param name="TargetFrameworks"></param>
+    ''' <param name="targetFrameworks"></param>
     ''' <returns></returns>
-    Friend Function GetFrameworks(TargetFrameworks As List(Of String)) As List(Of String)
-        Select Case TargetFrameworks.Count
+    <Extension>
+    Friend Function GetFrameworks(mainForm As Form1, targetFrameworks As List(Of String)) As List(Of String)
+        Select Case targetFrameworks.Count
             Case 0
                 Return New List(Of String)
             Case 1
-                Return New List(Of String)({TargetFrameworks(0)})
+                Return New List(Of String)({targetFrameworks(0)})
             Case Else
                 Dim page As New TaskDialogPage
-                For Each s As IndexClass(Of String) In TargetFrameworks.WithIndex
+                For Each s As IndexClass(Of String) In targetFrameworks.WithIndex
                     page.RadioButtons.Add(New TaskDialogRadioButton(s.Value) With
                                           {.Checked = s.IsFirst}
                                          )
@@ -64,7 +54,7 @@ Public Module ProcessProjectUtilities
                 page.Buttons.Add(New TaskDialogButton("OK"))
                 page.Buttons.Add(New TaskDialogButton("Cancel"))
                 page.DefaultButton = page.Buttons(0)
-                Dim taskDialogResult As TaskDialogButton = TaskDialog.ShowDialog(Form1.Handle, page, TaskDialogStartupLocation.CenterOwner)
+                Dim taskDialogResult As TaskDialogButton = TaskDialog.ShowDialog(My.Forms.Form1.Handle, page, TaskDialogStartupLocation.CenterOwner)
 
                 If taskDialogResult.Text = TaskDialogButton.OK.Text Then
                     Return {page.RadioButtons.Where(Function(b As TaskDialogRadioButton) b.Checked = True).First.Text}.ToList
@@ -74,9 +64,9 @@ Public Module ProcessProjectUtilities
         End Select
     End Function
 
-    Friend Async Function GetManagerAsync(SolutionPath As String) As Task(Of AnalyzerManager)
-        If SolutionPath.EndsWith(".sln", StringComparison.OrdinalIgnoreCase) Then
-            Return Await Task.Run(Function() New AnalyzerManager(SolutionPath)).ConfigureAwait(True)
+    Friend Async Function GetManagerAsync(solutionPath As String) As Task(Of AnalyzerManager)
+        If solutionPath.EndsWith(".sln", StringComparison.OrdinalIgnoreCase) Then
+            Return Await Task.Run(Function() New AnalyzerManager(solutionPath)).ConfigureAwait(True)
         End If
         Return Await Task.Run(Function() New AnalyzerManager()).ConfigureAwait(True)
     End Function
@@ -89,21 +79,21 @@ Public Module ProcessProjectUtilities
         Return Await Task.Run(Function() analyzer.Build()).ConfigureAwait(True)
     End Function
 
-    Friend Async Function GetWorkspaceAsync(TaskProjectAnalyzer As IProjectAnalyzer) As Task(Of AdhocWorkspace)
-        Return Await Task.Run(Function() CType(TaskProjectAnalyzer, ProjectAnalyzer).GetWorkspace()).ConfigureAwait(True)
+    Friend Async Function GetWorkspaceAsync(taskProjectAnalyzer As IProjectAnalyzer) As Task(Of AdhocWorkspace)
+        Return Await Task.Run(Function() CType(taskProjectAnalyzer, ProjectAnalyzer).GetWorkspace()).ConfigureAwait(True)
     End Function
 
     ''' <summary>
     ''' Convert 1 Project
     ''' </summary>
-    ''' <param name="TaskProjectAnalyzer"></param>
-    ''' <param name="SolutionRoot"></param>
+    ''' <param name="taskProjectAnalyzer"></param>
+    ''' <param name="solutionRoot"></param>
     ''' <param name="cancelToken"></param>
     ''' <returns>Error String to be Displayed and list of products processed</returns>
-    Friend Async Function ProcessProjectAsync(MainForm As Form1, TaskProjectAnalyzer As IProjectAnalyzer, SolutionRoot As String, processedProjects As Integer, totalProjects As Integer, cancelToken As CancellationTokenSource) As Task(Of (ErrorPrompt As String, ProjectsToBeAdded As List(Of String)))
+    Friend Async Function ProcessProjectAsync(mainForm As Form1, taskProjectAnalyzer As IProjectAnalyzer, solutionRoot As String, processedProjects As Integer, totalProjects As Integer, cancelToken As CancellationTokenSource) As Task(Of (ErrorPrompt As String, ProjectsToBeAdded As List(Of String)))
         Application.DoEvents()
-        UpdateProgressLabels(MainForm, "Getting Analyzer Results")
-        Dim taskResults As Task(Of IAnalyzerResults) = GetResultsAsync(CType(TaskProjectAnalyzer, ProjectAnalyzer))
+        mainForm.UpdateProgressLabels("Getting Analyzer Results")
+        Dim taskResults As Task(Of IAnalyzerResults) = GetResultsAsync(CType(taskProjectAnalyzer, ProjectAnalyzer))
         While Not taskResults.IsCompleted
             If cancelToken.IsCancellationRequested Then
                 Return ("", New List(Of String))
@@ -111,9 +101,9 @@ Public Module ProcessProjectUtilities
             Await Task.Delay(100).ConfigureAwait(True)
         End While
         Dim results As IAnalyzerResults = taskResults.Result
-        MainForm.UpdateProgressLabels("Loading Workspace")
-        Dim taskWorkspace As Task(Of AdhocWorkspace) = GetWorkspaceAsync(TaskProjectAnalyzer)
-        Dim frameworkList As List(Of String) = GetFrameworks(results.TargetFrameworks.ToList)
+        mainForm.UpdateProgressLabels("Loading Workspace")
+        Dim taskWorkspace As Task(Of AdhocWorkspace) = GetWorkspaceAsync(taskProjectAnalyzer)
+        Dim frameworkList As List(Of String) = mainForm.GetFrameworks(results.TargetFrameworks.ToList)
         ' Under debugger each framework will be processed
         ' Under production the user will select one framework
         While Not taskWorkspace.IsCompleted
@@ -127,7 +117,7 @@ Public Module ProcessProjectUtilities
         End If
         Dim projectsToBeAdd As New List(Of String)
         Using workspace As AdhocWorkspace = taskWorkspace.Result
-            MainForm.UpdateProgressLabels("")
+            mainForm.UpdateProgressLabels("")
 
             If workspace.CurrentSolution.Projects.Count <> 1 Then
                 Return ($"of an unexpected number of projects {workspace.CurrentSolution.Projects.Count}, processing project will terminate!", New List(Of String))
@@ -140,17 +130,17 @@ Public Module ProcessProjectUtilities
                     frameworkMsg = $"Framework {framework.index + 1} of {frameworkList.Count}: {framework.Value}"
                 End If
                 Dim currentProject As Project = workspace.CurrentSolution.Projects(0)
-                MainForm.StatusStripCurrentFileName.Text = $"{processedProjects} of {totalProjects} Projects, {frameworkMsg}, {currentProject.FilePath}"
+                mainForm.StatusStripCurrentFileName.Text = $"{processedProjects} of {totalProjects} Projects, {frameworkMsg}, {currentProject.FilePath}"
                 Application.DoEvents()
-                Dim csReferences As MetadataReference() = CSharpReferences(results(framework.Value).References, results(framework.Value).ProjectReferences).ToArray
+                Dim csReferences As MetadataReference() = CSharpMetaDataReferences(results(framework.Value).References, results(framework.Value).ProjectReferences).ToArray
                 Dim taskConvertOneProject As Task(Of Boolean) =
-                        ProcessProjectCoreAsync(MainForm,
+                        ProcessProjectCoreAsync(mainForm,
                                                 currentProject,
-                                                SolutionRoot,
+                                                solutionRoot,
                                                 framework.Value,
                                                 csReferences
                                                )
-                Dim projectToBeAdd As String = ConvertProjectFile(currentProject.FilePath, SolutionRoot)
+                Dim projectToBeAdd As String = ConvertProjectFile(currentProject.FilePath, solutionRoot)
                 If projectToBeAdd.Length > 0 AndAlso Not projectsToBeAdd.Contains(projectToBeAdd) Then
                     projectsToBeAdd.Add(projectToBeAdd)
                 End If
@@ -171,85 +161,85 @@ Public Module ProcessProjectUtilities
     ''' <summary>
     ''' Converts all the files in a C# project
     ''' </summary>
-    ''' <param name="MainForm"></param>
+    ''' <param name="mainForm"></param>
     ''' <param name="currentProject"></param>
     ''' <param name="solutionRoot"></param>
-    ''' <param name="Framework"></param>
+    ''' <param name="framework"></param>
     ''' <returns>False if failed</returns>
-    ''' <param name="References"></param>
-    Friend Async Function ProcessProjectCoreAsync(MainForm As Form1, currentProject As Project, solutionRoot As String, Framework As String, References As MetadataReference()) As Task(Of Boolean)
-        If MainForm._cancellationTokenSource.IsCancellationRequested Then
+    ''' <param name="references"></param>
+    Friend Async Function ProcessProjectCoreAsync(mainForm As Form1, currentProject As Project, solutionRoot As String, framework As String, references As MetadataReference()) As Task(Of Boolean)
+        If mainForm._cancellationTokenSource.IsCancellationRequested Then
             Return False
         End If
         Dim filesProcessed As Integer = 0
         Dim totalFilesToProcess As Integer = currentProject.Documents.Count
-        Dim convertedFramework As String = FrameworkNameToConstant(Framework)
-        Dim csPreprocessorSymbols As New List(Of String) From {Framework, convertedFramework}
+        Dim convertedFramework As String = FrameworkNameToConstant(framework)
+        Dim csPreprocessorSymbols As New List(Of String) From {framework, convertedFramework}
 
         Dim vbPreprocessorSymbols As New List(Of KeyValuePair(Of String, Object)) From {
                                     KeyValuePair.Create(Of String, Object)(convertedFramework, True)}
-        If Not convertedFramework.Equals(Framework, StringComparison.OrdinalIgnoreCase) Then
-            vbPreprocessorSymbols.Add(KeyValuePair.Create(Of String, Object)(Framework, True))
+        If Not convertedFramework.Equals(framework, StringComparison.OrdinalIgnoreCase) Then
+            vbPreprocessorSymbols.Add(KeyValuePair.Create(Of String, Object)(framework, True))
         End If
 
         For Each currentDocument As Document In currentProject.Documents
-            If MainForm._cancellationTokenSource.IsCancellationRequested Then
+            If mainForm._cancellationTokenSource.IsCancellationRequested Then
                 Return False
             End If
             Dim targetFileWithPath As String = DestinationFilePath(currentDocument.FilePath, solutionRoot)
             filesProcessed += 1
-            MainForm.ListBoxFileList.Items.Add(New NumberedListItem($"{filesProcessed.ToString(CultureInfo.InvariantCulture),-5} {currentDocument.FilePath}", $"{targetFileWithPath}{Path.DirectorySeparatorChar}{Path.GetFileNameWithoutExtension(currentDocument.Name)}.vb"))
-            MainForm.ListBoxFileList.SelectedIndex = MainForm.ListBoxFileList.Items.Count - 1
-            MainForm.StatusStripConversionFileProgressLabel.Text = $"Processed {filesProcessed:N0} of {totalFilesToProcess:N0} Files"
+            mainForm.ListBoxFileList.Items.Add(New NumberedListItem($"{filesProcessed.ToString(CultureInfo.InvariantCulture),-5} {currentDocument.FilePath}", $"{targetFileWithPath}{Path.DirectorySeparatorChar}{Path.GetFileNameWithoutExtension(currentDocument.Name)}.vb"))
+            mainForm.ListBoxFileList.SelectedIndex = mainForm.ListBoxFileList.Items.Count - 1
+            mainForm.StatusStripConversionFileProgressLabel.Text = $"Processed {filesProcessed:N0} of {totalFilesToProcess:N0} Files"
             Application.DoEvents()
-            If Not Await ProcessFileAsync(MainForm,
+            If Not Await ProcessFileAsync(mainForm,
                                           currentDocument.FilePath,
                                           targetFileWithPath,
                                           "cs",
                                           csPreprocessorSymbols,
                                           vbPreprocessorSymbols,
-                                          References,
-                                          SkipAutoGenerated:=True,
-                                          CancelToken:=MainForm._cancellationTokenSource.Token).ConfigureAwait(True) _
-                                                    OrElse MainForm._requestToConvert.CancelToken.IsCancellationRequested Then
+                                          references,
+                                          skipAutoGenerated:=True,
+                                          cancelToken:=mainForm._cancellationTokenSource.Token).ConfigureAwait(True) _
+                                                    OrElse mainForm._requestToConvert.CancelToken.IsCancellationRequested Then
                 Return False
             End If
         Next
         Return True
     End Function
 
-    Friend Async Sub ProcessProjectOrSolutionAsync(MainForm As Form1, fileName As String)
-        MainForm._cancellationTokenSource = New CancellationTokenSource
-        Dim saveSolutionRoot As String = MainForm.GetSavePath(fileName, PromptIfDirExsits:=True).SolutionRoot
+    Friend Async Sub ProcessProjectOrSolutionAsync(mainForm As Form1, fileName As String)
+        mainForm._cancellationTokenSource = New CancellationTokenSource
+        Dim saveSolutionRoot As String = mainForm.GetSavePath(fileName, promptIfDirExists:=True).SolutionRoot
         If String.IsNullOrWhiteSpace(saveSolutionRoot) Then
-            MainForm.UpdateProgress("")
+            mainForm.UpdateProgress("")
             MsgBox($"Can't find {saveSolutionRoot}, exiting solution conversion")
             Exit Sub
         End If
-        SetButtonStopAndCursor(MainForm, MainForm.ButtonStopConversion, StopButtonVisible:=True)
-        MainForm.ListBoxErrorList.Items.Clear()
-        MainForm.ListBoxFileList.Items.Clear()
-        MainForm.ConversionInput.Clear()
-        MainForm.ConversionOutput.Clear()
-        MainForm.UpdateProgressLabels($"Getting Analyzer Manger for {fileName}")
+        SetButtonStopAndCursor(mainForm, mainForm.ButtonStopConversion, stopButtonVisible:=True)
+        mainForm.ListBoxErrorList.Items.Clear()
+        mainForm.ListBoxFileList.Items.Clear()
+        mainForm.ConversionInput.Clear()
+        mainForm.ConversionOutput.Clear()
+        mainForm.UpdateProgressLabels($"Getting Analyzer Manger for {fileName}")
         ' Allow user to read
-        Await Task.Delay(5000, MainForm._cancellationTokenSource.Token).ConfigureAwait(True)
+        Await Task.Delay(5000, mainForm._cancellationTokenSource.Token).ConfigureAwait(True)
         Try
             Dim taskAnalyzerManager As Task(Of AnalyzerManager) = GetManagerAsync(fileName)
             While Not taskAnalyzerManager.IsCompleted
-                If MainForm._cancellationTokenSource.IsCancellationRequested Then
+                If mainForm._cancellationTokenSource.IsCancellationRequested Then
                     Exit Try
                 End If
-                Await Task.Delay(100, MainForm._cancellationTokenSource.Token).ConfigureAwait(True)
+                Await Task.Delay(100, mainForm._cancellationTokenSource.Token).ConfigureAwait(True)
             End While
             Dim solutionAnalyzerManager As AnalyzerManager = taskAnalyzerManager.Result
-            MainForm.UpdateProgress("")
+            mainForm.UpdateProgress("")
 
             Dim prompt As String = "Conversion stopped."
             If fileName.EndsWith(".sln", StringComparison.OrdinalIgnoreCase) Then
-                MainForm.mnuFileLastSolution.Enabled = True
+                mainForm.mnuFileLastSolution.Enabled = True
                 My.Settings.LastSolution = fileName
-                MainForm.mnuFileLastSolution.Text = $"Last Solution - {fileName}"
+                mainForm.mnuFileLastSolution.Text = $"Last Solution - {fileName}"
                 My.Settings.Save()
                 Dim totalProjects As Integer = solutionAnalyzerManager.Projects.Count
                 Dim processedProjects As Integer = 0
@@ -270,20 +260,20 @@ Public Module ProcessProjectUtilities
                             skipProjects = False
                         End If
                     End If
-                    MainForm.mnuFileLastProject.Text = $"Last Project - {projectFile}"
-                    MainForm.mnuFileLastProject.Enabled = True
+                    mainForm.mnuFileLastProject.Text = $"Last Project - {projectFile}"
+                    mainForm.mnuFileLastProject.Enabled = True
                     My.Settings.LastProject = projectFile
                     My.Settings.Save()
                     Application.DoEvents()
                     results = Await ProcessProjectAsync(
-                        MainForm,
-                        TaskProjectAnalyzer:=proj.Value,
+                        mainForm,
+                        taskProjectAnalyzer:=proj.Value,
                         saveSolutionRoot,
                         processedProjects,
                         totalProjects,
-                        MainForm._cancellationTokenSource).ConfigureAwait(True)
+                        mainForm._cancellationTokenSource).ConfigureAwait(True)
                     If results.resultsString.Length = 0 Then
-                        If MainForm._cancellationTokenSource.Token.IsCancellationRequested Then
+                        If mainForm._cancellationTokenSource.Token.IsCancellationRequested Then
                             prompt = $"Conversion canceled, files in {processedProjects} of {totalProjects} projects completed successfully."
                             Exit For
                         Else
@@ -302,30 +292,30 @@ Public Module ProcessProjectUtilities
                 End If
             Else
                 ' Single project
-                MainForm.UpdateProgressLabels($"Getting Project Analyzer for {fileName}")
+                mainForm.UpdateProgressLabels($"Getting Project Analyzer for {fileName}")
                 Dim taskProjectAnalyzer As Task(Of IProjectAnalyzer) = GetProjectAnalyzerAsync(fileName, solutionAnalyzerManager)
                 While Not taskProjectAnalyzer.IsCompleted
-                    If MainForm._cancellationTokenSource.IsCancellationRequested Then
+                    If mainForm._cancellationTokenSource.IsCancellationRequested Then
                         Exit Sub
                     End If
                     Await Task.Delay(100).ConfigureAwait(True)
                 End While
-                MainForm.UpdateProgressLabels("")
-                MainForm.mnuFileLastProject.Text = $"Last Project - {fileName}"
-                MainForm.mnuFileLastProject.Enabled = True
+                mainForm.UpdateProgressLabels("")
+                mainForm.mnuFileLastProject.Text = $"Last Project - {fileName}"
+                mainForm.mnuFileLastProject.Enabled = True
                 My.Settings.LastProject = fileName
                 My.Settings.Save()
-                prompt = (Await ProcessProjectAsync(MainForm, taskProjectAnalyzer.Result,
+                prompt = (Await ProcessProjectAsync(mainForm, taskProjectAnalyzer.Result,
                     saveSolutionRoot,
                     processedProjects:=1,
                     totalProjects:=1,
-                    MainForm._cancellationTokenSource).ConfigureAwait(True)).ErrorPrompt
+                    mainForm._cancellationTokenSource).ConfigureAwait(True)).ErrorPrompt
 
                 Dim conversionComplete As Boolean = prompt.Length = 0
 
                 If conversionComplete Then
 #Disable Warning CA1308 ' Normalize strings to uppercase
-                    prompt = $"{If(MainForm._cancellationTokenSource.Token.IsCancellationRequested, "Conversion canceled", "Conversion completed")}, {MainForm.StatusStripConversionFileProgressLabel.Text.ToLower(CultureInfo.InvariantCulture)} completed successfully."
+                    prompt = $"{If(mainForm._cancellationTokenSource.Token.IsCancellationRequested, "Conversion canceled", "Conversion completed")}, {mainForm.StatusStripConversionFileProgressLabel.Text.ToLower(CultureInfo.InvariantCulture)} completed successfully."
 #Enable Warning CA1308 ' Normalize strings to uppercase
                 End If
                 MsgBox(prompt,
@@ -340,9 +330,20 @@ Public Module ProcessProjectUtilities
             End If
         Catch ex As ObjectDisposedException
         Finally
-            MainForm.UpdateProgress("")
-            SetButtonStopAndCursor(MainForm, MainForm.ButtonStopConversion, StopButtonVisible:=False)
+            mainForm.UpdateProgress("")
+            SetButtonStopAndCursor(mainForm, mainForm.ButtonStopConversion, stopButtonVisible:=False)
         End Try
+    End Sub
+
+    <Extension>
+    Friend Sub UpdateProgressLabels(mainForm As Form1, progressStr As String)
+        If mainForm.InvokeRequired Then
+            mainForm.Invoke(Sub()
+                                mainForm.UpdateProgress(progressStr)
+                            End Sub)
+        Else
+            mainForm.UpdateProgress(progressStr)
+        End If
     End Sub
 
 End Module

@@ -5,7 +5,7 @@
 Imports System.Collections.Immutable
 Imports System.Runtime.CompilerServices
 
-Namespace CSharpToVBConverter
+Namespace Extensions
 
     Public Module ImmutableArrayExtensions
 

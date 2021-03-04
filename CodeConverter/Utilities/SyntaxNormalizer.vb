@@ -1,16 +1,15 @@
 ﻿' Licensed to the .NET Foundation under one or more agreements.
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
-
 Imports System.Diagnostics.CodeAnalysis
+Imports Extensions
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Text
 Imports Microsoft.CodeAnalysis.VisualBasic
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
-
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 
-Namespace CSharpToVBConverter
+Namespace Utilities
 
     Friend Class SyntaxNormalizer
         Inherits VisualBasicSyntaxRewriter
@@ -26,7 +25,7 @@ Namespace CSharpToVBConverter
         Private _afterIndentation As Boolean
         Private _afterLineBreak As Boolean
         Private _eolLeadingTriviaCount As Integer
-        Private _eolTraiingTriviaCount As Integer
+        Private _eolTrailingTriviaCount As Integer
         Private _indentationDepth As Integer
         Private _indentations As List(Of SyntaxTrivia)
         Private _isInStructuredTrivia As Boolean
@@ -40,7 +39,7 @@ Namespace CSharpToVBConverter
         ''' <param name="eolWhitespace">The whitespace to use for end of line</param>
         ''' <param name="useElasticTrivia">Whether to use elastic trivia or not</param>
         ''' <param name="useDefaultCasing">Whether to rewrite keywords in default casing or not</param>
-        ''' <param name="usePreserveCRLF">Whether to remove extra CRLF (beyond 2) or not</param>
+        ''' <param name="usePreserveCRLF">Whether to remove extra CrLf (beyond 2) or not</param>
         ''' <remarks></remarks>
         Private Sub New(consideredSpan As TextSpan, indentWhitespace As String, eolWhitespace As String, useElasticTrivia As Boolean, useDefaultCasing As Boolean, usePreserveCRLF As Boolean)
             MyBase.New(visitIntoStructuredTrivia:=True)
@@ -80,8 +79,8 @@ Namespace CSharpToVBConverter
                     token.TrailingTrivia.Last.IsKind(SyntaxKind.ColonTrivia)
         End Function
 
-        Private Shared Function ExtraIndentNeeded(previousToken As SyntaxToken, CurrentToken As SyntaxToken) As Boolean
-            If previousToken.ContainsEOLTrivia Then
+        Private Shared Function ExtraIndentNeeded(previousToken As SyntaxToken, currentToken As SyntaxToken) As Boolean
+            If previousToken.ContainsEolTrivia Then
                 If previousToken.IsKind(
                                 SyntaxKind.AmpersandToken,
                                 SyntaxKind.CommaToken,
@@ -91,10 +90,10 @@ Namespace CSharpToVBConverter
                                 SyntaxKind.WithKeyword) Then
                     Return True
                 End If
-                If CurrentToken.IsKind(SyntaxKind.SelectKeyword) AndAlso CurrentToken.Parent.IsKind(SyntaxKind.SelectClause) Then
+                If currentToken.IsKind(SyntaxKind.SelectKeyword) AndAlso currentToken.Parent.IsKind(SyntaxKind.SelectClause) Then
                     Return True
                 End If
-                If CurrentToken.IsKind(SyntaxKind.WhereKeyword) AndAlso CurrentToken.Parent.IsKind(SyntaxKind.WhereClause) Then
+                If currentToken.IsKind(SyntaxKind.WhereKeyword) AndAlso currentToken.Parent.IsKind(SyntaxKind.WhereClause) Then
                     Return True
                 End If
             End If
@@ -108,12 +107,12 @@ Namespace CSharpToVBConverter
         ''' true.</param>
         ''' <param name="stepInto">Delegate applied to trivia.  If this delegate is present then trailing trivia is
         ''' included in the search.</param>
-        Private Shared Function GetNextToken(Token As SyntaxToken, predicate As Func(Of SyntaxToken, Boolean), Optional stepInto As Func(Of SyntaxTrivia, Boolean) = Nothing) As SyntaxToken
-            If Token = Nothing Then
+        Private Shared Function GetNextToken(token As SyntaxToken, predicate As Func(Of SyntaxToken, Boolean), Optional stepInto As Func(Of SyntaxTrivia, Boolean) = Nothing) As SyntaxToken
+            If token = Nothing Then
                 Return Nothing
             End If
 
-            Return SyntaxNavigator.s_instance.GetNextToken(Token, predicate, stepInto)
+            Return SyntaxNavigator.s_instance.GetNextToken(token, predicate, stepInto)
         End Function
 
         Private Shared Function IsLastTokenOnLine(token As SyntaxToken) As Boolean
@@ -420,11 +419,10 @@ Namespace CSharpToVBConverter
             End Select
         End Function
 
-        Private Sub AddLinebreaksAfterElementsIfNeeded(Of TNode As SyntaxNode)(
-                                                            list As SyntaxList(Of TNode),
-                    linebreaksBetweenElements As Integer,
-                    linebreaksAfterLastElement As Integer
-                )
+        Private Sub AddLineBreaksAfterElementsIfNeeded(Of TNode As SyntaxNode)(list As SyntaxList(Of TNode),
+                                                                               lineBreaksBetweenElements As Integer,
+                                                                               lineBreaksAfterLastElement As Integer
+                                                                              )
             Dim lastElementIndex As Integer = list.Count - 1
             For elementIndex As Integer = 0 To lastElementIndex
                 Dim listElement As TNode = list(elementIndex)
@@ -432,18 +430,18 @@ Namespace CSharpToVBConverter
                     ' always add line breaks after label
                     _lineBreaksAfterToken(listElement.GetLastToken()) = 1
                 Else
-                    Me.AddLinebreaksAfterTokenIfNeeded(listElement.GetLastToken(),
+                    Me.AddLineBreaksAfterTokenIfNeeded(listElement.GetLastToken(),
                                                        If(elementIndex = lastElementIndex,
-                                                            linebreaksAfterLastElement,
-                                                            linebreaksBetweenElements)
+                                                            lineBreaksAfterLastElement,
+                                                            lineBreaksBetweenElements)
                                                         )
                 End If
             Next
         End Sub
 
-        Private Sub AddLinebreaksAfterTokenIfNeeded(node As SyntaxToken, linebreaksAfterToken As Integer)
+        Private Sub AddLineBreaksAfterTokenIfNeeded(node As SyntaxToken, lineBreaksAfterToken As Integer)
             If Not EndsWithColonSeparator(node) Then
-                _lineBreaksAfterToken(node) = linebreaksAfterToken
+                _lineBreaksAfterToken(node) = lineBreaksAfterToken
             End If
         End Sub
 
@@ -457,8 +455,8 @@ Namespace CSharpToVBConverter
             Return _eolTrivia
         End Function
 
-        Private Function GetIndentation(count As Integer, CurrentToken As SyntaxToken) As SyntaxTrivia
-            If ExtraIndentNeeded(_previousToken, CurrentToken) Then
+        Private Function GetIndentation(count As Integer, currentToken As SyntaxToken) As SyntaxTrivia
+            If ExtraIndentNeeded(_previousToken, currentToken) Then
                 count += 1
             End If
             Dim capacity As Integer = count + 1
@@ -522,7 +520,7 @@ Namespace CSharpToVBConverter
             If currentToken.ToFullString.IsNewLine Then
                 Return 0
             End If
-            Return If(currentToken.ContainsEOLTrivia, 1, 0)
+            Return If(currentToken.ContainsEolTrivia, 1, 0)
         End Function
 
         Private Sub MarkLastStatementIfNeeded(Of TNode As SyntaxNode)(list As SyntaxList(Of TNode))
@@ -534,7 +532,7 @@ Namespace CSharpToVBConverter
         ''' <summary>
         '''
         ''' </summary>
-        ''' <param name="CurrentToken">Original Token</param>
+        ''' <param name="currentToken">Original Token</param>
         ''' <param name="triviaList">List of trivia From Original Token</param>
         ''' <param name="depth">How many indents are required</param>
         ''' <param name="isTrailing">True if the triviaList leading</param>
@@ -543,7 +541,7 @@ Namespace CSharpToVBConverter
         ''' <param name="lineBreaksAfter">Number of Line Breaks required after this token (0 or 1)</param>
         ''' <param name="lineBreaksBefore">Number of Line Breaks required before this token</param>
         ''' <returns></returns>
-        Private Function RewriteTrivia(CurrentToken As SyntaxToken,
+        Private Function RewriteTrivia(currentToken As SyntaxToken,
                                        triviaList As SyntaxTriviaList,
                                        depth As Integer,
                                        isTrailing As Boolean,
@@ -554,6 +552,7 @@ Namespace CSharpToVBConverter
 
             Dim currentTriviaList As New SyntaxTriviaList
             Try
+                ' ReSharper disable once RedundantAssignment
                 For index As Integer = 1 To lineBreaksBefore
                     If _eolLeadingTriviaCount < 2 Then
                         currentTriviaList = currentTriviaList.Add(Me.GetEndOfLine())
@@ -578,12 +577,12 @@ Namespace CSharpToVBConverter
                     End If
                     If trivia.IsKind(SyntaxKind.EndOfLineTrivia) Then
                         If isTrailing Then
-                            If _eolTraiingTriviaCount = 0 Then
+                            If _eolTrailingTriviaCount = 0 Then
                                 currentTriviaList = currentTriviaList.Add(Me.GetEndOfLine())
-                                _eolTraiingTriviaCount += 1
+                                _eolTrailingTriviaCount += 1
                             Else
                                 If currentTriviaList.Last.IsComment AndAlso Not e.IsLast Then
-                                    currentTriviaList = currentTriviaList.Add(VBEOLTrivia)
+                                    currentTriviaList = currentTriviaList.Add(VbEolTrivia)
                                 End If
                                 Continue For
                             End If
@@ -626,9 +625,9 @@ Namespace CSharpToVBConverter
                             (currentTriviaList.Any AndAlso NeedsLineBreakBetween(currentTriviaList.Last(), trivia, isTrailing))
 
                     If needsLineBreak AndAlso Not _afterLineBreak Then
-                        If _eolTraiingTriviaCount = 0 Then
+                        If _eolTrailingTriviaCount = 0 Then
                             currentTriviaList = currentTriviaList.Add(Me.GetEndOfLine())
-                            _eolTraiingTriviaCount += 1
+                            _eolTrailingTriviaCount += 1
                         End If
                         _afterLineBreak = True
                         _afterIndentation = False
@@ -636,7 +635,7 @@ Namespace CSharpToVBConverter
 
                     If _afterLineBreak And Not isTrailing Then
                         If Not _afterIndentation AndAlso NeedsIndentAfterLineBreak(trivia) Then
-                            currentTriviaList = currentTriviaList.Add(Me.GetIndentation(Me.GetIndentationDepth(trivia), CurrentToken))
+                            currentTriviaList = currentTriviaList.Add(Me.GetIndentation(Me.GetIndentationDepth(trivia), currentToken))
                             _afterIndentation = True
                         End If
 
@@ -667,7 +666,7 @@ Namespace CSharpToVBConverter
                             End If
                             currentTriviaList = currentTriviaList.Add(trivia)
                             ' Allow one return after this trivia
-                            _eolTraiingTriviaCount = 0
+                            _eolTrailingTriviaCount = 0
                         End If
                     End If
 
@@ -688,15 +687,16 @@ Namespace CSharpToVBConverter
                         lineBreaksAfter -= 1
                     End If
 
+                    ' ReSharper disable once RedundantAssignment
                     For index As Integer = 0 To lineBreaksAfter - 1
                         If Not isTrailing Then
                             Throw UnexpectedValue("IsTrailing")
                         End If
-                        If _eolTraiingTriviaCount = 0 Then
+                        If _eolTrailingTriviaCount = 0 Then
                             currentTriviaList = currentTriviaList.Add(Me.GetEndOfLine())
                         End If
                         _eolLeadingTriviaCount = 0
-                        _eolTraiingTriviaCount += 1
+                        _eolTrailingTriviaCount += 1
                         _afterLineBreak = True
                         _afterIndentation = False
                     Next index
@@ -708,7 +708,7 @@ Namespace CSharpToVBConverter
                 End If
 
                 If mustBeIndented Then
-                    currentTriviaList = currentTriviaList.Add(Me.GetIndentation(depth, CurrentToken))
+                    currentTriviaList = currentTriviaList.Add(Me.GetIndentation(depth, currentToken))
                     _afterIndentation = True
                     _afterLineBreak = False
                 End If
@@ -725,17 +725,17 @@ Namespace CSharpToVBConverter
         End Function
 
         Private Sub VisitForOrForEachBlock(node As ForOrForEachBlockSyntax)
-            Me.AddLinebreaksAfterTokenIfNeeded(node.ForOrForEachStatement.GetLastToken(), 1)
+            Me.AddLineBreaksAfterTokenIfNeeded(node.ForOrForEachStatement.GetLastToken(), 1)
 
-            Me.AddLinebreaksAfterElementsIfNeeded(node.Statements, 1, 1)
+            Me.AddLineBreaksAfterElementsIfNeeded(node.Statements, 1, 1)
 
             Me.MarkLastStatementIfNeeded(node.Statements)
 
             If node.NextStatement IsNot Nothing Then
                 If Not _lastStatementsInBlocks.Contains(node) Then
-                    Me.AddLinebreaksAfterTokenIfNeeded(node.NextStatement.GetLastToken(), 2)
+                    Me.AddLineBreaksAfterTokenIfNeeded(node.NextStatement.GetLastToken(), 2)
                 Else
-                    Me.AddLinebreaksAfterTokenIfNeeded(node.NextStatement.GetLastToken(), 1)
+                    Me.AddLineBreaksAfterTokenIfNeeded(node.NextStatement.GetLastToken(), 1)
                 End If
             End If
         End Sub
@@ -784,28 +784,28 @@ Namespace CSharpToVBConverter
 
             ' add a line break between begin statement and the ones from the statement list
             If Not hasInherits AndAlso Not hasImplements AndAlso node.Members.Any Then
-                Me.AddLinebreaksAfterTokenIfNeeded(node.BlockStatement.GetLastToken(), 2)
+                Me.AddLineBreaksAfterTokenIfNeeded(node.BlockStatement.GetLastToken(), 2)
             Else
-                Me.AddLinebreaksAfterTokenIfNeeded(node.BlockStatement.GetLastToken(), 1)
+                Me.AddLineBreaksAfterTokenIfNeeded(node.BlockStatement.GetLastToken(), 1)
             End If
 
             If hasImplements Then
-                Me.AddLinebreaksAfterElementsIfNeeded(node.Inherits, 1, 1)
+                Me.AddLineBreaksAfterElementsIfNeeded(node.Inherits, 1, 1)
             Else
-                Me.AddLinebreaksAfterElementsIfNeeded(node.Inherits, 1, 2)
+                Me.AddLineBreaksAfterElementsIfNeeded(node.Inherits, 1, 2)
             End If
 
-            Me.AddLinebreaksAfterElementsIfNeeded(node.Implements, 1, 2)
+            Me.AddLineBreaksAfterElementsIfNeeded(node.Implements, 1, 2)
 
             Select Case node.Kind
                 Case SyntaxKind.InterfaceBlock
-                    Me.AddLinebreaksAfterElementsIfNeeded(node.Members, 1, 2)
+                    Me.AddLineBreaksAfterElementsIfNeeded(node.Members, 1, 2)
                 Case SyntaxKind.StructureBlock
-                    Me.AddLinebreaksAfterElementsIfNeeded(node.Members, 1, 2)
+                    Me.AddLineBreaksAfterElementsIfNeeded(node.Members, 1, 2)
                 Case SyntaxKind.ModuleBlock
-                    Me.AddLinebreaksAfterElementsIfNeeded(node.Members, 1, 2)
+                    Me.AddLineBreaksAfterElementsIfNeeded(node.Members, 1, 2)
                 Case Else
-                    Me.AddLinebreaksAfterElementsIfNeeded(node.Members, 2, 1)
+                    Me.AddLineBreaksAfterElementsIfNeeded(node.Members, 2, 1)
             End Select
         End Sub
 
@@ -817,9 +817,9 @@ Namespace CSharpToVBConverter
         End Function
 
         Public Overrides Function VisitAccessorBlock(node As AccessorBlockSyntax) As SyntaxNode
-            Me.AddLinebreaksAfterTokenIfNeeded(node.BlockStatement.GetLastToken(), 1)
+            Me.AddLineBreaksAfterTokenIfNeeded(node.BlockStatement.GetLastToken(), 1)
 
-            Me.AddLinebreaksAfterElementsIfNeeded(node.Statements, 1, 1)
+            Me.AddLineBreaksAfterElementsIfNeeded(node.Statements, 1, 1)
 
             Me.MarkLastStatementIfNeeded(node.Statements)
 
@@ -838,7 +838,7 @@ Namespace CSharpToVBConverter
             If node.Parent Is Nothing OrElse
                 (node.Parent.Kind <> SyntaxKind.Parameter AndAlso node.Parent.Kind <> SyntaxKind.SimpleAsClause) Then
 
-                Me.AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
+                Me.AddLineBreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
             End If
 
             Return MyBase.VisitAttributeList(node)
@@ -846,15 +846,15 @@ Namespace CSharpToVBConverter
 
         <ExcludeFromCodeCoverage>
         Public Overrides Function VisitBadDirectiveTrivia(node As BadDirectiveTriviaSyntax) As SyntaxNode
-            Me.AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
+            Me.AddLineBreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
 
             Return MyBase.VisitBadDirectiveTrivia(node)
         End Function
 
         Public Overrides Function VisitCaseBlock(node As CaseBlockSyntax) As SyntaxNode
-            Me.AddLinebreaksAfterTokenIfNeeded(node.CaseStatement.GetLastToken(), 1)
+            Me.AddLineBreaksAfterTokenIfNeeded(node.CaseStatement.GetLastToken(), 1)
 
-            Me.AddLinebreaksAfterElementsIfNeeded(node.Statements, 1, 1)
+            Me.AddLineBreaksAfterElementsIfNeeded(node.Statements, 1, 1)
 
             Dim result As SyntaxNode = MyBase.VisitCaseBlock(node)
             _indentationDepth -= 1
@@ -870,9 +870,9 @@ Namespace CSharpToVBConverter
         End Function
 
         Public Overrides Function VisitCatchBlock(node As CatchBlockSyntax) As SyntaxNode
-            Me.AddLinebreaksAfterTokenIfNeeded(node.CatchStatement.GetLastToken(), 1)
+            Me.AddLineBreaksAfterTokenIfNeeded(node.CatchStatement.GetLastToken(), 1)
 
-            Me.AddLinebreaksAfterElementsIfNeeded(node.Statements, 1, 1)
+            Me.AddLineBreaksAfterElementsIfNeeded(node.Statements, 1, 1)
 
             Return MyBase.VisitCatchBlock(node)
         End Function
@@ -917,39 +917,39 @@ Namespace CSharpToVBConverter
             Dim hasAttributes As Boolean = node.Attributes.Any
 
             If hasImports OrElse hasAttributes OrElse hasMembers Then
-                Me.AddLinebreaksAfterElementsIfNeeded(node.Options, 1, 2)
+                Me.AddLineBreaksAfterElementsIfNeeded(node.Options, 1, 2)
             Else
-                Me.AddLinebreaksAfterElementsIfNeeded(node.Options, 1, 1)
+                Me.AddLineBreaksAfterElementsIfNeeded(node.Options, 1, 1)
             End If
 
             If hasAttributes OrElse hasMembers Then
-                Me.AddLinebreaksAfterElementsIfNeeded(node.Imports, 1, 2)
+                Me.AddLineBreaksAfterElementsIfNeeded(node.Imports, 1, 2)
             Else
-                Me.AddLinebreaksAfterElementsIfNeeded(node.Imports, 1, 1)
+                Me.AddLineBreaksAfterElementsIfNeeded(node.Imports, 1, 1)
             End If
 
             If hasMembers Then
-                Me.AddLinebreaksAfterElementsIfNeeded(node.Attributes, 1, 2)
+                Me.AddLineBreaksAfterElementsIfNeeded(node.Attributes, 1, 2)
             Else
-                Me.AddLinebreaksAfterElementsIfNeeded(node.Attributes, 1, 1)
+                Me.AddLineBreaksAfterElementsIfNeeded(node.Attributes, 1, 1)
             End If
 
-            Me.AddLinebreaksAfterElementsIfNeeded(node.Members, 2, 1)
+            Me.AddLineBreaksAfterElementsIfNeeded(node.Members, 2, 1)
 
             Return MyBase.VisitCompilationUnit(node)
         End Function
 
         <ExcludeFromCodeCoverage>
         Public Overrides Function VisitConstDirectiveTrivia(node As ConstDirectiveTriviaSyntax) As SyntaxNode
-            Me.AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
+            Me.AddLineBreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
 
             Return MyBase.VisitConstDirectiveTrivia(node)
         End Function
 
         Public Overrides Function VisitConstructorBlock(node As ConstructorBlockSyntax) As SyntaxNode
-            Me.AddLinebreaksAfterTokenIfNeeded(node.BlockStatement.GetLastToken(), 1)
+            Me.AddLineBreaksAfterTokenIfNeeded(node.BlockStatement.GetLastToken(), 1)
 
-            Me.AddLinebreaksAfterElementsIfNeeded(node.Statements, 1, 1)
+            Me.AddLineBreaksAfterElementsIfNeeded(node.Statements, 1, 1)
 
             Me.MarkLastStatementIfNeeded(node.Statements)
 
@@ -958,22 +958,22 @@ Namespace CSharpToVBConverter
 
         <ExcludeFromCodeCoverage>
         Public Overrides Function VisitDisableWarningDirectiveTrivia(node As DisableWarningDirectiveTriviaSyntax) As SyntaxNode
-            Me.AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
+            Me.AddLineBreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
 
             Return MyBase.VisitDisableWarningDirectiveTrivia(node)
         End Function
 
         Public Overrides Function VisitDoLoopBlock(node As DoLoopBlockSyntax) As SyntaxNode
-            Me.AddLinebreaksAfterTokenIfNeeded(node.DoStatement.GetLastToken(), 1)
+            Me.AddLineBreaksAfterTokenIfNeeded(node.DoStatement.GetLastToken(), 1)
 
-            Me.AddLinebreaksAfterElementsIfNeeded(node.Statements, 1, 1)
+            Me.AddLineBreaksAfterElementsIfNeeded(node.Statements, 1, 1)
 
             Me.MarkLastStatementIfNeeded(node.Statements)
 
             If _lastStatementsInBlocks.Contains(node) Then
-                Me.AddLinebreaksAfterTokenIfNeeded(node.LoopStatement.GetLastToken(), 1)
+                Me.AddLineBreaksAfterTokenIfNeeded(node.LoopStatement.GetLastToken(), 1)
             Else
-                Me.AddLinebreaksAfterTokenIfNeeded(node.LoopStatement.GetLastToken(), 2)
+                Me.AddLineBreaksAfterTokenIfNeeded(node.LoopStatement.GetLastToken(), 2)
             End If
 
             Return MyBase.VisitDoLoopBlock(node)
@@ -987,9 +987,9 @@ Namespace CSharpToVBConverter
         End Function
 
         Public Overrides Function VisitElseBlock(node As ElseBlockSyntax) As SyntaxNode
-            Me.AddLinebreaksAfterTokenIfNeeded(node.ElseStatement.GetLastToken(), 1)
+            Me.AddLineBreaksAfterTokenIfNeeded(node.ElseStatement.GetLastToken(), 1)
 
-            Me.AddLinebreaksAfterElementsIfNeeded(node.Statements, 1, 1)
+            Me.AddLineBreaksAfterElementsIfNeeded(node.Statements, 1, 1)
 
             Me.MarkLastStatementIfNeeded(node.Statements)
 
@@ -998,15 +998,15 @@ Namespace CSharpToVBConverter
 
         <ExcludeFromCodeCoverage>
         Public Overrides Function VisitElseDirectiveTrivia(node As ElseDirectiveTriviaSyntax) As SyntaxNode
-            Me.AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
+            Me.AddLineBreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
 
             Return MyBase.VisitElseDirectiveTrivia(node)
         End Function
 
         Public Overrides Function VisitElseIfBlock(node As ElseIfBlockSyntax) As SyntaxNode
-            Me.AddLinebreaksAfterTokenIfNeeded(node.ElseIfStatement.GetLastToken(), 1)
+            Me.AddLineBreaksAfterTokenIfNeeded(node.ElseIfStatement.GetLastToken(), 1)
 
-            Me.AddLinebreaksAfterElementsIfNeeded(node.Statements, 1, 1)
+            Me.AddLineBreaksAfterElementsIfNeeded(node.Statements, 1, 1)
 
             Me.MarkLastStatementIfNeeded(node.Statements)
 
@@ -1031,7 +1031,7 @@ Namespace CSharpToVBConverter
 
         <ExcludeFromCodeCoverage>
         Public Overrides Function VisitEnableWarningDirectiveTrivia(node As EnableWarningDirectiveTriviaSyntax) As SyntaxNode
-            Me.AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
+            Me.AddLineBreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
 
             Return MyBase.VisitEnableWarningDirectiveTrivia(node)
         End Function
@@ -1044,21 +1044,21 @@ Namespace CSharpToVBConverter
 
         <ExcludeFromCodeCoverage>
         Public Overrides Function VisitEndExternalSourceDirectiveTrivia(node As EndExternalSourceDirectiveTriviaSyntax) As SyntaxNode
-            Me.AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
+            Me.AddLineBreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
 
             Return MyBase.VisitEndExternalSourceDirectiveTrivia(node)
         End Function
 
         <ExcludeFromCodeCoverage>
         Public Overrides Function VisitEndIfDirectiveTrivia(node As EndIfDirectiveTriviaSyntax) As SyntaxNode
-            Me.AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
+            Me.AddLineBreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
 
             Return MyBase.VisitEndIfDirectiveTrivia(node)
         End Function
 
         <ExcludeFromCodeCoverage>
         Public Overrides Function VisitEndRegionDirectiveTrivia(node As EndRegionDirectiveTriviaSyntax) As SyntaxNode
-            Me.AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
+            Me.AddLineBreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
 
             Return MyBase.VisitEndRegionDirectiveTrivia(node)
         End Function
@@ -1067,8 +1067,8 @@ Namespace CSharpToVBConverter
         ''' Each statement and the begin will be displayed on a separate line. No empty lines.
         ''' </summary>
         Public Overrides Function VisitEnumBlock(node As EnumBlockSyntax) As SyntaxNode
-            Me.AddLinebreaksAfterTokenIfNeeded(node.EnumStatement.GetLastToken(), 1)
-            Me.AddLinebreaksAfterElementsIfNeeded(node.Members, 1, 1)
+            Me.AddLineBreaksAfterTokenIfNeeded(node.EnumStatement.GetLastToken(), 1)
+            Me.AddLineBreaksAfterElementsIfNeeded(node.Members, 1, 1)
 
             Return MyBase.VisitEnumBlock(node)
         End Function
@@ -1081,8 +1081,8 @@ Namespace CSharpToVBConverter
         End Function
 
         Public Overrides Function VisitEventBlock(node As EventBlockSyntax) As SyntaxNode
-            Me.AddLinebreaksAfterTokenIfNeeded(node.EventStatement.GetLastToken, 1)
-            Me.AddLinebreaksAfterElementsIfNeeded(node.Accessors, 2, 1)
+            Me.AddLineBreaksAfterTokenIfNeeded(node.EventStatement.GetLastToken, 1)
+            Me.AddLineBreaksAfterElementsIfNeeded(node.Accessors, 2, 1)
             Return MyBase.VisitEventBlock(node)
         End Function
 
@@ -1099,21 +1099,21 @@ Namespace CSharpToVBConverter
 
         <ExcludeFromCodeCoverage>
         Public Overrides Function VisitExternalChecksumDirectiveTrivia(node As ExternalChecksumDirectiveTriviaSyntax) As SyntaxNode
-            Me.AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
+            Me.AddLineBreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
 
             Return MyBase.VisitExternalChecksumDirectiveTrivia(node)
         End Function
 
         <ExcludeFromCodeCoverage>
         Public Overrides Function VisitExternalSourceDirectiveTrivia(node As ExternalSourceDirectiveTriviaSyntax) As SyntaxNode
-            Me.AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
+            Me.AddLineBreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
 
             Return MyBase.VisitExternalSourceDirectiveTrivia(node)
         End Function
 
         Public Overrides Function VisitFinallyBlock(node As FinallyBlockSyntax) As SyntaxNode
-            Me.AddLinebreaksAfterTokenIfNeeded(node.FinallyStatement.GetLastToken(), 1)
-            Me.AddLinebreaksAfterElementsIfNeeded(node.Statements, 1, 1)
+            Me.AddLineBreaksAfterTokenIfNeeded(node.FinallyStatement.GetLastToken(), 1)
+            Me.AddLineBreaksAfterElementsIfNeeded(node.Statements, 1, 1)
             Me.MarkLastStatementIfNeeded(node.Statements)
             Return MyBase.VisitFinallyBlock(node)
         End Function
@@ -1154,7 +1154,7 @@ Namespace CSharpToVBConverter
 
         <ExcludeFromCodeCoverage>
         Public Overrides Function VisitIfDirectiveTrivia(node As IfDirectiveTriviaSyntax) As SyntaxNode
-            Me.AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
+            Me.AddLineBreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
 
             Return MyBase.VisitIfDirectiveTrivia(node)
         End Function
@@ -1200,9 +1200,9 @@ Namespace CSharpToVBConverter
         End Function
 
         Public Overrides Function VisitMethodBlock(node As MethodBlockSyntax) As SyntaxNode
-            Me.AddLinebreaksAfterTokenIfNeeded(node.BlockStatement.GetLastToken(), 1)
+            Me.AddLineBreaksAfterTokenIfNeeded(node.BlockStatement.GetLastToken(), 1)
 
-            Me.AddLinebreaksAfterElementsIfNeeded(node.Statements, 1, 1)
+            Me.AddLineBreaksAfterElementsIfNeeded(node.Statements, 1, 1)
 
             Me.MarkLastStatementIfNeeded(node.Statements)
 
@@ -1235,8 +1235,8 @@ Namespace CSharpToVBConverter
         End Function
 
         Public Overrides Function VisitMultiLineIfBlock(node As MultiLineIfBlockSyntax) As SyntaxNode
-            Me.AddLinebreaksAfterTokenIfNeeded(node.IfStatement.GetLastToken(), 1)
-            Me.AddLinebreaksAfterElementsIfNeeded(node.Statements, 1, 1)
+            Me.AddLineBreaksAfterTokenIfNeeded(node.IfStatement.GetLastToken(), 1)
+            Me.AddLineBreaksAfterElementsIfNeeded(node.Statements, 1, 1)
             Me.MarkLastStatementIfNeeded(node.Statements)
 
             Dim previousNode As VisualBasicSyntaxNode
@@ -1248,27 +1248,27 @@ Namespace CSharpToVBConverter
             End If
 
             For Each elseIfBlock As ElseIfBlockSyntax In node.ElseIfBlocks
-                Me.AddLinebreaksAfterTokenIfNeeded(previousNode.GetLastToken(), 1)
+                Me.AddLineBreaksAfterTokenIfNeeded(previousNode.GetLastToken(), 1)
                 previousNode = elseIfBlock
             Next
 
             If node.ElseBlock IsNot Nothing Then
-                Me.AddLinebreaksAfterTokenIfNeeded(previousNode.GetLastToken(), 1)
+                Me.AddLineBreaksAfterTokenIfNeeded(previousNode.GetLastToken(), 1)
             End If
 
             If Not _lastStatementsInBlocks.Contains(node) Then
-                Me.AddLinebreaksAfterTokenIfNeeded(node.EndIfStatement.GetLastToken(), 2)
+                Me.AddLineBreaksAfterTokenIfNeeded(node.EndIfStatement.GetLastToken(), 2)
             Else
-                Me.AddLinebreaksAfterTokenIfNeeded(node.EndIfStatement.GetLastToken(), 1)
+                Me.AddLineBreaksAfterTokenIfNeeded(node.EndIfStatement.GetLastToken(), 1)
             End If
 
             Return MyBase.VisitMultiLineIfBlock(node)
         End Function
 
         Public Overrides Function VisitMultiLineLambdaExpression(node As MultiLineLambdaExpressionSyntax) As SyntaxNode
-            Me.AddLinebreaksAfterTokenIfNeeded(node.SubOrFunctionHeader.GetLastToken(), 1)
+            Me.AddLineBreaksAfterTokenIfNeeded(node.SubOrFunctionHeader.GetLastToken(), 1)
             ' one statement per line
-            Me.AddLinebreaksAfterElementsIfNeeded(node.Statements, 1, 1)
+            Me.AddLineBreaksAfterElementsIfNeeded(node.Statements, 1, 1)
             Me.MarkLastStatementIfNeeded(node.Statements)
             _indentationDepth += 1
             Dim result As SyntaxNode = MyBase.VisitMultiLineLambdaExpression(node)
@@ -1285,14 +1285,14 @@ Namespace CSharpToVBConverter
                 ' Add an empty line after the namespace begin if there
                 ' is not a namespace declaration as first member
                 If node.Members(0).Kind <> SyntaxKind.NamespaceBlock Then
-                    Me.AddLinebreaksAfterTokenIfNeeded(node.NamespaceStatement.GetLastToken(), 2)
+                    Me.AddLineBreaksAfterTokenIfNeeded(node.NamespaceStatement.GetLastToken(), 2)
                 Else
-                    Me.AddLinebreaksAfterTokenIfNeeded(node.NamespaceStatement.GetLastToken(), 1)
+                    Me.AddLineBreaksAfterTokenIfNeeded(node.NamespaceStatement.GetLastToken(), 1)
                 End If
 
-                Me.AddLinebreaksAfterElementsIfNeeded(node.Members, 2, 1)
+                Me.AddLineBreaksAfterElementsIfNeeded(node.Members, 2, 1)
             Else
-                Me.AddLinebreaksAfterTokenIfNeeded(node.NamespaceStatement.GetLastToken(), 1)
+                Me.AddLineBreaksAfterTokenIfNeeded(node.NamespaceStatement.GetLastToken(), 1)
             End If
 
             Return MyBase.VisitNamespaceBlock(node)
@@ -1319,8 +1319,8 @@ Namespace CSharpToVBConverter
 
         <ExcludeFromCodeCoverage>
         Public Overrides Function VisitOperatorBlock(node As OperatorBlockSyntax) As SyntaxNode
-            Me.AddLinebreaksAfterTokenIfNeeded(node.BlockStatement.GetLastToken(), 1)
-            Me.AddLinebreaksAfterElementsIfNeeded(node.Statements, 1, 1)
+            Me.AddLineBreaksAfterTokenIfNeeded(node.BlockStatement.GetLastToken(), 1)
+            Me.AddLineBreaksAfterElementsIfNeeded(node.Statements, 1, 1)
             Me.MarkLastStatementIfNeeded(node.Statements)
             Return MyBase.VisitOperatorBlock(node)
         End Function
@@ -1334,8 +1334,8 @@ Namespace CSharpToVBConverter
         End Function
 
         Public Overrides Function VisitPropertyBlock(node As PropertyBlockSyntax) As SyntaxNode
-            Me.AddLinebreaksAfterTokenIfNeeded(node.PropertyStatement.GetLastToken(), 1)
-            Me.AddLinebreaksAfterElementsIfNeeded(node.Accessors, 2, 1)
+            Me.AddLineBreaksAfterTokenIfNeeded(node.PropertyStatement.GetLastToken(), 1)
+            Me.AddLineBreaksAfterElementsIfNeeded(node.Accessors, 2, 1)
             Return MyBase.VisitPropertyBlock(node)
         End Function
 
@@ -1352,25 +1352,25 @@ Namespace CSharpToVBConverter
 
         <ExcludeFromCodeCoverage>
         Public Overrides Function VisitReferenceDirectiveTrivia(node As ReferenceDirectiveTriviaSyntax) As SyntaxNode
-            Me.AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
+            Me.AddLineBreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
 
             Return MyBase.VisitReferenceDirectiveTrivia(node)
         End Function
 
         <ExcludeFromCodeCoverage>
         Public Overrides Function VisitRegionDirectiveTrivia(node As RegionDirectiveTriviaSyntax) As SyntaxNode
-            Me.AddLinebreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
+            Me.AddLineBreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
 
             Return MyBase.VisitRegionDirectiveTrivia(node)
         End Function
 
         Public Overrides Function VisitSelectBlock(node As SelectBlockSyntax) As SyntaxNode
-            Me.AddLinebreaksAfterTokenIfNeeded(node.SelectStatement.GetLastToken(), 1)
+            Me.AddLineBreaksAfterTokenIfNeeded(node.SelectStatement.GetLastToken(), 1)
 
             If Not _lastStatementsInBlocks.Contains(node) Then
-                Me.AddLinebreaksAfterTokenIfNeeded(node.EndSelectStatement.GetLastToken(), 2)
+                Me.AddLineBreaksAfterTokenIfNeeded(node.EndSelectStatement.GetLastToken(), 2)
             Else
-                Me.AddLinebreaksAfterTokenIfNeeded(node.EndSelectStatement.GetLastToken(), 1)
+                Me.AddLineBreaksAfterTokenIfNeeded(node.EndSelectStatement.GetLastToken(), 1)
             End If
 
             Return MyBase.VisitSelectBlock(node)
@@ -1404,14 +1404,14 @@ Namespace CSharpToVBConverter
         End Function
 
         Public Overrides Function VisitSyncLockBlock(node As SyncLockBlockSyntax) As SyntaxNode
-            Me.AddLinebreaksAfterTokenIfNeeded(node.SyncLockStatement.GetLastToken(), 1)
+            Me.AddLineBreaksAfterTokenIfNeeded(node.SyncLockStatement.GetLastToken(), 1)
 
-            Me.AddLinebreaksAfterElementsIfNeeded(node.Statements, 1, 1)
+            Me.AddLineBreaksAfterElementsIfNeeded(node.Statements, 1, 1)
 
             If _lastStatementsInBlocks.Contains(node) Then
-                Me.AddLinebreaksAfterTokenIfNeeded(node.EndSyncLockStatement.GetLastToken(), 1)
+                Me.AddLineBreaksAfterTokenIfNeeded(node.EndSyncLockStatement.GetLastToken(), 1)
             Else
-                Me.AddLinebreaksAfterTokenIfNeeded(node.EndSyncLockStatement.GetLastToken(), 2)
+                Me.AddLineBreaksAfterTokenIfNeeded(node.EndSyncLockStatement.GetLastToken(), 2)
             End If
 
             Return MyBase.VisitSyncLockBlock(node)
@@ -1450,7 +1450,7 @@ Namespace CSharpToVBConverter
 
                 ' all line breaks except the first will be leading trivia of this token. The first line break
                 ' is trailing trivia of the previous token.
-                If numLineBreaksBefore > 0 AndAlso (IsLastTokenOnLine(_previousToken) OrElse _previousToken.ContainsEOLTrivia) Then
+                If numLineBreaksBefore > 0 AndAlso (IsLastTokenOnLine(_previousToken) OrElse _previousToken.ContainsEolTrivia) Then
                     numLineBreaksBefore -= 1
                 End If
                 _eolLeadingTriviaCount = 0
@@ -1483,7 +1483,7 @@ Namespace CSharpToVBConverter
                                                        If(Me.LineBreaksBetween(token, nextToken) > 0, 1, 0))
                 Dim needsSeparatorAfter As Boolean = numLineBreaksAfter <= 0 AndAlso NeedsSeparator(token, nextToken)
 
-                _eolTraiingTriviaCount = 0
+                _eolTrailingTriviaCount = 0
                 newToken = newToken.WithTrailingTrivia(
                             Me.RewriteTrivia(token,
                                 token.TrailingTrivia,
@@ -1504,6 +1504,7 @@ Namespace CSharpToVBConverter
                 End If
 
                 Return newToken
+
             Finally
                 _previousToken = token
             End Try
@@ -1512,13 +1513,13 @@ Namespace CSharpToVBConverter
         End Function
 
         Public Overrides Function VisitTryBlock(node As TryBlockSyntax) As SyntaxNode
-            Me.AddLinebreaksAfterTokenIfNeeded(node.TryStatement.GetLastToken(), 1)
-            Me.AddLinebreaksAfterElementsIfNeeded(node.Statements, 1, 1)
+            Me.AddLineBreaksAfterTokenIfNeeded(node.TryStatement.GetLastToken(), 1)
+            Me.AddLineBreaksAfterElementsIfNeeded(node.Statements, 1, 1)
             Me.MarkLastStatementIfNeeded(node.Statements)
             If Not _lastStatementsInBlocks.Contains(node) Then
-                Me.AddLinebreaksAfterTokenIfNeeded(node.EndTryStatement.GetLastToken(), 2)
+                Me.AddLineBreaksAfterTokenIfNeeded(node.EndTryStatement.GetLastToken(), 2)
             Else
-                Me.AddLinebreaksAfterTokenIfNeeded(node.EndTryStatement.GetLastToken(), 1)
+                Me.AddLineBreaksAfterTokenIfNeeded(node.EndTryStatement.GetLastToken(), 1)
             End If
 
             Return MyBase.VisitTryBlock(node)
@@ -1533,13 +1534,13 @@ Namespace CSharpToVBConverter
 
         <ExcludeFromCodeCoverage>
         Public Overrides Function VisitUsingBlock(node As UsingBlockSyntax) As SyntaxNode
-            Me.AddLinebreaksAfterTokenIfNeeded(node.UsingStatement.GetLastToken(), 1)
-            Me.AddLinebreaksAfterElementsIfNeeded(node.Statements, 1, 1)
+            Me.AddLineBreaksAfterTokenIfNeeded(node.UsingStatement.GetLastToken(), 1)
+            Me.AddLineBreaksAfterElementsIfNeeded(node.Statements, 1, 1)
             Me.MarkLastStatementIfNeeded(node.Statements)
             If Not _lastStatementsInBlocks.Contains(node) Then
-                Me.AddLinebreaksAfterTokenIfNeeded(node.EndUsingStatement.GetLastToken(), 2)
+                Me.AddLineBreaksAfterTokenIfNeeded(node.EndUsingStatement.GetLastToken(), 2)
             Else
-                Me.AddLinebreaksAfterTokenIfNeeded(node.EndUsingStatement.GetLastToken(), 1)
+                Me.AddLineBreaksAfterTokenIfNeeded(node.EndUsingStatement.GetLastToken(), 1)
             End If
 
             Return MyBase.VisitUsingBlock(node)
@@ -1554,11 +1555,11 @@ Namespace CSharpToVBConverter
         End Function
 
         Public Overrides Function VisitWhileBlock(node As WhileBlockSyntax) As SyntaxNode
-            Me.AddLinebreaksAfterTokenIfNeeded(node.WhileStatement.GetLastToken(), 1)
-            Me.AddLinebreaksAfterElementsIfNeeded(node.Statements, 1, 1)
+            Me.AddLineBreaksAfterTokenIfNeeded(node.WhileStatement.GetLastToken(), 1)
+            Me.AddLineBreaksAfterElementsIfNeeded(node.Statements, 1, 1)
             Me.MarkLastStatementIfNeeded(node.Statements)
             If Not _lastStatementsInBlocks.Contains(node) Then
-                Me.AddLinebreaksAfterTokenIfNeeded(node.EndWhileStatement.GetLastToken(), 2)
+                Me.AddLineBreaksAfterTokenIfNeeded(node.EndWhileStatement.GetLastToken(), 2)
             End If
 
             Return MyBase.VisitWhileBlock(node)
@@ -1573,7 +1574,7 @@ Namespace CSharpToVBConverter
 
         <ExcludeFromCodeCoverage>
         Public Overrides Function VisitWithBlock(node As WithBlockSyntax) As SyntaxNode
-            Me.AddLinebreaksAfterTokenIfNeeded(node.WithStatement.GetLastToken(), 1)
+            Me.AddLineBreaksAfterTokenIfNeeded(node.WithStatement.GetLastToken(), 1)
             Me.AddLinebreaksAfterElementsIfNeeded(node.Statements, 1, 1)
             Me.MarkLastStatementIfNeeded(node.Statements)
             Return MyBase.VisitWithBlock(node)

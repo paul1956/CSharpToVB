@@ -15,7 +15,7 @@ Public Module VisualStudioFileUtilities
         Return sourceDirectory
     End Function
 
-    Public Function GetAlternetVisualStudioProjectsPath() As String
+    Public Function GetAlternateVisualStudioProjectsPath() As String
         Dim sourceDirectory As String = GetUserDirectoryFromTemp()
 
         If Directory.Exists(sourceDirectory) Then

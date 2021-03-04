@@ -2,8 +2,9 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
+Imports Extensions
 Imports Microsoft.CodeAnalysis
-
+Imports Utilities
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
@@ -31,7 +32,6 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 For index As Integer = 0 To separatorCount
                     Dim e As CSS.ParameterSyntax = node.Parameters(index)
                     Dim itemWithTrivia As VBS.ParameterSyntax = DirectCast(e.Accept(Me).WithConvertedTrailingTriviaFrom(e), VBS.ParameterSyntax)
-                    Dim item As VBS.ParameterSyntax = itemWithTrivia.WithoutTrivia
                     items.Add(itemWithTrivia)
                     If separatorCount > index Then
                         If items.Last.ContainsEOLTrivia Then
@@ -89,8 +89,8 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     modifiers = Factory.TokenList(ByValKeyword).ToList
                     newAttributes = Array.Empty(Of VBS.AttributeListSyntax)
                 ElseIf node.Modifiers.Contains(CS.SyntaxKind.OutKeyword) Then
-                    If Not AllImports.ContainsName(InteropServices) Then
-                        AllImports.Add(FactoryImportInteropServices)
+                    If Not s_allImports.ContainsName(InteropServices) Then
+                        s_allImports.Add(FactoryImportInteropServices)
                     End If
                     newAttributes = {Factory.AttributeList(Factory.SingletonSeparatedList(OutAttribute)).WithConvertedLeadingTriviaFrom(node.Modifiers(node.Modifiers.IndexOf(CS.SyntaxKind.OutKeyword)))}
                 Else
@@ -99,7 +99,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
 
                 Dim parameterTrailingTrivia As New SyntaxTriviaList
 
-                Dim id As SyntaxToken = GenerateSafeVBToken(node.Identifier, node, _semanticModel, _usedIdentifiers).
+                Dim id As SyntaxToken = GenerateSafeVbToken(node.Identifier, node, _semanticModel, _usedIdentifiers).
                     WithTrailingTrivia(SpaceTrivia)
 
                 Dim typeLeadingTrivia As New SyntaxTriviaList
@@ -137,8 +137,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     For index As Integer = 0 To originalAttributeListWithTrivia.Count - 1
                         Dim attributeLeadingTrivia As SyntaxTriviaList
                         Dim attributeTrailingTrivia As SyntaxTriviaList
-                        Dim needEOL As Boolean = False
-                        Dim foundEOL As Boolean = False
+                        Dim needEol As Boolean = False
                         For Each e As IndexClass(Of SyntaxTrivia) In originalAttributeListWithTrivia(index).GetLeadingTrivia.WithIndex
                             Dim trivia As SyntaxTrivia = e.Value
                             If e.IsFirst AndAlso trivia.RawKind = VB.SyntaxKind.WhitespaceTrivia AndAlso trivia.FullSpan.Length > 0 Then
@@ -155,24 +154,24 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                     Else
                                         attributeTrailingTrivia = attributeTrailingTrivia.Add(SpaceTrivia)
                                         attributeTrailingTrivia = attributeTrailingTrivia.Add(trivia)
-                                        needEOL = True
+                                        needEol = True
                                     End If
                                 Case VB.SyntaxKind.EndOfLineTrivia
-                                    If needEOL Then
+                                    If needEol Then
                                         attributeTrailingTrivia = attributeTrailingTrivia.Add(trivia)
                                     Else
                                         parameterTrailingTrivia = parameterTrailingTrivia.Add(trivia)
                                     End If
-                                    needEOL = False
+                                    needEol = False
                                 Case VB.SyntaxKind.WhitespaceTrivia
                                     If attributeLeadingTrivia.Any AndAlso attributeLeadingTrivia.Last.RawKind <> VB.SyntaxKind.WhitespaceTrivia Then
                                         attributeLeadingTrivia = attributeLeadingTrivia.Add(SpaceTrivia)
                                     End If
-                                    needEOL = False
+                                    needEol = False
                                 Case VB.SyntaxKind.DisableWarningDirectiveTrivia
-                                    GetStatementwithIssues(node).AddMarker(Factory.EmptyStatement.WithLeadingTrivia(trivia), StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
+                                    GetStatementWithIssues(node).AddMarker(Factory.EmptyStatement.WithLeadingTrivia(trivia), StatementHandlingOption.PrependStatement, allowDuplicates:=True)
                                 Case VB.SyntaxKind.EnableWarningDirectiveTrivia
-                                    GetStatementwithIssues(node).AddMarker(Factory.EmptyStatement.WithLeadingTrivia(trivia), StatementHandlingOption.AppendEmptyStatement, AllowDuplicates:=True)
+                                    GetStatementWithIssues(node).AddMarker(Factory.EmptyStatement.WithLeadingTrivia(trivia), StatementHandlingOption.AppendEmptyStatement, allowDuplicates:=True)
                                 Case Else
                                     Stop
                             End Select
@@ -199,7 +198,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                     Stop
                             End Select
                             If foundComment Then
-                                attributeTrailingTrivia = attributeTrailingTrivia.Add(VBEOLTrivia)
+                                attributeTrailingTrivia = attributeTrailingTrivia.Add(VbEolTrivia)
                             End If
                         Next
                         originalAttributeListWithTrivia(index) = originalAttributeListWithTrivia(index).With(attributeLeadingTrivia, attributeTrailingTrivia)
@@ -253,18 +252,18 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                             Case VB.SyntaxKind.ElseDirectiveTrivia
                                 ' TODO Ignore for now
                             Case VB.SyntaxKind.DisableWarningDirectiveTrivia
-                                GetStatementwithIssues(node).AddMarker(Factory.EmptyStatement.WithLeadingTrivia(trivia), StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
+                                GetStatementWithIssues(node).AddMarker(Factory.EmptyStatement.WithLeadingTrivia(trivia), StatementHandlingOption.PrependStatement, allowDuplicates:=True)
                             Case VB.SyntaxKind.EnableWarningDirectiveTrivia
-                                GetStatementwithIssues(node).AddMarker(Factory.EmptyStatement.WithLeadingTrivia(trivia), StatementHandlingOption.AppendEmptyStatement, AllowDuplicates:=True)
+                                GetStatementWithIssues(node).AddMarker(Factory.EmptyStatement.WithLeadingTrivia(trivia), StatementHandlingOption.AppendEmptyStatement, allowDuplicates:=True)
                             Case Else
                                 Stop
                         End Select
                     Next
-                    Dim foundEOL As Boolean
+                    Dim foundEol As Boolean
                     Dim initialTriviaList As SyntaxTriviaList = returnType.GetTrailingTrivia
                     For index As Integer = 0 To initialTriviaList.Count - 1
                         Dim trivia As SyntaxTrivia = initialTriviaList(index)
-                        Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, index, LookaheadCount:=1)
+                        Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, index, lookaheadCount:=1)
 
                         Select Case trivia.RawKind
                             Case VB.SyntaxKind.WhitespaceTrivia
@@ -272,7 +271,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                     parameterTrailingTrivia = parameterTrailingTrivia.Add(trivia)
                                 End If
                             Case VB.SyntaxKind.EndOfLineTrivia
-                                foundEOL = True
+                                foundEol = True
                             Case VB.SyntaxKind.CommentTrivia
                                 parameterTrailingTrivia = parameterTrailingTrivia.Add(trivia)
                             Case VB.SyntaxKind.EndIfDirectiveTrivia
@@ -286,17 +285,17 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                             Case VB.SyntaxKind.ElseDirectiveTrivia
                                 ' TODO Ignore for now
                             Case VB.SyntaxKind.DisableWarningDirectiveTrivia
-                                GetStatementwithIssues(node).AddMarker(Factory.EmptyStatement.WithLeadingTrivia(trivia), StatementHandlingOption.PrependStatement, AllowDuplicates:=True)
+                                GetStatementWithIssues(node).AddMarker(Factory.EmptyStatement.WithLeadingTrivia(trivia), StatementHandlingOption.PrependStatement, allowDuplicates:=True)
                             Case VB.SyntaxKind.EnableWarningDirectiveTrivia
-                                GetStatementwithIssues(node).AddMarker(Factory.EmptyStatement.WithLeadingTrivia(trivia), StatementHandlingOption.AppendEmptyStatement, AllowDuplicates:=True)
+                                GetStatementWithIssues(node).AddMarker(Factory.EmptyStatement.WithLeadingTrivia(trivia), StatementHandlingOption.AppendEmptyStatement, allowDuplicates:=True)
                             Case VB.SyntaxKind.LineContinuationTrivia
                                 parameterTrailingTrivia = parameterTrailingTrivia.Add(trivia)
                             Case Else
                                 Stop
                         End Select
                     Next
-                    If foundEOL Then
-                        parameterTrailingTrivia = parameterTrailingTrivia.Add(VBEOLTrivia)
+                    If foundEol Then
+                        parameterTrailingTrivia = parameterTrailingTrivia.Add(VbEolTrivia)
                     End If
 
                     returnType = returnType.WithLeadingTrivia(If(returnType.GetLeadingTrivia.FirstOrDefault.FullWidth > 0, Nothing, SpaceTrivia)).WithoutTrailingTrivia

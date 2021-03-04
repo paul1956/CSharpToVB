@@ -4,10 +4,11 @@
 
 Imports System.Runtime.CompilerServices
 Imports Microsoft.CodeAnalysis
+Imports Utilities
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
-Namespace CSharpToVBConverter.CSharpToVBVisitors
+Namespace Extensions
     Friend Module SyntaxKindExtensions
 
         <Extension>
@@ -66,17 +67,17 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
         ''' </summary>
         ''' <param name="op"></param>
         ''' <returns></returns>
-        ''' <param name="IsReferenceType"></param>
+        ''' <param name="isReferenceType"></param>
         <Extension>
-        Friend Function GetOperatorToken(op As VB.SyntaxKind, IsReferenceType As Boolean) As SyntaxToken
+        Friend Function GetOperatorToken(op As VB.SyntaxKind, isReferenceType As Boolean) As SyntaxToken
             Select Case op
                 Case VB.SyntaxKind.EqualsExpression
-                    If IsReferenceType Then
+                    If isReferenceType Then
                         Return IsKeyword
                     End If
                     Return EqualsToken
                 Case VB.SyntaxKind.NotEqualsExpression
-                    If IsReferenceType Then
+                    If isReferenceType Then
                         Return IsNotKeyword
                     End If
                     Return LessThanGreaterThanToken
@@ -215,7 +216,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     Return CharKeyword
                 Case CS.SyntaxKind.VoidKeyword
                     ' not supported
-                    If context = TokenContext.XMLComment Then
+                    If context = TokenContext.XmlComment Then
                         Return NothingKeyword
                     End If
                     Return EmptyToken
@@ -331,21 +332,21 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
         End Function
 
         <Extension>
-        Friend Function GetVisibilityKeyword(t As CS.SyntaxKind, IsModule As Boolean, context As TokenContext, ByRef FoundVisibility As Boolean) As SyntaxToken
+        Friend Function GetVisibilityKeyword(t As CS.SyntaxKind, isModule As Boolean, context As TokenContext, ByRef foundVisibility As Boolean) As SyntaxToken
             Select Case t
                 Case CS.SyntaxKind.None
                     Return EmptyToken
                 Case CS.SyntaxKind.PublicKeyword
-                    FoundVisibility = True
+                    foundVisibility = True
                     Return PublicKeyword
                 Case CS.SyntaxKind.PrivateKeyword
-                    If FoundVisibility Then
+                    If foundVisibility Then
                         Return EmptyToken
                     End If
-                    FoundVisibility = True
+                    foundVisibility = True
                     Return PrivateKeyword
                 Case CS.SyntaxKind.InternalKeyword
-                    FoundVisibility = True
+                    foundVisibility = True
                     Return FriendKeyword
                 Case CS.SyntaxKind.ProtectedKeyword
                     Return ProtectedKeyword
@@ -389,9 +390,9 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Case CS.SyntaxKind.SealedKeyword
                     Return If(context = TokenContext.Global OrElse context = TokenContext.Class, NotInheritableKeyword, NotOverridableKeyword)
                 Case CS.SyntaxKind.StaticKeyword
-                    If IsModule Then
+                    If isModule Then
                         If context = TokenContext.VariableOrConst Then
-                            If FoundVisibility Then
+                            If foundVisibility Then
                                 Return EmptyToken
                             End If
                             Return PrivateKeyword
@@ -428,8 +429,8 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
         End Function
 
         <Extension>
-        Friend Function IsKind(Kind As VB.SyntaxKind, ParamArray Kinds() As VB.SyntaxKind) As Boolean
-            Return Kinds.Contains(Kind)
+        Friend Function IsKind(kind As VB.SyntaxKind, ParamArray kinds() As VB.SyntaxKind) As Boolean
+            Return kinds.Contains(kind)
         End Function
 
     End Module

@@ -3,16 +3,12 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Runtime.CompilerServices
-Imports System.Text
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Classification
-Imports Microsoft.CodeAnalysis.CSharp.Formatting
 Imports Microsoft.CodeAnalysis.Formatting
-Imports Microsoft.CodeAnalysis.Options
 Imports Microsoft.CodeAnalysis.Text
 
 Public Module RangeSupport
-    Private s_Text As SourceText
 
     <Extension>
     Private Function AdjustAdditiveSpans(spans As IEnumerable(Of ClassifiedSpan)) As List(Of ClassifiedSpan)
@@ -22,6 +18,7 @@ Public Module RangeSupport
         Dim i As Integer = 0
         While i <= spans.Count - 1
             Try
+                ' ReSharper disable once PossibleMultipleEnumeration
                 Dim nextSpan As ClassifiedSpan = spans.GetForwardItem(i, 1)
                 If ClassificationTypeNames.AdditiveTypeNames.Contains(currentSpan.ClassificationType) Then
                     i += 1
@@ -39,7 +36,7 @@ Public Module RangeSupport
                     Exit While
                 End If
                 If currentSpan.TextSpan.Length = 0 OrElse
-                    currentSpan.TextSpan.End <= nextSpan.TextSpan.Start Then
+                currentSpan.TextSpan.End <= nextSpan.TextSpan.Start Then
                     newSpans.Add(currentSpan)
                     currentSpan = nextSpan
                     i += 1
@@ -88,48 +85,28 @@ Public Module RangeSupport
     End Function
 
     <Extension>
-    Friend Function GetForwardItem(Of T)(ListOfT As IEnumerable(Of T), index As Integer, LookAhead As Integer) As T
-        Dim finalIndex As Integer = index + LookAhead
+    Friend Function GetForwardItem(Of T)(listOfT As IEnumerable(Of T), index As Integer, lookAhead As Integer) As T
+        Dim finalIndex As Integer = index + lookAhead
         If finalIndex < 0 Then
             Return Nothing
         End If
-        Return If(finalIndex < ListOfT.Count, ListOfT(finalIndex), Nothing)
+        Return If(finalIndex < listOfT.Count, listOfT(finalIndex), Nothing)
     End Function
 
-    <Extension>
-    Friend Function ToStringClassifiedSpan(spans As IEnumerable(Of ClassifiedSpan)) As String
-        Dim builder As New StringBuilder
-        For Each span As ClassifiedSpan In spans
-            builder.AppendLine(span.ToStringClassifiedSpan())
-        Next
-        Return builder.ToString
-    End Function
-
-    <Extension>
-    Friend Function ToStringClassifiedSpan(span As ClassifiedSpan) As String
-        Return $"{s_Text.GetSubText(span.TextSpan)} {span.ClassificationType} Start = {span.TextSpan.Start} End = {span.TextSpan.End}"
-    End Function
-
-    Public Function GetClassifiedRanges(SourceCode As String, Language As String) As IEnumerable(Of Range)
+    Public Function GetClassifiedRanges(sourceCode As String, language As String) As IEnumerable(Of Range)
         Using workspace As New AdhocWorkspace()
             Dim solution As Solution = workspace.CurrentSolution
             Dim document As Document
-            If Language = LanguageNames.CSharp Then
+            If language = LanguageNames.CSharp Then
                 Dim project As Project = solution.AddProject("projectName", "assemblyName", LanguageNames.CSharp)
-                document = project.AddDocument("name.cs", SourceCode)
-
-                Dim csOptions As OptionSet = workspace.Options
-                csOptions = csOptions.WithChangedOption(CSharpFormattingOptions.NewLinesForBracesInMethods, value:=True)
-                csOptions = csOptions.WithChangedOption(CSharpFormattingOptions.NewLinesForBracesInProperties, value:=True)
+                document = project.AddDocument("name.cs", sourceCode)
             Else
-                Dim vbOptions As OptionSet = workspace.Options
                 Dim project As Project = solution.AddProject("projectName", "assemblyName", LanguageNames.VisualBasic)
-                document = project.AddDocument("name.vb", SourceCode)
+                document = project.AddDocument("name.vb", sourceCode)
             End If
 
             document = Formatter.FormatAsync(document).Result
             Dim text As SourceText = document.GetTextAsync().Result
-            s_Text = text
             Dim classifiedSpans As List(Of ClassifiedSpan) = Classifier.GetClassifiedSpansAsync(document, TextSpan.FromBounds(0, text.Length)).Result.AdjustAdditiveSpans()
             Dim ranges As IEnumerable(Of Range) = From span As ClassifiedSpan In classifiedSpans
                                                   Select New Range(span, text.GetSubText(span.TextSpan).ToString())

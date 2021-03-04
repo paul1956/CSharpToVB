@@ -5,8 +5,7 @@ Imports System.Collections.Immutable
 Imports System.Reflection
 Imports System.Threading
 Imports ConvertDirectory.Tests
-Imports CSharpToVBConverter
-Imports CSharpToVBConverter.CSharpToVBVisitors
+Imports Extensions
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.CSharp
 Imports Microsoft.CodeAnalysis.CSharp.Formatting
@@ -14,8 +13,10 @@ Imports Microsoft.CodeAnalysis.Formatting
 Imports Microsoft.CodeAnalysis.Options
 Imports Microsoft.CodeAnalysis.Text
 Imports Microsoft.CodeAnalysis.VisualBasic
+Imports SupportClasses
 Imports Tests.CodeConverter
 Imports Tests.ConvertDirectories
+Imports Utilities
 
 Namespace Helpers
 

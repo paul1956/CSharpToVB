@@ -5,8 +5,8 @@
 Public Class MyListItem
 
     Public Sub New(pText As String, pValue As String)
-        _Text = pText
-        _Value = pValue
+        Me.Text = pText
+        Me.Value = pValue
     End Sub
 
     Public ReadOnly Property Text() As String

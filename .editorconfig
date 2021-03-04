@@ -1,7 +1,7 @@
+root = true
 # editorconfig.org
 
 # top-most EditorConfig file
-root = true
 
 # Default settings:
 # A newline ending every file
@@ -10,6 +10,9 @@ root = true
 indent_style = space
 indent_size = 4
 file_header_template = Licensed to the .NET Foundation under one or more agreements.\nThe .NET Foundation licenses this file to you under the MIT license.\nSee the LICENSE file in the project root for more information.
+
+# ReSharper properties
+resharper_vb_prefer_qualified_reference = true
 
 [*.json]
 indent_size = 2
@@ -44,20 +47,20 @@ dotnet_style_predefined_type_for_member_access = true:suggestion
 
 # name all constant fields using PascalCase
 dotnet_naming_rule.constant_fields_should_be_pascal_case.severity = suggestion
-dotnet_naming_rule.constant_fields_should_be_pascal_case.symbols  = constant_fields
-dotnet_naming_rule.constant_fields_should_be_pascal_case.style    = pascal_case_style
+dotnet_naming_rule.constant_fields_should_be_pascal_case.symbols = constant_fields
+dotnet_naming_rule.constant_fields_should_be_pascal_case.style = pascal_case_style
 
-dotnet_naming_symbols.constant_fields.applicable_kinds   = field
+dotnet_naming_symbols.constant_fields.applicable_kinds = field
 dotnet_naming_symbols.constant_fields.required_modifiers = const
 
 dotnet_naming_style.pascal_case_style.capitalization = pascal_case
 
 # static fields should have s_ prefix
 dotnet_naming_rule.static_fields_should_have_prefix.severity = silent
-dotnet_naming_rule.static_fields_should_have_prefix.symbols  = static_fields
-dotnet_naming_rule.static_fields_should_have_prefix.style    = static_prefix_style
+dotnet_naming_rule.static_fields_should_have_prefix.symbols = static_fields
+dotnet_naming_rule.static_fields_should_have_prefix.style = static_prefix_style
 
-dotnet_naming_symbols.static_fields.applicable_kinds   = field
+dotnet_naming_symbols.static_fields.applicable_kinds = field
 dotnet_naming_symbols.static_fields.required_modifiers = static
 
 dotnet_naming_style.static_prefix_style.required_prefix = s_
@@ -65,8 +68,8 @@ dotnet_naming_style.static_prefix_style.capitalization = camel_case
 
 # internal and private fields should be _camelCase
 dotnet_naming_rule.camel_case_for_private_internal_fields.severity = suggestion
-dotnet_naming_rule.camel_case_for_private_internal_fields.symbols  = private_internal_fields
-dotnet_naming_rule.camel_case_for_private_internal_fields.style    = camel_case_underscore_style
+dotnet_naming_rule.camel_case_for_private_internal_fields.symbols = private_internal_fields
+dotnet_naming_rule.camel_case_for_private_internal_fields.style = camel_case_underscore_style
 
 dotnet_naming_symbols.private_internal_fields.applicable_kinds = field
 dotnet_naming_symbols.private_internal_fields.applicable_accessibilities = private, internal
@@ -192,16 +195,16 @@ dotnet_naming_rule.locals_must_have_camel_case.style = camel_case_style
 #dotnet_naming_rule.async_methods_must_have_async_suffix.severity = warning
 
 # CA1031: Do not catch general exception types
-dotnet_diagnostic.CA1031.severity = silent
+dotnet_diagnostic.ca1031.severity = silent
 
 # CA1303: Do not pass literals as localized parameters
-dotnet_diagnostic.CA1303.severity = silent
+dotnet_diagnostic.ca1303.severity = silent
 
 # CA1308: Do not pass literals as localized parameters
-dotnet_diagnostic.CA1308.severity = suggestion
+dotnet_diagnostic.ca1308.severity = suggestion
 
 # CA1826: Do not use Enumerable methods on indexable collections. Instead use the collection directly
-dotnet_diagnostic.CA1826.severity = silent
+dotnet_diagnostic.ca1826.severity = silent
 
 # Xml project files
 [*.{csproj,vcxproj,vcxproj.filters,proj,nativeproj,locproj,vbproj}]
