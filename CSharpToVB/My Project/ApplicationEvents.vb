@@ -32,7 +32,7 @@ Namespace My
             End If
 
             ' Get the splash screen.
-            CType(Me.SplashScreen, SplashScreen1).UserName.Text = "Current user: " & User.Name
+            CType(Me.SplashScreen, SplashScreen1).UserName.Text = $"Current user: " & User.Name
         End Sub
 
         Private Sub MyApplication_StartupNextInstance(sender As Object, e As StartupNextInstanceEventArgs) Handles Me.StartupNextInstance
@@ -44,6 +44,9 @@ Namespace My
             ' My.Application.Log.WriteException(e.Exception, TraceEventType.Critical, "Unhandled Exception.")
         End Sub
 
+        Private Sub MyApplication_ApplyHighDpiMode(sender As Object, e As ApplyHighDpiModeEventArgs) Handles Me.ApplyHighDpiMode
+            e.HighDpiMode = HighDpiMode.PerMonitorV2
+        End Sub
     End Class
 
 End Namespace

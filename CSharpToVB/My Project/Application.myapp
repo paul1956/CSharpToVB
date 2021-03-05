@@ -6,7 +6,6 @@
   <ShutdownMode>0</ShutdownMode>
   <EnableVisualStyles>true</EnableVisualStyles>
   <AuthenticationMode>0</AuthenticationMode>
-  <ApplicationType>0</ApplicationType>
+  <SplashScreen>SplashScreen1</SplashScreen>
   <SaveMySettingsOnExit>true</SaveMySettingsOnExit>
-    <SplashScreen>SplashScreen1</SplashScreen>
 </MyApplicationData>
