@@ -80,7 +80,7 @@ Namespace Utilities
                 Case "U", "UL", "LU"
                     newType = "UL"
                 Case Else
-                    Throw UnexpectedValue(typeChars.ToUpperInvariant)
+                    Throw UnreachableException()
             End Select
             Return tokenAString.Replace(typeChars, newType, StringComparison.OrdinalIgnoreCase)
         End Function

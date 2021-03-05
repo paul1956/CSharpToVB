@@ -456,7 +456,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                             statementLeadingTrivia = statementLeadingTrivia.AddRange(vbMemberAccessExpression.GetLeadingTrivia)
                             vbMemberAccessExpression = vbMemberAccessExpression.WithLeadingTrivia(SpaceTrivia)
                         Else
-                            vbMemberAccessExpression = vbMemberAccessExpression.AdjustExpressionTrivia(AdjustLeading:=True, DirectiveNotAllowed:=False)
+                            vbMemberAccessExpression = vbMemberAccessExpression.AdjustExpressionTrivia(adjustLeading:=True, directiveNotAllowed:=False)
                         End If
                         Dim handlerStatement As AddRemoveHandlerStatementSyntax
                         If node.IsKind(CS.SyntaxKind.AddAssignmentExpression) Then
@@ -700,7 +700,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 End If
                 Dim expressionString As String = expression.ToString
 
-                Return expressionString.GetSafeVBName()
+                Return expressionString.GetSafeVbName()
             End Function
 
             Private Function TryConvertIfNotNullRaiseEvent(node As CSS.IfStatementSyntax, ByRef raiseEventStatement As StatementSyntax) As Boolean
@@ -1440,8 +1440,6 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     End If
                 ElseIf TypeOf node.Parent Is CSS.GlobalStatementSyntax Then
                     stmtWithIssues = node
-                Else
-                    Stop
                 End If
 
                 Dim parameters As SeparatedSyntaxList(Of CSS.ParameterSyntax) = node.ParameterList.Parameters

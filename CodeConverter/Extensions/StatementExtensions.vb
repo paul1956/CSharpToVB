@@ -4,7 +4,6 @@
 
 Imports System.Runtime.CompilerServices
 Imports System.Runtime.InteropServices
-Imports Extensions
 Imports Microsoft.CodeAnalysis
 Imports Utilities
 Imports CS = Microsoft.CodeAnalysis.CSharp
@@ -89,14 +88,13 @@ Namespace Extensions
                                             invocationExpr.ArgumentList.Arguments(e.index).With(newArgumentLeadingTrivia, newArgumentTrailingTrivia)
                                             )
                 Next
-                statementTrailingTrivia.AddRange(CollectConvertedTokenTrivia(csArgumentList.CloseParenToken, getLeading:=True, getTrailing:=True))
+                statementTrailingTrivia.AddRange(csArgumentList.CloseParenToken.CollectConvertedTokenTrivia(getLeading:=True, getTrailing:=True))
                 If statementTrailingTrivia.Any AndAlso statementTrailingTrivia(0).IsDirective Then
                     statementTrailingTrivia = statementTrailingTrivia.Insert(0, VbEolTrivia)
                 End If
                 Return exprStmt.WithPrependedLeadingTrivia(statementLeadingTrivia).
                                             WithMergedTrailingTrivia(statementTrailingTrivia)
             Else
-                Stop
                 Return vbNode
             End If
         End Function
@@ -114,8 +112,8 @@ Namespace Extensions
             Dim statementLeadingTrivia As SyntaxTriviaList
             Dim statementTrailingTrivia As SyntaxTriviaList
 
-            If TypeOf statement Is VBS.ClassStatementSyntax Then
-                Dim classStatement As VBS.ClassStatementSyntax = DirectCast(statement, VBS.ClassStatementSyntax)
+            Dim classStatement As VBS.ClassStatementSyntax = TryCast(statement, VBS.ClassStatementSyntax)
+            If classStatement IsNot Nothing Then
                 If hasAttributes Then
                     RestructureAttributeList(classStatement.AttributeLists, attributeLists, newAttributeLeadingTrivia, statementLeadingTrivia, statementTrailingTrivia)
                     classStatement = classStatement.WithAttributeLists(Factory.List(attributeLists))
@@ -123,7 +121,7 @@ Namespace Extensions
 
                 If hasModifiers Then
                     For Each e As IndexClass(Of SyntaxToken) In classStatement.Modifiers.WithIndex
-                        newModifiers = newModifiers.Add(RestructureModifier(e.Value, e.index, Not statementLeadingTrivia.ContainsCommentOrDirectiveTrivia, statementLeadingTrivia, statementTrailingTrivia))
+                        newModifiers = newModifiers.Add(e.Value.RestructureModifier(e.index, Not statementLeadingTrivia.ContainsCommentOrDirectiveTrivia, statementLeadingTrivia, statementTrailingTrivia))
                     Next
                     classStatement = classStatement.WithModifiers(newModifiers)
                 End If
@@ -132,12 +130,12 @@ Namespace Extensions
                 Dim newClassKeyword As SyntaxToken = classStatement.ClassKeyword.WithLeadingTrivia(keywordLeadingTrivia)
                 Dim newKeywordLeadingTrivia As SyntaxTriviaList = RelocateLeadingCommentTrivia(newClassKeyword.LeadingTrivia, statementLeadingTrivia)
                 Return classStatement.ReplaceToken(classStatement.ClassKeyword, newClassKeyword.WithLeadingTrivia(newKeywordLeadingTrivia)).
-                                                                        WithLeadingTrivia(statementLeadingTrivia).
-                                                                        WithAppendedTrailingTrivia(statementTrailingTrivia)
+                    WithLeadingTrivia(statementLeadingTrivia).
+                    WithAppendedTrailingTrivia(statementTrailingTrivia)
             End If
 
-            If TypeOf statement Is VBS.EnumStatementSyntax Then
-                Dim enumStmt As VBS.EnumStatementSyntax = DirectCast(statement, VBS.EnumStatementSyntax)
+            Dim enumStmt As VBS.EnumStatementSyntax = TryCast(statement, VBS.EnumStatementSyntax)
+            If enumStmt IsNot Nothing Then
 
                 If hasAttributes Then
                     RestructureAttributeList(enumStmt.AttributeLists, attributeLists, newAttributeLeadingTrivia, statementLeadingTrivia, statementTrailingTrivia)
@@ -146,7 +144,7 @@ Namespace Extensions
 
                 If hasModifiers Then
                     For index As Integer = 0 To enumStmt.Modifiers.Count - 1
-                        newModifiers = newModifiers.Add(RestructureModifier(enumStmt.Modifiers(index), index, Not statementLeadingTrivia.ContainsCommentOrDirectiveTrivia, statementLeadingTrivia, statementTrailingTrivia))
+                        newModifiers = newModifiers.Add(enumStmt.Modifiers(index).RestructureModifier(index, Not statementLeadingTrivia.ContainsCommentOrDirectiveTrivia, statementLeadingTrivia, statementTrailingTrivia))
                     Next
                     enumStmt = enumStmt.WithModifiers(newModifiers)
                 End If
@@ -154,12 +152,12 @@ Namespace Extensions
                 keywordLeadingTrivia = RelocateDirectiveDisabledTrivia(enumStmt.EnumKeyword.LeadingTrivia, statementTrailingTrivia, removeEol:=False)
                 Dim newEnumKeyword As SyntaxToken = enumStmt.EnumKeyword.WithLeadingTrivia(keywordLeadingTrivia)
                 Return enumStmt.ReplaceToken(enumStmt.EnumKeyword, newEnumKeyword).
-                                                                        WithLeadingTrivia(statementLeadingTrivia).
-                                                                        WithAppendedTrailingTrivia(statementTrailingTrivia)
+                    WithLeadingTrivia(statementLeadingTrivia).
+                    WithAppendedTrailingTrivia(statementTrailingTrivia)
             End If
 
-            If TypeOf statement Is VBS.FieldDeclarationSyntax Then
-                Dim fieldStmt As VBS.FieldDeclarationSyntax = DirectCast(statement, VBS.FieldDeclarationSyntax)
+            Dim fieldStmt As VBS.FieldDeclarationSyntax = TryCast(statement, VBS.FieldDeclarationSyntax)
+            If fieldStmt IsNot Nothing Then
 
                 If hasAttributes Then
                     RestructureAttributeList(fieldStmt.AttributeLists, attributeLists, newAttributeLeadingTrivia, statementLeadingTrivia, statementTrailingTrivia)
@@ -168,7 +166,7 @@ Namespace Extensions
 
                 If hasModifiers Then
                     For index As Integer = 0 To fieldStmt.Modifiers.Count - 1
-                        newModifiers = newModifiers.Add(RestructureModifier(fieldStmt.Modifiers(index), index, Not statementLeadingTrivia.ContainsCommentOrDirectiveTrivia, statementLeadingTrivia, statementTrailingTrivia))
+                        newModifiers = newModifiers.Add(fieldStmt.Modifiers(index).RestructureModifier(index, Not statementLeadingTrivia.ContainsCommentOrDirectiveTrivia, statementLeadingTrivia, statementTrailingTrivia))
                     Next
                     fieldStmt = fieldStmt.WithModifiers(newModifiers)
                 End If
@@ -176,8 +174,8 @@ Namespace Extensions
                 Return fieldStmt.With(statementLeadingTrivia, statementTrailingTrivia)
             End If
 
-            If TypeOf statement Is VBS.InterfaceStatementSyntax Then
-                Dim interfaceStmt As VBS.InterfaceStatementSyntax = DirectCast(statement, VBS.InterfaceStatementSyntax)
+            Dim interfaceStmt As VBS.InterfaceStatementSyntax = TryCast(statement, VBS.InterfaceStatementSyntax)
+            If interfaceStmt IsNot Nothing Then
 
                 If hasAttributes Then
                     RestructureAttributeList(interfaceStmt.AttributeLists, attributeLists, newAttributeLeadingTrivia, statementLeadingTrivia, statementTrailingTrivia)
@@ -186,7 +184,7 @@ Namespace Extensions
 
                 If hasModifiers Then
                     For index As Integer = 0 To interfaceStmt.Modifiers.Count - 1
-                        newModifiers = newModifiers.Add(RestructureModifier(interfaceStmt.Modifiers(index), index, Not statementLeadingTrivia.ContainsCommentOrDirectiveTrivia, statementLeadingTrivia, statementTrailingTrivia))
+                        newModifiers = newModifiers.Add(interfaceStmt.Modifiers(index).RestructureModifier(index, Not statementLeadingTrivia.ContainsCommentOrDirectiveTrivia, statementLeadingTrivia, statementTrailingTrivia))
                     Next
                     interfaceStmt = interfaceStmt.WithModifiers(newModifiers)
                 End If
@@ -194,12 +192,12 @@ Namespace Extensions
                 keywordLeadingTrivia = RelocateDirectiveDisabledTrivia(interfaceStmt.InterfaceKeyword.LeadingTrivia, statementTrailingTrivia, removeEol:=False)
                 Dim interfaceKeyword As SyntaxToken = interfaceStmt.InterfaceKeyword.WithLeadingTrivia(keywordLeadingTrivia)
                 Return interfaceStmt.ReplaceToken(interfaceStmt.InterfaceKeyword, interfaceKeyword).
-                                                                    WithLeadingTrivia(statementLeadingTrivia).
-                                                                    WithAppendedTrailingTrivia(statementTrailingTrivia)
+                    WithLeadingTrivia(statementLeadingTrivia).
+                    WithAppendedTrailingTrivia(statementTrailingTrivia)
             End If
 
-            If TypeOf statement Is VBS.MethodStatementSyntax Then
-                Dim methodStmt As VBS.MethodStatementSyntax = DirectCast(statement, VBS.MethodStatementSyntax)
+            Dim methodStmt As VBS.MethodStatementSyntax = TryCast(statement, VBS.MethodStatementSyntax)
+            If methodStmt IsNot Nothing Then
 
                 If hasAttributes Then
                     RestructureAttributeList(methodStmt.AttributeLists, attributeLists, newAttributeLeadingTrivia, statementLeadingTrivia, statementTrailingTrivia)
@@ -208,7 +206,7 @@ Namespace Extensions
 
                 If hasModifiers Then
                     For index As Integer = 0 To methodStmt.Modifiers.Count - 1
-                        newModifiers = newModifiers.Add(RestructureModifier(methodStmt.Modifiers(index), index, Not statementLeadingTrivia.ContainsCommentOrDirectiveTrivia, statementLeadingTrivia, statementTrailingTrivia))
+                        newModifiers = newModifiers.Add(methodStmt.Modifiers(index).RestructureModifier(index, Not statementLeadingTrivia.ContainsCommentOrDirectiveTrivia, statementLeadingTrivia, statementTrailingTrivia))
                     Next
                     methodStmt = methodStmt.WithModifiers(newModifiers)
                 End If
@@ -216,15 +214,15 @@ Namespace Extensions
                 keywordLeadingTrivia = RelocateDirectiveDisabledTrivia(methodStmt.SubOrFunctionKeyword.LeadingTrivia, statementTrailingTrivia, removeEol:=False)
                 Dim newSubOrFunctionKeyword As SyntaxToken = methodStmt.SubOrFunctionKeyword.WithLeadingTrivia(keywordLeadingTrivia)
                 Return methodStmt.ReplaceToken(
-                                methodStmt.SubOrFunctionKeyword,
-                                newSubOrFunctionKeyword
-                                ).
-                            WithLeadingTrivia(statementLeadingTrivia).
-                            WithAppendedTrailingTrivia(statementTrailingTrivia)
+                    methodStmt.SubOrFunctionKeyword,
+                    newSubOrFunctionKeyword
+                    ).
+                    WithLeadingTrivia(statementLeadingTrivia).
+                    WithAppendedTrailingTrivia(statementTrailingTrivia)
             End If
 
-            If TypeOf statement Is VBS.ModuleStatementSyntax Then
-                Dim moduleStatement As VBS.ModuleStatementSyntax = DirectCast(statement, VBS.ModuleStatementSyntax)
+            Dim moduleStatement As VBS.ModuleStatementSyntax = TryCast(statement, VBS.ModuleStatementSyntax)
+            If moduleStatement IsNot Nothing Then
 
                 If hasAttributes Then
                     RestructureAttributeList(moduleStatement.AttributeLists, attributeLists, newAttributeLeadingTrivia, statementLeadingTrivia, statementTrailingTrivia)
@@ -233,7 +231,7 @@ Namespace Extensions
 
                 If hasModifiers Then
                     For index As Integer = 0 To moduleStatement.Modifiers.Count - 1
-                        newModifiers = newModifiers.Add(RestructureModifier(moduleStatement.Modifiers(index), index, Not statementLeadingTrivia.ContainsCommentOrDirectiveTrivia, statementLeadingTrivia, statementTrailingTrivia))
+                        newModifiers = newModifiers.Add(moduleStatement.Modifiers(index).RestructureModifier(index, Not statementLeadingTrivia.ContainsCommentOrDirectiveTrivia, statementLeadingTrivia, statementTrailingTrivia))
                     Next
                     moduleStatement = moduleStatement.WithModifiers(newModifiers)
                 End If
@@ -241,12 +239,12 @@ Namespace Extensions
                 keywordLeadingTrivia = RelocateDirectiveDisabledTrivia(moduleStatement.ModuleKeyword.LeadingTrivia, statementTrailingTrivia, removeEol:=False)
                 Dim newModuleKeyword As SyntaxToken = moduleStatement.ModuleKeyword.WithLeadingTrivia(keywordLeadingTrivia)
                 Return moduleStatement.ReplaceToken(moduleStatement.ModuleKeyword, newModuleKeyword).
-                                                                        WithLeadingTrivia(statementLeadingTrivia).
-                                                                        WithAppendedTrailingTrivia(statementTrailingTrivia)
+                    WithLeadingTrivia(statementLeadingTrivia).
+                    WithAppendedTrailingTrivia(statementTrailingTrivia)
             End If
 
-            If TypeOf statement Is VBS.PropertyBlockSyntax Then
-                Dim propertyBlock As VBS.PropertyBlockSyntax = DirectCast(statement, VBS.PropertyBlockSyntax)
+            Dim propertyBlock As VBS.PropertyBlockSyntax = TryCast(statement, VBS.PropertyBlockSyntax)
+            If propertyBlock IsNot Nothing Then
                 Dim propertyStmt As VBS.PropertyStatementSyntax = propertyBlock.PropertyStatement
 
                 If hasAttributes Then
@@ -256,7 +254,7 @@ Namespace Extensions
 
                 If hasModifiers Then
                     For index As Integer = 0 To propertyStmt.Modifiers.Count - 1
-                        newModifiers = newModifiers.Add(RestructureModifier(propertyStmt.Modifiers(index), index, Not statementLeadingTrivia.ContainsCommentOrDirectiveTrivia, statementLeadingTrivia, statementTrailingTrivia))
+                        newModifiers = newModifiers.Add(propertyStmt.Modifiers(index).RestructureModifier(index, Not statementLeadingTrivia.ContainsCommentOrDirectiveTrivia, statementLeadingTrivia, statementTrailingTrivia))
                     Next
                     propertyStmt = propertyStmt.WithModifiers(newModifiers)
                 End If
@@ -269,9 +267,8 @@ Namespace Extensions
                 Return newPropertyBlock.WithAppendedTrailingTrivia(statementTrailingTrivia)
             End If
 
-            If TypeOf statement Is VBS.StructureStatementSyntax Then
-                Dim structureStmt As VBS.StructureStatementSyntax = DirectCast(statement, VBS.StructureStatementSyntax)
-
+            Dim structureStmt As VBS.StructureStatementSyntax = TryCast(statement, VBS.StructureStatementSyntax)
+            If structureStmt IsNot Nothing Then
                 If hasAttributes Then
                     RestructureAttributeList(structureStmt.AttributeLists, attributeLists, newAttributeLeadingTrivia, statementLeadingTrivia, statementTrailingTrivia)
                     structureStmt = structureStmt.WithAttributeLists(Factory.List(attributeLists))
@@ -279,7 +276,7 @@ Namespace Extensions
 
                 If hasModifiers Then
                     For index As Integer = 0 To structureStmt.Modifiers.Count - 1
-                        newModifiers = newModifiers.Add(RestructureModifier(structureStmt.Modifiers(index), index, Not statementLeadingTrivia.ContainsCommentOrDirectiveTrivia, statementLeadingTrivia, statementTrailingTrivia))
+                        newModifiers = newModifiers.Add(structureStmt.Modifiers(index).RestructureModifier(index, Not statementLeadingTrivia.ContainsCommentOrDirectiveTrivia, statementLeadingTrivia, statementTrailingTrivia))
                     Next
                     structureStmt = structureStmt.WithModifiers(newModifiers)
                 End If
@@ -287,12 +284,11 @@ Namespace Extensions
                 keywordLeadingTrivia = RelocateDirectiveDisabledTrivia(structureStmt.StructureKeyword.LeadingTrivia, statementTrailingTrivia, removeEol:=True)
                 Dim newStructureKeyword As SyntaxToken = structureStmt.StructureKeyword.WithLeadingTrivia(keywordLeadingTrivia)
                 Return structureStmt.ReplaceToken(structureStmt.StructureKeyword, newStructureKeyword).
-                                                                         WithLeadingTrivia(statementLeadingTrivia).
-                                                                         WithAppendedTrailingTrivia(statementTrailingTrivia)
+                    WithLeadingTrivia(statementLeadingTrivia).
+                    WithAppendedTrailingTrivia(statementTrailingTrivia)
             End If
-            If TypeOf statement Is VBS.SubNewStatementSyntax Then
-                Dim subNewStmt As VBS.SubNewStatementSyntax = DirectCast(statement, VBS.SubNewStatementSyntax)
-
+            Dim subNewStmt As VBS.SubNewStatementSyntax = TryCast(statement, VBS.SubNewStatementSyntax)
+            If subNewStmt IsNot Nothing Then
                 If hasAttributes Then
                     RestructureAttributeList(subNewStmt.AttributeLists, attributeLists, newAttributeLeadingTrivia, statementLeadingTrivia, statementTrailingTrivia)
                     subNewStmt = subNewStmt.WithAttributeLists(Factory.List(attributeLists))
@@ -300,7 +296,7 @@ Namespace Extensions
 
                 If hasModifiers Then
                     For index As Integer = 0 To subNewStmt.Modifiers.Count - 1
-                        newModifiers = newModifiers.Add(RestructureModifier(subNewStmt.Modifiers(index), index, Not statementLeadingTrivia.ContainsCommentOrDirectiveTrivia, statementLeadingTrivia, statementTrailingTrivia))
+                        newModifiers = newModifiers.Add(subNewStmt.Modifiers(index).RestructureModifier(index, Not statementLeadingTrivia.ContainsCommentOrDirectiveTrivia, statementLeadingTrivia, statementTrailingTrivia))
                     Next
                     subNewStmt = subNewStmt.WithModifiers(newModifiers)
                 End If
@@ -308,12 +304,11 @@ Namespace Extensions
                 keywordLeadingTrivia = RelocateDirectiveDisabledTrivia(subNewStmt.SubKeyword.LeadingTrivia, statementTrailingTrivia, removeEol:=False)
                 Dim newSubKeyword As SyntaxToken = subNewStmt.SubKeyword.WithLeadingTrivia(keywordLeadingTrivia)
                 Return subNewStmt.ReplaceToken(subNewStmt.SubKeyword, newSubKeyword).
-                                                                        WithLeadingTrivia(statementLeadingTrivia).
-                                                                        WithAppendedTrailingTrivia(statementTrailingTrivia)
+                    WithLeadingTrivia(statementLeadingTrivia).
+                    WithAppendedTrailingTrivia(statementTrailingTrivia)
             End If
 
             Throw UnreachableException
-            Return statement
         End Function
 
         <Extension>

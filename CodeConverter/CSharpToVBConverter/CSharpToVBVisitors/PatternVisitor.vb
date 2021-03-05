@@ -101,7 +101,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         statementWithIssue.AddMarker(statement, StatementHandlingOption.PrependStatement, allowDuplicates:=True)
                     Else
                         dimToBeAdded = FactoryDimStatement(designationNameToken,
-                                                           Factory.SimpleAsClause(varType.AdjustExpressionTrivia(AdjustLeading:=False, DirectiveNotAllowed:=False)),
+                                                           Factory.SimpleAsClause(varType.AdjustExpressionTrivia(adjustLeading:=False, directiveNotAllowed:=False)),
                                                            Factory.EqualsValue(vbExpr)
                                                           ).WithTrailingTrivia(VbEolTrivia)
                         statementWithIssue.AddMarker(dimToBeAdded, StatementHandlingOption.PrependStatement, allowDuplicates:=True)
@@ -180,7 +180,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             End Function
 
             Public Overrides Function VisitRecursivePattern(node As CSS.RecursivePatternSyntax) As VB.VisualBasicSyntaxNode
-                Return Factory.IdentifierName(node.GetUniqueVariableNameInScope($"RecursivePattern_{node.ToString.GetSafeVBName}", _usedIdentifiers, _semanticModel))
+                Return Factory.IdentifierName(node.GetUniqueVariableNameInScope($"RecursivePattern_{node.ToString.GetSafeVbName}", _usedIdentifiers, _semanticModel))
             End Function
 
             Public Overrides Function VisitVarPattern(node As CSS.VarPatternSyntax) As VB.VisualBasicSyntaxNode

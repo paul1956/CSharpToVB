@@ -16,28 +16,29 @@ Namespace Extensions
             Return node IsNot Nothing AndAlso node.Parent.IsKind(kind)
         End Function
 
-        ''' <summary>
+        ''' <Summary>
         ''' Creates a new syntax node with all whitespace and end of line trivia replaced with
-        ''' regularly formatted trivia.        ''' </summary>
+        ''' regularly formatted trivia.        '''
+        ''' </summary>
         ''' <typeparam name="TNode">>The type of the node.</typeparam>
         ''' <param name="node">The node to format.</param>
         ''' <param name="useDefaultCasing"></param>
         ''' <param name="indentation">An optional sequence of whitespace characters that defines a single level of indentation.</param>
-        ''' <param name="elasticTrivia"></param>
-        ''' <param name="PreserveCRLF"></param>
+        ''' <param name="eol"></param>
+        ''' <param name="preserveCRLF"></param>
         ''' <returns></returns>
         <Extension>
         Public Function NormalizeWhitespaceEx(Of TNode As SyntaxNode)(node As TNode,
-                                                                  useDefaultCasing As Boolean,
-                                                                  Optional indentation As String = "    ",
-                                                                  Optional eol As String = vbCrLf,
-                                                                  Optional PreserveCRLF As Boolean = False
-                                                                  ) As TNode
+                                                                      useDefaultCasing As Boolean,
+                                                                      Optional indentation As String = "    ",
+                                                                      Optional eol As String = vbCrLf,
+                                                                      Optional preserveCRLF As Boolean = False
+                                                                     ) As TNode
             If node Is Nothing Then
                 Throw New ArgumentNullException(NameOf(node))
             End If
 
-            Return DirectCast(SyntaxNormalizer.Normalize(node, indentation, eol, useElasticTrivia:=False, useDefaultCasing, PreserveCRLF), TNode)
+            Return DirectCast(SyntaxNormalizer.Normalize(node, indentation, eol, useElasticTrivia:=False, useDefaultCasing, preserveCRLF), TNode)
         End Function
 
     End Module

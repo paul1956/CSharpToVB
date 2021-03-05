@@ -8,7 +8,7 @@ Imports System.Threading
 Imports Microsoft.CodeAnalysis
 
 Namespace Extensions
-    Public Module INamedTypeSymbolExtensons
+    Public Module NamedTypeSymbolExtensions
 
         Private Function GetAbstractClassesToImplement(abstractClasses As IEnumerable(Of INamedTypeSymbol)) As ImmutableArray(Of INamedTypeSymbol)
             Return abstractClasses.SelectMany(Function(a As INamedTypeSymbol) a.GetBaseTypesAndThis()).Where(Function(t As INamedTypeSymbol) t.IsAbstractClass()).ToImmutableArray()
@@ -22,22 +22,23 @@ Namespace Extensions
                                                           isValidImplementation As Func(Of INamedTypeSymbol, ISymbol, Boolean),
                                                           interfaceMemberGetter As Func(Of INamedTypeSymbol, ISymbol, ImmutableArray(Of ISymbol)),
                                                           allowReimplementation As Boolean,
-                                                          CancelToken As CancellationToken
+                                                          cancelToken As CancellationToken
                                                          ) As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))
             If classOrStructType.TypeKind <> TypeKind.Class AndAlso classOrStructType.TypeKind <> TypeKind.Struct Then
                 Return ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))).Empty
             End If
 
-            If Not interfacesOrAbstractClasses.Any() Then
+            Dim namedTypeSymbols As IEnumerable(Of INamedTypeSymbol) = If(TryCast(interfacesOrAbstractClasses, INamedTypeSymbol()), interfacesOrAbstractClasses.ToArray())
+            If Not namedTypeSymbols.Any() Then
                 Return ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))).Empty
             End If
 
-            If Not interfacesOrAbstractClasses.All(Function(i As INamedTypeSymbol) i.TypeKind = TypeKind.Interface) AndAlso Not interfacesOrAbstractClasses.All(Function(i As INamedTypeSymbol) i.IsAbstractClass()) Then
+            If Not namedTypeSymbols.All(Function(i As INamedTypeSymbol) i.TypeKind = TypeKind.Interface) AndAlso Not namedTypeSymbols.All(Function(i As INamedTypeSymbol) i.IsAbstractClass()) Then
                 Return ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))).Empty
             End If
 
-            Dim typesToImplement As ImmutableArray(Of INamedTypeSymbol) = GetTypesToImplement(classOrStructType, interfacesOrAbstractClasses, allowReimplementation, CancelToken)
-            Return typesToImplement.SelectAsArray(Function(s As INamedTypeSymbol) (s, members:=GetImplementedMembers(classOrStructType, s, isImplemented, isValidImplementation, interfaceMemberGetter, CancelToken))).WhereAsArray(Function(t As (s As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))) t.members.Any)
+            Dim typesToImplement As ImmutableArray(Of INamedTypeSymbol) = GetTypesToImplement(classOrStructType, namedTypeSymbols, allowReimplementation, cancelToken)
+            Return typesToImplement.SelectAsArray(Function(s As INamedTypeSymbol) (s, members:=GetImplementedMembers(classOrStructType, s, isImplemented, isValidImplementation, interfaceMemberGetter, cancelToken))).WhereAsArray(Function(t As (s As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))) t.members.Any)
         End Function
 
         <Extension>
@@ -45,7 +46,7 @@ Namespace Extensions
             Dim allInterfaces As ImmutableArray(Of INamedTypeSymbol) = type.AllInterfaces
             Dim isINamedType As Boolean = TypeOf type Is INamedTypeSymbol
             Dim namedType As INamedTypeSymbol = If(isINamedType, CType(type, INamedTypeSymbol), Nothing)
-            If isINamedType AndAlso namedType.TypeKind = Microsoft.CodeAnalysis.TypeKind.Interface AndAlso Not allInterfaces.Contains(namedType) Then
+            If isINamedType AndAlso namedType.TypeKind = TypeKind.Interface AndAlso Not allInterfaces.Contains(namedType) Then
                 Dim result As New List(Of INamedTypeSymbol)(allInterfaces.Length + 1) From {
                 namedType
             }
@@ -56,22 +57,22 @@ Namespace Extensions
             Return allInterfaces
         End Function
 
-        Private Function GetImplementedMembers(classOrStructType As INamedTypeSymbol, interfaceType As INamedTypeSymbol, isImplemented As Func(Of INamedTypeSymbol, ISymbol, Func(Of INamedTypeSymbol, ISymbol, Boolean), CancellationToken, Boolean), isValidImplementation As Func(Of INamedTypeSymbol, ISymbol, Boolean), interfaceMemberGetter As Func(Of INamedTypeSymbol, ISymbol, ImmutableArray(Of ISymbol)), CancelToken As CancellationToken) As ImmutableArray(Of ISymbol)
+        Private Function GetImplementedMembers(classOrStructType As INamedTypeSymbol, interfaceType As INamedTypeSymbol, isImplemented As Func(Of INamedTypeSymbol, ISymbol, Func(Of INamedTypeSymbol, ISymbol, Boolean), CancellationToken, Boolean), isValidImplementation As Func(Of INamedTypeSymbol, ISymbol, Boolean), interfaceMemberGetter As Func(Of INamedTypeSymbol, ISymbol, ImmutableArray(Of ISymbol)), cancelToken As CancellationToken) As ImmutableArray(Of ISymbol)
             Dim q As IEnumerable(Of ISymbol) = From m In interfaceMemberGetter(interfaceType, classOrStructType)
                                                Where m.Kind <> SymbolKind.NamedType
                                                Where m.Kind <> SymbolKind.Method OrElse DirectCast(m, IMethodSymbol).MethodKind = MethodKind.Ordinary
                                                Where m.Kind <> SymbolKind.Property OrElse DirectCast(m, IPropertySymbol).IsIndexer OrElse DirectCast(m, IPropertySymbol).CanBeReferencedByName
                                                Where m.Kind <> SymbolKind.Event OrElse DirectCast(m, IEventSymbol).CanBeReferencedByName
-                                               Where isImplemented(classOrStructType, m, isValidImplementation, CancelToken)
+                                               Where isImplemented(classOrStructType, m, isValidImplementation, cancelToken)
                                                Select m
 
             Return q.ToImmutableArray()
         End Function
 
-        Private Function GetInterfacesToImplement(classOrStructType As INamedTypeSymbol, interfaces As IEnumerable(Of INamedTypeSymbol), allowReimplementation As Boolean, CancelToken As CancellationToken) As ImmutableArray(Of INamedTypeSymbol)
+        Private Function GetInterfacesToImplement(classOrStructType As INamedTypeSymbol, interfaces As IEnumerable(Of INamedTypeSymbol), allowReimplementation As Boolean, cancelToken As CancellationToken) As ImmutableArray(Of INamedTypeSymbol)
             ' We need to not only implement the specified interface, but also everything it
             ' inherits from.
-            CancelToken.ThrowIfCancellationRequested()
+            cancelToken.ThrowIfCancellationRequested()
 #Disable Warning RS1024 ' Compare symbols correctly
             Dim interfacesToImplement As New List(Of INamedTypeSymbol)(interfaces.SelectMany(Function(i As INamedTypeSymbol) i.GetAllInterfacesIncludingThis()).Distinct())
 #Enable Warning RS1024 ' Compare symbols correctly
@@ -81,7 +82,7 @@ Namespace Extensions
             Dim baseType As INamedTypeSymbol = classOrStructType.BaseType
             Dim alreadyImplementedInterfaces As ImmutableArray(Of INamedTypeSymbol) = If(baseType Is Nothing OrElse allowReimplementation, New ImmutableArray(Of INamedTypeSymbol), baseType.AllInterfaces)
 
-            CancelToken.ThrowIfCancellationRequested()
+            cancelToken.ThrowIfCancellationRequested()
             interfacesToImplement.RemoveRange(alreadyImplementedInterfaces)
             Return interfacesToImplement.ToImmutableArray()
         End Function
@@ -103,12 +104,13 @@ Namespace Extensions
             Return Nothing
         End Function
 
-        Private Function GetTypesToImplement(classOrStructType As INamedTypeSymbol, interfacesOrAbstractClasses As IEnumerable(Of INamedTypeSymbol), allowReimplementation As Boolean, CancelToken As CancellationToken) As ImmutableArray(Of INamedTypeSymbol)
-            Return If(interfacesOrAbstractClasses.First().TypeKind = TypeKind.Interface, GetInterfacesToImplement(classOrStructType,
-                                                                                                                  interfacesOrAbstractClasses,
-                                                                                                                  allowReimplementation,
-                                                                                                                  CancelToken),
-                                                                                         GetAbstractClassesToImplement(interfacesOrAbstractClasses))
+        Private Function GetTypesToImplement(classOrStructType As INamedTypeSymbol, interfacesOrAbstractClasses As IEnumerable(Of INamedTypeSymbol), allowReimplementation As Boolean, cancelToken As CancellationToken) As ImmutableArray(Of INamedTypeSymbol)
+            Dim namedTypeSymbols As IEnumerable(Of INamedTypeSymbol) = If(TryCast(interfacesOrAbstractClasses, INamedTypeSymbol()), interfacesOrAbstractClasses.ToArray())
+            Return If(namedTypeSymbols.First().TypeKind = TypeKind.Interface, GetInterfacesToImplement(classOrStructType,
+                                                                                                       namedTypeSymbols,
+                                                                                                       allowReimplementation,
+                                                                                                       cancelToken),
+                                                                             GetAbstractClassesToImplement(namedTypeSymbols))
         End Function
 
         Private Function ImplementationExists(classOrStructType As INamedTypeSymbol, member As ISymbol) As Boolean
@@ -117,7 +119,7 @@ Namespace Extensions
 
         <Extension>
         Private Function IsAbstractClass(symbol As ITypeSymbol) As Boolean
-            Return CBool(symbol?.TypeKind = Microsoft.CodeAnalysis.TypeKind.Class AndAlso symbol.IsAbstract)
+            Return CBool(symbol?.TypeKind = TypeKind.Class AndAlso symbol.IsAbstract)
         End Function
 
         Private Function IsAbstractPropertyImplemented(classOrStructType As INamedTypeSymbol,
@@ -146,7 +148,7 @@ Namespace Extensions
             Return m.IsVirtual OrElse m.IsAbstract
         End Function
 
-        Private Function IsImplemented(classOrStructType As INamedTypeSymbol, member As ISymbol, isValidImplementation As Func(Of INamedTypeSymbol, ISymbol, Boolean), CancelToken As CancellationToken) As Boolean
+        Private Function IsImplemented(classOrStructType As INamedTypeSymbol, member As ISymbol, isValidImplementation As Func(Of INamedTypeSymbol, ISymbol, Boolean), cancelToken As CancellationToken) As Boolean
             If member.ContainingType.TypeKind = TypeKind.Interface Then
                 If member.Kind = SymbolKind.Property Then
                     Return IsInterfacePropertyImplemented(classOrStructType, DirectCast(member, IPropertySymbol))
@@ -205,7 +207,7 @@ Namespace Extensions
             If symbol.IsAbstract Then
                 Return type.GetBaseTypesAndThis() _
                     .SelectMany(Function(t As INamedTypeSymbol) t.GetMembers(symbol.Name)) _
-                    .FirstOrDefault(Function(s As ISymbol) SymbolEqualityComparer.Default.Equals(symbol, GetOverriddenMember(s)))
+                    .FirstOrDefault(Function(s As ISymbol) SymbolEqualityComparer.Default.Equals(symbol, s.GetOverriddenMember()))
             End If
 
             Return Nothing
@@ -214,7 +216,7 @@ Namespace Extensions
         <Extension>
         Friend Function GetAllImplementedMembers(classOrStructType As INamedTypeSymbol,
                                                            interfacesOrAbstractClasses As IEnumerable(Of INamedTypeSymbol),
-                                                           CancelToken As CancellationToken) As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))
+                                                           cancelToken As CancellationToken) As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))
             Return GetAllImplementedMembers(classOrStructType,
                                             interfacesOrAbstractClasses,
                                             AddressOf IsImplemented,
@@ -222,7 +224,7 @@ Namespace Extensions
                                             Function(type As INamedTypeSymbol, within As ISymbol)
                                                 If type.TypeKind = TypeKind.Interface Then
                                                     Return type.GetMembers().WhereAsArray(
-                                                        Function(m As ISymbol) m.DeclaredAccessibility = Microsoft.CodeAnalysis.Accessibility.Public AndAlso
+                                                        Function(m As ISymbol) m.DeclaredAccessibility = Accessibility.Public AndAlso
                                                                     m.Kind <> SymbolKind.NamedType AndAlso
                                                                     IsImplementable(m) AndAlso
                                                                     Not IsPropertyWithNonPublicImplementableAccessor(m))
@@ -230,7 +232,7 @@ Namespace Extensions
                                                 Return type.GetMembers()
                                             End Function,
                                             allowReimplementation:=False,
-                                            CancelToken)
+                                            cancelToken)
         End Function
 
         <Extension>

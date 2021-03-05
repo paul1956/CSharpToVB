@@ -44,7 +44,7 @@ Namespace Extensions
             End If
             Dim ev As IEventSymbol = TryCast(symbol, IEventSymbol)
             If ev IsNot Nothing Then
-                Return GetDelegateInvokeMethod(ev.Type).Parameters
+                Return ev.Type.GetDelegateInvokeMethod().Parameters
             End If
             Return ImmutableArray(Of IParameterSymbol).Empty
         End Function

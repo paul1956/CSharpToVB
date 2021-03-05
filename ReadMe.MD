@@ -65,6 +65,12 @@ Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpec
 Any changes to CSharpToVB application needs to change the version information in the project file **AND** in MyProject/AssemblyInfo.vb until Visual Studio is able to general file automatically for a WinForms application.
 
 ## What's New in this release
+  New in 5.0.2.8/5.0.1.13
+  - Fix duplicate last statement when Switch expression is converted
+  - Update Code Coverage which is now almost 95%
+  - Correct spelling errors and eliminate more unused code
+  - Fix Spelling errors in variable names and comments
+
   New in 5.0.2.7/5.0.1.12
   - Fix Search to correctly put found text at top of visible window.
   - Speed up Trivia Conversion.
@@ -279,17 +285,17 @@ Any changes to CSharpToVB application needs to change the version information in
 
 ## Code Coverage
 ```
-+------------------+--------+--------+--------+
-| Module           | Line   | Branch | Method |
-+------------------+--------+--------+--------+
-| VB.CodeConverter | 85.15% | 77.97% | 94.67% |
-+------------------+--------+--------+--------+
++------------------+-------+--------+--------+
+| Module           | Line  | Branch | Method |
++------------------+-------+--------+--------+
+| VB.CodeConverter | 85.3% | 78.04% | 94.81% |
++------------------+-------+--------+--------+
 
-+---------+--------+--------+--------+
-|         | Line   | Branch | Method |
-+---------+--------+--------+--------+
-| Total   | 85.15% | 77.97% | 94.67% |
-+---------+--------+--------+--------+
-| Average | 85.15% | 77.97% | 94.67% |
-+---------+--------+--------+--------+
++---------+-------+--------+--------+
+|         | Line  | Branch | Method |
++---------+-------+--------+--------+
+| Total   | 85.3% | 78.04% | 94.81% |
++---------+-------+--------+--------+
+| Average | 85.3% | 78.04% | 94.81% |
++---------+-------+--------+--------+
 ```

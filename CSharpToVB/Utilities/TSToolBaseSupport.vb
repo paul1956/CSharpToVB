@@ -12,7 +12,6 @@ Public Module TsToolBaseSupport
     Public Enum SearchBuffers
         CS = 1
         VB = 2
-        Both = CS Or VB
     End Enum
 #Enable Warning InconsistentNaming
 

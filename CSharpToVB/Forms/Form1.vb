@@ -944,20 +944,20 @@ namespace Application
 #Region "TSFind Events"
 
     Private Sub TSFindClearHighlightsButton_Click(sender As Object, e As EventArgs) Handles TSFindClearHighlightsButton.Click
-        Dim selectionstart As Integer
+        Dim selectionStart As Integer
         _inColorize = True
         If Me.BufferToSearch.IsFlagSet(SearchBuffers.CS) Then
-            selectionstart = Me.ConversionInput.SelectionStart
+            selectionStart = Me.ConversionInput.SelectionStart
             Me.ConversionInput.SelectAll()
             Me.ConversionInput.SelectionBackColor = DefaultColor.Background
-            Me.ConversionInput.Select(selectionstart, 0)
+            Me.ConversionInput.Select(selectionStart, 0)
             Me.ConversionInput.ScrollToCaret()
         End If
         If Me.BufferToSearch.IsFlagSet(SearchBuffers.VB) Then
-            selectionstart = Me.ConversionOutput.SelectionStart
+            selectionStart = Me.ConversionOutput.SelectionStart
             Me.ConversionOutput.SelectAll()
             Me.ConversionOutput.SelectionBackColor = DefaultColor.Background
-            Me.ConversionOutput.Select(selectionstart, 0)
+            Me.ConversionOutput.Select(selectionStart, 0)
             Me.ConversionOutput.ScrollToCaret()
         End If
         Application.DoEvents()
@@ -1005,7 +1005,7 @@ namespace Application
             Case 1
                 Me.BufferToSearch = SearchBuffers.VB
             Case 2
-                Me.BufferToSearch = SearchBuffers.Both
+                Me.BufferToSearch = {SearchBuffers.CS, SearchBuffers.VB}.CombineFlags()
         End Select
         Me.SetSearchControls()
     End Sub

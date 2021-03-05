@@ -25,9 +25,9 @@ Namespace Extensions
         End Function
 
         <Extension>
-        Friend Function GetSafeVBName(exprsssionString As String) As String
+        Friend Function GetSafeVbName(expressionString As String) As String
             Dim expressionBuilder As New StringBuilder
-            For Each e As IndexClass(Of Char) In exprsssionString.
+            For Each e As IndexClass(Of Char) In expressionString.
                                                     Replace(".", "Dot_", StringComparison.Ordinal).
                                                     Replace(",", "Comma_", StringComparison.Ordinal).
                                                     Replace("""", "Quote", StringComparison.Ordinal).
@@ -58,16 +58,16 @@ Namespace Extensions
         End Function
 
         <Extension>
-        Friend Function RemoveAll(input As String, ParamArray StringsToBeRemoved() As String) As String
-            For Each s As String In StringsToBeRemoved
+        Friend Function RemoveAll(input As String, ParamArray stringsToBeRemoved() As String) As String
+            For Each s As String In stringsToBeRemoved
                 input = input.Replace(s, "", StringComparison.Ordinal)
             Next
             Return input
         End Function
 
         <Extension>
-        Friend Function RemoveAll(input As String, StringsToBeRemoved As String) As String
-            Return input.Replace(StringsToBeRemoved, "", StringComparison.Ordinal)
+        Friend Function RemoveAll(input As String, stringsToBeRemoved As String) As String
+            Return input.Replace(stringsToBeRemoved, "", StringComparison.Ordinal)
         End Function
 
         <Extension>

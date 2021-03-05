@@ -22,10 +22,10 @@ Namespace Extensions
             Dim afterWhiteSpace As Boolean = False
             Dim finalTrailingTrivia As SyntaxTriviaList
             Dim initialTriviaList As SyntaxTriviaList = node.GetTrailingTrivia
+            Dim afterLineContinuation As Boolean = False
             For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
                 Dim trivia As SyntaxTrivia = e.Value
                 Dim nextTrivia As SyntaxTrivia = initialTriviaList.GetForwardTriviaOrDefault(e.index, lookaheadCount:=1)
-                Dim afterLineContinuation As Boolean = False
                 Select Case trivia.RawKind
                     Case VB.SyntaxKind.WhitespaceTrivia
                         If nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
@@ -84,9 +84,6 @@ Namespace Extensions
                         afterLineContinuation = False
                         afterLinefeed = False
                         afterWhiteSpace = False
-                        Stop
-                    Case Else
-                        Stop
                 End Select
             Next
             Return node.WithTrailingTrivia(finalTrailingTrivia)

@@ -18,7 +18,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
         Partial Friend Class NodesVisitor
             Inherits CS.CSharpSyntaxVisitor(Of VB.VisualBasicSyntaxNode)
 
-            Private Iterator Function ConvertQueryBody(Node As CS.CSharpSyntaxNode, body As CSS.QueryBodySyntax) As IEnumerable(Of VBS.QueryClauseSyntax)
+            Private Iterator Function ConvertQueryBody(node As CS.CSharpSyntaxNode, body As CSS.QueryBodySyntax) As IEnumerable(Of VBS.QueryClauseSyntax)
                 If TypeOf body.SelectOrGroup Is CSS.SelectClauseSyntax Then
                     Yield DirectCast(body.SelectOrGroup.Accept(Me), VBS.QueryClauseSyntax)
                 Else
@@ -33,12 +33,12 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         functionNameToken = Factory.Identifier("Group")
                     Else
                         keys = Factory.ExpressionRangeVariable(nameEquals, expression)
-                        functionNameToken = GenerateSafeVbToken(body.Continuation.Identifier, Node, _semanticModel, _usedIdentifiers)
+                        functionNameToken = GenerateSafeVbToken(body.Continuation.Identifier, node, _semanticModel, _usedIdentifiers)
                     End If
-                    Dim aggrationRange As VBS.AggregationRangeVariableSyntax = Factory.AggregationRangeVariable(Factory.FunctionAggregation(functionNameToken))
-                    Yield Factory.GroupByClause(Factory.SingletonSeparatedList(items), Factory.SingletonSeparatedList(keys), Factory.SingletonSeparatedList(aggrationRange))
+                    Dim aggravationRange As VBS.AggregationRangeVariableSyntax = Factory.AggregationRangeVariable(Factory.FunctionAggregation(functionNameToken))
+                    Yield Factory.GroupByClause(Factory.SingletonSeparatedList(items), Factory.SingletonSeparatedList(keys), Factory.SingletonSeparatedList(aggravationRange))
                     If body.Continuation?.Body IsNot Nothing Then
-                        For Each clause As VBS.QueryClauseSyntax In Me.ConvertQueryBody(Node, body.Continuation.Body)
+                        For Each clause As VBS.QueryClauseSyntax In Me.ConvertQueryBody(node, body.Continuation.Body)
                             Yield clause
                         Next
                     End If

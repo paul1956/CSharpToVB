@@ -72,7 +72,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                             Dim identName As VBS.IdentifierNameSyntax = Factory.IdentifierName(MakeVbSafeName(elementAccessExpression.Expression.ToString))
                             argumentWithTrivia = Factory.BinaryExpression(VB.SyntaxKind.SubtractExpression, identName, MinusToken, right:=offsetFromLength)
                         Catch ex As Exception
-                            Throw UnexpectedValue("IndexExpression Parent.Parent not 'ElementAccessExpression'")
+                            Throw UnexpectedValue(node.Parent.Parent, NameOf(node.Parent.Parent))
                         End Try
                     Else
                         Dim visualBasicSyntaxNode As VB.VisualBasicSyntaxNode = csExpression.Accept(Me)

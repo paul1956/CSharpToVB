@@ -687,8 +687,6 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         If arm.WhenClause IsNot Nothing Then
                             whenClause = CType(e.Value.WhenClause.Accept(Me), VBS.ExpressionSyntax)
                             caseClause = Factory.SingletonSeparatedList(Of VBS.CaseClauseSyntax)(Factory.SimpleCaseClause(whenClause))
-                        Else
-                            whenClause = Nothing
                         End If
                         caseStatement = Factory.CaseStatement(caseClause)
                     ElseIf TypeOf arm.Pattern Is CSS.RecursivePatternSyntax Then
@@ -707,16 +705,21 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                                                                         initializer).WithConvertedLeadingTriviaFrom(arm).WithTrailingEol
                                                                                        )
                             Dim armExpression As VBS.ExpressionSyntax = CType(arm.Expression.Accept(Me), VBS.ExpressionSyntax)
-                            Dim right As VBS.ExpressionSyntax = armExpression.AdjustExpressionTrivia(AdjustLeading:=True, DirectiveNotAllowed:=False)
+                            Dim right As VBS.ExpressionSyntax = armExpression.AdjustExpressionTrivia(adjustLeading:=True, directiveNotAllowed:=False)
                             If right.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
                                 equalsTokenWithTrivia = equalsTokenWithTrivia.WithTrailingTrivia(SpaceLineContinueEOL)
                             End If
-                            statements = statements.Add(Factory.AssignmentStatement(VB.SyntaxKind.SimpleAssignmentStatement, resultIdentifier, equalsTokenWithTrivia, right).WithTrailingEol)
-                            whenClause = CType(e.Value.WhenClause?.Accept(Me), VBS.ExpressionSyntax)
-                            caseClause = Factory.SingletonSeparatedList(Of VBS.CaseClauseSyntax)(Factory.SimpleCaseClause(Factory.EqualsExpression(tryCastExpr, Factory.TrueLiteralExpression(TrueKeyword))))
+                            statements = statements.Replace(statements.Last, Factory.AssignmentStatement(VB.SyntaxKind.SimpleAssignmentStatement, resultIdentifier, equalsTokenWithTrivia, right).WithTrailingEol)
+                            If e.Value.WhenClause IsNot Nothing Then
+                                whenClause = CType(e.Value.WhenClause.Accept(Me), VBS.ExpressionSyntax)
+                                caseClause = Factory.SingletonSeparatedList(Of VBS.CaseClauseSyntax)(Factory.SimpleCaseClause(whenClause))
+                            Else
+                                caseClause = New SeparatedSyntaxList(Of VBS.CaseClauseSyntax)
+                            End If
+                            caseClause = caseClause.Insert(0, Factory.SimpleCaseClause(Factory.EqualsExpression(tryCastExpr, Factory.TrueLiteralExpression(TrueKeyword))))
                         ElseIf pattern.Designation.IsKind(CS.SyntaxKind.DiscardDesignation) Then
                             Dim armExpression As VBS.ExpressionSyntax = CType(arm.Expression.Accept(Me), VBS.ExpressionSyntax)
-                            Dim right As VBS.ExpressionSyntax = armExpression.AdjustExpressionTrivia(AdjustLeading:=True, DirectiveNotAllowed:=False)
+                            Dim right As VBS.ExpressionSyntax = armExpression.AdjustExpressionTrivia(adjustLeading:=True, directiveNotAllowed:=False)
                             If right.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
                                 equalsTokenWithTrivia = equalsTokenWithTrivia.WithTrailingTrivia(SpaceLineContinueEOL)
                             End If
@@ -727,7 +730,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                                                                                ).WithTrailingEol)
                             caseClause = Factory.SingletonSeparatedList(Of VBS.CaseClauseSyntax)(Factory.SimpleCaseClause(Factory.EqualsExpression(tryCastExpr, Factory.TrueLiteralExpression(TrueKeyword))))
                         Else
-                            Throw UnexpectedValue(pattern.Designation)
+                            Throw UnexpectedValue(pattern.Designation, NameOf(pattern.Designation))
                         End If
                         caseStatement = Factory.CaseStatement(caseClause)
                     ElseIf TypeOf arm.Pattern Is CSS.VarPatternSyntax Then
@@ -787,8 +790,8 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
 
             Public Overrides Function VisitVariableDeclaration(node As CSS.VariableDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 ' TODO Implement
-                Dim statementWithIssue As CS.CSharpSyntaxNode = GetStatementWithIssues(node)
-                Dim leadingTrivia As SyntaxTriviaList = statementWithIssue.CheckCorrectnessLeadingTrivia(attemptToPortMade:=True, "VB has no direct equivalent To C# var pattern expressions")
+                'Dim statementWithIssue As CS.CSharpSyntaxNode = GetStatementWithIssues(node)
+                'Dim leadingTrivia As SyntaxTriviaList = statementWithIssue.CheckCorrectnessLeadingTrivia(attemptToPortMade:=True, "VB has no direct equivalent To C# var pattern expressions")
                 Return MyBase.VisitVariableDeclaration(node)
             End Function
 
@@ -841,7 +844,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Dim modifiers As New SyntaxTokenList
                 Dim statements As New SyntaxList(Of VBS.StatementSyntax)
                 Dim variableITypeSymbol As (_Error As Boolean, _ITypeSymbol As ITypeSymbol) = node.Expression.DetermineType(_semanticModel)
-                Dim recordType As VBS.TypeSyntax = PredefinedTypeObject
+                Dim recordType As VBS.TypeSyntax
                 Dim asClause As VBS.SimpleAsClauseSyntax = Nothing
                 If Not variableITypeSymbol._Error Then
                     recordType = variableITypeSymbol._ITypeSymbol.ConvertToType
@@ -891,11 +894,6 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Dim endSubOrFunctionStatement As VBS.EndBlockStatementSyntax = Factory.EndFunctionStatement(EndKeyword.WithTrailingTrivia(SpaceTrivia), FunctionKeyword).WithConvertedTriviaFrom(node)
 
                 Dim lambda As VBS.MultiLineLambdaExpressionSyntax = Factory.MultiLineFunctionLambdaExpression(subOrFunctionHeader, statements, endSubOrFunctionStatement)
-                Dim typeArguments As New SeparatedSyntaxList(Of VBS.TypeSyntax)
-                typeArguments = typeArguments.Add(recordType)
-                typeArguments = typeArguments.Add(recordType)
-                Dim typeArgumentList As VBS.TypeArgumentListSyntax = Factory.TypeArgumentList(typeArguments)
-                Dim genericName As VBS.GenericNameSyntax = Factory.GenericName("Func", typeArgumentList)
                 Dim lambdaArgument As SeparatedSyntaxList(Of VBS.ArgumentSyntax)
                 lambdaArgument = lambdaArgument.Add(Factory.SimpleArgument(CType(node.Expression.Accept(Me), VBS.ExpressionSyntax)))
                 Return Factory.InvocationExpression(lambda, Factory.ArgumentList(lambdaArgument))

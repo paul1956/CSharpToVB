@@ -45,7 +45,7 @@ Namespace Extensions
                 Case VB.SyntaxKind.EnableWarningDirectiveTrivia
                     triviaAsString = $"#Enable Warning Directive {trivia.ToFullString.Substring("#Enable Warning".Length).Trim.WithoutNewLines(" "c)}"
                 Case Else
-                    Throw UnexpectedValue(trivia.RawKind.ToString())
+                    Throw UnexpectedValue(trivia.RawKind.ToString(), NameOf(trivia.RawKind))
             End Select
             Const msg As String = " ' TODO VB does not allow directives here, original directive: "
             newTriviaList = New SyntaxTriviaList

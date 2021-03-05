@@ -34,9 +34,6 @@ Return value
 End Function
 "
 
-            Private Shared ReadOnly s_leadingDirectiveMovedComment As SyntaxTrivia = Factory.CommentTrivia("' This directive was moved from leading statement trivia")
-            Private Shared ReadOnly s_trailingDirectiveMovedComment As SyntaxTrivia = Factory.CommentTrivia("' This directive was moved from trailing statement trivia")
-
             '    Private Const ByRefHelperCode As String = "Private Function __VbByRefHelper(Of t)(ByRef byRefValue As t, byRefSetter As Func(Of t, t)) As t
             '        Dim orgValue = byRefValue
             '        byRefValue = byRefSetter(byRefValue)
@@ -117,12 +114,12 @@ End Function
                     Return initialTriviaList
                 End If
                 Dim replacementTrailingTrivia As SyntaxTriviaList
+                Dim useReplacementTrailingTrivia As Boolean = False
+                Dim foundSpace As Boolean = False
+                Dim foundLineContinuation As Boolean = False
                 For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
                     Dim trivia As SyntaxTrivia = e.Value
                     Dim nextTrivia As SyntaxTrivia = initialTriviaList.GetForwardTriviaOrDefault(e.index, lookaheadCount:=1)
-                    Dim foundSpace As Boolean = False
-                    Dim foundLineContinuation As Boolean = False
-                    Dim useReplacementTrailingTrivia As Boolean = False
                     Select Case trivia.RawKind
                         Case VB.SyntaxKind.WhitespaceTrivia
                             If nextTrivia.IsKind(VB.SyntaxKind.None) OrElse nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
@@ -192,7 +189,7 @@ End Function
 
             Private Sub ConvertBaseList(baseType As CSS.BaseTypeDeclarationSyntax, [inherits] As List(Of InheritsStatementSyntax), [implements] As List(Of ImplementsStatementSyntax), ByRef movedFinalTrivia As SyntaxTriviaList, ByRef Optional implementedMembers As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))) = Nothing)
                 Dim typeSyntaxArray As TypeSyntax()
-                Dim startImplementsIndex As Integer = 0
+                Dim startImplementsIndex As Integer
                 Select Case baseType.Kind()
                     Case CS.SyntaxKind.ClassDeclaration
                         Dim classOrInterface As CSS.TypeSyntax = baseType.BaseList?.Types.FirstOrDefault()?.Type

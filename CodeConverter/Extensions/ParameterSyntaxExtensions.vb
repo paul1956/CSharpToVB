@@ -14,17 +14,17 @@ Namespace Extensions
     Public Module ParameterSyntaxExtensions
 
         <Extension>
-        Friend Function RemoveModifier(Parameter As VBS.ParameterSyntax, ModifierKind As SyntaxKind) As VBS.ParameterSyntax
+        Friend Function RemoveModifier(parameter As VBS.ParameterSyntax, modifierKind As SyntaxKind) As VBS.ParameterSyntax
             Dim returnTokenList As New SyntaxTokenList
-            If Parameter.Modifiers.Any Then
-                For Each token As SyntaxToken In Parameter.Modifiers
-                    If token.IsKind(ModifierKind) Then
+            If parameter.Modifiers.Any Then
+                For Each token As SyntaxToken In parameter.Modifiers
+                    If token.IsKind(modifierKind) Then
                         Continue For
                     End If
                     returnTokenList = returnTokenList.Add(token)
                 Next
             End If
-            Return Parameter.WithModifiers(returnTokenList)
+            Return parameter.WithModifiers(returnTokenList)
         End Function
 
     End Module

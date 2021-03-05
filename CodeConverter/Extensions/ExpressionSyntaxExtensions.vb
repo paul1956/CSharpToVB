@@ -22,24 +22,24 @@ Namespace Extensions
         End Function
 
         <Extension>
-        Private Function StartsWithSystemDot(Expression As SyntaxNode) As Boolean
-            Return Expression.ToString.StartsWith("System.", StringComparison.Ordinal)
+        Private Function StartsWithSystemDot(expression As SyntaxNode) As Boolean
+            Return expression.ToString.StartsWith("System.", StringComparison.Ordinal)
         End Function
 
         <Extension>
-        Friend Function AdjustExpressionTrivia(Of T As VB.VisualBasicSyntaxNode)(Expression As T, AdjustLeading As Boolean, DirectiveNotAllowed As Boolean) As T
-            If Expression Is Nothing Then
-                Throw New ArgumentNullException(NameOf(Expression))
+        Friend Function AdjustExpressionTrivia(Of T As VB.VisualBasicSyntaxNode)(expression As T, adjustLeading As Boolean, directiveNotAllowed As Boolean) As T
+            If expression Is Nothing Then
+                Throw New ArgumentNullException(NameOf(expression))
             End If
 
-            Dim initialTriviaList As SyntaxTriviaList = Expression.GetLeadingTrivia
+            Dim initialTriviaList As SyntaxTriviaList = expression.GetLeadingTrivia
             Dim newLeadingTrivia As New SyntaxTriviaList
 
-            If AdjustLeading Then
-                Dim afterEOL As Boolean
+            If adjustLeading Then
+                Dim afterEol As Boolean
                 For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
                     Dim trivia As SyntaxTrivia = e.Value
-                    Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.index, lookaheadCount:=1)
+                    Dim nextTrivia As SyntaxTrivia = initialTriviaList.GetForwardTriviaOrDefault(e.index, lookaheadCount:=1)
 
                     Select Case trivia.RawKind
                         Case VB.SyntaxKind.WhitespaceTrivia
@@ -51,7 +51,7 @@ Namespace Extensions
                                     newLeadingTrivia = newLeadingTrivia.Add(SpaceTrivia)
                                     newLeadingTrivia = newLeadingTrivia.Add(LineContinuation)
                                     e.MoveNext()
-                                    nextTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.index, lookaheadCount:=1)
+                                    nextTrivia = initialTriviaList.GetForwardTriviaOrDefault(e.index, lookaheadCount:=1)
                                     If nextTrivia.IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
                                         newLeadingTrivia = newLeadingTrivia.Add(If(trivia.Span.Length > nextTrivia.Span.Length, trivia, nextTrivia))
                                         e.MoveNext()
@@ -94,15 +94,15 @@ Namespace Extensions
                         Case VB.SyntaxKind.LineContinuationTrivia
                             newLeadingTrivia = newLeadingTrivia.Add(trivia)
                         Case VB.SyntaxKind.DisabledTextTrivia
-                            If DirectiveNotAllowed Then
-                                newLeadingTrivia = newLeadingTrivia.AddRange(DirectiveNotAllowedHere(trivia, afterEOL))
+                            If directiveNotAllowed Then
+                                newLeadingTrivia = newLeadingTrivia.AddRange(trivia.DirectiveNotAllowedHere(afterEol))
                             Else
                                 newLeadingTrivia = newLeadingTrivia.Add(trivia)
                             End If
                         Case Else
                             If trivia.IsDirective Then
-                                If DirectiveNotAllowed Then
-                                    newLeadingTrivia = newLeadingTrivia.AddRange(DirectiveNotAllowedHere(trivia, afterEOL))
+                                If directiveNotAllowed Then
+                                    newLeadingTrivia = newLeadingTrivia.AddRange(trivia.DirectiveNotAllowedHere(afterEol))
                                 Else
                                     newLeadingTrivia = newLeadingTrivia.Add(trivia)
                                 End If
@@ -111,14 +111,14 @@ Namespace Extensions
                             End If
                     End Select
                 Next
-                Expression = Expression.WithLeadingTrivia(newLeadingTrivia)
+                expression = expression.WithLeadingTrivia(newLeadingTrivia)
             End If
 
-            initialTriviaList = Expression.GetTrailingTrivia
+            initialTriviaList = expression.GetTrailingTrivia
             Dim newTrailingTrivia As New SyntaxTriviaList
 
             For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
-                Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, e.index, lookaheadCount:=1)
+                Dim nextTrivia As SyntaxTrivia = initialTriviaList.GetForwardTriviaOrDefault(e.index, lookaheadCount:=1)
                 Select Case e.Value.RawKind
                     Case VB.SyntaxKind.WhitespaceTrivia
                         Select Case nextTrivia.RawKind
@@ -133,7 +133,6 @@ Namespace Extensions
                             Case VB.SyntaxKind.LineContinuationTrivia
                                 newTrailingTrivia = newTrailingTrivia.Add(e.Value)
                             Case Else
-                                Stop
                                 newTrailingTrivia = newTrailingTrivia.Add(e.Value)
                         End Select
                     Case VB.SyntaxKind.EndOfLineTrivia
@@ -152,7 +151,6 @@ Namespace Extensions
                                 newTrailingTrivia = newTrailingTrivia.Add(e.Value)
                                 e.MoveNext()
                             Case Else
-                                Stop
                                 newTrailingTrivia = newTrailingTrivia.Add(e.Value)
                         End Select
                     Case VB.SyntaxKind.CommentTrivia, VB.SyntaxKind.DocumentationCommentTrivia
@@ -172,9 +170,9 @@ Namespace Extensions
                         Stop
                 End Select
             Next
-            Expression = Expression.WithTrailingTrivia(newTrailingTrivia)
+            expression = expression.WithTrailingTrivia(newTrailingTrivia)
             'Debug.WriteLine($"Exp Out         :{Expression.ToFullString}")
-            Return Expression
+            Return expression
         End Function
 
         <Extension>
@@ -183,21 +181,21 @@ Namespace Extensions
         End Function
 
         Friend Function CreateArgList(Of T As VBS.ExpressionSyntax)(ParamArray args() As T) As VBS.ArgumentListSyntax
-            Return CreateVbArgList(args)
+            Return args.CreateVbArgList()
         End Function
 
         <Extension>
-        Friend Function DetermineType(expression As CSS.ExpressionSyntax, Model As SemanticModel) As (_Error As Boolean, _ITypeSymbol As ITypeSymbol)
+        Friend Function DetermineType(expression As CSS.ExpressionSyntax, model As SemanticModel) As (_Error As Boolean, _ITypeSymbol As ITypeSymbol)
             ' If a parameter appears to have a void return type, then just use 'object' instead.
             Try
                 If expression IsNot Nothing Then
-                    Dim typeInfo As TypeInfo = Model.GetTypeInfo(expression)
-                    Dim symbolInfo As SymbolInfo = Model.GetSymbolInfo(expression)
+                    Dim typeInfo As TypeInfo = model.GetTypeInfo(expression)
+                    Dim symbolInfo As SymbolInfo = model.GetSymbolInfo(expression)
                     If typeInfo.Type IsNot Nothing Then
                         If typeInfo.Type.IsErrorType Then
-                            Return (_Error:=True, Model.Compilation.ObjectType)
-                        ElseIf SymbolEqualityComparer.Default.Equals(typeInfo.Type, Model.Compilation.ObjectType) Then
-                            Return (_Error:=False, Model.Compilation.ObjectType)
+                            Return (_Error:=True, model.Compilation.ObjectType)
+                        ElseIf SymbolEqualityComparer.Default.Equals(typeInfo.Type, model.Compilation.ObjectType) Then
+                            Return (_Error:=False, model.Compilation.ObjectType)
                         End If
                     End If
                     Dim symbol As ISymbol = If(typeInfo.Type, symbolInfo.GetAnySymbol())
@@ -213,27 +211,27 @@ Namespace Extensions
                             End If
                             Return (_Error:=False, type)
                         End If
-                        Return (_Error:=False, symbol.ConvertISymbolToType(Model.Compilation))
+                        Return (_Error:=False, symbol.ConvertISymbolToType(model.Compilation))
                     End If
 
                 End If
             Catch ex As OperationCanceledException
                 Throw
             End Try
-            Return (_Error:=True, Model.Compilation.ObjectType)
+            Return (_Error:=True, model.Compilation.ObjectType)
         End Function
 
         <Extension>
-        Friend Function DetermineTypeSyntax(expression As CSS.ExpressionSyntax, Model As SemanticModel) As (_Error As Boolean, _ITypeSymbol As VBS.TypeSyntax)
+        Friend Function DetermineTypeSyntax(expression As CSS.ExpressionSyntax, model As SemanticModel) As (_Error As Boolean, _ITypeSymbol As VBS.TypeSyntax)
             ' If a parameter appears to have a void return type, then just use 'object' instead.
             Try
                 If expression IsNot Nothing Then
-                    Dim typeInfo As TypeInfo = Model.GetTypeInfo(expression)
-                    Dim symbolInfo As SymbolInfo = Model.GetSymbolInfo(expression)
+                    Dim typeInfo As TypeInfo = model.GetTypeInfo(expression)
+                    Dim symbolInfo As SymbolInfo = model.GetSymbolInfo(expression)
                     If typeInfo.Type IsNot Nothing Then
                         If typeInfo.Type.IsErrorType Then
                             Return (_Error:=True, PredefinedTypeObject)
-                        ElseIf SymbolEqualityComparer.Default.Equals(typeInfo.Type, Model.Compilation.ObjectType) Then
+                        ElseIf SymbolEqualityComparer.Default.Equals(typeInfo.Type, model.Compilation.ObjectType) Then
                             Return (_Error:=False, PredefinedTypeObject)
                         ElseIf typeInfo.Type.ToString.StartsWith("System.ValueTuple") Then
                             Return (_Error:=False, Factory.ParseTypeName(typeInfo.Type.ToString.Replace("<", "(Of ").Replace(">", ")")))
@@ -254,7 +252,7 @@ Namespace Extensions
                             End If
                         End If
 
-                        Dim typeSymbol As ITypeSymbol = symbol.ConvertISymbolToType(Model.Compilation)
+                        Dim typeSymbol As ITypeSymbol = symbol.ConvertISymbolToType(model.Compilation)
                         Return (_Error:=False, typeSymbol.ConvertToType)
                     End If
 
@@ -268,15 +266,15 @@ Namespace Extensions
         End Function
 
         <Extension>
-        Friend Function GetExpressionBodyStatements(ArrowExpressionClause As CSS.ArrowExpressionClauseSyntax, IsReturnVoid As Boolean, visitor As NodesVisitor) As SyntaxList(Of VBS.StatementSyntax)
+        Friend Function GetExpressionBodyStatements(arrowExpressionClause As CSS.ArrowExpressionClauseSyntax, isReturnVoid As Boolean, visitor As NodesVisitor) As SyntaxList(Of VBS.StatementSyntax)
             Dim statement As VBS.StatementSyntax
-            Dim expressionBody As VB.VisualBasicSyntaxNode = ArrowExpressionClause.Accept(visitor)
+            Dim expressionBody As VB.VisualBasicSyntaxNode = arrowExpressionClause.Accept(visitor)
             Dim leadingComments As SyntaxTriviaList
             leadingComments = expressionBody.GetLeadingTrivia
             expressionBody = expressionBody.WithLeadingTrivia(SpaceTrivia)
             If TypeOf expressionBody Is VBS.TryBlockSyntax Then
                 Dim tryBlock As VBS.TryBlockSyntax = CType(expressionBody, VBS.TryBlockSyntax)
-                Dim statementList As SyntaxList(Of VBS.StatementSyntax) = ReplaceOneStatementWithMarkedStatements(ArrowExpressionClause, tryBlock.Statements(0))
+                Dim statementList As SyntaxList(Of VBS.StatementSyntax) = ReplaceOneStatementWithMarkedStatements(arrowExpressionClause, tryBlock.Statements(0))
                 For Each e As IndexClass(Of VBS.StatementSyntax) In tryBlock.Statements.WithIndex
                     statementList = statementList.Add(e.Value)
                 Next
@@ -286,7 +284,7 @@ Namespace Extensions
                         TypeOf expressionBody Is VBS.RaiseEventStatementSyntax OrElse
                         TypeOf expressionBody Is VBS.ThrowStatementSyntax Then
                 statement = DirectCast(expressionBody, VBS.StatementSyntax).WithTrailingEol
-            ElseIf ArrowExpressionClause.Parent.IsKind(CS.SyntaxKind.SetAccessorDeclaration) OrElse IsReturnVoid Then
+            ElseIf arrowExpressionClause.Parent.IsKind(CS.SyntaxKind.SetAccessorDeclaration) OrElse isReturnVoid Then
                 If TypeOf expressionBody Is VBS.ObjectCreationExpressionSyntax Then
                     statement = FactoryDimStatement("tempVar", Factory.AsNewClause(CType(expressionBody, VBS.NewExpressionSyntax)), Nothing).WithPrependedLeadingTrivia(leadingComments)
                 ElseIf TypeOf expressionBody Is VBS.InvocationExpressionSyntax Then
@@ -298,19 +296,19 @@ Namespace Extensions
                 statement = Factory.ReturnStatement(DirectCast(expressionBody.WithLeadingTrivia(SpaceTrivia), VBS.ExpressionSyntax)) _
                                         .WithLeadingTrivia(leadingComments)
             End If
-            Return ReplaceOneStatementWithMarkedStatements(ArrowExpressionClause, statement.WithTrailingEol)
+            Return ReplaceOneStatementWithMarkedStatements(arrowExpressionClause, statement.WithTrailingEol)
         End Function
 
         <Extension>
-        Friend Function IsReferenceComparison(Expression1 As CSS.ExpressionSyntax, Expression2 As CSS.ExpressionSyntax, Model As SemanticModel) As Boolean
-            Dim typeSymbol1 As (IsRefType As Boolean, IsString As Boolean) = IsReferenceTypeOrString(Expression1, Model)
-            Dim typeSymbol2 As (IsRefType As Boolean, IsString As Boolean) = IsReferenceTypeOrString(Expression2, Model)
+        Friend Function IsReferenceComparison(expression1 As CSS.ExpressionSyntax, expression2 As CSS.ExpressionSyntax, model As SemanticModel) As Boolean
+            Dim typeSymbol1 As (IsRefType As Boolean, IsString As Boolean) = expression1.IsReferenceTypeOrString(model)
+            Dim typeSymbol2 As (IsRefType As Boolean, IsString As Boolean) = expression2.IsReferenceTypeOrString(model)
             Return typeSymbol1.IsRefType AndAlso typeSymbol2.IsRefType AndAlso Not (typeSymbol1.IsString OrElse typeSymbol2.IsString)
         End Function
 
         <Extension>
-        Friend Function IsReferenceTypeOrString(Expression1 As CSS.ExpressionSyntax, Model As SemanticModel) As (IsRefType As Boolean, IsString As Boolean)
-            Dim typeSymbol1 As (_Error As Boolean, _ITypeSymbol As ITypeSymbol) = DetermineType(Expression1, Model)
+        Friend Function IsReferenceTypeOrString(expression1 As CSS.ExpressionSyntax, model As SemanticModel) As (IsRefType As Boolean, IsString As Boolean)
+            Dim typeSymbol1 As (_Error As Boolean, _ITypeSymbol As ITypeSymbol) = expression1.DetermineType(model)
             If typeSymbol1._Error Then
                 Return (False, False)
             End If
@@ -319,12 +317,12 @@ Namespace Extensions
 
         <Extension>
         Friend Function IsReturnValueDiscarded(node As CSS.ExpressionSyntax) As Boolean
-            If TypeOf node.Parent Is CSS.ExpressionStatementSyntax Then
-                Dim csExpression As CSS.ExpressionStatementSyntax = CType(node.Parent, CSS.ExpressionStatementSyntax)
-                If TypeOf csExpression.Expression Is CSS.AssignmentExpressionSyntax Then
-                    Dim assignmentExpression As CSS.AssignmentExpressionSyntax = CType(csExpression.Expression, CSS.AssignmentExpressionSyntax)
+            Dim csExpression As CSS.ExpressionStatementSyntax = TryCast(node.Parent, CSS.ExpressionStatementSyntax)
+            If csExpression IsNot Nothing Then
+                Dim assignmentExpression As CSS.AssignmentExpressionSyntax = TryCast(csExpression.Expression, CSS.AssignmentExpressionSyntax)
+                If assignmentExpression IsNot Nothing Then
                     If TypeOf assignmentExpression.Left Is CSS.DeclarationExpressionSyntax OrElse
-                     TypeOf assignmentExpression.Left Is CSS.TupleExpressionSyntax Then
+                       TypeOf assignmentExpression.Left Is CSS.TupleExpressionSyntax Then
                         Return False
                     End If
                 End If
@@ -337,12 +335,12 @@ Namespace Extensions
         End Function
 
         <Extension>
-        Friend Function WithoutLeadingSystemDot(Expression As VBS.ExpressionSyntax) As VBS.ExpressionSyntax
+        Friend Function WithoutLeadingSystemDot(expression As VBS.ExpressionSyntax) As VBS.ExpressionSyntax
 
-            If Expression.StartsWithSystemDot Then
-                Return Factory.ParseExpression(Expression.ToString.Substring("System.".Length)).WithTriviaFrom(Expression)
+            If expression.StartsWithSystemDot Then
+                Return Factory.ParseExpression(expression.ToString.Substring("System.".Length)).WithTriviaFrom(expression)
             End If
-            Return Expression
+            Return expression
         End Function
 
     End Module
