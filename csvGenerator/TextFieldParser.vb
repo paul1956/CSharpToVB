@@ -7,6 +7,7 @@ Imports System.IO
 Imports System.Security
 Imports System.Text
 Imports System.Text.RegularExpressions
+Imports System.IO.Path
 
 ''' <summary>
 '''  Enum used to indicate the kind of file being read, either delimited or fixed length
@@ -51,12 +52,12 @@ Friend Class QuoteDelimitedFieldBuilder
     ''' <summary>
     '''  Creates an instance of the class and sets some properties
     ''' </summary>
-    ''' <param name="DelimiterRegex">The regex used to find any of the delimiters</param>
-    ''' <param name="SpaceChars">Characters treated as space (usually space and tab)</param>
+    ''' <param name="delimiterRegex">The regex used to find any of the delimiters</param>
+    ''' <param name="spaceChars">Characters treated as space (usually space and tab)</param>
     ''' <remarks></remarks>
-    Public Sub New(DelimiterRegex As Regex, SpaceChars As String)
-        _delimiterRegex = DelimiterRegex
-        _spaceChars = SpaceChars
+    Public Sub New(delimiterRegex As Regex, spaceChars As String)
+        _delimiterRegex = delimiterRegex
+        _spaceChars = spaceChars
     End Sub
 
     ''' <summary>
@@ -64,7 +65,7 @@ Friend Class QuoteDelimitedFieldBuilder
     ''' </summary>
     ''' <value>The length of the delimiter</value>
     ''' <remarks></remarks>
-    Public ReadOnly Property DelimiterLength() As Integer
+    Public ReadOnly Property DelimiterLength As Integer
         Get
             Return _delimiterLength
         End Get
@@ -75,7 +76,7 @@ Friend Class QuoteDelimitedFieldBuilder
     ''' </summary>
     ''' <value>The field</value>
     ''' <remarks></remarks>
-    Public ReadOnly Property Field() As String
+    Public ReadOnly Property Field As String
         Get
             Return _field.ToString()
         End Get
@@ -86,7 +87,7 @@ Friend Class QuoteDelimitedFieldBuilder
     ''' </summary>
     ''' <value>True if the field has been built, otherwise False</value>
     ''' <remarks>If the Field has been built, the Field property will return the entire field</remarks>
-    Public ReadOnly Property FieldFinished() As Boolean
+    Public ReadOnly Property FieldFinished As Boolean
         Get
             Return _fieldFinished
         End Get
@@ -101,7 +102,7 @@ Friend Class QuoteDelimitedFieldBuilder
     '''      Embedded quotes must be escaped
     '''      Only space characters can occur between a delimiter and a quote
     '''</remarks>
-    Public ReadOnly Property MalformedLine() As Boolean
+    Public ReadOnly Property MalformedLine As Boolean
         Get
             Return _malformedLine
         End Get
@@ -112,7 +113,7 @@ Friend Class QuoteDelimitedFieldBuilder
     ''' </summary>
     ''' <value>The current position on the line</value>
     ''' <remarks></remarks>
-    Public ReadOnly Property Index() As Integer
+    Public ReadOnly Property Index As Integer
         Get
             Return _index
         End Get
@@ -121,17 +122,17 @@ Friend Class QuoteDelimitedFieldBuilder
     ''' <summary>
     '''  Builds a field by walking through the passed in line starting at StartAt
     ''' </summary>
-    ''' <param name="Line">The line containing the data</param>
-    ''' <param name="StartAt">The index at which we start building the field</param>
+    ''' <param name="line">The line containing the data</param>
+    ''' <param name="startAt">The index at which we start building the field</param>
     ''' <remarks></remarks>
-    Public Sub BuildField(Line As String, StartAt As Integer)
+    Public Sub BuildField(line As String, startAt As Integer)
 
-        _index = StartAt
-        Dim length As Integer = Line.Length
+        _index = startAt
+        Dim length As Integer = line.Length
 
         While _index < length
 
-            If Line(_index) = """"c Then
+            If line(_index) = """"c Then
 
                 ' Are we at the end of the file?
                 If _index + 1 = length Then
@@ -144,7 +145,7 @@ Friend Class QuoteDelimitedFieldBuilder
                     Return
                 End If
                 ' Check to see if this is an escaped quote
-                If _index + 1 < Line.Length And Line(_index + 1) = """"c Then
+                If _index + 1 < line.Length And line(_index + 1) = """"c Then
                     _field.Append(""""c)
                     _index += 2
                     Continue While
@@ -153,7 +154,7 @@ Friend Class QuoteDelimitedFieldBuilder
                 ' Find the next delimiter and make sure everything between the quote and
                 ' the delimiter is ignorable
                 Dim limit As Integer
-                Dim delimiterMatch As Match = _delimiterRegex.Match(Line, _index + 1)
+                Dim delimiterMatch As Match = _delimiterRegex.Match(line, _index + 1)
                 If Not delimiterMatch.Success Then
                     limit = length - 1
                 Else
@@ -161,7 +162,7 @@ Friend Class QuoteDelimitedFieldBuilder
                 End If
 
                 For i As Integer = _index + 1 To limit
-                    If _spaceChars.IndexOf(Line(i)) < 0 Then
+                    If _spaceChars.IndexOf(line(i)) < 0 Then
                         _malformedLine = True
                         Return
                     End If
@@ -177,7 +178,7 @@ Friend Class QuoteDelimitedFieldBuilder
                 _fieldFinished = True
                 Return
             Else
-                _field.Append(Line(_index))
+                _field.Append(line(_index))
                 _index += 1
             End If
         End While
@@ -192,7 +193,9 @@ End Class
 Public Class TextFieldParser
     Implements IDisposable
 
+
     ' Regex pattern to determine if field begins with quotes
+    ' ReSharper disable InconsistentNaming
     Private Const BEGINS_WITH_QUOTE As String = "\G[{0}]*"""
 
     ' The default size for the buffer
@@ -207,6 +210,7 @@ Public Class TextFieldParser
 
     ' Options used for regular expressions
     Private Const REGEX_OPTIONS As RegexOptions = RegexOptions.CultureInvariant
+    ' ReSharper restore InconsistentNaming
 
     ' Indicates passed in stream should be not be closed
     Private ReadOnly _leaveOpen As Boolean
@@ -425,7 +429,7 @@ Public Class TextFieldParser
     ''' </summary>
     ''' <value>The right regex</value>
     ''' <remarks></remarks>
-    Private ReadOnly Property BeginQuotesRegex() As Regex
+    Private ReadOnly Property BeginQuotesRegex As Regex
         Get
             If _beginQuotesRegex Is Nothing Then
                 ' Get the pattern
@@ -442,7 +446,7 @@ Public Class TextFieldParser
     ''' </summary>
     ''' <value>The expression</value>
     ''' <remarks></remarks>
-    Private ReadOnly Property EndQuotePattern() As String
+    Private ReadOnly Property EndQuotePattern As String
         Get
             Return String.Format(CultureInfo.InvariantCulture, ENDING_QUOTE, Me.WhitespacePattern)
         End Get
@@ -453,7 +457,7 @@ Public Class TextFieldParser
     ''' </summary>
     ''' <value></value>
     ''' <remarks></remarks>
-    Private ReadOnly Property WhitespaceCharacters() As String
+    Private ReadOnly Property WhitespaceCharacters As String
         Get
             Dim builder As New StringBuilder
             For Each code As Integer In _whitespaceCodes
@@ -468,33 +472,53 @@ Public Class TextFieldParser
         End Get
     End Property
 
+    ''' <summary>
+    ''' Gets the character set of white-spaces to be used in a regex pattern
+    ''' </summary>
+    ''' <value></value>
+    ''' <remarks></remarks>
+    Private ReadOnly Property WhitespacePattern As String
+        Get
+            Dim builder As New StringBuilder()
+            For Each code As Integer In _whitespaceCodes
+                Dim spaceChar As Char = ChrW(code)
+                If Not Me.CharacterIsInDelimiter(spaceChar) Then
+                    ' Gives us something like \u00A0
+                    builder.Append("\u" & code.ToString("X4", CultureInfo.InvariantCulture))
+                End If
+            Next
+
+            Return builder.ToString()
+        End Get
+    End Property
+
     <EditorBrowsable(EditorBrowsableState.Advanced)>
-    Public Property CommentTokens() As String()
+    Public Property CommentTokens As String()
         Get
             Return _commentTokens
         End Get
-        Set(value As String())
-            Me.CheckCommentTokensForWhitespace(value)
-            _commentTokens = value
+        Set
+            Me.CheckCommentTokensForWhitespace(Value)
+            _commentTokens = Value
             _needPropertyCheck = True
         End Set
     End Property
 
-    Public Property Delimiters() As String()
+    Public Property Delimiters As String()
         Get
             Return _delimiters
         End Get
-        Set(value As String())
-            If value IsNot Nothing Then
-                ValidateDelimiters(value)
+        Set
+            If Value IsNot Nothing Then
+                ValidateDelimiters(Value)
 
                 ' Keep a copy so we can determine if the user changes elements of the array
-                _delimitersCopy = DirectCast(value.Clone(), String())
+                _delimitersCopy = DirectCast(Value.Clone(), String())
             Else
                 _delimitersCopy = Nothing
             End If
 
-            _delimiters = value
+            _delimiters = Value
 
             _needPropertyCheck = True
 
@@ -509,7 +533,7 @@ Public Class TextFieldParser
     ''' </summary>
     ''' <value>True if there's more data to read, otherwise False</value>
     ''' <remarks>Ignores comments and blank lines</remarks>
-    Public ReadOnly Property EndOfData() As Boolean
+    Public ReadOnly Property EndOfData As Boolean
         Get
             If _endOfData Then
                 Return _endOfData
@@ -536,7 +560,7 @@ Public Class TextFieldParser
     ''' </summary>
     ''' <value>The last malformed line</value>
     ''' <remarks></remarks>
-    Public ReadOnly Property ErrorLine() As String
+    Public ReadOnly Property ErrorLine As String
         Get
             Return _errorLine
         End Get
@@ -547,27 +571,27 @@ Public Class TextFieldParser
     ''' </summary>
     ''' <value>The last malformed line number</value>
     ''' <remarks></remarks>
-    Public ReadOnly Property ErrorLineNumber() As Long
+    Public ReadOnly Property ErrorLineNumber As Long
         Get
             Return _errorLineNumber
         End Get
     End Property
 
-    Public Property FieldWidths() As Integer()
+    Public Property FieldWidths As Integer()
         Get
             Return _fieldWidths
         End Get
-        Set(value As Integer())
-            If value IsNot Nothing Then
-                ValidateFieldWidthsOnInput(value)
+        Set
+            If Value IsNot Nothing Then
+                ValidateFieldWidthsOnInput(Value)
 
                 ' Keep a copy so we can determine if the user changes elements of the array
-                _fieldWidthsCopy = DirectCast(value.Clone(), Integer())
+                _fieldWidthsCopy = DirectCast(Value.Clone(), Integer())
             Else
                 _fieldWidthsCopy = Nothing
             End If
 
-            _fieldWidths = value
+            _fieldWidths = Value
             _needPropertyCheck = True
         End Set
     End Property
@@ -578,12 +602,12 @@ Public Class TextFieldParser
     ''' <value>True if we escape quotes otherwise false</value>
     ''' <remarks></remarks>
     <EditorBrowsable(EditorBrowsableState.Advanced)>
-    Public Property HasFieldsEnclosedInQuotes() As Boolean
+    Public Property HasFieldsEnclosedInQuotes As Boolean
         Get
             Return _hasFieldsEnclosedInQuotes
         End Get
-        Set(value As Boolean)
-            _hasFieldsEnclosedInQuotes = value
+        Set
+            _hasFieldsEnclosedInQuotes = Value
         End Set
     End Property
 
@@ -593,7 +617,7 @@ Public Class TextFieldParser
     ''' <value>The number of the line</value>
     ''' <remarks>LineNumber returns the location in the file and has nothing to do with rows or fields</remarks>
     <EditorBrowsable(EditorBrowsableState.Advanced)>
-    Public ReadOnly Property LineNumber() As Long
+    Public ReadOnly Property LineNumber As Long
         Get
             If _lineNumber <> -1 Then
 
@@ -612,13 +636,13 @@ Public Class TextFieldParser
     ''' </summary>
     ''' <value>The type of fields in the file</value>
     ''' <remarks></remarks>
-    Public Property TextFieldType() As FieldType
+    Public Property TextFieldType As FieldType
         Get
             Return _textFieldType
         End Get
-        Set(value As FieldType)
-            ValidateFieldTypeEnumValue(value, NameOf(value))
-            _textFieldType = value
+        Set
+            ValidateFieldTypeEnumValue(Value, NameOf(Value))
+            _textFieldType = Value
             _needPropertyCheck = True
         End Set
     End Property
@@ -633,57 +657,37 @@ Public Class TextFieldParser
     ''' </summary>
     ''' <value>True if white space should be removed, otherwise False</value>
     ''' <remarks></remarks>
-    Public Property TrimWhiteSpace() As Boolean
+    Public Property TrimWhiteSpace As Boolean
         Get
             Return _trimWhiteSpace
         End Get
-        Set(value As Boolean)
-            _trimWhiteSpace = value
+        Set
+            _trimWhiteSpace = Value
         End Set
-    End Property
-
-    ''' <summary>
-    ''' Gets the character set of white-spaces to be used in a regex pattern
-    ''' </summary>
-    ''' <value></value>
-    ''' <remarks></remarks>
-    Private ReadOnly Property WhitespacePattern() As String
-        Get
-            Dim builder As New StringBuilder()
-            For Each code As Integer In _whitespaceCodes
-                Dim spaceChar As Char = ChrW(code)
-                If Not Me.CharacterIsInDelimiter(spaceChar) Then
-                    ' Gives us something like \u00A0
-                    builder.Append("\u" & code.ToString("X4", CultureInfo.InvariantCulture))
-                End If
-            Next
-
-            Return builder.ToString()
-        End Get
     End Property
 
     ''' <summary>
     '''  Gets the index of the first end of line character
     ''' </summary>
-    ''' <param name="Line"></param>
+    ''' <param name="line"></param>
     ''' <returns></returns>
     ''' <remarks>When there are no end of line characters, the index is the length (one past the end)</remarks>
-    Private Shared Function GetEndOfLineIndex(Line As String) As Integer
+    Private Shared Function GetEndOfLineIndex(line As String) As Integer
 
-        Debug.Assert(Line IsNot Nothing, "We are parsing a Nothing")
+        Debug.Assert(line IsNot Nothing, "We are parsing a Nothing")
 
-        Dim length As Integer = Line.Length
+        Dim length As Integer = line.Length
         Debug.Assert(length > 0, "A blank line shouldn't be parsed")
 
         If length = 1 Then
-            Debug.Assert(Line(0) <> vbCr And Line(0) <> vbLf, "A blank line shouldn't be parsed")
+            Debug.Assert(line(0) <> vbCr And line(0) <> vbLf, "A blank line shouldn't be parsed")
             Return length
         End If
 
         ' Check the next to last and last char for end line characters
-        If Line(length - 2) = vbCr Or Line(length - 2) = vbLf Then
+        If line(length - 2) = vbCr Or line(length - 2) = vbLf Then
             Return length - 2
-        ElseIf Line(length - 1) = vbCr Or Line(length - 1) = vbLf Then
+        ElseIf line(length - 1) = vbCr Or line(length - 1) = vbLf Then
             Return length - 1
         Else
             Return length
@@ -694,33 +698,33 @@ Public Class TextFieldParser
     ''' <summary>
     '''  Returns the given path in long format (v.s 8.3 format) if the path exists.
     ''' </summary>
-    ''' <param name="FullPath">The path to resolve to long format.</param>
+    ''' <param name="fullPath">The path to resolve to long format.</param>
     ''' <returns>The given path in long format if the path exists.</returns>
     ''' <remarks>
     '''  GetLongPathName is a PInvoke call and requires unmanaged code permission.
     '''  Use DirectoryInfo.GetFiles and GetDirectories (which call FindFirstFile) so that we always have permission.
     '''</remarks>
-    Private Shared Function GetLongPath(FullPath As String) As String
-        Debug.Assert(Not String.IsNullOrEmpty(FullPath) AndAlso Path.IsPathRooted(FullPath), "Must be full path")
+    Private Shared Function GetLongPath(fullPath As String) As String
+        Debug.Assert(Not String.IsNullOrEmpty(fullPath) AndAlso IsPathRooted(fullPath), "Must be full path")
         Try
             ' If root path, return itself. UNC path do not recognize 8.3 format in root path, so this is fine.
-            If IsRoot(FullPath) Then
-                Return FullPath
+            If IsRoot(fullPath) Then
+                Return fullPath
             End If
 
             ' DirectoryInfo.GetFiles and GetDirectories call FindFirstFile which resolves 8.3 path.
             ' Get the DirectoryInfo (user must have code permission or access permission).
-            Dim dInfo As New DirectoryInfo(GetParentPath(FullPath))
+            Dim dInfo As New DirectoryInfo(GetParentPath(fullPath))
 
-            If File.Exists(FullPath) Then
-                Debug.Assert(dInfo.GetFiles(Path.GetFileName(FullPath)).Length = 1, "Must found exactly 1")
-                Return dInfo.GetFiles(Path.GetFileName(FullPath))(0).FullName
-            ElseIf Directory.Exists(FullPath) Then
-                Debug.Assert(dInfo.GetDirectories(Path.GetFileName(FullPath)).Length = 1,
+            If File.Exists(fullPath) Then
+                Debug.Assert(dInfo.GetFiles(GetFileName(fullPath)).Length = 1, "Must found exactly 1")
+                Return dInfo.GetFiles(GetFileName(fullPath))(0).FullName
+            ElseIf Directory.Exists(fullPath) Then
+                Debug.Assert(dInfo.GetDirectories(GetFileName(fullPath)).Length = 1,
                                  "Must found exactly 1")
-                Return dInfo.GetDirectories(Path.GetFileName(FullPath))(0).FullName
+                Return dInfo.GetDirectories(GetFileName(fullPath))(0).FullName
             Else
-                Return FullPath ' Path does not exist, cannot resolve.
+                Return fullPath ' Path does not exist, cannot resolve.
             End If
         Catch ex As Exception
             ' Ignore these type of exceptions and return FullPath. These type of exceptions should either be caught by calling functions
@@ -738,7 +742,7 @@ Public Class TextFieldParser
                         TypeOf ex Is PathTooLongException OrElse
                         TypeOf ex Is NotSupportedException), "These exceptions should be caught above")
 
-                Return FullPath
+                Return fullPath
             Else
                 Throw
             End If
@@ -748,23 +752,44 @@ Public Class TextFieldParser
     ''' <summary>
     ''' Checks if the full path is a root path.
     ''' </summary>
-    ''' <param name="Path">The path to check.</param>
+    ''' <param name="path">The path to check.</param>
     ''' <returns>True if FullPath is a root path, False otherwise.</returns>
     ''' <remarks>
     '''   IO.Path.GetPathRoot: C: -> C:, C:\ -> C:\, \\machine\share -> \\machine\share,
     '''           BUT \\machine\share\ -> \\machine\share (No separator here).
     '''   Therefore, remove any separators at the end to have correct result.
     ''' </remarks>
-    Private Shared Function IsRoot(Path As String) As Boolean
+    Private Shared Function IsRoot(path As String) As Boolean
         ' This function accepts a relative path since GetParentPath will call this,
         ' and GetParentPath accept relative paths.
-        If Not IO.Path.IsPathRooted(Path) Then
+        If Not IsPathRooted(path) Then
             Return False
         End If
 
-        Path = Path.TrimEnd(IO.Path.DirectorySeparatorChar, IO.Path.AltDirectorySeparatorChar)
-        Return String.Compare(Path, IO.Path.GetPathRoot(Path),
+        path = path.TrimEnd(DirectorySeparatorChar, AltDirectorySeparatorChar)
+        Return String.Compare(path, GetPathRoot(path),
                     StringComparison.OrdinalIgnoreCase) = 0
+    End Function
+
+    ''' <summary>
+    ''' Removes all directory separators at the end of a path.
+    ''' </summary>
+    ''' <param name="path">a full or relative path.</param>
+    ''' <returns>If Path is a root path, the same value. Otherwise, removes any directory separators at the end.</returns>
+    ''' <remarks>We decided not to return path with separators at the end.</remarks>
+    Private Shared Function RemoveEndingSeparator(path As String) As String
+        If IsPathRooted(path) Then
+            ' If the path is rooted, attempt to check if it is a root path.
+            ' Note: IO.Path.GetPathRoot: C: -> C:, C:\ -> C:\, \\myShare\myDir -> \\myShare\myDir
+            ' BUT \\myShare\myDir\ -> \\myShare\myDir!!! This function will remove the ending separator of
+            ' \\myShare\myDir\ as well. Do not use IsRoot here.
+            If path.Equals(GetPathRoot(path), StringComparison.OrdinalIgnoreCase) Then
+                Return path
+            End If
+        End If
+
+        ' Otherwise, remove all separators at the end.
+        Return path.TrimEnd(DirectorySeparatorChar, AltDirectorySeparatorChar)
     End Function
 
     ''' <summary>
@@ -800,18 +825,18 @@ Public Class TextFieldParser
     ''' <summary>
     '''  Checks the field widths at input.
     ''' </summary>
-    ''' <param name="Widths"></param>
+    ''' <param name="widths"></param>
     ''' <remarks>
     '''  All field widths, except the last one, must be greater than zero. If the last width is
     '''  less than one it indicates the last field is ragged
     '''</remarks>
-    Private Shared Sub ValidateFieldWidthsOnInput(Widths() As Integer)
+    Private Shared Sub ValidateFieldWidthsOnInput(widths() As Integer)
 
-        Debug.Assert(Widths IsNot Nothing, "There are no field widths")
+        Debug.Assert(widths IsNot Nothing, "There are no field widths")
 
-        Dim bound As Integer = Widths.Length - 1
+        Dim bound As Integer = widths.Length - 1
         For i As Integer = 0 To bound - 1
-            If Widths(i) < 1 Then
+            If widths(i) < 1 Then
                 Throw ExceptionUtils.GetArgumentExceptionWithArgName("FieldWidths", SR.TextFieldParser_FieldWidthsMustPositive, "FieldWidths")
             End If
         Next
@@ -826,7 +851,7 @@ Public Class TextFieldParser
     Private Shared Function ValidatePath(path As String) As String
 
         ' Validate and get full path
-        Dim fullPath As String = NormalizeFilePath(path, "path")
+        Dim fullPath As String = NormalizeFilePath(path, NameOf(path))
 
         ' Make sure the file exists
         If Not File.Exists(fullPath) Then
@@ -960,22 +985,22 @@ Public Class TextFieldParser
     ''' <summary>
     '''  Returns the field at the passed in index
     ''' </summary>
-    ''' <param name="Line">The string containing the fields</param>
-    ''' <param name="Index">The start of the field</param>
-    ''' <param name="FieldLength">The length of the field</param>
+    ''' <param name="line">The string containing the fields</param>
+    ''' <param name="index">The start of the field</param>
+    ''' <param name="fieldLength">The length of the field</param>
     ''' <returns>The field</returns>
     ''' <remarks></remarks>
-    Private Function GetFixedWidthField(Line As StringInfo, Index As Integer, FieldLength As Integer) As String
+    Private Function GetFixedWidthField(line As StringInfo, index As Integer, fieldLength As Integer) As String
 
         Dim field As String
-        If FieldLength > 0 Then
-            field = Line.SubstringByTextElements(Index, FieldLength)
+        If fieldLength > 0 Then
+            field = line.SubstringByTextElements(index, fieldLength)
         Else
             ' Make sure the index isn't past the string
-            If Index >= Line.LengthInTextElements Then
+            If index >= line.LengthInTextElements Then
                 field = String.Empty
             Else
-                field = Line.SubstringByTextElements(Index).TrimEnd(Chr(13), Chr(10))
+                field = line.SubstringByTextElements(index).TrimEnd(Chr(13), Chr(10))
             End If
         End If
 
@@ -1321,18 +1346,18 @@ Public Class TextFieldParser
     ''' <summary>
     '''  Gets the next line from the file and moves the passed in cursor past the line
     ''' </summary>
-    ''' <param name="Cursor">Indicates the current position in the buffer</param>
-    ''' <param name="ChangeBuffer">Function to call when we've reached the end of the buffer</param>
+    ''' <param name="cursor">Indicates the current position in the buffer</param>
+    ''' <param name="changeBuffer">Function to call when we've reached the end of the buffer</param>
     ''' <returns>The next line in the file</returns>
     ''' <remarks>Returns Nothing if we are at the end of the file</remarks>
-    Private Function ReadNextLine(ByRef Cursor As Integer, ChangeBuffer As ChangeBufferFunction) As String
+    Private Function ReadNextLine(ByRef cursor As Integer, changeBuffer As ChangeBufferFunction) As String
 
         Debug.Assert(_buffer IsNot Nothing, "There's no buffer")
-        Debug.Assert(Cursor >= 0 And Cursor <= _charsRead, "The cursor is out of range")
+        Debug.Assert(cursor >= 0 And cursor <= _charsRead, "The cursor is out of range")
 
         ' Check to see if the cursor is at the end of the chars in the buffer. If it is, re fill the buffer
-        If Cursor = _charsRead Then
-            If ChangeBuffer() = 0 Then
+        If cursor = _charsRead Then
+            If changeBuffer() = 0 Then
 
                 ' We're at the end of the file
                 Return Nothing
@@ -1342,7 +1367,7 @@ Public Class TextFieldParser
         Dim builder As StringBuilder = Nothing
         Do
             ' Walk through buffer looking for the end of a line. End of line can be vbLf (\n), vbCr (\r) or vbCrLf (\r\n)
-            For i As Integer = Cursor To _charsRead - 1
+            For i As Integer = cursor To _charsRead - 1
 
                 Dim character As Char = _buffer(i)
                 If character = vbCr Or character = vbLf Then
@@ -1351,43 +1376,41 @@ Public Class TextFieldParser
                     ' builder. We include the end of line char because we need to know what it is
                     ' in case it's embedded in a field.
                     If builder IsNot Nothing Then
-                        builder.Append(_buffer, Cursor, i - Cursor + 1)
+                        builder.Append(_buffer, cursor, i - cursor + 1)
                     Else
                         builder = New StringBuilder(i + 1)
-                        builder.Append(_buffer, Cursor, i - Cursor + 1)
+                        builder.Append(_buffer, cursor, i - cursor + 1)
                     End If
-                    Cursor = i + 1
+                    cursor = i + 1
 
-#Disable Warning CA1834 ' Consider using 'StringBuilder.Append(char)' when applicable
                     ' See if vbLf should be added as well
                     If character = vbCr Then
-                        If Cursor < _charsRead Then
-                            If _buffer(Cursor) = vbLf Then
-                                Cursor += 1
-                                builder.Append(vbLf)
+                        If cursor < _charsRead Then
+                            If _buffer(cursor) = vbLf Then
+                                cursor += 1
+                                builder.Append(CChar(vbLf))
                             End If
-                        ElseIf ChangeBuffer() > 0 Then
-                            If _buffer(Cursor) = vbLf Then
-                                Cursor += 1
-                                builder.Append(vbLf)
+                        ElseIf changeBuffer() > 0 Then
+                            If _buffer(cursor) = vbLf Then
+                                cursor += 1
+                                builder.Append(CChar(vbLf))
                             End If
                         End If
                     End If
-#Enable Warning CA1834 ' Consider using 'StringBuilder.Append(char)' when applicable
 
                     Return builder.ToString()
                 End If
             Next i
 
             ' We've searched the whole buffer and haven't found an end of line. Save what we have, and read more to the buffer.
-            Dim size As Integer = _charsRead - Cursor
+            Dim size As Integer = _charsRead - cursor
 
             If builder Is Nothing Then
                 builder = New StringBuilder(size + DEFAULT_BUILDER_INCREASE)
             End If
-            builder.Append(_buffer, Cursor, size)
+            builder.Append(_buffer, cursor, size)
 
-        Loop While ChangeBuffer() > 0
+        Loop While changeBuffer() > 0
 
         Return builder.ToString()
     End Function
@@ -1429,6 +1452,7 @@ Public Class TextFieldParser
     '''  This should be called when we want to make maximum use of the space in the buffer. Characters
     '''  to the left of the cursor have already been read and can be discarded.
     '''</remarks>
+' ReSharper disable once UnusedMethodReturnValue.Local
     Private Function SlideCursorToStartOfBuffer() As Integer
 
         Debug.Assert(_buffer IsNot Nothing, "There's no buffer")
@@ -1540,17 +1564,17 @@ Public Class TextFieldParser
     ''' <summary>
     '''  Indicates whether or not a line is valid
     ''' </summary>
-    ''' <param name="Line">The line to be tested</param>
-    ''' <param name="LineNumber">The line number, used for exception</param>
+    ''' <param name="line">The line to be tested</param>
+    ''' <param name="lineNum">The line number, used for exception</param>
     ''' <remarks></remarks>
-    Private Sub ValidateFixedWidthLine(Line As StringInfo, LineNumber As Long)
-        Debug.Assert(Line IsNot Nothing, "No Line sent")
+    Private Sub ValidateFixedWidthLine(line As StringInfo, lineNum As Long)
+        Debug.Assert(line IsNot Nothing, "No Line sent")
 
         ' The only malformed line for fixed length fields is one that's too short
-        If Line.LengthInTextElements < _lineLength Then
-            _errorLine = Line.String
+        If line.LengthInTextElements < _lineLength Then
+            _errorLine = line.String
             _errorLineNumber = _lineNumber - 1
-            Throw New MalformedLineException(SR.Format(SR.TextFieldParser_MalFormedFixedWidthLine, LineNumber.ToString(CultureInfo.InvariantCulture)), LineNumber)
+            Throw New MalformedLineException(SR.Format(SR.TextFieldParser_MalFormedFixedWidthLine, lineNum.ToString(CultureInfo.InvariantCulture)), lineNum)
         End If
 
     End Sub
@@ -1618,8 +1642,8 @@ Public Class TextFieldParser
         If String.IsNullOrEmpty(path) Then ' Check for argument null
             Throw ExceptionUtils.GetArgumentNullException(paramName)
         End If
-        If path.EndsWith(IO.Path.DirectorySeparatorChar, StringComparison.Ordinal) Or
-                path.EndsWith(IO.Path.AltDirectorySeparatorChar, StringComparison.Ordinal) Then
+        If path.EndsWith(DirectorySeparatorChar, StringComparison.Ordinal) Or
+                path.EndsWith(AltDirectorySeparatorChar, StringComparison.Ordinal) Then
             Throw ExceptionUtils.GetArgumentExceptionWithArgName(paramName, SR.IO_FilePathException)
         End If
     End Sub
@@ -1627,23 +1651,23 @@ Public Class TextFieldParser
     ''' <summary>
     ''' Normalize the path, but throw exception if the path ends with separator.
     ''' </summary>
-    ''' <param name="Path">The input path.</param>
-    ''' <param name="ParamName">The parameter name to include in the exception if one is raised.</param>
+    ''' <param name="path">The input path.</param>
+    ''' <param name="paramName">The parameter name to include in the exception if one is raised.</param>
     ''' <returns>The normalized path.</returns>
-    Friend Shared Function NormalizeFilePath(Path As String, ParamName As String) As String
-        CheckFilePathTrailingSeparator(Path, ParamName)
-        Return NormalizePath(Path)
+    Friend Shared Function NormalizeFilePath(path As String, paramName As String) As String
+        CheckFilePathTrailingSeparator(path, paramName)
+        Return NormalizePath(path)
     End Function
 
     ''' <summary>
     ''' Get full path, get long format, and remove any pending separator.
     ''' </summary>
-    ''' <param name="Path">The path to be normalized.</param>
+    ''' <param name="path">The path to be normalized.</param>
     ''' <returns>The normalized path.</returns>
     ''' <exception cref="Path.GetFullPath">See IO.Path.GetFullPath for possible exceptions.</exception>
     ''' <remarks>Keep this function since we might change the implementation / behavior later.</remarks>
-    Friend Shared Function NormalizePath(Path As String) As String
-        Return GetLongPath(FileSystem.RemoveEndingSeparator(IO.Path.GetFullPath(Path)))
+    Friend Shared Function NormalizePath(path As String) As String
+        Return GetLongPath(RemoveEndingSeparator(GetFullPath(path)))
     End Function
 
     ''' <summary>
@@ -1661,13 +1685,14 @@ Public Class TextFieldParser
     ''' </remarks>
     Public Shared Function GetParentPath(path As String) As String
         ' Call IO.Path.GetFullPath to handle exception cases. Don't use the full path returned.
-        IO.Path.GetFullPath(path)
+        ' ReSharper disable once ReturnValueOfPureMethodIsNotUsed
+        GetFullPath(path)
 
         If IsRoot(path) Then
             Throw ExceptionUtils.GetArgumentExceptionWithArgName("path", SR.IO_GetParentPathIsRoot_Path, path)
         Else
-            Return IO.Path.GetDirectoryName(path.TrimEnd(
-                    IO.Path.DirectorySeparatorChar, IO.Path.AltDirectorySeparatorChar))
+            Return GetDirectoryName(path.TrimEnd(
+                    DirectorySeparatorChar, AltDirectorySeparatorChar))
         End If
     End Function
 
@@ -1808,21 +1833,21 @@ Public Class TextFieldParser
     End Function
 
     ''' <summary>
-    ''' Helper function to enable setting delimiters without diming an array
+    ''' Helper function to enable setting delimiters without having to Dim an array
     ''' </summary>
-    ''' <param name="delimiters">A list of the delimiters</param>
+    ''' <param name="delimiter">A list of the delimiters</param>
     ''' <remarks></remarks>
-    Public Sub SetDelimiters(ParamArray delimiters As String())
-        Me.Delimiters = delimiters
+    Public Sub SetDelimiters(ParamArray delimiter As String())
+        Me.Delimiters = delimiter
     End Sub
 
     ''' <summary>
-    ''' Helper function to enable setting field widths without diming an array
+    ''' Helper function to enable setting field widths without having to Dim an array
     ''' </summary>
-    ''' <param name="fieldWidths">A list of field widths</param>
+    ''' <param name="widths">A list of field widths</param>
     ''' <remarks></remarks>
-    Public Sub SetFieldWidths(ParamArray fieldWidths As Integer())
-        Me.FieldWidths = fieldWidths
+    Public Sub SetFieldWidths(ParamArray widths As Integer())
+        Me.FieldWidths = widths
     End Sub
 
 End Class

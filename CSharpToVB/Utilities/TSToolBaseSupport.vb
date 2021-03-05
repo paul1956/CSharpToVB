@@ -7,17 +7,17 @@ Imports Extensions
 
 Public Module TsToolBaseSupport
 
-#Disable Warning InconsistentNaming
     <Flags>
     Public Enum SearchBuffers
+        ' ReSharper disable InconsistentNaming
         CS = 1
         VB = 2
+        ' ReSharper restore InconsistentNaming
     End Enum
-#Enable Warning InconsistentNaming
 
     <Extension>
     Friend Sub DoFind(mainForm As Form1, searchForward As Boolean)
-        If mainForm.TSFindFindWhatComboBox.Text = "Search..." Then
+        If mainForm.TSFindFindWhatComboBox.Text = $"Search..." Then
             Exit Sub
         End If
         mainForm._inColorize = True

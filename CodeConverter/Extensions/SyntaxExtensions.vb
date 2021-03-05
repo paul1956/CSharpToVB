@@ -18,8 +18,8 @@ Namespace Extensions
 
         ''' <Summary>
         ''' Creates a new syntax node with all whitespace and end of line trivia replaced with
-        ''' regularly formatted trivia.        '''
-        ''' </summary>
+        ''' regularly formatted trivia
+        ''' </Summary>
         ''' <typeparam name="TNode">>The type of the node.</typeparam>
         ''' <param name="node">The node to format.</param>
         ''' <param name="useDefaultCasing"></param>

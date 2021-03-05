@@ -8,18 +8,17 @@ Imports System.Text
 Public Module ClassificationNameStrings
 
 #Region "Special names"
-#Disable Warning InconsistentNaming
     Public Const FunctionKeyword As String = "function"
     Public Const NumericLiteral As String = "number"
+    ' ReSharper disable InconsistentNaming
     Public Const String_VerbatimLiteral As String = "string - verbatim"
+    ' ReSharper restore InconsistentNaming
     Public Const StringLiteral As String = "string"
     Public Const ThemeDefaultColor As String = "default"
     Public Const ThemeErrorColor As String = "error"
-#Enable Warning InconsistentNaming
 
 #End Region
 
-#Disable Warning InconsistentNaming
     Public Const [Operator] As String = "operator"
     Public Const Button As String = "Button"
     Public Const CheckBox As String = "CheckBox"
@@ -40,6 +39,7 @@ Public Module ClassificationNameStrings
     Public Const Identifier As String = "identifier"
     Public Const InterfaceName As String = "interface name"
     Public Const Keyword As String = "keyword"
+    ' ReSharper disable InconsistentNaming
     Public Const Keyword_Control As String = "keyword - control"
     Public Const Label As String = "Label"
     Public Const LabelName As String = "label name"
@@ -114,7 +114,7 @@ Public Module ClassificationNameStrings
     Public Const XmlLiteral_Name As String = "xml literal - name"
     Public Const XmlLiteral_ProcessingInstruction As String = "xml literal - processing instruction"
     Public Const XmlLiteral_Text As String = "xml literal - text"
-#Enable Warning InconsistentNaming
+    ' ReSharper restore InconsistentNaming
 
     Public Function ClassificationNameToString(classificationName As String) As String
         Dim name As New StringBuilder

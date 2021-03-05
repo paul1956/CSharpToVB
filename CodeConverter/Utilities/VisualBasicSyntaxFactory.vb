@@ -13,9 +13,10 @@ Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 
 Namespace Utilities
-#Disable Warning InconsistentNaming
 
     Public Module VisualBasicSyntaxFactory
+
+        ' ReSharper disable InconsistentNaming
 
 #Region "Strings"
 
@@ -365,7 +366,6 @@ Namespace Utilities
         Public ReadOnly AsObject As SimpleAsClauseSyntax = Factory.SimpleAsClause(PredefinedTypeObject)
 
 #End If
-#Enable Warning InconsistentNaming
 
     End Module
 End Namespace

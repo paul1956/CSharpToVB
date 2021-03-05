@@ -24,8 +24,8 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             ' This file contains all the stuff accessed by multiple Visitor functions in Class NodeVisitor and Visitors that
             ' had no better home.
 
-#Disable Warning InconsistentNaming
             Private ReadOnly _commonConversions As CommonConversions
+            ' ReSharper disable InconsistentNaming
             Private ReadOnly _defaultVBOptions As DefaultVbOptions
             Private ReadOnly _isModuleStack As New Stack(Of Boolean)
             Private ReadOnly _originalRequest As ConvertRequest
@@ -34,8 +34,8 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             Private ReadOnly _semanticModel As SemanticModel
             Private _membersList As SyntaxList(Of VBS.StatementSyntax)
             Friend _usedIdentifiers As Dictionary(Of String, SymbolTableEntry)
+            ' ReSharper restore InconsistentNaming
             Public ReadOnly s_allImports As New List(Of VBS.ImportsStatementSyntax)()
-#Enable Warning InconsistentNaming
 
             Public ReadOnly s_discardHelperMarkers As New List(Of CSS.BaseTypeDeclarationSyntax)()
             Public ReadOnly s_inlineAssignHelperMarkers As New List(Of CSS.BaseTypeDeclarationSyntax)()
