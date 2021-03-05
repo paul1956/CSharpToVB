@@ -916,7 +916,7 @@ namespace Application
     End Sub
 
     Private Sub StatusStripCurrentFileName_MouseDown(sender As Object, e As MouseEventArgs) Handles StatusStripCurrentFileName.MouseDown
-        If e.Button = Windows.Forms.MouseButtons.Right Then
+        If e.Button = System.Windows.Forms.MouseButtons.Right Then
             Clipboard.SetText(text:=CType(sender, ToolStripStatusLabel).Text)
         End If
     End Sub

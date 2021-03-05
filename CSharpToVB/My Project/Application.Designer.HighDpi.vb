@@ -50,7 +50,7 @@ Namespace My
 
             RaiseEvent ApplyHighDpiMode(Me, eventArgs)
 
-            Windows.Forms.Application.SetHighDpiMode(eventArgs.HighDpiMode)
+            System.Windows.Forms.Application.SetHighDpiMode(eventArgs.HighDpiMode)
 
             Return MyBase.OnInitialize(commandLineArgs)
         End Function

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net5.0-windows</TargetFramework>
+    <TargetFramework>net5.0-windows10.0.19041.0</TargetFramework>
     <RootNamespace>CSharpToVBApp</RootNamespace>
     <MyType>WindowsForms</MyType>
     <StartupObject>Sub Main</StartupObject>
