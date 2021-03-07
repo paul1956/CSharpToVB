@@ -14,7 +14,7 @@ Namespace Tests.ConvertDirectories
 
     Public Module TestUtilities
 
-        Private ReadOnly SLockRoslynRootDirectory As Object = New Object
+        Private ReadOnly s_lockRoslynRootDirectory As Object = New Object
         Private _sRoslynRootDirectory As String = String.Empty
 
         Private Sub GetOccurrenceCount(kind As SyntaxKind, node As SyntaxNodeOrToken,
@@ -56,6 +56,7 @@ Namespace Tests.ConvertDirectories
                 If possibleNewline > 0 Then
                     sb.AppendLine()
                     If possibleNewline = 2 Then
+' ReSharper disable once RedundantAssignment
                         index += 1
                     End If
                 Else
@@ -66,7 +67,7 @@ Namespace Tests.ConvertDirectories
         End Function
 
         Public Function GetRoslynRootDirectory() As String
-            SyncLock SLockRoslynRootDirectory
+            SyncLock s_lockRoslynRootDirectory
                 If String.IsNullOrWhiteSpace(_sRoslynRootDirectory) Then
                     _sRoslynRootDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Source")
                     If Not Directory.Exists(_sRoslynRootDirectory) Then

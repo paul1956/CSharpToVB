@@ -10,10 +10,10 @@ Namespace Tests.CodeConverter
     Friend Class TestWorkspace
         Inherits Workspace
 
-        Private Shared Shadows ReadOnly SServices As HostServices = Mef.MefHostServices.DefaultHost
+        Private Shared Shadows ReadOnly s_services As HostServices = Mef.MefHostServices.DefaultHost
 
         Public Sub New(Optional workspaceKind As String = "Test")
-            MyBase.New(SServices, workspaceKind)
+            MyBase.New(s_services, workspaceKind)
         End Sub
 
         Protected Overrides Sub ApplyDocumentTextChanged(id As DocumentId, text As SourceText)
