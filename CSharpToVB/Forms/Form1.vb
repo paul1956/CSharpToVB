@@ -608,8 +608,9 @@ namespace Application
     End Sub
 
     Private Sub mnuEditCut_Click(sender As Object, e As EventArgs) Handles mnuEditCut.Click
-        If TypeOf Me.CurrentBuffer Is RichTextBox Then
-            CType(Me.CurrentBuffer, RichTextBox).Cut()
+        Dim control As RichTextBox = TryCast(Me.CurrentBuffer, RichTextBox)
+        If control IsNot Nothing then
+            control.Cut()
         End If
     End Sub
 
@@ -618,8 +619,9 @@ namespace Application
     End Sub
 
     Private Sub mnuEditPaste_Click(sender As Object, e As EventArgs) Handles mnuEditPaste.Click
-        If TypeOf Me.CurrentBuffer Is RichTextBox Then
-            CType(Me.CurrentBuffer, RichTextBox).SelectedText = Clipboard.GetText(TextDataFormat.Text)
+        Dim control As RichTextBox = TryCast(Me.CurrentBuffer, RichTextBox)
+        If control IsNot Nothing then
+            control.SelectedText = Clipboard.GetText(TextDataFormat.Text)
         End If
     End Sub
 
@@ -668,7 +670,6 @@ namespace Application
             ' This path is a directory.
             Dim lastFileNameWithPath As String = If(My.Settings.StartFolderConvertFromLastFile, My.Settings.MRU_Data.Last, "")
             Dim stats As New ProcessingStats(lastFileNameWithPath)
-            Dim filesProcessed As Long = 0
             If _cancellationTokenSource IsNot Nothing Then
                 _cancellationTokenSource.Dispose()
             End If
@@ -708,7 +709,7 @@ namespace Application
             .DefaultExt = "cs"
             .InitialDirectory = My.Settings.DefaultProjectDirectory
             .FileName = ""
-            .Filter = "C# Code Files (*.cs)|*.cs"
+            .Filter = $"C# Code Files (*.cs)|*.cs"
             .FilterIndex = 0
             .Multiselect = False
             .ReadOnlyChecked = True
@@ -726,7 +727,7 @@ namespace Application
             .CheckFileExists = True
             .CheckPathExists = True
             .FileName = ""
-            .Filter = "C# Project or Solution (*.csproj, *.sln)|*.csproj; *.sln"
+            .Filter = $"C# Project or Solution (*.csproj, *.sln)|*.csproj; *.sln"
             .FilterIndex = 0
             .Multiselect = False
             .ReadOnlyChecked = True
@@ -738,7 +739,7 @@ namespace Application
             Dim colorizeOutput As Boolean = My.Settings.ColorizeOutput
             My.Settings.ColorizeOutput = colorizeOutput = False
             ProcessProjectOrSolutionAsync(Me, .FileName)
-            My.Settings.ColorizeOutput = colorizeOutput = colorizeOutput
+            My.Settings.ColorizeOutput =  colorizeOutput
         End With
     End Sub
 
@@ -748,7 +749,7 @@ namespace Application
         Me.SaveFileDialog1.CreatePrompt = False
         Me.SaveFileDialog1.DefaultExt = "vb"
         Me.SaveFileDialog1.FileName = Path.ChangeExtension(Me.OpenFileDialog1.SafeFileName, "vb")
-        Me.SaveFileDialog1.Filter = "VB Code Files (*.vb)|*.vb"
+        Me.SaveFileDialog1.Filter = $"VB Code Files (*.vb)|*.vb"
         Me.SaveFileDialog1.FilterIndex = 0
         Me.SaveFileDialog1.OverwritePrompt = True
         Me.SaveFileDialog1.SupportMultiDottedExtensions = False
@@ -973,7 +974,7 @@ namespace Application
     End Sub
 
     Private Sub TSFindFindWhatComboBox_Click(sender As Object, e As EventArgs) Handles TSFindFindWhatComboBox.Click
-        If Me.TSFindFindWhatComboBox.Text = "Search..." Then
+        If Me.TSFindFindWhatComboBox.Text = $"Search..." Then
             Me.TSFindFindWhatComboBox.Text = ""
             Me.TSFindFindWhatComboBox.ForeColor = SystemColors.ControlText
         End If
@@ -982,7 +983,7 @@ namespace Application
     Private Sub TSFindFindWhatComboBox_Leave(sender As Object, e As EventArgs) Handles TSFindFindWhatComboBox.Leave
         If Not Me.TSFindFindWhatComboBox.Text.Any Then
             Me.TSFindFindWhatComboBox.ForeColor = SystemColors.GrayText
-            Me.TSFindFindWhatComboBox.Text = "Search..."
+            Me.TSFindFindWhatComboBox.Text = $"Search..."
         End If
     End Sub
 
