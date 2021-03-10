@@ -8,8 +8,6 @@ Imports System.Threading
 Imports Extensions
 Imports Microsoft.CodeAnalysis
 Imports Utilities
-Imports CS = Microsoft.CodeAnalysis.CSharp
-Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
 Public Module FilePathExtensions
 
@@ -31,14 +29,14 @@ Public Module FilePathExtensions
 
     <Extension>
     Private Function IsMultiLineComment(trivia As SyntaxTrivia) As Boolean
-        Return trivia.IsKind(CS.SyntaxKind.MultiLineCommentTrivia) OrElse
-                trivia.IsKind(CS.SyntaxKind.DocumentationCommentExteriorTrivia) OrElse
-                trivia.IsKind(CS.SyntaxKind.MultiLineDocumentationCommentTrivia)
+        Return trivia.IsKind(CSharp.SyntaxKind.MultiLineCommentTrivia) OrElse
+                trivia.IsKind(CSharp.SyntaxKind.DocumentationCommentExteriorTrivia) OrElse
+                trivia.IsKind(CSharp.SyntaxKind.MultiLineDocumentationCommentTrivia)
     End Function
 
     <Extension>
     Private Function IsMultiLineDocComment(trivia As SyntaxTrivia) As Boolean
-        Return trivia.IsKind(CS.SyntaxKind.MultiLineDocumentationCommentTrivia)
+        Return trivia.IsKind(CSharp.SyntaxKind.MultiLineDocumentationCommentTrivia)
     End Function
 
     <Extension>
@@ -48,14 +46,14 @@ Public Module FilePathExtensions
 
     <Extension>
     Private Function IsSingleLineComment(trivia As SyntaxTrivia) As Boolean
-        Return trivia.IsKind(CS.SyntaxKind.SingleLineCommentTrivia) OrElse
-                trivia.IsKind(CS.SyntaxKind.SingleLineDocumentationCommentTrivia) OrElse
-                trivia.IsKind(VB.SyntaxKind.CommentTrivia)
+        Return trivia.IsKind(CSharp.SyntaxKind.SingleLineCommentTrivia) OrElse
+                trivia.IsKind(CSharp.SyntaxKind.SingleLineDocumentationCommentTrivia) OrElse
+                trivia.IsKind(VisualBasic.SyntaxKind.CommentTrivia)
     End Function
 
     <Extension>
     Private Function IsSingleLineDocComment(trivia As SyntaxTrivia) As Boolean
-        Return trivia.IsKind(CS.SyntaxKind.SingleLineDocumentationCommentTrivia)
+        Return trivia.IsKind(CSharp.SyntaxKind.SingleLineDocumentationCommentTrivia)
     End Function
 
     <Extension>

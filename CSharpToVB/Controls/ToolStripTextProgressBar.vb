@@ -20,22 +20,22 @@ Public Class ToolStripTextProgressBar
         Get
             Return MyBase.Maximum
         End Get
-        Set(value As Integer)
+        Set
             MyBase.Maximum = value
 
         End Set
     End Property
 
-    Private Sub pbPrecentage(Text As String)
+    Private Sub PbPrecentage(txt As String)
         Me.Invalidate()
         Using g As Graphics = Me.ProgressBar.CreateGraphics()
             g.PixelOffsetMode = PixelOffsetMode.HighSpeed
             'Switch to Anti-aliased drawing for better (smoother) graphic results
             g.SmoothingMode = SmoothingMode.AntiAlias
-            TextRenderer.MeasureText(g, Text, Me.Font)
-            Dim sizeF As SizeF = g.MeasureString(Text, Me.Font)
+            TextRenderer.MeasureText(g, txt, Me.Font)
+            Dim sizeF As SizeF = g.MeasureString(txt, Me.Font)
             Dim pt As New Point(CInt((Me.Width / 2) - (sizeF.Width / 2.0F)), CInt((Me.Height / 2) - (sizeF.Height / 2.0F)))
-            TextRenderer.DrawText(g, Text, Me.Font, pt, Color.Black)
+            TextRenderer.DrawText(g, txt, Me.Font, pt, Color.Black)
         End Using
     End Sub
 
@@ -46,34 +46,34 @@ Public Class ToolStripTextProgressBar
     ''' <summary>
     ''' Advances the current position of the underlying Progress Bar by the specified amount.
     ''' </summary>
-    ''' <param name="Value">The amount by which to increment the underlying progress bar's current position.</param>
-    Public Overloads Sub Increment(Value As Integer)
-        MyBase.Increment(Value)
+    ''' <param name="val">The amount by which to increment the underlying progress bar's current position.</param>
+    Public Overloads Sub Increment(val As Integer)
+        MyBase.Increment(val)
         If MyBase.Value >= Me.Maximum Then
             MyBase.Value = 0
             Exit Sub
         End If
         If Me.Value Mod Me.DisplayIncrement = 0 Then
-            Me.pbPrecentage($"{ MyBase.Value:N0} of { Me.Maximum:N0}")
+            Me.PbPrecentage($"{ MyBase.Value:N0} of { Me.Maximum:N0}")
             Thread.Sleep(1)
         End If
     End Sub
 
-    Public Sub Update(value As ProgressReport)
-        If Me.Maximum <> value.Maximum Then
-            Me.Maximum = value.Maximum
+    Public Sub Update(val As ProgressReport)
+        If Me.Maximum <> val.Maximum Then
+            Me.Maximum = val.Maximum
         End If
-        MyBase.Value = value.Current
-        If value.Current = 0 Then
+        MyBase.Value = val.Current
+        If val.Current = 0 Then
             Exit Sub
         End If
-        If value.Current >= Me.Maximum Then
+        If val.Current >= Me.Maximum Then
             Me.Clear()
             Exit Sub
         End If
 
         If Me.Value Mod Me.DisplayIncrement = 0 Then
-            Me.pbPrecentage($"{value.Current:N0} of {value.Maximum:N0}")
+            Me.PbPrecentage($"{val.Current:N0} of {val.Maximum:N0}")
             If Debugger.IsAttached Then
                 Thread.Sleep(1)
             End If

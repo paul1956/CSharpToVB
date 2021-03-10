@@ -56,7 +56,7 @@ Friend Module BrowserUtilities
 
     Friend Sub CheckForUpdates(mainForm As Form1, reportResults As Boolean)
         Try
-            Dim request As WebRequest = WebRequest.Create($"{Form1.ProjectGitHubURL}blob/master/ReadMe.MD")
+            Dim request As WebRequest = WebRequest.Create($"{Form1.ProjectGitHubUrl}blob/master/ReadMe.MD")
             request.Timeout = 4000
             Dim response As WebResponse = request.GetResponse()
             Using reader As New StreamReader(response.GetResponseStream())
@@ -94,7 +94,7 @@ Friend Module BrowserUtilities
                     mainForm.StatusStripUpdateAvailable.Visible = True
                     If reportResults Then
                         If MsgBox("There is a newer version available, do you want to install now?", MsgBoxStyle.YesNo, "Updates Available") = MsgBoxResult.Yes Then
-                            OpenUrlInBrowser(Form1.ProjectGitHubURL)
+                            OpenUrlInBrowser(Form1.ProjectGitHubUrl)
                         End If
                     End If
                 Else

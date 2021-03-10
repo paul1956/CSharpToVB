@@ -3,7 +3,7 @@
 ' See the LICENSE file in the project root for more information.
 
 Public Class IgnoreFilesWithErrorsListDialog
-    Private ReadOnly _list_string As New List(Of String)()
+    Private ReadOnly _listString As New List(Of String)()
     Private _fileToLoad As String = ""
 
     Public ReadOnly Property FileToLoad As String
@@ -46,7 +46,7 @@ Public Class IgnoreFilesWithErrorsListDialog
         End If
         ' Initialize the button column.
         _fileToLoad = ""
-        ChangeTheme(My.Forms.Form1.CurrentThemeDictionary, Me.Controls)
+        ChangeTheme(My.Forms.Form1._currentThemeDictionary, Me.Controls)
     End Sub
 
     Private Sub OK_Button_Click(sender As Object, e As EventArgs) Handles OK_Button.Click
@@ -56,11 +56,11 @@ Public Class IgnoreFilesWithErrorsListDialog
     End Sub
 
     Private Sub UpdateGrid()
-        _list_string.Clear()
+        _listString.Clear()
         For Each s As String In My.Settings.IgnoreFileList
-            _list_string.Add(s)
+            _listString.Add(s)
         Next
-        Me.dgvIgnoredFilesList.DataSource = _list_string.Select(Function(x As String) New With {Key .Value = x}).ToList()
+        Me.dgvIgnoredFilesList.DataSource = _listString.Select(Function(x As String) New With {Key .Value = x}).ToList()
     End Sub
 
 End Class

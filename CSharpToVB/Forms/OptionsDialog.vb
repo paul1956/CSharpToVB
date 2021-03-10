@@ -8,7 +8,7 @@ Public Class OptionsDialog
     Private _selectedColor As ColorDescriptor
     Private _selectedColorName As String = ThemeDefaultColor
 
-    Public MainForm As Form1
+    Public property MainForm As Form1
 
     Private Sub Cancel_Button_Click(sender As Object, e As EventArgs) Handles Cancel_Button.Click
         Me.DialogResult = DialogResult.Cancel
@@ -17,8 +17,8 @@ Public Class OptionsDialog
 
     ' Handle the Apply event by setting all buffers' fonts to the chosen font.
     Private Sub FontDialog1_Apply(sender As Object, e As EventArgs) Handles FontDialog1.Apply
-        MainForm.ConversionInput.Font = Me.FontDialog1.Font
-        MainForm.ConversionOutput.Font = Me.FontDialog1.Font
+        Me.MainForm.ConversionInput.Font = Me.FontDialog1.Font
+        Me.MainForm.ConversionOutput.Font = Me.FontDialog1.Font
         Me.SampleTextBox.Font = Me.FontDialog1.Font
         My.Settings.EditorFont = Me.FontDialog1.Font
         My.Settings.Save()
@@ -57,8 +57,8 @@ Public Class OptionsDialog
         WriteColorDictionaryToFile()
 
         Me.Cursor = Cursors.Default
-        My.Settings.EditorFont = MainForm.ConversionInput.Font
-        My.Settings.EditorFontName = MainForm.ConversionInput.Font.Name
+        My.Settings.EditorFont = Me.MainForm.ConversionInput.Font
+        My.Settings.EditorFontName = Me.MainForm.ConversionInput.Font.Name
         My.Settings.IncludeTopLevelStmtProtoInCode = Me.CheckBoxTopLevelStatements.Checked
         My.Settings.OptionCompare = Me.ComboBoxCompare.SelectedItem.ToString
         My.Settings.OptionCompareIncludeInCode = Me.CheckBoxCompare.Checked
@@ -87,9 +87,9 @@ Public Class OptionsDialog
             End If
         Next
         Me.ModeTextBox.Text = My.Forms.Form1.TSThemeButton.Text
-        For Each name As String In GetColorNameList()
-            Me.ItemColor_ComboBox.Items.Add(name)
-        Next name
+        For Each colorName As String In GetColorNameList()
+            Me.ItemColor_ComboBox.Items.Add(colorName)
+        Next colorName
         Me.ItemColor_ComboBox.SelectedIndex = Me.ItemColor_ComboBox.FindStringExact(ThemeDefaultColor)
 
         Me.ComboBoxCompare.SelectedItem = My.Settings.OptionCompare
@@ -103,11 +103,11 @@ Public Class OptionsDialog
         Me.CheckBoxInfer.Checked = My.Settings.OptionInferIncludeInCode
         Me.CheckBoxTopLevelStatements.Checked = My.Settings.IncludeTopLevelStmtProtoInCode
         Me.CheckBoxStrict.Checked = My.Settings.OptionStrictIncludeInCode
-        ChangeTheme(My.Forms.Form1.CurrentThemeDictionary, Me.Controls)
+        ChangeTheme(My.Forms.Form1._currentThemeDictionary, Me.Controls)
     End Sub
 
     Private Sub ResetThemeButton_Click(sender As Object, e As EventArgs) Handles ResetThemeButton.Click
-        If MessageBox.Show("You are about to reset the '{My.Forms.Form1.TSThemeButton.Text}' theme any customizations will be lost, are you sure?", "Confirm Theme Reset", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) <> DialogResult.OK Then
+        If MessageBox.Show($"You are about to reset the '{My.Forms.Form1.TSThemeButton.Text}' theme any customizations will be lost, are you sure?", $"Confirm Theme Reset", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) <> DialogResult.OK Then
             Exit Sub
         End If
         Dim executableDirectoryPath As String = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "Assets")
@@ -115,21 +115,21 @@ Public Class OptionsDialog
         Dim userColorFile As String
         If My.Settings.ColorMode.IsLightMode Then
             userColorFile = Path.Combine(FileIO.SpecialDirectories.MyDocuments, LightModeDictionaryFileName)
-            LoadColorDictionaryFromFile(Path.Combine(executableDirectoryPath, LightModeDictionaryFileName), s_LightModeColorDictionary)
-            MainForm.CurrentThemeDictionary = s_LightModeColorDictionary
+            LoadColorDictionaryFromFile(Path.Combine(executableDirectoryPath, LightModeDictionaryFileName), _lightModeColorDictionary)
+            Me.MainForm._currentThemeDictionary = _lightModeColorDictionary
         Else
             userColorFile = Path.Combine(FileIO.SpecialDirectories.MyDocuments, DarkModeDictionaryFileName)
-            LoadColorDictionaryFromFile(Path.Combine(executableDirectoryPath, DarkModeDictionaryFileName), s_DarkModeColorDictionary)
-            MainForm.CurrentThemeDictionary = s_DarkModeColorDictionary
+            LoadColorDictionaryFromFile(Path.Combine(executableDirectoryPath, DarkModeDictionaryFileName), _darkModeColorDictionary)
+            Me.MainForm._currentThemeDictionary = _darkModeColorDictionary
         End If
         If File.Exists(userColorFile) Then
             File.Delete(userColorFile)
         End If
-        DefaultColor = MainForm.CurrentThemeDictionary(ThemeDefaultColor)
+        DefaultColor = Me.MainForm._currentThemeDictionary(ThemeDefaultColor)
     End Sub
 
     Private Sub SelectEditorFontButton_Click(sender As Object, e As EventArgs) Handles SelectEditorFontButton.Click
-        Dim oldFont As Font = New Font(MainForm.ConversionInput.Font.Name, MainForm.ConversionInput.Font.SizeInPoints, FontStyle.Regular, GraphicsUnit.Point)
+        Dim oldFont As Font = New Font(Me.MainForm.ConversionInput.Font.Name, Me.MainForm.ConversionInput.Font.SizeInPoints, FontStyle.Regular, GraphicsUnit.Point)
         ' Display the font being used in Conversion buffers
         Me.FontDialog1.Font = oldFont
 
@@ -150,13 +150,13 @@ Public Class OptionsDialog
         ' set all the conversion buffers' fonts to the chosen font by
         ' calling the FontDialog1_Apply method.
         If result = DialogResult.OK Then
-            Me.FontDialog1_Apply(Nothing, New System.EventArgs)
+            Me.FontDialog1_Apply(Nothing, New EventArgs)
 
             ' If the Cancel button is clicked, set the buffers'
             ' fonts back to the original font.
         ElseIf result = DialogResult.Cancel Then
-            MainForm.ConversionInput.Font = oldFont
-            MainForm.ConversionOutput.Font = oldFont
+            Me.MainForm.ConversionInput.Font = oldFont
+            Me.MainForm.ConversionOutput.Font = oldFont
             Me.SampleTextBox.Font = oldFont
         End If
     End Sub
@@ -165,7 +165,7 @@ Public Class OptionsDialog
         Me.ColorDialog1.Color = _selectedColor.Background
         If Me.ColorDialog1.ShowDialog <> DialogResult.Cancel Then
             Me.SampleTextBox.BackColor = Me.ColorDialog1.Color
-            My.Forms.Form1.CurrentThemeDictionary(Me.ItemColor_ComboBox.Items(Me.ItemColor_ComboBox.SelectedIndex).ToString) = New ColorDescriptor(Me.SampleTextBox.ForeColor, Me.SampleTextBox.BackColor)
+            My.Forms.Form1._currentThemeDictionary(Me.ItemColor_ComboBox.Items(Me.ItemColor_ComboBox.SelectedIndex).ToString) = New ColorDescriptor(Me.SampleTextBox.ForeColor, Me.SampleTextBox.BackColor)
             Application.DoEvents()
         End If
     End Sub
@@ -174,7 +174,7 @@ Public Class OptionsDialog
         Me.ColorDialog1.Color = _selectedColor.Foreground
         If Me.ColorDialog1.ShowDialog <> DialogResult.Cancel Then
             Me.SampleTextBox.ForeColor = Me.ColorDialog1.Color
-            My.Forms.Form1.CurrentThemeDictionary(Me.ItemColor_ComboBox.Items(Me.ItemColor_ComboBox.SelectedIndex).ToString) = New ColorDescriptor(Me.SampleTextBox.ForeColor, Me.SampleTextBox.BackColor)
+            My.Forms.Form1._currentThemeDictionary(Me.ItemColor_ComboBox.Items(Me.ItemColor_ComboBox.SelectedIndex).ToString) = New ColorDescriptor(Me.SampleTextBox.ForeColor, Me.SampleTextBox.BackColor)
             Application.DoEvents()
         End If
     End Sub

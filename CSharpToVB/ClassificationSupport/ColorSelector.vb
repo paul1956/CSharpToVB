@@ -44,11 +44,11 @@ Partial Public Module ColorSelector
             Return DefaultColor
         End If
         Dim returnValue As ColorDescriptor = Nothing
-        If My.Forms.Form1.CurrentThemeDictionary.TryGetValue(name, returnValue) Then
+        If My.Forms.Form1._currentThemeDictionary.TryGetValue(name, returnValue) Then
             Return returnValue
         End If
         Debug.Print($"GetColorFromName missing({name})")
-        Return My.Forms.Form1.CurrentThemeDictionary("error")
+        Return My.Forms.Form1._currentThemeDictionary("error")
     End Function
 
     <Extension>
@@ -56,8 +56,8 @@ Partial Public Module ColorSelector
         Return text = LightModeStr
     End Function
 
-    Public Function GetColorNameList() As Dictionary(Of String, ColorDescriptor).KeyCollection
-        Return My.Forms.Form1.CurrentThemeDictionary.Keys
+    Public Function GetColorNameList() As Dictionary(Of String,ColorDescriptor).KeyCollection
+        Return My.Forms.Form1._currentThemeDictionary.Keys
     End Function
 
     Public Sub LoadColorDictionaryFromFile(fPath As String, themeDictionary As Dictionary(Of String, ColorDescriptor))
@@ -95,12 +95,12 @@ Partial Public Module ColorSelector
         Dim userColorFile As String = Path.Combine(FileIO.SpecialDirectories.MyDocuments, LightModeDictionaryFileName)
 
         If File.Exists(userColorFile) AndAlso assetColorFile.AreNotSame(userColorFile) Then
-            s_LightModeColorDictionary = MergeColorDictionary(userColorFile, File.GetLastAccessTime(assetColorFile), s_LightModeColorDictionary)
+            _lightModeColorDictionary = MergeColorDictionary(userColorFile, File.GetLastAccessTime(assetColorFile), _lightModeColorDictionary)
         End If
         assetColorFile = Path.Combine(executableDirectoryPath, DarkModeDictionaryFileName)
         userColorFile = Path.Combine(FileIO.SpecialDirectories.MyDocuments, DarkModeDictionaryFileName)
         If File.Exists(userColorFile) AndAlso assetColorFile.AreNotSame(userColorFile) Then
-            s_DarkModeColorDictionary = MergeColorDictionary(userColorFile, File.GetLastWriteTime(assetColorFile), s_DarkModeColorDictionary)
+            _darkModeColorDictionary = MergeColorDictionary(userColorFile, File.GetLastWriteTime(assetColorFile), _darkModeColorDictionary)
         End If
     End Sub
 
@@ -108,7 +108,7 @@ Partial Public Module ColorSelector
         Dim saveFilePath As String = Path.Combine(FileIO.SpecialDirectories.MyDocuments,
                                             $"{If(IsLightMode(My.Forms.Form1.TSThemeButton.Text), "LightMode", "DarkMode")}ColorDictionary.csv")
         If File.Exists(saveFilePath) Then
-            WriteColorDictionaryToFile(saveFilePath, My.Forms.Form1.CurrentThemeDictionary)
+            WriteColorDictionaryToFile(saveFilePath, My.Forms.Form1._currentThemeDictionary)
         End If
     End Sub
 

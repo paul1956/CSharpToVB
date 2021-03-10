@@ -7,10 +7,12 @@ Imports Microsoft.CodeAnalysis.Text
 Public Class CsvGenerator
     Implements ISourceGenerator
 
+    ' ReSharper disable UnusedMember.Global
     Public Enum CsvLoadType
         Startup
-        '        OnDemand
+        OnDemand
     End Enum
+    ' ReSharper restore UnusedMember.Global
 
     Public Sub Initialize(context As GeneratorInitializationContext) Implements ISourceGenerator.Initialize
 
@@ -65,6 +67,8 @@ Public Class CsvGenerator
         Dim parser As New TextFieldParser(New StringReader(csvText))
         parser.SetDelimiters({","})
         parser.TextFieldType = FieldType.Delimited
+
+        sb.AppendLine($"' File Version {GetType(CsvGenerator).Assembly.GetName.Version}")
 
         ''' Module Definition
         sb.AppendLine("Partial Public Module ColorSelector")

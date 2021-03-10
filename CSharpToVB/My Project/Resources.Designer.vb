@@ -22,24 +22,24 @@ Namespace My.Resources
     '''<summary>
     '''  A strongly-typed resource class, for looking up localized strings, etc.
     '''</summary>
-    <Global.System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0"),  _
-     Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-     Global.System.Runtime.CompilerServices.CompilerGeneratedAttribute(),  _
-     Global.Microsoft.VisualBasic.HideModuleNameAttribute()>  _
+    <System.CodeDom.Compiler.GeneratedCode("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0"),  _
+     DebuggerNonUserCode(),  _
+     System.Runtime.CompilerServices.CompilerGenerated(),  _
+     HideModuleName()>  _
     Friend Module Resources
         
-        Private resourceMan As Global.System.Resources.ResourceManager
+        Private resourceMan As System.Resources.ResourceManager
         
-        Private resourceCulture As Global.System.Globalization.CultureInfo
+        Private resourceCulture As Globalization.CultureInfo
         
         '''<summary>
         '''  Returns the cached ResourceManager instance used by this class.
         '''</summary>
-        <Global.System.ComponentModel.EditorBrowsableAttribute(Global.System.ComponentModel.EditorBrowsableState.Advanced)>  _
-        Friend ReadOnly Property ResourceManager() As Global.System.Resources.ResourceManager
+        <ComponentModel.EditorBrowsable(ComponentModel.EditorBrowsableState.Advanced)>  _
+        Friend ReadOnly Property ResourceManager() As System.Resources.ResourceManager
             Get
-                If Object.ReferenceEquals(resourceMan, Nothing) Then
-                    Dim temp As Global.System.Resources.ResourceManager = New Global.System.Resources.ResourceManager("CSharpToVBApp.Resources", GetType(Resources).Assembly)
+                If ReferenceEquals(resourceMan, Nothing) Then
+                    Dim temp As System.Resources.ResourceManager = New System.Resources.ResourceManager("CSharpToVBApp.Resources", GetType(Resources).Assembly)
                     resourceMan = temp
                 End If
                 Return resourceMan
@@ -50,8 +50,8 @@ Namespace My.Resources
         '''  Overrides the current thread's CurrentUICulture property for all
         '''  resource lookups using this strongly typed resource class.
         '''</summary>
-        <Global.System.ComponentModel.EditorBrowsableAttribute(Global.System.ComponentModel.EditorBrowsableState.Advanced)>  _
-        Friend Property Culture() As Global.System.Globalization.CultureInfo
+        <ComponentModel.EditorBrowsable(ComponentModel.EditorBrowsableState.Advanced)>  _
+        Friend Property Culture() As Globalization.CultureInfo
             Get
                 Return resourceCulture
             End Get

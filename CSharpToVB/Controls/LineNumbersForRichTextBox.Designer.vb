@@ -1,9 +1,9 @@
-﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()>
+﻿<CompilerServices.DesignerGenerated()>
 Partial Class LineNumbersForRichTextBox
-    Inherits System.Windows.Forms.Control
+    Inherits Control
 
     'Control overrides dispose to clean up the component list.
-    <System.Diagnostics.DebuggerNonUserCode()>
+    <DebuggerNonUserCode()>
     Protected Overrides Sub Dispose(ByVal disposing As Boolean)
         Try
             If disposing AndAlso components IsNot Nothing Then
@@ -15,15 +15,15 @@ Partial Class LineNumbersForRichTextBox
     End Sub
 
     'Required by the Control Designer
-    Private components As System.ComponentModel.IContainer
+    Private components As ComponentModel.IContainer
 
     ' NOTE: The following procedure is required by the Component Designer
     ' It can be modified using the Component Designer.  Do not modify it
     ' using the code editor.
-    <System.Diagnostics.DebuggerStepThrough()>
+    <DebuggerStepThrough()>
     Private Sub InitializeComponent()
-        components = New System.ComponentModel.Container()
-        Me.ClientSize = New System.Drawing.Size(23, 450)
+        components = New ComponentModel.Container()
+        Me.ClientSize = New Size(23, 450)
     End Sub
 
 End Class

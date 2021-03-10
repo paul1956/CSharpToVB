@@ -122,6 +122,7 @@ Public Class MalformedLineException
     Private _lineNumber As Long
 
     ' Name of property used for serialization
+' ReSharper disable once InconsistentNaming
     Private Const LINE_NUMBER_PROPERTY As String = "LineNumber"
 
 End Class

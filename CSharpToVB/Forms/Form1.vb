@@ -23,8 +23,8 @@ Partial Public Class Form1
     Friend _inColorize As Boolean
     Friend _requestToConvert As ConvertRequest
     Friend _resultOfConversion As ConversionResult
-    Public Const ProjectGitHubURL As String = "https://github.com/paul1956/CSharpToVB/"
-    Public CurrentThemeDictionary As Dictionary(Of String, ColorDescriptor)
+    Public Const ProjectGitHubUrl As String = "https://github.com/paul1956/CSharpToVB/"
+    Public _currentThemeDictionary As Dictionary(Of String, ColorDescriptor)
 
     Public Sub New()
         Me.InitializeComponent()
@@ -274,7 +274,7 @@ Partial Public Class Form1
         Me.ListBoxErrorList.Height = Me.SplitContainer1.Panel2.ClientSize.Height
 
         For Each frameworkType As ToolStripMenuItem In Me.mnuOptionsDefaultFramework.DropDownItems
-            If frameworkType.Text = ".Net Full Framework" Then
+            If frameworkType.Text = $".Net Full Framework" Then
                 For Each f As String In GetAllFrameworkVersions()
                     frameworkType.DropDownItems.AddDropDownMenuItem(f)
                 Next
@@ -324,13 +324,13 @@ Partial Public Class Form1
         CheckForUpdates(Me, reportResults:=False)
         If My.Settings.ColorMode.IsLightMode Then
             Me.TSThemeButton.Text = LightModeStr
-            CurrentThemeDictionary = s_LightModeColorDictionary
+            _currentThemeDictionary = _lightModeColorDictionary
         Else
             Me.TSThemeButton.Text = DarkModeStr
-            CurrentThemeDictionary = s_DarkModeColorDictionary
+            _currentThemeDictionary = _darkModeColorDictionary
         End If
-        DefaultColor = CurrentThemeDictionary(ThemeDefaultColor)
-        ChangeTheme(CurrentThemeDictionary, My.Forms.Form1.Controls)
+        DefaultColor = _currentThemeDictionary(ThemeDefaultColor)
+        ChangeTheme(_currentThemeDictionary, My.Forms.Form1.Controls)
     End Sub
 
     Private Sub Form1_Resize(sender As Object, e As EventArgs) Handles Me.Resize
@@ -472,12 +472,12 @@ Partial Public Class Form1
     End Sub
 
     Private Async Sub mnuConvertConvertTopLevelStmts_Click(sender As Object, e As EventArgs) Handles mnuConvertConvertTopLevelStmts.Click
-        Dim usings As New StringBuilder
+        Dim usingSb As New StringBuilder
         Dim stmts As New StringBuilder
         Dim asyncValue As String = ""
         For Each stmt As String In Me.ConversionInput.Text.SplitLines
             If stmt.StartsWith("using") Then
-                usings.AppendLine(stmt)
+                usingSB.AppendLine(stmt)
             Else
                 If stmt.Trim.StartsWith("await", StringComparison.Ordinal) Then
                     asyncValue = " async"
@@ -487,7 +487,7 @@ Partial Public Class Form1
         Next
 
         Await Me.ConvertSnippetOfTopLevelStmt($"/* Top Level Code boilerplate is included, to remove deselect 'Top Level Statements' under Options/Advance Options */
-{usings}
+{usingSb}
 namespace Application
 {{
     class Program
@@ -510,7 +510,7 @@ namespace Application
         Dim solutionSavePath As String
         Using browseFolderDialog As New FolderBrowserDialog
             With browseFolderDialog
-                .Description = "Select folder to convert..."
+                .Description = $"Select folder to convert..."
                 .SelectedPath = My.Settings.DefaultProjectDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) & Path.DirectorySeparatorChar
                 .ShowNewFolderButton = False
                 If .ShowDialog(Me) <> DialogResult.OK Then
@@ -580,9 +580,9 @@ namespace Application
 
     Private Sub mnuEdit_DropDownOpening(sender As Object, e As EventArgs) Handles mnuEdit.DropDownOpening
         If Me.TSFindToolStrip.Visible Then
-            Me.mnuEditFind.Text = "Hide &Find Toolbar"
+            Me.mnuEditFind.Text = $"Hide &Find Toolbar"
         Else
-            Me.mnuEditFind.Text = "Show &Find Toolbar"
+            Me.mnuEditFind.Text = $"Show &Find Toolbar"
         End If
         If TypeOf Me.CurrentBuffer Is RichTextBox Then
             Dim sourceBuffer As RichTextBox = CType(Me.CurrentBuffer, RichTextBox)
@@ -778,7 +778,7 @@ namespace Application
     End Sub
 
     Private Sub mnuHelpReportIssueMenuItem_Click(sender As Object, e As EventArgs) Handles mnuHelpReportIssueMenuItem.Click
-        OpenUrlInBrowser($"{ProjectGitHubURL}issues")
+        OpenUrlInBrowser($"{ProjectGitHubUrl}issues")
     End Sub
 
     Private Sub mnuOptionDefaultFramework_CheckedChanged(sender As Object, e As EventArgs) Handles mnuOptionsDefaultFramework.CheckedChanged
@@ -916,13 +916,13 @@ namespace Application
     End Sub
 
     Private Sub StatusStripCurrentFileName_MouseDown(sender As Object, e As MouseEventArgs) Handles StatusStripCurrentFileName.MouseDown
-        If e.Button = System.Windows.Forms.MouseButtons.Right Then
+        If e.Button = MouseButtons.Right Then
             Clipboard.SetText(text:=CType(sender, ToolStripStatusLabel).Text)
         End If
     End Sub
 
     Private Sub StatusStripUpdateAvailable_Click(sender As Object, e As EventArgs) Handles StatusStripUpdateAvailable.Click
-        OpenUrlInBrowser(ProjectGitHubURL)
+        OpenUrlInBrowser(ProjectGitHubUrl)
     End Sub
 
     Protected Overrides Sub OnLoad(e As EventArgs)
@@ -1024,13 +1024,13 @@ namespace Application
     Private Sub TSThemeButton_Click(sender As Object, e As EventArgs) Handles TSThemeButton.Click
         If Me.TSThemeButton.Text.IsLightMode Then
             Me.TSThemeButton.Text = DarkModeStr
-            CurrentThemeDictionary = s_DarkModeColorDictionary
+            _currentThemeDictionary = _darkModeColorDictionary
         Else
             Me.TSThemeButton.Text = LightModeStr
-            CurrentThemeDictionary = s_LightModeColorDictionary
+            _currentThemeDictionary = _lightModeColorDictionary
         End If
         DefaultColor = GetColorFromName(ThemeDefaultColor)
-        ChangeTheme(CurrentThemeDictionary, My.Forms.Form1.Controls)
+        ChangeTheme(_currentThemeDictionary, My.Forms.Form1.Controls)
         If Me.ConversionInput.Text.Any Then
             If Me.mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
                 Colorize(Me, GetClassifiedRanges(sourceCode:=Me.ConversionInput.Text, LanguageNames.CSharp), conversionBuffer:=Me.ConversionInput, lines:=Me.ConversionInput.Lines.Length)

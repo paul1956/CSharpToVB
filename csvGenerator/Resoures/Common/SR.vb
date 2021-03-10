@@ -1,11 +1,12 @@
 ﻿' Licensed to the .NET Foundation under one or more agreements.
 ' The .NET Foundation licenses this file to you under the MIT license.
 '
-' SR.vb
+'   This is a stand-in for the SR class used throughout FX.
 '
-'   This is a standin for the SR class used throughout FX.
-'
+' ReSharper disable once CheckNamespace
+' ReSharper disable once InconsistentNaming
 Partial Friend Class SR
+' ReSharper disable InconsistentNaming
     Friend Const IO_FileNotFound_Path As String = "IO File Not Found Path"
     Friend Const IO_FilePathException As String = "IO File Path Exception"
     Friend Const IO_GetParentPathIsRoot_Path As String = "IO Get Parent Path Is Root Path"
@@ -23,6 +24,7 @@ Partial Friend Class SR
     Friend Const TextFieldParser_NumberOfCharsMustBePositive As String = "Text Field Parser Number Of Chars Must Be Positive"
     Friend Const TextFieldParser_StreamNotReadable As String = "Text Field Parser Stream Not Readable"
     Friend Const TextFieldParser_WhitespaceInToken As String = "Text Field Parser Whitespace In Token"
+' ReSharper restore InconsistentNaming
 
     Friend Shared Function Format(resourceFormat As String, p1 As Object) As String
         Return String.Format(resourceFormat, p1)

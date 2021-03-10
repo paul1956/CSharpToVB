@@ -16,7 +16,7 @@ Public Class ToolStripCheckBox
         Get
             Return CType(Me.Control, CheckBox).Checked
         End Get
-        Set(value As Boolean)
+        Set
             CType(Me.Control, CheckBox).Checked = value
         End Set
     End Property
@@ -27,26 +27,26 @@ Public Class ToolStripCheckBox
     End Sub
 
     'Subscribe and Unsubscribe the events you wish to expose
-    Protected Overrides Sub OnSubscribeControlEvents(control As Control)
-        If control Is Nothing Then
-            Throw New ArgumentNullException(NameOf(control))
+    Protected Overrides Sub OnSubscribeControlEvents(ctrl As Control)
+        If ctrl Is Nothing Then
+            Throw New ArgumentNullException(NameOf(ctrl))
         End If
         'Connect the base events
-        MyBase.OnSubscribeControlEvents(control)
+        MyBase.OnSubscribeControlEvents(ctrl)
 
         'Add any events you want to expose
-        AddHandler CType(control, CheckBox).CheckedChanged, AddressOf Me.CheckedChangedHandler
+        AddHandler CType(ctrl, CheckBox).CheckedChanged, AddressOf Me.CheckedChangedHandler
     End Sub
 
-    Protected Overrides Sub OnUnsubscribeControlEvents(control As Control)
-        If control Is Nothing Then
-            Throw New ArgumentNullException(NameOf(control))
+    Protected Overrides Sub OnUnsubscribeControlEvents(ctrl As Control)
+        If ctrl Is Nothing Then
+            Throw New ArgumentNullException(NameOf(ctrl))
         End If
         'Disconnect the base events
-        MyBase.OnUnsubscribeControlEvents(control)
+        MyBase.OnUnsubscribeControlEvents(ctrl)
 
         'Remove any events you have exposed
-        RemoveHandler CType(control, CheckBox).CheckedChanged, AddressOf Me.CheckedChangedHandler
+        RemoveHandler CType(ctrl, CheckBox).CheckedChanged, AddressOf Me.CheckedChangedHandler
     End Sub
 
 End Class
