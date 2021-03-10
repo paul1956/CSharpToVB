@@ -1,4 +1,8 @@
-﻿Partial Public Module ColorSelector
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Partial Public Module ColorSelector
     Friend _lightModeColorDictionary As New Dictionary(Of String, ColorDescriptor)(StringComparer.OrdinalIgnoreCase) From {
         {ThemeDefaultColor, New ColorDescriptor(Color.FromARGB(0, 0, 0), Color.FromARGB(255, 255, 255))},
         {ClassName, New ColorDescriptor(Color.FromARGB(0, 128, 128), Color.FromARGB(255, 255, 255))},
