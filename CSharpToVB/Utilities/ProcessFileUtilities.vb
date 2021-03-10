@@ -80,7 +80,7 @@ Friend Module ProcessFileUtilities
                 End If
             Case ResultTriState.Ignore
                 mainForm.ConversionOutput.Text = String.Empty
-                mainForm.LabelErrorCount.Text = "File Skipped"
+                mainForm.LabelErrorCount.Text = $"File Skipped"
         End Select
         Return mainForm._resultOfConversion.ResultStatus <> ResultTriState.Failure
     End Function
@@ -201,7 +201,7 @@ Friend Module ProcessFileUtilities
                         If ._requestToConvert.CancelToken.IsCancellationRequested Then
                             Return False
                         End If
-                        If .LabelErrorCount.Text = "File Skipped" Then
+                        If .LabelErrorCount.Text = $"File Skipped" Then
                             Return True
                         End If
                         Dim newFileName As String = Path.ChangeExtension(New FileInfo(sourceFileNameWithPath).Name, If(sourceLanguageExtension = "vb", "cs", "vb"))

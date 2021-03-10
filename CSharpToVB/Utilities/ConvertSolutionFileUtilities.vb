@@ -242,7 +242,6 @@ Public Module ConvertSolutionFileUtilities
                         While (Not String.IsNullOrEmpty(currentLine)) AndAlso Not currentLine.Contains("EndGlobalSection", StringComparison.OrdinalIgnoreCase)
                             Dim oldGuid As String = GetGuid(currentLine, first:=True)
                             If String.IsNullOrWhiteSpace(oldGuid) Then
-                                Stop
                                 sb.AppendLine(currentLine)
                             Else
                                 sb.AppendLine(currentLine.Replace(oldGuid, projectsGuidMap(oldGuid), StringComparison.OrdinalIgnoreCase))
@@ -274,14 +273,12 @@ Public Module ConvertSolutionFileUtilities
                         While (Not String.IsNullOrEmpty(currentLine)) AndAlso Not currentLine.Contains("EndGlobalSection", StringComparison.OrdinalIgnoreCase)
                             Dim oldGuid As String = GetGuid(currentLine, first:=True)
                             If String.IsNullOrWhiteSpace(oldGuid) Then
-                                Stop
                                 sb.AppendLine(currentLine)
                             Else
                                 currentLine = currentLine.Replace(oldGuid, projectsGuidMap(oldGuid), StringComparison.OrdinalIgnoreCase)
                             End If
                             oldGuid = GetGuid(currentLine, first:=False)
                             If String.IsNullOrWhiteSpace(oldGuid) Then
-                                Stop
                                 sb.AppendLine(currentLine)
                             Else
                                 sb.AppendLine(currentLine.Replace(oldGuid, projectsGuidMap(oldGuid), StringComparison.OrdinalIgnoreCase))

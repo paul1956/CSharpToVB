@@ -49,12 +49,12 @@ Public Class ToolStripTextProgressBar
     ''' <param name="val">The amount by which to increment the underlying progress bar's current position.</param>
     Public Overloads Sub Increment(val As Integer)
         MyBase.Increment(val)
-        If MyBase.Value >= Me.Maximum Then
-            MyBase.Value = 0
+        If Me.Value >= Me.Maximum Then
+            Me.Value = 0
             Exit Sub
         End If
         If Me.Value Mod Me.DisplayIncrement = 0 Then
-            Me.PbPrecentage($"{ MyBase.Value:N0} of { Me.Maximum:N0}")
+            Me.PbPrecentage($"{ Me.Value:N0} of { Me.Maximum:N0}")
             Thread.Sleep(1)
         End If
     End Sub
@@ -63,7 +63,7 @@ Public Class ToolStripTextProgressBar
         If Me.Maximum <> val.Maximum Then
             Me.Maximum = val.Maximum
         End If
-        MyBase.Value = val.Current
+        Me.Value = val.Current
         If val.Current = 0 Then
             Exit Sub
         End If
