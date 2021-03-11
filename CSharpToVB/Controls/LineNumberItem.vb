@@ -5,7 +5,7 @@
 Partial Public Class LineNumbersForRichTextBox
 
     Private Class LineNumberItem
-        Friend _lineNumber As Integer
+        Friend ReadOnly _lineNumber As Integer
         Friend _rectangle As Rectangle
 
         Friend Sub New(zLineNumber As Integer, zRectangle As Rectangle)

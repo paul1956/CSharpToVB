@@ -31,14 +31,15 @@ Partial Public Class Form1
     End Sub
 
     Friend Property BufferToSearch As SearchBuffers = SearchBuffers.CS
+    Private Shared _loading As Boolean = True
 
     Private Property CurrentBuffer As Control
         Get
             Return _currentBuffer
         End Get
-        Set(value As Control)
-            _currentBuffer = value
-            If value IsNot Nothing Then
+        Set
+            _currentBuffer = Value
+            If Value IsNot Nothing Then
                 _currentBuffer.Focus()
             End If
         End Set
@@ -215,7 +216,7 @@ Partial Public Class Form1
     End Sub
 
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles Me.Load
-        Me.SplitContainer1.SplitterDistance = Me.SplitContainer1.Height - (Me.ListBoxErrorList.Height + 20)
+        Me.SplitContainer1.SplitterDistance = Me.SplitContainer1.Height - (Me.SplitContainer1.Panel2.Height + 20)
 
         ' Load all settings
         If My.Settings.UpgradeRequired Then
@@ -322,17 +323,224 @@ Partial Public Class Form1
         Application.DoEvents()
         UpdateColorDictionariesFromFile()
         CheckForUpdates(Me, reportResults:=False)
+        DarkMode.ToggleImmersiveDarkMode(CType(Me.Controls(0).Parent, Form).Handle, True)
         If My.Settings.ColorMode.IsLightMode Then
             Me.TSThemeButton.Text = LightModeStr
             _currentThemeDictionary = _lightModeColorDictionary
+            Me.SetLightMode(Me.Controls) ' Not really needed at startup... but, hey, just in case.
         Else
             Me.TSThemeButton.Text = DarkModeStr
             _currentThemeDictionary = _darkModeColorDictionary
+            Me.SetDarkMode(Me.Controls)
         End If
+        _loading = False
+        Me.SplitContainer1.SplitterIncrement = Me.ListBoxFileList.ItemHeight + 2
+        Me.ResizeRichTextBuffers()
         DefaultColor = _currentThemeDictionary(ThemeDefaultColor)
-        ChangeTheme(_currentThemeDictionary, My.Forms.Form1.Controls)
+    End Sub
+    Private _mCapturedRenderer As ToolStripRenderer
+
+    Private Sub SetLightMode(ctrl As Control.ControlCollection)
+
+        For Each c As Control In ctrl
+
+            If TypeOf c Is MenuStrip Then
+                Dim m As MenuStrip = CType(c, MenuStrip)
+                If _mCapturedRenderer IsNot Nothing Then
+                    m.Renderer = _mCapturedRenderer
+                End If
+                m.ForeColor = SystemColors.ControlText
+                For Each item As ToolStripMenuItem In m.Items
+                    For Each subItem As ToolStripItem In item.DropDownItems
+                        Dim toolStripItem As ToolStripMenuItem = TryCast(subItem, ToolStripMenuItem)
+                        If toolStripItem IsNot Nothing Then
+                            toolStripItem.ForeColor = SystemColors.ControlText
+                        End If
+                    Next
+                Next
+
+            ElseIf TypeOf c Is StatusStrip Then
+                Dim s As StatusStrip = CType(c, StatusStrip)
+                s.BackColor = SystemColors.Control
+                s.ForeColor = SystemColors.ControlText
+
+            ElseIf TypeOf c Is ToolStrip Then
+                Dim ts As ToolStrip = CType(c, ToolStrip)
+                If _mCapturedRenderer IsNot Nothing Then
+                    ts.Renderer = _mCapturedRenderer
+                End If
+                ts.ForeColor = SystemColors.ControlText
+                Me.SetLightMode(ts.Controls)
+
+            ElseIf TypeOf c Is CheckBox Then
+
+            ElseIf TypeOf c Is ComboBox Then
+                Dim cb As ComboBox = CType(c, ComboBox)
+                cb.BackColor = Color.White 'SystemColors.Control
+                cb.ForeColor = SystemColors.ControlText
+                Dim comboBoxEx As ComboBoxEx = TryCast(c, ComboBoxEx)
+                If comboBoxEx IsNot Nothing Then
+                    If TypeOf cb.Parent Is ToolStrip Then
+                        comboBoxEx.BorderColor = SystemColors.Control
+                    Else
+                        comboBoxEx.BorderColor = SystemColors.ControlText
+                    End If
+                End If
+
+            ElseIf TypeOf c Is SplitContainer Then
+                Dim s As SplitContainer = CType(c, SplitContainer)
+                s.BackColor = SystemColors.Control
+                s.ForeColor = SystemColors.ControlText
+                Me.SetLightMode(s.Panel1.Controls)
+                Me.SetLightMode(s.Panel2.Controls)
+
+            ElseIf TypeOf c Is TabControl Then
+                Dim t As TabControl = CType(c, TabControl)
+                t.BackColor = SystemColors.Control
+                t.ForeColor = SystemColors.ControlText
+                For Each tab As TabPage In t.TabPages
+                    tab.BackColor = SystemColors.Control
+                    Me.SetLightMode(tab.Controls)
+                Next
+
+            ElseIf TypeOf c Is Panel Then
+                Dim p As Panel = CType(c, Panel)
+                p.BackColor = SystemColors.Control
+                p.ForeColor = SystemColors.ControlText
+                p.Padding = New Padding(1)
+                Dim panelEx As PanelEx = TryCast(c, PanelEx)
+                If panelEx IsNot Nothing Then
+                    panelEx.BorderColor = SystemColors.WindowFrame
+                End If
+                Me.SetLightMode(p.Controls)
+
+            ElseIf TypeOf c Is RichTextBox Then
+                Dim rtb As RichTextBox = CType(c, RichTextBox)
+                rtb.BackColor = Color.White
+                rtb.ForeColor = SystemColors.ControlText
+
+            ElseIf TypeOf c Is TreeView Then
+                Dim tvw As TreeView = CType(c, TreeView)
+                tvw.BackColor = Color.White
+                tvw.ForeColor = SystemColors.ControlText
+
+            ElseIf TypeOf c Is TextBox Then
+                Dim tb As TextBox = CType(c, TextBox)
+                tb.BorderStyle = BorderStyle.FixedSingle
+                tb.BackColor = Color.White
+                tb.ForeColor = SystemColors.ControlText
+
+            ElseIf TypeOf c Is Button Then
+                Dim btn As Button = CType(c, Button)
+                btn.BackColor = SystemColors.Control
+                btn.ForeColor = SystemColors.ControlText
+            Else
+                'MsgBox($"Unhandled Control: {c}")
+            End If
+
+        Next
     End Sub
 
+    Private Sub SetDarkMode(ctrl As Control.ControlCollection)
+
+        For Each c As Control In ctrl
+
+            If TypeOf c Is MenuStrip Then
+                Dim m As MenuStrip = CType(c, MenuStrip)
+                If _mCapturedRenderer Is Nothing Then _mCapturedRenderer = m.Renderer
+                m.Renderer = New ToolStripProfessionalRenderer(New DarkColorTable)
+                m.ForeColor = Color.Silver 'Color.White
+                For Each item As ToolStripMenuItem In m.Items
+                    For Each subItem As ToolStripItem In item.DropDownItems
+                        Dim toolStripItem As ToolStripMenuItem = TryCast(subItem, ToolStripMenuItem)
+                        If toolStripItem IsNot Nothing Then
+                            toolStripItem.ForeColor = Color.Silver 'Color.White
+                        End If
+                    Next
+                Next
+
+            ElseIf TypeOf c Is StatusStrip Then
+                Dim s As StatusStrip = CType(c, StatusStrip)
+                s.BackColor = Color.FromArgb(40, 40, 40)
+                s.ForeColor = Color.Silver
+
+            ElseIf TypeOf c Is ToolStrip Then
+                Dim ts As ToolStrip = CType(c, ToolStrip)
+                ts.Renderer = New ToolStripProfessionalRenderer(New DarkColorTable)
+                ts.ForeColor = Color.Silver 'Color.White
+                Me.SetDarkMode(ts.Controls)
+
+            ElseIf TypeOf c Is CheckBox Then
+
+            ElseIf TypeOf c Is ComboBox Then
+                Dim cb As ComboBox = CType(c, ComboBox)
+                cb.BackColor = Color.FromArgb(50, 50, 50)
+                cb.ForeColor = Color.Silver 'Color.White
+                Dim comboBoxEx As ComboBoxEx = TryCast(c, ComboBoxEx)
+                If comboBoxEx IsNot Nothing Then
+                    comboBoxEx.BorderColor = Color.FromArgb(60, 60, 60)
+                End If
+
+            ElseIf TypeOf c Is SplitContainer Then
+                Dim s As SplitContainer = CType(c, SplitContainer)
+                s.BackColor = Color.FromArgb(40, 40, 40)
+                s.ForeColor = Color.Silver
+                Me.SetDarkMode(s.Panel1.Controls)
+                Me.SetDarkMode(s.Panel2.Controls)
+
+            ElseIf TypeOf c Is TabControl Then
+                Dim t As TabControl = CType(c, TabControl)
+                t.BackColor = Color.FromArgb(40, 40, 40)
+                t.ForeColor = Color.Silver
+                For Each tab As TabPage In t.TabPages
+                    tab.BackColor = Color.FromArgb(40, 40, 40)
+                    tab.BorderStyle = BorderStyle.None
+                    Me.SetDarkMode(tab.Controls)
+                Next
+
+            ElseIf TypeOf c Is Panel Then
+                Dim p As Panel = CType(c, Panel)
+                p.BackColor = Color.FromArgb(40, 40, 40)
+                p.ForeColor = Color.Silver
+                p.Padding = New Padding(1)
+                Dim panelEx As PanelEx = TryCast(c, PanelEx)
+                If panelEx IsNot Nothing Then
+                    panelEx.BorderColor = Color.FromArgb(60, 60, 60)
+                End If
+                Me.SetDarkMode(p.Controls)
+
+            ElseIf TypeOf c Is RichTextBox Then
+                Dim rtb As RichTextBox = CType(c, RichTextBox)
+                rtb.BackColor = Color.FromArgb(45, 45, 45)
+                rtb.ForeColor = Color.Silver
+                rtb.BorderStyle = BorderStyle.None
+                'If TypeOf rtb.Parent Is PanelEx Then
+                '  CType(rtb.Parent, PanelEx).BorderColor = Color.FromArgb(60, 60, 60)
+                'End If
+
+            ElseIf TypeOf c Is TreeView Then
+                Dim tvw As TreeView = CType(c, TreeView)
+                tvw.BackColor = Color.FromArgb(40, 40, 40)
+                tvw.ForeColor = Color.Silver
+                tvw.BorderStyle = BorderStyle.None
+
+            ElseIf TypeOf c Is TextBox Then
+                Dim tb As TextBox = CType(c, TextBox)
+                tb.BorderStyle = BorderStyle.FixedSingle
+                tb.BackColor = Color.FromArgb(60, 60, 60)
+                tb.ForeColor = Color.Silver
+
+            ElseIf TypeOf c Is Button Then
+                Dim btn As Button = CType(c, Button)
+                btn.FlatStyle = FlatStyle.Flat
+                btn.BackColor = Color.FromArgb(60, 60, 60)
+                btn.ForeColor = Color.Silver
+            Else
+                'MsgBox($"Unhandled Control: {c}")
+            End If
+
+        Next
+    End Sub
     Private Sub Form1_Resize(sender As Object, e As EventArgs) Handles Me.Resize
         Me.ResizeRichTextBuffers()
     End Sub
@@ -477,7 +685,7 @@ Partial Public Class Form1
         Dim asyncValue As String = ""
         For Each stmt As String In Me.ConversionInput.Text.SplitLines
             If stmt.StartsWith("using") Then
-                usingSB.AppendLine(stmt)
+                usingSb.AppendLine(stmt)
             Else
                 If stmt.Trim.StartsWith("await", StringComparison.Ordinal) Then
                     asyncValue = " async"
@@ -609,7 +817,7 @@ namespace Application
 
     Private Sub mnuEditCut_Click(sender As Object, e As EventArgs) Handles mnuEditCut.Click
         Dim control As RichTextBox = TryCast(Me.CurrentBuffer, RichTextBox)
-        If control IsNot Nothing then
+        If control IsNot Nothing Then
             control.Cut()
         End If
     End Sub
@@ -620,7 +828,7 @@ namespace Application
 
     Private Sub mnuEditPaste_Click(sender As Object, e As EventArgs) Handles mnuEditPaste.Click
         Dim control As RichTextBox = TryCast(Me.CurrentBuffer, RichTextBox)
-        If control IsNot Nothing then
+        If control IsNot Nothing Then
             control.SelectedText = Clipboard.GetText(TextDataFormat.Text)
         End If
     End Sub
@@ -739,7 +947,7 @@ namespace Application
             Dim colorizeOutput As Boolean = My.Settings.ColorizeOutput
             My.Settings.ColorizeOutput = colorizeOutput = False
             ProcessProjectOrSolutionAsync(Me, .FileName)
-            My.Settings.ColorizeOutput =  colorizeOutput
+            My.Settings.ColorizeOutput = colorizeOutput
         End With
     End Sub
 
@@ -912,8 +1120,9 @@ namespace Application
     End Sub
 
     Private Sub SplitContainer1_SplitterMoved(sender As Object, e As SplitterEventArgs) Handles SplitContainer1.SplitterMoved
-        Me.ListBoxFileList.Height = Me.SplitContainer1.Panel2.ClientSize.Height
-        Me.ListBoxErrorList.Height = Me.SplitContainer1.Panel2.ClientSize.Height
+        Me.FileListPanelEx.Height = Me.SplitContainer1.Panel2.ClientSize.Height
+        Me.ErrorListPanelEx.Height = Me.SplitContainer1.Panel2.ClientSize.Height
+        Me.ResizeRichTextBuffers()
     End Sub
 
     Private Sub StatusStripCurrentFileName_MouseDown(sender As Object, e As MouseEventArgs) Handles StatusStripCurrentFileName.MouseDown
@@ -1026,12 +1235,14 @@ namespace Application
         If Me.TSThemeButton.Text.IsLightMode Then
             Me.TSThemeButton.Text = DarkModeStr
             _currentThemeDictionary = _darkModeColorDictionary
+            Me.SetDarkMode(Me.Controls)
         Else
             Me.TSThemeButton.Text = LightModeStr
             _currentThemeDictionary = _lightModeColorDictionary
+            Me.SetlightMode(Me.Controls)
         End If
         DefaultColor = GetColorFromName(ThemeDefaultColor)
-        ChangeTheme(_currentThemeDictionary, My.Forms.Form1.Controls)
+        'ChangeTheme(_currentThemeDictionary, My.Forms.Form1.Controls)
         If Me.ConversionInput.Text.Any Then
             If Me.mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
                 Colorize(Me, GetClassifiedRanges(sourceCode:=Me.ConversionInput.Text, LanguageNames.CSharp), conversionBuffer:=Me.ConversionInput, lines:=Me.ConversionInput.Lines.Length)
@@ -1052,21 +1263,67 @@ namespace Application
 #End Region
 
 #Region "Form Support Routines"
-
     Friend Sub ResizeRichTextBuffers()
-        Dim lineNumberInputWidth As Integer = If(Me.LineNumbersForConversionInput.Visible AndAlso Me.ConversionInput.TextLength > 0, Me.LineNumbersForConversionInput.Width, 0)
-        Dim lineNumberOutputWidth As Integer = If(Me.LineNumbersForConversionOutput.Visible AndAlso Me.ConversionOutput.TextLength > 0, Me.LineNumbersForConversionOutput.Width, 0)
-        Dim halfClientWidth As Integer = Me.ClientSize.Width \ 2
-        Me.ConversionInput.Left = lineNumberInputWidth - 1
-        Me.ConversionInput.Width = halfClientWidth - lineNumberInputWidth
-        Me.ListBoxFileList.Width = halfClientWidth
+        If _loading Then
+            Exit Sub
+        End If
+        Try
 
-        Me.ConversionOutput.Width = Me.ClientSize.Width - (Me.ConversionInput.Width + lineNumberInputWidth + lineNumberOutputWidth)
-        Me.ConversionOutput.Left = Me.ConversionInput.Width + lineNumberInputWidth + lineNumberOutputWidth
+            ' Position all 4 panels
+            Dim halfClientWidth As Integer = (Me.SplitContainer1.ClientRectangle.Width - Me.SplitContainer1.SplitterWidth) \ 2
+            Me.ConversionInputPanelEx.Width = halfClientWidth
+            Me.ConversionInputPanelEx.Height = Me.SplitContainer1.Panel1.Height
+            Dim lineNumberInputWidth As Integer = If(Me.LineNumbersForConversionInput.Visible AndAlso Me.ConversionInput.TextLength > 0, Me.LineNumbersForConversionInput.Width, 0)
 
-        Me.ListBoxErrorList.Left = halfClientWidth
-        Me.ListBoxErrorList.Width = halfClientWidth
-        Me.StatusStripCurrentFileName.Width = halfClientWidth
+            If lineNumberInputWidth > 0 Then
+                Me.LineNumbersForConversionInput.Left = 2
+                Me.ConversionInput.Left = lineNumberInputWidth + 1
+            Else
+                Me.ConversionInput.Left = 2
+            End If
+            Me.ConversionInput.Top = 2
+            Me.ConversionInput.Height = Me.ConversionInputPanelEx.Height - 4
+
+            Me.ConversionInput.Width = Me.ConversionInputPanelEx.Width - 4
+
+            Me.ConversionOutputPanelEx.Left = halfClientWidth + Me.SplitContainer1.SplitterWidth + 1
+            Me.ConversionOutputPanelEx.Width = halfClientWidth
+            Me.ConversionOutputPanelEx.Height = Me.SplitContainer1.Panel1.Height
+
+            Dim lineNumberOutputWidth As Integer = If(Me.LineNumbersForConversionOutput.Visible AndAlso Me.ConversionOutput.TextLength > 0, Me.LineNumbersForConversionOutput.Width, 0)
+
+            If lineNumberOutputWidth > 0 Then
+                Me.LineNumbersForConversionOutput.Left = 2
+                Me.ConversionOutput.Left = lineNumberOutputWidth + 1
+            Else
+                Me.ConversionOutput.Left = 2
+            End If
+            Me.ConversionOutput.Top = 2
+            Me.ConversionOutput.Height = Me.ConversionInputPanelEx.Height - 4
+
+            Me.ConversionOutput.Width = Me.ConversionOutputPanelEx.Width - 4
+
+            Me.FileListPanelEx.Width = halfClientWidth
+            Me.FileListPanelEx.Height = Me.SplitContainer1.Panel2.Height
+
+            Me.ListBoxFileList.Left = 2
+            Me.ListBoxFileList.Top = 2
+            Me.ListBoxFileList.Width = halfClientWidth - 4
+            Me.ListBoxFileList.Height = Me.SplitContainer1.Panel2.Height - 4
+
+            Me.ErrorListPanelEx.Left = Me.ConversionOutputPanelEx.Left
+            Me.ErrorListPanelEx.Width = halfClientWidth
+            Me.ErrorListPanelEx.Height = Me.SplitContainer1.Panel2.Height
+
+            Me.ListBoxErrorList.Left = 2
+            Me.ListBoxErrorList.Top = 2
+            Me.ListBoxErrorList.Width = Me.ConversionOutput.Width
+            Me.ListBoxErrorList.Height = Me.SplitContainer1.Panel2.Height - 4
+
+            Me.StatusStripCurrentFileName.Width = halfClientWidth - 4
+        Catch ex As Exception
+            Stop
+        End Try
     End Sub
 
 #End Region
