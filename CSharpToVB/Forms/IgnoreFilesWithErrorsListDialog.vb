@@ -40,6 +40,7 @@ Public Class IgnoreFilesWithErrorsListDialog
     End Sub
 
     Private Sub IgnoreFilesWithErrorsListDialog_Load(sender As Object, e As EventArgs) Handles Me.Load
+        DarkMode.ToggleImmersiveDarkMode(CType(Me.Controls(0).Parent, Form).Handle, True)
         Me.UpdateGrid()
         If Me.dgvIgnoredFilesList.Columns.Count > 1 Then
             Exit Sub

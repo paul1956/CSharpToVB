@@ -75,6 +75,7 @@ Public Class OptionsDialog
     End Sub
 
     Private Sub OptionsDialog_Load(sender As Object, e As EventArgs) Handles Me.Load
+        DarkMode.ToggleImmersiveDarkMode(CType(Me.Controls(0).Parent, Form).Handle, True)
         Me.FontDialog1.Font = My.Settings.EditorFont
 
         Me.ProjectDirectoryList.Items.Add(New MyListItem("Projects", GetLatestVisualStudioProjectPath))
@@ -103,7 +104,6 @@ Public Class OptionsDialog
         Me.CheckBoxInfer.Checked = My.Settings.OptionInferIncludeInCode
         Me.CheckBoxTopLevelStatements.Checked = My.Settings.IncludeTopLevelStmtProtoInCode
         Me.CheckBoxStrict.Checked = My.Settings.OptionStrictIncludeInCode
-        ChangeTheme(My.Forms.Form1._currentThemeDictionary, Me.Controls)
     End Sub
 
     Private Sub ResetThemeButton_Click(sender As Object, e As EventArgs) Handles ResetThemeButton.Click

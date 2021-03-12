@@ -8,6 +8,7 @@ Imports SupportClasses
 Public NotInheritable Class AboutBox1
 
     Private Sub AboutBox1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        DarkMode.ToggleImmersiveDarkMode(CType(Me.Controls(0).Parent, Form).Handle, True)
         ' Set the title of the form.
         Dim applicationTitle As String = If(My.Application.Info.Title, IO.Path.GetFileNameWithoutExtension(My.Application.Info.AssemblyName))
         Me.Text = $"About {applicationTitle}"

@@ -862,6 +862,7 @@ Partial Class Form1
         Me.ConversionInputPanelEx.Location = New System.Drawing.Point(0, 0)
         Me.ConversionInputPanelEx.Margin = New System.Windows.Forms.Padding(0)
         Me.ConversionInputPanelEx.Name = "ConversionInputPanelEx"
+        Me.ConversionInputPanelEx.Padding = New System.Windows.Forms.Padding(1)
         Me.ConversionInputPanelEx.Size = New System.Drawing.Size(950, 692)
         Me.ConversionInputPanelEx.TabIndex = 24
         '
@@ -899,7 +900,9 @@ Partial Class Form1
         Me.ConversionOutputPanelEx.Controls.Add(Me.LineNumbersForConversionOutput)
         Me.ConversionOutputPanelEx.Dock = System.Windows.Forms.DockStyle.Right
         Me.ConversionOutputPanelEx.Location = New System.Drawing.Point(966, 0)
+        Me.ConversionOutputPanelEx.Margin = New System.Windows.Forms.Padding(0)
         Me.ConversionOutputPanelEx.Name = "ConversionOutputPanelEx"
+        Me.ConversionOutputPanelEx.Padding = New System.Windows.Forms.Padding(1)
         Me.ConversionOutputPanelEx.Size = New System.Drawing.Size(957, 692)
         Me.ConversionOutputPanelEx.TabIndex = 26
         '
@@ -935,7 +938,9 @@ Partial Class Form1
         '
         Me.FileListPanelEx.Controls.Add(Me.ListBoxFileList)
         Me.FileListPanelEx.Location = New System.Drawing.Point(0, 0)
+        Me.FileListPanelEx.Margin = New System.Windows.Forms.Padding(0)
         Me.FileListPanelEx.Name = "FileListPanelEx"
+        Me.FileListPanelEx.Padding = New System.Windows.Forms.Padding(1)
         Me.FileListPanelEx.Size = New System.Drawing.Size(950, 57)
         Me.FileListPanelEx.TabIndex = 2
         '
@@ -954,7 +959,9 @@ Partial Class Form1
         '
         Me.ErrorListPanelEx.Controls.Add(Me.ListBoxErrorList)
         Me.ErrorListPanelEx.Location = New System.Drawing.Point(966, 0)
+        Me.ErrorListPanelEx.Margin = New System.Windows.Forms.Padding(0)
         Me.ErrorListPanelEx.Name = "ErrorListPanelEx"
+        Me.ErrorListPanelEx.Padding = New System.Windows.Forms.Padding(1)
         Me.ErrorListPanelEx.Size = New System.Drawing.Size(954, 57)
         Me.ErrorListPanelEx.TabIndex = 3
         '
