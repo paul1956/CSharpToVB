@@ -6,6 +6,7 @@ Imports Microsoft.VisualBasic.ApplicationServices
 
 Imports Microsoft.VisualBasic.Devices
 
+' ReSharper disable once CheckNamespace
 Namespace My
 
     ' The following events are available for MyApplication:
@@ -44,7 +45,7 @@ Namespace My
             ' My.Application.Log.WriteException(e.Exception, TraceEventType.Critical, "Unhandled Exception.")
         End Sub
 
-        Private Sub MyApplication_ApplyHighDpiMode(sender As Object, e As ApplyHighDpiModeEventArgs) Handles Me.ApplyHighDpiMode
+        Private Sub MyApplication_ApplyHighDpiMode(sender As Object, e As My.ApplyHighDpiModeEventArgs) Handles Me.ApplyHighDpiMode
             e.HighDpiMode = HighDpiMode.PerMonitorV2
         End Sub
     End Class

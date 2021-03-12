@@ -78,7 +78,7 @@ Public Module ColorizeSupport
             If conversionBuffer.Visible Then
                 conversionBuffer.Visible = False
             End If
-            Dim dias As IEnumerable(Of Diagnostic) = If(TryCast(failures, Diagnostic()), failures.ToArray())
+            Dim dias As IEnumerable(Of Diagnostic) = If(TryCast(failures, Diagnostic()), failures?.ToArray())
             If failures Is Nothing Then
                 mainForm.ListBoxErrorList.Enabled = False
             Else

@@ -1508,8 +1508,6 @@ Namespace Utilities
             Finally
                 _previousToken = token
             End Try
-
-            Return token
         End Function
 
         Public Overrides Function VisitTryBlock(node As TryBlockSyntax) As SyntaxNode

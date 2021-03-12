@@ -68,7 +68,7 @@ Public Module ProcessDirectoriesUtilities
                 If stats.LastFileNameWithPath.Length = 0 OrElse stats.LastFileNameWithPath = sourcePathWithFileName Then
                     stats.LastFileNameWithPath = ""
                     If listBoxFileList IsNot Nothing Then
-                        listBoxFileList.Items.Add(New NumberedListItem($"{stats.FilesProcessed.ToString(Globalization.CultureInfo.InvariantCulture),-5} {sourcePathWithFileName}", $"{Path.Combine(targetDirectory, Path.GetFileNameWithoutExtension(sourcePathWithFileName))}.vb"))
+                        listBoxFileList.Items.Add(New NumberedListItem($"{stats.FilesProcessed.ToString(Globalization.CultureInfo.InvariantCulture), -5} {sourcePathWithFileName}", $"{Path.Combine(targetDirectory, Path.GetFileNameWithoutExtension(sourcePathWithFileName))}.vb"))
                         listBoxFileList.SelectedIndex = listBoxFileList.Items.Count - 1
                         Application.DoEvents()
                     End If

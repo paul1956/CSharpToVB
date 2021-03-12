@@ -127,18 +127,10 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             End Function
 
             Public Overrides Function VisitPredefinedType(node As CSS.PredefinedTypeSyntax) As VB.VisualBasicSyntaxNode
-                Dim predefinedType As VBS.PredefinedTypeSyntax = Nothing
-                Try
-                    If node.Keyword.ToString = "void" Then
-                        Return Factory.IdentifierName("void")
-                    End If
-                    predefinedType = Factory.PredefinedType(CS.CSharpExtensions.Kind(node.Keyword).GetTypeToken())
-                Catch ex As OperationCanceledException
-                    Throw
-                Catch ex As Exception
-                    Stop
-                End Try
-                Return predefinedType
+                If node.Keyword.ToString = "void" Then
+                    Return Factory.IdentifierName("void")
+                End If
+                Return Factory.PredefinedType(CS.CSharpExtensions.Kind(node.Keyword).GetTypeToken())
             End Function
 
             Public Overrides Function VisitSimpleBaseType(node As CSS.SimpleBaseTypeSyntax) As VB.VisualBasicSyntaxNode

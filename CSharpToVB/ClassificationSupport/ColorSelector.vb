@@ -106,7 +106,7 @@ Partial Public Module ColorSelector
 
     Public Sub WriteColorDictionaryToFile()
         Dim saveFilePath As String = Path.Combine(FileIO.SpecialDirectories.MyDocuments,
-                                            $"{If(IsLightMode(My.Forms.Form1.TSThemeButton.Text), "LightMode", "DarkMode")}ColorDictionary.csv")
+                                            $"{If(My.Forms.Form1.TSThemeButton.Text.IsLightMode(), "LightMode", "DarkMode")}ColorDictionary.csv")
         If File.Exists(saveFilePath) Then
             WriteColorDictionaryToFile(saveFilePath, My.Forms.Form1._currentThemeDictionary)
         End If

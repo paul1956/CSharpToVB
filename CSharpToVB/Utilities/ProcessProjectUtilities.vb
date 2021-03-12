@@ -188,7 +188,7 @@ Public Module ProcessProjectUtilities
             End If
             Dim targetFileWithPath As String = DestinationFilePath(currentDocument.FilePath, solutionRoot)
             filesProcessed += 1
-            mainForm.ListBoxFileList.Items.Add(New NumberedListItem($"{filesProcessed.ToString(CultureInfo.InvariantCulture),-5} {currentDocument.FilePath}", $"{targetFileWithPath}{Path.DirectorySeparatorChar}{Path.GetFileNameWithoutExtension(currentDocument.Name)}.vb"))
+            mainForm.ListBoxFileList.Items.Add(New NumberedListItem($"{filesProcessed.ToString(CultureInfo.InvariantCulture), -5} {currentDocument.FilePath}", $"{targetFileWithPath}{Path.DirectorySeparatorChar}{Path.GetFileNameWithoutExtension(currentDocument.Name)}.vb"))
             mainForm.ListBoxFileList.SelectedIndex = mainForm.ListBoxFileList.Items.Count - 1
             mainForm.StatusStripConversionFileProgressLabel.Text = $"Processed {filesProcessed:N0} of {totalFilesToProcess:N0} Files"
             Application.DoEvents()

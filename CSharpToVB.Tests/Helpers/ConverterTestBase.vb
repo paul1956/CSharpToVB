@@ -4,7 +4,6 @@
 Imports System.Collections.Immutable
 Imports System.Reflection
 Imports System.Threading
-Imports ConvertDirectory.Tests
 Imports Extensions
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.CSharp
