@@ -4,6 +4,8 @@
 
 Public Module ThemeSupport
     Friend Sub SetDarkMode(ctrl As Control.ControlCollection, ByRef mCapturedRenderer As ToolStripRenderer)
+        ctrl(0).Parent.BackColor = Color.FromArgb(40, 40, 40)
+        ctrl(0).Parent.ForeColor = Color.Silver
 
         For Each c As Control In ctrl
 
@@ -125,6 +127,8 @@ Public Module ThemeSupport
     End Sub
 
     Friend Sub SetLightMode(ctrl As Control.ControlCollection, ByRef mCapturedRenderer As ToolStripRenderer)
+        ctrl(0).Parent.BackColor = SystemColors.Control
+        ctrl(0).Parent.ForeColor = SystemColors.ControlText
 
         For Each c As Control In ctrl
 

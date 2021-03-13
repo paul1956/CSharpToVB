@@ -6,9 +6,15 @@ Imports Microsoft.VisualBasic.ApplicationServices
 Imports SupportClasses
 
 Public NotInheritable Class AboutBox1
+    Private ReadOnly _enableDarkMode As Boolean = False
+
+    Public Sub New(lightMode As Boolean)
+        Me.InitializeComponent
+        _enableDarkMode = Not lightMode
+    End Sub
 
     Private Sub AboutBox1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        DarkMode.ToggleImmersiveDarkMode(CType(Me.Controls(0).Parent, Form).Handle, True)
+        DarkMode.ToggleImmersiveDarkMode(Me.Handle, _enableDarkMode)
         ' Set the title of the form.
         Dim applicationTitle As String = If(My.Application.Info.Title, IO.Path.GetFileNameWithoutExtension(My.Application.Info.AssemblyName))
         Me.Text = $"About {applicationTitle}"
