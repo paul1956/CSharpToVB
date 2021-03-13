@@ -17,7 +17,6 @@ Partial Public Class Form1
     Private Shared _loading As Boolean = True
     Private ReadOnly _frameworkTypeList As New List(Of ToolStripMenuItem)
     Private ReadOnly _frameworkVersionList As New Dictionary(Of String, (item As ToolStripMenuItem, Parent As ToolStripMenuItem))
-    Private _currentBuffer As Control
     Private _mCapturedRenderer As ToolStripRenderer
     Private _tlsEnable As Boolean
     Friend _cancellationTokenSource As CancellationTokenSource
@@ -32,265 +31,8 @@ Partial Public Class Form1
         Me.InitializeComponent()
     End Sub
 
-    Private Property CurrentBuffer As Control
-        Get
-            Return _currentBuffer
-        End Get
-        Set
-            _currentBuffer = Value
-            If Value IsNot Nothing Then
-                _currentBuffer.Focus()
-            End If
-        End Set
-    End Property
-
     Friend Property BufferToSearch As SearchBuffers = SearchBuffers.CS
-
-    Private Shared Sub SetDarkMode(ctrl As Control.ControlCollection, ByRef mCapturedRenderer As ToolStripRenderer)
-
-        For Each c As Control In ctrl
-
-            If TypeOf c Is MenuStrip Then
-                Dim m As MenuStrip = CType(c, MenuStrip)
-                If mCapturedRenderer Is Nothing Then mCapturedRenderer = m.Renderer
-                m.Renderer = New ToolStripProfessionalRenderer(New DarkColorTable)
-                m.ForeColor = Color.Silver 'Color.White
-                For Each item As ToolStripMenuItem In m.Items
-                    For Each subItem As ToolStripItem In item.DropDownItems
-                        Dim toolStripItem As ToolStripMenuItem = TryCast(subItem, ToolStripMenuItem)
-                        If toolStripItem IsNot Nothing Then
-                            toolStripItem.ForeColor = Color.Silver 'Color.White
-                        End If
-                    Next
-                Next
-
-            ElseIf TypeOf c Is StatusStrip Then
-                Dim s As StatusStrip = CType(c, StatusStrip)
-                s.BackColor = Color.FromArgb(40, 40, 40)
-                s.ForeColor = Color.Silver
-
-            ElseIf TypeOf c Is ToolStrip Then
-                Dim ts As ToolStrip = CType(c, ToolStrip)
-                ts.Renderer = New ToolStripProfessionalRenderer(New DarkColorTable)
-                ts.ForeColor = Color.Silver 'Color.White
-                SetDarkMode(ts.Controls, mCapturedRenderer)
-
-            ElseIf TypeOf c Is CheckBox Then
-
-            ElseIf TypeOf c Is ComboBox Then
-                Dim cb As ComboBox = CType(c, ComboBox)
-                cb.BackColor = Color.FromArgb(50, 50, 50)
-                cb.ForeColor = Color.Silver 'Color.White
-                Dim comboBoxEx As ComboBoxEx = TryCast(c, ComboBoxEx)
-                If comboBoxEx IsNot Nothing Then
-                    comboBoxEx.BorderColor = Color.FromArgb(60, 60, 60)
-                End If
-
-            ElseIf TypeOf c Is SplitContainer Then
-                Dim s As SplitContainer = CType(c, SplitContainer)
-                s.BackColor = Color.FromArgb(40, 40, 40)
-                s.ForeColor = Color.Silver
-                SetDarkMode(s.Panel1.Controls, mCapturedRenderer)
-                SetDarkMode(s.Panel2.Controls, mCapturedRenderer)
-
-            ElseIf TypeOf c Is TabControl Then
-                Dim t As TabControl = CType(c, TabControl)
-                t.BackColor = Color.FromArgb(40, 40, 40)
-                t.ForeColor = Color.Silver
-                For Each tab As TabPage In t.TabPages
-                    tab.BackColor = Color.FromArgb(40, 40, 40)
-                    tab.BorderStyle = BorderStyle.None
-                    SetDarkMode(tab.Controls, mCapturedRenderer)
-                Next
-
-            ElseIf TypeOf c Is Panel Then
-                Dim p As Panel = CType(c, Panel)
-                p.BackColor = Color.FromArgb(40, 40, 40)
-                p.ForeColor = Color.Silver
-                p.Padding = New Padding(1)
-                Dim panelEx As PanelEx = TryCast(c, PanelEx)
-                If panelEx IsNot Nothing Then
-                    panelEx.BorderColor = Color.FromArgb(60, 60, 60)
-                End If
-                SetDarkMode(p.Controls, mCapturedRenderer)
-
-            ElseIf TypeOf c Is RichTextBox Then
-                Dim rtb As RichTextBox = CType(c, RichTextBox)
-                rtb.BackColor = Color.FromArgb(45, 45, 45)
-                rtb.ForeColor = Color.Silver
-                rtb.BorderStyle = BorderStyle.None
-                'If TypeOf rtb.Parent Is PanelEx Then
-                '  CType(rtb.Parent, PanelEx).BorderColor = Color.FromArgb(60, 60, 60)
-                'End If
-
-            ElseIf TypeOf c Is TreeView Then
-                Dim tvw As TreeView = CType(c, TreeView)
-                tvw.BackColor = Color.FromArgb(40, 40, 40)
-                tvw.ForeColor = Color.Silver
-                tvw.BorderStyle = BorderStyle.None
-
-            ElseIf TypeOf c Is TextBox Then
-                Dim tb As TextBox = CType(c, TextBox)
-                tb.BorderStyle = BorderStyle.FixedSingle
-                tb.BackColor = Color.FromArgb(60, 60, 60)
-                tb.ForeColor = Color.Silver
-
-            ElseIf TypeOf c Is Button Then
-                Dim btn As Button = CType(c, Button)
-                btn.FlatStyle = FlatStyle.Flat
-                btn.BackColor = Color.FromArgb(60, 60, 60)
-                btn.ForeColor = Color.Silver
-            ElseIf TypeOf c Is Label Then
-                Dim lb As Label = CType(c, Label)
-                lb.BorderStyle = BorderStyle.FixedSingle
-                lb.BackColor = Color.FromArgb(60, 60, 60)
-                lb.ForeColor = Color.Silver
-            ElseIf TypeOf c Is ListBox Then
-                Dim lb As ListBox = CType(c, ListBox)
-                lb.BorderStyle = BorderStyle.FixedSingle
-                lb.BackColor = Color.FromArgb(60, 60, 60)
-                lb.ForeColor = Color.Silver
-            ElseIf TypeOf c Is ProgressBar Then
-                Dim pb As ProgressBar = CType(c, ProgressBar)
-                pb.BackColor = Color.FromArgb(60, 60, 60)
-                pb.ForeColor = Color.Silver
-            ElseIf TypeOf c Is DataGridView Then
-                ' ignore for now
-            ElseIf TypeOf c Is LineNumbersForRichTextBox Then
-                ' ignore
-            ElseIf TypeOf c Is PictureBox Then
-                ' ignore
-            Else
-                MsgBox($"Unhandled Control: {c}")
-            End If
-
-        Next
-    End Sub
-
-    Private Shared Sub SetLightMode(ctrl As Control.ControlCollection, ByRef mCapturedRenderer As ToolStripRenderer)
-
-        For Each c As Control In ctrl
-
-            If TypeOf c Is MenuStrip Then
-                Dim m As MenuStrip = CType(c, MenuStrip)
-                If mCapturedRenderer IsNot Nothing Then
-                    m.Renderer = mCapturedRenderer
-                End If
-                m.ForeColor = SystemColors.ControlText
-                For Each item As ToolStripMenuItem In m.Items
-                    For Each subItem As ToolStripItem In item.DropDownItems
-                        Dim toolStripItem As ToolStripMenuItem = TryCast(subItem, ToolStripMenuItem)
-                        If toolStripItem IsNot Nothing Then
-                            toolStripItem.ForeColor = SystemColors.ControlText
-                        End If
-                    Next
-                Next
-
-            ElseIf TypeOf c Is StatusStrip Then
-                Dim s As StatusStrip = CType(c, StatusStrip)
-                s.BackColor = SystemColors.Control
-                s.ForeColor = SystemColors.ControlText
-
-            ElseIf TypeOf c Is ToolStrip Then
-                Dim ts As ToolStrip = CType(c, ToolStrip)
-                If mCapturedRenderer IsNot Nothing Then
-                    ts.Renderer = mCapturedRenderer
-                End If
-                ts.ForeColor = SystemColors.ControlText
-                SetLightMode(ts.Controls, mCapturedRenderer)
-
-            ElseIf TypeOf c Is CheckBox Then
-
-            ElseIf TypeOf c Is ComboBox Then
-                Dim cb As ComboBox = CType(c, ComboBox)
-                cb.BackColor = Color.White 'SystemColors.Control
-                cb.ForeColor = SystemColors.ControlText
-                Dim comboBoxEx As ComboBoxEx = TryCast(c, ComboBoxEx)
-                If comboBoxEx IsNot Nothing Then
-                    If TypeOf cb.Parent Is ToolStrip Then
-                        comboBoxEx.BorderColor = SystemColors.Control
-                    Else
-                        comboBoxEx.BorderColor = SystemColors.ControlText
-                    End If
-                End If
-
-            ElseIf TypeOf c Is SplitContainer Then
-                Dim s As SplitContainer = CType(c, SplitContainer)
-                s.BackColor = SystemColors.Control
-                s.ForeColor = SystemColors.ControlText
-                SetLightMode(s.Panel1.Controls, mCapturedRenderer)
-                SetLightMode(s.Panel2.Controls, mCapturedRenderer)
-
-            ElseIf TypeOf c Is TabControl Then
-                Dim t As TabControl = CType(c, TabControl)
-                t.BackColor = SystemColors.Control
-                t.ForeColor = SystemColors.ControlText
-                For Each tab As TabPage In t.TabPages
-                    tab.BackColor = SystemColors.Control
-                    SetLightMode(tab.Controls, mCapturedRenderer)
-                Next
-
-            ElseIf TypeOf c Is Panel Then
-                Dim p As Panel = CType(c, Panel)
-                p.BackColor = SystemColors.Control
-                p.ForeColor = SystemColors.ControlText
-                p.Padding = New Padding(1)
-                Dim panelEx As PanelEx = TryCast(c, PanelEx)
-                If panelEx IsNot Nothing Then
-                    panelEx.BorderColor = SystemColors.WindowFrame
-                End If
-                SetLightMode(p.Controls, mCapturedRenderer)
-
-            ElseIf TypeOf c Is RichTextBox Then
-                Dim rtb As RichTextBox = CType(c, RichTextBox)
-                rtb.BackColor = Color.White
-                rtb.ForeColor = SystemColors.ControlText
-
-            ElseIf TypeOf c Is TreeView Then
-                Dim tvw As TreeView = CType(c, TreeView)
-                tvw.BackColor = Color.White
-                tvw.ForeColor = SystemColors.ControlText
-
-            ElseIf TypeOf c Is TextBox Then
-                Dim tb As TextBox = CType(c, TextBox)
-                tb.BorderStyle = BorderStyle.FixedSingle
-                tb.BackColor = Color.White
-                tb.ForeColor = SystemColors.ControlText
-
-            ElseIf TypeOf c Is Button Then
-                Dim btn As Button = CType(c, Button)
-                btn.BackColor = SystemColors.Control
-                btn.ForeColor = SystemColors.ControlText
-
-            ElseIf TypeOf c Is Label Then
-                Dim lb As Label = CType(c, Label)
-                lb.BorderStyle = BorderStyle.FixedSingle
-                lb.BackColor = Color.White
-                lb.ForeColor = SystemColors.ControlText
-
-            ElseIf TypeOf c Is ListBox Then
-                Dim lb As ListBox = CType(c, ListBox)
-                lb.BorderStyle = BorderStyle.FixedSingle
-                lb.BackColor = Color.White
-                lb.ForeColor = SystemColors.ControlText
-
-            ElseIf TypeOf c Is ProgressBar Then
-                Dim pb As ProgressBar = CType(c, ProgressBar)
-                pb.BackColor = Color.White
-                pb.ForeColor = SystemColors.ControlText
-
-            ElseIf TypeOf c Is DataGridView Then
-                ' ignore for now
-            ElseIf TypeOf c Is LineNumbersForRichTextBox Then
-                ' ignore
-            ElseIf TypeOf c Is PictureBox Then
-                ' ignore
-            Else
-                MsgBox($"Unhandled Control: {c}")
-            End If
-
-        Next
-    End Sub
+    Private Property CurrentBuffer As RichTextBox = Nothing
 
     Private Sub ButtonStop_Click(sender As Object, e As EventArgs) Handles ButtonStopConversion.Click
         Me.ButtonStopConversion.Visible = False
@@ -322,7 +64,7 @@ Partial Public Class Form1
                 Exit Sub
             Case Else
                 If TypeOf Me.CurrentBuffer Is RichTextBox Then
-                    sourceControl = CType(Me.CurrentBuffer, RichTextBox)
+                    sourceControl = Me.CurrentBuffer
                 Else
                     Exit Sub
                 End If
@@ -334,7 +76,7 @@ Partial Public Class Form1
         Dim sourceControl As RichTextBox = TryCast(Me.ContextMenuStrip1.SourceControl, RichTextBox)
         If sourceControl Is Nothing Then
             If TypeOf Me.CurrentBuffer Is RichTextBox Then
-                sourceControl = CType(Me.CurrentBuffer, RichTextBox)
+                sourceControl = Me.CurrentBuffer
             Else
                 Exit Sub
             End If
@@ -346,7 +88,7 @@ Partial Public Class Form1
         Dim sourceControl As RichTextBox = TryCast(Me.ContextMenuStrip1.SourceControl, RichTextBox)
         If sourceControl Is Nothing Then
             If TypeOf Me.CurrentBuffer Is RichTextBox Then
-                sourceControl = CType(Me.CurrentBuffer, RichTextBox)
+                sourceControl = Me.CurrentBuffer
             Else
                 Exit Sub
             End If
@@ -361,7 +103,7 @@ Partial Public Class Form1
         Dim sourceControl As RichTextBox = TryCast(Me.ContextMenuStrip1.SourceControl, RichTextBox)
         If sourceControl Is Nothing Then
             If TypeOf Me.CurrentBuffer Is RichTextBox Then
-                sourceControl = CType(Me.CurrentBuffer, RichTextBox)
+                sourceControl = Me.CurrentBuffer
             Else
                 Exit Sub
             End If
@@ -375,7 +117,7 @@ Partial Public Class Form1
         Dim sourceControl As RichTextBox = TryCast(Me.ContextMenuStrip1.SourceControl, RichTextBox)
         If sourceControl Is Nothing Then
             If TypeOf Me.CurrentBuffer Is RichTextBox Then
-                sourceControl = CType(Me.CurrentBuffer, RichTextBox)
+                sourceControl = Me.CurrentBuffer
             Else
                 Exit Sub
             End If
@@ -385,15 +127,16 @@ Partial Public Class Form1
 
     Private Sub ContextMenuStrip1_Opening(sender As Object, e As CancelEventArgs) Handles ContextMenuStrip1.Opening
         Dim contextMenu As ContextMenuStrip = CType(sender, ContextMenuStrip)
-
-        If TypeOf Me.CurrentBuffer Is RichTextBox Then
-            Dim sourceBuffer As RichTextBox = CType(Me.CurrentBuffer, RichTextBox)
-            contextMenu.Items(contextMenu.IndexOf(NameOf(ContextMenuCopy))).Enabled = sourceBuffer.TextLength > 0 And sourceBuffer.SelectedText.Any
-            contextMenu.Items(contextMenu.IndexOf(NameOf(ContextMenuCut))).Enabled = sourceBuffer.TextLength > 0 And sourceBuffer.SelectedText.Any
-            contextMenu.Items(contextMenu.IndexOf(NameOf(ContextMenuPaste))).Enabled = sourceBuffer.CanPaste(DataFormats.GetFormat(DataFormats.Rtf)) OrElse sourceBuffer.CanPaste(DataFormats.GetFormat(DataFormats.Text))
-            contextMenu.Items(contextMenu.IndexOf(NameOf(ContextMenuRedo))).Enabled = sourceBuffer.CanRedo
-            contextMenu.Items(contextMenu.IndexOf(NameOf(ContextMenuUndo))).Enabled = sourceBuffer.CanUndo
-        Else
+        Dim sourceRtb As RichTextBox = TryCast(Me.ContextMenuStrip1.SourceControl, RichTextBox)
+        If sourceRtb IsNot Nothing Then
+            contextMenu.Items(contextMenu.IndexOf(NameOf(ContextMenuCopy))).Enabled = sourceRtb.TextLength > 0 And sourceRtb.SelectedText.Any
+            contextMenu.Items(contextMenu.IndexOf(NameOf(ContextMenuCut))).Enabled = sourceRtb.TextLength > 0 And sourceRtb.SelectedText.Any
+            contextMenu.Items(contextMenu.IndexOf(NameOf(ContextMenuPaste))).Enabled = sourceRtb.CanPaste(DataFormats.GetFormat(DataFormats.Rtf)) OrElse sourceRtb.CanPaste(DataFormats.GetFormat(DataFormats.Text))
+            contextMenu.Items(contextMenu.IndexOf(NameOf(ContextMenuRedo))).Enabled = sourceRtb.CanRedo
+            contextMenu.Items(contextMenu.IndexOf(NameOf(ContextMenuUndo))).Enabled = sourceRtb.CanUndo
+            Exit Sub
+        End If
+        If TypeOf Me.ContextMenuStrip1.SourceControl Is ListBox Then
             contextMenu.Items(contextMenu.IndexOf(NameOf(ContextMenuCut))).Enabled = False
             contextMenu.Items(contextMenu.IndexOf(NameOf(ContextMenuPaste))).Enabled = False
             contextMenu.Items(contextMenu.IndexOf(NameOf(ContextMenuRedo))).Enabled = False
@@ -405,7 +148,7 @@ Partial Public Class Form1
         Dim sourceControl As RichTextBox = CType(Me.ContextMenuStrip1.SourceControl, RichTextBox)
         If sourceControl Is Nothing Then
             If TypeOf Me.CurrentBuffer Is RichTextBox Then
-                sourceControl = CType(Me.CurrentBuffer, RichTextBox)
+                sourceControl = Me.CurrentBuffer
             Else
                 Exit Sub
             End If
@@ -622,24 +365,6 @@ Partial Public Class Form1
         End If
     End Sub
 
-    Private Sub ListBoxErrorList_Enter(sender As Object, e As EventArgs) Handles ListBoxErrorList.Enter
-        If Me.ListBoxErrorList.Items.Count = 0 Then
-            Me.ListBoxErrorList.Enabled = False
-            Exit Sub
-        End If
-        Me.ListBoxErrorList.Enabled = True
-        Me.CurrentBuffer = Me.ListBoxErrorList
-    End Sub
-
-    Private Sub ListBoxErrorList_MouseEnter(sender As Object, e As EventArgs) Handles ListBoxErrorList.MouseEnter
-        If Me.ListBoxErrorList.Items.Count = 0 Then
-            Me.ListBoxErrorList.Enabled = False
-            Exit Sub
-        End If
-        Me.ListBoxErrorList.Enabled = True
-        Me.CurrentBuffer = Me.ListBoxErrorList
-    End Sub
-
     Private Sub ListBoxErrorList_SelectedValueChanged(sender As Object, e As EventArgs) Handles ListBoxErrorList.SelectedValueChanged
         Me.ListBoxErrorList.Enabled = Me.ListBoxErrorList.Items.Count > 0
     End Sub
@@ -663,20 +388,6 @@ Partial Public Class Form1
 
             LoadOutputBufferFromStream(Me, convertedFileNameWithPath)
         End Using
-    End Sub
-
-    Private Sub ListBoxFileList_Enter(sender As Object, e As EventArgs) Handles ListBoxFileList.Enter
-        If Me.ListBoxFileList.Items.Count = 0 Then
-            Exit Sub
-        End If
-        Me.CurrentBuffer = Me.ListBoxFileList
-    End Sub
-
-    Private Sub ListBoxFileList_MouseEnter(sender As Object, e As EventArgs) Handles ListBoxFileList.MouseEnter
-        If Me.ListBoxFileList.Items.Count = 0 Then
-            Exit Sub
-        End If
-        Me.CurrentBuffer = Me.ListBoxFileList
     End Sub
 
     Private Sub ListBoxFileList_SelectedValueChanged(sender As Object, e As EventArgs) Handles ListBoxFileList.SelectedValueChanged
@@ -830,7 +541,7 @@ namespace Application
             Me.mnuEditFind.Text = $"Show &Find Toolbar"
         End If
         If TypeOf Me.CurrentBuffer Is RichTextBox Then
-            Dim sourceBuffer As RichTextBox = CType(Me.CurrentBuffer, RichTextBox)
+            Dim sourceBuffer As RichTextBox = Me.CurrentBuffer
             Me.mnuEditCopy.Enabled = sourceBuffer.TextLength > 0 AndAlso sourceBuffer.SelectedText.Length > 0
             Me.mnuEditCut.Enabled = sourceBuffer.TextLength > 0 AndAlso sourceBuffer.SelectedText.Length > 0
             Me.mnuEditPaste.Enabled = sourceBuffer.CanPaste(DataFormats.GetFormat(DataFormats.Rtf)) OrElse sourceBuffer.CanPaste(DataFormats.GetFormat(DataFormats.Text))
@@ -845,17 +556,14 @@ namespace Application
     End Sub
 
     Private Sub mnuEditCopy_Click(sender As Object, e As EventArgs) Handles mnuEditCopy.Click
-        If TypeOf Me.CurrentBuffer Is RichTextBox Then
-            CType(Me.CurrentBuffer, RichTextBox).Copy()
-        Else
-            Clipboard.SetText(CType(Me.CurrentBuffer, ListBox).Text)
+        If Me.CurrentBuffer IsNot Nothing Then
+            Me.CurrentBuffer.Copy()
         End If
     End Sub
 
     Private Sub mnuEditCut_Click(sender As Object, e As EventArgs) Handles mnuEditCut.Click
-        Dim control As RichTextBox = TryCast(Me.CurrentBuffer, RichTextBox)
-        If control IsNot Nothing Then
-            control.Cut()
+        If Me.CurrentBuffer IsNot Nothing Then
+            Me.CurrentBuffer.Cut()
         End If
     End Sub
 
@@ -864,14 +572,13 @@ namespace Application
     End Sub
 
     Private Sub mnuEditPaste_Click(sender As Object, e As EventArgs) Handles mnuEditPaste.Click
-        Dim control As RichTextBox = TryCast(Me.CurrentBuffer, RichTextBox)
-        If control IsNot Nothing Then
-            control.SelectedText = Clipboard.GetText(TextDataFormat.Text)
+        If Me.CurrentBuffer IsNot Nothing Then
+            Me.CurrentBuffer.SelectedText = Clipboard.GetText(TextDataFormat.Text)
         End If
     End Sub
 
     Private Sub mnuEditRedo_Click(sender As Object, e As EventArgs) Handles mnuEditRedo.Click
-        Dim sourceControl As RichTextBox = TryCast(Me.CurrentBuffer, RichTextBox)
+        Dim sourceControl As RichTextBox = Me.CurrentBuffer
         If sourceControl IsNot Nothing AndAlso sourceControl.CanRedo Then
             sourceControl.Redo()
         End If
@@ -879,15 +586,14 @@ namespace Application
     End Sub
 
     Private Sub mnuEditSelectAll_Click(sender As Object, e As EventArgs) Handles mnuEditSelectAll.Click
-        Dim sourceControl As RichTextBox = TryCast(Me.CurrentBuffer, RichTextBox)
+        Dim sourceControl As RichTextBox = Me.CurrentBuffer
         If sourceControl IsNot Nothing Then
             sourceControl.SelectAll()
         End If
-
     End Sub
 
     Private Sub mnuEditUndo_Click(sender As Object, e As EventArgs) Handles mnuEditUndo.Click
-        Dim sourceControl As RichTextBox = TryCast(Me.CurrentBuffer, RichTextBox)
+        Dim sourceControl As RichTextBox = Me.CurrentBuffer
         If sourceControl IsNot Nothing AndAlso sourceControl.CanUndo Then
             sourceControl.Undo()
         End If
@@ -1181,16 +887,6 @@ namespace Application
         MyBase.OnLoad(e)
     End Sub
 
-    ''' <summary>
-    ''' This will be used at runtime to add this Event to all items on mnuFileMRU list
-    ''' </summary>
-    ''' <param name="sender"></param>
-    ''' <param name="e"></param>
-    Friend Sub mnu_MRUList_Click(sender As Object, e As EventArgs)
-        ' open the file...
-        OpenSourceFile(Me, DirectCast(sender, ToolStripItem).Tag.ToString().Substring(startIndex:=4))
-    End Sub
-
 #Region "TSFind Events"
 
     Private Sub TSFindClearHighlightsButton_Click(sender As Object, e As EventArgs) Handles TSFindClearHighlightsButton.Click
@@ -1294,6 +990,16 @@ namespace Application
 #End Region
 
 #Region "Form Support Routines"
+
+    ''' <summary>
+    ''' This will be used at runtime to add this Event to all items on mnuFileMRU list
+    ''' </summary>
+    ''' <param name="sender"></param>
+    ''' <param name="e"></param>
+    Friend Sub mnu_MRUList_Click(sender As Object, e As EventArgs)
+        ' open the file...
+        OpenSourceFile(Me, DirectCast(sender, ToolStripItem).Tag.ToString().Substring(startIndex:=4))
+    End Sub
 
     Private Sub SetColorMode(myForm As Form, lightMode As Boolean)
 
