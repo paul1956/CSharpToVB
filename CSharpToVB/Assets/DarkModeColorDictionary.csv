@@ -66,34 +66,3 @@ xml literal - entity reference,185,100,100,18,32,42
 xml literal - name,132,70,70,18,32,42
 xml literal - processing instruction,128,128,128,18,32,42
 xml literal - text,85,85,85,18,32,42
-Button,227,227,227,160,160,160
-CheckBox,227,227,227,160,160,160
-ComboBox,227,227,227,160,160,160
-ContextMenuStrip,227,227,227,160,160,160
-FloatingMenu,227,227,227,160,160,160
-FolderBrowserDialog,227,227,227,160,160,160
-Label,227,227,227,160,160,160
-LineNumbersForRichTextBox,227,227,227,160,160,160
-ListBox,227,227,227,160,160,160
-MenuStrip,227,227,227,160,160,160
-Panel,227,227,227,30,30,30
-PanelBoarderStyle,227,227,227,160,160,160
-ProgressBar,0,120,215,160,160,160
-RichTextBox,227,227,227,30,30,30
-SplitBar,227,227,227,160,160,160
-SplitContainer,227,227,227,30,30,30
-StatusBar,227,227,227,100,100,100
-TextBox,227,227,227,45,45,48
-TitleBar,227,227,227,160,160,160
-ToolBar,227,227,227,160,160,160
-ToolStrip,227,227,227,160,160,160
-ToolStripButton,227,227,227,160,160,160
-ToolStripCheckBox,109,109,109,160,160,160
-ToolStripComboBox,109,109,109,160,160,160
-ToolStripLabel,227,227,227,160,160,160
-ToolStripMenuItem,227,227,227,160,160,160
-ToolStripProgressBar,227,227,227,160,160,160
-ToolStripSeparator,227,227,227,160,160,160
-ToolStripStatusLabel,227,227,227,160,160,160
-ToolStripTextProgressBar,227,227,227,160,160,160
-ToolTip,227,227,227,160,160,160

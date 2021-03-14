@@ -7,46 +7,81 @@ Imports System.ComponentModel
 <DefaultProperty("ParentRichTextBox")>
 Partial Public Class LineNumbersForRichTextBox : Inherits Control
 
-' ReSharper disable InconsistentNaming
+    ' ReSharper disable InconsistentNaming
     Private WithEvents ZParent As RichTextBox = Nothing
+
     Private WithEvents ZTimer As New Timer
+
     Private ReadOnly _zLNIs As New List(Of LineNumberItem)
 
     Private _zAutoSizing As Boolean = True
+
     Private _zAutoSizing_Size As New Size(0, 0)
+
     Private _zBorderLines_Color As Color = Color.SlateGray
+
     Private _zBorderLines_Show As Boolean = True
+
     Private _zBorderLines_Style As Drawing2D.DashStyle = Drawing2D.DashStyle.Dot
+
     Private _zBorderLines_Thickness As Single = 1
+
     Private _zContentRectangle As Rectangle = Nothing
+
     Private _zDockSide As LineNumberDockSides = LineNumberDockSides.Left
+
     Private _zGradient_Direction As Drawing2D.LinearGradientMode = Drawing2D.LinearGradientMode.Horizontal
+
     Private _zGradient_EndColor As Color = Color.LightSteelBlue
+
     Private _zGradient_Show As Boolean = True
+
     Private _zGradient_StartColor As Color = Color.FromArgb(0, 0, 0, 0)
+
     Private _zGridLines_Color As Color = Color.SlateGray
+
     Private _zGridLines_Show As Boolean = True
+
     Private _zGridLines_Style As Drawing2D.DashStyle = Drawing2D.DashStyle.Dot
+
     Private _zGridLines_Thickness As Single = 1
+
     Private _zLineNumbers_Alignment As ContentAlignment = ContentAlignment.TopRight
+
     Private _zLineNumbers_AntiAlias As Boolean = True
+
     Private _zLineNumbers_ClipByItemRectangle As Boolean = True
+
     Private _zLineNumbers_Format As String = "0"
+
     Private _zLineNumbers_Offset As New Size(0, 0)
+
     Private _zLineNumbers_Show As Boolean = True
+
     Private _zLineNumbers_ShowAsHexadecimal As Boolean
+
     Private _zLineNumbers_ShowLeadingZeroes As Boolean = True
+
     Private _zMarginLines_Color As Color = Color.SlateGray
+
     Private _zMarginLines_Show As Boolean = True
+
     Private _zMarginLines_Side As LineNumberDockSides = LineNumberDockSides.Right
+
     Private _zMarginLines_Style As Drawing2D.DashStyle = Drawing2D.DashStyle.Solid
+
     Private _zMarginLines_Thickness As Single = 1
+
     Private _zParentInMe As Integer
+
     Private _zParentIsScrolling As Boolean
+
     Private _zPointInMe As New Point(0, 0)
+
     Private _zPointInParent As New Point(0, 0)
+
     Private _zSeeThroughMode As Boolean
-' ReSharper restore InconsistentNaming
+    ' ReSharper restore InconsistentNaming
 
     Public Sub New()
         Me.InitializeComponent()
@@ -69,16 +104,13 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
         Me.Invalidate()
     End Sub
 
-    <Browsable(False)>
-    Public Overrides Property AutoSize() As Boolean
-        Get
-            Return MyBase.AutoSize
-        End Get
-        Set(value As Boolean)
-            MyBase.AutoSize = value
-            Me.Invalidate()
-        End Set
-    End Property
+    <Flags>
+    Public Enum LineNumberDockSides
+        None = 0
+        Left = 1
+        Right = 2
+        Height = 4
+    End Enum
 
     <Description("Use this property to automatically resize the control (and reposition it if needed).")>
     <Category("Additional Behavior")>
@@ -177,18 +209,6 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
         End Get
         Set(value As LineNumberDockSides)
             _zDockSide = value
-            Me.Refresh()
-            Me.Invalidate()
-        End Set
-    End Property
-
-    <Browsable(True)>
-    Public Overrides Property Font() As Font
-        Get
-            Return MyBase.Font
-        End Get
-        Set(value As Font)
-            MyBase.Font = value
             Me.Refresh()
             Me.Invalidate()
         End Set
@@ -364,24 +384,6 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
         End Set
     End Property
 
-    <Description("Use this property to enable LineNumbers for the chosen RichTextBox.")>
-    <Category("Add LineNumbers to")>
-    Public Property ParentRichTextBox() As RichTextBox
-        Get
-            Return Me.ZParent
-        End Get
-        Set(value As RichTextBox)
-            Me.ZParent = value
-            If Me.ZParent IsNot Nothing Then
-                Me.Parent = Me.ZParent.Parent
-                Me.ZParent.Refresh()
-            End If
-            Me.Text = ""
-            Me.Refresh()
-            Me.Invalidate()
-        End Set
-    End Property
-
     <Description("Use this property to enable the control to act as an overlay on top of the RichTextBox.")>
     <Category("Additional Behavior")>
     <DefaultValue(False)>
@@ -455,6 +457,47 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
         End Get
         Set(value As Boolean)
             _zMarginLines_Show = value
+            Me.Invalidate()
+        End Set
+    End Property
+
+    <Browsable(False)>
+    Public Overrides Property AutoSize() As Boolean
+        Get
+            Return MyBase.AutoSize
+        End Get
+        Set(value As Boolean)
+            MyBase.AutoSize = value
+            Me.Invalidate()
+        End Set
+    End Property
+
+    <Browsable(True)>
+    Public Overrides Property Font() As Font
+        Get
+            Return MyBase.Font
+        End Get
+        Set(value As Font)
+            MyBase.Font = value
+            Me.Refresh()
+            Me.Invalidate()
+        End Set
+    End Property
+
+    <Description("Use this property to enable LineNumbers for the chosen RichTextBox.")>
+    <Category("Add LineNumbers to")>
+    Public Property ParentRichTextBox() As RichTextBox
+        Get
+            Return Me.ZParent
+        End Get
+        Set(value As RichTextBox)
+            Me.ZParent = value
+            If Me.ZParent IsNot Nothing Then
+                Me.Parent = Me.ZParent.Parent
+                Me.ZParent.Refresh()
+            End If
+            Me.Text = ""
+            Me.Refresh()
             Me.Invalidate()
         End Set
     End Property
@@ -1007,6 +1050,5 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
         MyBase.Refresh()
         Me.Update_SizeAndPosition()
     End Sub
-' ReSharper restore InconsistentNaming
 
 End Class

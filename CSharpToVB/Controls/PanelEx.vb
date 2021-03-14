@@ -13,6 +13,10 @@ Imports System.Drawing.Drawing2D
 Public Class PanelEx
   Inherits Panel
 
+    Private _borderStyle As BorderStyle = BorderStyle.FixedSingle
+    Private _borderColor As Color = SystemColors.WindowFrame
+    Private _borderWidth As Integer = 1
+
   Public Sub New()
     MyBase.New()
         'SetDefaultControlStyles()

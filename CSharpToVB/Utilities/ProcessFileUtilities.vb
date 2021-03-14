@@ -102,8 +102,8 @@ Friend Module ProcessFileUtilities
     <Extension>
     Friend Async Function ConvertSnippetOfTopLevelStmt(mainForm As Form1, sourceCode As String) As Task
         SetButtonStopAndCursor(meForm:=mainForm, stopButton:=mainForm.ButtonStopConversion, stopButtonVisible:=True)
-        mainForm.ListBoxErrorList.Items.Clear()
-        mainForm.ListBoxFileList.Items.Clear()
+        mainForm.ErrorListListBox.Items.Clear()
+        mainForm.FileListListBox.Items.Clear()
         mainForm.LineNumbersForConversionOutput.Visible = False
         mainForm.StatusStripCurrentFileName.Text = ""
         mainForm.ResizeRichTextBuffers()
@@ -190,7 +190,7 @@ Friend Module ProcessFileUtilities
                                 My.Settings.IgnoreFileList.Add(sourceFileNameWithPath)
                                 My.Settings.Save()
                             End If
-                            .ListBoxErrorList.Items.Clear()
+                            .ErrorListListBox.Items.Clear()
                             .LineNumbersForConversionInput.Visible = My.Settings.ShowSourceLineNumbers
                             .LineNumbersForConversionOutput.Visible = My.Settings.ShowDestinationLineNumbers
                             ._doNotFailOnError = True
@@ -251,8 +251,8 @@ Friend Module ProcessFileUtilities
     Friend Async Function ProcessFilesAsync(mainForm As Form1, sourceDirectory As String, targetDirectory As String, sourceLanguageExtension As String, stats As ProcessingStats, cancelToken As CancellationToken) As Task(Of Boolean)
         With mainForm
             Try
-                .ListBoxErrorList.Items.Clear()
-                .ListBoxFileList.Items.Clear()
+                .ErrorListListBox.Items.Clear()
+                .FileListListBox.Items.Clear()
                 SetButtonStopAndCursor(mainForm,
                                        .ButtonStopConversion,
                                        stopButtonVisible:=True)
@@ -278,7 +278,7 @@ Friend Module ProcessFileUtilities
                                                    sourceDirectory,
                                                    targetDirectory,
                                                    .ButtonStopConversion,
-                                                   .ListBoxFileList,
+                                                   .FileListListBox,
                                                    sourceLanguageExtension,
                                                    stats,
                                                    AddressOf ProcessFileAsync,

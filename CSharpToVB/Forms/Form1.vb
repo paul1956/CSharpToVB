@@ -206,7 +206,7 @@ Partial Public Class Form1
     End Sub
 
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles Me.Load
-        Me.SplitContainer1.SplitterDistance = Me.SplitContainer1.Height - (Me.SplitContainer1.Panel2.Height + 20)
+        Me.SplitContainer1.SplitterDistance = Me.SplitContainer1.Height - (Me.SplitContainer1.Panel2.Height + 15)
 
         ' Load all settings
         If My.Settings.UpgradeRequired Then
@@ -261,8 +261,8 @@ Partial Public Class Form1
         Me.Width = Screen.PrimaryScreen.Bounds.Width
         Me.Height = CInt(Screen.PrimaryScreen.Bounds.Height * 0.95)
 
-        Me.ListBoxFileList.Height = Me.SplitContainer1.Panel2.ClientSize.Height
-        Me.ListBoxErrorList.Height = Me.SplitContainer1.Panel2.ClientSize.Height
+        Me.FileListListBox.Height = Me.SplitContainer1.Panel2.ClientSize.Height
+        Me.ErrorListListBox.Height = Me.SplitContainer1.Panel2.ClientSize.Height
 
         For Each frameworkType As ToolStripMenuItem In Me.mnuOptionsDefaultFramework.DropDownItems
             If frameworkType.Text = $".Net Full Framework" Then
@@ -304,8 +304,8 @@ Partial Public Class Form1
         Me.ProjectConversionInitProgressBar.Location = New Point(Me.ClientSize.Width \ 4, Me.ClientSize.Height \ 2)
         Me.ProjectConversionInitProgressLabel.Left = Me.ProjectConversionInitProgressBar.Left
         Me.ProjectConversionInitProgressLabel.Top = Me.ProjectConversionInitProgressBar.Top - (Me.ProjectConversionInitProgressLabel.Height * 2)
-        Me.ToolTipErrorList.SetToolTip(Me.ListBoxErrorList, "Double-Click to scroll to VB error")
-        Me.ToolTipFileList.SetToolTip(Me.ListBoxFileList, "Double-Click to open C# and corresponding VB file if available")
+        Me.ToolTipErrorList.SetToolTip(Me.ErrorListListBox, "Double-Click to scroll to VB error")
+        Me.ToolTipFileList.SetToolTip(Me.FileListListBox, "Double-Click to open C# and corresponding VB file if available")
         Me.TSFindLookInComboBox.DropDownStyle = ComboBoxStyle.Simple
         Me.TSFindLookInComboBox.SelectedIndex = 0
         Me.TSFindMatchCaseCheckBox.Checked = My.Settings.TSFindMatchCase
@@ -317,7 +317,7 @@ Partial Public Class Form1
         DarkMode.ToggleImmersiveDarkMode(Me.Handle, isDarkMode)
         Me.ToggleColorMode(Me, isDarkMode)
         _loading = False
-        Me.SplitContainer1.SplitterIncrement = Me.ListBoxFileList.ItemHeight + 2
+        Me.SplitContainer1.SplitterIncrement = Me.FileListListBox.ItemHeight + 2
         Me.ResizeRichTextBuffers()
         DefaultColor = _currentThemeDictionary(ThemeDefaultColor)
     End Sub
@@ -344,7 +344,7 @@ Partial Public Class Form1
         Me.ResizeRichTextBuffers()
     End Sub
 
-    Private Sub ListboxErrorList_DoubleClick(sender As Object, e As EventArgs) Handles ListBoxErrorList.DoubleClick
+    Private Sub ListboxErrorList_DoubleClick(sender As Object, e As EventArgs) Handles ErrorListListBox.DoubleClick
         Dim box As ListBox = DirectCast(sender, ListBox)
         If box.Text.Length = 0 Then
             Exit Sub
@@ -366,11 +366,11 @@ Partial Public Class Form1
         End If
     End Sub
 
-    Private Sub ListBoxErrorList_SelectedValueChanged(sender As Object, e As EventArgs) Handles ListBoxErrorList.SelectedValueChanged
-        Me.ListBoxErrorList.Enabled = Me.ListBoxErrorList.Items.Count > 0
+    Private Sub ListBoxErrorList_SelectedValueChanged(sender As Object, e As EventArgs) Handles ErrorListListBox.SelectedValueChanged
+        Me.ErrorListListBox.Enabled = Me.ErrorListListBox.Items.Count > 0
     End Sub
 
-    Private Sub ListBoxFileList_DoubleClick(sender As Object, e As EventArgs) Handles ListBoxFileList.DoubleClick
+    Private Sub ListBoxFileList_DoubleClick(sender As Object, e As EventArgs) Handles FileListListBox.DoubleClick
         Using fileList As ListBox = CType(sender, ListBox)
             If fileList.Items.Count = 0 Then
                 Exit Sub
@@ -391,19 +391,19 @@ Partial Public Class Form1
         End Using
     End Sub
 
-    Private Sub ListBoxFileList_SelectedValueChanged(sender As Object, e As EventArgs) Handles ListBoxFileList.SelectedValueChanged
-        Me.ListBoxFileList.Enabled = Me.ListBoxFileList.Items.Count > 0
+    Private Sub ListBoxFileList_SelectedValueChanged(sender As Object, e As EventArgs) Handles FileListListBox.SelectedValueChanged
+        Me.FileListListBox.Enabled = Me.FileListListBox.Items.Count > 0
     End Sub
 
     Private Sub mnuCompile_Click(sender As Object, e As EventArgs) Handles mnuCompile.Click
         Me.LineNumbersForConversionInput.Visible = False
         Me.LineNumbersForConversionOutput.Visible = False
-        Me.ListBoxErrorList.Items.Clear()
+        Me.ErrorListListBox.Items.Clear()
 
         If String.IsNullOrWhiteSpace(Me.ConversionOutput.Text) Then
             Exit Sub
         End If
-        Me.ListBoxErrorList.Text = ""
+        Me.ErrorListListBox.Text = ""
         Dim preprocessorSymbols As New List(Of KeyValuePair(Of String, Object)) From {
             New KeyValuePair(Of String, Object)(My.Settings.Framework, True)
         }
@@ -1037,12 +1037,12 @@ namespace Application
             Exit Sub
         End If
         Try
-
+            _loading = True
             ' Position all 4 panels
             Dim halfClientWidth As Integer = (Me.SplitContainer1.ClientRectangle.Width - Me.SplitContainer1.SplitterWidth) \ 2
             Me.ConversionInputPanelEx.Width = halfClientWidth
             Me.ConversionInputPanelEx.Height = Me.SplitContainer1.Panel1.ClientRectangle.Height
-            Me.ConversionOutputPanelEx.Left = halfClientWidth + Me.SplitContainer1.SplitterWidth + 1
+            Me.ConversionOutputPanelEx.Left = halfClientWidth + Me.SplitContainer1.SplitterWidth + 2
             Me.ConversionOutputPanelEx.Width = halfClientWidth
             Me.ConversionOutputPanelEx.Height = Me.SplitContainer1.Panel1.Height
             Me.FileListPanelEx.Width = halfClientWidth
@@ -1055,27 +1055,30 @@ namespace Application
             If lineNumberInputWidth > 0 Then
                 Me.ConversionInput.Left = lineNumberInputWidth + 1
             Else
-                Me.ConversionInput.Left = 0
+                Me.ConversionInput.Left = 2
             End If
-            Me.ConversionInput.Height = Me.ConversionInputPanelEx.Height
-            Me.ConversionInput.Width = halfClientWidth - lineNumberInputWidth
+            Me.ConversionInput.Height = Me.ConversionInputPanelEx.Height - 6
+            Me.ConversionInput.Width = halfClientWidth - lineNumberInputWidth - 4
 
             Dim lineNumberOutputWidth As Integer = If(Me.LineNumbersForConversionOutput.Visible AndAlso Me.ConversionOutput.TextLength > 0, Me.LineNumbersForConversionOutput.Width, 0)
             If lineNumberOutputWidth > 0 Then
                 Me.ConversionOutput.Left = lineNumberOutputWidth + 1
             Else
-                Me.ConversionOutput.Left = 0
+                Me.ConversionOutput.Left = 2
             End If
-            Me.ConversionOutput.Height = Me.ConversionInputPanelEx.Height
-            Me.ConversionOutput.Width = halfClientWidth - lineNumberOutputWidth
+            Me.ConversionOutput.Height = Me.ConversionInputPanelEx.Height - 6
+            Me.ConversionOutput.Width = halfClientWidth - lineNumberOutputWidth - 6
 
-            Me.ListBoxFileList.Width = halfClientWidth
-            Me.ListBoxFileList.Height = Me.SplitContainer1.Panel2.ClientRectangle.Height
+            Me.FileListListBox.Left = 2
+            Me.FileListListBox.Width = Me.FileListPanelEx.ClientRectangle.Width - 4
+            Me.FileListListBox.Height = Me.FileListPanelEx.ClientRectangle.Height - 2
 
-            Me.ListBoxErrorList.Width = halfClientWidth
-            Me.ListBoxErrorList.Height = Me.SplitContainer1.Panel2.ClientRectangle.Height
+            Me.ErrorListListBox.Left = 2
+            Me.ErrorListListBox.Width = Me.ErrorListPanelEx.ClientRectangle.Width - 4
+            Me.ErrorListListBox.Height = Me.ErrorListPanelEx.ClientRectangle.Height - 2
 
             Me.StatusStripCurrentFileName.Width = halfClientWidth
+            _loading = False
         Catch ex As Exception
             Stop
         End Try

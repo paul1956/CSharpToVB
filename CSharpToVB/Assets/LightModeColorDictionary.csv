@@ -66,34 +66,3 @@ xml literal - entity reference,185,100,100,255,255,255
 xml literal - name,132,70,70,255,255,255
 xml literal - processing instruction,128,128,128,255,255,255
 xml literal - text,85,85,85,255,255,255
-Button,0,0,0,240,240,240
-CheckBox,0,0,0,240,240,240
-ComboBox,0,0,0,255,255,255
-ContextMenuStrip,0,0,0,240,240,240
-FloatingMenu,0,0,0,240,240,240
-FolderBrowserDialog,0,0,0,240,240,240
-Label,0,0,0,240,240,240
-LineNumbersForRichTextBox,0,0,0,240,240,240
-ListBox,0,0,0,255,255,255
-MenuStrip,0,0,0,240,240,240
-Panel,0,0,0,240,240,240
-PanelBoarderStyle,0,0,0,240,240,240
-ProgressBar,0,120,215,240,240,240
-RichTextBox,0,0,0,255,255,255
-SplitBar,0,0,0,240,240,240
-SplitContainer,0,0,0,240,240,240
-StatusBar,0,0,0,240,240,240
-TextBox,0,0,0,240,240,240
-TitleBar,0,0,0,240,240,240
-ToolBar,0,0,0,240,240,240
-ToolStrip,0,0,0,240,240,240
-ToolStripButton,0,0,0,240,240,240
-ToolStripCheckBox,0,0,0,240,240,240
-ToolStripComboBox,0,0,0,255,255,255
-ToolStripLabel,0,0,0,240,240,240
-ToolStripMenuItem,0,0,0,240,240,240
-ToolStripProgressBar,0,0,0,240,240,240
-ToolStripSeparator,0,0,0,240,240,240
-ToolStripStatusLabel,0,0,0,240,240,240
-ToolStripTextProgressBar,0,0,0,240,240,240
-ToolTip,0,0,0,240,240,240

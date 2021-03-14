@@ -80,11 +80,11 @@ Public Module ColorizeSupport
             End If
             Dim dias As IEnumerable(Of Diagnostic) = If(TryCast(failures, Diagnostic()), failures?.ToArray())
             If failures Is Nothing Then
-                mainForm.ListBoxErrorList.Enabled = False
+                mainForm.ErrorListListBox.Enabled = False
             Else
-                mainForm.ListBoxErrorList.Enabled = True
+                mainForm.ErrorListListBox.Enabled = True
                 For Each dia As Diagnostic In dias
-                    mainForm.ListBoxErrorList.Items.Add($"{dia.Id} Line = {dia.Location.GetLineSpan.StartLinePosition.Line + 1} {dia.GetMessage}")
+                    mainForm.ErrorListListBox.Items.Add($"{dia.Id} Line = {dia.Location.GetLineSpan.StartLinePosition.Line + 1} {dia.GetMessage}")
                 Next
             End If
 

@@ -124,9 +124,9 @@ Partial Class Form1
         Me.ConversionOutput = New System.Windows.Forms.RichTextBox()
         Me.LineNumbersForConversionOutput = New CSharpToVBApp.LineNumbersForRichTextBox()
         Me.FileListPanelEx = New CSharpToVBApp.PanelEx()
-        Me.ListBoxFileList = New System.Windows.Forms.ListBox()
+        Me.FileListListBox = New System.Windows.Forms.ListBox()
         Me.ErrorListPanelEx = New CSharpToVBApp.PanelEx()
-        Me.ListBoxErrorList = New System.Windows.Forms.ListBox()
+        Me.ErrorListListBox = New System.Windows.Forms.ListBox()
         Me.StatusStrip1 = New System.Windows.Forms.StatusStrip()
         Me.StatusStripElapasedTimeLabel = New System.Windows.Forms.ToolStripStatusLabel()
         Me.StatusStripCurrentFileName = New System.Windows.Forms.ToolStripStatusLabel()
@@ -886,7 +886,7 @@ Partial Class Form1
         Me.LineNumbersForConversionInput.LineNrsOffset = New System.Drawing.Size(0, 0)
         Me.LineNumbersForConversionInput.Location = New System.Drawing.Point(4, 2)
         Me.LineNumbersForConversionInput.Margin = New System.Windows.Forms.Padding(0)
-        Me.LineNumbersForConversionInput.MarginLinesSide = LineNumberDockSidesEnums.LineNumberDockSides.Right
+        Me.LineNumbersForConversionInput.MarginLinesSide = LineNumbersForRichTextBox.LineNumberDockSides.Right
         Me.LineNumbersForConversionInput.MarginLinesThickness = 1.0!
         Me.LineNumbersForConversionInput.Name = "LineNumbersForConversionInput"
         Me.LineNumbersForConversionInput.Padding = New System.Windows.Forms.Padding(0, 0, 2, 0)
@@ -926,7 +926,7 @@ Partial Class Form1
         Me.LineNumbersForConversionOutput.LineNrsOffset = New System.Drawing.Size(0, 0)
         Me.LineNumbersForConversionOutput.Location = New System.Drawing.Point(4, 3)
         Me.LineNumbersForConversionOutput.Margin = New System.Windows.Forms.Padding(0)
-        Me.LineNumbersForConversionOutput.MarginLinesSide = LineNumberDockSidesEnums.LineNumberDockSides.Right
+        Me.LineNumbersForConversionOutput.MarginLinesSide = LineNumbersForRichTextBox.LineNumberDockSides.Right
         Me.LineNumbersForConversionOutput.MarginLinesThickness = 1.0!
         Me.LineNumbersForConversionOutput.Name = "LineNumbersForConversionOutput"
         Me.LineNumbersForConversionOutput.Padding = New System.Windows.Forms.Padding(0, 0, 2, 0)
@@ -936,7 +936,8 @@ Partial Class Form1
         '
         'FileListPanelEx
         '
-        Me.FileListPanelEx.Controls.Add(Me.ListBoxFileList)
+        Me.FileListPanelEx.Controls.Add(Me.FileListListBox)
+        Me.FileListPanelEx.Dock = DockStyle.Left
         Me.FileListPanelEx.Location = New System.Drawing.Point(0, 0)
         Me.FileListPanelEx.Margin = New System.Windows.Forms.Padding(0)
         Me.FileListPanelEx.Name = "FileListPanelEx"
@@ -944,20 +945,21 @@ Partial Class Form1
         Me.FileListPanelEx.Size = New System.Drawing.Size(950, 57)
         Me.FileListPanelEx.TabIndex = 2
         '
-        'ListBoxFileList
+        'FileListListBox
         '
-        Me.ListBoxFileList.ContextMenuStrip = Me.ContextMenuStrip1
-        Me.ListBoxFileList.Enabled = False
-        Me.ListBoxFileList.IntegralHeight = True
-        Me.ListBoxFileList.ItemHeight = 15
-        Me.ListBoxFileList.Location = New System.Drawing.Point(2, 2)
-        Me.ListBoxFileList.Name = "ListBoxFileList"
-        Me.ListBoxFileList.Size = New System.Drawing.Size(930, 49)
-        Me.ListBoxFileList.TabIndex = 0
+        Me.FileListListBox.ContextMenuStrip = Me.ContextMenuStrip1
+        Me.FileListListBox.Enabled = False
+        Me.FileListListBox.IntegralHeight = True
+        Me.FileListListBox.ItemHeight = 15
+        Me.FileListListBox.Location = New System.Drawing.Point(0, 0)
+        Me.FileListListBox.Name = "FileListListBox"
+        Me.FileListListBox.Size = New System.Drawing.Size(930, 49)
+        Me.FileListListBox.TabIndex = 0
         '
         'ErrorListPanelEx
         '
-        Me.ErrorListPanelEx.Controls.Add(Me.ListBoxErrorList)
+        Me.ErrorListPanelEx.Controls.Add(Me.ErrorListListBox)
+        Me.ErrorListPanelEx.Dock = DockStyle.Right
         Me.ErrorListPanelEx.Location = New System.Drawing.Point(966, 0)
         Me.ErrorListPanelEx.Margin = New System.Windows.Forms.Padding(0)
         Me.ErrorListPanelEx.Name = "ErrorListPanelEx"
@@ -965,17 +967,17 @@ Partial Class Form1
         Me.ErrorListPanelEx.Size = New System.Drawing.Size(954, 57)
         Me.ErrorListPanelEx.TabIndex = 3
         '
-        'ListBoxErrorList
+        'ErrorListListBox
         '
-        Me.ListBoxErrorList.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.ListBoxErrorList.ContextMenuStrip = Me.ContextMenuStrip1
-        Me.ListBoxErrorList.Enabled = False
-        Me.ListBoxErrorList.IntegralHeight = True
-        Me.ListBoxErrorList.ItemHeight = 15
-        Me.ListBoxErrorList.Location = New System.Drawing.Point(2, 2)
-        Me.ListBoxErrorList.Name = "ListBoxErrorList"
-        Me.ListBoxErrorList.Size = New System.Drawing.Size(948, 49)
-        Me.ListBoxErrorList.TabIndex = 1
+        Me.ErrorListListBox.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.ErrorListListBox.ContextMenuStrip = Me.ContextMenuStrip1
+        Me.ErrorListListBox.Enabled = False
+        Me.ErrorListListBox.IntegralHeight = True
+        Me.ErrorListListBox.ItemHeight = 15
+        Me.ErrorListListBox.Location = New System.Drawing.Point(0, 0)
+        Me.ErrorListListBox.Name = "ErrorListListBox"
+        Me.ErrorListListBox.Size = New System.Drawing.Size(948, 49)
+        Me.ErrorListListBox.TabIndex = 1
         '
         'StatusStrip1
         '
@@ -1120,12 +1122,12 @@ Partial Class Form1
     Friend WithEvents ConversionInputPanelEx As PanelEx
     Friend WithEvents ConversionOutput As RichTextBox
     Friend WithEvents ConversionOutputPanelEx As PanelEx
+    Friend WithEvents ErrorListListBox As ListBox
+    Friend WithEvents FileListListBox As ListBox
     Friend WithEvents InputFolderBrowserDialog1 As FolderBrowserDialog
     Friend WithEvents LabelErrorCount As Label
     Friend WithEvents LineNumbersForConversionInput As LineNumbersForRichTextBox
     Friend WithEvents LineNumbersForConversionOutput As LineNumbersForRichTextBox
-    Friend WithEvents ListBoxErrorList As ListBox
-    Friend WithEvents ListBoxFileList As ListBox
     Friend WithEvents MenuStrip1 As MenuStrip
     Friend WithEvents mnuCompile As ToolStripMenuItem
     Friend WithEvents mnuConvert As ToolStripMenuItem
