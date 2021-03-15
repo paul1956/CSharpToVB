@@ -992,6 +992,17 @@ Partial Class Form1
         Me.StatusStrip1.TabIndex = 6
         Me.StatusStrip1.Text = "StatusStrip1"
         '
+        'StatusStripConversionProgressBar
+        '
+        Me.StatusStripConversionProgressBar.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right
+        Me.StatusStripConversionProgressBar.AutoSize = False
+        Me.StatusStripConversionProgressBar.DisplayIncrement = 10
+        Me.StatusStripConversionProgressBar.Name = "StatusStripConversionProgressBar"
+        Me.StatusStripConversionProgressBar.Size = New System.Drawing.Size(200, 16)
+        Me.StatusStripConversionProgressBar.Step = 1
+        Me.StatusStripConversionProgressBar.Style = System.Windows.Forms.ProgressBarStyle.Continuous
+        Me.StatusStripConversionProgressBar.TextImageRelation = System.Windows.Forms.TextImageRelation.Overlay
+        '
         'StatusStripElapasedTimeLabel
         '
         Me.StatusStripElapasedTimeLabel.AutoSize = False
@@ -1013,17 +1024,6 @@ Partial Class Form1
         Me.StatusStripSpacer.Name = "StatusStripSpacer"
         Me.StatusStripSpacer.Size = New System.Drawing.Size(1058, 17)
         Me.StatusStripSpacer.Spring = True
-        '
-        'StatusStripConversionProgressBar
-        '
-        Me.StatusStripConversionProgressBar.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right
-        Me.StatusStripConversionProgressBar.AutoSize = False
-        Me.StatusStripConversionProgressBar.DisplayIncrement = 10
-        Me.StatusStripConversionProgressBar.Name = "StatusStripConversionProgressBar"
-        Me.StatusStripConversionProgressBar.Size = New System.Drawing.Size(200, 16)
-        Me.StatusStripConversionProgressBar.Step = 1
-        Me.StatusStripConversionProgressBar.Style = System.Windows.Forms.ProgressBarStyle.Continuous
-        Me.StatusStripConversionProgressBar.TextImageRelation = System.Windows.Forms.TextImageRelation.Overlay
         '
         'StatusStripConversionFileProgressLabel
         '
