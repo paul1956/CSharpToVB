@@ -21,7 +21,7 @@ Friend Module LoadBufferSupport
 
         Dim lines() As String = sourceText.SplitLines
         If mainForm.mnuOptionsColorizeSource.Checked Then
-            Colorize(mainForm, GetClassifiedRanges(lines.Join(vbCrLf), LanguageNames.CSharp), mainForm.ConversionInput, lines.Length)
+            Colorize(mainForm, GetClassifiedRanges(lines.Join(vbCrLf), LanguageNames.CSharp).ToList(), mainForm.ConversionInput, lines.Length)
             mainForm.ConversionInput.Select(0, 0)
         Else
             mainForm.ConversionInput.Text = lines.Join(vbCrLf)
@@ -46,7 +46,7 @@ Friend Module LoadBufferSupport
 
         Dim lines() As String = sourceText.SplitLines
         If mainForm.mnuOptionsColorizeSource.Checked Then
-            Colorize(mainForm, GetClassifiedRanges(lines.Join(vbCrLf), LanguageNames.VisualBasic), mainForm.ConversionOutput, lines.Length)
+            Colorize(mainForm, GetClassifiedRanges(lines.Join(vbCrLf), LanguageNames.VisualBasic).ToList(), mainForm.ConversionOutput, lines.Length)
             mainForm.ConversionOutput.Select(0, 0)
         Else
             mainForm.ConversionOutput.Text = lines.Join(vbCrLf)

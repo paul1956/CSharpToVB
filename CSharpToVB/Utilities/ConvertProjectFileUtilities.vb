@@ -182,6 +182,8 @@ Public Module ConvertProjectFileUtilities
             End If
             Directory.CreateDirectory(Path.GetDirectoryName(destFileNameWithPath))
             File.Copy(Path.Combine(New FileInfo(sourceFilePath).Directory.FullName, partialPathWithFileName), destFileNameWithPath, overwrite:=True)
+        Catch ex As ObjectDisposedException
+            End
         Catch ex As Exception
             Throw
         End Try

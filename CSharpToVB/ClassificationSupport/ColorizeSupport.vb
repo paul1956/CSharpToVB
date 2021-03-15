@@ -52,7 +52,13 @@ Public Module ColorizeSupport
         Return textToCompile
     End Function
 
-    Friend Sub Colorize(mainForm As Form1, fragmentRange As IEnumerable(Of Range), conversionBuffer As RichTextBox)
+    ''' <summary>
+    ''' This function only colorizes 1 range it is an optimization to handle editing and is not perfect
+    ''' </summary>
+    ''' <param name="mainForm"></param>
+    ''' <param name="fragmentRange"></param>
+    ''' <param name="conversionBuffer"></param>
+    Friend Sub Colorize(mainForm As Form1, fragmentRange As List(Of Range), conversionBuffer As RichTextBox)
         Dim currentChar As Integer = conversionBuffer.SelectionStart
         Dim currentLength As Integer = conversionBuffer.SelectionLength
         With conversionBuffer
@@ -69,7 +75,7 @@ Public Module ColorizeSupport
         End With
     End Sub
 
-    Friend Sub Colorize(mainForm As Form1, fragmentRange As IEnumerable(Of Range), conversionBuffer As RichTextBox, lines As Integer, Optional failures As IEnumerable(Of Diagnostic) = Nothing)
+    Friend Sub Colorize(mainForm As Form1, fragmentRange As List(Of Range), conversionBuffer As RichTextBox, lines As Integer, Optional failures As IEnumerable(Of Diagnostic) = Nothing)
         If mainForm._inColorize Then
             Exit Sub
         End If
@@ -128,6 +134,8 @@ Public Module ColorizeSupport
             End If
             mainForm.StatusStripConversionProgressBar.Clear()
         Catch ex As OperationCanceledException
+        Catch ex As ObjectDisposedException
+            End
         Catch ex As Exception
             Stop
         Finally
@@ -151,7 +159,7 @@ Public Module ColorizeSupport
         If compileResult.Success AndAlso compileResult.EmitResult.Success Then
             textToCompile = FilterOutTopLevelStatementCode(textToCompile)
             If My.Settings.ColorizeOutput Then
-                Colorize(mainForm, GetClassifiedRanges(textToCompile, LanguageNames.VisualBasic), mainForm.ConversionOutput, textToCompile.SplitLines.Length)
+                Colorize(mainForm, GetClassifiedRanges(textToCompile, LanguageNames.VisualBasic).ToList(), mainForm.ConversionOutput, textToCompile.SplitLines.Length)
                 mainForm.ConversionOutput.Select(0, 0)
             Else
                 mainForm.ConversionOutput.Text = textToCompile
@@ -161,13 +169,13 @@ Public Module ColorizeSupport
                 textToCompile = FilterOutTopLevelStatementCode(textToCompile)
                 mainForm._resultOfConversion.ResultStatus = ResultTriState.Success
                 If My.Settings.ColorizeOutput Then
-                    Colorize(mainForm, GetClassifiedRanges(textToCompile, LanguageNames.VisualBasic), mainForm.ConversionOutput, textToCompile.SplitLines.Length, mainForm._resultOfConversion.GetFilteredListOfFailures())
+                    Colorize(mainForm, GetClassifiedRanges(textToCompile, LanguageNames.VisualBasic).ToList(), mainForm.ConversionOutput, textToCompile.SplitLines.Length, mainForm._resultOfConversion.GetFilteredListOfFailures())
                     mainForm.ConversionOutput.Select(0, 0)
                 Else
                     mainForm.ConversionOutput.Text = textToCompile
                 End If
             Else
-                Colorize(mainForm, GetClassifiedRanges(textToCompile, LanguageNames.VisualBasic), mainForm.ConversionOutput, textToCompile.SplitLines.Length, mainForm._resultOfConversion.GetFilteredListOfFailures())
+                Colorize(mainForm, GetClassifiedRanges(textToCompile, LanguageNames.VisualBasic).ToList(), mainForm.ConversionOutput, textToCompile.SplitLines.Length, mainForm._resultOfConversion.GetFilteredListOfFailures())
             End If
         End If
         mainForm.ConversionOutput.Visible = True

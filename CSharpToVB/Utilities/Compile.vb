@@ -99,6 +99,8 @@ Public Module Compile
             Try
                 compileResult = compilation.Emit(ms)
                 compileSuccess = True
+            Catch ex As ObjectDisposedException
+                End
             Catch
                 ' Ignore fatal compiler errors
             End Try

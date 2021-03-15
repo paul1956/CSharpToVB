@@ -83,6 +83,8 @@ Public Module FilePathExtensions
                     totalFilesToProcess += 1
                 End If
             Next
+        Catch ex As ObjectDisposedException
+            End
         Catch ex As OperationCanceledException
             Throw
         Catch ua As UnauthorizedAccessException

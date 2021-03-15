@@ -329,6 +329,7 @@ Public Module ProcessProjectUtilities
                 End If
             End If
         Catch ex As ObjectDisposedException
+            End
         Finally
             mainForm.UpdateProgress("")
             SetButtonStopAndCursor(mainForm, mainForm.ButtonStopConversion, stopButtonVisible:=False)

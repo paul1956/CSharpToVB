@@ -18,7 +18,7 @@ Partial Public Class Form1
     Private ReadOnly _frameworkTypeList As New List(Of ToolStripMenuItem)
     Private ReadOnly _frameworkVersionList As New Dictionary(Of String, (item As ToolStripMenuItem, Parent As ToolStripMenuItem))
     Private _mCapturedRenderer As ToolStripRenderer
-    Private _tlsEnable As Boolean
+    Private _topLevelStatementConversionEnable As Boolean
     Friend _cancellationTokenSource As CancellationTokenSource
     Friend _doNotFailOnError As Boolean
     Friend _inColorize As Boolean
@@ -93,9 +93,13 @@ Partial Public Class Form1
                 Exit Sub
             End If
         End If
-        If sourceControl.CanPaste(DataFormats.GetFormat(DataFormats.Rtf)) OrElse
-            sourceControl.CanPaste(DataFormats.GetFormat(DataFormats.Text)) Then
-            sourceControl.Paste(DataFormats.GetFormat("Text"))
+        If sourceControl IsNot Nothing AndAlso (sourceControl.CanPaste(DataFormats.GetFormat(DataFormats.Rtf)) OrElse
+                                                sourceControl.CanPaste(DataFormats.GetFormat(DataFormats.Text))
+                                               ) Then
+            _inColorize = True
+            sourceControl.SelectedText = Clipboard.GetText(TextDataFormat.Text)
+            _inColorize = False
+            Colorize(Me, GetClassifiedRanges(sourceControl.Text, LanguageNames.CSharp).ToList(), sourceControl, sourceControl.Lines.Length, New List(Of Diagnostic))
         End If
     End Sub
 
@@ -122,6 +126,7 @@ Partial Public Class Form1
                 Exit Sub
             End If
         End If
+        sourceControl.Focus()
         sourceControl.SelectAll()
     End Sub
 
@@ -171,17 +176,17 @@ Partial Public Class Form1
         Me.mnuViewShowSourceLineNumbers.Checked = inputBufferInUse And My.Settings.ShowSourceLineNumbers
         Me.mnuFileSaveSnippet.Enabled = inputBufferInUse
         If Me.mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
-            Colorize(Me, GetClassifiedRanges(Me.ConversionInput.Text, LanguageNames.CSharp), Me.ConversionInput)
+            Colorize(Me, GetClassifiedRanges(Me.ConversionInput.Text, LanguageNames.CSharp).ToList(), Me.ConversionInput)
         End If
         If Me.ConversionInput.Text.Any() Then
             Dim selectionStart As Integer = Me.ConversionInput.SelectionStart
             Dim selectionLength As Integer = Me.ConversionInput.SelectionLength
 
             Dim keywordIndex As Integer = Me.ConversionInput.FindIndexOfAny("namespace", "internal static class")
-            _tlsEnable = Me.ConversionInput.Text(0) <> "/"
+            _topLevelStatementConversionEnable = Me.ConversionInput.Text(0) <> "/"
             If keywordIndex >= 0 Then
                 Dim firstCharIndexOfNamespaceLine As Integer = Me.ConversionInput.GetFirstCharIndexFromLine(Me.ConversionInput.GetLineFromCharIndex(keywordIndex))
-                _tlsEnable = keywordIndex <> firstCharIndexOfNamespaceLine
+                _topLevelStatementConversionEnable = keywordIndex <> firstCharIndexOfNamespaceLine
             End If
             Me.ConversionInput.Select(selectionStart, selectionLength)
         End If
@@ -200,7 +205,7 @@ Partial Public Class Form1
         Me.mnuViewShowDestinationLineNumbers.Checked = outputBufferInUse And My.Settings.ShowDestinationLineNumbers
         Me.mnuCompile.Enabled = outputBufferInUse
         If Me.mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
-            Colorize(Me, GetClassifiedRanges(Me.ConversionInput.Text, LanguageNames.VisualBasic), Me.ConversionOutput)
+            Colorize(Me, GetClassifiedRanges(Me.ConversionOutput.Text, LanguageNames.VisualBasic).ToList(), Me.ConversionOutput)
         End If
         Me.SetSearchControls()
     End Sub
@@ -412,8 +417,8 @@ Partial Public Class Form1
 
     Private Sub mnuConvert_DropDownOpening(sender As Object, e As EventArgs) Handles mnuConvert.DropDownOpening
         If Me.ConversionInput.Text.Any Then
-            Me.mnuConvertConvertSnippet.Enabled = True ' For now always enable, Not _tlsEnable
-            Me.mnuConvertConvertTopLevelStmts.Enabled = _tlsEnable
+            Me.mnuConvertConvertSnippet.Enabled = True ' For now always enable, Not _topLevelStatementConversionEnable
+            Me.mnuConvertConvertTopLevelStmts.Enabled = _topLevelStatementConversionEnable
         Else
             Me.mnuConvertConvertSnippet.Enabled = False
             Me.mnuConvertConvertTopLevelStmts.Enabled = False
@@ -574,13 +579,18 @@ namespace Application
 
     Private Sub mnuEditPaste_Click(sender As Object, e As EventArgs) Handles mnuEditPaste.Click
         If Me.CurrentBuffer IsNot Nothing Then
+            _inColorize = True
             Me.CurrentBuffer.SelectedText = Clipboard.GetText(TextDataFormat.Text)
+            _inColorize = False
+            Me.CurrentBuffer.Focus()
+            Colorize(Me, GetClassifiedRanges(Me.CurrentBuffer.Text, LanguageNames.CSharp).ToList(), Me.CurrentBuffer, Me.CurrentBuffer.Lines.Length, New List(Of Diagnostic))
         End If
     End Sub
 
     Private Sub mnuEditRedo_Click(sender As Object, e As EventArgs) Handles mnuEditRedo.Click
         Dim sourceControl As RichTextBox = Me.CurrentBuffer
         If sourceControl IsNot Nothing AndAlso sourceControl.CanRedo Then
+            sourceControl.Focus()
             sourceControl.Redo()
         End If
 
@@ -589,6 +599,7 @@ namespace Application
     Private Sub mnuEditSelectAll_Click(sender As Object, e As EventArgs) Handles mnuEditSelectAll.Click
         Dim sourceControl As RichTextBox = Me.CurrentBuffer
         If sourceControl IsNot Nothing Then
+            sourceControl.Focus()
             sourceControl.SelectAll()
         End If
     End Sub
@@ -982,14 +993,14 @@ namespace Application
         'ChangeTheme(_currentThemeDictionary, My.Forms.Form1.Controls)
         If Me.ConversionInput.Text.Any Then
             If Me.mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
-                Colorize(Me, GetClassifiedRanges(sourceCode:=Me.ConversionInput.Text, LanguageNames.CSharp), conversionBuffer:=Me.ConversionInput, lines:=Me.ConversionInput.Lines.Length)
+                Colorize(Me, GetClassifiedRanges(sourceCode:=Me.ConversionInput.Text, LanguageNames.CSharp).ToList(), Me.ConversionInput, Me.ConversionInput.Lines.Length)
                 Me.ConversionInput.Select(0, 0)
             End If
 
         End If
         If Me.ConversionOutput.Text.Any Then
             If Me.mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
-                Colorize(Me, GetClassifiedRanges(sourceCode:=Me.ConversionOutput.Text, LanguageNames.VisualBasic), conversionBuffer:=Me.ConversionOutput, lines:=Me.ConversionOutput.Lines.Length)
+                Colorize(Me, GetClassifiedRanges(sourceCode:=Me.ConversionOutput.Text, LanguageNames.VisualBasic).ToList(), Me.ConversionOutput, Me.ConversionOutput.Lines.Length)
                 Me.ConversionOutput.Select(0, 0)
             End If
         End If
@@ -1079,6 +1090,8 @@ namespace Application
 
             Me.StatusStripCurrentFileName.Width = halfClientWidth
             _loading = False
+        Catch ex As ObjectDisposedException
+            End
         Catch ex As Exception
             Stop
         End Try
