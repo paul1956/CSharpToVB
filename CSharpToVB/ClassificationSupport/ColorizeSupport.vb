@@ -149,7 +149,7 @@ Public Module ColorizeSupport
     Friend Sub Compile_Colorize(mainForm As Form1, textToCompile As String, vbPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)))
         Dim compileResult As (Success As Boolean, EmitResult As EmitResult) = CompileVisualBasicString(textToCompile, vbPreprocessorSymbols, DiagnosticSeverity.Error, mainForm._resultOfConversion)
 
-        mainForm.LabelErrorCount.Text = $"Number Of Errors:  {mainForm._resultOfConversion.GetFilteredListOfFailures().Count}"
+        mainForm.LabelErrorCount.Text = $"Number of Errors:  {mainForm._resultOfConversion.GetFilteredListOfFailures().Count}"
         If Not My.Settings.IncludeTopLevelStmtProtoInCode Then
             mainForm._inColorize = True
 
