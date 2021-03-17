@@ -87,7 +87,12 @@ Public Module TsToolBaseSupport
     End Function
 
     <Extension>
-    Friend Function SetSearchControls(mainForm As Form1, Optional returnInputInUse As Boolean = False) As Boolean
+    Friend Function SetSearchControls(mainForm As Form1) As Boolean
+        Return mainForm.SetSearchControls(False)
+    End Function
+
+    <Extension>
+    Friend Function SetSearchControls(mainForm As Form1, returnInputInUse As Boolean) As Boolean
         Dim inputBufferInUse As Boolean
         Dim outputBufferInUse As Boolean
         inputBufferInUse = mainForm.ConversionInput.Text.Any

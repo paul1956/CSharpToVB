@@ -31,7 +31,7 @@ Option Strict Off
         ' Do not remove Version
         Public Property Version As Integer = 1
 
-        Private Shared Sub CSharpWorkspaceSetup(text As String, ByRef workspace As TestWorkspace, ByRef doc As Document, Optional parseOptions As CSharpParseOptions = Nothing)
+        Private Shared Sub CSharpWorkspaceSetup(text As String, ByRef workspace As TestWorkspace, ByRef doc As Document, parseOptions As CSharpParseOptions)
             workspace = New TestWorkspace()
             Dim projectId As ProjectId = ProjectId.CreateNewId()
             Dim documentId As DocumentId = DocumentId.CreateNewId(projectId)
@@ -108,8 +108,9 @@ Option Strict Off
             Return "Files identical"
         End Function
 
-        Private Shared Sub VbWorkspaceSetup(ByRef workspace As TestWorkspace, ByRef doc As Document,
-                                            Optional parseOptions As VisualBasicParseOptions = Nothing)
+        Private Shared Sub VbWorkspaceSetup(ByRef workspace As TestWorkspace,
+                                            ByRef doc As Document,
+                                            parseOptions As VisualBasicParseOptions)
             workspace = New TestWorkspace()
             If parseOptions Is Nothing Then
                 parseOptions = New VisualBasicParseOptions(
@@ -176,7 +177,7 @@ Option Strict Off
 
             Dim actualResult As String = outputDocument.WithSyntaxRoot(
                 root:=outputNode.NormalizeWhitespaceEx(useDefaultCasing:=True,
-                                                       PreserveCRLF:=True)
+                                                       preserveCRLF:=True)
                                                       ).GetTextAsync().GetAwaiter().GetResult().ToString()
 
             Using workspace As AdhocWorkspace = New AdhocWorkspace()

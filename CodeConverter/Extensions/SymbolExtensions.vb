@@ -48,9 +48,7 @@ Namespace Extensions
         End Function
 
         <Extension>
-        Friend Function ExtractBestMatch(Of TSymbol As {Class, ISymbol})(info As SymbolInfo, Optional isMatch As Func(Of TSymbol, Boolean) = Nothing) As TSymbol
-' ReSharper disable once InconsistentNaming
-            isMatch = If(isMatch, Function(_1) True)
+        Friend Function ExtractBestMatch(Of TSymbol As {Class, ISymbol})(info As SymbolInfo, isMatch As Func(Of TSymbol, Boolean)) As TSymbol
             If info.Symbol Is Nothing AndAlso info.CandidateSymbols.IsEmpty Then
                 Return Nothing
             End If

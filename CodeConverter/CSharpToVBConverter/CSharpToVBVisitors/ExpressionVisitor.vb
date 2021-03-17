@@ -281,7 +281,8 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             Private Function IsNameOfExpression(node As CSS.InvocationExpressionSyntax) As Boolean
                 Dim isIdentifierName As Boolean = TypeOf node.Expression Is CSS.IdentifierNameSyntax
                 Dim methodIdentifier As CSS.IdentifierNameSyntax = If(isIdentifierName, CType(node.Expression, CSS.IdentifierNameSyntax), Nothing)
-                Return isIdentifierName AndAlso methodIdentifier?.Identifier.Text = "nameof" AndAlso _semanticModel.GetSymbolInfo(methodIdentifier).ExtractBestMatch(Of ISymbol)() Is Nothing
+                ' ReSharper disable once InconsistentNaming
+                Return isIdentifierName AndAlso methodIdentifier?.Identifier.Text = "nameof" AndAlso _semanticModel.GetSymbolInfo(methodIdentifier).ExtractBestMatch(Of ISymbol)(Function(_1) True) Is Nothing
             End Function
 
             Private Function IsStringExpression(node As SyntaxNode) As Boolean
@@ -452,7 +453,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     If removeLeadingTrivia Then
                         fieldInitializer = fieldInitializer.WithoutLeadingTrivia
                     End If
-                    Dim field As FieldInitializerSyntax = fieldInitializer.NormalizeWhitespaceEx(useDefaultCasing:=True, PreserveCRLF:=True)
+                    Dim field As FieldInitializerSyntax = fieldInitializer.NormalizeWhitespaceEx(useDefaultCasing:=True, preserveCRLF:=True)
                     Dim firstTrivia As Boolean = True
                     Dim foundComment As Boolean = False
                     Dim fieldLeadingTrivia As SyntaxTriviaList = field.GetLeadingTrivia

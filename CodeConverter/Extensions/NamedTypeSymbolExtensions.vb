@@ -10,6 +10,17 @@ Imports Microsoft.CodeAnalysis
 Namespace Extensions
     Public Module NamedTypeSymbolExtensions
 
+        <Extension>
+        Private Function FindImplementationForAbstractMember(type As INamedTypeSymbol, symbol As ISymbol) As ISymbol
+            If symbol.IsAbstract Then
+                Return type.GetBaseTypesAndThis() _
+                    .SelectMany(Function(t As INamedTypeSymbol) t.GetMembers(symbol.Name)) _
+                    .FirstOrDefault(Function(s As ISymbol) SymbolEqualityComparer.Default.Equals(symbol, s.GetOverriddenMember()))
+            End If
+
+            Return Nothing
+        End Function
+
         Private Function GetAbstractClassesToImplement(abstractClasses As IEnumerable(Of INamedTypeSymbol)) As ImmutableArray(Of INamedTypeSymbol)
             Return abstractClasses.SelectMany(Function(a As INamedTypeSymbol) a.GetBaseTypesAndThis()).Where(Function(t As INamedTypeSymbol) t.IsAbstractClass()).ToImmutableArray()
         End Function
@@ -203,17 +214,6 @@ Namespace Extensions
         End Sub
 
         <Extension>
-        Friend Function FindImplementationForAbstractMember(type As INamedTypeSymbol, symbol As ISymbol) As ISymbol
-            If symbol.IsAbstract Then
-                Return type.GetBaseTypesAndThis() _
-                    .SelectMany(Function(t As INamedTypeSymbol) t.GetMembers(symbol.Name)) _
-                    .FirstOrDefault(Function(s As ISymbol) SymbolEqualityComparer.Default.Equals(symbol, s.GetOverriddenMember()))
-            End If
-
-            Return Nothing
-        End Function
-
-        <Extension>
         Friend Function GetAllImplementedMembers(classOrStructType As INamedTypeSymbol,
                                                            interfacesOrAbstractClasses As IEnumerable(Of INamedTypeSymbol),
                                                            cancelToken As CancellationToken) As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))
@@ -236,7 +236,7 @@ Namespace Extensions
         End Function
 
         <Extension>
-        Public Iterator Function GetBaseTypesAndThis(namedType As INamedTypeSymbol) As IEnumerable(Of INamedTypeSymbol)
+        Friend Iterator Function GetBaseTypesAndThis(namedType As INamedTypeSymbol) As IEnumerable(Of INamedTypeSymbol)
             Dim current As INamedTypeSymbol = namedType
             Do While current IsNot Nothing
                 Yield current

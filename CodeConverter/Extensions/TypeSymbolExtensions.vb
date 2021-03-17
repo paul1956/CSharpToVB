@@ -16,8 +16,8 @@ Namespace Extensions
     Public Module TypeSymbolExtensions
 
         <Extension>
-        Private Function GetFullMetadataName(ns As INamespaceSymbol, Optional sb As StringBuilder = Nothing) As String
-            sb = If(sb, New StringBuilder)
+        Private Function GetFullMetadataName(ns As INamespaceSymbol) As String
+            Dim sb As New StringBuilder
             While ns IsNot Nothing AndAlso Not ns.IsGlobalNamespace
                 If sb.Length > 0 Then
                     sb.Insert(0, "."c)
@@ -30,7 +30,7 @@ Namespace Extensions
         End Function
 
         <Extension>
-        Friend Function GetFullyQualifiedNameSyntax(symbol As INamespaceOrTypeSymbol, Optional allowGlobalPrefix As Boolean = True) As VBS.NameSyntax
+        Friend Function GetFullyQualifiedNameSyntax(symbol As INamespaceOrTypeSymbol) As VBS.NameSyntax
             Select Case True
                 Case TypeOf symbol Is ITypeSymbol
                     Dim typeSyntax As VBS.TypeSyntax = CType(symbol, ITypeSymbol).ConvertToType.GetElementType
@@ -41,17 +41,7 @@ Namespace Extensions
                     If nullableType IsNot Nothing Then
                         typeSyntax = nullableType.ElementType
                     End If
-
-                    Dim nameSyntax1 As VBS.NameSyntax = CType(typeSyntax, VBS.NameSyntax)
-                    If allowGlobalPrefix Then
-                        Return nameSyntax1
-                    End If
-                    Dim globalNameNode As VBS.GlobalNameSyntax = nameSyntax1.DescendantNodes().OfType(Of VBS.GlobalNameSyntax)().FirstOrDefault()
-                    If globalNameNode IsNot Nothing Then
-                        nameSyntax1 = nameSyntax1.ReplaceNodes(TryCast(globalNameNode.Parent, VBS.QualifiedNameSyntax).Yield(), Function(orig, rewrite) orig.Right)
-                    End If
-
-                    Return nameSyntax1
+                    Return CType(typeSyntax, VBS.NameSyntax)
                 Case TypeOf symbol Is INamespaceSymbol
                     Dim ns As INamespaceSymbol = CType(symbol, INamespaceSymbol)
                     Return Factory.ParseName(ns.GetFullMetadataName())

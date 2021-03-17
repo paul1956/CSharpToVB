@@ -103,11 +103,9 @@ Namespace Utilities
         ''' <summary>
         ''' Returns the token after this token in the syntax tree.
         ''' </summary>
-        ''' <param name="predicate">Delegate applied to each token.  The token is returned if the predicate returns
-        ''' true.</param>
-        ''' <param name="stepInto">Delegate applied to trivia.  If this delegate is present then trailing trivia is
-        ''' included in the search.</param>
-        Private Shared Function GetNextToken(token As SyntaxToken, predicate As Func(Of SyntaxToken, Boolean), Optional stepInto As Func(Of SyntaxTrivia, Boolean) = Nothing) As SyntaxToken
+        ''' <param name="predicate">Delegate applied to each token.  The token is returned if the predicate returns true.</param>
+        ''' <param name="stepInto">Delegate applied to trivia.  If this delegate is present then trailing trivia is included in the search.</param>
+        Private Shared Function GetNextToken(token As SyntaxToken, predicate As Func(Of SyntaxToken, Boolean), stepInto As Func(Of SyntaxTrivia, Boolean)) As SyntaxToken
             If token = Nothing Then
                 Return Nothing
             End If
@@ -1573,7 +1571,7 @@ Namespace Utilities
         <ExcludeFromCodeCoverage>
         Public Overrides Function VisitWithBlock(node As WithBlockSyntax) As SyntaxNode
             Me.AddLineBreaksAfterTokenIfNeeded(node.WithStatement.GetLastToken(), 1)
-            Me.AddLinebreaksAfterElementsIfNeeded(node.Statements, 1, 1)
+            Me.AddLineBreaksAfterElementsIfNeeded(node.Statements, 1, 1)
             Me.MarkLastStatementIfNeeded(node.Statements)
             Return MyBase.VisitWithBlock(node)
         End Function

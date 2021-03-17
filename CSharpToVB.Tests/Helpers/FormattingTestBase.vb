@@ -12,7 +12,6 @@ Imports Xunit
 
 Namespace Helpers
 
-    '<UseExportProvider>
     Public MustInherit Class FormattingTestBase
 
         Protected Async Function AssertFormatAsync(expected As String,
@@ -51,8 +50,7 @@ Namespace Helpers
             End Using
         End Function
 
-        Protected Sub AssertFormatWithTransformation(
-            workspace As Workspace, expected As String, root As SyntaxNode, spans As IEnumerable(Of TextSpan), optionSet As OptionSet, Optional treeCompare As Boolean = True, Optional parseOptions As ParseOptions = Nothing)
+        Protected Sub AssertFormatWithTransformation(workspace As Workspace, expected As String, root As SyntaxNode, spans As IEnumerable(Of TextSpan), optionSet As OptionSet, treeCompare As Boolean, parseOptions As ParseOptions)
             Dim newRootNode As SyntaxNode = Formatter.Format(root, spans, workspace, optionSet, CancellationToken.None)
 
             Assert.Equal(expected, newRootNode.ToFullString())
