@@ -701,9 +701,9 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         modifiers(0) = modifiers(0).WithLeadingTrivia(SpaceTrivia)
                     End If
                     attributeLists.Insert(0, Factory.AttributeList(Factory.SingletonSeparatedList(ExtensionAttribute)).WithPrependedLeadingTrivia(newLeadingTrivia))
-                    If Not DirectCast(node.SyntaxTree, CS.CSharpSyntaxTree).HasUsingDirective(CompilerServices) Then
-                        If Not s_allImports.ContainsName(CompilerServices) Then
-                            s_allImports.Add(FactoryImportCompilerServices)
+                    If Not DirectCast(node.SyntaxTree, CS.CSharpSyntaxTree).HasUsingDirective(s_compilerServices) Then
+                        If Not _allImports.ContainsName(s_compilerServices) Then
+                            _allImports.Add(FactoryImportCompilerServices)
                         End If
                     End If
                 End If

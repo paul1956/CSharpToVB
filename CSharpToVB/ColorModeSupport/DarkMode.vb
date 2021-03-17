@@ -13,11 +13,6 @@ Public NotInheritable Class DarkMode
     Private Shared Function DwmSetWindowAttribute(hwnd As IntPtr, attr As Integer, ByRef attrValue As Integer, attrSize As Integer) As Integer
     End Function
 
-' ReSharper disable InconsistentNaming
-    Private Const DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 As Integer = 19
-    Private Const DWMWA_USE_IMMERSIVE_DARK_MODE As Integer = 20
-' ReSharper restore InconsistentNaming
-
     Public Shared Function IsWindows10(Optional build As Integer = -1) As Boolean
         Dim windowsMajor As Integer = Environment.OSVersion.Version.Major
         Dim windowsBuild As Integer = Environment.OSVersion.Version.Build

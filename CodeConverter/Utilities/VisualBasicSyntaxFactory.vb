@@ -16,7 +16,6 @@ Namespace Utilities
 
     Public Module VisualBasicSyntaxFactory
 
-        ' ReSharper disable InconsistentNaming
 
 #Region "Strings"
 
@@ -30,13 +29,14 @@ Namespace Utilities
 
 #Region "Runtime Service Names"
 
-        Public ReadOnly CompilerServices As String = "System.Runtime.CompilerServices"
-        Public ReadOnly InteropServices As String = "System.Runtime.InteropServices"
+        Public ReadOnly s_compilerServices As String = "System.Runtime.CompilerServices"
+        Public ReadOnly s_interopServices As String = "System.Runtime.InteropServices"
 
 #End Region
 
 #End Region
 
+        ' ReSharper disable InconsistentNaming
 #Region "Token"
 
         Public ReadOnly AmpersandToken As SyntaxToken = Factory.Token(SyntaxKind.AmpersandToken)
@@ -345,8 +345,8 @@ Namespace Utilities
             Return Factory.EndBlockStatement(EndBlockKind, EndKeyword.WithTrailingTrivia(SpaceTrivia), BlockKeyword).WithAppendedTrailingTrivia(finalTrivia).WithTrailingEol
         End Function
 
-        Public ReadOnly FactoryImportCompilerServices As ImportsStatementSyntax = Factory.ImportsStatement(Factory.SingletonSeparatedList(Of ImportsClauseSyntax)(Factory.SimpleImportsClause(Factory.IdentifierName(CompilerServices)))).WithAppendedEol
-        Public ReadOnly FactoryImportInteropServices As ImportsStatementSyntax = Factory.ImportsStatement(Factory.SingletonSeparatedList(Of ImportsClauseSyntax)(Factory.SimpleImportsClause(Factory.IdentifierName(InteropServices)))).WithAppendedEol
+        Public ReadOnly FactoryImportCompilerServices As ImportsStatementSyntax = Factory.ImportsStatement(Factory.SingletonSeparatedList(Of ImportsClauseSyntax)(Factory.SimpleImportsClause(Factory.IdentifierName(s_compilerServices)))).WithAppendedEol
+        Public ReadOnly FactoryImportInteropServices As ImportsStatementSyntax = Factory.ImportsStatement(Factory.SingletonSeparatedList(Of ImportsClauseSyntax)(Factory.SimpleImportsClause(Factory.IdentifierName(s_interopServices)))).WithAppendedEol
 
         Friend Function FactoryTypeArgumentList(DictionaryTypeElement As List(Of TypeSyntax)) As TypeArgumentListSyntax
             Return Factory.TypeArgumentList(openParenToken, OfKeyword.WithTrailingTrivia(SpaceTrivia), Factory.SeparatedList(DictionaryTypeElement), CloseParenToken)

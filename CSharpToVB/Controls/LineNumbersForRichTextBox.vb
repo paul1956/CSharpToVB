@@ -7,70 +7,69 @@ Imports System.ComponentModel
 <DefaultProperty("ParentRichTextBox")>
 Partial Public Class LineNumbersForRichTextBox : Inherits Control
 
-    ' ReSharper disable InconsistentNaming
-    Private WithEvents ZParent As RichTextBox = Nothing
+    Private WithEvents _zParent As RichTextBox = Nothing
 
-    Private WithEvents ZTimer As New Timer
+    Private WithEvents _zTimer As New Timer
 
-    Private ReadOnly _zLNIs As New List(Of LineNumberItem)
+    Private ReadOnly _zLineNunmberItems As New List(Of LineNumberItem)
 
     Private _zAutoSizing As Boolean = True
 
-    Private _zAutoSizing_Size As New Size(0, 0)
+    Private _zAutoSizingSize As New Size(0, 0)
 
-    Private _zBorderLines_Color As Color = Color.SlateGray
+    Private _zBorderLinesColor As Color = Color.SlateGray
 
-    Private _zBorderLines_Show As Boolean = True
+    Private _zBorderLinesShow As Boolean = True
 
-    Private _zBorderLines_Style As Drawing2D.DashStyle = Drawing2D.DashStyle.Dot
+    Private _zBorderLinesStyle As Drawing2D.DashStyle = Drawing2D.DashStyle.Dot
 
-    Private _zBorderLines_Thickness As Single = 1
+    Private _zBorderLinesThickness As Single = 1
 
     Private _zContentRectangle As Rectangle = Nothing
 
     Private _zDockSide As LineNumberDockSides = LineNumberDockSides.Left
 
-    Private _zGradient_Direction As Drawing2D.LinearGradientMode = Drawing2D.LinearGradientMode.Horizontal
+    Private _zGradientDirection As Drawing2D.LinearGradientMode = Drawing2D.LinearGradientMode.Horizontal
 
-    Private _zGradient_EndColor As Color = Color.LightSteelBlue
+    Private _zGradientEndColor As Color = Color.LightSteelBlue
 
-    Private _zGradient_Show As Boolean = True
+    Private _zGradientShow As Boolean = True
 
-    Private _zGradient_StartColor As Color = Color.FromArgb(0, 0, 0, 0)
+    Private _zGradientStartColor As Color = Color.FromArgb(0, 0, 0, 0)
 
-    Private _zGridLines_Color As Color = Color.SlateGray
+    Private _zGridLinesColor As Color = Color.SlateGray
 
-    Private _zGridLines_Show As Boolean = True
+    Private _zGridLinesShow As Boolean = True
 
-    Private _zGridLines_Style As Drawing2D.DashStyle = Drawing2D.DashStyle.Dot
+    Private _zGridLinesStyle As Drawing2D.DashStyle = Drawing2D.DashStyle.Dot
 
-    Private _zGridLines_Thickness As Single = 1
+    Private _zGridLinesThickness As Single = 1
 
-    Private _zLineNumbers_Alignment As ContentAlignment = ContentAlignment.TopRight
+    Private _zLineNumbersAlignment As ContentAlignment = ContentAlignment.TopRight
 
-    Private _zLineNumbers_AntiAlias As Boolean = True
+    Private _zLineNumbersAntiAlias As Boolean = True
 
-    Private _zLineNumbers_ClipByItemRectangle As Boolean = True
+    Private _zLineNumbersClipByItemRectangle As Boolean = True
 
-    Private _zLineNumbers_Format As String = "0"
+    Private _zLineNumbersFormat As String = "0"
 
-    Private _zLineNumbers_Offset As New Size(0, 0)
+    Private _zLineNumbersOffset As New Size(0, 0)
 
-    Private _zLineNumbers_Show As Boolean = True
+    Private _zLineNumbersShow As Boolean = True
 
-    Private _zLineNumbers_ShowAsHexadecimal As Boolean
+    Private _zLineNumbersShowAsHexadecimal As Boolean
 
-    Private _zLineNumbers_ShowLeadingZeroes As Boolean = True
+    Private _zLineNumbersShowLeadingZeroes As Boolean = True
 
-    Private _zMarginLines_Color As Color = Color.SlateGray
+    Private _zMarginLinesColor As Color = Color.SlateGray
 
-    Private _zMarginLines_Show As Boolean = True
+    Private _zMarginLinesShow As Boolean = True
 
-    Private _zMarginLines_Side As LineNumberDockSides = LineNumberDockSides.Right
+    Private _zMarginLinesSide As LineNumberDockSides = LineNumberDockSides.Right
 
-    Private _zMarginLines_Style As Drawing2D.DashStyle = Drawing2D.DashStyle.Solid
+    Private _zMarginLinesStyle As Drawing2D.DashStyle = Drawing2D.DashStyle.Solid
 
-    Private _zMarginLines_Thickness As Single = 1
+    Private _zMarginLinesThickness As Single = 1
 
     Private _zParentInMe As Integer
 
@@ -81,7 +80,6 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
     Private _zPointInParent As New Point(0, 0)
 
     Private _zSeeThroughMode As Boolean
-    ' ReSharper restore InconsistentNaming
 
     Public Sub New()
         Me.InitializeComponent()
@@ -95,7 +93,7 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
             .Margin = New Padding(0)
             .Padding = New Padding(0, 0, 2, 0)
         End With
-        With Me.ZTimer
+        With Me._zTimer
             .Enabled = True
             .Interval = 200
             .Stop()
@@ -115,11 +113,11 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
     <Description("Use this property to automatically resize the control (and reposition it if needed).")>
     <Category("Additional Behavior")>
     <DefaultValue(True)>
-    Public Property AutoSizing() As Boolean
+    Public Property AutoSizing As Boolean
         Get
             Return _zAutoSizing
         End Get
-        Set(value As Boolean)
+        Set
             _zAutoSizing = value
             Me.Refresh()
             Me.Invalidate()
@@ -127,75 +125,75 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
     End Property
 
     <Category("Additional Appearance")>
-    Public Property BackgroundGradientAlphaColor() As Color
+    Public Property BackgroundGradientAlphaColor As Color
         Get
-            Return _zGradient_StartColor
+            Return _zGradientStartColor
         End Get
-        Set(value As Color)
-            _zGradient_StartColor = value
+        Set
+            _zGradientStartColor = value
             Me.Invalidate()
         End Set
     End Property
 
     <Category("Additional Appearance")>
     <DefaultValue(GetType(Color), "LightSteelBlue")>
-    Public Property BackgroundGradientBetaColor() As Color
+    Public Property BackgroundGradientBetaColor As Color
         Get
-            Return _zGradient_EndColor
+            Return _zGradientEndColor
         End Get
-        Set(value As Color)
-            _zGradient_EndColor = value
+        Set
+            _zGradientEndColor = value
             Me.Invalidate()
         End Set
     End Property
 
     <Category("Additional Appearance")>
     <DefaultValue(Drawing2D.LinearGradientMode.Horizontal)>
-    Public Property BackgroundGradientDirection() As Drawing2D.LinearGradientMode
+    Public Property BackgroundGradientDirection As Drawing2D.LinearGradientMode
         Get
-            Return _zGradient_Direction
+            Return _zGradientDirection
         End Get
-        Set(value As Drawing2D.LinearGradientMode)
-            _zGradient_Direction = value
+        Set
+            _zGradientDirection = value
             Me.Invalidate()
         End Set
     End Property
 
     <Category("Additional Appearance")>
     <DefaultValue(GetType(Color), "SlateGray")>
-    Public Property BorderLinesColor() As Color
+    Public Property BorderLinesColor As Color
         Get
-            Return _zBorderLines_Color
+            Return _zBorderLinesColor
         End Get
-        Set(value As Color)
-            _zBorderLines_Color = value
+        Set
+            _zBorderLinesColor = value
             Me.Invalidate()
         End Set
     End Property
 
     <Category("Additional Appearance")>
     <DefaultValue(Drawing2D.DashStyle.Dot)>
-    Public Property BorderLinesStyle() As Drawing2D.DashStyle
+    Public Property BorderLinesStyle As Drawing2D.DashStyle
         Get
-            Return _zBorderLines_Style
+            Return _zBorderLinesStyle
         End Get
-        Set(value As Drawing2D.DashStyle)
+        Set
             If value = Drawing2D.DashStyle.Custom Then
                 value = Drawing2D.DashStyle.Solid
             End If
-            _zBorderLines_Style = value
+            _zBorderLinesStyle = value
             Me.Invalidate()
         End Set
     End Property
 
     <Category("Additional Appearance")>
     <DefaultValue(1)>
-    Public Property BorderLinesThickness() As Single
+    Public Property BorderLinesThickness As Single
         Get
-            Return _zBorderLines_Thickness
+            Return _zBorderLinesThickness
         End Get
-        Set(value As Single)
-            _zBorderLines_Thickness = Math.Max(1, Math.Min(255, value))
+        Set
+            _zBorderLinesThickness = Math.Max(1, Math.Min(255, value))
             Me.Invalidate()
         End Set
     End Property
@@ -203,11 +201,11 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
     <Description("Use this property to dock the LineNumbers to a chosen side of the chosen RichTextBox.")>
     <Category("Additional Behavior")>
     <DefaultValue(LineNumberDockSides.Left)>
-    Public Property DockSide() As LineNumberDockSides
+    Public Property DockSide As LineNumberDockSides
         Get
             Return _zDockSide
         End Get
-        Set(value As LineNumberDockSides)
+        Set
             _zDockSide = value
             Me.Refresh()
             Me.Invalidate()
@@ -216,39 +214,39 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
 
     <Category("Additional Appearance")>
     <DefaultValue(GetType(Color), "SlateGray")>
-    Public Property GridLinesColor() As Color
+    Public Property GridLinesColor As Color
         Get
-            Return _zGridLines_Color
+            Return _zGridLinesColor
         End Get
-        Set(value As Color)
-            _zGridLines_Color = value
+        Set
+            _zGridLinesColor = value
             Me.Invalidate()
         End Set
     End Property
 
     <Category("Additional Appearance")>
     <DefaultValue(Drawing2D.DashStyle.Dot)>
-    Public Property GridLinesStyle() As Drawing2D.DashStyle
+    Public Property GridLinesStyle As Drawing2D.DashStyle
         Get
-            Return _zGridLines_Style
+            Return _zGridLinesStyle
         End Get
-        Set(value As Drawing2D.DashStyle)
+        Set
             If value = Drawing2D.DashStyle.Custom Then
                 value = Drawing2D.DashStyle.Solid
             End If
-            _zGridLines_Style = value
+            _zGridLinesStyle = value
             Me.Invalidate()
         End Set
     End Property
 
     <Category("Additional Appearance")>
     <DefaultValue(1)>
-    Public Property GridLinesThickness() As Single
+    Public Property GridLinesThickness As Single
         Get
-            Return _zGridLines_Thickness
+            Return _zGridLinesThickness
         End Get
-        Set(value As Single)
-            _zGridLines_Thickness = Math.Max(1, Math.Min(255, value))
+        Set
+            _zGridLinesThickness = Math.Max(1, Math.Min(255, value))
             Me.Invalidate()
         End Set
     End Property
@@ -256,12 +254,12 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
     <Description("Use this to align the LineNumbers to a chosen corner (or center) within their item-area.")>
     <Category("Additional Behavior")>
     <DefaultValue(ContentAlignment.TopRight)>
-    Public Property LineNrsAlignment() As ContentAlignment
+    Public Property LineNrsAlignment As ContentAlignment
         Get
-            Return _zLineNumbers_Alignment
+            Return _zLineNumbersAlignment
         End Get
-        Set(value As ContentAlignment)
-            _zLineNumbers_Alignment = value
+        Set
+            _zLineNumbersAlignment = value
             Me.Invalidate()
         End Set
     End Property
@@ -269,12 +267,12 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
     <Description("Use this to apply Anti-Aliasing to the LineNumbers (high quality). Some fonts will look better without it, though.")>
     <Category("Additional Behavior")>
     <DefaultValue(True)>
-    Public Property LineNrsAntiAlias() As Boolean
+    Public Property LineNrsAntiAlias As Boolean
         Get
-            Return _zLineNumbers_AntiAlias
+            Return _zLineNumbersAntiAlias
         End Get
-        Set(value As Boolean)
-            _zLineNumbers_AntiAlias = value
+        Set
+            _zLineNumbersAntiAlias = value
             Me.Refresh()
             Me.Invalidate()
         End Set
@@ -283,12 +281,12 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
     <Description("Use this to set whether the LineNumbers should be shown as hexadecimal values.")>
     <Category("Additional Behavior")>
     <DefaultValue(False)>
-    Public Property LineNrsAsHexadecimal() As Boolean
+    Public Property LineNrsAsHexadecimal As Boolean
         Get
-            Return _zLineNumbers_ShowAsHexadecimal
+            Return _zLineNumbersShowAsHexadecimal
         End Get
-        Set(value As Boolean)
-            _zLineNumbers_ShowAsHexadecimal = value
+        Set
+            _zLineNumbersShowAsHexadecimal = value
             Me.Refresh()
             Me.Invalidate()
         End Set
@@ -297,12 +295,12 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
     <Description("Use this to set whether the LineNumbers are allowed to spill out of their item-area, or should be clipped by it.")>
     <Category("Additional Behavior")>
     <DefaultValue(True)>
-    Public Property LineNrsClippedByItemRectangle() As Boolean
+    Public Property LineNrsClippedByItemRectangle As Boolean
         Get
-            Return _zLineNumbers_ClipByItemRectangle
+            Return _zLineNumbersClipByItemRectangle
         End Get
-        Set(value As Boolean)
-            _zLineNumbers_ClipByItemRectangle = value
+        Set
+            _zLineNumbersClipByItemRectangle = value
             Me.Invalidate()
         End Set
     End Property
@@ -310,12 +308,12 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
     <Description("Use this to set whether the LineNumbers should have leading zeros (based on the total amount of text lines).")>
     <Category("Additional Behavior")>
     <DefaultValue(True)>
-    Public Property LineNrsLeadingZeroes() As Boolean
+    Public Property LineNrsLeadingZeroes As Boolean
         Get
-            Return _zLineNumbers_ShowLeadingZeroes
+            Return _zLineNumbersShowLeadingZeroes
         End Get
-        Set(value As Boolean)
-            _zLineNumbers_ShowLeadingZeroes = value
+        Set
+            _zLineNumbersShowLeadingZeroes = value
             Me.Refresh()
             Me.Invalidate()
         End Set
@@ -323,63 +321,63 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
 
     <Description("Use this property to manually reposition the LineNumbers, relative to their current location.")>
     <Category("Additional Behavior")>
-    Public Property LineNrsOffset() As Size
+    Public Property LineNrsOffset As Size
         Get
-            Return _zLineNumbers_Offset
+            Return _zLineNumbersOffset
         End Get
-        Set(value As Size)
-            _zLineNumbers_Offset = value
+        Set
+            _zLineNumbersOffset = value
             Me.Invalidate()
         End Set
     End Property
 
     <Category("Additional Appearance")>
     <DefaultValue(GetType(Color), "SlateGray")>
-    Public Property MarginLinesColor() As Color
+    Public Property MarginLinesColor As Color
         Get
-            Return _zMarginLines_Color
+            Return _zMarginLinesColor
         End Get
-        Set(value As Color)
-            _zMarginLines_Color = value
+        Set
+            _zMarginLinesColor = value
             Me.Invalidate()
         End Set
     End Property
 
     <Category("Additional Appearance")>
     <DefaultValue(LineNumberDockSides.Left)>
-    Public Property MarginLinesSide() As LineNumberDockSides
+    Public Property MarginLinesSide As LineNumberDockSides
         Get
-            Return _zMarginLines_Side
+            Return _zMarginLinesSide
         End Get
-        Set(value As LineNumberDockSides)
-            _zMarginLines_Side = value
+        Set
+            _zMarginLinesSide = value
             Me.Invalidate()
         End Set
     End Property
 
     <Category("Additional Appearance")>
     <DefaultValue(Drawing2D.DashStyle.Solid)>
-    Public Property MarginLinesStyle() As Drawing2D.DashStyle
+    Public Property MarginLinesStyle As Drawing2D.DashStyle
         Get
-            Return _zMarginLines_Style
+            Return _zMarginLinesStyle
         End Get
-        Set(value As Drawing2D.DashStyle)
+        Set
             If value = Drawing2D.DashStyle.Custom Then
                 value = Drawing2D.DashStyle.Solid
             End If
-            _zMarginLines_Style = value
+            _zMarginLinesStyle = value
             Me.Invalidate()
         End Set
     End Property
 
     <Category("Additional Appearance")>
     <DefaultValue(1)>
-    Public Property MarginLinesThickness() As Single
+    Public Property MarginLinesThickness As Single
         Get
-            Return _zMarginLines_Thickness
+            Return _zMarginLinesThickness
         End Get
-        Set(value As Single)
-            _zMarginLines_Thickness = Math.Max(1, Math.Min(255, value))
+        Set
+            _zMarginLinesThickness = Math.Max(1, Math.Min(255, value))
             Me.Invalidate()
         End Set
     End Property
@@ -387,11 +385,11 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
     <Description("Use this property to enable the control to act as an overlay on top of the RichTextBox.")>
     <Category("Additional Behavior")>
     <DefaultValue(False)>
-    Public Property SeeThroughMode() As Boolean
+    Public Property SeeThroughMode As Boolean
         Get
             Return _zSeeThroughMode
         End Get
-        Set(value As Boolean)
+        Set
             _zSeeThroughMode = value
             Me.Invalidate()
         End Set
@@ -400,12 +398,12 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
     <Description("The BackgroundGradient is a gradual blend of two colors, shown in the back of each LineNumber's item-area.")>
     <Category("Additional Behavior")>
     <DefaultValue(True)>
-    Public Property ShowBackgroundGradient() As Boolean
+    Public Property ShowBackgroundGradient As Boolean
         Get
-            Return _zGradient_Show
+            Return _zGradientShow
         End Get
-        Set(value As Boolean)
-            _zGradient_Show = value
+        Set
+            _zGradientShow = value
             Me.Invalidate()
         End Set
     End Property
@@ -413,12 +411,12 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
     <Description("BorderLines are shown on all sides of the LineNumber control.")>
     <Category("Additional Behavior")>
     <DefaultValue(True)>
-    Public Property ShowBorderLines() As Boolean
+    Public Property ShowBorderLines As Boolean
         Get
-            Return _zBorderLines_Show
+            Return _zBorderLinesShow
         End Get
-        Set(value As Boolean)
-            _zBorderLines_Show = value
+        Set
+            _zBorderLinesShow = value
             Me.Invalidate()
         End Set
     End Property
@@ -426,24 +424,24 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
     <Description("GridLines are the horizontal divider-lines shown above each LineNumber.")>
     <Category("Additional Behavior")>
     <DefaultValue(True)>
-    Public Property ShowGridLines() As Boolean
+    Public Property ShowGridLines As Boolean
         Get
-            Return _zGridLines_Show
+            Return _zGridLinesShow
         End Get
-        Set(value As Boolean)
-            _zGridLines_Show = value
+        Set
+            _zGridLinesShow = value
             Me.Invalidate()
         End Set
     End Property
 
     <Category("Additional Behavior")>
     <DefaultValue(True)>
-    Public Property ShowLineNrs() As Boolean
+    Public Property ShowLineNrs As Boolean
         Get
-            Return _zLineNumbers_Show
+            Return _zLineNumbersShow
         End Get
-        Set(value As Boolean)
-            _zLineNumbers_Show = value
+        Set
+            _zLineNumbersShow = value
             Me.Invalidate()
         End Set
     End Property
@@ -451,33 +449,33 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
     <Description("MarginLines are shown on the Left or Right (or both in Height-mode) of the LineNumber control.")>
     <Category("Additional Behavior")>
     <DefaultValue(True)>
-    Public Property ShowMarginLines() As Boolean
+    Public Property ShowMarginLines As Boolean
         Get
-            Return _zMarginLines_Show
+            Return _zMarginLinesShow
         End Get
-        Set(value As Boolean)
-            _zMarginLines_Show = value
+        Set
+            _zMarginLinesShow = value
             Me.Invalidate()
         End Set
     End Property
 
     <Browsable(False)>
-    Public Overrides Property AutoSize() As Boolean
+    Public Overrides Property AutoSize As Boolean
         Get
             Return MyBase.AutoSize
         End Get
-        Set(value As Boolean)
+        Set
             MyBase.AutoSize = value
             Me.Invalidate()
         End Set
     End Property
 
     <Browsable(True)>
-    Public Overrides Property Font() As Font
+    Public Overrides Property Font As Font
         Get
             Return MyBase.Font
         End Get
-        Set(value As Font)
+        Set
             MyBase.Font = value
             Me.Refresh()
             Me.Invalidate()
@@ -486,15 +484,15 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
 
     <Description("Use this property to enable LineNumbers for the chosen RichTextBox.")>
     <Category("Add LineNumbers to")>
-    Public Property ParentRichTextBox() As RichTextBox
+    Public Property ParentRichTextBox As RichTextBox
         Get
-            Return Me.ZParent
+            Return Me._zParent
         End Get
-        Set(value As RichTextBox)
-            Me.ZParent = value
-            If Me.ZParent IsNot Nothing Then
-                Me.Parent = Me.ZParent.Parent
-                Me.ZParent.Refresh()
+        Set
+            Me._zParent = value
+            If Me._zParent IsNot Nothing Then
+                Me.Parent = Me._zParent.Parent
+                Me._zParent.Refresh()
             End If
             Me.Text = ""
             Me.Refresh()
@@ -505,11 +503,11 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
     <DefaultValue("")>
     <AmbientValue("")>
     <Browsable(False)>
-    Public Overrides Property Text() As String
+    Public Overrides Property Text As String
         Get
             Return MyBase.Text
         End Get
-        Set(value As String)
+        Set
             MyBase.Text = ""
             Me.Invalidate()
         End Set
@@ -527,7 +525,7 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
         If zMax = zMin + 1 Or zMin = (zMax + zMin) \ 2 Then
             Exit Sub
         End If
-        Select Case Me.ZParent.GetPositionFromCharIndex((zMax + zMin) \ 2).Y
+        Select Case Me._zParent.GetPositionFromCharIndex((zMax + zMin) \ 2).Y
             Case Is = zTarget
                 '   BestStartIndex found
                 zMin = (zMax + zMin) \ 2
@@ -558,43 +556,43 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
 
         If _zAutoSizing = True Then
             Select Case True
-                Case Me.ZParent Is Nothing
+                Case Me._zParent Is Nothing
                     ' --- ReminderMessage sizing
-                    If _zAutoSizing_Size.Width > 0 Then
-                        zNewSize.Width = _zAutoSizing_Size.Width
+                    If _zAutoSizingSize.Width > 0 Then
+                        zNewSize.Width = _zAutoSizingSize.Width
                     End If
-                    If _zAutoSizing_Size.Height > 0 Then
-                        zNewSize.Height = _zAutoSizing_Size.Height
+                    If _zAutoSizingSize.Height > 0 Then
+                        zNewSize.Height = _zAutoSizingSize.Height
                     End If
                     Me.Size = zNewSize
 
                     '--- zParent isNot Nothing for the following cases
                 Case Me.Dock = DockStyle.Left Or Me.Dock = DockStyle.Right
-                    If _zAutoSizing_Size.Width > 0 Then
-                        zNewSize.Width = _zAutoSizing_Size.Width
+                    If _zAutoSizingSize.Width > 0 Then
+                        zNewSize.Width = _zAutoSizingSize.Width
                     End If
                     Me.Width = zNewSize.Width
 
                     ' --- DockSide is active L/R/H
                 Case _zDockSide <> LineNumberDockSides.None
-                    If _zAutoSizing_Size.Width > 0 Then
-                        zNewSize.Width = _zAutoSizing_Size.Width
+                    If _zAutoSizingSize.Width > 0 Then
+                        zNewSize.Width = _zAutoSizingSize.Width
                     End If
-                    zNewSize.Height = Me.ZParent.Height
+                    zNewSize.Height = Me._zParent.Height
                     If Me._zDockSide = LineNumberDockSides.Left Then
-                        zNewLocation.X = Me.ZParent.Left - zNewSize.Width - 1
+                        zNewLocation.X = Me._zParent.Left - zNewSize.Width - 1
                     End If
                     If Me._zDockSide = LineNumberDockSides.Right Then
-                        zNewLocation.X = Me.ZParent.Right + 1
+                        zNewLocation.X = Me._zParent.Right + 1
                     End If
-                    zNewLocation.Y = Me.ZParent.Top
+                    zNewLocation.Y = Me._zParent.Top
                     Me.Location = zNewLocation
                     Me.Size = zNewSize
 
                     ' --- DockSide = None, but AutoSizing is still setting the Width
                 Case Me._zDockSide = LineNumberDockSides.None
-                    If _zAutoSizing_Size.Width > 0 Then
-                        zNewSize.Width = _zAutoSizing_Size.Width
+                    If _zAutoSizingSize.Width > 0 Then
+                        zNewSize.Width = _zAutoSizingSize.Width
                     End If
                     Me.Size = zNewSize
 
@@ -602,26 +600,26 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
         Else
             ' --- No AutoSizing
             Select Case True
-                Case Me.ZParent Is Nothing
+                Case Me._zParent Is Nothing
                     ' --- ReminderMessage sizing
-                    If _zAutoSizing_Size.Width > 0 Then
-                        zNewSize.Width = _zAutoSizing_Size.Width
+                    If _zAutoSizingSize.Width > 0 Then
+                        zNewSize.Width = _zAutoSizingSize.Width
                     End If
-                    If _zAutoSizing_Size.Height > 0 Then
-                        zNewSize.Height = _zAutoSizing_Size.Height
+                    If _zAutoSizingSize.Height > 0 Then
+                        zNewSize.Height = _zAutoSizingSize.Height
                     End If
                     Me.Size = zNewSize
 
                     ' --- No AutoSizing, but DockSide L/R/H is active so height and position need updates.
                 Case _zDockSide <> LineNumberDockSides.None
-                    zNewSize.Height = Me.ZParent.Height
+                    zNewSize.Height = Me._zParent.Height
                     If Me._zDockSide = LineNumberDockSides.Left Then
-                        zNewLocation.X = Me.ZParent.Left - zNewSize.Width - 1
+                        zNewLocation.X = Me._zParent.Left - zNewSize.Width - 1
                     End If
                     If Me._zDockSide = LineNumberDockSides.Right Then
-                        zNewLocation.X = Me.ZParent.Right + 1
+                        zNewLocation.X = Me._zParent.Right + 1
                     End If
-                    zNewLocation.Y = Me.ZParent.Top
+                    zNewLocation.Y = Me._zParent.Top
                     Me.Location = zNewLocation
                     Me.Size = zNewSize
 
@@ -636,80 +634,80 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
     ''' </summary>
     ''' <remarks></remarks>
     Private Sub Update_VisibleLineNumberItems()
-        _zLNIs.Clear()
-        _zAutoSizing_Size = New Size(0, 0)
-        _zLineNumbers_Format = "0"  'initial setting
+        _zLineNunmberItems.Clear()
+        _zAutoSizingSize = New Size(0, 0)
+        _zLineNumbersFormat = "0"  'initial setting
         '   To measure the LineNumber's width, its Format 0 is replaced by w as that is likely to be one of the widest characters in non-mono-space fonts.
         If _zAutoSizing = True Then
-            _zAutoSizing_Size = New Size(TextRenderer.MeasureText(_zLineNumbers_Format.Replace("0".ToCharArray, "W".ToCharArray, StringComparison.Ordinal), Me.Font).Width, 0)
+            _zAutoSizingSize = New Size(TextRenderer.MeasureText(_zLineNumbersFormat.Replace("0".ToCharArray, "W".ToCharArray, StringComparison.Ordinal), Me.Font).Width, 0)
         End If
 
-        If String.IsNullOrWhiteSpace(Me.ZParent?.Text) Then
+        If String.IsNullOrWhiteSpace(Me._zParent?.Text) Then
             Exit Sub
         End If
 
         ' --- Make sure the LineNumbers are aligning to the same height as the zParent textlines by converting to screencoordinates
         '   and using that as an offset that gets added to the points for the LineNumberItems
-        _zPointInParent = Me.ZParent.PointToScreen(Me.ZParent.ClientRectangle.Location)
+        _zPointInParent = Me._zParent.PointToScreen(Me._zParent.ClientRectangle.Location)
         _zPointInMe = Me.PointToScreen(New Point(0, 0))
         '   zParentInMe is the vertical offset to make the LineNumberItems line up with the textlines in zParent.
         _zParentInMe = _zPointInParent.Y - _zPointInMe.Y + 1
         '   The first visible LineNumber may not be the first visible line of text in the RTB if the LineNumbercontrol's .Top is lower on the form than
         '   the .Top of the parent RichTextBox. Therefor, zPointInParent will now be used to find zPointInMe's equivalent height in zParent,
         '   which is needed to find the best StartIndex later on.
-        _zPointInParent = Me.ZParent.PointToClient(_zPointInMe)
+        _zPointInParent = Me._zParent.PointToClient(_zPointInMe)
 
         ' --- NOTES:
         '   Additional complication is the fact that when word-wrap is enabled on the RTB, the wordwrapped text spills into the RTB.Lines collection,
         '   so we need to split the text into lines ourselves, and use the Index of each zSplit-line's first character instead of the RTB's.
-        Dim zSplit() As String = Me.ZParent.Text.Split(vbCrLf.ToCharArray)
+        Dim zSplit() As String = Me._zParent.Text.Split(vbCrLf.ToCharArray)
 
         If zSplit.Length < 2 Then
             '   Just one line in the text = one linenumber
             '   NOTE:  zContentRectangle is built by the zParent.ContentsResized event.
-            Dim zPoint As Point = Me.ZParent.GetPositionFromCharIndex(0)
-            _zLNIs.Add(New LineNumberItem(1, New Rectangle(New Point(0, zPoint.Y - 1 + _zParentInMe), New Size(Me.Width, _zContentRectangle.Height - zPoint.Y))))
+            Dim zPoint As Point = Me._zParent.GetPositionFromCharIndex(0)
+            _zLineNunmberItems.Add(New LineNumberItem(1, New Rectangle(New Point(0, zPoint.Y - 1 + _zParentInMe), New Size(Me.Width, _zContentRectangle.Height - zPoint.Y))))
         Else
 
             '   Multiple lines, but store only those LineNumberItems for lines that are visible.
             Dim zTimeSpan As New TimeSpan(Now.Ticks)
             Dim zPoint As Point
             Dim zStartIndex As Integer = 0
-            Dim zA As Integer = Me.ZParent.Text.Length - 1
+            Dim zA As Integer = Me._zParent.Text.Length - 1
             Me.FindStartIndex(zStartIndex, zA, _zPointInParent.Y)
 
             '   zStartIndex now holds the index of a character in the first visible line from zParent.Text
             '   Now it will be pointed at the first character of that line (chr(10) = Linefeed part of the vbCrLf constant)
-            zStartIndex = Math.Max(0, Math.Min(Me.ZParent.Text.Length - 1, Me.ZParent.Text.Substring(0, zStartIndex).LastIndexOf(Chr(10)) + 1))
+            zStartIndex = Math.Max(0, Math.Min(Me._zParent.Text.Length - 1, Me._zParent.Text.Substring(0, zStartIndex).LastIndexOf(Chr(10)) + 1))
 
             '   We now need to find out which zSplit-line that character is in, by counting the vbCrlf appearances that come before it.
-            Dim zSplitStartLine As Integer = Math.Max(0, Me.ZParent.Text.Substring(0, zStartIndex).Split(vbCrLf.ToCharArray).Length - 1)
+            Dim zSplitStartLine As Integer = Math.Max(0, Me._zParent.Text.Substring(0, zStartIndex).Split(vbCrLf.ToCharArray).Length - 1)
 
             '   zStartIndex starts off pointing at the first character of the first visible line, and will be then be pointed to
             '   the index of the first character on the next line.
             For zA = zSplitStartLine To zSplit.Length - 1
-                zPoint = Me.ZParent.GetPositionFromCharIndex(zStartIndex)
+                zPoint = Me._zParent.GetPositionFromCharIndex(zStartIndex)
                 zStartIndex += Math.Max(1, zSplit(zA).Length + 1)
                 If zPoint.Y + _zParentInMe > Me.Height Then
                     Exit For
                 End If
                 '   For performance reasons, the list of LineNumberItems (zLNIs) is first built with only the location of its
                 '   itemrectangle being used. The height of those rectangles will be computed afterwards by comparing the items' Y coordinates.
-                _zLNIs.Add(New LineNumberItem(zA + 1, New Rectangle(0, zPoint.Y - 1 + _zParentInMe, Me.Width, 1)))
+                _zLineNunmberItems.Add(New LineNumberItem(zA + 1, New Rectangle(0, zPoint.Y - 1 + _zParentInMe, Me.Width, 1)))
                 If _zParentIsScrolling = True AndAlso Now.Ticks > zTimeSpan.Ticks + 500000 Then
                     '   The more lines there are in the RTB, the slower the RTB's .GetPositionFromCharIndex() method becomes
                     '   To avoid those delays from interfering with the scrollingspeed, this speedbased exit for is applied (0.05 sec)
                     '   zLNIs will have at least 1 item, and if that's the only one, then change its location to 0,0 to make it readable
-                    If _zLNIs.Count = 1 Then
-                        _zLNIs(0)._rectangle.Y = 0
+                    If _zLineNunmberItems.Count = 1 Then
+                        _zLineNunmberItems(0)._rectangle.Y = 0
                     End If
                     _zParentIsScrolling = False
-                    Me.ZTimer.Start()
+                    Me._zTimer.Start()
                     Exit For
                 End If
             Next
 
-            If _zLNIs.Count = 0 Then
+            If _zLineNunmberItems.Count = 0 Then
                 Exit Sub
             End If
 
@@ -717,56 +715,56 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
             If zA < zSplit.Length Then
                 '   getting here means the for/next loop was exited before reaching the last zSplit textline
                 '   zStartIndex will still be pointing to the startcharacter of the next line, so we can use that:
-                zPoint = Me.ZParent.GetPositionFromCharIndex(Math.Min(zStartIndex, Me.ZParent.Text.Length - 1))
-                _zLNIs.Add(New LineNumberItem(-1, New Rectangle(0, zPoint.Y - 1 + _zParentInMe, 0, 0)))
+                zPoint = Me._zParent.GetPositionFromCharIndex(Math.Min(zStartIndex, Me._zParent.Text.Length - 1))
+                _zLineNunmberItems.Add(New LineNumberItem(-1, New Rectangle(0, zPoint.Y - 1 + _zParentInMe, 0, 0)))
             Else
                 '   getting here means the for/next loop ran to the end (zA is now zSplit.Length).
-                _zLNIs.Add(New LineNumberItem(-1, New Rectangle(0, _zContentRectangle.Bottom, 0, 0)))
+                _zLineNunmberItems.Add(New LineNumberItem(-1, New Rectangle(0, _zContentRectangle.Bottom, 0, 0)))
             End If
 
             '   And now we can easily compute the height of the LineNumberItems by comparing each item's Y coordinate with that of the next line.
             '   There's at least two items in the list, and the last item is a "nextline-placeholder" that will be removed.
-            For zA = 0 To _zLNIs.Count - 2
-                _zLNIs(zA)._rectangle.Height = Math.Max(1, _zLNIs(zA + 1)._rectangle.Y - _zLNIs(zA)._rectangle.Y)
+            For zA = 0 To _zLineNunmberItems.Count - 2
+                _zLineNunmberItems(zA)._rectangle.Height = Math.Max(1, _zLineNunmberItems(zA + 1)._rectangle.Y - _zLineNunmberItems(zA)._rectangle.Y)
             Next
             '   Removing the placeholder item
-            _zLNIs.RemoveAt(_zLNIs.Count - 1)
+            _zLineNunmberItems.RemoveAt(_zLineNunmberItems.Count - 1)
 
             ' Set the Format to the width of the highest possible number so that LeadingZeroes shows the correct amount of zeros.
-            _zLineNumbers_Format = If(_zLineNumbers_ShowAsHexadecimal = True, "".PadRight(zSplit.Length.ToString("X", Globalization.CultureInfo.InvariantCulture).Length, "0"c), "".PadRight(zSplit.Length.ToString(Globalization.CultureInfo.InvariantCulture).Length, "0"c))
+            _zLineNumbersFormat = If(_zLineNumbersShowAsHexadecimal = True, "".PadRight(zSplit.Length.ToString("X", Globalization.CultureInfo.InvariantCulture).Length, "0"c), "".PadRight(zSplit.Length.ToString(Globalization.CultureInfo.InvariantCulture).Length, "0"c))
         End If
 
         '   To measure the LineNumber's width, its Format 0 is replaced by w as that is likely to be one of the widest characters in non-mono-space fonts.
         If _zAutoSizing = True Then
-            _zAutoSizing_Size = New Size(TextRenderer.MeasureText(_zLineNumbers_Format.Replace("0".ToCharArray, "W".ToCharArray, StringComparison.Ordinal), Me.Font).Width, 0)
+            _zAutoSizingSize = New Size(TextRenderer.MeasureText(_zLineNumbersFormat.Replace("0".ToCharArray, "W".ToCharArray, StringComparison.Ordinal), Me.Font).Width, 0)
         End If
     End Sub
 
-    Private Sub ZParent_Changed(sender As Object, e As EventArgs) Handles ZParent.LocationChanged, ZParent.Move, ZParent.Resize, ZParent.DockChanged, ZParent.TextChanged, ZParent.MultilineChanged
+    Private Sub ZParent_Changed(sender As Object, e As EventArgs) Handles _zParent.LocationChanged, _zParent.Move, _zParent.Resize, _zParent.DockChanged, _zParent.TextChanged, _zParent.MultilineChanged
         Me.Refresh()
         Me.Invalidate()
     End Sub
 
-    Private Sub ZParent_ContentsResized(sender As Object, e As ContentsResizedEventArgs) Handles ZParent.ContentsResized
+    Private Sub ZParent_ContentsResized(sender As Object, e As ContentsResizedEventArgs) Handles _zParent.ContentsResized
         _zContentRectangle = e.NewRectangle
         Me.Refresh()
         Me.Invalidate()
     End Sub
 
-    Private Sub ZParent_Disposed(sender As Object, e As EventArgs) Handles ZParent.Disposed
+    Private Sub ZParent_Disposed(sender As Object, e As EventArgs) Handles _zParent.Disposed
         Me.ParentRichTextBox = Nothing
         Me.Refresh()
         Me.Invalidate()
     End Sub
 
-    Private Sub ZParent_Scroll(sender As Object, e As EventArgs) Handles ZParent.HScroll, ZParent.VScroll
+    Private Sub ZParent_Scroll(sender As Object, e As EventArgs) Handles _zParent.HScroll, _zParent.VScroll
         _zParentIsScrolling = True
         Me.Invalidate()
     End Sub
 
-    Private Sub ZTimer_Tick(sender As Object, e As EventArgs) Handles ZTimer.Tick
+    Private Sub ZTimer_Tick(sender As Object, e As EventArgs) Handles _zTimer.Tick
         _zParentIsScrolling = False
-        Me.ZTimer.Stop()
+        Me._zTimer.Stop()
         Me.Invalidate()
     End Sub
 
@@ -798,44 +796,43 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
         MyBase.OnPaint(e)
 
         ' --- QualitySettings
-        e.Graphics.TextRenderingHint = If(_zLineNumbers_AntiAlias = True, Drawing.Text.TextRenderingHint.AntiAlias, Drawing.Text.TextRenderingHint.SystemDefault)
+        e.Graphics.TextRenderingHint = If(_zLineNumbersAntiAlias = True, Drawing.Text.TextRenderingHint.AntiAlias, Drawing.Text.TextRenderingHint.SystemDefault)
 
-' ReSharper disable InconsistentNaming
-        Dim zGP_LineNumbers As New Drawing2D.GraphicsPath(Drawing2D.FillMode.Winding)
+        Dim zGraphicsPathLineNumbers As New Drawing2D.GraphicsPath(Drawing2D.FillMode.Winding)
         Dim zTextSize As SizeF
         Dim zPoint As New Point(0, 0)
-        Using zSF As New StringFormat
+        Using zStringFormat As New StringFormat
             ' ----------------------------------------------
             ' --- DESIGNTIME / NO VISIBLE ITEMS
             If Me.DesignMode = True Then
                 Dim zReminderToShow As String = ""
                 '   Show a vertical reminder message
-                If Me.ZParent Is Nothing Then
+                If Me._zParent Is Nothing Then
                     zReminderToShow = "-!- Set ParentRichTextBox -!-"
                 Else
-                    If _zLNIs.Count = 0 Then
-                        zReminderToShow = "LineNrs (  " & Me.ZParent.Name & "  )"
+                    If _zLineNunmberItems.Count = 0 Then
+                        zReminderToShow = "LineNrs (  " & Me._zParent.Name & "  )"
                     End If
                 End If
                 If zReminderToShow.Length > 0 Then
                     ' --- Centering and Rotation for the reminder message
                     e.Graphics.TranslateTransform(CSng(Me.Width / 2), CSng(Me.Height / 2))
                     e.Graphics.RotateTransform(-90)
-                    zSF.Alignment = StringAlignment.Center
-                    zSF.LineAlignment = StringAlignment.Center
+                    zStringFormat.Alignment = StringAlignment.Center
+                    zStringFormat.LineAlignment = StringAlignment.Center
                     ' --- Show the reminder message (with small shadow)
-                    zTextSize = e.Graphics.MeasureString(zReminderToShow, Me.Font, zPoint, zSF)
-                    e.Graphics.DrawString(zReminderToShow, Me.Font, Brushes.WhiteSmoke, 1, 1, zSF)
-                    e.Graphics.DrawString(zReminderToShow, Me.Font, Brushes.Firebrick, 0, 0, zSF)
+                    zTextSize = e.Graphics.MeasureString(zReminderToShow, Me.Font, zPoint, zStringFormat)
+                    e.Graphics.DrawString(zReminderToShow, Me.Font, Brushes.WhiteSmoke, 1, 1, zStringFormat)
+                    e.Graphics.DrawString(zReminderToShow, Me.Font, Brushes.Firebrick, 0, 0, zStringFormat)
                     e.Graphics.ResetTransform()
 
                     Dim zReminderRectangle As New Rectangle(CInt((Me.Width / 2) - (zTextSize.Height / 2)), CInt((Me.Height / 2) - (zTextSize.Width / 2)), CInt(zTextSize.Height), CInt(zTextSize.Width))
-                    zGP_LineNumbers.AddRectangle(zReminderRectangle)
-                    zGP_LineNumbers.CloseFigure()
+                    zGraphicsPathLineNumbers.AddRectangle(zReminderRectangle)
+                    zGraphicsPathLineNumbers.CloseFigure()
 
                     If _zAutoSizing = True Then
                         zReminderRectangle.Inflate(CInt(zTextSize.Height * 0.2), CInt(zTextSize.Width * 0.1))
-                        _zAutoSizing_Size = New Size(zReminderRectangle.Width, zReminderRectangle.Height)
+                        _zAutoSizingSize = New Size(zReminderRectangle.Width, zReminderRectangle.Height)
                     End If
                 End If
             End If
@@ -844,32 +841,32 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
 
             '   NOTE: The GraphicsPaths are only used for SeeThroughMode
             '   FillMode.Winding: combined outline ( Alternate: XOR'ed outline )
-            Dim zGP_GridLines As New Drawing2D.GraphicsPath(Drawing2D.FillMode.Winding)
+            Dim zGpGridLines As New Drawing2D.GraphicsPath(Drawing2D.FillMode.Winding)
             Dim zBrush As New SolidBrush(Me.ForeColor)
             ' ----------------------------------------------
             ' --- DESIGN OR RUNTIME / WITH VISIBLE ITEMS (which means zParent exists)
-            If _zLNIs.Count > 0 Then
+            If _zLineNunmberItems.Count > 0 Then
                 '   The visible LineNumberItems with their BackgroundGradient and GridLines
                 '   Loop through every visible LineNumberItem
-                Dim zLGB As Drawing2D.LinearGradientBrush = Nothing
-                zPen = New Pen(_zGridLines_Color, _zGridLines_Thickness) With {
-                                    .DashStyle = _zGridLines_Style
+                Dim zLinearGradientBrush As Drawing2D.LinearGradientBrush = Nothing
+                zPen = New Pen(_zGridLinesColor, _zGridLinesThickness) With {
+                                    .DashStyle = _zGridLinesStyle
                                 }
-                zSF.Alignment = StringAlignment.Near
-                zSF.LineAlignment = StringAlignment.Near
-                zSF.FormatFlags = CType(StringFormatFlags.FitBlackBox + StringFormatFlags.NoClip + StringFormatFlags.NoWrap, StringFormatFlags)
+                zStringFormat.Alignment = StringAlignment.Near
+                zStringFormat.LineAlignment = StringAlignment.Near
+                zStringFormat.FormatFlags = CType(StringFormatFlags.FitBlackBox + StringFormatFlags.NoClip + StringFormatFlags.NoWrap, StringFormatFlags)
 
-                For zA As Integer = 0 To _zLNIs.Count - 1
+                For zA As Integer = 0 To _zLineNunmberItems.Count - 1
 
                     ' --- BackgroundGradient
-                    If _zGradient_Show = True Then
-                        zLGB = New Drawing2D.LinearGradientBrush(_zLNIs(zA)._rectangle, _zGradient_StartColor, _zGradient_EndColor, _zGradient_Direction)
-                        e.Graphics.FillRectangle(zLGB, _zLNIs(zA)._rectangle)
+                    If _zGradientShow = True Then
+                        zLinearGradientBrush = New Drawing2D.LinearGradientBrush(_zLineNunmberItems(zA)._rectangle, _zGradientStartColor, _zGradientEndColor, _zGradientDirection)
+                        e.Graphics.FillRectangle(zLinearGradientBrush, _zLineNunmberItems(zA)._rectangle)
                     End If
 
                     ' --- GridLines
-                    If _zGridLines_Show = True Then
-                        e.Graphics.DrawLine(zPen, New Point(0, _zLNIs(zA)._rectangle.Y), New Point(Me.Width, _zLNIs(zA)._rectangle.Y))
+                    If _zGridLinesShow = True Then
+                        e.Graphics.DrawLine(zPen, New Point(0, _zLineNunmberItems(zA)._rectangle.Y), New Point(Me.Width, _zLineNunmberItems(zA)._rectangle.Y))
 
                         '   NOTE: Every item in a GraphicsPath is a closed figure, so instead of adding gridlines as lines, we'll add them
                         '   as rectangles that loop out of sight. Their height uses the zContentRectangle which is the maxsize of
@@ -877,112 +874,112 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
                         '   NOTE: Slight adjustment needed when the first item has a negative Y coordinate.
                         '   This explains the " - zLNIs(0).Rectangle.Y" (which adds the negative size to the height
                         '   to make sure the rectangle's bottompart stays out of sight)
-                        zGP_GridLines.AddRectangle(New Rectangle(CInt(-_zGridLines_Thickness), _zLNIs(zA)._rectangle.Y, CInt(Me.Width + (_zGridLines_Thickness * 2)), CInt(Me.Height - _zLNIs(0)._rectangle.Y + _zGridLines_Thickness)))
-                        zGP_GridLines.CloseFigure()
+                        zGpGridLines.AddRectangle(New Rectangle(CInt(-_zGridLinesThickness), _zLineNunmberItems(zA)._rectangle.Y, CInt(Me.Width + (_zGridLinesThickness * 2)), CInt(Me.Height - _zLineNunmberItems(0)._rectangle.Y + _zGridLinesThickness)))
+                        zGpGridLines.CloseFigure()
                     End If
 
                     ' --- LineNumbers
-                    If _zLineNumbers_Show = True Then
+                    If _zLineNumbersShow = True Then
                         ' --- Local Declarations
                         '   TextFormatting
-                        Dim zTextToShow As String = If(_zLineNumbers_ShowLeadingZeroes, If(_zLineNumbers_ShowAsHexadecimal, _zLNIs(zA)._lineNumber.ToString("X", Globalization.CultureInfo.InvariantCulture), _zLNIs(zA)._lineNumber.ToString(_zLineNumbers_Format, Globalization.CultureInfo.InvariantCulture)), If(_zLineNumbers_ShowAsHexadecimal, _zLNIs(zA)._lineNumber.ToString("X", Globalization.CultureInfo.InvariantCulture), _zLNIs(zA)._lineNumber.ToString(Globalization.CultureInfo.InvariantCulture)))
+                        Dim zTextToShow As String = If(_zLineNumbersShowLeadingZeroes, If(_zLineNumbersShowAsHexadecimal, _zLineNunmberItems(zA)._lineNumber.ToString("X", Globalization.CultureInfo.InvariantCulture), _zLineNunmberItems(zA)._lineNumber.ToString(_zLineNumbersFormat, Globalization.CultureInfo.InvariantCulture)), If(_zLineNumbersShowAsHexadecimal, _zLineNunmberItems(zA)._lineNumber.ToString("X", Globalization.CultureInfo.InvariantCulture), _zLineNunmberItems(zA)._lineNumber.ToString(Globalization.CultureInfo.InvariantCulture)))
                         '   TextSizing
-                        zTextSize = e.Graphics.MeasureString(zTextToShow, Me.Font, zPoint, zSF)
+                        zTextSize = e.Graphics.MeasureString(zTextToShow, Me.Font, zPoint, zStringFormat)
                         '   TextAlignment and positioning   (zPoint = TopLeftCornerPoint of the text)
                         '   TextAlignment, padding, manual offset (via LineNrs_Offset) and zTextSize are all included in the calculation of zPoint.
-                        Select Case _zLineNumbers_Alignment
+                        Select Case _zLineNumbersAlignment
                             Case ContentAlignment.TopLeft
-                                zPoint = New Point(_zLNIs(zA)._rectangle.Left + Me.Padding.Left + _zLineNumbers_Offset.Width, _zLNIs(zA)._rectangle.Top + Me.Padding.Top + _zLineNumbers_Offset.Height)
+                                zPoint = New Point(_zLineNunmberItems(zA)._rectangle.Left + Me.Padding.Left + _zLineNumbersOffset.Width, _zLineNunmberItems(zA)._rectangle.Top + Me.Padding.Top + _zLineNumbersOffset.Height)
                             Case ContentAlignment.MiddleLeft
-                                zPoint = New Point(_zLNIs(zA)._rectangle.Left + Me.Padding.Left + _zLineNumbers_Offset.Width, CInt(_zLNIs(zA)._rectangle.Top + (_zLNIs(zA)._rectangle.Height / 2) + _zLineNumbers_Offset.Height - (zTextSize.Height / 2)))
+                                zPoint = New Point(_zLineNunmberItems(zA)._rectangle.Left + Me.Padding.Left + _zLineNumbersOffset.Width, CInt(_zLineNunmberItems(zA)._rectangle.Top + (_zLineNunmberItems(zA)._rectangle.Height / 2) + _zLineNumbersOffset.Height - (zTextSize.Height / 2)))
                             Case ContentAlignment.BottomLeft
-                                zPoint = New Point(_zLNIs(zA)._rectangle.Left + Me.Padding.Left + _zLineNumbers_Offset.Width, CInt(_zLNIs(zA)._rectangle.Bottom - Me.Padding.Bottom + 1 + _zLineNumbers_Offset.Height - zTextSize.Height))
+                                zPoint = New Point(_zLineNunmberItems(zA)._rectangle.Left + Me.Padding.Left + _zLineNumbersOffset.Width, CInt(_zLineNunmberItems(zA)._rectangle.Bottom - Me.Padding.Bottom + 1 + _zLineNumbersOffset.Height - zTextSize.Height))
                             Case ContentAlignment.TopCenter
-                                zPoint = New Point(CInt((_zLNIs(zA)._rectangle.Width / 2) + _zLineNumbers_Offset.Width - (zTextSize.Width / 2)), _zLNIs(zA)._rectangle.Top + Me.Padding.Top + _zLineNumbers_Offset.Height)
+                                zPoint = New Point(CInt((_zLineNunmberItems(zA)._rectangle.Width / 2) + _zLineNumbersOffset.Width - (zTextSize.Width / 2)), _zLineNunmberItems(zA)._rectangle.Top + Me.Padding.Top + _zLineNumbersOffset.Height)
                             Case ContentAlignment.MiddleCenter
-                                zPoint = New Point(CInt((_zLNIs(zA)._rectangle.Width / 2) + _zLineNumbers_Offset.Width - (zTextSize.Width / 2)), CInt(_zLNIs(zA)._rectangle.Top + (_zLNIs(zA)._rectangle.Height / 2) + _zLineNumbers_Offset.Height - (zTextSize.Height / 2)))
+                                zPoint = New Point(CInt((_zLineNunmberItems(zA)._rectangle.Width / 2) + _zLineNumbersOffset.Width - (zTextSize.Width / 2)), CInt(_zLineNunmberItems(zA)._rectangle.Top + (_zLineNunmberItems(zA)._rectangle.Height / 2) + _zLineNumbersOffset.Height - (zTextSize.Height / 2)))
                             Case ContentAlignment.BottomCenter
-                                zPoint = New Point(CInt((_zLNIs(zA)._rectangle.Width / 2) + _zLineNumbers_Offset.Width - (zTextSize.Width / 2)), CInt(_zLNIs(zA)._rectangle.Bottom - Me.Padding.Bottom + 1 + _zLineNumbers_Offset.Height - zTextSize.Height))
+                                zPoint = New Point(CInt((_zLineNunmberItems(zA)._rectangle.Width / 2) + _zLineNumbersOffset.Width - (zTextSize.Width / 2)), CInt(_zLineNunmberItems(zA)._rectangle.Bottom - Me.Padding.Bottom + 1 + _zLineNumbersOffset.Height - zTextSize.Height))
                             Case ContentAlignment.TopRight
-                                zPoint = New Point(CInt(_zLNIs(zA)._rectangle.Right - Me.Padding.Right + _zLineNumbers_Offset.Width - zTextSize.Width), _zLNIs(zA)._rectangle.Top + Me.Padding.Top + _zLineNumbers_Offset.Height)
+                                zPoint = New Point(CInt(_zLineNunmberItems(zA)._rectangle.Right - Me.Padding.Right + _zLineNumbersOffset.Width - zTextSize.Width), _zLineNunmberItems(zA)._rectangle.Top + Me.Padding.Top + _zLineNumbersOffset.Height)
                             Case ContentAlignment.MiddleRight
-                                zPoint = New Point(CInt(_zLNIs(zA)._rectangle.Right - Me.Padding.Right + _zLineNumbers_Offset.Width - zTextSize.Width), CInt(_zLNIs(zA)._rectangle.Top + (_zLNIs(zA)._rectangle.Height / 2) + _zLineNumbers_Offset.Height - (zTextSize.Height / 2)))
+                                zPoint = New Point(CInt(_zLineNunmberItems(zA)._rectangle.Right - Me.Padding.Right + _zLineNumbersOffset.Width - zTextSize.Width), CInt(_zLineNunmberItems(zA)._rectangle.Top + (_zLineNunmberItems(zA)._rectangle.Height / 2) + _zLineNumbersOffset.Height - (zTextSize.Height / 2)))
                             Case ContentAlignment.BottomRight
-                                zPoint = New Point(CInt(_zLNIs(zA)._rectangle.Right - Me.Padding.Right + _zLineNumbers_Offset.Width - zTextSize.Width), CInt(_zLNIs(zA)._rectangle.Bottom - Me.Padding.Bottom + 1 + _zLineNumbers_Offset.Height - zTextSize.Height))
+                                zPoint = New Point(CInt(_zLineNunmberItems(zA)._rectangle.Right - Me.Padding.Right + _zLineNumbersOffset.Width - zTextSize.Width), CInt(_zLineNunmberItems(zA)._rectangle.Bottom - Me.Padding.Bottom + 1 + _zLineNumbersOffset.Height - zTextSize.Height))
                         End Select
                         '   TextClipping
                         Dim zItemClipRectangle As New Rectangle(zPoint, zTextSize.ToSize)
-                        If _zLineNumbers_ClipByItemRectangle = True Then
+                        If _zLineNumbersClipByItemRectangle = True Then
                             '   If selected, the text will be clipped so that it doesn't spill out of its own LineNumberItem-area.
                             '   Only the part of the text inside the LineNumberItem.Rectangle should be visible, so intersect with the ItemRectangle
                             '   The SetClip method temporary restricts the drawing area of the control for whatever is drawn next.
-                            zItemClipRectangle.Intersect(_zLNIs(zA)._rectangle)
+                            zItemClipRectangle.Intersect(_zLineNunmberItems(zA)._rectangle)
                             e.Graphics.SetClip(zItemClipRectangle)
                         End If
                         '   TextDrawing
-                        e.Graphics.DrawString(zTextToShow, Me.Font, zBrush, zPoint, zSF)
+                        e.Graphics.DrawString(zTextToShow, Me.Font, zBrush, zPoint, zStringFormat)
                         e.Graphics.ResetClip()
                         '   The GraphicsPath for the LineNumber is just a rectangle behind the text, to keep the paintingspeed high and avoid ugly artifacts.
-                        zGP_LineNumbers.AddRectangle(zItemClipRectangle)
-                        zGP_LineNumbers.CloseFigure()
+                        zGraphicsPathLineNumbers.AddRectangle(zItemClipRectangle)
+                        zGraphicsPathLineNumbers.CloseFigure()
                     End If
                 Next
 
                 ' --- GridLinesThickness and LineStyle in SeeThroughMode. All GraphicsPath lines are drawn as solid to keep the paintingspeed high.
-                If _zGridLines_Show = True Then
+                If _zGridLinesShow = True Then
                     zPen.DashStyle = Drawing2D.DashStyle.Solid
-                    zGP_GridLines.Widen(zPen)
+                    zGpGridLines.Widen(zPen)
                 End If
 
                 ' --- Memory CleanUp
-                If zLGB IsNot Nothing Then
-                    zLGB.Dispose()
+                If zLinearGradientBrush IsNot Nothing Then
+                    zLinearGradientBrush.Dispose()
                 End If
             End If
 
             ' ----------------------------------------------
             ' --- DESIGN OR RUNTIME / ALWAYS
-            Dim zP_Left As New Point(CInt(Math.Floor(_zBorderLines_Thickness / 2)), CInt(Math.Floor(_zBorderLines_Thickness / 2)))
-            Dim zP_Right As New Point(Me.Width - CInt(Math.Ceiling(_zBorderLines_Thickness / 2)), Me.Height - CInt(Math.Ceiling(_zBorderLines_Thickness / 2)))
+            Dim zPointLeft As New Point(CInt(Math.Floor(_zBorderLinesThickness / 2)), CInt(Math.Floor(_zBorderLinesThickness / 2)))
+            Dim zPointRight As New Point(Me.Width - CInt(Math.Ceiling(_zBorderLinesThickness / 2)), Me.Height - CInt(Math.Ceiling(_zBorderLinesThickness / 2)))
 
             ' --- BorderLines
-            Dim zBorderLines_Points() As Point = {New Point(zP_Left.X, zP_Left.Y), New Point(zP_Right.X, zP_Left.Y), New Point(zP_Right.X, zP_Right.Y), New Point(zP_Left.X, zP_Right.Y), New Point(zP_Left.X, zP_Left.Y)}
+            Dim zBorderLinesPoints() As Point = {New Point(zPointLeft.X, zPointLeft.Y), New Point(zPointRight.X, zPointLeft.Y), New Point(zPointRight.X, zPointRight.Y), New Point(zPointLeft.X, zPointRight.Y), New Point(zPointLeft.X, zPointLeft.Y)}
 
-            Dim zGP_BorderLines As New Drawing2D.GraphicsPath(Drawing2D.FillMode.Winding)
-            If _zBorderLines_Show = True Then
-                zPen = New Pen(_zBorderLines_Color, _zBorderLines_Thickness) With {
-                .DashStyle = _zBorderLines_Style
+            Dim zGraphicsPathBorderLines As New Drawing2D.GraphicsPath(Drawing2D.FillMode.Winding)
+            If _zBorderLinesShow = True Then
+                zPen = New Pen(_zBorderLinesColor, _zBorderLinesThickness) With {
+                .DashStyle = _zBorderLinesStyle
             }
-                e.Graphics.DrawLines(zPen, zBorderLines_Points)
-                zGP_BorderLines.AddLines(zBorderLines_Points)
-                zGP_BorderLines.CloseFigure()
+                e.Graphics.DrawLines(zPen, zBorderLinesPoints)
+                zGraphicsPathBorderLines.AddLines(zBorderLinesPoints)
+                zGraphicsPathBorderLines.CloseFigure()
                 '   BorderThickness and Style for SeeThroughMode
                 zPen.DashStyle = Drawing2D.DashStyle.Solid
-                zGP_BorderLines.Widen(zPen)
+                zGraphicsPathBorderLines.Widen(zPen)
             End If
 
-            Dim zGP_MarginLines As New Drawing2D.GraphicsPath(Drawing2D.FillMode.Winding)
+            Dim zGraphicsPathMarginLines As New Drawing2D.GraphicsPath(Drawing2D.FillMode.Winding)
             ' --- MarginLines
-            If _zMarginLines_Show = True AndAlso _zMarginLines_Side > LineNumberDockSides.None Then
-                zP_Left = New Point(CInt(-_zMarginLines_Thickness), CInt(-_zMarginLines_Thickness))
-                zP_Right = New Point(Me.Width + CInt(_zMarginLines_Thickness), Me.Height + CInt(_zMarginLines_Thickness))
-                zPen = New Pen(_zMarginLines_Color, _zMarginLines_Thickness) With {
-                .DashStyle = _zMarginLines_Style
+            If _zMarginLinesShow = True AndAlso _zMarginLinesSide > LineNumberDockSides.None Then
+                zPointLeft = New Point(CInt(-_zMarginLinesThickness), CInt(-_zMarginLinesThickness))
+                zPointRight = New Point(Me.Width + CInt(_zMarginLinesThickness), Me.Height + CInt(_zMarginLinesThickness))
+                zPen = New Pen(_zMarginLinesColor, _zMarginLinesThickness) With {
+                .DashStyle = _zMarginLinesStyle
             }
-                If Me._zMarginLines_Side = LineNumberDockSides.Left Or Me._zMarginLines_Side = LineNumberDockSides.Height Then
-                    e.Graphics.DrawLine(zPen, New Point(CInt(Math.Floor(_zMarginLines_Thickness / 2)), 0), New Point(CInt(Math.Floor(_zMarginLines_Thickness / 2)), Me.Height - 1))
-                    zP_Left = New Point(CInt(Math.Ceiling(_zMarginLines_Thickness / 2)), CInt(-_zMarginLines_Thickness))
+                If Me._zMarginLinesSide = LineNumberDockSides.Left Or Me._zMarginLinesSide = LineNumberDockSides.Height Then
+                    e.Graphics.DrawLine(zPen, New Point(CInt(Math.Floor(_zMarginLinesThickness / 2)), 0), New Point(CInt(Math.Floor(_zMarginLinesThickness / 2)), Me.Height - 1))
+                    zPointLeft = New Point(CInt(Math.Ceiling(_zMarginLinesThickness / 2)), CInt(-_zMarginLinesThickness))
                 End If
-                If Me._zMarginLines_Side = LineNumberDockSides.Right Or Me._zMarginLines_Side = LineNumberDockSides.Height Then
-                    e.Graphics.DrawLine(zPen, New Point(CInt(Me.Width - Math.Ceiling(_zMarginLines_Thickness / 2)), 0), New Point(CInt(Me.Width - Math.Ceiling(_zMarginLines_Thickness / 2)), Me.Height - 1))
-                    zP_Right = New Point(Me.Width - CInt(Math.Ceiling(_zMarginLines_Thickness / 2)), Me.Height + CInt(_zMarginLines_Thickness))
+                If Me._zMarginLinesSide = LineNumberDockSides.Right Or Me._zMarginLinesSide = LineNumberDockSides.Height Then
+                    e.Graphics.DrawLine(zPen, New Point(CInt(Me.Width - Math.Ceiling(_zMarginLinesThickness / 2)), 0), New Point(CInt(Me.Width - Math.Ceiling(_zMarginLinesThickness / 2)), Me.Height - 1))
+                    zPointRight = New Point(Me.Width - CInt(Math.Ceiling(_zMarginLinesThickness / 2)), Me.Height + CInt(_zMarginLinesThickness))
                 End If
                 '   GraphicsPath for the MarginLines(s):
                 '   MarginLines(s) are drawn as a rectangle connecting the zP_Left and zP_Right points, which are either inside or
                 '   outside of sight, depending on whether the MarginLines at that side is visible. zP_Left: TopLeft and ZP_Right: BottomRight
-                zGP_MarginLines.AddRectangle(New Rectangle(zP_Left, New Size(zP_Right.X - zP_Left.X, zP_Right.Y - zP_Left.Y)))
+                zGraphicsPathMarginLines.AddRectangle(New Rectangle(zPointLeft, New Size(zPointRight.X - zPointLeft.X, zPointRight.Y - zPointLeft.Y)))
                 zPen.DashStyle = Drawing2D.DashStyle.Solid
-                zGP_MarginLines.Widen(zPen)
+                zGraphicsPathMarginLines.Widen(zPen)
             End If
 
             Dim zRegion As New Region(Me.ClientRectangle)
@@ -991,24 +988,24 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
             '   combine all the GraphicsPaths (= zGP_... ) and set them as the region for the control.
             If _zSeeThroughMode = True Then
                 zRegion.MakeEmpty()
-                zRegion.Union(zGP_BorderLines)
-                zRegion.Union(zGP_MarginLines)
-                zRegion.Union(zGP_GridLines)
-                zRegion.Union(zGP_LineNumbers)
+                zRegion.Union(zGraphicsPathBorderLines)
+                zRegion.Union(zGraphicsPathMarginLines)
+                zRegion.Union(zGpGridLines)
+                zRegion.Union(zGraphicsPathLineNumbers)
             End If
 
             ' --- Region
             If zRegion.GetBounds(e.Graphics).IsEmpty = True Then
                 '   Note: If the control is in a condition that would show it as empty, then a border-region is still drawn regardless of it's borders on/off state.
                 '   This is added to make sure that the bounds of the control are never lost (it would remain empty if this was not done).
-                zGP_BorderLines.AddLines(zBorderLines_Points)
-                zGP_BorderLines.CloseFigure()
-                zPen = New Pen(_zBorderLines_Color, 1) With {
+                zGraphicsPathBorderLines.AddLines(zBorderLinesPoints)
+                zGraphicsPathBorderLines.CloseFigure()
+                zPen = New Pen(_zBorderLinesColor, 1) With {
                 .DashStyle = Drawing2D.DashStyle.Solid
             }
-                zGP_BorderLines.Widen(zPen)
+                zGraphicsPathBorderLines.Widen(zPen)
 
-                zRegion = New Region(zGP_BorderLines)
+                zRegion = New Region(zGraphicsPathBorderLines)
             End If
             Me.Region = zRegion
             ' ----------------------------------------------
@@ -1022,18 +1019,18 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
             If zRegion IsNot Nothing Then
                 zRegion.Dispose()
             End If
-            If zGP_GridLines IsNot Nothing Then
-                zGP_GridLines.Dispose()
+            If zGpGridLines IsNot Nothing Then
+                zGpGridLines.Dispose()
             End If
-            If zGP_BorderLines IsNot Nothing Then
-                zGP_BorderLines.Dispose()
+            If zGraphicsPathBorderLines IsNot Nothing Then
+                zGraphicsPathBorderLines.Dispose()
             End If
-            If zGP_MarginLines IsNot Nothing Then
-                zGP_MarginLines.Dispose()
+            If zGraphicsPathMarginLines IsNot Nothing Then
+                zGraphicsPathMarginLines.Dispose()
             End If
         End Using
-        If zGP_LineNumbers IsNot Nothing Then
-            zGP_LineNumbers.Dispose()
+        If zGraphicsPathLineNumbers IsNot Nothing Then
+            zGraphicsPathLineNumbers.Dispose()
         End If
     End Sub
 

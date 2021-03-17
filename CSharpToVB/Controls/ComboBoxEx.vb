@@ -11,17 +11,11 @@ Imports System.ComponentModel
 Public Class ComboBoxEx
     Inherits ComboBox
 
-    ' ReSharper disable InconsistentNaming
-    Private Const WM_NCPAINT As Integer = &H85
-    Private Const WM_PAINT As Integer = &HF
-    Private Const WM_SYNCPAINT As Integer = &H88
-
     Private ReadOnly _buttonWidth As Integer = SystemInformation.HorizontalScrollBarArrowWidth
     Private _borderColor As Color = Color.Red
     Private _borderDrawArea As Rectangle = Rectangle.Empty
     Private _borderDrawMode As ControlBorderDrawMode = ControlBorderDrawMode.Full
     Private _fadedBorderColor As Color = Color.Red
-    ' ReSharper restore InconsistentNaming
 
     Public Sub New()
         Me.InitializeComponent()

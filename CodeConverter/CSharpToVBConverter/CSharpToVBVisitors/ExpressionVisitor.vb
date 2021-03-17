@@ -807,7 +807,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
 
                         For Each e As IndexClass(Of String) In variableNames.WithIndex
                             If e.Value = "__" Then
-                                s_discardHelperMarkers.Add(node.AncestorsAndSelf().OfType(Of CSS.BaseTypeDeclarationSyntax).FirstOrDefault())
+                                _discardHelperMarkers.Add(node.AncestorsAndSelf().OfType(Of CSS.BaseTypeDeclarationSyntax).FirstOrDefault())
                                 Continue For
                             End If
 
@@ -854,7 +854,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                              )
                 End If
 
-                s_inlineAssignHelperMarkers.Add(node.AncestorsAndSelf().OfType(Of CSS.BaseTypeDeclarationSyntax).FirstOrDefault())
+                _inlineAssignHelperMarkers.Add(node.AncestorsAndSelf().OfType(Of CSS.BaseTypeDeclarationSyntax).FirstOrDefault())
                 Return Factory.InvocationExpression(
                     expression:=Factory.IdentifierName("__InlineAssignHelper"),
                     argumentList:=Factory.ArgumentList(Factory.SeparatedList((New ArgumentSyntax() {

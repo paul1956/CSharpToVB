@@ -31,7 +31,7 @@ Partial Public Class Form1
         Me.InitializeComponent()
     End Sub
 
-    Friend Property BufferToSearch As SearchBuffers = SearchBuffers.CS
+    Friend Property LanguageBuffersToSearch As LanguageBufferToSearch = LanguageBufferToSearch.Csharp
     Private Property CurrentBuffer As RichTextBox = Nothing
 
     Private Sub ButtonStop_Click(sender As Object, e As EventArgs) Handles ButtonStopConversion.Click
@@ -913,14 +913,14 @@ namespace Application
     Private Sub TSFindClearHighlightsButton_Click(sender As Object, e As EventArgs) Handles TSFindClearHighlightsButton.Click
         Dim selectionStart As Integer
         _inColorize = True
-        If Me.BufferToSearch.IsFlagSet(SearchBuffers.CS) Then
+        If Me.LanguageBuffersToSearch.IsFlagSet(LanguageBufferToSearch.Csharp) Then
             selectionStart = Me.ConversionInput.SelectionStart
             Me.ConversionInput.SelectAll()
             Me.ConversionInput.SelectionBackColor = DefaultColor.Background
             Me.ConversionInput.Select(selectionStart, 0)
             Me.ConversionInput.ScrollToCaret()
         End If
-        If Me.BufferToSearch.IsFlagSet(SearchBuffers.VB) Then
+        If Me.LanguageBuffersToSearch.IsFlagSet(LanguageBufferToSearch.VisualBasic) Then
             selectionStart = Me.ConversionOutput.SelectionStart
             Me.ConversionOutput.SelectAll()
             Me.ConversionOutput.SelectionBackColor = DefaultColor.Background
@@ -968,11 +968,11 @@ namespace Application
     Private Sub TSFindLookInComboBox_SelectedIndexChanged(sender As Object, e As EventArgs) Handles TSFindLookInComboBox.SelectedIndexChanged
         Select Case Me.TSFindLookInComboBox.SelectedIndex
             Case 0
-                Me.BufferToSearch = SearchBuffers.CS
+                Me.LanguageBuffersToSearch = LanguageBufferToSearch.Csharp
             Case 1
-                Me.BufferToSearch = SearchBuffers.VB
+                Me.LanguageBuffersToSearch = LanguageBufferToSearch.VisualBasic
             Case 2
-                Me.BufferToSearch = {SearchBuffers.CS, SearchBuffers.VB}.CombineFlags()
+                Me.LanguageBuffersToSearch = {LanguageBufferToSearch.Csharp, LanguageBufferToSearch.VisualBasic}.CombineFlags()
         End Select
         Me.SetSearchControls()
     End Sub
@@ -990,7 +990,6 @@ namespace Application
     Private Sub TSThemeButton_Click(sender As Object, e As EventArgs) Handles TSThemeButton.Click
         Me.ToggleColorMode(Me, Me.TSThemeButton.Text.IsLightMode)
         DefaultColor = GetColorFromName(ThemeDefaultColor)
-        'ChangeTheme(_currentThemeDictionary, My.Forms.Form1.Controls)
         If Me.ConversionInput.Text.Any Then
             If Me.mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
                 Colorize(Me, GetClassifiedRanges(sourceCode:=Me.ConversionInput.Text, LanguageNames.CSharp).ToList(), Me.ConversionInput, Me.ConversionInput.Lines.Length)

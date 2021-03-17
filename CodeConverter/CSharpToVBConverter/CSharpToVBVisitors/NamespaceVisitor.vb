@@ -309,12 +309,12 @@ End Function
             End Sub
 
             Private Iterator Function PatchInlineHelpers(node As CSS.BaseTypeDeclarationSyntax, localIsModule As Boolean) As IEnumerable(Of StatementSyntax)
-                If s_inlineAssignHelperMarkers.Contains(node) Then
-                    s_inlineAssignHelperMarkers.Remove(node)
+                If _inlineAssignHelperMarkers.Contains(node) Then
+                    _inlineAssignHelperMarkers.Remove(node)
                     Yield TryCast(Factory.ParseSyntaxTree(InlineAssignHelperCode.Replace("Shared ", If(localIsModule, "", "Shared "), StringComparison.Ordinal)).GetRoot().ChildNodes().FirstOrDefault(), StatementSyntax)
                 End If
-                If s_discardHelperMarkers.Contains(node) Then
-                    s_discardHelperMarkers.Remove(node)
+                If _discardHelperMarkers.Contains(node) Then
+                    _discardHelperMarkers.Remove(node)
                     Yield TryCast(Factory.ParseSyntaxTree(DiscardHelperCode.Replace("Shared ", If(localIsModule, "", "Shared "), StringComparison.Ordinal)).GetRoot().ChildNodes().FirstOrDefault(), StatementSyntax)
                 End If
             End Function
@@ -800,7 +800,7 @@ End Function
                                               Factory.EndNamespaceStatement(EndKeyword.WithTrailingTrivia(SpaceTrivia), NamespaceKeyword)
                                              ) _
                                             .WithConvertedLeadingTriviaFrom(node.NamespaceKeyword) _
-                                            .WithUniqueLeadingTrivia(s_vbHeaderLeadingTrivia) _
+                                            .WithUniqueLeadingTrivia(_vbHeaderLeadingTrivia) _
                                             .WithTrailingTrivia(node.GetTrailingTrivia.ConvertTriviaList)
             End Function
 
@@ -891,17 +891,17 @@ End Function
                 Dim clause As ImportsClauseSyntax = Factory.SimpleImportsClause([alias], importsName)
 
                 Dim import As ImportsStatementSyntax
-                If s_allImports.Any Then
+                If _allImports.Any Then
                     import = Factory.ImportsStatement(Factory.SingletonSeparatedList(clause)).WithConvertedTriviaFrom(node)
                 Else
                     import = Factory.ImportsStatement(Factory.SingletonSeparatedList(clause)) _
                                                     .WithConvertedLeadingTriviaFrom(node) _
-                                                    .WithUniqueLeadingTrivia(s_vbHeaderLeadingTrivia) _
+                                                    .WithUniqueLeadingTrivia(_vbHeaderLeadingTrivia) _
                                                     .WithTrailingTrivia(node.GetTrailingTrivia.ConvertTriviaList)
                 End If
                 Dim matchNotFound As Boolean = True
-                If s_allImports.Any Then
-                    For Each importStmt As ImportsStatementSyntax In s_allImports
+                If _allImports.Any Then
+                    For Each importStmt As ImportsStatementSyntax In _allImports
                         Dim importsClause As SimpleImportsClauseSyntax = DirectCast(importStmt.ImportsClauses(0), SimpleImportsClauseSyntax)
                         If importsClause.Alias IsNot Nothing AndAlso importsClause.Alias.ToString = [alias]?.ToString Then
                             matchNotFound = False
@@ -921,7 +921,7 @@ End Function
                     Next
                 End If
                 If matchNotFound Then
-                    s_allImports.Add(import)
+                    _allImports.Add(import)
                 End If
 
                 SyncLock _originalRequest.UsedStacks

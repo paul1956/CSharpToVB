@@ -12,8 +12,7 @@ Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
 Namespace Utilities
     Public Module DoConversion
-' ReSharper disable once InconsistentNaming
-        Friend s_thisLock As New Object
+        Friend _thisLock As New Object
 
         Private Function GetDefaultVersionForLanguage(language As String) As Integer
             If language Is Nothing Then

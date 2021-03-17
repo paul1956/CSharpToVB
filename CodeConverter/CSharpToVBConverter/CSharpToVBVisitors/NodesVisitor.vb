@@ -25,8 +25,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             ' had no better home.
 
             Private ReadOnly _commonConversions As CommonConversions
-            ' ReSharper disable InconsistentNaming
-            Private ReadOnly _defaultVBOptions As DefaultVbOptions
+            Private ReadOnly _defaultVbOptions As DefaultVbOptions
             Private ReadOnly _isModuleStack As New Stack(Of Boolean)
             Private ReadOnly _originalRequest As ConvertRequest
             Private ReadOnly _placeholder As Integer = 1
@@ -34,19 +33,15 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             Private ReadOnly _semanticModel As SemanticModel
             Private _membersList As SyntaxList(Of VBS.StatementSyntax)
             Friend _usedIdentifiers As Dictionary(Of String, SymbolTableEntry)
-            ' ReSharper restore InconsistentNaming
-            Public ReadOnly s_allImports As New List(Of VBS.ImportsStatementSyntax)()
-
-            Public ReadOnly s_discardHelperMarkers As New List(Of CSS.BaseTypeDeclarationSyntax)()
-            Public ReadOnly s_inlineAssignHelperMarkers As New List(Of CSS.BaseTypeDeclarationSyntax)()
-            'Public ReadOnly ByRefHelperMarkers As New List(Of CSS.BaseTypeDeclarationSyntax)()
-
-            Public s_vbHeaderLeadingTrivia As SyntaxTriviaList
+            Public ReadOnly _allImports As New List(Of VBS.ImportsStatementSyntax)()
+            Public ReadOnly _discardHelperMarkers As New List(Of CSS.BaseTypeDeclarationSyntax)()
+            Public ReadOnly _inlineAssignHelperMarkers As New List(Of CSS.BaseTypeDeclarationSyntax)()
+            Public _vbHeaderLeadingTrivia As SyntaxTriviaList
 
             Friend Sub New(originalRequest As ConvertRequest, lSemanticModel As SemanticModel, defaultVbOptions As DefaultVbOptions, reportException As Action(Of Exception))
                 _semanticModel = lSemanticModel
                 _reportException = reportException
-                _defaultVBOptions = defaultVbOptions
+                _defaultVbOptions = defaultVbOptions
                 _commonConversions = New CommonConversions(lSemanticModel)
                 _usedIdentifiers = New Dictionary(Of String, SymbolTableEntry)(StringComparer.Ordinal)
                 _originalRequest = originalRequest
@@ -141,7 +136,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
 
             Public Overrides Function VisitCompilationUnit(node As CSS.CompilationUnitSyntax) As VB.VisualBasicSyntaxNode
                 If node.GetLeadingTrivia.FirstOrDefault.IsKind(CS.SyntaxKind.SingleLineCommentTrivia) Then
-                    s_vbHeaderLeadingTrivia = node.GetLeadingTrivia.GetDocumentBanner
+                    _vbHeaderLeadingTrivia = node.GetLeadingTrivia.GetDocumentBanner
                 End If
                 For Each [using] As CSS.UsingDirectiveSyntax In node.Usings
                     If _originalRequest.CancelToken.IsCancellationRequested Then
@@ -156,7 +151,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Next
 
                 Dim options As New SyntaxList(Of VBS.OptionStatementSyntax)
-                With _defaultVBOptions
+                With _defaultVbOptions
                     If .OptionCompareInclude Then
                         options = options.Add(Factory.OptionStatement(CompareToken, If(.OptionCompare = "Text", TextToken, BinaryToken)).WithTrailingEol)
                     End If
@@ -188,7 +183,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Next
 
                 Dim listOfAttributes As List(Of VBS.AttributesStatementSyntax) = node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) Factory.AttributesStatement(Factory.SingletonList(DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))).ToList
-                If s_allImports.Any Then
+                If _allImports.Any Then
                     If _membersList.Any AndAlso _membersList(0).HasLeadingTrivia Then
                         If (TypeOf _membersList(0) IsNot VBS.NamespaceBlockSyntax AndAlso
                                 TypeOf _membersList(0) IsNot VBS.ModuleBlockSyntax) OrElse
@@ -210,11 +205,11 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                     newLeadingTrivia = newLeadingTrivia.Add(t)
                                 End If
                             Next
-                            s_allImports(0) = s_allImports(0).WithPrependedLeadingTrivia(newLeadingTrivia)
+                            _allImports(0) = _allImports(0).WithPrependedLeadingTrivia(newLeadingTrivia)
                         End If
                     End If
-                    For i As Integer = 0 To s_allImports.Count - 1
-                        Dim importsClause As VBS.ImportsClauseSyntax = s_allImports(i).ImportsClauses.FirstOrDefault
+                    For i As Integer = 0 To _allImports.Count - 1
+                        Dim importsClause As VBS.ImportsClauseSyntax = _allImports(i).ImportsClauses.FirstOrDefault
                         Dim simpleImportsClause As VBS.SimpleImportsClauseSyntax = TryCast(importsClause, VBS.SimpleImportsClauseSyntax)
                         If simpleImportsClause IsNot Nothing Then
                             Dim identifierName As VBS.IdentifierNameSyntax = TryCast(simpleImportsClause.Name, VBS.IdentifierNameSyntax)
@@ -222,16 +217,16 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                 If i = 0 Then
                                     Select Case identifierName.Identifier.ValueText
                                         Case "System"
-                                            Dim isLast As Boolean = i = (s_allImports.Count - 1)
+                                            Dim isLast As Boolean = i = (_allImports.Count - 1)
                                             If Not isLast Then
-                                                s_allImports(i + 1) = s_allImports(i + 1).WithMergedLeadingTrivia(s_allImports(i).GetLeadingTrivia)
+                                                _allImports(i + 1) = _allImports(i + 1).WithMergedLeadingTrivia(_allImports(i).GetLeadingTrivia)
                                             End If
-                                            s_allImports.RemoveAt(i)
+                                            _allImports.RemoveAt(i)
                                             Exit For
-                                        Case CompilerServices, InteropServices
-                                            s_allImports(0) = s_allImports(0).WithLeadingTrivia(node.GetLeadingTrivia.ConvertTriviaList).WithUniqueLeadingTrivia(s_vbHeaderLeadingTrivia)
+                                        Case s_compilerServices, s_interopServices
+                                            _allImports(0) = _allImports(0).WithLeadingTrivia(node.GetLeadingTrivia.ConvertTriviaList).WithUniqueLeadingTrivia(_vbHeaderLeadingTrivia)
                                             If _membersList.Any Then
-                                                _membersList = _membersList.Replace(_membersList(0), _membersList(0).WithUniqueLeadingTrivia(s_allImports(0).GetLeadingTrivia))
+                                                _membersList = _membersList.Replace(_membersList(0), _membersList(0).WithUniqueLeadingTrivia(_allImports(0).GetLeadingTrivia))
                                             End If
                                     End Select
                                 End If
@@ -239,35 +234,35 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         End If
                     Next
                     If options.Any Then
-                        If s_vbHeaderLeadingTrivia.Any Then
-                            options = options.Replace(options.First, options.First.WithLeadingTrivia(s_vbHeaderLeadingTrivia.Add(VbEolTrivia)))
+                        If _vbHeaderLeadingTrivia.Any Then
+                            options = options.Replace(options.First, options.First.WithLeadingTrivia(_vbHeaderLeadingTrivia.Add(VbEolTrivia)))
 
-                            If s_allImports.Any AndAlso Not s_allImports(0).GetLeadingTrivia.FirstOrDefault.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+                            If _allImports.Any AndAlso Not _allImports(0).GetLeadingTrivia.FirstOrDefault.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
                                 options = options.Replace(options.Last, options.Last.WithAppendedEol)
                             End If
                         End If
                     End If
                 ElseIf options.Any Then
                     If listOfAttributes.Any AndAlso listOfAttributes(0).GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
-                        options = options.Replace(options(0), options(0).WithLeadingTrivia(s_vbHeaderLeadingTrivia.Add(VbEolTrivia)))
-                        listOfAttributes(0) = listOfAttributes(0).WithUniqueLeadingTrivia(s_vbHeaderLeadingTrivia)
+                        options = options.Replace(options(0), options(0).WithLeadingTrivia(_vbHeaderLeadingTrivia.Add(VbEolTrivia)))
+                        listOfAttributes(0) = listOfAttributes(0).WithUniqueLeadingTrivia(_vbHeaderLeadingTrivia)
 
                         If Not listOfAttributes(0).GetLeadingTrivia.FirstOrDefault.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
                             options = options.Replace(options.Last, options.Last.WithAppendedEol)
                         End If
                     ElseIf _membersList.Any AndAlso
-                        s_vbHeaderLeadingTrivia.Any AndAlso
+                        _vbHeaderLeadingTrivia.Any AndAlso
                         _membersList(0).GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
 
-                        options = options.Replace(options(0), options(0).WithLeadingTrivia(s_vbHeaderLeadingTrivia))
-                        _membersList = _membersList.Replace(_membersList(0), _membersList(0).WithUniqueLeadingTrivia(s_vbHeaderLeadingTrivia))
+                        options = options.Replace(options(0), options(0).WithLeadingTrivia(_vbHeaderLeadingTrivia))
+                        _membersList = _membersList.Replace(_membersList(0), _membersList(0).WithUniqueLeadingTrivia(_vbHeaderLeadingTrivia))
 
                         If Not _membersList(0).GetLeadingTrivia.FirstOrDefault.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
                             options = options.Replace(options.Last, options.Last.WithAppendedEol)
                         End If
                     Else
-                        If s_vbHeaderLeadingTrivia.Any Then
-                            options = options.Replace(options(0), options(0).WithLeadingTrivia(s_vbHeaderLeadingTrivia.Add(VbEolTrivia)))
+                        If _vbHeaderLeadingTrivia.Any Then
+                            options = options.Replace(options(0), options(0).WithLeadingTrivia(_vbHeaderLeadingTrivia.Add(VbEolTrivia)))
                         End If
                         options = options.Replace(options.Last, options.Last.WithAppendedEol)
                     End If
@@ -277,14 +272,14 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     Throw New ApplicationException(GetMarkerErrorMessage)
                 End If
                 Dim compilationUnitSyntax1 As VBS.CompilationUnitSyntax
-                If s_allImports.Any OrElse _membersList.Any OrElse listOfAttributes.Any Then
+                If _allImports.Any OrElse _membersList.Any OrElse listOfAttributes.Any Then
                     compilationUnitSyntax1 = Factory.CompilationUnit(options,
-                                             Factory.List(s_allImports),
+                                             Factory.List(_allImports),
                                              Factory.List(listOfAttributes),
                                              _membersList,
                                              EndOfFileToken.WithConvertedTriviaFrom(node.EndOfFileToken))
                 Else
-                    _membersList = _membersList.Add(Factory.EmptyStatement.WithLeadingTrivia(s_vbHeaderLeadingTrivia))
+                    _membersList = _membersList.Add(Factory.EmptyStatement.WithLeadingTrivia(_vbHeaderLeadingTrivia))
                     compilationUnitSyntax1 = Factory.CompilationUnit(options:=Nothing,
                                                                      [imports]:=Nothing,
                                                                      attributes:=Nothing,

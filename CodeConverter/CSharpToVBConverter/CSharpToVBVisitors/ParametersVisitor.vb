@@ -89,8 +89,8 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     modifiers = Factory.TokenList(ByValKeyword).ToList
                     newAttributes = Array.Empty(Of VBS.AttributeListSyntax)
                 ElseIf node.Modifiers.Contains(CS.SyntaxKind.OutKeyword) Then
-                    If Not s_allImports.ContainsName(InteropServices) Then
-                        s_allImports.Add(FactoryImportInteropServices)
+                    If Not _allImports.ContainsName(s_interopServices) Then
+                        _allImports.Add(FactoryImportInteropServices)
                     End If
                     newAttributes = {Factory.AttributeList(Factory.SingletonSeparatedList(OutAttribute)).WithConvertedLeadingTriviaFrom(node.Modifiers(node.Modifiers.IndexOf(CS.SyntaxKind.OutKeyword)))}
                 Else

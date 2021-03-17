@@ -8,11 +8,9 @@ Imports Extensions
 Public Module TsToolBaseSupport
 
     <Flags>
-    Public Enum SearchBuffers
-        ' ReSharper disable InconsistentNaming
-        CS = 1
-        VB = 2
-        ' ReSharper restore InconsistentNaming
+    Public Enum LanguageBufferToSearch
+        Csharp = 1
+        VisualBasic = 2
     End Enum
 
     <Extension>
@@ -25,11 +23,11 @@ Public Module TsToolBaseSupport
         My.Settings.Save()
         mainForm.TSFindFindWhatComboBox.TsFindWhatMruUpdateUi()
         Dim prompt As String = ""
-        If mainForm.BufferToSearch.IsFlagSet(SearchBuffers.CS) AndAlso Not FindTextInBuffer(mainForm, mainForm.ConversionInput, searchForward) Then
+        If mainForm.LanguageBuffersToSearch.IsFlagSet(LanguageBufferToSearch.Csharp) AndAlso Not FindTextInBuffer(mainForm, mainForm.ConversionInput, searchForward) Then
             prompt = $"'{mainForm.TSFindFindWhatComboBox.Text}' not found in C# code!"
         End If
 
-        If mainForm.BufferToSearch.IsFlagSet(SearchBuffers.VB) AndAlso Not FindTextInBuffer(mainForm, mainForm.ConversionOutput, searchForward) Then
+        If mainForm.LanguageBuffersToSearch.IsFlagSet(LanguageBufferToSearch.VisualBasic) AndAlso Not FindTextInBuffer(mainForm, mainForm.ConversionOutput, searchForward) Then
             If prompt.Any Then
                 prompt = $"'{mainForm.TSFindFindWhatComboBox.Text}' not found in C# or Visual Basic code!"
             Else
