@@ -402,7 +402,6 @@ Namespace Utilities
                     retType = Factory.ParseTypeName($"{retType}{arrayRank}")
                 End If
             Catch ex As Exception
-                Stop
             End Try
             Return retType
         End Function
@@ -521,6 +520,7 @@ Namespace Utilities
                             If commaIndex < 0 Then
                                 Exit For
                             End If
+' ReSharper disable once RedundantAssignment
                             currentIndex = commaIndex + 1
                         End If
                     Case " " ' variable name
@@ -530,10 +530,12 @@ Namespace Utilities
                         If commaIndex < 0 Then
                             Exit For
                         End If
+' ReSharper disable once RedundantAssignment
                         currentIndex = commaIndex + 1
                     Case ","
                         elementList.Add(ConvertToType(typeString.ToString).ToString)
                         typeString.Clear()
+' ReSharper disable once RedundantAssignment
                         currentIndex += If(cSharpNamedTypeString(currentIndex + 1) = " ", 1, 0)
                     Case ")"
                         currentIndex = ExtractTupleWithName(cSharpNamedTypeString, includeName, typeString, elementList, currentIndex)
@@ -578,6 +580,7 @@ Namespace Utilities
                             typeString.Clear()
                         End If
                         commaIndex = cSharpNamedTypeString.IndexOf(",", currentIndex + 1, StringComparison.OrdinalIgnoreCase)
+' ReSharper disable once RedundantAssignment
                         currentIndex += 2
                         If commaIndex < 0 Then
                             Exit For

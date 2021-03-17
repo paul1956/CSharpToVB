@@ -84,8 +84,8 @@ Namespace Extensions
                     Dim newArgumentLeadingTrivia As SyntaxTriviaList = RelocateDirectiveDisabledTrivia(Factory.TriviaList(e.Value.GetLeadingTrivia.ConvertTriviaList()), statementLeadingTrivia, removeEol:=True)
                     Dim newArgumentTrailingTrivia As SyntaxTriviaList = RelocateDirectiveDisabledTrivia(Factory.TriviaList(e.Value.GetTrailingTrivia.ConvertTriviaList()), statementTrailingTrivia, removeEol:=False)
                     exprStmt = exprStmt.ReplaceNode(
-                                            invocationExpr.ArgumentList.Arguments(e.index),
-                                            invocationExpr.ArgumentList.Arguments(e.index).With(newArgumentLeadingTrivia, newArgumentTrailingTrivia)
+                                            invocationExpr.ArgumentList.Arguments(e.Index),
+                                            invocationExpr.ArgumentList.Arguments(e.Index).With(newArgumentLeadingTrivia, newArgumentTrailingTrivia)
                                             )
                 Next
                 statementTrailingTrivia.AddRange(csArgumentList.CloseParenToken.CollectConvertedTokenTrivia(getLeading:=True, getTrailing:=True))
@@ -121,7 +121,7 @@ Namespace Extensions
 
                 If hasModifiers Then
                     For Each e As IndexClass(Of SyntaxToken) In classStatement.Modifiers.WithIndex
-                        newModifiers = newModifiers.Add(e.Value.RestructureModifier(e.index, Not statementLeadingTrivia.ContainsCommentOrDirectiveTrivia, statementLeadingTrivia, statementTrailingTrivia))
+                        newModifiers = newModifiers.Add(e.Value.RestructureModifier(e.Index, Not statementLeadingTrivia.ContainsCommentOrDirectiveTrivia, statementLeadingTrivia, statementTrailingTrivia))
                     Next
                     classStatement = classStatement.WithModifiers(newModifiers)
                 End If

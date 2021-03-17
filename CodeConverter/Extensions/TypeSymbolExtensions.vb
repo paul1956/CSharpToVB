@@ -13,7 +13,7 @@ Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 Namespace Extensions
 
     <EditorBrowsable(EditorBrowsableState.Never)>
-    Public Module ITypeSymbolExtensions
+    Public Module TypeSymbolExtensions
 
         <Extension>
         Private Function GetFullMetadataName(ns As INamespaceSymbol, Optional sb As StringBuilder = Nothing) As String

@@ -19,11 +19,11 @@ Namespace Extensions
                 Dim hasNext As Boolean = enumerator.MoveNext
                 Dim index As Integer = -1
                 While hasNext
-                    Dim wi As New IndexClass(Of T) With {.index = index, .Enumerator = enumerator}
+                    Dim wi As New IndexClass(Of T) With {.Index = index, .Enumerator = enumerator}
                     wi.MoveNext()
                     Yield wi
                     hasNext = Not wi.IsLast
-                    index = wi.index ' if .MoveNext was used
+                    index = wi.Index ' if .MoveNext was used
                 End While
             End Using
         End Function

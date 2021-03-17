@@ -127,7 +127,7 @@ Public Module ProcessProjectUtilities
                 If frameworkList.Count = 1 Then
                     frameworkMsg = $"Framework: {framework.Value}"
                 Else
-                    frameworkMsg = $"Framework {framework.index + 1} of {frameworkList.Count}: {framework.Value}"
+                    frameworkMsg = $"Framework {framework.Index + 1} of {frameworkList.Count}: {framework.Value}"
                 End If
                 Dim currentProject As Project = workspace.CurrentSolution.Projects(0)
                 mainForm.StatusStripCurrentFileName.Text = $"{processedProjects} of {totalProjects} Projects, {frameworkMsg}, {currentProject.FilePath}"

@@ -7,10 +7,12 @@ Public Module LineNumberDockSidesEnums
 
     <Flags>
     Public Enum LineNumberDockSides
+' ReSharper disable UnusedMember.Global
         None = 0
         Left = 1
         Right = 2
         Height = 4
+' ReSharper restore UnusedMember.Global
     End Enum
 
 End Module

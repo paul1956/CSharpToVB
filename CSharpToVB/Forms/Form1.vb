@@ -511,7 +511,7 @@ namespace Application
                                    stats,
                                    cancelToken:=_cancellationTokenSource.Token
                                   ).ConfigureAwait(True) Then
-            stats.s_elapsedTimer.Stop()
+            stats._elapsedTimer.Stop()
             If _cancellationTokenSource.Token.IsCancellationRequested Then
                 prompt = $"Conversion canceled, {stats.FilesProcessed} files completed successfully."
             Else
@@ -522,13 +522,13 @@ namespace Application
                 Application.DoEvents()
             End If
         Else
-            stats.s_elapsedTimer.Stop()
+            stats._elapsedTimer.Stop()
             prompt = "Conversion stopped."
         End If
         MsgBox(prompt,
                MsgBoxStyle.OkOnly Or MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground,
                Title:="Convert C# To Visual Basic")
-        Dim elapsed As TimeSpan = stats.s_elapsedTimer.Elapsed
+        Dim elapsed As TimeSpan = stats._elapsedTimer.Elapsed
         Me.StatusStripElapasedTimeLabel.Text = $"Elapsed Time - {elapsed.Hours}: {elapsed.Minutes}:{elapsed.Seconds}.{elapsed.Milliseconds}"
         Me.mnuConvertConvertFolder.Enabled = True
 

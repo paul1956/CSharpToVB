@@ -25,7 +25,7 @@ Namespace Extensions
             Dim afterLineContinuation As Boolean = False
             For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
                 Dim trivia As SyntaxTrivia = e.Value
-                Dim nextTrivia As SyntaxTrivia = initialTriviaList.GetForwardTriviaOrDefault(e.index, lookaheadCount:=1)
+                Dim nextTrivia As SyntaxTrivia = initialTriviaList.GetForwardTriviaOrDefault(e.Index, lookaheadCount:=1)
                 Select Case trivia.RawKind
                     Case VB.SyntaxKind.WhitespaceTrivia
                         If nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
@@ -126,7 +126,7 @@ Namespace Extensions
             Else
                 vbType = DirectCast(typeOrAddressOf, VBS.TypeSyntax)
             End If
-            vbType = vbType.AdjustNodeTrivia(SeparatorFollows:=True)
+            vbType = vbType.AdjustNodeTrivia(separatorFollows:=True)
             Dim csDeclaratorsWithoutInitializers As New List(Of CSS.VariableDeclaratorSyntax)()
             Dim vbDeclarators As New List(Of VBS.VariableDeclaratorSyntax)
 

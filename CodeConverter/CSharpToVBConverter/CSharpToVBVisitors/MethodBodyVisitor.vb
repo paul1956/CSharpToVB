@@ -1159,7 +1159,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                                                                                            initializer)
                             declarators = declarators.Add(elementDeclarator)
                         Else
-                            identifier = Factory.IdentifierName($"_{e.index + 1}")
+                            identifier = Factory.IdentifierName($"_{e.Index + 1}")
                             nodes.Add(Factory.NamedTupleElement(identifier.Identifier, Factory.SimpleAsClause(PredefinedTypeObject)))
                         End If
                     Next
@@ -1276,7 +1276,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     If statementTrailingTrivia.Any AndAlso Not statementTrailingTrivia(0).IsEndOfLine Then
                         statementTrailingTrivia = statementTrailingTrivia.Insert(0, VbEolTrivia)
                     End If
-                    Dim conditionWithTrivia As ExpressionSyntax = DirectCast(node.Condition.Accept(_nodesVisitor), ExpressionSyntax).AdjustNodeTrivia(SeparatorFollows:=True)
+                    Dim conditionWithTrivia As ExpressionSyntax = DirectCast(node.Condition.Accept(_nodesVisitor), ExpressionSyntax).AdjustNodeTrivia(separatorFollows:=True)
 
                     If node.Statement.IsKind(CS.SyntaxKind.EmptyStatement) Then
                         statementTrailingTrivia = statementTrailingTrivia.InsertRange(0, DirectCast(node.Statement, CSS.EmptyStatementSyntax).SemicolonToken.TrailingTrivia.ConvertTriviaList())
@@ -1422,8 +1422,8 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     Else
                         For Each e As IndexClass(Of CSS.StatementSyntax) In parent.Statements.WithIndex
                             If TypeOf e.Value Is CSS.ReturnStatementSyntax Then
-                                If indexOfFirstReferencingStatement > e.index Then
-                                    indexOfFirstReferencingStatement = e.index
+                                If indexOfFirstReferencingStatement > e.Index Then
+                                    indexOfFirstReferencingStatement = e.Index
                                 End If
                                 Exit For
                             End If

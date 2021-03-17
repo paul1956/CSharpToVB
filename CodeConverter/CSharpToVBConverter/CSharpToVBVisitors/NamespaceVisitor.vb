@@ -56,7 +56,7 @@ End Function
                 Dim useReplacementLeadingTrivia As Boolean = True
                 For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
                     Dim trivia As SyntaxTrivia = e.Value
-                    Dim nextTrivia As SyntaxTrivia = initialTriviaList.GetForwardTriviaOrDefault(e.index, lookaheadCount:=1)
+                    Dim nextTrivia As SyntaxTrivia = initialTriviaList.GetForwardTriviaOrDefault(e.Index, lookaheadCount:=1)
                     Select Case trivia.RawKind
                         Case VB.SyntaxKind.WhitespaceTrivia
                             If nextTrivia.IsKind(VB.SyntaxKind.None) OrElse nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
@@ -119,7 +119,7 @@ End Function
                 Dim foundLineContinuation As Boolean = False
                 For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
                     Dim trivia As SyntaxTrivia = e.Value
-                    Dim nextTrivia As SyntaxTrivia = initialTriviaList.GetForwardTriviaOrDefault(e.index, lookaheadCount:=1)
+                    Dim nextTrivia As SyntaxTrivia = initialTriviaList.GetForwardTriviaOrDefault(e.Index, lookaheadCount:=1)
                     Select Case trivia.RawKind
                         Case VB.SyntaxKind.WhitespaceTrivia
                             If nextTrivia.IsKind(VB.SyntaxKind.None) OrElse nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
@@ -232,8 +232,8 @@ End Function
                             Dim typeSyntaxList As New List(Of TypeSyntax)
                             Dim separatorList As List(Of SyntaxToken) = baseType.BaseList.Types.GetSeparators.ToList
                             For Each e As IndexClass(Of CSS.BaseTypeSyntax) In baseType.BaseList.Types.WithIndex
-                                If e.index < separatorList.Count Then
-                                    FilterLeadingTrivia(separatorList(e.index).LeadingTrivia.ConvertTriviaList(), movedFinalTrivia)
+                                If e.Index < separatorList.Count Then
+                                    FilterLeadingTrivia(separatorList(e.Index).LeadingTrivia.ConvertTriviaList(), movedFinalTrivia)
                                 End If
                                 If e.IsFirst Then
                                     Continue For
@@ -279,12 +279,12 @@ End Function
                                     item = item.WithLeadingTrivia(SpaceTrivia)
                                 End If
                                 If Not e.IsLast Then
-                                    If csSeparators(e.index).LeadingTrivia.ContainsDirectiveTrivia Then
+                                    If csSeparators(e.Index).LeadingTrivia.ContainsDirectiveTrivia Then
                                         newLeadingTrivia = newLeadingTrivia.Add(Factory.CommentTrivia($"' TODO: Visual Basic does not support directives in inherits lists. Directive moved!"))
                                         newLeadingTrivia = newLeadingTrivia.Add(VbEolTrivia)
-                                        newLeadingTrivia = newLeadingTrivia.AddRange(csSeparators(e.index).LeadingTrivia.ConvertTriviaList())
-                                    ElseIf csSeparators(e.index).LeadingTrivia.ContainsCommentTrivia Then
-                                        newLeadingTrivia = newLeadingTrivia.AddRange(csSeparators(e.index).LeadingTrivia.ConvertTriviaList())
+                                        newLeadingTrivia = newLeadingTrivia.AddRange(csSeparators(e.Index).LeadingTrivia.ConvertTriviaList())
+                                    ElseIf csSeparators(e.Index).LeadingTrivia.ContainsCommentTrivia Then
+                                        newLeadingTrivia = newLeadingTrivia.AddRange(csSeparators(e.Index).LeadingTrivia.ConvertTriviaList())
                                     End If
                                     If item.GetTrailingTrivia.ContainsCommentTrivia Then
                                         baseList.Add(item)
@@ -514,14 +514,14 @@ End Function
                         If movedTrailingTrivia.Any Or finalTrailingTrivia.Any Then
                             If [inherits].Any Then
                                 For Each e As IndexClass(Of InheritsStatementSyntax) In [inherits].WithIndex
-                                    [inherits](e.index) = [inherits](e.index).WithLeadingTrivia(FilterLeadingTrivia(e.Value.GetLeadingTrivia, movedTrailingTrivia))
-                                    [inherits](e.index) = [inherits](e.index).WithTrailingTrivia(FilterTrailingTrivia(e.Value.GetLeadingTrivia, movedTrailingTrivia)).WithTrailingEol
+                                    [inherits](e.Index) = [inherits](e.Index).WithLeadingTrivia(FilterLeadingTrivia(e.Value.GetLeadingTrivia, movedTrailingTrivia))
+                                    [inherits](e.Index) = [inherits](e.Index).WithTrailingTrivia(FilterTrailingTrivia(e.Value.GetLeadingTrivia, movedTrailingTrivia)).WithTrailingEol
                                 Next
                             End If
                             If [implements].Any Then
                                 For Each e As IndexClass(Of ImplementsStatementSyntax) In [implements].WithIndex
-                                    [implements](e.index) = [implements](e.index).WithLeadingTrivia(FilterLeadingTrivia(e.Value.GetLeadingTrivia, movedTrailingTrivia))
-                                    [implements](e.index) = [implements](e.index).WithTrailingTrivia(FilterTrailingTrivia(e.Value.GetLeadingTrivia, movedTrailingTrivia)).WithTrailingEol
+                                    [implements](e.Index) = [implements](e.Index).WithLeadingTrivia(FilterLeadingTrivia(e.Value.GetLeadingTrivia, movedTrailingTrivia))
+                                    [implements](e.Index) = [implements](e.Index).WithTrailingTrivia(FilterTrailingTrivia(e.Value.GetLeadingTrivia, movedTrailingTrivia)).WithTrailingEol
                                 Next
                                 movedTrailingTrivia = movedTrailingTrivia.AddRange(finalTrailingTrivia)
                                 [implements]([implements].Count - 1) = [implements].Last.WithAppendedTrailingTrivia(movedTrailingTrivia).WithTrailingEol
@@ -564,7 +564,7 @@ End Function
                         listOfAttrLists.Add(DirectCast(e.Value.Accept(Me), AttributeListSyntax))
                     Else
                         If e.Value.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
-                            listOfAttrLists(e.index - 1) = listOfAttrLists(e.index - 1).WithTrailingTrivia(listOfAttrLists(e.index - 1).GetLeadingTrivia.WithLastLineContinuation)
+                            listOfAttrLists(e.Index - 1) = listOfAttrLists(e.Index - 1).WithTrailingTrivia(listOfAttrLists(e.Index - 1).GetLeadingTrivia.WithLastLineContinuation)
                             listOfAttrLists.Add(DirectCast(e.Value.Accept(Me).WithPrependedLeadingTrivia(SpaceLineContinue.ToArray), AttributeListSyntax))
                         Else
                             listOfAttrLists.Add(DirectCast(e.Value.Accept(Me), AttributeListSyntax))
@@ -595,7 +595,7 @@ End Function
                     Dim csIdentifierTrailingTrivia As SyntaxTriviaList
                     Dim csSeparatorTrailingTrivia As SyntaxTriviaList
                     Dim csMovedTrailingSpace As SyntaxTriviaList
-                    csMovedTrailingSpace = csMovedTrailingSpace.Add(CsEmptySpaceTrivia)
+                    csMovedTrailingSpace = csMovedTrailingSpace.Add(s_csEmptySpaceTrivia)
                     Dim vbEnumStatement As StatementSyntax
                     Dim leadingTrivia As SyntaxTriviaList = node.OpenBraceToken.CollectConvertedTokenTrivia(getLeading:=True, getTrailing:=False)
                     For Each e As IndexClass(Of CSS.EnumMemberDeclarationSyntax) In csMembers.WithIndex
@@ -609,7 +609,7 @@ End Function
                             csMovedTrailingSpace = csMovedTrailingSpace.Add(CS.SyntaxFactory.Space)
                         End If
                         vbEnumStatement = DirectCast(e.Value.Accept(Me), StatementSyntax)
-                        csSeparatorTrailingTrivia = csSeparators(e.index).TrailingTrivia
+                        csSeparatorTrailingTrivia = csSeparators(e.Index).TrailingTrivia
                         If csSeparatorTrailingTrivia.Any Then
                             If csSeparatorTrailingTrivia(0).IsKind(CS.SyntaxKind.WhitespaceTrivia) Then
                                 csMovedTrailingSpace = csMovedTrailingSpace.Add(csSeparatorTrailingTrivia(0))
@@ -787,7 +787,7 @@ End Function
                     End If
                     members.Add(item)
                     If e.IsLast Then
-                        members(e.index) = members.Last.
+                        members(e.Index) = members.Last.
                             WithAppendedTrailingTrivia(node.CloseBraceToken.LeadingTrivia.ConvertTriviaList()).
                             WithAppendedTrailingTrivia(node.CloseBraceToken.TrailingTrivia.ConvertTriviaList())
                     End If

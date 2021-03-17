@@ -34,7 +34,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     Dim itemWithTrivia As VBS.ParameterSyntax = DirectCast(e.Accept(Me).WithConvertedTrailingTriviaFrom(e), VBS.ParameterSyntax)
                     items.Add(itemWithTrivia)
                     If separatorCount > index Then
-                        If items.Last.ContainsEOLTrivia Then
+                        If items.Last.ContainsEolTrivia Then
                             separators.Add(CommaToken.WithConvertedTrailingTriviaFrom(csSeparators(index)))
                         Else
                             separators.Add(CommaToken.WithConvertedTrailingTriviaFrom(csSeparators(index)))

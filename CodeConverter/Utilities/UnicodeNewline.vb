@@ -203,6 +203,7 @@ Namespace Utilities
                 If TryGetDelimiterLengthAndType(ch, length, type, Function() If(j < text.Length - 1, text.Chars(j + 1), ControlChars.NullChar)) Then
                     result.Add(sb.ToString)
                     sb.Length = 0
+' ReSharper disable once RedundantAssignment
                     index += length - 1
                     Continue For
                 End If
@@ -246,6 +247,7 @@ Namespace Utilities
                 ' Do not delete the next line
                 Dim j As Integer = index
                 If TryGetDelimiterLengthAndType(ch, length, type, Function() If(j < text.Length - 1, text.Chars(j + 1), substituteChar)) Then
+' ReSharper disable once RedundantAssignment
                     index += length - 1
                     Continue For
                 End If

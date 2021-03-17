@@ -46,13 +46,12 @@ Namespace Helpers
             Return StringFromLines(adjustedLines.ToArray())
         End Function
 
-        Protected Friend Overloads Function AssertFormatAsync(
-            expected As String,
-            code As String,
-            spans As IEnumerable(Of TextSpan),
-            Optional changedOptionSet As Dictionary(Of OptionKey, Object) = Nothing,
-            Optional testWithTransformation As Boolean = False,
-            Optional experimental As Boolean = False) As Task
+        Protected Friend Overloads Function AssertFormatAsync(expected As String,
+                                    code As String,
+                                    spans As ImmutableArray(Of TextSpan),
+                                    Optional changedOptionSet As Dictionary(Of OptionKey, Object) = Nothing,
+                                    Optional testWithTransformation As Boolean = False,
+                                    Optional experimental As Boolean = False) As Task
 
             Dim parseOptions As New VisualBasicParseOptions(LanguageVersion.VisualBasic16, DocumentationMode.None)
             If experimental Then

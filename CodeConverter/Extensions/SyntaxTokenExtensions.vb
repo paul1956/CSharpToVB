@@ -129,7 +129,7 @@ Namespace Extensions
             Dim newTrailingTrivia As New SyntaxTriviaList
 
             For Each e As IndexClass(Of SyntaxTrivia) In initialTrivia.WithIndex
-                Dim nextTrivia As SyntaxTrivia = initialTrivia.GetForwardTriviaOrDefault(e.index, lookaheadCount:=1)
+                Dim nextTrivia As SyntaxTrivia = initialTrivia.GetForwardTriviaOrDefault(e.Index, lookaheadCount:=1)
                 Select Case e.Value.RawKind
                     Case VB.SyntaxKind.WhitespaceTrivia
                         Select Case nextTrivia.RawKind
@@ -180,7 +180,7 @@ Namespace Extensions
 
             'Debug.WriteLine($"Trailing Token({sourceLineNumber}) In :{Token.ToFullString}")
             For Each e As IndexClass(Of SyntaxTrivia) In initialTrivia.WithIndex
-                Dim nextTrivia As SyntaxTrivia = initialTrivia.GetForwardTriviaOrDefault(e.index, lookaheadCount:=1)
+                Dim nextTrivia As SyntaxTrivia = initialTrivia.GetForwardTriviaOrDefault(e.Index, lookaheadCount:=1)
                 Select Case e.Value.RawKind
                     Case VB.SyntaxKind.WhitespaceTrivia
                         If nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
@@ -477,7 +477,7 @@ Namespace Extensions
             Dim newLeadingTrivia As New SyntaxTriviaList
             For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
                 Dim trivia As SyntaxTrivia = e.Value
-                Dim nextTrivia As SyntaxTrivia = initialTriviaList.GetForwardTriviaOrDefault(e.index, lookaheadCount:=1)
+                Dim nextTrivia As SyntaxTrivia = initialTriviaList.GetForwardTriviaOrDefault(e.Index, lookaheadCount:=1)
                 If trivia.IsKind(VB.SyntaxKind.WhitespaceTrivia) AndAlso nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
                     Continue For
                 End If
@@ -594,7 +594,7 @@ Namespace Extensions
                 initialTriviaList = token.LeadingTrivia
                 triviaListUBound = initialTriviaList.Count - 1
                 For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
-                    Dim nextTrivia As SyntaxTrivia = initialTriviaList.GetForwardTriviaOrDefault(e.index, lookaheadCount:=1)
+                    Dim nextTrivia As SyntaxTrivia = initialTriviaList.GetForwardTriviaOrDefault(e.Index, lookaheadCount:=1)
                     Select Case e.Value.RawKind
                         Case VB.SyntaxKind.WhitespaceTrivia
                             afterEol = False
@@ -612,7 +612,7 @@ Namespace Extensions
                             If Not e.IsLast Then
                                 Dim j As Integer
                                 Dim newWhiteSpaceStr As String = ""
-                                For j = e.index + 1 To triviaListUBound
+                                For j = e.Index + 1 To triviaListUBound
                                     If initialTriviaList(j).IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
                                         newWhiteSpaceStr &= initialTriviaList(j).ToString
                                         e.MoveNext()

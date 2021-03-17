@@ -26,9 +26,9 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Dim separators As New List(Of SyntaxToken)
                 For Each e As IndexClass(Of CSS.ArgumentSyntax) In csArguments.WithIndex
                     Dim argument As VBS.ArgumentSyntax = DirectCast(e.Value.Accept(Me), VBS.ArgumentSyntax)
-                    vbNodeList.Add(argument.AdjustNodeTrivia(SeparatorFollows:=Not e.IsLast))
+                    vbNodeList.Add(argument.AdjustNodeTrivia(separatorFollows:=Not e.IsLast))
                     If Not e.IsLast Then
-                        separators.Add(CommaToken.WithConvertedTrailingTriviaFrom(csArguments.GetSeparators()(e.index)))
+                        separators.Add(CommaToken.WithConvertedTrailingTriviaFrom(csArguments.GetSeparators()(e.Index)))
                     End If
                 Next
                 Dim openParenTokenWithTrivia As SyntaxToken = openParenToken.WithConvertedTriviaFrom(openToken)
@@ -61,9 +61,9 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                                                                                               vbStatements,
                                                                                                               elseClause:=Nothing)
                             GetStatementWithIssues(node).AddMarker(ifBlock, StatementHandlingOption.PrependStatement, allowDuplicates:=False)
-                            argumentWithTrivia = DirectCast(csBinaryExpression.Left.Accept(Me).WithConvertedTriviaFrom(csBinaryExpression.Left).AdjustNodeTrivia(SeparatorFollows:=True), VBS.ExpressionSyntax)
+                            argumentWithTrivia = DirectCast(csBinaryExpression.Left.Accept(Me).WithConvertedTriviaFrom(csBinaryExpression.Left).AdjustNodeTrivia(separatorFollows:=True), VBS.ExpressionSyntax)
                         Else
-                            argumentWithTrivia = DirectCast(csExpression.Accept(Me).AdjustNodeTrivia(SeparatorFollows:=True), VBS.ExpressionSyntax)
+                            argumentWithTrivia = DirectCast(csExpression.Accept(Me).AdjustNodeTrivia(separatorFollows:=True), VBS.ExpressionSyntax)
                         End If
                     ElseIf csExpression.IsKind(CS.SyntaxKind.IndexExpression) Then
                         Try
@@ -79,7 +79,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         If TypeOf visualBasicSyntaxNode Is VBS.LambdaExpressionSyntax Then
                             argumentWithTrivia = DirectCast(visualBasicSyntaxNode, VBS.ExpressionSyntax)
                         Else
-                            argumentWithTrivia = DirectCast(visualBasicSyntaxNode.AdjustNodeTrivia(SeparatorFollows:=True), VBS.ExpressionSyntax)
+                            argumentWithTrivia = DirectCast(visualBasicSyntaxNode.AdjustNodeTrivia(separatorFollows:=True), VBS.ExpressionSyntax)
                         End If
                         If argumentWithTrivia.IsKind(VB.SyntaxKind.AddressOfExpression) Then
                             argumentWithTrivia = CType(argumentWithTrivia, VBS.UnaryExpressionSyntax).Operand.WithTriviaFrom(argumentWithTrivia)
@@ -159,7 +159,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 For Each e As IndexClass(Of CSS.TypeSyntax) In csVisitorArguments.WithIndex
                     nodeList.Add(DirectCast(e.Value.Accept(Me), VBS.TypeSyntax))
                     If Not e.IsLast Then
-                        separators.Add(CommaToken.WithConvertedTrailingTriviaFrom(csSeparators(e.index)))
+                        separators.Add(CommaToken.WithConvertedTrailingTriviaFrom(csSeparators(e.Index)))
                     End If
                 Next
                 Dim openParenTokenWithTrivia As SyntaxToken = openParenToken.WithConvertedTriviaFrom(node.LessThanToken)

@@ -29,7 +29,6 @@ Namespace SupportClasses
                     Me.ConvertedTree = DirectCast(root, VB.VisualBasicSyntaxNode)
                     Exit Sub
                 Catch ex As Exception
-                    Stop
                 End Try
 
                 Dim tree As SyntaxTree = VB.VisualBasicSyntaxTree.ParseText(root.NormalizeWhitespaceEx(useDefaultCasing:=True).ToFullString)

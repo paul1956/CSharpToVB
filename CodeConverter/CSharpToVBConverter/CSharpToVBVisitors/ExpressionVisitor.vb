@@ -395,7 +395,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     End If
                 End If
                 Return Factory.AssignmentStatement(kind,
-                                                   leftNode.AdjustNodeTrivia(SeparatorFollows:=True), kind.GetOperatorToken(isReferenceType:=False),
+                                                   leftNode.AdjustNodeTrivia(separatorFollows:=True), kind.GetOperatorToken(isReferenceType:=False),
                                                    rightNode)
             End Function
 
@@ -670,7 +670,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                 variableNames.Add(sBuilder.ToString)
                             Else
                                 If e.Value.IsKind(CS.SyntaxKind.DiscardDesignation) Then
-                                    variableNames.Add($"__DiscardDesignation{e.index}")
+                                    variableNames.Add($"__DiscardDesignation{e.Index}")
                                 Else
                                     variableNames.Add(e.Value.Accept(Me).ToString)
                                 End If
@@ -815,7 +815,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
 
                             Dim newLeftNode As IdentifierNameSyntax = Factory.IdentifierName(e.Value)
                             Dim assignmentStmt As StatementSyntax
-                            Dim newRightNode As ExpressionSyntax = Factory.InvocationExpression(Factory.ParseExpression($"{identifierName}.item{e.index + 1}"))
+                            Dim newRightNode As ExpressionSyntax = Factory.InvocationExpression(Factory.ParseExpression($"{identifierName}.item{e.Index + 1}"))
                             Dim stmtIndex As Integer = Nothing
                             If FindMatchingStatement(indexedStatementList, newLeftNode, stmtIndex, statement) Then
                                 With statement
@@ -892,11 +892,11 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                             End If
                         Next
                         Dim vbNode As VB.VisualBasicSyntaxNode = CType(CType(csNodesOrTokens(0), SyntaxNode), CSS.ExpressionSyntax).Accept(Me)
-                        retExp = CType(vbNode.ConvertAndModifyNodeTrivia(csNodesOrTokens, 0, IsStatement:=False), ExpressionSyntax)
+                        retExp = CType(vbNode.ConvertAndModifyNodeTrivia(csNodesOrTokens, 0, isStatement:=False), ExpressionSyntax)
                         For nodeOrTokenIndex As Integer = 1 To csNodesOrTokens.Count - 1 Step 2
                             operatorToken = AmpersandToken.ConvertAndModifyTokenTrivia(csNodesOrTokens, nodeOrTokenIndex)
                             vbNode = CType(CType(csNodesOrTokens(nodeOrTokenIndex + 1), SyntaxNode), CSS.ExpressionSyntax).Accept(Me)
-                            rightNode = vbNode.ConvertAndModifyNodeTrivia(csNodesOrTokens, nodeOrTokenIndex + 1, IsStatement:=False)
+                            rightNode = vbNode.ConvertAndModifyNodeTrivia(csNodesOrTokens, nodeOrTokenIndex + 1, isStatement:=False)
                             retExp = Factory.ConcatenateExpression(retExp,
                                                                    operatorToken,
                                                                    DirectCast(rightNode, ExpressionSyntax))
@@ -914,7 +914,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                             Dim visualBasicSyntaxNode As ExpressionSyntax = TryCast(rightNode, ExpressionSyntax)
                             If visualBasicSyntaxNode IsNot Nothing Then
                                 rightExp = visualBasicSyntaxNode.AdjustExpressionTrivia(adjustLeading:=True, directiveNotAllowed:=False)
-                                If leftExp.ContainsEOLTrivia OrElse leftExp.ContainsCommentOrDirectiveTrivia Then
+                                If leftExp.ContainsEolTrivia OrElse leftExp.ContainsCommentOrDirectiveTrivia Then
                                     If leftExp.HasLeadingTrivia Then
                                         ifKeywordWithTrivia = ifKeywordWithTrivia.WithLeadingTrivia(leftExp.GetLeadingTrivia)
                                     End If
@@ -957,7 +957,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         Case CS.SyntaxKind.AsExpression
                             leftExp = DirectCast(leftNode, ExpressionSyntax)
                             Dim commaTokenWithTrivia As SyntaxToken = CommaToken
-                            If leftExp.ContainsEOLTrivia Then
+                            If leftExp.ContainsEolTrivia Then
                                 leftExp = leftExp.WithRestructuredEolTrivia
                                 commaTokenWithTrivia = commaTokenWithTrivia.WithTrailingTrivia(VbEolTrivia)
                             End If
@@ -1193,7 +1193,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             Public Overrides Function VisitConditionalAccessExpression(node As CSS.ConditionalAccessExpressionSyntax) As VB.VisualBasicSyntaxNode
                 Dim expression As ExpressionSyntax = DirectCast(node.Expression.Accept(Me), ExpressionSyntax)
                 Dim trailingTriviaList As SyntaxTriviaList
-                If expression.ContainsEOLTrivia Then
+                If expression.ContainsEolTrivia Then
                     trailingTriviaList = trailingTriviaList.AddRange(expression.WithRestructuredEolTrivia.GetTrailingTrivia)
                     expression = expression.WithoutTrailingTrivia
                 End If
@@ -1213,12 +1213,12 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     node.WhenFalse
                 }
 
-                Dim condition As ExpressionSyntax = DirectCast(node.Condition.Accept(Me).ConvertAndModifyNodeTrivia(nodesOrTokens, 0, IsStatement:=False), ExpressionSyntax)
+                Dim condition As ExpressionSyntax = DirectCast(node.Condition.Accept(Me).ConvertAndModifyNodeTrivia(nodesOrTokens, 0, isStatement:=False), ExpressionSyntax)
 
                 Dim csWhenTrue As CSS.ExpressionSyntax = node.WhenTrue
                 Dim whenTrue As ExpressionSyntax = Nothing
                 If Not csWhenTrue.IsKind(CS.SyntaxKind.ThrowExpression) Then
-                    whenTrue = DirectCast(node.WhenTrue.Accept(Me).ConvertAndModifyNodeTrivia(nodesOrTokens, index:=2, IsStatement:=False), ExpressionSyntax)
+                    whenTrue = DirectCast(node.WhenTrue.Accept(Me).ConvertAndModifyNodeTrivia(nodesOrTokens, index:=2, isStatement:=False), ExpressionSyntax)
                     If whenTrue.GetTrailingTrivia.ContainsCommentTrivia Then
                         whenTrue = whenTrue.WithTrailingEol(removeLastLineContinuation:=False)
                     End If
@@ -1229,7 +1229,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Dim csWhenFalse As CSS.ExpressionSyntax = node.WhenFalse
                 Dim whenFalse As ExpressionSyntax = Nothing
                 If Not csWhenFalse.IsKind(CS.SyntaxKind.ThrowExpression) Then
-                    whenFalse = DirectCast(node.WhenFalse.Accept(Me).ConvertAndModifyNodeTrivia(nodesOrTokens, index:=4, IsStatement:=True), ExpressionSyntax)
+                    whenFalse = DirectCast(node.WhenFalse.Accept(Me).ConvertAndModifyNodeTrivia(nodesOrTokens, index:=4, isStatement:=True), ExpressionSyntax)
                     If whenFalse.GetTrailingTrivia.ContainsCommentTrivia Then
                         whenFalse = whenFalse.WithTrailingEol
                     End If
@@ -1363,7 +1363,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         Throw
                     End Try
                     If Not e.IsLast Then
-                        separators.Add(CommaToken.WithConvertedTrailingTriviaFrom(csSeparators(e.index)))
+                        separators.Add(CommaToken.WithConvertedTrailingTriviaFrom(csSeparators(e.Index)))
                     End If
                 Next
                 Dim openBraceTokenWithTrivia As SyntaxToken = OpenBraceToken.WithConvertedTriviaFrom(node.Initializer.OpenBraceToken)
@@ -1477,7 +1477,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         End If
                         RestructureNodesAndSeparators(openBraceTokenWithTrivia, expressions, separators, closeBraceTokenWithTrivia)
                         If expressions.Any Then
-                            If Not expressions(exprLastIndex).ContainsEOLTrivia Then
+                            If Not expressions(exprLastIndex).ContainsEolTrivia Then
                                 expressions(exprLastIndex) = expressions(exprLastIndex).WithAppendedEol
                                 Return Factory.ObjectCollectionInitializer(Factory.CollectionInitializer(openBraceTokenWithTrivia, Factory.SeparatedList(expressions.OfType(Of ExpressionSyntax), separators), closeBraceTokenWithTrivia))
                             End If

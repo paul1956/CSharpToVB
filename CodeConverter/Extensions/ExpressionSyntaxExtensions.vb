@@ -39,7 +39,7 @@ Namespace Extensions
                 Dim afterEol As Boolean
                 For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
                     Dim trivia As SyntaxTrivia = e.Value
-                    Dim nextTrivia As SyntaxTrivia = initialTriviaList.GetForwardTriviaOrDefault(e.index, lookaheadCount:=1)
+                    Dim nextTrivia As SyntaxTrivia = initialTriviaList.GetForwardTriviaOrDefault(e.Index, lookaheadCount:=1)
 
                     Select Case trivia.RawKind
                         Case VB.SyntaxKind.WhitespaceTrivia
@@ -51,7 +51,7 @@ Namespace Extensions
                                     newLeadingTrivia = newLeadingTrivia.Add(SpaceTrivia)
                                     newLeadingTrivia = newLeadingTrivia.Add(LineContinuation)
                                     e.MoveNext()
-                                    nextTrivia = initialTriviaList.GetForwardTriviaOrDefault(e.index, lookaheadCount:=1)
+                                    nextTrivia = initialTriviaList.GetForwardTriviaOrDefault(e.Index, lookaheadCount:=1)
                                     If nextTrivia.IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
                                         newLeadingTrivia = newLeadingTrivia.Add(If(trivia.Span.Length > nextTrivia.Span.Length, trivia, nextTrivia))
                                         e.MoveNext()
@@ -118,7 +118,7 @@ Namespace Extensions
             Dim newTrailingTrivia As New SyntaxTriviaList
 
             For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
-                Dim nextTrivia As SyntaxTrivia = initialTriviaList.GetForwardTriviaOrDefault(e.index, lookaheadCount:=1)
+                Dim nextTrivia As SyntaxTrivia = initialTriviaList.GetForwardTriviaOrDefault(e.Index, lookaheadCount:=1)
                 Select Case e.Value.RawKind
                     Case VB.SyntaxKind.WhitespaceTrivia
                         Select Case nextTrivia.RawKind

@@ -42,7 +42,7 @@ Namespace Extensions
             Dim newTrailingTrivia As SyntaxTriviaList
             For Each e As IndexClass(Of SyntaxTrivia) In inputTrivia.WithIndex
                 Dim trivia As SyntaxTrivia = e.Value
-                Dim nextTrivia As SyntaxTrivia = inputTrivia.GetForwardTriviaOrDefault(e.index, lookaheadCount:=1)
+                Dim nextTrivia As SyntaxTrivia = inputTrivia.GetForwardTriviaOrDefault(e.Index, lookaheadCount:=1)
                 Select Case trivia.RawKind
                     Case VB.SyntaxKind.WhitespaceTrivia
                         If Not foundWhiteSpace AndAlso Not nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
@@ -101,7 +101,7 @@ Namespace Extensions
             Dim foundWhiteSpace As Boolean = False
             For Each e As IndexClass(Of SyntaxTrivia) In inputTrivia.WithIndex
                 Dim trivia As SyntaxTrivia = e.Value
-                Dim nextTrivia As SyntaxTrivia = initialTriviaList.GetForwardTriviaOrDefault(e.index, lookaheadCount:=1)
+                Dim nextTrivia As SyntaxTrivia = initialTriviaList.GetForwardTriviaOrDefault(e.Index, lookaheadCount:=1)
                 Select Case trivia.RawKind
                     Case VB.SyntaxKind.WhitespaceTrivia
                         If Not (foundWhiteSpace OrElse nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia)) Then
@@ -278,7 +278,7 @@ Namespace Extensions
             Dim newLeadingTrivia As New SyntaxTriviaList
             For Each e As IndexClass(Of SyntaxTrivia) In initialLeadingTrivia.WithIndex
                 Dim trivia As SyntaxTrivia = e.Value
-                Dim nextTrivia As SyntaxTrivia = initialLeadingTrivia.GetForwardTriviaOrDefault(e.index, lookaheadCount:=1)
+                Dim nextTrivia As SyntaxTrivia = initialLeadingTrivia.GetForwardTriviaOrDefault(e.Index, lookaheadCount:=1)
                 If trivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) AndAlso (firstTrivia OrElse nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia)) Then
                     Continue For
                 End If
@@ -516,7 +516,7 @@ Namespace Extensions
                     Return node.WithTrailingTrivia(newTrailingTrivia.Add(VbEolTrivia))
                 Case Else
                     For Each e As IndexClass(Of SyntaxTrivia) In trailingTrivia.WithIndex
-                        Dim nextTrivia As SyntaxTrivia = trailingTrivia.GetForwardTriviaOrDefault(e.index, lookaheadCount:=1)
+                        Dim nextTrivia As SyntaxTrivia = trailingTrivia.GetForwardTriviaOrDefault(e.Index, lookaheadCount:=1)
                         Select Case e.Value.RawKind
                             Case VB.SyntaxKind.WhitespaceTrivia
                                 Select Case nextTrivia.RawKind
@@ -525,7 +525,7 @@ Namespace Extensions
                                         While nextTrivia.IsKind(VB.SyntaxKind.WhitespaceTrivia)
                                             maxTrivia = e.Value.AdjustWhitespace(nextTrivia, afterLineContinue:=False)
                                             e.MoveNext()
-                                            nextTrivia = trailingTrivia.GetForwardTriviaOrDefault(e.index, lookaheadCount:=1)
+                                            nextTrivia = trailingTrivia.GetForwardTriviaOrDefault(e.Index, lookaheadCount:=1)
                                         End While
                                         If e.IsLast Then
                                             newTrailingTrivia = newTrailingTrivia.Add(VbEolTrivia)
@@ -574,7 +574,7 @@ Namespace Extensions
                                 Select Case nextTrivia.RawKind
                                     Case VB.SyntaxKind.WhitespaceTrivia
                                         newTrailingTrivia = newTrailingTrivia.Add(e.Value)
-                                        If trailingTrivia.GetForwardTriviaOrDefault(e.index, lookaheadCount:=2).IsKind(VB.SyntaxKind.LineContinuationTrivia) Then
+                                        If trailingTrivia.GetForwardTriviaOrDefault(e.Index, lookaheadCount:=2).IsKind(VB.SyntaxKind.LineContinuationTrivia) Then
                                             newTrailingTrivia = newTrailingTrivia.Add(VbEolTrivia)
                                         Else
                                             e.MoveNext()

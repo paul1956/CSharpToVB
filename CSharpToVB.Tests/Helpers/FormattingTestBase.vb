@@ -1,6 +1,7 @@
 ﻿' Licensed to the .NET Foundation under one or more agreements.
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
+Imports System.Collections.Immutable
 Imports System.Threading
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Formatting
@@ -14,14 +15,13 @@ Namespace Helpers
     '<UseExportProvider>
     Public MustInherit Class FormattingTestBase
 
-        Protected Async Function AssertFormatAsync(
-            expected As String,
-            code As String,
-            spans As IEnumerable(Of TextSpan),
-            language As String,
-            Optional changedOptionSet As Dictionary(Of OptionKey, Object) = Nothing,
-            Optional treeCompare As Boolean = True,
-            Optional parseOptions As ParseOptions = Nothing) As Task
+        Protected Async Function AssertFormatAsync(expected As String,
+                                        code As String,
+                                        spans As ImmutableArray(Of TextSpan),
+                                        language As String,
+                                        Optional changedOptionSet As Dictionary(Of OptionKey, Object) = Nothing,
+                                        Optional treeCompare As Boolean = True,
+                                        Optional parseOptions As ParseOptions = Nothing) As Task
             Using workspace As AdhocWorkspace = New AdhocWorkspace()
                 Dim project As Project = workspace.CurrentSolution.AddProject("Project", "Project.dll", language)
                 If parseOptions IsNot Nothing Then
@@ -67,7 +67,7 @@ Namespace Helpers
 
         Protected MustOverride Function ParseCompilation(text As String, parseOptions As ParseOptions) As SyntaxNode
 
-        Friend Shared Sub AssertFormat(workspace As Workspace, expected As String, root As SyntaxNode, spans As IEnumerable(Of TextSpan), optionSet As OptionSet, sourceText As SourceText)
+        Friend Shared Sub AssertFormat(workspace As Workspace, expected As String, root As SyntaxNode, spans As ImmutableArray(Of TextSpan), optionSet As OptionSet, sourceText As SourceText)
             Dim result As IList(Of TextChange) = Formatter.GetFormattedTextChanges(root, spans, workspace, optionSet)
             AssertResult(expected, sourceText, result)
         End Sub

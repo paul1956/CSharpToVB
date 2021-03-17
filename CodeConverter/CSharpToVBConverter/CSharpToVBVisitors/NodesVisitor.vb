@@ -104,8 +104,8 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Dim separatorList As List(Of SyntaxToken) = baseType.BaseList.Types.GetSeparators.ToList
                 Dim argumentNames As New List(Of String)
                 For Each e As IndexClass(Of CSS.BaseTypeSyntax) In baseType.BaseList.Types.WithIndex
-                    If e.index < separatorList.Count Then
-                        FilterLeadingTrivia(separatorList(e.index).LeadingTrivia.ConvertTriviaList(), movedFinalTrivia)
+                    If e.Index < separatorList.Count Then
+                        FilterLeadingTrivia(separatorList(e.Index).LeadingTrivia.ConvertTriviaList(), movedFinalTrivia)
                     End If
                     For Each name As VBS.ArgumentSyntax In CType(CType(e.Value, CSS.PrimaryConstructorBaseTypeSyntax).ArgumentList.Accept(Me), VBS.ArgumentListSyntax).Arguments
                         argumentNames.Add(name.ToString)

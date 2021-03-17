@@ -88,7 +88,7 @@ Public Module ProcessDirectoriesUtilities
                         Return False
                     End If
                     If mainForm IsNot Nothing Then
-                        Dim elapsed As TimeSpan = stats.s_elapsedTimer.Elapsed
+                        Dim elapsed As TimeSpan = stats._elapsedTimer.Elapsed
                         mainForm.StatusStripElapasedTimeLabel.Text = $"Elapsed Time - {elapsed.Hours}: {elapsed.Minutes}:{elapsed.Seconds}"
                         mainForm.StatusStripConversionFileProgressLabel.Text = $"Processed {stats.FilesProcessed:N0} of {stats.TotalFilesToProcess:N0} Files"
                         Application.DoEvents()

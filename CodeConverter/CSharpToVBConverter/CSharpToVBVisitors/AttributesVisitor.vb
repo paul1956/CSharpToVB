@@ -63,7 +63,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                             Dim possibleMethodInfo As SymbolInfo = _semanticModel.GetSymbolInfo(attributeSyntax)
                             If possibleMethodInfo.CandidateSymbols.Length = 1 Then
                                 Dim method As IMethodSymbol = CType(possibleMethodInfo.CandidateSymbols(0), IMethodSymbol)
-                                name = Factory.IdentifierName(method.Parameters(e.index).Name)
+                                name = Factory.IdentifierName(method.Parameters(e.Index).Name)
                             End If
                         End If
                         If name Is Nothing Then
@@ -77,7 +77,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         Dim initialTriviaList As SyntaxTriviaList = item.GetLeadingTrivia
                         For Each e1 As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex()
                             Dim trivia As SyntaxTrivia = e1.Value
-                            Dim nextTrivia As SyntaxTrivia = initialTriviaList.GetForwardTriviaOrDefault(e1.index, lookaheadCount:=1)
+                            Dim nextTrivia As SyntaxTrivia = initialTriviaList.GetForwardTriviaOrDefault(e1.Index, lookaheadCount:=1)
                             If trivia.IsComment Then
                                 newTrailingTrivia = newTrailingTrivia.Add(trivia)
                                 If nextTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) Then

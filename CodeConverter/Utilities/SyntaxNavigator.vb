@@ -16,6 +16,7 @@ Namespace Utilities
         End Sub
 
         Private Shared Function Matches(predicate As Func(Of SyntaxToken, Boolean), token As SyntaxToken) As Boolean
+' ReSharper disable once ConditionIsAlwaysTrueOrFalse
             Return predicate Is Nothing OrElse ReferenceEquals(predicate, Function(t As SyntaxToken) True) OrElse predicate(token)
         End Function
 

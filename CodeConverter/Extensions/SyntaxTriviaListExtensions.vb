@@ -177,7 +177,7 @@ Namespace Extensions
             Try
                 For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
                     Dim trivia As SyntaxTrivia = e.Value
-                    Dim nextTrivia As SyntaxTrivia = initialTriviaList.GetForwardTriviaOrDefault(e.index, lookaheadCount:=1)
+                    Dim nextTrivia As SyntaxTrivia = initialTriviaList.GetForwardTriviaOrDefault(e.Index, lookaheadCount:=1)
                     Dim structuredTrivia As CSS.StructuredTriviaSyntax = DirectCast(trivia.GetStructure, CSS.StructuredTriviaSyntax)
                     Select Case trivia.RawKind
                         Case CS.SyntaxKind.WhitespaceTrivia
@@ -198,7 +198,7 @@ Namespace Extensions
                                 Dim node As CSS.XmlNodeSyntax = e1.Value
                                 If (Not node.IsKind(CS.SyntaxKind.XmlText)) AndAlso node.GetLeadingTrivia.Any AndAlso node.GetLeadingTrivia.First.IsKind(CS.SyntaxKind.DocumentationCommentExteriorTrivia) Then
                                     If Not e1.IsLast Then
-                                        Dim nextNode As CSS.XmlNodeSyntax = singleLineDocumentationComment.Content(e1.index + 1)
+                                        Dim nextNode As CSS.XmlNodeSyntax = singleLineDocumentationComment.Content(e1.Index + 1)
                                         If (Not nextNode.IsKind(CS.SyntaxKind.XmlText)) OrElse
                                             nextNode.GetLeadingTrivia.Count = 0 OrElse
                                             Not nextNode.GetLeadingTrivia.First.IsKind(CS.SyntaxKind.DocumentationCommentExteriorTrivia) Then
@@ -425,7 +425,7 @@ Namespace Extensions
             Dim banner As New SyntaxTriviaList
             For Each e As IndexClass(Of SyntaxTrivia) In triviaList.WithIndex
                 Dim t As SyntaxTrivia = e.Value
-                Dim nextTrivia As SyntaxTrivia = triviaList.GetForwardTriviaOrDefault(e.index, lookaheadCount:=1)
+                Dim nextTrivia As SyntaxTrivia = triviaList.GetForwardTriviaOrDefault(e.Index, lookaheadCount:=1)
 
                 If t.IsKind(CS.SyntaxKind.SingleLineCommentTrivia) Then
                     If nextTrivia.IsKind(CS.SyntaxKind.EndOfLineTrivia) Then

@@ -889,7 +889,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     Dim fixedModifierLeadingTrivia As SyntaxTriviaList
                     For Each e As IndexClass(Of SyntaxTrivia) In initialTriviaList.WithIndex
                         Dim t As SyntaxTrivia = e.Value
-                        Dim nextTrivia As SyntaxTrivia = initialTriviaList.GetForwardTriviaOrDefault(e.index, lookaheadCount:=1)
+                        Dim nextTrivia As SyntaxTrivia = initialTriviaList.GetForwardTriviaOrDefault(e.Index, lookaheadCount:=1)
                         Select Case t.RawKind
                             Case VB.SyntaxKind.WhitespaceTrivia
                                 If nextTrivia.IsComment Then
@@ -1192,7 +1192,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     If node.AccessorList IsNot Nothing AndAlso csAccessors.Count = 1 Then
                         Select Case csAccessors(0).Keyword.RawKind
                             Case CS.SyntaxKind.GetKeyword
-                                csModifiers = csModifiers.Add(CsReadOnlyKeyword)
+                                csModifiers = csModifiers.Add(s_csReadOnlyKeyword)
                             Case CS.SyntaxKind.SetKeyword
                                 isWriteOnly = True
                             Case Else

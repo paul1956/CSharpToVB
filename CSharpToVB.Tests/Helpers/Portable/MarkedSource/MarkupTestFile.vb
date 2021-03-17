@@ -106,8 +106,7 @@ Namespace Roslyn.Test.Utilities
             End If
         End Sub
 
-        Private Sub GetPositionAndSpans(
-            input As String, <Out> ByRef output As String, <Out> ByRef cursorPositionOpt As Integer?, <Out> ByRef spans As ImmutableArray(Of TextSpan))
+        Private Sub GetPositionAndSpans(input As String, <Out> ByRef output As String, <Out> ByRef cursorPositionOpt As Integer?, <Out> ByRef spans As ImmutableArray(Of TextSpan))
             Dim mDictionary As IDictionary(Of String, List(Of TextSpan)) = Nothing
             Parse(input, output, cursorPositionOpt, mDictionary)
 
