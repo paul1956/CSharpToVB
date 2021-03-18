@@ -262,6 +262,8 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                 GetStatementWithIssues(node).AddMarker(Factory.EmptyStatement.WithLeadingTrivia(trivia), StatementHandlingOption.PrependStatement, allowDuplicates:=True)
                             Case VB.SyntaxKind.EnableWarningDirectiveTrivia
                                 GetStatementWithIssues(node).AddMarker(Factory.EmptyStatement.WithLeadingTrivia(trivia), StatementHandlingOption.AppendEmptyStatement, allowDuplicates:=True)
+                            Case VB.SyntaxKind.IfDirectiveTrivia, VB.SyntaxKind.DisabledTextTrivia, VB.SyntaxKind.ElseDirectiveTrivia
+                                ' Ignore for now
                             Case Else
                                 Stop
                         End Select
