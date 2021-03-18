@@ -16,6 +16,50 @@ Namespace Extensions
     Friend Module VariableDeclarationExtensions
 
         <Extension>
+        Private Function DetermineTypeSyntax(expression As CSS.ExpressionSyntax, model As SemanticModel) As (_Error As Boolean, _ITypeSymbol As VBS.TypeSyntax)
+            ' If a parameter appears to have a void return type, then just use 'object' instead.
+            Try
+                If expression IsNot Nothing Then
+                    Dim typeInfo As TypeInfo = model.GetTypeInfo(expression)
+                    Dim symbolInfo As SymbolInfo = model.GetSymbolInfo(expression)
+                    If typeInfo.Type IsNot Nothing Then
+                        If typeInfo.Type.IsErrorType Then
+                            Return (_Error:=True, PredefinedTypeObject)
+                        ElseIf SymbolEqualityComparer.Default.Equals(typeInfo.Type, model.Compilation.ObjectType) Then
+                            Return (_Error:=False, PredefinedTypeObject)
+                        ElseIf typeInfo.Type.ToString.StartsWith("System.ValueTuple") Then
+                            Return (_Error:=False, Factory.ParseTypeName(typeInfo.Type.ToString.Replace("<", "(Of ").Replace(">", ")")))
+                        End If
+                    End If
+                    Dim symbol As ISymbol = If(typeInfo.Type, symbolInfo.GetAnySymbol())
+                    If symbol IsNot Nothing Then
+                        Dim type As ITypeSymbol = TryCast(symbol, ITypeSymbol)
+                        If type IsNot Nothing Then
+                            If symbol.Kind = SymbolKind.PointerType Then
+                                Return (_Error:=True, IntPtrType)
+                            End If
+                            If type.ToString.Contains("<anonymous type", StringComparison.Ordinal) Then
+                                Return (_Error:=True, PredefinedTypeObject)
+                            End If
+                            If type.ToString.StartsWith("(", StringComparison.Ordinal) Then
+                                Return (_Error:=False, type.ToString.ConvertCsStringToName)
+                            End If
+                        End If
+
+                        Dim typeSymbol As ITypeSymbol = symbol.ConvertISymbolToType(model.Compilation)
+                        Return (_Error:=False, typeSymbol.ConvertToType)
+                    End If
+
+                End If
+            Catch ex As OperationCanceledException
+                Throw
+            Catch ex As Exception
+                Stop
+            End Try
+            Return (_Error:=True, PredefinedTypeObject)
+        End Function
+
+        <Extension>
         Private Function WithModifiedNodeTrailingTrivia(Of T As VB.VisualBasicSyntaxNode)(node As T, separatorFollows As Boolean) As T
             Dim afterComment As Boolean = False
             Dim afterLinefeed As Boolean = False

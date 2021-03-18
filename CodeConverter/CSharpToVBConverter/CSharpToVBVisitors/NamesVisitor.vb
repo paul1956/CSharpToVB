@@ -51,7 +51,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                    TypeOf originalNameParent Is CSS.InvocationExpressionSyntax OrElse
                    TypeOf originalNameParent Is CSS.SimpleBaseTypeSyntax OrElse
                    TypeOf originalNameParent Is CSS.TypeArgumentListSyntax OrElse
-                   TypeOf originalNameParent.AncestorsAndSelf().OfType(Of CSS.AttributeSyntax).DefaultIfEmpty Is CSS.AttributeSyntax Then
+                   TypeOf originalNameParent.AncestorsAndSelf().OfType(Of CSS.AttributeSyntax).DefaultIfEmpty.First() Is CSS.AttributeSyntax Then
                     Return name
                 End If
 
@@ -61,13 +61,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 End If
 
                 Dim symbolInfo As SymbolInfo
-                Try
-                    symbolInfo = _semanticModel.GetSymbolInfo(originalName)
-                Catch ex As OperationCanceledException
-                    Throw
-                Catch ex As Exception
-                    Throw
-                End Try
+                symbolInfo = _semanticModel.GetSymbolInfo(originalName)
                 Dim symbol As ISymbol = If(symbolInfo.Symbol, symbolInfo.CandidateSymbols.FirstOrDefault())
                 If symbol?.IsKind(SymbolKind.Method) Then
                     Dim [addressOf] As VBS.UnaryExpressionSyntax = Factory.AddressOfExpression(name)

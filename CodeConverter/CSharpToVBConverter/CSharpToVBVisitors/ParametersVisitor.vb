@@ -18,6 +18,19 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
         Partial Friend Class NodesVisitor
             Inherits CS.CSharpSyntaxVisitor(Of VB.VisualBasicSyntaxNode)
 
+            Private Shared Function RemoveModifier(parameter As VBS.ParameterSyntax, modifierKind As VB.SyntaxKind) As VBS.ParameterSyntax
+                Dim returnTokenList As New SyntaxTokenList
+                If parameter.Modifiers.Any Then
+                    For Each token As SyntaxToken In parameter.Modifiers
+                        If token.IsKind(modifierKind) Then
+                            Continue For
+                        End If
+                        returnTokenList = returnTokenList.Add(token)
+                    Next
+                End If
+                Return parameter.WithModifiers(returnTokenList)
+            End Function
+
             Public Overrides Function VisitBracketedParameterList(node As CSS.BracketedParameterListSyntax) As VB.VisualBasicSyntaxNode
                 If node Is Nothing Then
                     Throw New ArgumentNullException(NameOf(node))
@@ -245,12 +258,6 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                 parameterTrailingTrivia = parameterTrailingTrivia.Add(trivia)
                             Case VB.SyntaxKind.EndIfDirectiveTrivia
                                 parameterTrailingTrivia = parameterTrailingTrivia.Add(trivia)
-                            Case VB.SyntaxKind.IfDirectiveTrivia
-                                ' TODO Ignore for now
-                            Case VB.SyntaxKind.DisabledTextTrivia
-                                ' TODO Ignore for now
-                            Case VB.SyntaxKind.ElseDirectiveTrivia
-                                ' TODO Ignore for now
                             Case VB.SyntaxKind.DisableWarningDirectiveTrivia
                                 GetStatementWithIssues(node).AddMarker(Factory.EmptyStatement.WithLeadingTrivia(trivia), StatementHandlingOption.PrependStatement, allowDuplicates:=True)
                             Case VB.SyntaxKind.EnableWarningDirectiveTrivia
@@ -263,7 +270,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     Dim initialTriviaList As SyntaxTriviaList = returnType.GetTrailingTrivia
                     For index As Integer = 0 To initialTriviaList.Count - 1
                         Dim trivia As SyntaxTrivia = initialTriviaList(index)
-                        Dim nextTrivia As SyntaxTrivia = GetForwardTriviaOrDefault(initialTriviaList, index, lookaheadCount:=1)
+                        Dim nextTrivia As SyntaxTrivia = initialTriviaList.GetForwardTriviaOrDefault(index, lookaheadCount:=1)
 
                         Select Case trivia.RawKind
                             Case VB.SyntaxKind.WhitespaceTrivia
@@ -276,14 +283,6 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                 parameterTrailingTrivia = parameterTrailingTrivia.Add(trivia)
                             Case VB.SyntaxKind.EndIfDirectiveTrivia
                                 parameterTrailingTrivia = parameterTrailingTrivia.Add(trivia)
-                            Case VB.SyntaxKind.IfDirectiveTrivia
-                                ' TODO Ignore for now
-                            Case VB.SyntaxKind.DisabledTextTrivia
-                                ' TODO Ignore for now
-                            Case VB.SyntaxKind.ElseIfDirectiveTrivia
-                                ' TODO Ignore for now
-                            Case VB.SyntaxKind.ElseDirectiveTrivia
-                                ' TODO Ignore for now
                             Case VB.SyntaxKind.DisableWarningDirectiveTrivia
                                 GetStatementWithIssues(node).AddMarker(Factory.EmptyStatement.WithLeadingTrivia(trivia), StatementHandlingOption.PrependStatement, allowDuplicates:=True)
                             Case VB.SyntaxKind.EnableWarningDirectiveTrivia
@@ -324,8 +323,8 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Dim separatorCount As Integer = node.Parameters.Count - 1
                 For index As Integer = 0 To separatorCount
                     Dim itemWithTrivia As VBS.ParameterSyntax = DirectCast(node.Parameters(index).Accept(Me), VBS.ParameterSyntax)
-                    itemWithTrivia = itemWithTrivia.RemoveModifier(VB.SyntaxKind.ByValKeyword)
-                    items.Add(itemWithTrivia) 'XXXX .AdjustNodeTrivia(separatorCount > index))
+                    itemWithTrivia = RemoveModifier(itemWithTrivia, VB.SyntaxKind.ByValKeyword)
+                    items.Add(itemWithTrivia)
                     If separatorCount > index Then
                         separators.Add(CommaToken.WithConvertedTrailingTriviaFrom(csSeparators(index)))
                     End If

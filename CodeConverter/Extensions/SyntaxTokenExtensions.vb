@@ -15,6 +15,22 @@ Namespace Extensions
     Public Module SyntaxTokenExtensions
 
         <Extension>
+        Private Function GetNewUniqueName(convertedIdentifier As String, usedIdentifiers As Dictionary(Of String, SymbolTableEntry), isType As Boolean, node As CS.CSharpSyntaxNode, model As SemanticModel) As String
+            If isType Then
+                Return convertedIdentifier
+            End If
+
+            convertedIdentifier = convertedIdentifier.RemoveBrackets
+
+            Dim uniqueId As String = node.GetUniqueVariableNameInScope(convertedIdentifier, usedIdentifiers, model)
+            If VB.SyntaxFacts.GetKeywordKind(uniqueId) = VB.SyntaxKind.None Then
+                Return uniqueId
+            End If
+
+            Return $"[{uniqueId}]"
+        End Function
+
+        <Extension>
         Private Function GetScopingBlock(node As CS.CSharpSyntaxNode) As CS.CSharpSyntaxNode
             Dim blockNode As CS.CSharpSyntaxNode = node
             While blockNode IsNot Nothing

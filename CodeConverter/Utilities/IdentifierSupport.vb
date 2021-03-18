@@ -29,22 +29,6 @@ Namespace Utilities
             Next
         End Sub
 
-        <Extension>
-        Friend Function GetNewUniqueName(convertedIdentifier As String, usedIdentifiers As Dictionary(Of String, SymbolTableEntry), isType As Boolean, node As CS.CSharpSyntaxNode, model As SemanticModel) As String
-            If isType Then
-                Return convertedIdentifier
-            End If
-
-            convertedIdentifier = convertedIdentifier.RemoveBrackets
-
-            Dim uniqueId As String = node.GetUniqueVariableNameInScope(convertedIdentifier, usedIdentifiers, model)
-            If VB.SyntaxFacts.GetKeywordKind(uniqueId) = VB.SyntaxKind.None Then
-                Return uniqueId
-            End If
-
-            Return $"[{uniqueId}]"
-        End Function
-
         Friend Function IsSpecialReservedWord(id As String) As Boolean
             If id.Equals("Alias", StringComparison.OrdinalIgnoreCase) OrElse
                     id.Equals("CType", StringComparison.OrdinalIgnoreCase) OrElse

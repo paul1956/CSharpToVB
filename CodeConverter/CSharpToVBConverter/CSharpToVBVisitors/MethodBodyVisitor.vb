@@ -39,6 +39,14 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
 
             Public Property IsIterator As Boolean
 
+            Private Shared Iterator Function IndexedSelect(Of T, TReturn)(source As IEnumerable(Of T), transform As Func(Of Integer, T, TReturn)) As IEnumerable(Of TReturn)
+                Dim i As Integer = 0
+                For Each item As T In source
+                    Yield transform(i, item)
+                    i += 1
+                Next item
+            End Function
+
             Private Shared Function TrimParenthesis(node As CSS.IfStatementSyntax) As CSS.ExpressionSyntax
                 Dim condition As CSS.ExpressionSyntax = node.Condition
                 Do While TypeOf condition Is CSS.ParenthesizedExpressionSyntax
@@ -1239,7 +1247,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 If node.IsKind(CS.SyntaxKind.GotoCaseStatement, CS.SyntaxKind.GotoDefaultStatement) Then
                     If _blockInfo.Count = 0 Then Throw New InvalidOperationException("GoTo Case/GoTo Default outside switch Is illegal!")
                     Dim labelExpression As VB.VisualBasicSyntaxNode = If(node.Expression?.Accept(_nodesVisitor), Factory.ElseCaseClause())
-                    _blockInfo.Peek().s_gotoCaseExpressions.Add(labelExpression)
+                    _blockInfo.Peek()._goToCaseExpressions.Add(labelExpression)
                     labelNameToken = Factory.Label(VB.SyntaxKind.IdentifierLabel, Me.MakeGotoSwitchLabel(labelExpression))
                 Else
                     labelNameToken = Factory.Label(VB.SyntaxKind.IdentifierLabel, GenerateSafeVbToken(DirectCast(node.Expression, CSS.IdentifierNameSyntax).Identifier, node, _semanticModel, _nodesVisitor._usedIdentifiers))
@@ -1626,7 +1634,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                                             If(expression, DirectCast(node.Expression.Accept(_nodesVisitor), ExpressionSyntax))
                                                             ).WithTrailingEol,
                                 Factory.List(nodes:=Me.AddLabels(blocks:=orderedBlocks.ToArray,
-                                               gotoLabels:=_blockInfo.Peek().s_gotoCaseExpressions)
+                                               gotoLabels:=_blockInfo.Peek()._goToCaseExpressions)
                                                ),
                                 endSelectStmt
                                 )
@@ -1648,7 +1656,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Dim openBraceLeadingTrivia As New SyntaxTriviaList
                 Dim closingBraceTrailingTrivia As New SyntaxTriviaList
                 Dim tryStmt As TryStatementSyntax = Factory.TryStatement.WithTrailingEol
-                Dim catchBlocks As SyntaxList(Of CatchBlockSyntax) = Factory.List(node.Catches.IndexedSelect(AddressOf Me.ConvertCatchClause))
+                Dim catchBlocks As SyntaxList(Of CatchBlockSyntax) = Factory.List(IndexedSelect(node.Catches, AddressOf Me.ConvertCatchClause))
                 Dim newTriviaList As New SyntaxTriviaList
                 For blockIndex As Integer = 0 To catchBlocks.Count - 1
                     Dim catchBlock As CatchBlockSyntax = catchBlocks(blockIndex)
@@ -1849,7 +1857,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             End Function
 
             Private Class BlockInfo
-                Public ReadOnly s_gotoCaseExpressions As New List(Of VB.VisualBasicSyntaxNode)()
+                Public ReadOnly _goToCaseExpressions As New List(Of VB.VisualBasicSyntaxNode)()
             End Class
 
         End Class

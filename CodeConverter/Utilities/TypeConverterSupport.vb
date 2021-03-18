@@ -29,6 +29,48 @@ Namespace Utilities
             Return compilation.GetTypeByMetadataName(GetType(Action).FullName)
         End Function
 
+        <Extension>
+        Private Function ConvertIFieldToTupleElement(tupleElement As IFieldSymbol) As VBS.TupleElementSyntax
+            If tupleElement.Type Is Nothing Then
+                Return Factory.NamedTupleElement(tupleElement.Name.ToString(Globalization.CultureInfo.InvariantCulture))
+            End If
+            Dim asClause As VBS.SimpleAsClauseSyntax = Factory.SimpleAsClause(AsKeyword.With(SpaceTrivia, SpaceTrivia), New SyntaxList(Of VBS.AttributeListSyntax), tupleElement.Type.ConvertToType)
+            Return Factory.NamedTupleElement(Factory.Identifier(MakeVbSafeName(tupleElement.Name)), asClause)
+        End Function
+
+        <Extension>
+        Private Function ConvertTypeITypeSymbolFromInterfaceToType(expressionConvertedType As ITypeSymbol) As VBS.TypeSyntax
+
+            If Not expressionConvertedType.AllInterfaces.Any Then
+                If expressionConvertedType.ToString.EndsWith("IArityEnumerable", StringComparison.Ordinal) Then
+                    Return PredefinedTypeInteger
+                End If
+                Return PredefinedTypeObject
+            End If
+            For Each namedType As INamedTypeSymbol In expressionConvertedType.AllInterfaces
+                Dim index As Integer = namedType.ToString.IndexOf(StrIEnumerableOf, StringComparison.Ordinal)
+                Dim newType As String
+                If index > 0 Then
+                    newType = namedType.ToString.Substring(index + StrIEnumerableOf.Length)
+                    Return Factory.ParseName(newType)
+                End If
+                index = namedType.ToString.IndexOf(StrIDictionary, StringComparison.Ordinal)
+                If index > 0 Then
+                    Return namedType.ConvertToType
+                End If
+                index = namedType.ToString.IndexOf(StrIEnumerable, StringComparison.Ordinal)
+                If index > 0 Then
+                    Return namedType.ConvertToType
+                End If
+            Next
+
+            Dim index1 As Integer = expressionConvertedType.ToString.IndexOf(StrIEnumerableOf, StringComparison.Ordinal)
+            If index1 > 0 Then
+                Return Factory.ParseName(expressionConvertedType.ToString.Substring(index1 + StrIEnumerableOf.Length))
+            End If
+            Return Nothing
+        End Function
+
         ''' <summary>
         ''' Extract String
         ''' </summary>
@@ -70,6 +112,36 @@ Namespace Utilities
                 elementList.Add(typePart)
             End If
             Return currentIndex
+        End Function
+
+        <Extension>
+        Private Function IsKind(kind As VB.SyntaxKind, ParamArray kinds() As VB.SyntaxKind) As Boolean
+            Return kinds.Contains(kind)
+        End Function
+
+        <Extension>
+        Friend Function ConvertCsStringToName(csNamedTypeStringIn As String) As VBS.TypeSyntax
+            Dim csNamedTypeString As String = csNamedTypeStringIn
+            Dim isArray As Boolean = False
+            Dim nullable As Boolean = False
+            If csNamedTypeString.EndsWith("?", StringComparison.Ordinal) Then
+                nullable = True
+                csNamedTypeString = csNamedTypeString.Substring(0, csNamedTypeString.Length - 1).Trim
+            End If
+            If csNamedTypeString.EndsWith("[]", StringComparison.Ordinal) Then
+                isArray = True
+                csNamedTypeString = csNamedTypeString.Substring(0, csNamedTypeString.Length - 2).Trim
+            End If
+
+            Dim elementList As List(Of String) = csNamedTypeString.ConvertTypeTupleToTypeStrings(includeName:=True)
+            Dim builder As New StringBuilder
+            builder.Append("("c)
+            For Each e As IndexClass(Of String) In elementList.WithIndex
+                If e.IsLast Then Exit For
+                builder.Append($"{e.Value}, ")
+            Next
+            builder.Append(elementList.Last & ")")
+            Return Factory.ParseTypeName($"{builder}{If(isArray, "()", "")}{If(nullable, "?", "")}").WithLeadingTrivia(SpaceTrivia)
         End Function
 
         <Extension>
@@ -407,73 +479,6 @@ Namespace Utilities
         End Function
 
         <Extension>
-        Friend Function ConvertCsStringToName(csNamedTypeStringIn As String) As VBS.TypeSyntax
-            Dim csNamedTypeString As String = csNamedTypeStringIn
-            Dim isArray As Boolean = False
-            Dim nullable As Boolean = False
-            If csNamedTypeString.EndsWith("?", StringComparison.Ordinal) Then
-                nullable = True
-                csNamedTypeString = csNamedTypeString.Substring(0, csNamedTypeString.Length - 1).Trim
-            End If
-            If csNamedTypeString.EndsWith("[]", StringComparison.Ordinal) Then
-                isArray = True
-                csNamedTypeString = csNamedTypeString.Substring(0, csNamedTypeString.Length - 2).Trim
-            End If
-
-            Dim elementList As List(Of String) = csNamedTypeString.ConvertTypeTupleToTypeStrings(includeName:=True)
-            Dim builder As New StringBuilder
-            builder.Append("("c)
-            For Each e As IndexClass(Of String) In elementList.WithIndex
-                If e.IsLast Then Exit For
-                builder.Append($"{e.Value}, ")
-            Next
-            builder.Append(elementList.Last & ")")
-            Return Factory.ParseTypeName($"{builder}{If(isArray, "()", "")}{If(nullable, "?", "")}").WithLeadingTrivia(SpaceTrivia)
-        End Function
-
-        <Extension>
-        Friend Function ConvertTypeITypeSymbolFromInterfaceToType(expressionConvertedType As ITypeSymbol) As VBS.TypeSyntax
-
-            If Not expressionConvertedType.AllInterfaces.Any Then
-                If expressionConvertedType.ToString.EndsWith("IArityEnumerable", StringComparison.Ordinal) Then
-                    Return PredefinedTypeInteger
-                End If
-                Return PredefinedTypeObject
-            End If
-            For Each namedType As INamedTypeSymbol In expressionConvertedType.AllInterfaces
-                Dim index As Integer = namedType.ToString.IndexOf(StrIEnumerableOf, StringComparison.Ordinal)
-                Dim newType As String
-                If index > 0 Then
-                    newType = namedType.ToString.Substring(index + StrIEnumerableOf.Length)
-                    Return Factory.ParseName(newType)
-                End If
-                index = namedType.ToString.IndexOf(StrIDictionary, StringComparison.Ordinal)
-                If index > 0 Then
-                    Return namedType.ConvertToType
-                End If
-                index = namedType.ToString.IndexOf(StrIEnumerable, StringComparison.Ordinal)
-                If index > 0 Then
-                    Return namedType.ConvertToType
-                End If
-            Next
-
-            Dim index1 As Integer = expressionConvertedType.ToString.IndexOf(StrIEnumerableOf, StringComparison.Ordinal)
-            If index1 > 0 Then
-                Return Factory.ParseName(expressionConvertedType.ToString.Substring(index1 + StrIEnumerableOf.Length))
-            End If
-            Return Nothing
-        End Function
-
-        <Extension>
-        Friend Function ConvertIFieldToTupleElement(tupleElement As IFieldSymbol) As VBS.TupleElementSyntax
-            If tupleElement.Type Is Nothing Then
-                Return Factory.NamedTupleElement(tupleElement.Name.ToString(Globalization.CultureInfo.InvariantCulture))
-            End If
-            Dim asClause As VBS.SimpleAsClauseSyntax = Factory.SimpleAsClause(AsKeyword.With(SpaceTrivia, SpaceTrivia), New SyntaxList(Of VBS.AttributeListSyntax), tupleElement.Type.ConvertToType)
-            Return Factory.NamedTupleElement(Factory.Identifier(MakeVbSafeName(tupleElement.Name)), asClause)
-        End Function
-
-        <Extension>
         Friend Function ConvertTypeTupleToTypeStrings(cSharpNamedTypeString As String, includeName As Boolean) As List(Of String)
             If cSharpNamedTypeString(0) <> "(" OrElse
                     cSharpNamedTypeString.Last <> ")" Then
@@ -520,7 +525,7 @@ Namespace Utilities
                             If commaIndex < 0 Then
                                 Exit For
                             End If
-' ReSharper disable once RedundantAssignment
+                            ' ReSharper disable once RedundantAssignment
                             currentIndex = commaIndex + 1
                         End If
                     Case " " ' variable name
@@ -530,12 +535,12 @@ Namespace Utilities
                         If commaIndex < 0 Then
                             Exit For
                         End If
-' ReSharper disable once RedundantAssignment
+                        ' ReSharper disable once RedundantAssignment
                         currentIndex = commaIndex + 1
                     Case ","
                         elementList.Add(ConvertToType(typeString.ToString).ToString)
                         typeString.Clear()
-' ReSharper disable once RedundantAssignment
+                        ' ReSharper disable once RedundantAssignment
                         currentIndex += If(cSharpNamedTypeString(currentIndex + 1) = " ", 1, 0)
                     Case ")"
                         currentIndex = ExtractTupleWithName(cSharpNamedTypeString, includeName, typeString, elementList, currentIndex)
@@ -580,7 +585,7 @@ Namespace Utilities
                             typeString.Clear()
                         End If
                         commaIndex = cSharpNamedTypeString.IndexOf(",", currentIndex + 1, StringComparison.OrdinalIgnoreCase)
-' ReSharper disable once RedundantAssignment
+                        ' ReSharper disable once RedundantAssignment
                         currentIndex += 2
                         If commaIndex < 0 Then
                             Exit For

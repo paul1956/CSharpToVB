@@ -169,6 +169,11 @@ Namespace Extensions
         End Function
 
         <Extension>
+        Friend Function ConvertDirectiveCondition(condition As CSS.ExpressionSyntax) As String
+            Return condition.ToString.ConvertCondition
+        End Function
+
+        <Extension>
         Friend Function ConvertTriviaList(initialTriviaList As SyntaxTriviaList) As SyntaxTriviaList
             Dim newTriviaList As New List(Of SyntaxTrivia)
             If Not initialTriviaList.Any Then
@@ -487,14 +492,6 @@ Namespace Extensions
         End Function
 
         <Extension>
-        Friend Function WithoutLastLineContinuation(triviaList As SyntaxTriviaList) As SyntaxTriviaList
-            Dim lineContIndex As Integer = triviaList.IndexOfLast(VB.SyntaxKind.LineContinuationTrivia)
-            If lineContIndex = -1 Then Return triviaList
-            Dim returnList As SyntaxTriviaList = triviaList
-            Return returnList.RemoveAt(lineContIndex).RemoveAt(lineContIndex - 1)
-        End Function
-
-        <Extension>
         Friend Function WithLastLineContinuation(triviaList As SyntaxTriviaList) As SyntaxTriviaList
             Dim eolIndex As Integer = triviaList.IndexOfLast(VB.SyntaxKind.EndOfLineTrivia)
             Dim lastIndex As Integer = triviaList.Count - 1
@@ -504,6 +501,14 @@ Namespace Extensions
             End If
             triviaList = triviaList.InsertRange(eolIndex, SpaceLineContinue)
             Return triviaList
+        End Function
+
+        <Extension>
+        Friend Function WithoutLastLineContinuation(triviaList As SyntaxTriviaList) As SyntaxTriviaList
+            Dim lineContIndex As Integer = triviaList.IndexOfLast(VB.SyntaxKind.LineContinuationTrivia)
+            If lineContIndex = -1 Then Return triviaList
+            Dim returnList As SyntaxTriviaList = triviaList
+            Return returnList.RemoveAt(lineContIndex).RemoveAt(lineContIndex - 1)
         End Function
 
     End Module

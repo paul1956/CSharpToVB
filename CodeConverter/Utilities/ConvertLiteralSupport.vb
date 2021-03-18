@@ -44,6 +44,13 @@ Namespace Utilities
             Return $"&B{Convert.ToString(value, 2).PadLeft(64, "0"c)}"
         End Function
 
+        <Extension>
+        Private Function ConvertUnicodeQuotes(tokenString As String, unicodeQuote As String) As String
+            tokenString = tokenString.Replace(unicodeQuote & unicodeQuote, ChrW(0), StringComparison.Ordinal)
+            tokenString = tokenString.Replace(unicodeQuote, unicodeQuote & unicodeQuote, StringComparison.Ordinal)
+            Return tokenString.Replace(ChrW(0), unicodeQuote & unicodeQuote, StringComparison.Ordinal)
+        End Function
+
         Private Function GetTypeCharacters(tokenAString As String) As String
             Dim typeChars As String = ""
             For i As Integer = tokenAString.Length - 1 To 0 Step -1
@@ -120,13 +127,6 @@ Namespace Utilities
                 Throw
             End Try
             Return tokenString
-        End Function
-
-        <Extension>
-        Friend Function ConvertUnicodeQuotes(tokenString As String, unicodeQuote As String) As String
-            tokenString = tokenString.Replace(unicodeQuote & unicodeQuote, ChrW(0), StringComparison.Ordinal)
-            tokenString = tokenString.Replace(unicodeQuote, unicodeQuote & unicodeQuote, StringComparison.Ordinal)
-            Return tokenString.Replace(ChrW(0), unicodeQuote & unicodeQuote, StringComparison.Ordinal)
         End Function
 
         Friend Function GetLiteralExpression(value As Object, token As SyntaxToken, nodesVisitor As NodesVisitor) As VBS.ExpressionSyntax
@@ -221,16 +221,16 @@ Namespace Utilities
                     If AscW(CChar(value)) = &H201D Then
                         Return Factory.LiteralExpression(VB.SyntaxKind.CharacterLiteralExpression, Factory.Literal($"{UnicodeCloseQuote}{UnicodeCloseQuote}"))
                     End If
-                    If Token.Text.StartsWith("'\u", StringComparison.OrdinalIgnoreCase) Then
+                    If token.Text.StartsWith("'\u", StringComparison.OrdinalIgnoreCase) Then
                         Return Factory.ParseExpression($"ChrW(&H{token.Text.RemoveAll("'").Substring(2)})")
                     End If
                     Return Factory.LiteralExpression(VB.SyntaxKind.CharacterLiteralExpression, Factory.Literal(CChar(value)))
                 Case CS.SyntaxKind.DefaultKeyword
-                    Dim methodStatement As CSS.MethodDeclarationSyntax = Token.Parent.GetAncestor(Of CSS.MethodDeclarationSyntax)
+                    Dim methodStatement As CSS.MethodDeclarationSyntax = token.Parent.GetAncestor(Of CSS.MethodDeclarationSyntax)
                     Dim returnType As VBS.TypeSyntax
-                    If Token.Parent.GetAncestor(Of CSS.ReturnStatementSyntax) IsNot Nothing OrElse
-                        Token.Parent.GetAncestor(Of CSS.ArrowExpressionClauseSyntax) IsNot Nothing Then
-                        Dim propertyDeclaration As CSS.PropertyDeclarationSyntax = Token.Parent.GetAncestor(Of CSS.PropertyDeclarationSyntax)
+                    If token.Parent.GetAncestor(Of CSS.ReturnStatementSyntax) IsNot Nothing OrElse
+                        token.Parent.GetAncestor(Of CSS.ArrowExpressionClauseSyntax) IsNot Nothing Then
+                        Dim propertyDeclaration As CSS.PropertyDeclarationSyntax = token.Parent.GetAncestor(Of CSS.PropertyDeclarationSyntax)
                         If propertyDeclaration IsNot Nothing Then
                             returnType = DirectCast(propertyDeclaration.Type.Accept(nodesVisitor), VBS.TypeSyntax)
                             Return Factory.CTypeExpression(NothingExpression, returnType)
@@ -239,31 +239,31 @@ Namespace Utilities
                             returnType = DirectCast(methodStatement.ReturnType.Accept(nodesVisitor), VBS.TypeSyntax)
                             Return Factory.CTypeExpression(NothingExpression, returnType)
                         End If
-                        Dim operatorStatement As CSS.ConversionOperatorDeclarationSyntax = Token.Parent.GetAncestor(Of CSS.ConversionOperatorDeclarationSyntax)
+                        Dim operatorStatement As CSS.ConversionOperatorDeclarationSyntax = token.Parent.GetAncestor(Of CSS.ConversionOperatorDeclarationSyntax)
                         If operatorStatement IsNot Nothing Then
                             returnType = DirectCast(operatorStatement.Type.Accept(nodesVisitor), VBS.TypeSyntax)
                             Return Factory.CTypeExpression(NothingExpression, returnType)
                         End If
                         Throw UnreachableException
                     End If
-                    Dim equalsValue As CSS.EqualsValueClauseSyntax = Token.Parent.GetAncestor(Of CSS.EqualsValueClauseSyntax)
+                    Dim equalsValue As CSS.EqualsValueClauseSyntax = token.Parent.GetAncestor(Of CSS.EqualsValueClauseSyntax)
                     If equalsValue IsNot Nothing Then
-                        Dim parameter As CSS.ParameterSyntax = Token.Parent.GetAncestor(Of CSS.ParameterSyntax)
+                        Dim parameter As CSS.ParameterSyntax = token.Parent.GetAncestor(Of CSS.ParameterSyntax)
                         If parameter IsNot Nothing Then
                             returnType = DirectCast(parameter.Type.Accept(nodesVisitor), VBS.TypeSyntax)
                             Return Factory.CTypeExpression(NothingExpression, returnType)
                         End If
                         Throw UnreachableException
                     End If
-                    Dim assignmentExpression As CSS.AssignmentExpressionSyntax = Token.Parent.GetAncestor(Of CSS.AssignmentExpressionSyntax)
+                    Dim assignmentExpression As CSS.AssignmentExpressionSyntax = token.Parent.GetAncestor(Of CSS.AssignmentExpressionSyntax)
                     If assignmentExpression IsNot Nothing Then
                         If methodStatement IsNot Nothing Then
                             If TypeOf assignmentExpression.Left Is CSS.ThisExpressionSyntax Then
-                                Dim classAncestor As CSS.ClassDeclarationSyntax = Token.Parent.GetAncestor(Of CSS.ClassDeclarationSyntax)
+                                Dim classAncestor As CSS.ClassDeclarationSyntax = token.Parent.GetAncestor(Of CSS.ClassDeclarationSyntax)
                                 If classAncestor IsNot Nothing Then
                                     Return Factory.CTypeExpression(NothingExpression, Factory.ParseTypeName(classAncestor.Identifier.ValueText))
                                 End If
-                                Dim structAncestor As CSS.StructDeclarationSyntax = Token.Parent.GetAncestor(Of CSS.StructDeclarationSyntax)
+                                Dim structAncestor As CSS.StructDeclarationSyntax = token.Parent.GetAncestor(Of CSS.StructDeclarationSyntax)
                                 If structAncestor IsNot Nothing Then
                                     Return Factory.CTypeExpression(NothingExpression, Factory.ParseTypeName(structAncestor.Identifier.ValueText))
                                 End If
@@ -301,10 +301,10 @@ Namespace Utilities
                             Return NothingExpression
                         End If
                     End If
-                    If Token.Parent.GetAncestor(Of CSS.ConstructorDeclarationSyntax) IsNot Nothing Then
+                    If token.Parent.GetAncestor(Of CSS.ConstructorDeclarationSyntax) IsNot Nothing Then
                         Return NothingExpression
                     End If
-                    If Token.Parent.GetAncestor(Of CSS.ArgumentSyntax) IsNot Nothing Then
+                    If token.Parent.GetAncestor(Of CSS.ArgumentSyntax) IsNot Nothing Then
                         Return NothingExpression
                     End If
                     Return NothingExpression

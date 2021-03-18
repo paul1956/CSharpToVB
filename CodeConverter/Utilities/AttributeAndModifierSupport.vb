@@ -8,7 +8,6 @@ Imports Microsoft.CodeAnalysis
 
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
-Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace Utilities
 
@@ -30,22 +29,6 @@ Namespace Utilities
         End Enum
 
         <Extension>
-        Private Function ContainsAny(s As String, comparisonType As StringComparison, ParamArray stringArray() As String) As Boolean
-            If String.IsNullOrWhiteSpace(s) Then
-                Return False
-            End If
-            If stringArray Is Nothing OrElse stringArray.Length = 0 Then
-                Return False
-            End If
-            For Each str As String In stringArray
-                If s.Contains(str, comparisonType) Then
-                    Return True
-                End If
-            Next
-            Return False
-        End Function
-
-        <Extension>
         Private Function ConvertModifier(csToken As SyntaxToken, isModule As Boolean, context As TokenContext, ByRef foundVisibility As Boolean) As SyntaxToken
             Dim token As SyntaxToken = CS.CSharpExtensions.Kind(csToken).GetVisibilityKeyword(isModule, context, foundVisibility)
             If token.IsKind(VB.SyntaxKind.EmptyToken) Then
@@ -65,6 +48,103 @@ Namespace Utilities
             End Select
 
             Throw New ArgumentOutOfRangeException(NameOf(context))
+        End Function
+
+        <Extension>
+        Private Function GetVisibilityKeyword(t As CS.SyntaxKind, isModule As Boolean, context As TokenContext, ByRef foundVisibility As Boolean) As SyntaxToken
+            Select Case t
+                Case CS.SyntaxKind.None
+                    Return EmptyToken
+                Case CS.SyntaxKind.PublicKeyword
+                    foundVisibility = True
+                    Return PublicKeyword
+                Case CS.SyntaxKind.PrivateKeyword
+                    If foundVisibility Then
+                        Return EmptyToken
+                    End If
+                    foundVisibility = True
+                    Return PrivateKeyword
+                Case CS.SyntaxKind.InternalKeyword
+                    foundVisibility = True
+                    Return FriendKeyword
+                Case CS.SyntaxKind.ProtectedKeyword
+                    Return ProtectedKeyword
+                Case CS.SyntaxKind.ReadOnlyKeyword
+                    If context = TokenContext.Struct Then
+                        Return EmptyToken
+                    End If
+                    Return ReadOnlyKeyword
+                Case CS.SyntaxKind.OverrideKeyword
+                    Return OverridesKeyword
+                Case CS.SyntaxKind.VirtualKeyword
+                    Return OverridableKeyword
+                Case CS.SyntaxKind.InKeyword
+                    Return ByValKeyword
+                Case CS.SyntaxKind.OutKeyword
+                    Return ByRefKeyword
+                Case CS.SyntaxKind.PartialKeyword
+                    Return PartialKeyword
+                Case CS.SyntaxKind.AsyncKeyword
+                    Return AsyncKeyword
+                Case CS.SyntaxKind.NewKeyword
+                    Return ShadowsKeyword
+                Case CS.SyntaxKind.ParamsKeyword
+                    Return ParamArrayKeyword
+                Case CS.SyntaxKind.AwaitKeyword
+                    Return AwaitKeyword
+                Case CS.SyntaxKind.RefKeyword
+                    If context = TokenContext.Struct Then
+                        Return EmptyToken
+                    End If
+                    Return ByRefKeyword
+
+                ' Context Specific
+                Case CS.SyntaxKind.AbstractKeyword
+                    Return If(context = TokenContext.Global OrElse context = TokenContext.Class, MustInheritKeyword, MustOverrideKeyword)
+                Case CS.SyntaxKind.ConstKeyword
+                    If context = TokenContext.Readonly Then
+                        Return ReadOnlyKeyword
+                    End If
+                    Return ConstKeyword
+                Case CS.SyntaxKind.SealedKeyword
+                    Return If(context = TokenContext.Global OrElse context = TokenContext.Class, NotInheritableKeyword, NotOverridableKeyword)
+                Case CS.SyntaxKind.StaticKeyword
+                    If isModule Then
+                        If context = TokenContext.VariableOrConst Then
+                            If foundVisibility Then
+                                Return EmptyToken
+                            End If
+                            Return PrivateKeyword
+                        End If
+                        Return EmptyToken
+                    End If
+                    If context = TokenContext.InterfaceOrModule Then
+                        Return NotInheritableKeyword
+                    End If
+                    If context = TokenContext.LocalFunction Then
+                        Return EmptyToken
+                    End If
+                    If context = TokenContext.Global Then
+                        Return NotInheritableKeyword
+                    End If
+                    Return SharedKeyword
+                Case CS.SyntaxKind.ThisKeyword
+                    Return MeKeyword
+                Case CS.SyntaxKind.BaseKeyword
+                    Return MyBaseKeyword
+
+                    ' unsupported start here
+                Case CS.SyntaxKind.ExternKeyword
+                    Return EmptyToken
+                Case CS.SyntaxKind.FixedKeyword
+                    Return EmptyToken
+                Case CS.SyntaxKind.UnsafeKeyword
+                    Return EmptyToken
+                Case CS.SyntaxKind.VolatileKeyword
+                    Return EmptyToken
+            End Select
+
+            Throw New NotSupportedException($"Modifier.Kind {t} is not supported!")
         End Function
 
         Private Function IgnoreInContext(m As SyntaxToken, context As TokenContext) As Boolean
@@ -176,32 +256,6 @@ Namespace Utilities
                 End If
             Next
 
-        End Function
-
-        Friend Function RestructureAttributeList(vbAttributeLists As SyntaxList(Of VBS.AttributeListSyntax), attributeLists As List(Of VBS.AttributeListSyntax), ByRef newAttributeLeadingTrivia As SyntaxTriviaList, ByRef statementLeadingTrivia As SyntaxTriviaList, ByRef statementTrailingTrivia As SyntaxTriviaList) As Boolean
-            Dim foundDirective As Boolean = False
-            Dim foundTheory As Boolean = False
-            Dim isTheoryOrInlineData As Boolean
-            For Each e As IndexClass(Of VBS.AttributeListSyntax) In vbAttributeLists.WithIndex
-                Dim attributeList As VBS.AttributeListSyntax = e.Value.RemoveExtraLeadingEol
-                isTheoryOrInlineData = attributeList.Attributes.FirstOrDefault.ToString.ContainsAny(StringComparison.OrdinalIgnoreCase, "Theory", "InlineData")
-                If isTheoryOrInlineData Then
-                    foundTheory = True
-                End If
-                If e.IsFirst Then
-                    statementLeadingTrivia = statementLeadingTrivia.AddRange(attributeList.GetLeadingTrivia)
-                    If statementLeadingTrivia.Any AndAlso statementLeadingTrivia.Last.IsWhitespaceOrEndOfLine Then
-                        newAttributeLeadingTrivia = newAttributeLeadingTrivia.Add(attributeList.GetLeadingTrivia.Last)
-                    Else
-                        newAttributeLeadingTrivia = newAttributeLeadingTrivia.Add(SpaceTrivia)
-                    End If
-                Else
-                    RelocateAttributeDirectiveDisabledTrivia(e.Value.GetLeadingTrivia, foundDirective, isTheoryOrInlineData, statementLeadingTrivia, statementTrailingTrivia)
-                End If
-                Dim newAttributeTrailingTrivia As SyntaxTriviaList = RelocateDirectiveDisabledTrivia(e.Value.GetTrailingTrivia, statementTrailingTrivia, removeEol:=False)
-                attributeLists.Add(attributeList.With(newAttributeLeadingTrivia, newAttributeTrailingTrivia))
-            Next
-            Return foundTheory
         End Function
 
     End Module

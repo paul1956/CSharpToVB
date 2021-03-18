@@ -28,7 +28,8 @@ Namespace Extensions
 
             Return Nothing
         End Function
-                <Extension>
+
+        <Extension>
         Friend Function ExplicitInterfaceImplementations(symbol As ISymbol) As ImmutableArray(Of ISymbol)
             If symbol Is Nothing Then
                 Throw New ArgumentNullException(NameOf(symbol))
@@ -61,6 +62,26 @@ Namespace Extensions
             End If
 
             Return Nothing
+        End Function
+
+        <Extension>
+        Friend Function GetParameters(symbol As ISymbol) As ImmutableArray(Of IParameterSymbol)
+            If symbol Is Nothing Then
+                Throw New ArgumentNullException(NameOf(symbol))
+            End If
+            Dim method As IMethodSymbol = TryCast(symbol, IMethodSymbol)
+            If method IsNot Nothing Then
+                Return method.Parameters
+            End If
+            Dim [property] As IPropertySymbol = TryCast(symbol, IPropertySymbol)
+            If [property] IsNot Nothing Then
+                Return [property].Parameters
+            End If
+            Dim ev As IEventSymbol = TryCast(symbol, IEventSymbol)
+            If ev IsNot Nothing Then
+                Return ev.Type.GetDelegateInvokeMethod().Parameters
+            End If
+            Return ImmutableArray(Of IParameterSymbol).Empty
         End Function
 
         <Extension>
@@ -108,26 +129,6 @@ Namespace Extensions
                 Return False
             End If
             Return symbol.Kind = kind
-        End Function
-
-        <Extension>
-        Public Function GetParameters(symbol As ISymbol) As ImmutableArray(Of IParameterSymbol)
-            If symbol Is Nothing Then
-                Throw New ArgumentNullException(NameOf(symbol))
-            End If
-            Dim method As IMethodSymbol = TryCast(symbol, IMethodSymbol)
-            If method IsNot Nothing Then
-                Return method.Parameters
-            End If
-            Dim [property] As IPropertySymbol = TryCast(symbol, IPropertySymbol)
-            If [property] IsNot Nothing Then
-                Return [property].Parameters
-            End If
-            Dim ev As IEventSymbol = TryCast(symbol, IEventSymbol)
-            If ev IsNot Nothing Then
-                Return ev.Type.GetDelegateInvokeMethod().Parameters
-            End If
-            Return ImmutableArray(Of IParameterSymbol).Empty
         End Function
 
     End Module

@@ -26,15 +26,15 @@ Namespace Extensions
         End Function
 
         Private Function GetAllImplementedMembers(classOrStructType As INamedTypeSymbol,
-                                                          interfacesOrAbstractClasses As IEnumerable(Of INamedTypeSymbol),
-                                                          isImplemented As Func(Of INamedTypeSymbol,
-                                                          ISymbol,
-                                                          Func(Of INamedTypeSymbol, ISymbol, Boolean), CancellationToken, Boolean),
-                                                          isValidImplementation As Func(Of INamedTypeSymbol, ISymbol, Boolean),
-                                                          interfaceMemberGetter As Func(Of INamedTypeSymbol, ISymbol, ImmutableArray(Of ISymbol)),
-                                                          allowReimplementation As Boolean,
-                                                          cancelToken As CancellationToken
-                                                         ) As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))
+                                                                          interfacesOrAbstractClasses As IEnumerable(Of INamedTypeSymbol),
+                                                                          isImplemented As Func(Of INamedTypeSymbol,
+                                                                          ISymbol,
+                                                                          Func(Of INamedTypeSymbol, ISymbol, Boolean), CancellationToken, Boolean),
+                                                                          isValidImplementation As Func(Of INamedTypeSymbol, ISymbol, Boolean),
+                                                                          interfaceMemberGetter As Func(Of INamedTypeSymbol, ISymbol, ImmutableArray(Of ISymbol)),
+                                                                          allowReimplementation As Boolean,
+                                                                          cancelToken As CancellationToken
+                                                                         ) As ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))
             If classOrStructType.TypeKind <> TypeKind.Class AndAlso classOrStructType.TypeKind <> TypeKind.Struct Then
                 Return ImmutableArray(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol))).Empty
             End If
@@ -68,6 +68,15 @@ Namespace Extensions
             Return allInterfaces
         End Function
 
+        <Extension>
+        Private Iterator Function GetBaseTypesAndThis(namedType As INamedTypeSymbol) As IEnumerable(Of INamedTypeSymbol)
+            Dim current As INamedTypeSymbol = namedType
+            Do While current IsNot Nothing
+                Yield current
+                current = current.BaseType
+            Loop
+        End Function
+
         Private Function GetImplementedMembers(classOrStructType As INamedTypeSymbol, interfaceType As INamedTypeSymbol, isImplemented As Func(Of INamedTypeSymbol, ISymbol, Func(Of INamedTypeSymbol, ISymbol, Boolean), CancellationToken, Boolean), isValidImplementation As Func(Of INamedTypeSymbol, ISymbol, Boolean), interfaceMemberGetter As Func(Of INamedTypeSymbol, ISymbol, ImmutableArray(Of ISymbol)), cancelToken As CancellationToken) As ImmutableArray(Of ISymbol)
             Dim q As IEnumerable(Of ISymbol) = From m In interfaceMemberGetter(interfaceType, classOrStructType)
                                                Where m.Kind <> SymbolKind.NamedType
@@ -84,12 +93,16 @@ Namespace Extensions
             ' We need to not only implement the specified interface, but also everything it
             ' inherits from.
             cancelToken.ThrowIfCancellationRequested()
-#Disable Warning RS1024 ' Compare symbols correctly
-            Dim interfacesToImplement As New List(Of INamedTypeSymbol)(interfaces.SelectMany(Function(i As INamedTypeSymbol) i.GetAllInterfacesIncludingThis()).Distinct())
-#Enable Warning RS1024 ' Compare symbols correctly
-
-            ' However, there's no need to re-implement any interfaces that our base types already
-            ' implement.  By definition they must contain all the necessary methods.
+            Dim interfacesToImplement As New List(Of INamedTypeSymbol)
+            For Each e As INamedTypeSymbol In interfaces
+                For Each e1 As INamedTypeSymbol In e.GetAllInterfacesIncludingThis()
+                    If Not interfacesToImplement.Contains(e1) Then
+                        interfacesToImplement.Add(e1)
+                    End If
+                Next
+            Next
+            ' However, there's no need to re-implement any interfaces that our base types already implement.
+            ' By definition they must contain all the necessary methods.
             Dim baseType As INamedTypeSymbol = classOrStructType.BaseType
             Dim alreadyImplementedInterfaces As ImmutableArray(Of INamedTypeSymbol) = If(baseType Is Nothing OrElse allowReimplementation, New ImmutableArray(Of INamedTypeSymbol), baseType.AllInterfaces)
 
@@ -134,7 +147,7 @@ Namespace Extensions
         End Function
 
         Private Function IsAbstractPropertyImplemented(classOrStructType As INamedTypeSymbol,
-                                propertySymbol As IPropertySymbol) As Boolean
+                                                propertySymbol As IPropertySymbol) As Boolean
             ' A property is only fully implemented if both it's setter and getter is implemented.
             If propertySymbol.GetMethod IsNot Nothing Then
                 If classOrStructType.FindImplementationForAbstractMember(propertySymbol.GetMethod) Is Nothing Then
@@ -213,6 +226,83 @@ Namespace Extensions
             End If
         End Sub
 
+        ''' <summary>
+        ''' Maps an immutable array to another immutable array.
+        ''' </summary>
+        ''' <typeparam name="TItem"></typeparam>
+        ''' <typeparam name="TResult"></typeparam>
+        ''' <param name="items">The array to map</param>
+        ''' <param name="map">The mapping delegate</param>
+        ''' <returns>If the items length is 0, this will return an empty immutable array</returns>
+        <Extension>
+        Private Function SelectAsArray(Of TItem, TResult)(items As ImmutableArray(Of TItem), map As Func(Of TItem, TResult)) As ImmutableArray(Of TResult)
+            Return ImmutableArray.CreateRange(items, map)
+        End Function
+
+        ''' <summary>
+        ''' Creates a new immutable array based on filtered elements by the predicate. The array must not be null.
+        ''' </summary>
+        ''' <typeparam name="T"></typeparam>
+        ''' <param name="array">The array to process</param>
+        ''' <param name="predicate">The delegate that defines the conditions of the element to search for.</param>
+        ''' <returns></returns>
+        <Extension>
+        Private Function WhereAsArray(Of T)(array As ImmutableArray(Of T), predicate As Func(Of T, Boolean)) As ImmutableArray(Of T)
+            If predicate Is Nothing Then
+                Throw New ArgumentNullException(NameOf(predicate))
+            End If
+
+            Debug.Assert(Not array.IsDefault)
+
+            Dim builder As List(Of T) = Nothing
+            Dim none As Boolean = True
+            Dim all As Boolean = True
+
+            Dim n As Integer = array.Length
+            For index As Integer = 0 To n - 1
+                Dim a As T = array(index)
+                If predicate(a) Then
+                    none = False
+                    If all Then
+                        Continue For
+                    End If
+
+                    Debug.Assert(index > 0)
+                    If builder Is Nothing Then
+                        builder = New List(Of T)
+                    End If
+
+                    builder.Add(a)
+                Else
+                    If none Then
+                        all = False
+                        Continue For
+                    End If
+
+                    Debug.Assert(index > 0)
+                    If all Then
+                        Debug.Assert(builder Is Nothing)
+                        all = False
+                        builder = New List(Of T)
+                        For j As Integer = 0 To index - 1
+                            builder.Add(array(j))
+                        Next j
+                    End If
+                End If
+            Next index
+
+            If builder IsNot Nothing Then
+                Debug.Assert(Not all)
+                Debug.Assert(Not none)
+                Return ImmutableArray.Create(builder.ToArray)
+            ElseIf all Then
+                Return array
+            Else
+                Debug.Assert(none)
+                Return ImmutableArray(Of T).Empty
+            End If
+        End Function
+
         <Extension>
         Friend Function GetAllImplementedMembers(classOrStructType As INamedTypeSymbol,
                                                            interfacesOrAbstractClasses As IEnumerable(Of INamedTypeSymbol),
@@ -233,15 +323,6 @@ Namespace Extensions
                                             End Function,
                                             allowReimplementation:=False,
                                             cancelToken)
-        End Function
-
-        <Extension>
-        Friend Iterator Function GetBaseTypesAndThis(namedType As INamedTypeSymbol) As IEnumerable(Of INamedTypeSymbol)
-            Dim current As INamedTypeSymbol = namedType
-            Do While current IsNot Nothing
-                Yield current
-                current = current.BaseType
-            Loop
         End Function
 
     End Module

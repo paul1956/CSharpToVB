@@ -16,6 +16,22 @@ Namespace Extensions
     Public Module StatementExtensions
 
         <Extension>
+        Private Function ContainsAny(s As String, comparisonType As StringComparison, ParamArray stringArray() As String) As Boolean
+            If String.IsNullOrWhiteSpace(s) Then
+                Return False
+            End If
+            If stringArray Is Nothing OrElse stringArray.Length = 0 Then
+                Return False
+            End If
+            For Each str As String In stringArray
+                If s.Contains(str, comparisonType) Then
+                    Return True
+                End If
+            Next
+            Return False
+        End Function
+
+        <Extension>
         Private Function ContainsConditionalDirective(argumentList As CSS.ArgumentListSyntax) As Boolean
             If argumentList.Arguments.Count = 0 Then
                 Return False
@@ -43,6 +59,27 @@ Namespace Extensions
             Next
             Return False
         End Function
+
+        Private Sub RestructureAttributeList(vbAttributeLists As SyntaxList(Of VBS.AttributeListSyntax), attributeLists As List(Of VBS.AttributeListSyntax), ByRef newAttributeLeadingTrivia As SyntaxTriviaList, ByRef statementLeadingTrivia As SyntaxTriviaList, ByRef statementTrailingTrivia As SyntaxTriviaList)
+            Dim foundDirective As Boolean = False
+            Dim isTheoryOrInlineData As Boolean
+            For Each e As IndexClass(Of VBS.AttributeListSyntax) In vbAttributeLists.WithIndex
+                Dim attributeList As VBS.AttributeListSyntax = e.Value.RemoveExtraLeadingEol
+                isTheoryOrInlineData = attributeList.Attributes.FirstOrDefault.ToString.ContainsAny(StringComparison.OrdinalIgnoreCase, "Theory", "InlineData")
+                If e.IsFirst Then
+                    statementLeadingTrivia = statementLeadingTrivia.AddRange(attributeList.GetLeadingTrivia)
+                    If statementLeadingTrivia.Any AndAlso statementLeadingTrivia.Last.IsWhitespaceOrEndOfLine Then
+                        newAttributeLeadingTrivia = newAttributeLeadingTrivia.Add(attributeList.GetLeadingTrivia.Last)
+                    Else
+                        newAttributeLeadingTrivia = newAttributeLeadingTrivia.Add(SpaceTrivia)
+                    End If
+                Else
+                    RelocateAttributeDirectiveDisabledTrivia(e.Value.GetLeadingTrivia, foundDirective, isTheoryOrInlineData, statementLeadingTrivia, statementTrailingTrivia)
+                End If
+                Dim newAttributeTrailingTrivia As SyntaxTriviaList = RelocateDirectiveDisabledTrivia(e.Value.GetTrailingTrivia, statementTrailingTrivia, removeEol:=False)
+                attributeLists.Add(attributeList.With(newAttributeLeadingTrivia, newAttributeTrailingTrivia))
+            Next
+        End Sub
 
         <Extension>
         Friend Function ContainsName(importList As List(Of VBS.ImportsStatementSyntax), importName As String) As Boolean
