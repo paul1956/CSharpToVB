@@ -635,28 +635,34 @@ Namespace Utilities
                 End If
             End If
 
+            Dim idParent As SyntaxNode = id.Parent
             If VB.SyntaxFacts.IsKeywordKind(keywordKind) OrElse id.ValueText = "Yield" Then
                 Dim bracketNeeded As Boolean = True
-                If keywordKind.IsKind(VB.SyntaxKind.REMKeyword, VB.SyntaxKind.DelegateKeyword) OrElse id.Text.Chars(0) = "@" Then
-                ElseIf id.Parent Is Nothing Then
-                ElseIf TypeOf id.Parent.Parent Is CSS.MemberAccessExpressionSyntax Then
-                    Dim memberAccessExpression As CSS.MemberAccessExpressionSyntax = CType(id.Parent?.Parent, CSS.MemberAccessExpressionSyntax)
+                If idParent Is Nothing OrElse
+                   keywordKind.IsKind(VB.SyntaxKind.REMKeyword, VB.SyntaxKind.DelegateKeyword) OrElse
+                   id.Text.Chars(0) = "@" Then
+                   ' Do nothing
+                ElseIf TypeOf idParent.Parent Is CSS.MemberAccessExpressionSyntax Then
+                    Dim memberAccessExpression As CSS.MemberAccessExpressionSyntax = CType(idParent?.Parent, CSS.MemberAccessExpressionSyntax)
                     If TypeOf memberAccessExpression.Expression IsNot CSS.GenericNameSyntax Then
                         bracketNeeded = memberAccessExpression.Expression.ToString.Equals(id.ToString, StringComparison.Ordinal)
                     End If
                     ' ReSharper disable once VBUseFirstInstead
-                ElseIf id.Parent.AncestorsAndSelf().OfType(Of CSS.UsingDirectiveSyntax).FirstOrDefault().IsKind(CS.SyntaxKind.UsingDirective) Then
+                ElseIf idParent.AncestorsAndSelf().OfType(Of CSS.UsingDirectiveSyntax).FirstOrDefault().IsKind(CS.SyntaxKind.UsingDirective) Then
                     id = Factory.Token(keywordKind).WithTriviaFrom(id)
                     bracketNeeded = False
                 End If
                 Return id.MakeIdentifierUnique(node, usedIdentifiers, model, bracketNeeded, isQualifiedNameOrTypeName:=isQualifiedName)
             End If
 
-            If id.Parent?.IsParentKind(CS.SyntaxKind.Parameter) Then
-                Dim param As CSS.ParameterSyntax = DirectCast(id.Parent.Parent, CSS.ParameterSyntax)
+            If (Not isQualifiedName) AndAlso idParent?.IsParentKind(CS.SyntaxKind.Parameter) Then
+                Dim param As CSS.ParameterSyntax = DirectCast(idParent.Parent, CSS.ParameterSyntax)
                 Dim methodDeclaration As CSS.MethodDeclarationSyntax = TryCast(param.Parent?.Parent, CSS.MethodDeclarationSyntax)
-                isQualifiedName = methodDeclaration Is Nothing OrElse String.Compare(methodDeclaration.Identifier.ValueText, id.ValueText, ignoreCase:=True, Globalization.CultureInfo.InvariantCulture) = 0
-                isQualifiedName = isQualifiedName Or String.Compare(param.Type.ToString, id.ValueText, ignoreCase:=False, Globalization.CultureInfo.InvariantCulture) = 0
+                isQualifiedName = methodDeclaration Is Nothing OrElse
+                                  String.Compare(methodDeclaration.Identifier.ValueText, id.ValueText,
+                                                 ignoreCase:=True, Globalization.CultureInfo.InvariantCulture) = 0 OrElse
+                                  String.Compare(param.Type.ToString, id.ValueText, ignoreCase:=False,
+                                                 Globalization.CultureInfo.InvariantCulture) = 0
             End If
             Return id.MakeIdentifierUnique(node, usedIdentifiers, model, isBracketNeeded:=False, isQualifiedNameOrTypeName:=isQualifiedName)
         End Function
