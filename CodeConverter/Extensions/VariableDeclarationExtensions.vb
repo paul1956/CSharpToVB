@@ -16,7 +16,7 @@ Namespace Extensions
     Friend Module VariableDeclarationExtensions
 
         <Extension>
-        Private Function DetermineTypeSyntax(expression As CSS.ExpressionSyntax, model As SemanticModel) As (_Error As Boolean, _ITypeSymbol As VBS.TypeSyntax)
+        Friend Function DetermineTypeSyntax(expression As CSS.ExpressionSyntax, model As SemanticModel) As (_Error As Boolean, _ITypeSymbol As VBS.TypeSyntax)
             ' If a parameter appears to have a void return type, then just use 'object' instead.
             Try
                 If expression IsNot Nothing Then

@@ -385,13 +385,27 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                CS.SyntaxKind.ModuloAssignmentExpression) Then
                     Return Factory.SimpleAssignmentStatement(leftNode, Factory.BinaryExpression(kind, leftNode.WithoutTrivia, operatorToken, rightNode.WithoutTrivia))
                 End If
-                If kind = VB.SyntaxKind.AddAssignmentStatement AndAlso
-                    rightNode.IsKind(VB.SyntaxKind.ObjectCreationExpression) Then
-                    Dim rightObjectCreation As ObjectCreationExpressionSyntax = DirectCast(rightNode, ObjectCreationExpressionSyntax)
-                    If rightObjectCreation.ArgumentList.Arguments.Count = 1 AndAlso
-                        rightObjectCreation.ArgumentList.Arguments(0).IsKind(VB.SyntaxKind.SimpleArgument) Then
-                        If DirectCast(rightObjectCreation.ArgumentList.Arguments(0), SimpleArgumentSyntax).Expression.IsKind(VB.SyntaxKind.AddressOfExpression) Then
-                            Return Factory.AddHandlerStatement(leftNode.WithLeadingTrivia(SpaceTrivia), rightNode).WithLeadingTrivia(leftNode.GetLeadingTrivia)
+                If kind = VB.SyntaxKind.AddAssignmentStatement Then
+                    If rightNode.IsKind(VB.SyntaxKind.ObjectCreationExpression) Then
+                        Dim rightObjectCreation As ObjectCreationExpressionSyntax = DirectCast(rightNode, ObjectCreationExpressionSyntax)
+                        If rightObjectCreation.ArgumentList.Arguments.Count = 1 AndAlso
+                            rightObjectCreation.ArgumentList.Arguments(0).IsKind(VB.SyntaxKind.SimpleArgument) Then
+                            If DirectCast(rightObjectCreation.ArgumentList.Arguments(0), SimpleArgumentSyntax).Expression.IsKind(VB.SyntaxKind.AddressOfExpression) Then
+                                Return Factory.AddHandlerStatement(leftNode.WithLeadingTrivia(SpaceTrivia), rightNode).WithLeadingTrivia(leftNode.GetLeadingTrivia)
+                            End If
+                        End If
+                    Else
+                        Dim isStringType As Boolean = False
+                        Dim typeRight = node.Right.DetermineTypeSyntax(_semanticModel)
+                        Dim typeLeft = node.Left.DetermineTypeSyntax(_semanticModel)
+                        If Not typeLeft._Error Then
+                            isStringType = typeLeft._ITypeSymbol.ToString = "String"
+                        End If
+                        If Not typeRight._Error Then
+                            isStringType = isStringType AndAlso typeRight._ITypeSymbol.ToString = "String"
+                        End If
+                        If isStringType Then
+                            kind = VB.SyntaxKind.ConcatenateAssignmentStatement
                         End If
                     End If
                 End If

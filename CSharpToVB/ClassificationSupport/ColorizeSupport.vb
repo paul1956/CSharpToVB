@@ -55,12 +55,12 @@ Public Module ColorizeSupport
     ''' <summary>
     ''' This function only colorizes 1 range it is an optimization to handle editing and is not perfect
     ''' </summary>
-    ''' <param name="mainForm"></param>
-    ''' <param name="fragmentRange"></param>
     ''' <param name="conversionBuffer"></param>
-    Friend Sub Colorize(mainForm As Form1, fragmentRange As List(Of Range), conversionBuffer As RichTextBox)
+    ''' <param name="sourceLanguage"></param>
+    Friend Sub Colorize1Range(conversionBuffer As RichTextBox, sourceLanguage As String)
         Dim currentChar As Integer = conversionBuffer.SelectionStart
         Dim currentLength As Integer = conversionBuffer.SelectionLength
+        Dim fragmentRange As List(Of Range) = GetClassifiedRanges(conversionBuffer.Text, sourceLanguage).ToList()
         With conversionBuffer
             For Each range As Range In fragmentRange
                 If currentChar < range.TextSpan.Start Then
@@ -75,6 +75,10 @@ Public Module ColorizeSupport
         End With
     End Sub
 
+    Friend Sub Colorize(mainForm As Form1, fragmentRange As List(Of Range), conversionBuffer As RichTextBox, lines As Integer)
+        Colorize(mainForm, fragmentRange, conversionBuffer, lines, Nothing)
+    End Sub
+
     Friend Sub Colorize(mainForm As Form1, fragmentRange As List(Of Range), conversionBuffer As RichTextBox, lines As Integer, Optional failures As IEnumerable(Of Diagnostic) = Nothing)
         If mainForm._inColorize Then
             Exit Sub
@@ -85,14 +89,6 @@ Public Module ColorizeSupport
                 conversionBuffer.Visible = False
             End If
             Dim dias As IEnumerable(Of Diagnostic) = If(TryCast(failures, Diagnostic()), failures?.ToArray())
-            If failures Is Nothing Then
-                mainForm.ErrorListListBox.Enabled = False
-            Else
-                mainForm.ErrorListListBox.Enabled = True
-                For Each dia As Diagnostic In dias
-                    mainForm.ErrorListListBox.Items.Add($"{dia.Id} Line = {dia.Location.GetLineSpan.StartLinePosition.Line + 1} {dia.GetMessage}")
-                Next
-            End If
 
             mainForm.StatusStripConversionProgressBar.Maximum = lines
 
@@ -128,9 +124,17 @@ Public Module ColorizeSupport
                     .ScrollToCaret()
                 End If
             End With
-            If failures?.Count > 0 Then
-                mainForm.LineNumbersForConversionInput.Visible = True
-                mainForm.LineNumbersForConversionOutput.Visible = True
+            If failures Is Nothing Then
+                mainForm.ErrorListListBox.Enabled = False
+            Else
+                mainForm.ErrorListListBox.Enabled = True
+                For Each dia As Diagnostic In dias
+                    mainForm.ErrorListListBox.Items.Add($"{dia.Id} Line = {dia.Location.GetLineSpan.StartLinePosition.Line + 1} {dia.GetMessage}")
+                Next
+                If failures?.Count > 0 Then
+                    mainForm.LineNumbersForConversionInput.Visible = True
+                    mainForm.LineNumbersForConversionOutput.Visible = True
+                End If
             End If
             mainForm.StatusStripConversionProgressBar.Clear()
         Catch ex As OperationCanceledException

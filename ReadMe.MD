@@ -65,6 +65,11 @@ Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpec
 Any changes to CSharpToVB application needs to change the version information in the project file **AND** in MyProject/AssemblyInfo.vb until Visual Studio is able to general file automatically for a WinForms application.
 
 ## What's New in this release
+  New in 5.0.2.13/5.0.1.14
+  - Improve conversion of dynamic types
+  - Improve converting += of strings to &=
+  - When pasting into conversion buffers respect colorize settings
+
   New in 5.0.2.12/5.0.1.13
   - Add support for Code Colorization on Paste
 

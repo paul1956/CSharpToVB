@@ -168,8 +168,18 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     End If
                     Return ConvertToType(node.ToString)
                 End If
-                If (TypeOf originalNameParent Is CSS.VariableDeclarationSyntax OrElse TypeOf originalNameParent Is CSS.ArrayTypeSyntax) AndAlso node.Identifier.ValueText = "dynamic" Then
-                    Return PredefinedTypeObject
+                If node.Identifier.ValueText = "dynamic" Then
+                    If TypeOf originalNameParent Is CSS.ArrayTypeSyntax Then
+                        Return PredefinedTypeObject
+                    End If
+                    Dim parent As CSS.VariableDeclarationSyntax = TryCast(originalNameParent, CSS.VariableDeclarationSyntax)
+                    If parent IsNot Nothing AndAlso parent.Variables.Count > 0 Then
+                        Dim type = parent.Variables(0).Initializer.Value.DetermineTypeSyntax(_semanticModel)
+                        If type._Error Then
+                            Return PredefinedTypeObject
+                        End If
+                        Return type._ITypeSymbol
+                    End If
                 End If
                 If TypeOf originalNameParent Is CSS.ParameterSyntax AndAlso node.ToString = "Variant" Then
                     Return PredefinedTypeObject

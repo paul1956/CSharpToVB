@@ -39,6 +39,7 @@ Namespace Utilities
         ' ReSharper disable InconsistentNaming
 #Region "Token"
 
+        Public ReadOnly AmpersandEqualsToken As SyntaxToken = Factory.Token(SyntaxKind.AmpersandEqualsToken)
         Public ReadOnly AmpersandToken As SyntaxToken = Factory.Token(SyntaxKind.AmpersandToken)
         Public ReadOnly AsteriskEqualsToken As SyntaxToken = Factory.Token(SyntaxKind.AsteriskEqualsToken)
         Public ReadOnly AsteriskToken As SyntaxToken = Factory.Token(SyntaxKind.AsteriskToken)

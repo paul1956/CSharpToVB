@@ -85,6 +85,7 @@ Partial Public Class Form1
     End Sub
 
     Private Sub ContextMenuPaste_Click(sender As Object, e As EventArgs) Handles ContextMenuPaste.Click
+
         Dim sourceControl As RichTextBox = TryCast(Me.ContextMenuStrip1.SourceControl, RichTextBox)
         If sourceControl Is Nothing Then
             If TypeOf Me.CurrentBuffer Is RichTextBox Then
@@ -96,10 +97,17 @@ Partial Public Class Form1
         If sourceControl IsNot Nothing AndAlso (sourceControl.CanPaste(DataFormats.GetFormat(DataFormats.Rtf)) OrElse
                                                 sourceControl.CanPaste(DataFormats.GetFormat(DataFormats.Text))
                                                ) Then
+            _cancellationTokenSource = New CancellationTokenSource
             _inColorize = True
             sourceControl.SelectedText = Clipboard.GetText(TextDataFormat.Text)
             _inColorize = False
-            Colorize(Me, GetClassifiedRanges(sourceControl.Text, LanguageNames.CSharp).ToList(), sourceControl, sourceControl.Lines.Length, New List(Of Diagnostic))
+            If Me.mnuOptionsColorizeSource.Checked AndAlso Me.CurrentBuffer.Equals(Me.ConversionInput) Then
+                Colorize(Me, GetClassifiedRanges(sourceControl.Text, LanguageNames.CSharp).ToList(), sourceControl, sourceControl.Lines.Length, New List(Of Diagnostic))
+            Else
+                If Me.mnuOptionsColorizeResult.Checked AndAlso Me.CurrentBuffer.Equals(Me.ConversionOutput) Then
+                    Colorize(Me, GetClassifiedRanges(sourceControl.Text, LanguageNames.VisualBasic).ToList(), sourceControl, sourceControl.Lines.Length, New List(Of Diagnostic))
+                End If
+            End If
         End If
     End Sub
 
@@ -176,7 +184,7 @@ Partial Public Class Form1
         Me.mnuViewShowSourceLineNumbers.Checked = inputBufferInUse And My.Settings.ShowSourceLineNumbers
         Me.mnuFileSaveSnippet.Enabled = inputBufferInUse
         If Me.mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
-            Colorize(Me, GetClassifiedRanges(Me.ConversionInput.Text, LanguageNames.CSharp).ToList(), Me.ConversionInput)
+            Colorize1Range(Me.ConversionInput, LanguageNames.CSharp)
         End If
         If Me.ConversionInput.Text.Any() Then
             Dim selectionStart As Integer = Me.ConversionInput.SelectionStart
@@ -205,7 +213,7 @@ Partial Public Class Form1
         Me.mnuViewShowDestinationLineNumbers.Checked = outputBufferInUse And My.Settings.ShowDestinationLineNumbers
         Me.mnuCompile.Enabled = outputBufferInUse
         If Me.mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
-            Colorize(Me, GetClassifiedRanges(Me.ConversionOutput.Text, LanguageNames.VisualBasic).ToList(), Me.ConversionOutput)
+            Colorize1Range(Me.ConversionOutput, LanguageNames.VisualBasic)
         End If
         Me.SetSearchControls()
     End Sub
@@ -582,8 +590,15 @@ namespace Application
             _inColorize = True
             Me.CurrentBuffer.SelectedText = Clipboard.GetText(TextDataFormat.Text)
             _inColorize = False
+            _cancellationTokenSource = New CancellationTokenSource
+            If Me.mnuOptionsColorizeSource.Checked AndAlso Me.CurrentBuffer.Equals(Me.ConversionInput) Then
+                Colorize(Me, GetClassifiedRanges(Me.CurrentBuffer.Text, LanguageNames.CSharp).ToList(), Me.CurrentBuffer, Me.CurrentBuffer.Lines.Length, New List(Of Diagnostic))
+            Else
+                If Me.mnuOptionsColorizeResult.Checked AndAlso Me.CurrentBuffer.Equals(Me.ConversionOutput) Then
+                    Colorize(Me, GetClassifiedRanges(Me.CurrentBuffer.Text, LanguageNames.VisualBasic).ToList(), Me.CurrentBuffer, Me.CurrentBuffer.Lines.Length, New List(Of Diagnostic))
+                End If
+            End If
             Me.CurrentBuffer.Focus()
-            Colorize(Me, GetClassifiedRanges(Me.CurrentBuffer.Text, LanguageNames.CSharp).ToList(), Me.CurrentBuffer, Me.CurrentBuffer.Lines.Length, New List(Of Diagnostic))
         End If
     End Sub
 
@@ -1011,16 +1026,6 @@ namespace Application
 
 #Region "Form Support Routines"
 
-    ''' <summary>
-    ''' This will be used at runtime to add this Event to all items on mnuFileMRU list
-    ''' </summary>
-    ''' <param name="sender"></param>
-    ''' <param name="e"></param>
-    Friend Sub mnu_MRUList_Click(sender As Object, e As EventArgs)
-        ' open the file...
-        OpenSourceFile(Me, DirectCast(sender, ToolStripItem).Tag.ToString().Substring(startIndex:=4))
-    End Sub
-
     Private Sub SetColorMode(myForm As Form, lightMode As Boolean)
 
         If lightMode Then
@@ -1040,6 +1045,16 @@ namespace Application
             _currentThemeDictionary = _lightModeColorDictionary
             SetLightMode(myForm.Controls, _mCapturedRenderer)
         End If
+    End Sub
+
+    ''' <summary>
+    ''' This will be used at runtime to add this Event to all items on mnuFileMRU list
+    ''' </summary>
+    ''' <param name="sender"></param>
+    ''' <param name="e"></param>
+    Friend Sub mnu_MRUList_Click(sender As Object, e As EventArgs)
+        ' open the file...
+        OpenSourceFile(Me, DirectCast(sender, ToolStripItem).Tag.ToString().Substring(startIndex:=4))
     End Sub
 
     Friend Sub ResizeRichTextBuffers()

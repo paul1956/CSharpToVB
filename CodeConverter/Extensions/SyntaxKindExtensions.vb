@@ -101,6 +101,8 @@ Namespace Extensions
                     Return PlusToken
                 Case VB.SyntaxKind.ConcatenateExpression
                     Return AmpersandToken
+                Case vb.SyntaxKind.ConcatenateAssignmentStatement
+                    Return AmpersandEqualsToken
                 Case VB.SyntaxKind.SubtractExpression
                     Return MinusToken
                 Case VB.SyntaxKind.MultiplyExpression
