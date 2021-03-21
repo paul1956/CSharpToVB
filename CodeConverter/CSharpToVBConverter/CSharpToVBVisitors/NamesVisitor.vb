@@ -174,11 +174,15 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     End If
                     Dim parent As CSS.VariableDeclarationSyntax = TryCast(originalNameParent, CSS.VariableDeclarationSyntax)
                     If parent IsNot Nothing AndAlso parent.Variables.Count > 0 Then
-                        Dim type = parent.Variables(0).Initializer.Value.DetermineTypeSyntax(_semanticModel)
-                        If type._Error Then
+                        If parent.Variables(0).Initializer Is Nothing Then
                             Return PredefinedTypeObject
+                        Else
+                            Dim type As (_Error As Boolean, _ITypeSymbol As VBS.TypeSyntax) = parent.Variables(0).Initializer.Value.DetermineTypeSyntax(_semanticModel)
+                            If type._Error Then
+                                Return PredefinedTypeObject
+                            End If
+                            Return type._ITypeSymbol
                         End If
-                        Return type._ITypeSymbol
                     End If
                 End If
                 If TypeOf originalNameParent Is CSS.ParameterSyntax AndAlso node.ToString = "Variant" Then
