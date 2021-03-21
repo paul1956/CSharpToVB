@@ -136,7 +136,6 @@ Public Module ColorizeSupport
                     mainForm.LineNumbersForConversionOutput.Visible = True
                 End If
             End If
-            mainForm.StatusStripConversionProgressBar.Clear()
         Catch ex As OperationCanceledException
         Catch ex As ObjectDisposedException
             End
@@ -146,8 +145,9 @@ Public Module ColorizeSupport
             conversionBuffer.Visible = True
             conversionBuffer.Refresh()
             Application.DoEvents()
-            mainForm._inColorize = False
+            mainForm.StatusStripConversionProgressBar.Clear()
             mainForm.ResizeRichTextBuffers()
+            mainForm._inColorize = False
         End Try
     End Sub
 

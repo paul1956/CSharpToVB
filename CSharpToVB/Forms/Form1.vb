@@ -194,16 +194,20 @@ Partial Public Class Form1
             Colorize1Range(Me.ConversionInput, LanguageNames.CSharp)
         End If
         If Me.ConversionInput.Text.Any() Then
-            Dim selectionStart As Integer = Me.ConversionInput.SelectionStart
-            Dim selectionLength As Integer = Me.ConversionInput.SelectionLength
+            If _topLevelStatementConversionEnable = False AndAlso Me.ConversionInput.Text(0) <> "/" Then
+                Dim selectionStart As Integer = Me.ConversionInput.SelectionStart
+                Dim selectionLength As Integer = Me.ConversionInput.SelectionLength
 
-            Dim keywordIndex As Integer = Me.ConversionInput.FindIndexOfAny("namespace", "internal static class")
-            _topLevelStatementConversionEnable = Me.ConversionInput.Text(0) <> "/"
-            If keywordIndex >= 0 Then
-                Dim firstCharIndexOfNamespaceLine As Integer = Me.ConversionInput.GetFirstCharIndexFromLine(Me.ConversionInput.GetLineFromCharIndex(keywordIndex))
-                _topLevelStatementConversionEnable = keywordIndex <> firstCharIndexOfNamespaceLine
+                _topLevelStatementConversionEnable = Me.ConversionInput.Text(0) <> "/"
+                Dim keywordIndex As Integer = Me.ConversionInput.FindIndexOfAny("namespace", "internal static class")
+                If keywordIndex >= 0 Then
+                    Dim firstCharIndexOfNamespaceLine As Integer = Me.ConversionInput.GetFirstCharIndexFromLine(Me.ConversionInput.GetLineFromCharIndex(keywordIndex))
+                    _topLevelStatementConversionEnable = keywordIndex <> firstCharIndexOfNamespaceLine
+                End If
+                Me.ConversionInput.Select(selectionStart, selectionLength)
             End If
-            Me.ConversionInput.Select(selectionStart, selectionLength)
+        Else
+            _topLevelStatementConversionEnable = False
         End If
     End Sub
 
@@ -401,16 +405,16 @@ Partial Public Class Form1
             If String.IsNullOrWhiteSpace(sourceFileNameWithPath) OrElse Not File.Exists(sourceFileNameWithPath) Then
                 Exit Sub
             End If
-            SetButtonStopCursorAndCancelToken(Me,True)
+            SetButtonStopCursorAndCancelToken(Me, True)
             LoadInputBufferFromStream(Me, sourceFileNameWithPath)
             Dim convertedFileNameWithPath As String = item.ValueItem
             If Not File.Exists(convertedFileNameWithPath) Then
-                SetButtonStopCursorAndCancelToken(Me,False)
+                SetButtonStopCursorAndCancelToken(Me, False)
                 Exit Sub
             End If
 
             LoadOutputBufferFromStream(Me, convertedFileNameWithPath)
-            SetButtonStopCursorAndCancelToken(Me,False)
+            SetButtonStopCursorAndCancelToken(Me, False)
         End Using
     End Sub
 
@@ -687,9 +691,9 @@ namespace Application
 
     Private Sub mnuFileLoadLastSnippet_Click(sender As Object, e As EventArgs) Handles mnuFileLoadLastSnippet.Click
         If My.Settings.ColorizeInput Then
-            SetButtonStopCursorAndCancelToken(Me,True)
+            SetButtonStopCursorAndCancelToken(Me, True)
             Me.mnuConvertConvertSnippet.Enabled = 0 <> LoadInputBufferFromStream(Me, s_snippetFileWithPath)
-            SetButtonStopCursorAndCancelToken(Me,False)
+            SetButtonStopCursorAndCancelToken(Me, False)
         Else
             Me.ConversionInput.LoadFile(s_snippetFileWithPath, RichTextBoxStreamType.PlainText)
         End If
