@@ -34,22 +34,28 @@ Partial Public Class Form1
     Friend Property LanguageBuffersToSearch As LanguageBufferToSearch = LanguageBufferToSearch.Csharp
     Private Property CurrentBuffer As RichTextBox = Nothing
 
-    Private Sub ButtonStop_Click(sender As Object, e As EventArgs) Handles ButtonStopConversion.Click
-        Me.ButtonStopConversion.Visible = False
+    Private Sub ButtonStopConversion_Click(sender As Object, e As EventArgs) Handles ButtonStopConversion.Click
+        SetButtonStopCursorAndCancelToken(Me, stopButtonVisible:=False)
         _cancellationTokenSource.Cancel()
         Application.DoEvents()
     End Sub
 
-    Private Sub ButtonStop_MouseEnter(sender As Object, e As EventArgs) Handles ButtonStopConversion.MouseEnter
+    Private Sub ButtonStopConversion_MouseEnter(sender As Object, e As EventArgs) Handles ButtonStopConversion.MouseEnter
         LocalUseWaitCursor(Me, waitCursorEnable:=False)
     End Sub
 
-    Private Sub ButtonStop_MouseLeave(sender As Object, e As EventArgs) Handles ButtonStopConversion.MouseLeave
+    Private Sub ButtonStopConversion_MouseLeave(sender As Object, e As EventArgs) Handles ButtonStopConversion.MouseLeave
         Me.ButtonStopConversion.BackColor = SystemColors.Control
         LocalUseWaitCursor(Me, waitCursorEnable:=Me.ButtonStopConversion.Visible)
     End Sub
 
-    Private Sub ButtonStop_VisibleChanged(sender As Object, e As EventArgs) Handles ButtonStopConversion.VisibleChanged
+    Private Sub ButtonStopConversion_VisibleChanged(sender As Object, e As EventArgs) Handles ButtonStopConversion.VisibleChanged
+        If Me.ButtonStopConversion.Visible Then
+            If _cancellationTokenSource IsNot Nothing Then
+                _cancellationTokenSource.Dispose()
+            End If
+            _cancellationTokenSource = New CancellationTokenSource
+        End If
         LocalUseWaitCursor(Me, waitCursorEnable:=Me.ButtonStopConversion.Visible)
     End Sub
 
@@ -97,8 +103,8 @@ Partial Public Class Form1
         If sourceControl IsNot Nothing AndAlso (sourceControl.CanPaste(DataFormats.GetFormat(DataFormats.Rtf)) OrElse
                                                 sourceControl.CanPaste(DataFormats.GetFormat(DataFormats.Text))
                                                ) Then
-            _cancellationTokenSource = New CancellationTokenSource
             _inColorize = True
+            SetButtonStopCursorAndCancelToken(Me, stopButtonVisible:=True)
             sourceControl.SelectedText = Clipboard.GetText(TextDataFormat.Text)
             _inColorize = False
             If Me.mnuOptionsColorizeSource.Checked AndAlso Me.CurrentBuffer.Equals(Me.ConversionInput) Then
@@ -108,6 +114,7 @@ Partial Public Class Form1
                     Colorize(Me, GetClassifiedRanges(sourceControl.Text, LanguageNames.VisualBasic).ToList(), sourceControl, sourceControl.Lines.Length, New List(Of Diagnostic))
                 End If
             End If
+            SetButtonStopCursorAndCancelToken(Me, stopButtonVisible:=False)
         End If
     End Sub
 
@@ -394,13 +401,16 @@ Partial Public Class Form1
             If String.IsNullOrWhiteSpace(sourceFileNameWithPath) OrElse Not File.Exists(sourceFileNameWithPath) Then
                 Exit Sub
             End If
+            SetButtonStopCursorAndCancelToken(Me,True)
             LoadInputBufferFromStream(Me, sourceFileNameWithPath)
             Dim convertedFileNameWithPath As String = item.ValueItem
             If Not File.Exists(convertedFileNameWithPath) Then
+                SetButtonStopCursorAndCancelToken(Me,False)
                 Exit Sub
             End If
 
             LoadOutputBufferFromStream(Me, convertedFileNameWithPath)
+            SetButtonStopCursorAndCancelToken(Me,False)
         End Using
     End Sub
 
@@ -438,10 +448,13 @@ Partial Public Class Form1
     End Sub
 
     Private Async Sub mnuConvertConvertSnippet_Click(sender As Object, e As EventArgs) Handles mnuConvertConvertSnippet.Click
+        SetButtonStopCursorAndCancelToken(Me, stopButtonVisible:=True)
         Await Me.ConvertSnippetOfTopLevelStmt(Me.ConversionInput.Text)
+        SetButtonStopCursorAndCancelToken(Me, stopButtonVisible:=False)
     End Sub
 
     Private Async Sub mnuConvertConvertTopLevelStmts_Click(sender As Object, e As EventArgs) Handles mnuConvertConvertTopLevelStmts.Click
+        SetButtonStopCursorAndCancelToken(Me, stopButtonVisible:=True)
         Dim usingSb As New StringBuilder
         Dim stmts As New StringBuilder
         Dim asyncValue As String = ""
@@ -469,6 +482,7 @@ namespace Application
     }}
 }}
 ")
+        SetButtonStopCursorAndCancelToken(Me, stopButtonVisible:=False)
     End Sub
 
     Private Async Sub mnuConvertFolder_Click(sender As Object, e As EventArgs) Handles mnuConvertConvertFolder.Click
@@ -508,10 +522,11 @@ namespace Application
         End If
         Dim lastFileNameWithPath As String = If(My.Settings.StartFolderConvertFromLastFile, My.Settings.MRU_Data.Last, "")
         Dim stats As New ProcessingStats(lastFileNameWithPath)
-        _cancellationTokenSource = New CancellationTokenSource
         Me.StatusStripElapasedTimeLabel.Text = ""
         ' Create new stopwatch
         Dim prompt As String
+        SetButtonStopCursorAndCancelToken(Me, stopButtonVisible:=True)
+
         If Await ProcessFilesAsync(Me,
                                    sourceFolderName,
                                    solutionSavePath,
@@ -539,7 +554,7 @@ namespace Application
         Dim elapsed As TimeSpan = stats._elapsedTimer.Elapsed
         Me.StatusStripElapasedTimeLabel.Text = $"Elapsed Time - {elapsed.Hours}: {elapsed.Minutes}:{elapsed.Seconds}.{elapsed.Milliseconds}"
         Me.mnuConvertConvertFolder.Enabled = True
-
+        SetButtonStopCursorAndCancelToken(Me, stopButtonVisible:=False)
     End Sub
 
     Private Sub mnuConvertStartFolderConvertFromLastFile_Click(sender As Object, e As EventArgs) Handles mnuConvertStartFolderConvertFromLastFile.Click
@@ -590,7 +605,7 @@ namespace Application
             _inColorize = True
             Me.CurrentBuffer.SelectedText = Clipboard.GetText(TextDataFormat.Text)
             _inColorize = False
-            _cancellationTokenSource = New CancellationTokenSource
+            SetButtonStopCursorAndCancelToken(Me, stopButtonVisible:=True)
             If Me.mnuOptionsColorizeSource.Checked AndAlso Me.CurrentBuffer.Equals(Me.ConversionInput) Then
                 Colorize(Me, GetClassifiedRanges(Me.CurrentBuffer.Text, LanguageNames.CSharp).ToList(), Me.CurrentBuffer, Me.CurrentBuffer.Lines.Length, New List(Of Diagnostic))
             Else
@@ -599,6 +614,7 @@ namespace Application
                 End If
             End If
             Me.CurrentBuffer.Focus()
+            SetButtonStopCursorAndCancelToken(Me, stopButtonVisible:=False)
         End If
     End Sub
 
@@ -639,7 +655,6 @@ namespace Application
     Private Async Sub mnuFileLastFolder_Click(sender As Object, e As EventArgs) Handles mnuFileLastFolder.Click
         Dim folderName As String = CType(sender, ToolStripMenuItem).Text
         If Directory.Exists(folderName) Then
-            Dim srcLanguageExtension As String = "cs"
             Dim fullFolderPath As (SolutionRoot As String, ProjectRelativePath As String) = Me.GetSavePath(folderName, promptIfDirExists:=True)
             Dim targetSavePath As String = Path.Combine(fullFolderPath.SolutionRoot, fullFolderPath.ProjectRelativePath)
             If String.IsNullOrWhiteSpace(targetSavePath) Then
@@ -648,14 +663,12 @@ namespace Application
             ' This path is a directory.
             Dim lastFileNameWithPath As String = If(My.Settings.StartFolderConvertFromLastFile, My.Settings.MRU_Data.Last, "")
             Dim stats As New ProcessingStats(lastFileNameWithPath)
-            If _cancellationTokenSource IsNot Nothing Then
-                _cancellationTokenSource.Dispose()
-            End If
-            _cancellationTokenSource = New CancellationTokenSource
-            If Await ProcessFilesAsync(Me, folderName, targetSavePath, srcLanguageExtension, stats, _cancellationTokenSource.Token).ConfigureAwait(True) Then
+            SetButtonStopCursorAndCancelToken(Me, stopButtonVisible:=True)
+            If Await ProcessFilesAsync(Me, folderName, targetSavePath, "cs", stats, _cancellationTokenSource.Token).ConfigureAwait(True) Then
                 MsgBox($"Conversion completed.",
                        MsgBoxStyle.OkOnly Or MsgBoxStyle.Information Or MsgBoxStyle.MsgBoxSetForeground)
             End If
+            SetButtonStopCursorAndCancelToken(Me, stopButtonVisible:=False)
         Else
             MsgBox($"{folderName} Is Not a directory.",
                    MsgBoxStyle.OkOnly Or MsgBoxStyle.Exclamation Or MsgBoxStyle.MsgBoxSetForeground)
@@ -674,7 +687,9 @@ namespace Application
 
     Private Sub mnuFileLoadLastSnippet_Click(sender As Object, e As EventArgs) Handles mnuFileLoadLastSnippet.Click
         If My.Settings.ColorizeInput Then
+            SetButtonStopCursorAndCancelToken(Me,True)
             Me.mnuConvertConvertSnippet.Enabled = 0 <> LoadInputBufferFromStream(Me, s_snippetFileWithPath)
+            SetButtonStopCursorAndCancelToken(Me,False)
         Else
             Me.ConversionInput.LoadFile(s_snippetFileWithPath, RichTextBoxStreamType.PlainText)
         End If
@@ -891,13 +906,11 @@ namespace Application
     End Sub
 
     Private Sub mnuViewShowSourceLineNumbers_CheckStateChanged(sender As Object, e As EventArgs) Handles mnuViewShowSourceLineNumbers.CheckStateChanged
-        Dim checked As Boolean = CType(sender, ToolStripMenuItem).Checked
-        Me.LineNumbersForConversionInput.Visible = checked
+        Me.LineNumbersForConversionInput.Visible = CType(sender, ToolStripMenuItem).Checked
     End Sub
 
     Private Sub mnuViewShowSourceLineNumbers_Click(sender As Object, e As EventArgs) Handles mnuViewShowSourceLineNumbers.Click
-        Dim checked As Boolean = CType(sender, ToolStripMenuItem).Checked
-        My.Settings.ShowSourceLineNumbers = checked
+        My.Settings.ShowSourceLineNumbers = CType(sender, ToolStripMenuItem).Checked
         My.Settings.Save()
     End Sub
 
@@ -1053,12 +1066,14 @@ namespace Application
     ''' <param name="sender"></param>
     ''' <param name="e"></param>
     Friend Sub mnu_MRUList_Click(sender As Object, e As EventArgs)
+        SetButtonStopCursorAndCancelToken(Me, stopButtonVisible:=True)
         ' open the file...
         OpenSourceFile(Me, DirectCast(sender, ToolStripItem).Tag.ToString().Substring(startIndex:=4))
+        SetButtonStopCursorAndCancelToken(Me, stopButtonVisible:=False)
     End Sub
 
     Friend Sub ResizeRichTextBuffers()
-        If _loading Then
+        If _loading OrElse _inColorize Then
             Exit Sub
         End If
         Try

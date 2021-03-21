@@ -188,7 +188,7 @@ Public Module ProcessProjectUtilities
             End If
             Dim targetFileWithPath As String = DestinationFilePath(currentDocument.FilePath, solutionRoot)
             filesProcessed += 1
-            mainForm.FileListListBox.Items.Add(New NumberedListItem($"{filesProcessed.ToString(CultureInfo.InvariantCulture), -5} {currentDocument.FilePath}", $"{targetFileWithPath}{Path.DirectorySeparatorChar}{Path.GetFileNameWithoutExtension(currentDocument.Name)}.vb"))
+            mainForm.FileListListBox.Items.Add(New NumberedListItem($"{filesProcessed.ToString(CultureInfo.InvariantCulture),-5} {currentDocument.FilePath}", $"{targetFileWithPath}{Path.DirectorySeparatorChar}{Path.GetFileNameWithoutExtension(currentDocument.Name)}.vb"))
             mainForm.FileListListBox.SelectedIndex = mainForm.FileListListBox.Items.Count - 1
             mainForm.StatusStripConversionFileProgressLabel.Text = $"Processed {filesProcessed:N0} of {totalFilesToProcess:N0} Files"
             Application.DoEvents()
@@ -216,7 +216,7 @@ Public Module ProcessProjectUtilities
             MsgBox($"Can't find {saveSolutionRoot}, exiting solution conversion")
             Exit Sub
         End If
-        SetButtonStopAndCursor(mainForm, mainForm.ButtonStopConversion, stopButtonVisible:=True)
+        SetButtonStopCursorAndCancelToken(mainForm, stopButtonVisible:=True)
         mainForm.ErrorListListBox.Items.Clear()
         mainForm.FileListListBox.Items.Clear()
         mainForm.ConversionInput.Clear()
@@ -332,7 +332,7 @@ Public Module ProcessProjectUtilities
             End
         Finally
             mainForm.UpdateProgress("")
-            SetButtonStopAndCursor(mainForm, mainForm.ButtonStopConversion, stopButtonVisible:=False)
+            SetButtonStopCursorAndCancelToken(mainForm, stopButtonVisible:=False)
         End Try
     End Sub
 

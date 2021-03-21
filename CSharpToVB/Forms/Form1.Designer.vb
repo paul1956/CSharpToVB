@@ -829,7 +829,7 @@ Partial Class Form1
         Me.LabelErrorCount.Name = "LabelErrorCount"
         Me.LabelErrorCount.Size = New System.Drawing.Size(110, 15)
         Me.LabelErrorCount.TabIndex = 5
-        Me.LabelErrorCount.Text = "Number of Errors: 0"
+        Me.LabelErrorCount.Text = "Number of Errors:"
         '
         'SplitContainer1
         '

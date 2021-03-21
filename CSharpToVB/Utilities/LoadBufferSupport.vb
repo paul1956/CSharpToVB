@@ -13,8 +13,8 @@ Friend Module LoadBufferSupport
             Return 0
         End If
         mainForm.ConversionInput.Visible = False
-        LocalUseWaitCursor(mainForm, waitCursorEnable:=True)
         Dim sourceText As String
+        mainForm.LineNumbersForConversionInput.Visible = False
         Using myFileStream As FileStream = File.OpenRead(path)
             sourceText = myFileStream.GetFileTextFromStream()
         End Using
@@ -27,19 +27,14 @@ Friend Module LoadBufferSupport
             mainForm.ConversionInput.Text = lines.Join(vbCrLf)
         End If
         mainForm.ConversionInput.Visible = True
-        If mainForm.mnuViewShowSourceLineNumbers.Checked Then
-            mainForm.LineNumbersForConversionInput.Visible = False
-            Application.DoEvents()
-            mainForm.LineNumbersForConversionInput.Visible = True
-            Application.DoEvents()
-        End If
-        LocalUseWaitCursor(mainForm, waitCursorEnable:=False)
+        mainForm.LineNumbersForConversionInput.Visible = mainForm.mnuViewShowSourceLineNumbers.Checked
+        Application.DoEvents()
         Return lines.Length
     End Function
 
     Friend Sub LoadOutputBufferFromStream(mainForm As Form1, path As String)
-        LocalUseWaitCursor(mainForm, waitCursorEnable:=True)
         Dim sourceText As String
+        mainForm.LineNumbersForConversionOutput.Visible=false
         Using myFileStream As FileStream = File.OpenRead(path)
             sourceText = myFileStream.GetFileTextFromStream()
         End Using
@@ -51,7 +46,7 @@ Friend Module LoadBufferSupport
         Else
             mainForm.ConversionOutput.Text = lines.Join(vbCrLf)
         End If
-        LocalUseWaitCursor(mainForm, waitCursorEnable:=False)
+        mainForm.LineNumbersForConversionOutput.Visible=mainForm.mnuViewShowDestinationLineNumbers.Checked
     End Sub
 
     Friend Sub OpenSourceFile(mainForm As Form1, path As String)

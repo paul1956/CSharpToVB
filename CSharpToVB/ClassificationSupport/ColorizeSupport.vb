@@ -104,7 +104,7 @@ Public Module ColorizeSupport
                         mainForm.StatusStripConversionProgressBar.Increment(range.Text.Count(CType(vbLf, Char)))
                         Application.DoEvents()
                     End If
-                    If mainForm._requestToConvert?.CancelToken.IsCancellationRequested Then
+                    If mainForm._cancellationTokenSource.IsCancellationRequested Then
                         Exit Sub
                     End If
                     Application.DoEvents()
@@ -147,6 +147,7 @@ Public Module ColorizeSupport
             conversionBuffer.Refresh()
             Application.DoEvents()
             mainForm._inColorize = False
+            mainForm.ResizeRichTextBuffers()
         End Try
     End Sub
 
