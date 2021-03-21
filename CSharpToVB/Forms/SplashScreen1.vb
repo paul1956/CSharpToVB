@@ -6,16 +6,9 @@ Imports System.Globalization
 
 Public NotInheritable Class SplashScreen1
 
-    'TODO: This form can easily be set as the splash screen for the application by going to the "Application" tab
-    '  of the Project Designer ("Properties" under the "Project" menu).
-
     Private Sub SplashScreen1_Load(sender As Object, e As EventArgs) Handles Me.Load
         'Set up the dialog text at runtime according to the application's assembly information.
 
-        'TODO: Customize the application's assembly information in the "Application" pane of the project
-        '  properties dialog (under the "Project" menu).
-
-        'Application title
         Me.ApplicationTitle.Text = If(String.IsNullOrWhiteSpace(My.Application.Info.Title), IO.Path.GetFileNameWithoutExtension(My.Application.Info.AssemblyName), My.Application.Info.Title)
 
         'Format the version information using the text set into the Version control at design time as the
