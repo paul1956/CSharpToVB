@@ -58,7 +58,6 @@ Public Module ThemeSupport
                 t.ForeColor = Color.Silver
                 For Each tab As TabPage In t.TabPages
                     tab.BackColor = Color.FromArgb(40, 40, 40)
-                    tab.BorderStyle = BorderStyle.None
                     SetDarkMode(tab.Controls, mCapturedRenderer)
                 Next
 
@@ -66,7 +65,6 @@ Public Module ThemeSupport
                 Dim p As Panel = CType(c, Panel)
                 p.BackColor = Color.FromArgb(40, 40, 40)
                 p.ForeColor = Color.Silver
-                p.Padding = New Padding(1)
                 Dim panelEx As PanelEx = TryCast(c, PanelEx)
                 If panelEx IsNot Nothing Then
                     panelEx.BorderColor = Color.FromArgb(60, 60, 60)
@@ -77,20 +75,14 @@ Public Module ThemeSupport
                 Dim rtb As RichTextBox = CType(c, RichTextBox)
                 rtb.BackColor = Color.FromArgb(45, 45, 45)
                 rtb.ForeColor = Color.Silver
-                rtb.BorderStyle = BorderStyle.None
-                'If TypeOf rtb.Parent Is PanelEx Then
-                '  CType(rtb.Parent, PanelEx).BorderColor = Color.FromArgb(60, 60, 60)
-                'End If
 
             ElseIf TypeOf c Is TreeView Then
                 Dim tvw As TreeView = CType(c, TreeView)
                 tvw.BackColor = Color.FromArgb(40, 40, 40)
                 tvw.ForeColor = Color.Silver
-                tvw.BorderStyle = BorderStyle.None
 
             ElseIf TypeOf c Is TextBox Then
                 Dim tb As TextBox = CType(c, TextBox)
-                tb.BorderStyle = BorderStyle.FixedSingle
                 tb.BackColor = Color.FromArgb(60, 60, 60)
                 tb.ForeColor = Color.Silver
 
@@ -101,12 +93,10 @@ Public Module ThemeSupport
                 btn.ForeColor = Color.Silver
             ElseIf TypeOf c Is Label Then
                 Dim lb As Label = CType(c, Label)
-                lb.BorderStyle = BorderStyle.FixedSingle
                 lb.BackColor = Color.FromArgb(60, 60, 60)
                 lb.ForeColor = Color.Silver
             ElseIf TypeOf c Is ListBox Then
                 Dim lb As ListBox = CType(c, ListBox)
-                lb.BorderStyle = BorderStyle.FixedSingle
                 lb.BackColor = Color.FromArgb(60, 60, 60)
                 lb.ForeColor = Color.Silver
             ElseIf TypeOf c Is ProgressBar Then
@@ -195,7 +185,6 @@ Public Module ThemeSupport
                 Dim p As Panel = CType(c, Panel)
                 p.BackColor = SystemColors.Control
                 p.ForeColor = SystemColors.ControlText
-                p.Padding = New Padding(1)
                 Dim panelEx As PanelEx = TryCast(c, PanelEx)
                 If panelEx IsNot Nothing Then
                     panelEx.BorderColor = SystemColors.WindowFrame
@@ -214,7 +203,6 @@ Public Module ThemeSupport
 
             ElseIf TypeOf c Is TextBox Then
                 Dim tb As TextBox = CType(c, TextBox)
-                tb.BorderStyle = BorderStyle.FixedSingle
                 tb.BackColor = Color.White
                 tb.ForeColor = SystemColors.ControlText
 
@@ -225,13 +213,11 @@ Public Module ThemeSupport
 
             ElseIf TypeOf c Is Label Then
                 Dim lb As Label = CType(c, Label)
-                lb.BorderStyle = BorderStyle.FixedSingle
                 lb.BackColor = Color.White
                 lb.ForeColor = SystemColors.ControlText
 
             ElseIf TypeOf c Is ListBox Then
                 Dim lb As ListBox = CType(c, ListBox)
-                lb.BorderStyle = BorderStyle.FixedSingle
                 lb.BackColor = Color.White
                 lb.ForeColor = SystemColors.ControlText
 

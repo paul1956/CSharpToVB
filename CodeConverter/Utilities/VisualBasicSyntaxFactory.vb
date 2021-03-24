@@ -93,7 +93,9 @@ Namespace Utilities
 
         Public ReadOnly DecrementIdentifier As IdentifierNameSyntax = Factory.IdentifierName("Decrement")
         Public ReadOnly IncrementIdentifier As IdentifierNameSyntax = Factory.IdentifierName("Increment")
+        Public ReadOnly ThreadingIdentifier As IdentifierNameSyntax = Factory.IdentifierName("Threading")
         Public ReadOnly InterlockedIdentifier As IdentifierNameSyntax = Factory.IdentifierName("Interlocked")
+        Public ReadOnly SytemInterlockedExpression As MemberAccessExpressionSyntax = Factory.SimpleMemberAccessExpression(ThreadingIdentifier, DotToken, InterlockedIdentifier)
         Public ReadOnly MathIdentifier As IdentifierNameSyntax = Factory.IdentifierName("Math")
         Public ReadOnly MaxIdentifier As IdentifierNameSyntax = Factory.IdentifierName("Max")
         Public ReadOnly MinIdentifier As IdentifierNameSyntax = Factory.IdentifierName("Min")

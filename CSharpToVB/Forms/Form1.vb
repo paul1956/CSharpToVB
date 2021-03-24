@@ -1113,13 +1113,13 @@ namespace Application
             Me.ConversionOutput.Height = Me.ConversionInputPanelEx.Height - 6
             Me.ConversionOutput.Width = halfClientWidth - lineNumberOutputWidth - 6
 
-            Me.FileListListBox.Left = 2
-            Me.FileListListBox.Width = Me.FileListPanelEx.ClientRectangle.Width - 4
-            Me.FileListListBox.Height = Me.FileListPanelEx.ClientRectangle.Height - 2
+            'Me.FileListListBox.Left = 2
+            'Me.FileListListBox.Width = Me.FileListPanelEx.ClientRectangle.Width - 4
+            'Me.FileListListBox.Height = Me.FileListPanelEx.ClientRectangle.Height - 2
 
-            Me.ErrorListListBox.Left = 2
-            Me.ErrorListListBox.Width = Me.ErrorListPanelEx.ClientRectangle.Width - 4
-            Me.ErrorListListBox.Height = Me.ErrorListPanelEx.ClientRectangle.Height - 2
+            'Me.ErrorListListBox.Left = 2
+            'Me.ErrorListListBox.Width = Me.ErrorListPanelEx.ClientRectangle.Width - 4
+            'Me.ErrorListListBox.Height = Me.ErrorListPanelEx.ClientRectangle.Height - 2
 
             Me.StatusStripCurrentFileName.Width = halfClientWidth
             _loading = False

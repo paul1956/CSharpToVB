@@ -857,6 +857,7 @@ Partial Class Form1
         'ConversionInputPanelEx
         '
         Me.ConversionInputPanelEx.BackColor = System.Drawing.Color.Transparent
+        Me.ConversionInputPanelEx.BorderStyle = BorderStyle.FixedSingle
         Me.ConversionInputPanelEx.Controls.Add(Me.ConversionInput)
         Me.ConversionInputPanelEx.Controls.Add(Me.LineNumbersForConversionInput)
         Me.ConversionInputPanelEx.Dock = System.Windows.Forms.DockStyle.Left
@@ -869,7 +870,9 @@ Partial Class Form1
         '
         'ConversionInput
         '
+        Me.ConversionInput.BorderStyle = BorderStyle.None
         Me.ConversionInput.ContextMenuStrip = Me.ContextMenuStrip1
+        Me.ConversionInput.Dock = DockStyle.Fill
         Me.ConversionInput.DetectUrls = False
         Me.ConversionInput.Font = New System.Drawing.Font("Consolas", 11.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point)
         Me.ConversionInput.Location = New System.Drawing.Point(28, 2)
@@ -898,6 +901,7 @@ Partial Class Form1
         'ConversionOutputPanelEx
         '
         Me.ConversionOutputPanelEx.BackColor = System.Drawing.Color.Transparent
+        Me.ConversionOutputPanelEx.BorderStyle = BorderStyle.FixedSingle
         Me.ConversionOutputPanelEx.Controls.Add(Me.ConversionOutput)
         Me.ConversionOutputPanelEx.Controls.Add(Me.LineNumbersForConversionOutput)
         Me.ConversionOutputPanelEx.Dock = System.Windows.Forms.DockStyle.Right
@@ -910,8 +914,10 @@ Partial Class Form1
         '
         'ConversionOutput
         '
+        Me.ConversionOutput.BorderStyle = BorderStyle.None
         Me.ConversionOutput.ContextMenuStrip = Me.ContextMenuStrip1
         Me.ConversionOutput.DetectUrls = False
+        Me.ConversionOutput.Dock = DockStyle.Fill
         Me.ConversionOutput.Font = New System.Drawing.Font("Consolas", 11.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point)
         Me.ConversionOutput.Location = New System.Drawing.Point(28, 3)
         Me.ConversionOutput.Name = "ConversionOutput"
@@ -939,6 +945,7 @@ Partial Class Form1
         'FileListPanelEx
         '
         Me.FileListPanelEx.BackColor = System.Drawing.Color.Transparent
+        Me.FileListPanelEx.BorderStyle = BorderStyle.FixedSingle
         Me.FileListPanelEx.Controls.Add(Me.FileListListBox)
         Me.FileListPanelEx.Dock = System.Windows.Forms.DockStyle.Left
         Me.FileListPanelEx.Location = New System.Drawing.Point(0, 0)
@@ -950,7 +957,9 @@ Partial Class Form1
         '
         'FileListListBox
         '
+        Me.FileListListBox.BorderStyle = BorderStyle.None
         Me.FileListListBox.ContextMenuStrip = Me.ContextMenuStrip1
+        Me.FileListListBox.Dock = DockStyle.Fill
         Me.FileListListBox.Enabled = False
         Me.FileListListBox.ItemHeight = 15
         Me.FileListListBox.Location = New System.Drawing.Point(0, 0)
@@ -961,6 +970,7 @@ Partial Class Form1
         'ErrorListPanelEx
         '
         Me.ErrorListPanelEx.BackColor = System.Drawing.Color.Transparent
+        Me.ErrorListPanelEx.BorderStyle = BorderStyle.FixedSingle
         Me.ErrorListPanelEx.Controls.Add(Me.ErrorListListBox)
         Me.ErrorListPanelEx.Dock = System.Windows.Forms.DockStyle.Right
         Me.ErrorListPanelEx.Location = New System.Drawing.Point(969, 0)
@@ -972,8 +982,9 @@ Partial Class Form1
         '
         'ErrorListListBox
         '
-        Me.ErrorListListBox.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.ErrorListListBox.BorderStyle = BorderStyle.None
         Me.ErrorListListBox.ContextMenuStrip = Me.ContextMenuStrip1
+        Me.ErrorListListBox.Dock = DockStyle.Fill
         Me.ErrorListListBox.Enabled = False
         Me.ErrorListListBox.ItemHeight = 15
         Me.ErrorListListBox.Location = New System.Drawing.Point(0, 0)

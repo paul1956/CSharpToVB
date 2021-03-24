@@ -2032,7 +2032,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         op = VB.SyntaxKind.AddExpression
                     End If
                     Dim vbMathExpression As MemberAccessExpressionSyntax = Factory.MemberAccessExpression(VB.SyntaxKind.SimpleMemberAccessExpression, MathIdentifier, DotToken, minMax)
-                    Dim vbInterlockedExpressionName As MemberAccessExpressionSyntax = Factory.MemberAccessExpression(VB.SyntaxKind.SimpleMemberAccessExpression, InterlockedIdentifier, DotToken, operatorName)
+                    Dim vbInterlockedExpressionName As MemberAccessExpressionSyntax = Factory.MemberAccessExpression(VB.SyntaxKind.SimpleMemberAccessExpression, SytemInterlockedExpression, DotToken, operatorName)
 
                     Dim vbOperandArgument As SimpleArgumentSyntax = Factory.SimpleArgument(leftExpr)
 
@@ -2079,7 +2079,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         End If
                     Else
                         Dim operatorName As IdentifierNameSyntax = If(kind = VB.SyntaxKind.AddAssignmentStatement, IncrementIdentifier, DecrementIdentifier)
-                        Dim mathExpr As MemberAccessExpressionSyntax = Factory.MemberAccessExpression(VB.SyntaxKind.SimpleMemberAccessExpression, InterlockedIdentifier, DotToken, operatorName)
+                        Dim mathExpr As MemberAccessExpressionSyntax = Factory.MemberAccessExpression(VB.SyntaxKind.SimpleMemberAccessExpression, SytemInterlockedExpression, DotToken, operatorName)
                         Return Factory.InvocationExpression(mathExpr,
                                                               Factory.ArgumentList(Factory.SeparatedList(
                                                                                         New ArgumentSyntax() {Factory.SimpleArgument(vbOperandExpression)})

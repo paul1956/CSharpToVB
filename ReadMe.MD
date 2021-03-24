@@ -65,6 +65,10 @@ Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpec
 Any changes to CSharpToVB application needs to change the version information in the project file **AND** in MyProject/AssemblyInfo.vb until Visual Studio is able to general file automatically for a WinForms application.
 
 ## What's New in this release
+  New in 5.0.3.1/5.0.1.15
+  - Change Interlocked.Increment to Threading.Interlocked.Increment to partly address issue #72
+  - Improve support for Dark Mode
+
   New in 5.0.3.0/5.0.1.14
   - Major improvement in colorize performance
   - Improvement in StopButton responsiveness
