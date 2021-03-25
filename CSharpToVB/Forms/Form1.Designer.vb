@@ -1046,11 +1046,11 @@ Partial Class Form1
         'StatusStripUpdateAvailable
         '
         Me.StatusStripUpdateAvailable.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
-        Me.StatusStripUpdateAvailable.Image = CType(resources.GetObject("StatusStripUpdateAvailable.Image"), System.Drawing.Image)
+        Me.StatusStripUpdateAvailable.Image = CType(resources.GetObject("StatusStripUpdateNotAvailable.Image"), System.Drawing.Image)
         Me.StatusStripUpdateAvailable.Name = "StatusStripUpdateAvailable"
         Me.StatusStripUpdateAvailable.Size = New System.Drawing.Size(16, 17)
-        Me.StatusStripUpdateAvailable.ToolTipText = "Update Available"
-        Me.StatusStripUpdateAvailable.Visible = False
+        Me.StatusStripUpdateAvailable.ImageTransparentColor = System.Drawing.Color.White
+        Me.StatusStripUpdateAvailable.ToolTipText = "Update Not Available"
         '
         'OpenFileDialog1
         '

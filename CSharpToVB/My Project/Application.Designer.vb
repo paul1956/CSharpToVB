@@ -21,23 +21,23 @@ Namespace My
     '
     Partial Friend Class MyApplication
         
-        <DebuggerStepThrough()>  _
+        <Global.System.Diagnostics.DebuggerStepThroughAttribute()>  _
         Public Sub New()
-            MyBase.New(ApplicationServices.AuthenticationMode.Windows)
+            MyBase.New(Global.Microsoft.VisualBasic.ApplicationServices.AuthenticationMode.Windows)
             Me.IsSingleInstance = true
             Me.EnableVisualStyles = true
             Me.SaveMySettingsOnExit = true
-            Me.ShutDownStyle = ApplicationServices.ShutdownMode.AfterMainFormCloses
+            Me.ShutDownStyle = Global.Microsoft.VisualBasic.ApplicationServices.ShutdownMode.AfterMainFormCloses
         End Sub
         
-        <DebuggerStepThrough()>  _
+        <Global.System.Diagnostics.DebuggerStepThroughAttribute()>  _
         Protected Overrides Sub OnCreateMainForm()
-            Me.MainForm = CSharpToVBApp.Form1
+            Me.MainForm = Global.CSharpToVBApp.Form1
         End Sub
         
-        <DebuggerStepThrough()>  _
+        <Global.System.Diagnostics.DebuggerStepThroughAttribute()>  _
         Protected Overrides Sub OnCreateSplashScreen()
-            Me.SplashScreen = CSharpToVBApp.SplashScreen1
+            Me.SplashScreen = Global.CSharpToVBApp.SplashScreen1
         End Sub
     End Class
 End Namespace

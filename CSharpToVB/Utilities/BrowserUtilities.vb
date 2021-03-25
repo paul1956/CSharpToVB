@@ -91,14 +91,16 @@ Friend Module BrowserUtilities
                 Dim gitHubVersion() As String = versionStr.Split("/")
                 Dim codeConverterInfo As New AssemblyInfo(GetType(CodeWithOptions).Assembly)
                 If IsNewerVersion(gitHubVersion, My.Application.Info.Version, codeConverterInfo.Version) Then
-                    mainForm.StatusStripUpdateAvailable.Visible = True
+                    mainForm.StatusStripUpdateAvailable.Image = CType(mainForm.ResourceManager.GetObject("StatusStripUpdateAvailable.Image"), Image)
+                    mainForm.StatusStripUpdateAvailable.ToolTipText = $"Update Available"
                     If reportResults Then
                         If MsgBox("There is a newer version available, do you want to install now?", MsgBoxStyle.YesNo, "Updates Available") = MsgBoxResult.Yes Then
                             OpenUrlInBrowser(Form1.ProjectGitHubUrl)
                         End If
                     End If
                 Else
-                    mainForm.StatusStripUpdateAvailable.Visible = False
+                    mainForm.StatusStripUpdateAvailable.Image = CType(mainForm.ResourceManager.GetObject("StatusStripUpdateNotAvailable.Image"), Image)
+                    mainForm.StatusStripUpdateAvailable.ToolTipText = $"Update Not Available"
                     If reportResults Then
                         MsgBox("You are running latest version", MsgBoxStyle.OkOnly, "No Updates Available")
                     End If

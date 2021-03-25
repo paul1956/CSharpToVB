@@ -32,6 +32,7 @@ Partial Public Class Form1
     End Sub
 
     Friend Property LanguageBuffersToSearch As LanguageBufferToSearch = LanguageBufferToSearch.Csharp
+    Friend Property ResourceManager As ComponentResourceManager = New ComponentResourceManager(GetType(Form1))
     Private Property CurrentBuffer As RichTextBox = Nothing
 
     Private Sub ButtonStopConversion_Click(sender As Object, e As EventArgs) Handles ButtonStopConversion.Click
