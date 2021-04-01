@@ -436,6 +436,8 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     'x.IsReadOnly = True
                     If node.IsKind(CS.SyntaxKind.SimpleAssignmentExpression) Then
                         Dim csMemberAccessExpression As CSS.MemberAccessExpressionSyntax = TryCast(csAssignment.Left, CSS.MemberAccessExpressionSyntax)
+                        Dim kind As VB.SyntaxKind = CS.CSharpExtensions.Kind(node).GetExpressionKind()
+                        Dim operatorToken As SyntaxToken = kind.GetOperatorToken(isReferenceType:=False)
                         If csMemberAccessExpression IsNot Nothing Then
                             Dim csObjectCreationExpression As CSS.ObjectCreationExpressionSyntax = TryCast(csMemberAccessExpression.Expression, CSS.ObjectCreationExpressionSyntax)
                             If csObjectCreationExpression IsNot Nothing Then
@@ -446,8 +448,6 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                                                       initializer:=Nothing
                                                                       ).WithLeadingTrivia(newExpression.GetLeadingTrivia)
                                                   )
-                                Dim kind As VB.SyntaxKind = CS.CSharpExtensions.Kind(node).GetExpressionKind()
-                                Dim operatorToken As SyntaxToken = kind.GetOperatorToken(isReferenceType:=False)
                                 statementList.Add(Factory.AssignmentStatement(kind,
                                                                               Factory.SimpleMemberAccessExpression(Factory.IdentifierName(nameToken),
                                                                                                                    DotToken,
@@ -456,6 +456,12 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                                                               rightExpr).WithTrailingEol)
                                 Return statementList
                             End If
+                        End If
+                        If TypeOf csAssignment.Left Is CSS.IdentifierNameSyntax Then
+                            oneStatement = Factory.AssignmentStatement(kind,
+                                                                       CType(csAssignment.Left.Accept(_nodesVisitor), ExpressionSyntax),
+                                                                       operatorToken,
+                                                                       rightExpr)
                         End If
                     ElseIf csAssignment.Left.IsKind(CS.SyntaxKind.SimpleMemberAccessExpression) AndAlso rightExpr.IsKind(VB.SyntaxKind.AddressOfExpression) Then
                         Dim vbMemberAccessExpression As MemberAccessExpressionSyntax = CType(csAssignment.Left.Accept(_nodesVisitor), MemberAccessExpressionSyntax)

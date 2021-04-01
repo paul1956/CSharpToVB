@@ -919,7 +919,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         'Debug.WriteLine(retExp.ToFullString)
                         Return retExp
                     End If
-                    Dim kind As VisualBasic.SyntaxKind = CS.CSharpExtensions.Kind(node).GetExpressionKind()
+                    Dim kind As VB.SyntaxKind = CS.CSharpExtensions.Kind(node).GetExpressionKind()
                     leftNode = node.Left.Accept(Me)
                     rightNode = node.Right.Accept(Me)
                     Select Case node.Kind
@@ -1835,7 +1835,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     name = name.WithLeadingTrivia(SpaceTrivia)
                 End If
                 Dim expressionName As MemberAccessExpressionSyntax = Factory.MemberAccessExpression(VB.SyntaxKind.SimpleMemberAccessExpression, expression, operatorToken, name)
-                Return Me.WrapTypedNameIfNecessary(expressionName, node).WithConvertedTriviaFrom(node)
+                Return expressionName.WithConvertedTriviaFrom(node)
             End Function
 
             Public Overrides Function VisitMemberBindingExpression(node As CSS.MemberBindingExpressionSyntax) As VB.VisualBasicSyntaxNode
