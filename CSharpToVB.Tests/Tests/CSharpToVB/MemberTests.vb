@@ -928,7 +928,7 @@ Public NotInheritable Class [MyClass]
     Inherits MyBaseClass
 
     Public Sub New(o As Object)
-        MyBase.New(o)
+        Me.New(o)
     End Sub
 End Class")
         End Sub

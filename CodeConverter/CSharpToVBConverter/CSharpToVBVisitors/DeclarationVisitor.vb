@@ -323,7 +323,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Dim argumentList As VBS.ArgumentListSyntax = DirectCast(node?.ArgumentList.Accept(Me), VBS.ArgumentListSyntax)
                 Dim simpleMemberAccessExpr As VBS.MemberAccessExpressionSyntax
                 Dim parent As SyntaxNode = node.Parent.Parent
-                Dim meOrMyExpr As VBS.ExpressionSyntax = If(TypeOf parent Is CSS.StructDeclarationSyntax,
+                Dim meOrMyExpr As VBS.ExpressionSyntax = If(TypeOf parent Is CSS.StructDeclarationSyntax OrElse TypeOf parent Is CSS.ClassDeclarationSyntax,
                                                             DirectCast(MeExpression, VBS.ExpressionSyntax),
                                                             MyBaseExpression).WithConvertedLeadingTriviaFrom(node.ColonToken)
 
