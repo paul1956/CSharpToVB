@@ -1915,7 +1915,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     ' statement with issues points to "statement" Probably an Expression statement. If this is part of an ElseIf we need to go higher
                     Dim initializer As EqualsValueSyntax = Factory.EqualsValue(expr)
                     If TypeOf node.Parent Is CSS.MemberAccessExpressionSyntax OrElse TypeOf node.Parent Is CSS.ElementAccessExpressionSyntax Then
-                        If node.Expression.IsKind(CS.SyntaxKind.AddExpression) Then
+                        If node.Expression.IsKind(CS.SyntaxKind.AddExpression, CS.SyntaxKind.MultiplyExpression, CS.SyntaxKind.DivideExpression, CS.SyntaxKind.SubtractExpression) Then
                             Return Factory.ParenthesizedExpression(openParenToken.WithConvertedTriviaFrom(node.OpenParenToken), expr, CloseParenToken.WithConvertedTriviaFrom(node.CloseParenToken))
                         End If
                         Dim uniqueName As String = node.GetUniqueVariableNameInScope("tempVar", _usedIdentifiers, _semanticModel)
