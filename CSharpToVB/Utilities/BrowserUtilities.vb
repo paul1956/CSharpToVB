@@ -2,11 +2,11 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
-Imports System.IO
-Imports System.Net
 Imports Microsoft.VisualBasic.ApplicationServices
 Imports Microsoft.Win32
+Imports Extensions
 Imports SupportClasses
+Imports Utilities
 
 Friend Module BrowserUtilities
 
@@ -54,58 +54,50 @@ Friend Module BrowserUtilities
         End Using
     End Sub
 
-    Friend Sub CheckForUpdates(mainForm As Form1, reportResults As Boolean)
+    Friend Async Sub CheckForUpdatesAsync(mainForm As Form1, reportResults As Boolean)
         Try
-            Dim request As WebRequest = WebRequest.Create($"{Form1.ProjectGitHubUrl}blob/master/ReadMe.MD")
-            request.Timeout = 4000
-            Dim response As WebResponse = request.GetResponse()
-            Using reader As New StreamReader(response.GetResponseStream())
-                Dim line As String
-                Dim index As Integer = -1
-                Do
-                    line = reader.ReadLine
-                    If line Is Nothing Then
-                        Exit Do
+            Dim responseBody As String = Await mainForm._client.GetStringAsync($"{Form1.ProjectGitHubUrl}blob/master/ReadMe.MD")
+            Dim index As Integer
+            Dim versionStr As String = ""
+            For Each e As IndexClass(Of String) In responseBody.SplitLines().ToList().WithIndex()
+                Dim line As String = e.Value
+                If line.Contains("What's New in this release", StringComparison.Ordinal) Then
+                    If e.IsLast Then
+                        MsgBox("Failed while checking for new version: File '{Form1.ProjectGitHubUrl}blob/master/ReadMe.MD' is corrupt", MsgBoxStyle.Information, "Version Check Failed")
+                        Exit Sub
                     End If
-                    If line.Contains("What's New in this release", StringComparison.Ordinal) Then
-                        Exit Do
-                    End If
-                Loop
-                Do
-                    line = reader.ReadLine
-                    If line Is Nothing Then
-                        Exit Do
-                    End If
+                    e.MoveNext()
+                    line = e.Value
                     index = line.IndexOf("New in ", StringComparison.OrdinalIgnoreCase)
-                    Exit Do
-                Loop
-                If index < 0 Then
-                    Exit Sub
+                    If index < 0 Then
+                        Exit Sub
+                    End If
+                    versionStr = line.Substring(index + "New In ".Length)
+                    Exit For
                 End If
-                Dim versionStr As String = line.Substring(index + "New In ".Length)
+            Next
 
-                index = versionStr.IndexOf("<"c)
-                If index > 0 Then
-                    versionStr = versionStr.Substring(0, index)
-                End If
-                Dim gitHubVersion() As String = versionStr.Split("/")
-                Dim codeConverterInfo As New AssemblyInfo(GetType(CodeWithOptions).Assembly)
-                If IsNewerVersion(gitHubVersion, My.Application.Info.Version, codeConverterInfo.Version) Then
-                    mainForm.StatusStripUpdateAvailable.Image = CType(mainForm.ResourceManager.GetObject("StatusStripUpdateAvailable.Image"), Image)
-                    mainForm.StatusStripUpdateAvailable.ToolTipText = $"Update Available"
-                    If reportResults Then
-                        If MsgBox("There is a newer version available, do you want to install now?", MsgBoxStyle.YesNo, "Updates Available") = MsgBoxResult.Yes Then
-                            OpenUrlInBrowser(Form1.ProjectGitHubUrl)
-                        End If
-                    End If
-                Else
-                    mainForm.StatusStripUpdateAvailable.Image = CType(mainForm.ResourceManager.GetObject("StatusStripUpdateNotAvailable.Image"), Image)
-                    mainForm.StatusStripUpdateAvailable.ToolTipText = $"Update Not Available"
-                    If reportResults Then
-                        MsgBox("You are running latest version", MsgBoxStyle.OkOnly, "No Updates Available")
+            index = versionStr.IndexOf("<"c)
+            If index > 0 Then
+                versionStr = versionStr.Substring(0, index)
+            End If
+            Dim gitHubVersion() As String = versionStr.Split("/")
+            Dim codeConverterInfo As New AssemblyInfo(GetType(CodeWithOptions).Assembly)
+            If IsNewerVersion(gitHubVersion, My.Application.Info.Version, codeConverterInfo.Version) Then
+                mainForm.StatusStripUpdateAvailable.Image = CType(mainForm.ResourceManager.GetObject("StatusStripUpdateAvailable.Image"), Image)
+                mainForm.StatusStripUpdateAvailable.ToolTipText = $"Update Available"
+                If reportResults Then
+                    If MsgBox("There is a newer version available, do you want to install now?", MsgBoxStyle.YesNo, "Updates Available") = MsgBoxResult.Yes Then
+                        OpenUrlInBrowser(Form1.ProjectGitHubUrl)
                     End If
                 End If
-            End Using
+            Else
+                mainForm.StatusStripUpdateAvailable.Image = CType(mainForm.ResourceManager.GetObject("StatusStripUpdateNotAvailable.Image"), Image)
+                mainForm.StatusStripUpdateAvailable.ToolTipText = $"Update Not Available"
+                If reportResults Then
+                    MsgBox("You are running latest version", MsgBoxStyle.OkOnly, "No Updates Available")
+                End If
+            End If
         Catch ex As Exception
             If reportResults Then
                 MsgBox("Failed while checking for new  version: " + ex.Message, MsgBoxStyle.Information, "Version Check Failed")

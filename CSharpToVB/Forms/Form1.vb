@@ -4,6 +4,7 @@
 
 Imports System.ComponentModel
 Imports System.IO
+Imports System.Net.Http
 Imports System.Text
 Imports System.Threading
 Imports Extensions
@@ -19,6 +20,7 @@ Partial Public Class Form1
     Private ReadOnly _frameworkVersionList As New Dictionary(Of String, (item As ToolStripMenuItem, Parent As ToolStripMenuItem))
     Private _mCapturedRenderer As ToolStripRenderer
     Private _topLevelStatementConversionEnable As Boolean
+    Friend ReadOnly _client As New HttpClient()
     Friend _cancellationTokenSource As CancellationTokenSource
     Friend _doNotFailOnError As Boolean
     Friend _inColorize As Boolean
@@ -337,11 +339,11 @@ Partial Public Class Form1
         Me.TSFindMatchWholeWordCheckBox.Checked = My.Settings.TSFindMatchWholeWord
         Application.DoEvents()
         UpdateColorDictionariesFromFile()
-        CheckForUpdates(Me, reportResults:=False)
         Dim isDarkMode As Boolean = Not My.Settings.ColorMode.IsLightMode
         DarkMode.ToggleImmersiveDarkMode(Me.Handle, isDarkMode)
         Me.ToggleColorMode(Me, isDarkMode)
         _loading = False
+        CheckForUpdatesAsync(Me, reportResults:=False)
         Me.SplitContainer1.SplitterIncrement = Me.FileListListBox.ItemHeight + 2
         Me.ResizeRichTextBuffers()
         DefaultColor = _currentThemeDictionary(ThemeDefaultColor)
@@ -776,7 +778,7 @@ namespace Application
     End Sub
 
     Private Sub mnuHelpCheckForUpdatesMenuItem_Click(sender As Object, e As EventArgs) Handles mnuHelpCheckForUpdatesMenuItem.Click
-        CheckForUpdates(Me, reportResults:=True)
+        CheckForUpdatesAsync(Me, reportResults:=True)
     End Sub
 
     Private Sub mnuHelpReportIssueMenuItem_Click(sender As Object, e As EventArgs) Handles mnuHelpReportIssueMenuItem.Click
