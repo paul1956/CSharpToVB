@@ -4,7 +4,6 @@
 
 Imports System.Runtime.CompilerServices
 Imports Microsoft.CodeAnalysis
-Imports Utilities
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 

@@ -12,10 +12,8 @@ Imports Microsoft.CodeAnalysis.Formatting
 Imports Microsoft.CodeAnalysis.Options
 Imports Microsoft.CodeAnalysis.Text
 Imports Microsoft.CodeAnalysis.VisualBasic
-Imports SupportClasses
 Imports Tests.CodeConverter
 Imports Tests.ConvertDirectories
-Imports Utilities
 
 Namespace Helpers
 

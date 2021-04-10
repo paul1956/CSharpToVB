@@ -5,10 +5,8 @@
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.CSharp
 
-Namespace Utilities
-    Public Module CSharpSyntaxFactory
-        Public ReadOnly s_csReadOnlyKeyword As SyntaxToken = SyntaxFactory.Token(SyntaxKind.ReadOnlyKeyword)
-        Public ReadOnly s_csEmptySpaceTrivia As SyntaxTrivia = SyntaxFactory.Whitespace(String.Empty)
+Public Module CSharpSyntaxFactory
+    Public ReadOnly s_csReadOnlyKeyword As SyntaxToken = SyntaxFactory.Token(SyntaxKind.ReadOnlyKeyword)
+    Public ReadOnly s_csEmptySpaceTrivia As SyntaxTrivia = SyntaxFactory.Whitespace(String.Empty)
 
-    End Module
-End Namespace
+End Module

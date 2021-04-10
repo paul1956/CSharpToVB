@@ -3,11 +3,10 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Text
+Imports ConversionResult
 Imports Extensions
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Emit
-Imports SupportClasses.ConversionResult
-Imports Utilities
 
 Public Module ColorizeSupport
 

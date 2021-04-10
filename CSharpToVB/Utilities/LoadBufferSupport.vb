@@ -4,7 +4,6 @@
 
 Imports System.IO
 Imports Microsoft.CodeAnalysis
-Imports Utilities
 
 Friend Module LoadBufferSupport
 

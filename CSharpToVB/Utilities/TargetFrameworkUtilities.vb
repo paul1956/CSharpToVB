@@ -4,7 +4,6 @@
 
 Imports System.Runtime.CompilerServices
 Imports Microsoft.Win32
-Imports Utilities
 
 Friend Module TargetFrameworkUtilities
 

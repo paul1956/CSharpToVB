@@ -6,7 +6,6 @@ Imports System.IO
 Imports System.Reflection
 Imports System.Threading
 Imports Microsoft.CodeAnalysis
-Imports Utilities
 
 Public Module ProcessDirectoriesUtilities
 

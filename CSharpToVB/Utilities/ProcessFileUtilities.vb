@@ -9,11 +9,9 @@ Imports System.Reflection
 Imports System.Runtime.CompilerServices
 Imports System.Text
 Imports System.Threading
+Imports ConversionResult
 Imports Microsoft.CodeAnalysis
 Imports ProgressReportLibrary
-Imports SupportClasses
-Imports SupportClasses.ConversionResult
-Imports Utilities
 
 Friend Module ProcessFileUtilities
 

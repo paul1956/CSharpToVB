@@ -8,8 +8,6 @@ Imports System.Reflection
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Emit
 Imports Microsoft.CodeAnalysis.VisualBasic
-Imports SupportClasses
-Imports Utilities
 
 Public Module Compile
 

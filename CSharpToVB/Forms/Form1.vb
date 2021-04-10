@@ -10,8 +10,6 @@ Imports System.Threading
 Imports Extensions
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.VisualBasic.FileIO
-Imports SupportClasses
-Imports Utilities
 
 Partial Public Class Form1
     Private Shared ReadOnly s_snippetFileWithPath As String = Path.Combine(SpecialDirectories.MyDocuments, "CSharpToVBLastSnippet.RTF")

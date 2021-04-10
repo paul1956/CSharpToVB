@@ -6,8 +6,6 @@ Imports System.Diagnostics.CodeAnalysis
 Imports System.Text
 Imports Extensions
 Imports Microsoft.CodeAnalysis
-Imports SupportClasses
-Imports Utilities
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory

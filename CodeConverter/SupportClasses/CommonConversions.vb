@@ -5,23 +5,19 @@ Imports Extensions
 Imports Microsoft.CodeAnalysis
 Imports CS = Microsoft.CodeAnalysis.CSharp
 
-Namespace SupportClasses
+Friend NotInheritable Class CommonConversions
+    Private ReadOnly _semanticModel As SemanticModel
 
-    Friend NotInheritable Class CommonConversions
-        Private ReadOnly _semanticModel As SemanticModel
+    Friend Sub New(semanticModel1 As SemanticModel)
+        _semanticModel = semanticModel1
+    End Sub
 
-        Friend Sub New(semanticModel1 As SemanticModel)
-            _semanticModel = semanticModel1
-        End Sub
+    Private Function GetSymbol(syntax As CS.CSharpSyntaxNode) As ISymbol
+        Return If(syntax.SyntaxTree Is _semanticModel.SyntaxTree, _semanticModel.GetSymbolInfo(syntax).Symbol, Nothing)
+    End Function
 
-        Private Function GetSymbol(syntax As CS.CSharpSyntaxNode) As ISymbol
-            Return If(syntax.SyntaxTree Is _semanticModel.SyntaxTree, _semanticModel.GetSymbolInfo(syntax).Symbol, Nothing)
-        End Function
+    Friend Function IsEventHandlerIdentifier(syntax As CS.CSharpSyntaxNode) As Boolean
+        Return Me.GetSymbol(syntax).IsKind(SymbolKind.Event)
+    End Function
 
-        Friend Function IsEventHandlerIdentifier(syntax As CS.CSharpSyntaxNode) As Boolean
-            Return Me.GetSymbol(syntax).IsKind(SymbolKind.Event)
-        End Function
-
-    End Class
-
-End Namespace
+End Class

@@ -7,7 +7,6 @@ Imports System.Runtime.CompilerServices
 Imports System.Text
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.VisualBasic
-Imports Utilities
 Imports Xunit
 
 Namespace Tests.ConvertDirectories

@@ -9,7 +9,6 @@ Imports CSharpToVBApp
 
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Emit
-Imports SupportClasses
 
 Imports Xunit
 
@@ -37,7 +36,7 @@ Namespace Tests.ConvertDirectories
                     .SourceCode = fs.GetFileTextFromStream()
                 }
 
-                Dim resultOfConversion As ConversionResult = Utilities.ConvertInputRequest(requestToConvert, New DefaultVbOptions, csPreprocessorSymbols, vbPreprocessorSymbols, Utilities.CSharpReferences(Assembly.Load("System.Windows.Forms").Location, optionalReferences).ToArray, reportException:=Nothing, mProgress:=Nothing)
+                Dim resultOfConversion As ConversionResult = ConvertInputRequest(requestToConvert, New DefaultVbOptions, csPreprocessorSymbols, vbPreprocessorSymbols, CSharpReferences(Assembly.Load("System.Windows.Forms").Location, optionalReferences).ToArray, reportException:=Nothing, mProgress:=Nothing)
                 If resultOfConversion.ResultStatus = ConversionResult.ResultTriState.Failure Then
                     Return Task.FromResult(False)
                 End If

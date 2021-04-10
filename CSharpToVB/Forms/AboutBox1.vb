@@ -3,7 +3,6 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports Microsoft.VisualBasic.ApplicationServices
-Imports SupportClasses
 
 Public NotInheritable Class AboutBox1
     Private ReadOnly _enableDarkMode As Boolean = False

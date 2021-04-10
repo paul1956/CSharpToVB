@@ -9,8 +9,6 @@ Imports Microsoft.CodeAnalysis.VisualBasic
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 
-Namespace Utilities
-
     Friend Class SyntaxNormalizer
         Inherits VisualBasicSyntaxRewriter
 
@@ -1585,5 +1583,3 @@ Namespace Utilities
         End Function
 
     End Class
-
-End Namespace

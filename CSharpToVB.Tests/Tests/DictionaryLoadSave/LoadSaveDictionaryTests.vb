@@ -4,7 +4,6 @@
 Imports System.Drawing
 Imports System.IO
 Imports CSharpToVBApp
-Imports Utilities
 Imports Xunit
 
 Namespace Tests.DictionaryLoadSave

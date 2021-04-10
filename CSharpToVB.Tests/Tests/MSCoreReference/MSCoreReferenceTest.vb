@@ -14,7 +14,7 @@ Namespace Tests.MSCoreReference
             Dim tree As SyntaxTree = CSharpSyntaxTree.ParseText("using System; //Not required in VB due to global imports
 class test : IComparable { }")
 
-            Dim compilation As CSharpCompilation = CSharpCompilation.Create("MyCompilation", syntaxTrees:={tree}, Utilities.CSharpReferences("", New List(Of MetadataReference)))
+            Dim compilation As CSharpCompilation = CSharpCompilation.Create("MyCompilation", syntaxTrees:={tree}, CSharpReferences("", New List(Of MetadataReference)))
             Dim lSemanticModel As SemanticModel = compilation.GetSemanticModel(tree)
             Dim inputNode As Syntax.CompilationUnitSyntax = CType(compilation.SyntaxTrees(0).GetRoot, Syntax.CompilationUnitSyntax)
             Dim node As Syntax.ClassDeclarationSyntax = CType(inputNode.Members(0), Syntax.ClassDeclarationSyntax)

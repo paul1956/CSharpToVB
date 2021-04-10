@@ -7,29 +7,26 @@ Imports Microsoft.CodeAnalysis
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
-Namespace Utilities
+Public Module ParseUtilities
 
-    Public Module ParseUtilities
+    Private Function GetCSharpParseOptions(csPreprocessorSymbols As List(Of String)) As CS.CSharpParseOptions
+        Return New CS.CSharpParseOptions(CS.LanguageVersion.Latest,
+                                         DocumentationMode.Parse,
+                                         SourceCodeKind.Script,
+                                         csPreprocessorSymbols)
+    End Function
 
-        Private Function GetCSharpParseOptions(csPreprocessorSymbols As List(Of String)) As CS.CSharpParseOptions
-            Return New CS.CSharpParseOptions(CS.LanguageVersion.Latest,
-                                             DocumentationMode.Parse,
-                                             SourceCodeKind.Script,
-                                             csPreprocessorSymbols)
-        End Function
+    Friend Function GetVbParseOptions(vbPreprocessorSymbols As List(Of KeyValuePair(Of String, Object))) As VB.VisualBasicParseOptions
+        Return New VB.VisualBasicParseOptions(VB.LanguageVersion.Latest,
+                                              DocumentationMode.Diagnose,
+                                              SourceCodeKind.Regular,
+                                              vbPreprocessorSymbols)
+    End Function
 
-        Friend Function GetVbParseOptions(vbPreprocessorSymbols As List(Of KeyValuePair(Of String, Object))) As VB.VisualBasicParseOptions
-            Return New VB.VisualBasicParseOptions(VB.LanguageVersion.Latest,
-                                                  DocumentationMode.Diagnose,
-                                                  SourceCodeKind.Regular,
-                                                  vbPreprocessorSymbols)
-        End Function
+    Public Function ParseCSharpSource(sourceText As String, csPreprocessorSymbols As List(Of String)) As SyntaxTree
+        Return CS.SyntaxFactory.ParseSyntaxTree(Text.SourceText.From(sourceText),
+                                                GetCSharpParseOptions(csPreprocessorSymbols)
+                                               )
+    End Function
 
-        Public Function ParseCSharpSource(sourceText As String, csPreprocessorSymbols As List(Of String)) As SyntaxTree
-            Return CS.SyntaxFactory.ParseSyntaxTree(Text.SourceText.From(sourceText),
-                                                    GetCSharpParseOptions(csPreprocessorSymbols)
-                                                   )
-        End Function
-
-    End Module
-End Namespace
+End Module

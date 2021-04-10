@@ -6,8 +6,6 @@ Imports System.Threading
 Imports CSharpToVBConverter.CSharpToVBVisitors.CSharpConverter
 Imports Microsoft.CodeAnalysis
 Imports ProgressReportLibrary
-Imports SupportClasses
-Imports Utilities
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
