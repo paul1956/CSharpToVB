@@ -56,7 +56,7 @@ Partial Public Module ColorSelector
         Return text = LightModeStr
     End Function
 
-    Public Function GetColorNameList() As Dictionary(Of String,ColorDescriptor).KeyCollection
+    Public Function GetColorNameList() As Dictionary(Of String, ColorDescriptor).KeyCollection
         Return My.Forms.Form1._currentThemeDictionary.Keys
     End Function
 

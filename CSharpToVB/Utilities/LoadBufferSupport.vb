@@ -33,7 +33,7 @@ Friend Module LoadBufferSupport
 
     Friend Sub LoadOutputBufferFromStream(mainForm As Form1, path As String)
         Dim sourceText As String
-        mainForm.LineNumbersForConversionOutput.Visible=false
+        mainForm.LineNumbersForConversionOutput.Visible = False
         Using myFileStream As FileStream = File.OpenRead(path)
             sourceText = myFileStream.GetFileTextFromStream()
         End Using
@@ -45,7 +45,7 @@ Friend Module LoadBufferSupport
         Else
             mainForm.ConversionOutput.Text = lines.Join(vbCrLf)
         End If
-        mainForm.LineNumbersForConversionOutput.Visible=mainForm.mnuViewShowDestinationLineNumbers.Checked
+        mainForm.LineNumbersForConversionOutput.Visible = mainForm.mnuViewShowDestinationLineNumbers.Checked
     End Sub
 
     Friend Sub OpenSourceFile(mainForm As Form1, path As String)

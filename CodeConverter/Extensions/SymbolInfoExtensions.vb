@@ -3,17 +3,13 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Runtime.CompilerServices
-
 Imports Microsoft.CodeAnalysis
 
-Namespace Extensions
+Public Module SymbolInfoExtensions
 
-    Public Module SymbolInfoExtensions
+    <Extension>
+    Friend Function GetAnySymbol(info As SymbolInfo) As ISymbol
+        Return If(info.Symbol, info.CandidateSymbols.FirstOrDefault())
+    End Function
 
-        <Extension>
-        Friend Function GetAnySymbol(info As SymbolInfo) As ISymbol
-            Return If(info.Symbol, info.CandidateSymbols.FirstOrDefault())
-        End Function
-
-    End Module
-End Namespace
+End Module

@@ -3,27 +3,23 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Runtime.CompilerServices
-
 Imports Microsoft.CodeAnalysis
 
-Namespace Extensions
+Public Module TypeInfoExtensions
 
-    Public Module TypeInfoExtensions
+    <Extension>
+    Friend Function IsString(typeInfo As TypeInfo) As Boolean
+        Dim typeSymbol As ITypeSymbol = typeInfo.Type
 
-        <Extension>
-        Friend Function IsString(typeInfo As TypeInfo) As Boolean
-            Dim typeSymbol As ITypeSymbol = typeInfo.Type
-
-            If typeSymbol Is Nothing OrElse typeSymbol.IsErrorType Then
-                Return False
-            End If
-
-            If typeSymbol.ToString.RemoveAll("?").Equals("string", StringComparison.OrdinalIgnoreCase) Then
-                Return True
-            End If
-
+        If typeSymbol Is Nothing OrElse typeSymbol.IsErrorType Then
             Return False
-        End Function
+        End If
 
-    End Module
-End Namespace
+        If typeSymbol.ToString.RemoveAll("?").Equals("string", StringComparison.OrdinalIgnoreCase) Then
+            Return True
+        End If
+
+        Return False
+    End Function
+
+End Module

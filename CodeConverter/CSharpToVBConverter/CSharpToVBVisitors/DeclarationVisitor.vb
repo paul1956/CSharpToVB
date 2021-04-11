@@ -4,7 +4,6 @@
 
 Imports System.Collections.Immutable
 Imports System.Runtime.InteropServices
-Imports Extensions
 Imports Microsoft.CodeAnalysis
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax

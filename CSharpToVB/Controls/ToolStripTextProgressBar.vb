@@ -21,7 +21,7 @@ Public Class ToolStripTextProgressBar
             Return MyBase.Maximum
         End Get
         Set
-            MyBase.Maximum = value
+            MyBase.Maximum = Value
 
         End Set
     End Property

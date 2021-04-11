@@ -4,7 +4,6 @@
 
 Imports Microsoft.VisualBasic.ApplicationServices
 Imports Microsoft.Win32
-Imports Extensions
 
 Friend Module BrowserUtilities
 

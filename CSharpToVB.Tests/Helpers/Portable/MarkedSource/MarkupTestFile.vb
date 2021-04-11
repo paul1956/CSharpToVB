@@ -1,15 +1,13 @@
 ﻿' Licensed to the .NET Foundation under one or more agreements.
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
-
 Imports System.Collections.Immutable
 Imports System.Runtime.InteropServices
 Imports System.Text
 Imports System.Text.RegularExpressions
-
 Imports Microsoft.CodeAnalysis.Text
 
-Namespace Roslyn.Test.Utilities
+Namespace Helpers.Portable.MarkedSource
 
     '' <summary>
     '' To aid with testing, we define a special type of text file that can encode additional
@@ -39,7 +37,7 @@ Namespace Roslyn.Test.Utilities
         Private Const SpanEndString As String = "|]"
         Private Const NamedSpanEndString As String = "|}"
 
-        Private ReadOnly SNamedSpanStartRegex As Regex = New Regex("\{\| ([-_.A-Za-z0-9\+]+) \:",
+        Private ReadOnly s_namedSpanStartRegex As Regex = New Regex("\{\| ([-_.A-Za-z0-9\+]+) \:",
             RegexOptions.Multiline Or RegexOptions.IgnorePatternWhitespace)
 
         Private Sub Parse(
@@ -50,7 +48,6 @@ Namespace Roslyn.Test.Utilities
             Dim outputBuilder As New StringBuilder()
 
             Dim currentIndexInInput As Integer = 0
-            Dim inputOutputOffset As Integer = 0
 
             ' A stack of span starts along with their associated annotation name.  [||] spans simply
             ' have empty string for their annotation name.
@@ -63,7 +60,7 @@ Namespace Roslyn.Test.Utilities
                 AddMatch(input, SpanEndString, currentIndexInInput, matches)
                 AddMatch(input, NamedSpanEndString, currentIndexInInput, matches)
 
-                Dim namedSpanStartMatch As Match = SNamedSpanStartRegex.Match(input, currentIndexInInput)
+                Dim namedSpanStartMatch As Match = s_namedSpanStartRegex.Match(input, currentIndexInInput)
                 If namedSpanStartMatch.Success Then
                     matches.Add(Tuple.Create(namedSpanStartMatch.Index, namedSpanStartMatch.Value))
                 End If

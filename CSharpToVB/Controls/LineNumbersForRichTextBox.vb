@@ -118,7 +118,7 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
             Return _zAutoSizing
         End Get
         Set
-            _zAutoSizing = value
+            _zAutoSizing = Value
             Me.Refresh()
             Me.Invalidate()
         End Set
@@ -130,7 +130,7 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
             Return _zGradientStartColor
         End Get
         Set
-            _zGradientStartColor = value
+            _zGradientStartColor = Value
             Me.Invalidate()
         End Set
     End Property
@@ -142,7 +142,7 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
             Return _zGradientEndColor
         End Get
         Set
-            _zGradientEndColor = value
+            _zGradientEndColor = Value
             Me.Invalidate()
         End Set
     End Property
@@ -154,7 +154,7 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
             Return _zGradientDirection
         End Get
         Set
-            _zGradientDirection = value
+            _zGradientDirection = Value
             Me.Invalidate()
         End Set
     End Property
@@ -166,7 +166,7 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
             Return _zBorderLinesColor
         End Get
         Set
-            _zBorderLinesColor = value
+            _zBorderLinesColor = Value
             Me.Invalidate()
         End Set
     End Property
@@ -178,10 +178,10 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
             Return _zBorderLinesStyle
         End Get
         Set
-            If value = Drawing2D.DashStyle.Custom Then
-                value = Drawing2D.DashStyle.Solid
+            If Value = Drawing2D.DashStyle.Custom Then
+                Value = Drawing2D.DashStyle.Solid
             End If
-            _zBorderLinesStyle = value
+            _zBorderLinesStyle = Value
             Me.Invalidate()
         End Set
     End Property
@@ -193,7 +193,7 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
             Return _zBorderLinesThickness
         End Get
         Set
-            _zBorderLinesThickness = Math.Max(1, Math.Min(255, value))
+            _zBorderLinesThickness = Math.Max(1, Math.Min(255, Value))
             Me.Invalidate()
         End Set
     End Property
@@ -206,7 +206,7 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
             Return _zDockSide
         End Get
         Set
-            _zDockSide = value
+            _zDockSide = Value
             Me.Refresh()
             Me.Invalidate()
         End Set
@@ -219,7 +219,7 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
             Return _zGridLinesColor
         End Get
         Set
-            _zGridLinesColor = value
+            _zGridLinesColor = Value
             Me.Invalidate()
         End Set
     End Property
@@ -231,10 +231,10 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
             Return _zGridLinesStyle
         End Get
         Set
-            If value = Drawing2D.DashStyle.Custom Then
-                value = Drawing2D.DashStyle.Solid
+            If Value = Drawing2D.DashStyle.Custom Then
+                Value = Drawing2D.DashStyle.Solid
             End If
-            _zGridLinesStyle = value
+            _zGridLinesStyle = Value
             Me.Invalidate()
         End Set
     End Property
@@ -246,7 +246,7 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
             Return _zGridLinesThickness
         End Get
         Set
-            _zGridLinesThickness = Math.Max(1, Math.Min(255, value))
+            _zGridLinesThickness = Math.Max(1, Math.Min(255, Value))
             Me.Invalidate()
         End Set
     End Property
@@ -259,7 +259,7 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
             Return _zLineNumbersAlignment
         End Get
         Set
-            _zLineNumbersAlignment = value
+            _zLineNumbersAlignment = Value
             Me.Invalidate()
         End Set
     End Property
@@ -272,7 +272,7 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
             Return _zLineNumbersAntiAlias
         End Get
         Set
-            _zLineNumbersAntiAlias = value
+            _zLineNumbersAntiAlias = Value
             Me.Refresh()
             Me.Invalidate()
         End Set
@@ -286,7 +286,7 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
             Return _zLineNumbersShowAsHexadecimal
         End Get
         Set
-            _zLineNumbersShowAsHexadecimal = value
+            _zLineNumbersShowAsHexadecimal = Value
             Me.Refresh()
             Me.Invalidate()
         End Set
@@ -300,7 +300,7 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
             Return _zLineNumbersClipByItemRectangle
         End Get
         Set
-            _zLineNumbersClipByItemRectangle = value
+            _zLineNumbersClipByItemRectangle = Value
             Me.Invalidate()
         End Set
     End Property
@@ -313,7 +313,7 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
             Return _zLineNumbersShowLeadingZeroes
         End Get
         Set
-            _zLineNumbersShowLeadingZeroes = value
+            _zLineNumbersShowLeadingZeroes = Value
             Me.Refresh()
             Me.Invalidate()
         End Set
@@ -326,7 +326,7 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
             Return _zLineNumbersOffset
         End Get
         Set
-            _zLineNumbersOffset = value
+            _zLineNumbersOffset = Value
             Me.Invalidate()
         End Set
     End Property
@@ -338,7 +338,7 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
             Return _zMarginLinesColor
         End Get
         Set
-            _zMarginLinesColor = value
+            _zMarginLinesColor = Value
             Me.Invalidate()
         End Set
     End Property
@@ -350,7 +350,7 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
             Return _zMarginLinesSide
         End Get
         Set
-            _zMarginLinesSide = value
+            _zMarginLinesSide = Value
             Me.Invalidate()
         End Set
     End Property
@@ -362,10 +362,10 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
             Return _zMarginLinesStyle
         End Get
         Set
-            If value = Drawing2D.DashStyle.Custom Then
-                value = Drawing2D.DashStyle.Solid
+            If Value = Drawing2D.DashStyle.Custom Then
+                Value = Drawing2D.DashStyle.Solid
             End If
-            _zMarginLinesStyle = value
+            _zMarginLinesStyle = Value
             Me.Invalidate()
         End Set
     End Property
@@ -377,7 +377,7 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
             Return _zMarginLinesThickness
         End Get
         Set
-            _zMarginLinesThickness = Math.Max(1, Math.Min(255, value))
+            _zMarginLinesThickness = Math.Max(1, Math.Min(255, Value))
             Me.Invalidate()
         End Set
     End Property
@@ -390,7 +390,7 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
             Return _zSeeThroughMode
         End Get
         Set
-            _zSeeThroughMode = value
+            _zSeeThroughMode = Value
             Me.Invalidate()
         End Set
     End Property
@@ -403,7 +403,7 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
             Return _zGradientShow
         End Get
         Set
-            _zGradientShow = value
+            _zGradientShow = Value
             Me.Invalidate()
         End Set
     End Property
@@ -416,7 +416,7 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
             Return _zBorderLinesShow
         End Get
         Set
-            _zBorderLinesShow = value
+            _zBorderLinesShow = Value
             Me.Invalidate()
         End Set
     End Property
@@ -429,7 +429,7 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
             Return _zGridLinesShow
         End Get
         Set
-            _zGridLinesShow = value
+            _zGridLinesShow = Value
             Me.Invalidate()
         End Set
     End Property
@@ -441,7 +441,7 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
             Return _zLineNumbersShow
         End Get
         Set
-            _zLineNumbersShow = value
+            _zLineNumbersShow = Value
             Me.Invalidate()
         End Set
     End Property
@@ -454,7 +454,7 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
             Return _zMarginLinesShow
         End Get
         Set
-            _zMarginLinesShow = value
+            _zMarginLinesShow = Value
             Me.Invalidate()
         End Set
     End Property
@@ -465,7 +465,7 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
             Return MyBase.AutoSize
         End Get
         Set
-            MyBase.AutoSize = value
+            MyBase.AutoSize = Value
             Me.Invalidate()
         End Set
     End Property
@@ -476,7 +476,7 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
             Return MyBase.Font
         End Get
         Set
-            MyBase.Font = value
+            MyBase.Font = Value
             Me.Refresh()
             Me.Invalidate()
         End Set
@@ -489,7 +489,7 @@ Partial Public Class LineNumbersForRichTextBox : Inherits Control
             Return Me._zParent
         End Get
         Set
-            Me._zParent = value
+            Me._zParent = Value
             If Me._zParent IsNot Nothing Then
                 Me.Parent = Me._zParent.Parent
                 Me._zParent.Refresh()

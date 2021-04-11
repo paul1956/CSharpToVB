@@ -46,9 +46,11 @@ Namespace My
         End Sub
 
 #If NET5_0 And Not NET6_0 Then
+
         Private Sub MyApplication_ApplyHighDpiMode(sender As Object, e As ApplyHighDpiModeEventArgs) Handles Me.ApplyHighDpiMode
             e.HighDpiMode = HighDpiMode.PerMonitorV2
         End Sub
+
 #End If
     End Class
 

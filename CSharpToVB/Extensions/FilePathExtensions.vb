@@ -5,7 +5,6 @@
 Imports System.IO
 Imports System.Runtime.CompilerServices
 Imports System.Threading
-Imports Extensions
 Imports Microsoft.CodeAnalysis
 
 Public Module FilePathExtensions

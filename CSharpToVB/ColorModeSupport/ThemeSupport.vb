@@ -3,6 +3,7 @@
 ' See the LICENSE file in the project root for more information.
 
 Public Module ThemeSupport
+
     Friend Sub SetDarkMode(ctrl As Control.ControlCollection, ByRef mCapturedRenderer As ToolStripRenderer)
         ctrl(0).Parent.BackColor = Color.FromArgb(40, 40, 40)
         ctrl(0).Parent.ForeColor = Color.Silver
@@ -238,6 +239,5 @@ Public Module ThemeSupport
 
         Next
     End Sub
-
 
 End Module

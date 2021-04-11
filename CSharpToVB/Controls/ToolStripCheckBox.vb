@@ -17,7 +17,7 @@ Public Class ToolStripCheckBox
             Return CType(Me.Control, CheckBox).Checked
         End Get
         Set
-            CType(Me.Control, CheckBox).Checked = value
+            CType(Me.Control, CheckBox).Checked = Value
         End Set
     End Property
 

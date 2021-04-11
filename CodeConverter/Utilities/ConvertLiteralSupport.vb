@@ -4,7 +4,6 @@
 
 Imports System.Runtime.CompilerServices
 Imports CSharpToVBConverter.CSharpToVBVisitors.CSharpConverter
-Imports Extensions
 Imports Microsoft.CodeAnalysis
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax

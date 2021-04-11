@@ -2,12 +2,11 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
-Imports CSharpToVB.PooledObjects
 Imports Microsoft.CodeAnalysis
 
 Friend NotInheritable Class SyntaxNavigator
 
-    Private Shared ReadOnly s_childEnumeratorStackPool As New ObjectPool(Of Stack(Of ChildSyntaxList.Enumerator))(Function() New Stack(Of ChildSyntaxList.Enumerator)(), 10)
+    Private Shared ReadOnly s_childEnumeratorStackPool As New ObjectPoolLibrary.ObjectPool(Of Stack(Of ChildSyntaxList.Enumerator))(Function() New Stack(Of ChildSyntaxList.Enumerator)(), 10)
     Public Shared ReadOnly s_instance As SyntaxNavigator = New SyntaxNavigator()
 
     Private Sub New()

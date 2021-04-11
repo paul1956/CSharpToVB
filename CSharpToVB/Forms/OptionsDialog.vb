@@ -8,7 +8,7 @@ Public Class OptionsDialog
     Private _selectedColor As ColorDescriptor
     Private _selectedColorName As String = ThemeDefaultColor
 
-    Public property MainForm As Form1
+    Public Property MainForm As Form1
 
     Private Sub Cancel_Button_Click(sender As Object, e As EventArgs) Handles Cancel_Button.Click
         Me.DialogResult = DialogResult.Cancel

@@ -5,9 +5,9 @@
 Public Structure ProgressReport
     Implements IEquatable(Of ProgressReport)
 
-    Public Sub New(Current As Integer, Maximum As Integer)
-        Me.Current = Current
-        Me.Maximum = Maximum
+    Public Sub New(current As Integer, maximum As Integer)
+        Me.Current = current
+        Me.Maximum = maximum
     End Sub
 
     Public ReadOnly Property Current As Integer

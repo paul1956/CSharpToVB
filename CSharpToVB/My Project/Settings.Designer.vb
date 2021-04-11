@@ -8,17 +8,13 @@
 ' </auto-generated>
 '------------------------------------------------------------------------------
 
-Option Strict On
-Option Explicit On
-
-
 Namespace My
     
     <System.Runtime.CompilerServices.CompilerGenerated(),  _
      System.CodeDom.Compiler.GeneratedCode("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.8.1.0"),  _
      ComponentModel.EditorBrowsable(ComponentModel.EditorBrowsableState.Advanced)>  _
     Partial Friend NotInheritable Class MySettings
-        Inherits Configuration.ApplicationSettingsBase
+        Inherits System.Configuration.ApplicationSettingsBase
         
         Private Shared defaultInstance As MySettings = CType(Synchronized(New MySettings()),MySettings)
         

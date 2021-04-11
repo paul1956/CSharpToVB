@@ -8,7 +8,7 @@ Public NotInheritable Class AboutBox1
     Private ReadOnly _enableDarkMode As Boolean = False
 
     Public Sub New(lightMode As Boolean)
-        Me.InitializeComponent
+        Me.InitializeComponent()
         _enableDarkMode = Not lightMode
     End Sub
 
@@ -25,7 +25,7 @@ Public NotInheritable Class AboutBox1
         Me.LabelCopyright.Text = My.Application.Info.Copyright
         Me.LabelCompanyName.Text = $"Developer {My.Application.Info.CompanyName}"
         Dim codeConverterInfo As New AssemblyInfo(GetType(CodeWithOptions).Assembly)
-        Dim objectPoolLibrary As New AssemblyInfo(GetType(CSharpToVB.PooledObjects.ObjectPool(Of String)).Assembly)
+        Dim objectPoolLibrary As New AssemblyInfo(GetType(ObjectPoolLibrary.ObjectPool(Of String)).Assembly)
         Dim progressReportLibrary As New AssemblyInfo(GetType(ProgressReportLibrary.ProgressReport).Assembly)
         Me.TextBoxDescription.Text = $"{My.Application.Info.Description}
 

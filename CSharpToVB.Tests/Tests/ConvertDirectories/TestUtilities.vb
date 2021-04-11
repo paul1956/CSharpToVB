@@ -55,7 +55,7 @@ Namespace Tests.ConvertDirectories
                 If possibleNewline > 0 Then
                     sb.AppendLine()
                     If possibleNewline = 2 Then
-' ReSharper disable once RedundantAssignment
+                        ' ReSharper disable once RedundantAssignment
                         index += 1
                     End If
                 Else

@@ -8,7 +8,6 @@ Imports System.Runtime.CompilerServices
 Imports System.Threading
 Imports Buildalyzer
 Imports Buildalyzer.Workspaces
-Imports Extensions
 Imports Microsoft.CodeAnalysis
 
 Public Module ProcessProjectUtilities

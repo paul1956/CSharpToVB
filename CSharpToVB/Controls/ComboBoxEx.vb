@@ -2,10 +2,6 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
-Option Explicit On
-Option Infer On
-Option Strict On
-
 Imports System.ComponentModel
 
 Public Class ComboBoxEx
@@ -96,22 +92,22 @@ Internal: the internal section of the control, excluding the DropDown Button.")>
                 '  End If
                 'g.DrawRectangle(pen1, m_BorderDrawArea)
 
-                Using p = New Pen(_borderColor, 1)
+                Using p As New Pen(_borderColor, 1)
 
-                    Dim rect = Me.ClientRectangle
+                    Dim rect As Rectangle = Me.ClientRectangle
                     rect.Width -= 1
                     rect.Height -= 1
                     g.DrawRectangle(p, rect)
 
-                    Dim bRect = New Rectangle(rect.Left + rect.Width - 17, rect.Top, 17, rect.Height)
-                    Using b = New SolidBrush(Me.BackColor)
+                    Dim bRect As New Rectangle(rect.Left + rect.Width - 17, rect.Top, 17, rect.Height)
+                    Using b As New SolidBrush(Me.BackColor)
                         g.FillRectangle(b, bRect)
                     End Using
                     g.DrawRectangle(p, bRect)
 
-                    Dim x1 = bRect.Left + 7
-                    Dim x2 = x1 + 4
-                    Dim y = bRect.Top + 10
+                    Dim x1 As Integer = bRect.Left + 7
+                    Dim x2 As Integer = x1 + 4
+                    Dim y As Integer = bRect.Top + 10
                     g.DrawLine(If(Me.BackColor = Color.White, Pens.Black, p), x1, y, x2, y)
                     x1 += 1 : x2 -= 1 : y += 1
                     g.DrawLine(If(Me.BackColor = Color.White, Pens.Black, p), x1, y, x2, y)

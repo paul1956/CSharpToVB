@@ -3,13 +3,12 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Runtime.CompilerServices
-Imports Extensions
 Imports Microsoft.CodeAnalysis
-
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 
 Public Module MethodBodySupport
+
     ''' <summary>
     ''' Ensures that any 'names' is unique and does not collide with any other name.  Names that
     ''' are marked as IsFixed can not be touched.  This does mean that if there are two names

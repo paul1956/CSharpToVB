@@ -7,7 +7,6 @@ Imports System.Reflection
 Imports System.Reflection.Metadata
 Imports System.Reflection.PortableExecutable
 Imports System.Runtime.CompilerServices
-
 Imports Microsoft.CodeAnalysis
 
 Public Module SharedReferences

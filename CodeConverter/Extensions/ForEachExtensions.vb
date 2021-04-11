@@ -4,29 +4,27 @@
 
 Imports System.Runtime.CompilerServices
 
-Namespace Extensions
-    Public Module ForEachExtensions
+Public Module ForEachExtensions
 
-        <Extension>
-        Public Iterator Function WithIndex(Of T)(
-                                             source As IEnumerable(Of T)
-                                             ) As IEnumerable(Of IndexClass(Of T))
-            If source Is Nothing Then
-                Throw New ArgumentNullException(NameOf(source))
-            End If
+    <Extension>
+    Public Iterator Function WithIndex(Of T)(
+                                         source As IEnumerable(Of T)
+                                         ) As IEnumerable(Of IndexClass(Of T))
+        If source Is Nothing Then
+            Throw New ArgumentNullException(NameOf(source))
+        End If
 
-            Using enumerator As IEnumerator(Of T) = source.GetEnumerator
-                Dim hasNext As Boolean = enumerator.MoveNext
-                Dim index As Integer = -1
-                While hasNext
-                    Dim wi As New IndexClass(Of T) With {.Index = index, .Enumerator = enumerator}
-                    wi.MoveNext()
-                    Yield wi
-                    hasNext = Not wi.IsLast
-                    index = wi.Index ' if .MoveNext was used
-                End While
-            End Using
-        End Function
+        Using enumerator As IEnumerator(Of T) = source.GetEnumerator
+            Dim hasNext As Boolean = enumerator.MoveNext
+            Dim index As Integer = -1
+            While hasNext
+                Dim wi As New IndexClass(Of T) With {.Index = index, .Enumerator = enumerator}
+                wi.MoveNext()
+                Yield wi
+                hasNext = Not wi.IsLast
+                index = wi.Index ' if .MoveNext was used
+            End While
+        End Using
+    End Function
 
-    End Module
-End Namespace
+End Module

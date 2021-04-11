@@ -8,7 +8,9 @@ Imports System.Text
 Public Module ClassificationNameStrings
 
     ' ReSharper disable InconsistentNaming
+
 #Region "Special names"
+
     Public Const FunctionKeyword As String = "function"
     Public Const NumericLiteral As String = "number"
     Public Const String_VerbatimLiteral As String = "string - verbatim"

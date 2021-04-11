@@ -4,7 +4,6 @@
 
 Imports System.Text
 Imports ConversionResult
-Imports Extensions
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Emit
 

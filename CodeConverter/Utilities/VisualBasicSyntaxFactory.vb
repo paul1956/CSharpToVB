@@ -5,15 +5,12 @@
 ' DO NOT REORDER DOCUMENT Tokens must be defined BEFORE they are used, the #If is require to prevent code cleanup
 #If True Then
 
-Imports Extensions
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.VisualBasic
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
-
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 
 Public Module VisualBasicSyntaxFactory
-
 
 #Region "Strings"
 
@@ -35,6 +32,7 @@ Public Module VisualBasicSyntaxFactory
 #End Region
 
     ' ReSharper disable InconsistentNaming
+
 #Region "Token"
 
     Public ReadOnly AmpersandEqualsToken As SyntaxToken = Factory.Token(SyntaxKind.AmpersandEqualsToken)
