@@ -4,7 +4,7 @@
 
 Imports System.Runtime.CompilerServices
 
-Module RichTextBoxExtensions
+Friend Module RichTextBoxExtensions
 
     <Extension>
     Public Function FindIndexOfAny(rtb As RichTextBox, ParamArray strings() As String) As Integer

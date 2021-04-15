@@ -13,14 +13,14 @@ Public Class StatementHandling
         _HandlingOption = statementHandling
     End Sub
 
-    Property Index As Integer
+    Public Property HandlingOption As StatementHandlingOption
+    Public Property Index As Integer
 
-    ReadOnly Property Statement As VBS.StatementSyntax
+    Public ReadOnly Property Statement As VBS.StatementSyntax
         Get
             Return TryCast(_VbNode, VBS.StatementSyntax)
         End Get
     End Property
 
-    Property VbNode As VB.VisualBasicSyntaxNode
-    Property HandlingOption As StatementHandlingOption
+    Public Property VbNode As VB.VisualBasicSyntaxNode
 End Class
