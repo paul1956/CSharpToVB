@@ -7,14 +7,25 @@ Imports Microsoft.Win32
 
 Friend Module BrowserUtilities
 
+    ''' <summary>
+    ''' Compare version of executable with ReadMe.MkDir from GitHub
+    ''' </summary>
+    ''' <param name="gitHubVersions"></param>
+    ''' <param name="appVersion"></param>
+    ''' <param name="converterVersion"></param>
+    ''' <returns>True if application version or converter version is different</returns>
+    ''' <remarks>Uses equality is comparison to allow testing before upload to GitHub</remarks>
     Private Function IsNewerVersion(gitHubVersions() As String, appVersion As Version, converterVersion As Version) As Boolean
-        If String.IsNullOrWhiteSpace(gitHubVersions(0)) OrElse Version.Parse(gitHubVersions(0)) > Version.Parse(appVersion.ToString) Then
+        If gitHubVersions Is Nothing OrElse String.IsNullOrWhiteSpace(gitHubVersions(0)) Then
+            Return False
+        End If
+        If Version.Parse(gitHubVersions(0)) <> Version.Parse(appVersion.ToString) Then
             Return True
         End If
         If gitHubVersions.Length = 1 Then
             Return False
         End If
-        Return Version.Parse(gitHubVersions(1)) > Version.Parse(converterVersion.ToString)
+        Return Version.Parse(gitHubVersions(1)) <> Version.Parse(converterVersion.ToString)
     End Function
 
     Private Sub LaunchBrowser(url As String)
@@ -53,7 +64,7 @@ Friend Module BrowserUtilities
 
     Friend Async Sub CheckForUpdatesAsync(mainForm As Form1, reportResults As Boolean)
         Try
-            Dim responseBody As String = Await mainForm._client.GetStringAsync($"{Form1.ProjectGitHubUrl}blob/master/ReadMe.MD")
+            Dim responseBody As String = Await mainForm._client.GetStringAsync(Form1.ProjectGitHubReadMe)
             Dim index As Integer
             Dim versionStr As String = ""
             For Each e As IndexClass(Of String) In responseBody.SplitLines().ToList().WithIndex()
@@ -81,16 +92,17 @@ Friend Module BrowserUtilities
             Dim gitHubVersion() As String = versionStr.Split("/")
             Dim codeConverterInfo As New AssemblyInfo(GetType(CodeWithOptions).Assembly)
             If IsNewerVersion(gitHubVersion, My.Application.Info.Version, codeConverterInfo.Version) Then
-                mainForm.StatusStripUpdateAvailable.Image = CType(mainForm.ResourceManager.GetObject("StatusStripUpdateAvailable.Image"), Image)
-                mainForm.StatusStripUpdateAvailable.ToolTipText = $"Update Available"
+                mainForm.StatusStripUpdateAvailable.Visible = True
+                mainForm.StatusStripUpdateNotAvailable.Visible = False
+
                 If reportResults Then
                     If MsgBox("There is a newer version available, do you want to install now?", MsgBoxStyle.YesNo, "Updates Available") = MsgBoxResult.Yes Then
                         OpenUrlInBrowser(Form1.ProjectGitHubUrl)
                     End If
                 End If
             Else
-                mainForm.StatusStripUpdateAvailable.Image = CType(mainForm.ResourceManager.GetObject("StatusStripUpdateNotAvailable.Image"), Image)
-                mainForm.StatusStripUpdateAvailable.ToolTipText = $"Update Not Available"
+                mainForm.StatusStripUpdateAvailable.Visible = False
+                mainForm.StatusStripUpdateNotAvailable.Visible = True
                 If reportResults Then
                     MsgBox("You are running latest version", MsgBoxStyle.OkOnly, "No Updates Available")
                 End If

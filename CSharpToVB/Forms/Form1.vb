@@ -24,6 +24,7 @@ Partial Public Class Form1
     Friend _requestToConvert As ConvertRequest
     Friend _resultOfConversion As ConversionResult
     Public Const ProjectGitHubUrl As String = "https://github.com/paul1956/CSharpToVB/"
+    Public Const ProjectGitHubReadMe as String = "https://raw.githubusercontent.com/paul1956/CSharpToVB/master/ReadMe.MD"
     Public _currentThemeDictionary As Dictionary(Of String, ColorDescriptor)
 
     Public Sub New()
