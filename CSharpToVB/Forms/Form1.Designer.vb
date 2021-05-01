@@ -781,8 +781,7 @@ Partial Class Form1
         '
         'ContextMenuCopy
         '
-        Me.ContextMenuCopy.Image = CType(resources.GetObject("ContextMenuCopy.Image"), System.Drawing.Image)
-        Me.ContextMenuCopy.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.ContextMenuCopy.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.SizeToFit
         Me.ContextMenuCopy.Name = "ContextMenuCopy"
         Me.ContextMenuCopy.ShortcutKeyDisplayString = "Ctrl+C"
         Me.ContextMenuCopy.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.C), System.Windows.Forms.Keys)
@@ -791,8 +790,7 @@ Partial Class Form1
         '
         'ContextMenuPaste
         '
-        Me.ContextMenuPaste.Image = CType(resources.GetObject("ContextMenuPaste.Image"), System.Drawing.Image)
-        Me.ContextMenuPaste.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.ContextMenuPaste.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.SizeToFit
         Me.ContextMenuPaste.Name = "ContextMenuPaste"
         Me.ContextMenuPaste.ShortcutKeyDisplayString = "Ctrl+V"
         Me.ContextMenuPaste.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.V), System.Windows.Forms.Keys)
