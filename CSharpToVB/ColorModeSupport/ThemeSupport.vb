@@ -5,6 +5,7 @@
 Public Module ThemeSupport
 
     Friend Sub SetDarkMode(ctrl As Control.ControlCollection, ByRef mCapturedRenderer As ToolStripRenderer)
+
         ctrl(0).Parent.BackColor = Color.FromArgb(40, 40, 40)
         ctrl(0).Parent.ForeColor = Color.Silver
 

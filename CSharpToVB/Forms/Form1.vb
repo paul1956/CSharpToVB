@@ -24,7 +24,7 @@ Partial Public Class Form1
     Friend _requestToConvert As ConvertRequest
     Friend _resultOfConversion As ConversionResult
     Public Const ProjectGitHubUrl As String = "https://github.com/paul1956/CSharpToVB/"
-    Public Const ProjectGitHubReadMe as String = "https://raw.githubusercontent.com/paul1956/CSharpToVB/master/ReadMe.MD"
+    Public Const ProjectGitHubReadMe As String = "https://raw.githubusercontent.com/paul1956/CSharpToVB/master/ReadMe.MD"
     Public _currentThemeDictionary As Dictionary(Of String, ColorDescriptor)
 
     Public Sub New()
@@ -1047,18 +1047,30 @@ namespace Application
     Private Sub SetColorMode(myForm As Form, lightMode As Boolean)
 
         If lightMode Then
+            Me.mnuEditCopy.Image = CType(My.Resources.ResourceManager.GetObject("CopyLight"),Image)
+            Me.mnuEditPaste.Image = CType(My.Resources.ResourceManager.GetObject("PasteLight"),Image)
+            Me.mnuFileSaveAs.Image = CType(My.Resources.ResourceManager.GetObject("SaveAsLight"),Image)
             SetLightMode(myForm.Controls, _mCapturedRenderer)
         Else
+            Me.mnuEditCopy.Image = CType(My.Resources.ResourceManager.GetObject("CopyDark"),Image)
+            Me.mnuEditPaste.Image = CType(My.Resources.ResourceManager.GetObject("PasteDark"),Image)
+            Me.mnuFileSaveAs.Image = CType(My.Resources.ResourceManager.GetObject("SaveAsDark"),Image)
             SetDarkMode(myForm.Controls, _mCapturedRenderer)
         End If
     End Sub
 
     Private Sub ToggleColorMode(myForm As Form, lightMode As Boolean)
         If lightMode Then
+            Me.mnuEditCopy.Image = CType(My.Resources.ResourceManager.GetObject("CopyLight"),Image)
+            Me.mnuEditPaste.Image = CType(My.Resources.ResourceManager.GetObject("PasteLight"),Image)
+            Me.mnuFileSaveAs.Image = CType(My.Resources.ResourceManager.GetObject("SaveAsLight"),Image)
             Me.TSThemeButton.Text = DarkModeStr
             _currentThemeDictionary = _darkModeColorDictionary
             SetDarkMode(myForm.Controls, _mCapturedRenderer)
         Else
+            Me.mnuEditCopy.Image = CType(My.Resources.ResourceManager.GetObject("CopyDark"),Image)
+            Me.mnuEditPaste.Image = CType(My.Resources.ResourceManager.GetObject("PasteDark"),Image)
+            Me.mnuFileSaveAs.Image = CType(My.Resources.ResourceManager.GetObject("SaveAsDark"),Image)
             Me.TSThemeButton.Text = LightModeStr
             _currentThemeDictionary = _lightModeColorDictionary
             SetLightMode(myForm.Controls, _mCapturedRenderer)
