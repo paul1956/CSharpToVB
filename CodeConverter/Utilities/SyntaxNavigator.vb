@@ -7,7 +7,7 @@ Imports Microsoft.CodeAnalysis
 Friend NotInheritable Class SyntaxNavigator
 
     Private Shared ReadOnly s_childEnumeratorStackPool As New ObjectPoolLibrary.ObjectPool(Of Stack(Of ChildSyntaxList.Enumerator))(Function() New Stack(Of ChildSyntaxList.Enumerator)(), 10)
-    Public Shared ReadOnly s_instance As SyntaxNavigator = New SyntaxNavigator()
+    Public Shared ReadOnly s_instance As New SyntaxNavigator()
 
     Private Sub New()
     End Sub

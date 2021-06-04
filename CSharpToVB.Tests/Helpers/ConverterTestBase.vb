@@ -177,7 +177,7 @@ Option Strict Off
                                                        preserveCRLF:=True)
                                                       ).GetTextAsync().GetAwaiter().GetResult().ToString()
 
-            Using workspace As AdhocWorkspace = New AdhocWorkspace()
+            Using workspace As New AdhocWorkspace()
                 Dim project As Project = workspace.CurrentSolution.AddProject("Project", "Project.dll", LanguageNames.VisualBasic)
                 Dim preprocessorSymbols As New List(Of KeyValuePair(Of String, Object)) From {
                     New KeyValuePair(Of String, Object)("NETCOREAPP", True)

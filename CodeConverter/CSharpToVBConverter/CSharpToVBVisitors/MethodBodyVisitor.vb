@@ -20,7 +20,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
         Friend Class MethodBodyVisitor
             Inherits CS.CSharpSyntaxVisitor(Of SyntaxList(Of StatementSyntax))
 
-            Private ReadOnly _blockInfo As Stack(Of BlockInfo) = New Stack(Of BlockInfo)()
+            Private ReadOnly _blockInfo As New Stack(Of BlockInfo)()
             Private ReadOnly _nodesVisitor As NodesVisitor
             Private ReadOnly _semanticModel As SemanticModel
 

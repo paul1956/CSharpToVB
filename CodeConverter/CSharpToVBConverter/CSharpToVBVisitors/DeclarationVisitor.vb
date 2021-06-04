@@ -47,7 +47,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Dim stmt As VBS.AccessorStatementSyntax
                 Dim statements As SyntaxList(Of VBS.StatementSyntax) = Factory.List(Of VBS.StatementSyntax)()
                 isIterator = False
-                Dim visitor As MethodBodyVisitor = New MethodBodyVisitor(_semanticModel, Me)
+                Dim visitor As New MethodBodyVisitor(_semanticModel, Me)
                 If node.Body IsNot Nothing Then
                     statements = node.Body.GetBodyStatements(visitor)
                     isIterator = visitor.IsIterator
@@ -120,7 +120,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
 
             Friend Function ConvertAndSplitAttributes(csAttributeLists As SyntaxList(Of CSS.AttributeListSyntax), <Out> ByRef returnAttributes As SyntaxList(Of VBS.AttributeListSyntax), ByRef finalDirectiveTrivia As SyntaxTriviaList) As List(Of VBS.AttributeListSyntax)
                 Dim attributeLists As New List(Of VBS.AttributeListSyntax)
-                Dim retAttr As List(Of VBS.AttributeListSyntax) = New List(Of VBS.AttributeListSyntax)()
+                Dim retAttr As New List(Of VBS.AttributeListSyntax)()
                 Dim firstAttribute As Boolean = True
                 For Each e As IndexClass(Of CSS.AttributeListSyntax) In csAttributeLists.WithIndex
                     Dim attrList As CSS.AttributeListSyntax = e.Value

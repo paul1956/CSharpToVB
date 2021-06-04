@@ -13,7 +13,7 @@ Namespace Tests.ConvertDirectories
 
     Public Module TestUtilities
 
-        Private ReadOnly s_lockRoslynRootDirectory As Object = New Object
+        Private ReadOnly s_lockRoslynRootDirectory As New Object
         Private _sRoslynRootDirectory As String = String.Empty
 
         Private Sub GetOccurrenceCount(kind As SyntaxKind, node As SyntaxNodeOrToken,

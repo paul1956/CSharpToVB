@@ -37,7 +37,7 @@ Namespace Helpers.Portable.MarkedSource
         Private Const SpanEndString As String = "|]"
         Private Const NamedSpanEndString As String = "|}"
 
-        Private ReadOnly s_namedSpanStartRegex As Regex = New Regex("\{\| ([-_.A-Za-z0-9\+]+) \:",
+        Private ReadOnly s_namedSpanStartRegex As New Regex("\{\| ([-_.A-Za-z0-9\+]+) \:",
             RegexOptions.Multiline Or RegexOptions.IgnorePatternWhitespace)
 
         Private Sub Parse(

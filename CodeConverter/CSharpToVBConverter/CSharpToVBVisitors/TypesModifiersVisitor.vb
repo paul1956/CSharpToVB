@@ -59,7 +59,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             End Function
 
             Public Overrides Function VisitDefaultConstraint(node As CSS.DefaultConstraintSyntax) As VB.VisualBasicSyntaxNode
-                Dim commentTrivia As SyntaxTriviaList = New SyntaxTriviaList
+                Dim commentTrivia As New SyntaxTriviaList
                 commentTrivia = commentTrivia.Add(SpaceTrivia)
                 commentTrivia = commentTrivia.Add(LineContinuation)
                 commentTrivia = commentTrivia.Add(SpaceTrivia)

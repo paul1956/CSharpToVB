@@ -35,8 +35,7 @@ Public Module DoConversion
             Throw New ArgumentNullException(NameOf(optionalReferences))
         End If
         Dim tree As SyntaxTree = ParseCSharpSource(requestToConvert.SourceCode, csPreprocessorSymbols)
-        Dim csOptions As CS.CSharpCompilationOptions =
-            New CS.CSharpCompilationOptions(
+        Dim csOptions As New CS.CSharpCompilationOptions(
                             outputKind:=Nothing,
                             reportSuppressedDiagnostics:=False,
                             moduleName:=Nothing,

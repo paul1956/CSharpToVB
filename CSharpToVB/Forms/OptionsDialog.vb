@@ -129,7 +129,7 @@ Public Class OptionsDialog
     End Sub
 
     Private Sub SelectEditorFontButton_Click(sender As Object, e As EventArgs) Handles SelectEditorFontButton.Click
-        Dim oldFont As Font = New Font(Me.MainForm.ConversionInput.Font.Name, Me.MainForm.ConversionInput.Font.SizeInPoints, FontStyle.Regular, GraphicsUnit.Point)
+        Dim oldFont As New Font(Me.MainForm.ConversionInput.Font.Name, Me.MainForm.ConversionInput.Font.SizeInPoints, FontStyle.Regular, GraphicsUnit.Point)
         ' Display the font being used in Conversion buffers
         Me.FontDialog1.Font = oldFont
 

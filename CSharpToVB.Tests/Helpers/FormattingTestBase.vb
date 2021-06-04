@@ -22,7 +22,7 @@ Namespace Helpers
                                         Optional changedOptionSet As Dictionary(Of OptionKey, Object) = Nothing,
                                         Optional treeCompare As Boolean = True,
                                         Optional parseOptions As ParseOptions = Nothing) As Task
-            Using workspace As AdhocWorkspace = New AdhocWorkspace()
+            Using workspace As New AdhocWorkspace()
                 Dim project As Project = workspace.CurrentSolution.AddProject("Project", "Project.dll", language)
                 If parseOptions IsNot Nothing Then
                     project = project.WithParseOptions(parseOptions)

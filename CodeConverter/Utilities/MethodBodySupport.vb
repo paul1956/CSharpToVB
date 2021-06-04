@@ -89,8 +89,8 @@ Public Module MethodBodySupport
     ''' Transforms baseName into a name that does not conflict with any name in 'reservedNames'
     ''' </summary>
     Private Function EnsureUniqueness(baseName As String, usedIdentifiers As Dictionary(Of String, SymbolTableEntry), reservedNames As IEnumerable(Of String)) As String
-        Dim names As List(Of String) = New List(Of String) From {baseName}
-        Dim isFixed As List(Of Boolean) = New List(Of Boolean) From {False}
+        Dim names As New List(Of String) From {baseName}
+        Dim isFixed As New List(Of Boolean) From {False}
         For Each s As SymbolTableEntry In usedIdentifiers.Values
             names.Add(s.Name)
         Next

@@ -25,9 +25,9 @@ Namespace Helpers.Portable
                 Return
             End If
 
-            Dim diffBuilder As InlineDiffBuilder = New InlineDiffBuilder(New Differ())
+            Dim diffBuilder As New InlineDiffBuilder(New Differ())
             Dim diff As DiffPaneModel = diffBuilder.BuildDiffModel(expected, actual, ignoreWhitespace:=False)
-            Dim messageBuilder As StringBuilder = New StringBuilder()
+            Dim messageBuilder As New StringBuilder()
             messageBuilder.AppendLine(
                 If(String.IsNullOrEmpty(message),
                 "Actual and expected values differ. Expected shown in baseline of difference:", message))

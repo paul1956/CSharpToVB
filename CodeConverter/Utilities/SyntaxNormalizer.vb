@@ -15,8 +15,8 @@ Friend Class SyntaxNormalizer
     Private ReadOnly _consideredSpan As TextSpan
     Private ReadOnly _eolTrivia As SyntaxTrivia
     Private ReadOnly _indentWhitespace As String
-    Private ReadOnly _lastStatementsInBlocks As HashSet(Of SyntaxNode) = New HashSet(Of SyntaxNode)()
-    Private ReadOnly _lineBreaksAfterToken As Dictionary(Of SyntaxToken, Integer) = New Dictionary(Of SyntaxToken, Integer)()
+    Private ReadOnly _lastStatementsInBlocks As New HashSet(Of SyntaxNode)()
+    Private ReadOnly _lineBreaksAfterToken As New Dictionary(Of SyntaxToken, Integer)()
     Private ReadOnly _useDefaultCasing As Boolean
     Private ReadOnly _useElasticTrivia As Boolean
     Private ReadOnly _usePreserveCRLF As Boolean

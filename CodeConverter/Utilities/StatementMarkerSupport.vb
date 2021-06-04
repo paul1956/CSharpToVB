@@ -228,7 +228,7 @@ Public Module StatementMarker
                 newTrailingTrivia.Add(Factory.Whitespace(csLeadingTrivia.Last.ToString))
             End If
         End If
-        Dim leadingSpace As SyntaxTrivia = New SyntaxTrivia
+        Dim leadingSpace As New SyntaxTrivia
         If newLeadingTrivia.LastOrDefault.IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
             leadingSpace = newLeadingTrivia.Last
         End If

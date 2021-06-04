@@ -736,8 +736,8 @@ End Function
                                                                     typeParameterList).RestructureAttributesAndModifiers(listOfAttributes.Any, modifiers.Any),
                                                                             InterfaceStatementSyntax
                                                                             ).WithTrailingEol
-                Dim [inherits] As List(Of InheritsStatementSyntax) = New List(Of InheritsStatementSyntax)()
-                Dim [implements] As List(Of ImplementsStatementSyntax) = New List(Of ImplementsStatementSyntax)()
+                Dim [inherits] As New List(Of InheritsStatementSyntax)()
+                Dim [implements] As New List(Of ImplementsStatementSyntax)()
                 Dim movedTrailingTrivia As SyntaxTriviaList
                 Me.ConvertBaseList(node, [inherits], [implements], movedTrailingTrivia)
                 If movedTrailingTrivia.Any Then
@@ -802,8 +802,8 @@ End Function
             End Function
 
             Public Overrides Function VisitStructDeclaration(node As CSS.StructDeclarationSyntax) As VB.VisualBasicSyntaxNode
-                Dim [inherits] As List(Of InheritsStatementSyntax) = New List(Of InheritsStatementSyntax)
-                Dim [implements] As List(Of ImplementsStatementSyntax) = New List(Of ImplementsStatementSyntax)
+                Dim [inherits] As New List(Of InheritsStatementSyntax)
+                Dim [implements] As New List(Of ImplementsStatementSyntax)
                 If _originalRequest.ImplementedMembers.Any Then
                     _originalRequest.ImplementedMembersStack.Push(_originalRequest.ImplementedMembers)
                     _originalRequest.ImplementedMembers = (New List(Of (type As INamedTypeSymbol, members As ImmutableArray(Of ISymbol)))).ToImmutableArray
