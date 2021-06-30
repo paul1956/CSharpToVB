@@ -584,8 +584,21 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                             Next
                             nodeRight = Factory.CollectionInitializer(initializers)
                         End If
-                        Return Factory.CollectionInitializer(Factory.SeparatedList({CType(node.Left.Accept(Me), ExpressionSyntax),
-                                                                                   CType(nodeRight, ExpressionSyntax)})).WithConvertedTriviaFrom(node)
+                        Dim nodeLeft As CSS.ImplicitElementAccessSyntax = CType(node.Left, CSS.ImplicitElementAccessSyntax)
+                        Dim leftNode As ExpressionSyntax
+                        If nodeLeft.ArgumentList.Arguments.Count > 1 Then
+                            Dim arguments As SeparatedSyntaxList(Of SimpleArgumentSyntax)
+                            For Each arg As CSS.ArgumentSyntax In nodeLeft.ArgumentList.Arguments
+                                Dim simpleArg As SimpleArgumentSyntax = CType(arg.Accept(Me), SimpleArgumentSyntax)
+                                arguments = arguments.Add(simpleArg)
+                            Next
+                            leftNode = Factory.TupleExpression(arguments)
+                        Else
+                            leftNode = CType(node.Left.Accept(Me), ExpressionSyntax)
+                        End If
+                        Dim rightNode As ExpressionSyntax = CType(nodeRight, ExpressionSyntax)
+                        Return Factory.CollectionInitializer(Factory.SeparatedList({leftNode,
+                                                                                   rightNode})).WithConvertedTriviaFrom(node)
                     End If
                     If node.Parent.IsKind(CS.SyntaxKind.ObjectInitializerExpression) Then
                         Dim nodeRight As VB.VisualBasicSyntaxNode = node.Right.Accept(Me)

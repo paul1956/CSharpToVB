@@ -47,21 +47,21 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Buildalyzer" Version="3.2.0" />
-    <PackageReference Include="Buildalyzer.Workspaces" Version="3.2.0" />
+    <PackageReference Include="Buildalyzer" Version="3.2.2" />
+    <PackageReference Include="Buildalyzer.Workspaces" Version="3.2.2" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.9.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="3.9.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.CodeStyle" Version="3.9.0">
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.10.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="3.10.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.CodeStyle" Version="3.10.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="3.9.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="3.10.0" />
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
-    <PackageReference Include="NuGet.Frameworks" Version="5.9.0-preview.2" />
+    <PackageReference Include="NuGet.Frameworks" Version="5.10.0" />
     <PackageReference Include="PInvoke.Windows.Core" Version="0.7.104" />
     <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
     <PackageReference Include="System.Reflection.Metadata" Version="5.0.0" />

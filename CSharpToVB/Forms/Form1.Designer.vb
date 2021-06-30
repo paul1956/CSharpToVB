@@ -252,7 +252,7 @@ Partial Class Form1
         '
         Me.mnuFileSaveAs.Enabled = False
         Me.mnuFileSaveAs.Image = CType(resources.GetObject("mnuFileSaveAs.Image"), System.Drawing.Image)
-        Me.mnuFileSaveAs.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.SizeToFit
+        Me.mnuFileSaveAs.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
         Me.mnuFileSaveAs.Name = "mnuFileSaveAs"
         Me.mnuFileSaveAs.ShortcutKeys = CType((System.Windows.Forms.Keys.Alt Or System.Windows.Forms.Keys.A), System.Windows.Forms.Keys)
         Me.mnuFileSaveAs.Size = New System.Drawing.Size(289, 22)
@@ -330,7 +330,7 @@ Partial Class Form1
         'mnuEditCopy
         '
         Me.mnuEditCopy.Image = CType(resources.GetObject("mnuEditCopy.Image"), System.Drawing.Image)
-        Me.mnuEditCopy.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.SizeToFit
+        Me.mnuEditCopy.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
         Me.mnuEditCopy.Name = "mnuEditCopy"
         Me.mnuEditCopy.ShortcutKeyDisplayString = "Ctrl+C"
         Me.mnuEditCopy.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.C), System.Windows.Forms.Keys)
@@ -340,7 +340,7 @@ Partial Class Form1
         'mnuEditPaste
         '
         Me.mnuEditPaste.Image = CType(resources.GetObject("mnuEditPaste.Image"), System.Drawing.Image)
-        Me.mnuEditPaste.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.SizeToFit
+        Me.mnuEditPaste.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
         Me.mnuEditPaste.Name = "mnuEditPaste"
         Me.mnuEditPaste.ShortcutKeyDisplayString = "Ctrl+V"
         Me.mnuEditPaste.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.V), System.Windows.Forms.Keys)
@@ -781,7 +781,7 @@ Partial Class Form1
         '
         'ContextMenuCopy
         '
-        Me.ContextMenuCopy.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.SizeToFit
+        Me.ContextMenuCopy.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
         Me.ContextMenuCopy.Name = "ContextMenuCopy"
         Me.ContextMenuCopy.ShortcutKeyDisplayString = "Ctrl+C"
         Me.ContextMenuCopy.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.C), System.Windows.Forms.Keys)
@@ -790,7 +790,7 @@ Partial Class Form1
         '
         'ContextMenuPaste
         '
-        Me.ContextMenuPaste.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.SizeToFit
+        Me.ContextMenuPaste.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
         Me.ContextMenuPaste.Name = "ContextMenuPaste"
         Me.ContextMenuPaste.ShortcutKeyDisplayString = "Ctrl+V"
         Me.ContextMenuPaste.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.V), System.Windows.Forms.Keys)

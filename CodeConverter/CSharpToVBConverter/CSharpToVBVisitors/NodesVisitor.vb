@@ -297,10 +297,8 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             End Function
 
             Public Overrides Function VisitImplicitElementAccess(node As CSS.ImplicitElementAccessSyntax) As VB.VisualBasicSyntaxNode
-                If node.ArgumentList.Arguments.Count > 1 Then
-                    Throw New NotSupportedException("ImplicitElementAccess can only have one argument!")
-                End If
-                Return node.ArgumentList.Arguments(0).Expression.Accept(Me).WithConvertedTriviaFrom(node.ArgumentList.Arguments(0).Expression)
+                Dim resultExpression As VBS.ExpressionSyntax = CType(node.ArgumentList.Arguments(0).Expression.Accept(Me).WithConvertedTriviaFrom(node.ArgumentList.Arguments(0).Expression), VBS.ExpressionSyntax)
+                Return resultExpression
             End Function
 
             Public Overrides Function VisitImplicitObjectCreationExpression(node As CSS.ImplicitObjectCreationExpressionSyntax) As VB.VisualBasicSyntaxNode
