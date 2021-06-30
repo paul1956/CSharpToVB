@@ -4,6 +4,7 @@
 
 Imports System.Diagnostics.CodeAnalysis
 Imports System.Runtime.InteropServices
+Imports System.Runtime.Intrinsics.Arm
 Imports System.Text
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
@@ -1766,15 +1767,20 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     vbType = vbType.WithLeadingTrivia(SpaceTrivia)
                 End If
                 Dim collectedCommentTrivia As SyntaxTriviaList
-                Dim declaratorsWithoutInitializers As New List(Of CSS.VariableDeclaratorSyntax)()
                 Dim vbDeclarators As New SeparatedSyntaxList(Of VariableDeclaratorSyntax)
+                Dim asClause As SimpleAsClauseSyntax = If(node.Type.IsVar OrElse node.Type.IsKind(CS.SyntaxKind.RefType), Nothing, Factory.SimpleAsClause(vbType))
                 For Each e As IndexClass(Of CSS.VariableDeclaratorSyntax) In node.Variables.WithIndex
                     Dim v As CSS.VariableDeclaratorSyntax = e.Value
                     If v.Initializer Is Nothing Then
-                        declaratorsWithoutInitializers.Add(v.WithTrailingTrivia(collectedCommentTrivia))
+                        Dim name As SeparatedSyntaxList(Of ModifiedIdentifierSyntax) =
+                                Factory.SingletonSeparatedList(CType(v.Accept(_nodesVisitor), ModifiedIdentifierSyntax))
+
+                        vbDeclarators = vbDeclarators.Add(Factory.VariableDeclarator(name,
+                                                                                     asClause,
+                                                                                     initializer:=Nothing
+                                                                                     ).WithTrailingTrivia(collectedCommentTrivia))
                         Continue For
                     Else
-                        Dim asClause As SimpleAsClauseSyntax = If(node.Type.IsVar OrElse node.Type.IsKind(CS.SyntaxKind.RefType), Nothing, Factory.SimpleAsClause(vbType))
                         Dim value As ExpressionSyntax = DirectCast(v.Initializer.Value.Accept(_nodesVisitor), ExpressionSyntax)
                         If value Is Nothing Then
                             value = Factory.IdentifierName("HandleRefExpression").WithConvertedTriviaFrom(v.Initializer.Value)
@@ -1821,11 +1827,9 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         vbDeclarators = vbDeclarators.Add(declarator)
                     End If
                 Next
-                If declaratorsWithoutInitializers.Any Then
-                    Stop
-                End If
-                Dim localDeclStmt As LocalDeclarationStatementSyntax =
-                    FactoryDimStatement(vbDeclarators).WithoutTrivia.WithLeadingTrivia(leadingTrivia).WithAppendedTrailingTrivia(node.GetTrailingTrivia.ConvertTriviaList()) ' this picks up end of line comments
+                Dim localDeclStmt As LocalDeclarationStatementSyntax = FactoryDimStatement(vbDeclarators).WithoutTrivia.WithLeadingTrivia(leadingTrivia).WithAppendedTrailingTrivia(node.GetTrailingTrivia.ConvertTriviaList())
+
+                ' this picks up end of line comments
                 ' Don't repeat leading comments
                 If Not localDeclStmt.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
                     localDeclStmt = localDeclStmt.WithConvertedLeadingTriviaFrom(node)

@@ -168,6 +168,15 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                                  StatementHandlingOption.ReplaceStatement,
                                                  allowDuplicates:=True)
                     Return Factory.IdentifierName("DoNotCare")
+                ElseIf TypeOf pattern Is CSS.ParenthesizedPatternSyntax Then
+                    Dim emptyStatementWithError As VBS.EmptyStatementSyntax = FlagUnsupportedStatements(statementWithIssue,
+                                                                                                        "Parenthesized Pattern Syntax",
+                                                                                                        commentOutOriginalStatements:=True)
+                    statementWithIssue.AddMarker(statement:=emptyStatementWithError,
+                                                 StatementHandlingOption.ReplaceStatement,
+                                                 allowDuplicates:=True)
+
+                    Return Factory.IdentifierName("DoNotCare")
                 End If
                 Throw UnreachableException
             End Function

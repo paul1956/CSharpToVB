@@ -243,6 +243,9 @@ Friend Module VariableDeclarationExtensions
             Dim initializer As VBS.EqualsValueSyntax = Nothing
             If Not asClause.IsKind(VB.SyntaxKind.AsNewClause) Then
                 initializer = Factory.EqualsValue(initializerValue.WithLeadingTrivia(SpaceTrivia))
+                If variable.Initializer.EqualsToken.LeadingTrivia.ContainsDirectiveTrivia() Then
+                    leadingTrivia = leadingTrivia.AddRange(variable.Initializer.EqualsToken.LeadingTrivia.ConvertTriviaList())
+                End If
                 If initializer.Value.IsKind(VB.SyntaxKind.ObjectCreationExpression) Then
                     If asClause Is Nothing Then
                         asClause = Factory.AsNewClause(CType(initializerValue, VBS.ObjectCreationExpressionSyntax))
