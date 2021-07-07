@@ -17,47 +17,54 @@ Namespace Tests.Issues
         Public Shared Sub CustomEventsConversionIssue76()
             TestConversionCSharpToVisualBasic("namespace Test
 {
-private static event SmallBasicCallback _buttonClicked;
 
-	/// <summary>
-	/// Raises an event when any button control is clicked.
-	/// </summary>
-	public static event SmallBasicCallback ButtonClicked
-	{
-		add
-		{
-			Controls._buttonClicked = null;
-			_buttonClicked += value;
-		}
-		remove
-		{
-			_buttonClicked -= value;
-		}
-	}
-}
+    public class C
+    {
+        private static event SmallBasicCallback _buttonClicked;
+
+	        /// <summary>
+	        /// Raises an event when any button control is clicked.
+	        /// </summary>
+	        public static event SmallBasicCallback ButtonClicked
+	        {
+		        add
+		        {
+			        Controls._buttonClicked = null;
+			        _buttonClicked += value;
+		        }
+		        remove
+		        {
+			        _buttonClicked -= value;
+		        }
+	        }
+        }
+    }
 }", "Namespace Test
 
-Private Shared _buttonClicked As new EventHandlerList
+    Public Class C
 
-    ''' <summary>
-    ''' Raises an event when any button control is clicked.
-    ''' </summary>
-    Public Shared Custom Event ButtonClicked As SmallBasicCallback
-        AddHandler(Value As SmallBasicCallback)
-            Dim h = TryCast(_buttonClicked(""ButtonClicked""), SmallBasicCallback)
-            If h IsNot Nothing Then _buttonClicked.RemoveHandler(""ButtonClicked"", h)
-        _buttonClicked.AddHandler(""ButtonClicked"", Value)
-        End AddHandler
+        Private Shared _buttonClicked As new EventHandlerList
 
-        RemoveHandler(Value As SmallBasicCallback)
-            _buttonClicked.RemoveHandler(""ButtonClicked"", Value)
-        End RemoveHandler
+        ''' <summary>
+        ''' Raises an event when any button control is clicked.
+        ''' </summary>
+        Public Shared Custom Event ButtonClicked As SmallBasicCallback
+            AddHandler(Value As SmallBasicCallback)
+                Dim h = TryCast(_buttonClicked(""ButtonClicked""), SmallBasicCallback)
+                If h IsNot Nothing Then _buttonClicked.RemoveHandler(""ButtonClicked"", h)
+            _buttonClicked.AddHandler(""ButtonClicked"", Value)
+            End AddHandler
 
-        RaiseEvent()
-            Dim h = TryCast(_buttonClicked(""ButtonClicked""), SmallBasicCallback)
-            If h IsNot Nothing Then h.Invoke()
-        End RaiseEvent
-    End Event
+            RemoveHandler(Value As SmallBasicCallback)
+                _buttonClicked.RemoveHandler(""ButtonClicked"", Value)
+            End RemoveHandler
+
+            RaiseEvent()
+                Dim h = TryCast(_buttonClicked(""ButtonClicked""), SmallBasicCallback)
+                If h IsNot Nothing Then h.Invoke()
+            End RaiseEvent
+        End Event
+    End Class
 End Namespace")
         End Sub
 
