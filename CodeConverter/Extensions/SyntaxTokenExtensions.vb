@@ -85,6 +85,10 @@ Public Module SyntaxTokenExtensions
     End Function
 
     Private Function GetSymbolTableEntry(csIdentifier As SyntaxToken, baseVbIdent As String, usedIdentifiers As Dictionary(Of String, SymbolTableEntry), node As CS.CSharpSyntaxNode, model As SemanticModel, isQualifiedNameOrTypeName As Boolean, isField As Boolean) As (IdentToken As SyntaxToken, MeNeeded As Boolean)
+        ' Workaround till we get a list of special variables
+        If csIdentifier.ToString().Equals("Path",StringComparison.Ordinal) Then
+            Return (Factory.Identifier("Path"), False)
+        End If
         If usedIdentifiers.ContainsKey(baseVbIdent) Then
             Dim symbolTableEntry As SymbolTableEntry = usedIdentifiers(baseVbIdent)
             Return (Factory.Identifier(symbolTableEntry.Name).WithConvertedTriviaFrom(csIdentifier), symbolTableEntry.IsProperty)
