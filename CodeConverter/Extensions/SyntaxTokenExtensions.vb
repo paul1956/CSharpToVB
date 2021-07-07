@@ -107,6 +107,12 @@ Public Module SyntaxTokenExtensions
             End If
         Next
         Dim newIdentifier As String = baseVbIdent
+
+        ' This need to be looked up using current reference
+        ' For now just include Path from System.IO
+        If baseVbIdent.Equals("path", StringComparison.Ordinal) Then
+            newIdentifier &= "1"
+        End If
         usedIdentifiers.Add(baseVbIdent, New SymbolTableEntry(newIdentifier, isQualifiedNameOrTypeName, isField))
         Return (Factory.Identifier(newIdentifier), False)
     End Function

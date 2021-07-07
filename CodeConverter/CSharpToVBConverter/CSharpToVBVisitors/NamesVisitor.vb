@@ -121,11 +121,14 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                             Dim identifierExpr As CSS.IdentifierNameSyntax =
                                     DirectCast(parentAsMemberAccessExpr.Expression, CSS.IdentifierNameSyntax)
                             If identifierExpr.Identifier.ToString = node.Identifier.ToString Then
+                                Dim isQualifiedName As Boolean = Not _usedIdentifiers.ContainsKey(node.Identifier.ToString())
                                 Return Me.WrapTypedNameIfNecessary(
                                         Factory.IdentifierName(GenerateSafeVbToken(node.Identifier,
                                                                                        node,
                                                                                        _semanticModel,
-                                                                                       _usedIdentifiers)
+                                                                                       _usedIdentifiers,
+                                                                                       isQualifiedName:=isQualifiedName,
+                                                                                       isTypeName:=isQualifiedName)
                                                                    ), node)
                             End If
                         End If
