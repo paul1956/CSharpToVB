@@ -94,6 +94,7 @@ Public Module VisualBasicSyntaxFactory
     Public ReadOnly SytemInterlockedExpression As MemberAccessExpressionSyntax = Factory.SimpleMemberAccessExpression(ThreadingIdentifier, DotToken, InterlockedIdentifier)
     Public ReadOnly MathIdentifier As IdentifierNameSyntax = Factory.IdentifierName("Math")
     Public ReadOnly MaxIdentifier As IdentifierNameSyntax = Factory.IdentifierName("Max")
+    Public ReadOnly MaxValueIdentifier As IdentifierNameSyntax = Factory.IdentifierName("MaxValue")
     Public ReadOnly MinIdentifier As IdentifierNameSyntax = Factory.IdentifierName("Min")
 
 #End Region

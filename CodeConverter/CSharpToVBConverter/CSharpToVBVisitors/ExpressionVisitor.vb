@@ -1124,8 +1124,8 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                             If exprTypeStr = "char" Then
                                 cTypeExpression = Factory.ParseExpression($"ChrW({expr})").WithTrailingTrivia(newTrailingTrivia)
                             Else
-                                Dim argumentList As ArgumentListSyntax = Factory.ArgumentList(Factory.SingletonSeparatedList(Of ArgumentSyntax)(Factory.SimpleArgument(expr)))
-                                cTypeExpression = Factory.PredefinedCastExpression(CIntKeyword, Factory.InvocationExpression(fixExpr, argumentList))
+                                Dim rightExpression As ExpressionSyntax = Factory.MemberAccessExpression(VB.SyntaxKind.SimpleMemberAccessExpression, PredefinedTypeInteger, DotToken, MaxValueIdentifier)
+                                cTypeExpression = Factory.BinaryExpression(VisualBasic.SyntaxKind.ModuloExpression, expr, ModKeyword.With(SpaceTrivia, SpaceTrivia), rightExpression).WithTrailingTrivia(newTrailingTrivia)
                             End If
                         Case SpecialType.System_UInt32
                             cTypeExpression = Factory.PredefinedCastExpression(CUIntKeyword, expr)

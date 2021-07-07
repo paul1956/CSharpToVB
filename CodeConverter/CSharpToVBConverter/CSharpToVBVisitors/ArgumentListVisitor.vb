@@ -79,7 +79,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         Else
                             argumentWithTrivia = DirectCast(visualBasicSyntaxNode.AdjustNodeTrivia(separatorFollows:=True), VBS.ExpressionSyntax)
                         End If
-                        If argumentWithTrivia.IsKind(VB.SyntaxKind.AddressOfExpression) Then
+                        If argumentWithTrivia.IsKind(VB.SyntaxKind.AddressOfExpression) AndAlso TypeOf node.Parent IsNot CSS.ArgumentListSyntax Then
                             argumentWithTrivia = CType(argumentWithTrivia, VBS.UnaryExpressionSyntax).Operand.WithTriviaFrom(argumentWithTrivia)
                         End If
                     End If

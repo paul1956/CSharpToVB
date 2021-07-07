@@ -133,7 +133,7 @@ End Namespace")
 }", "Module TestModule
 
     Private Function Method(test As Object) As Integer
-        Dim tesT1 As Integer = CInt(Fix(test))
+        Dim tesT1 As Integer = test Mod Integer.MaxValue
         Return tesT1
     End Function
 
@@ -153,7 +153,7 @@ End Module")
 
     Private Sub Test()
         Dim aB As Object = 5
-        Dim Ab1 As Integer = CInt(Fix(o))
+        Dim Ab1 As Integer = o Mod Integer.MaxValue
     End Sub
 
 End Module")
@@ -184,13 +184,13 @@ End Module")
     Public Custom Event Test1 As EventHandler
         AddHandler(Value As EventHandler)
             Dim teSt2 As Object = 5
-            Dim tesT3 As Integer = CInt(Fix(o))
+            Dim tesT3 As Integer = o Mod Integer.MaxValue
             test = [Delegate].Combine(test, value)
         End AddHandler
 
         RemoveHandler(Value As EventHandler)
             Dim teSt2 As Object = 5
-            Dim tesT3 As Integer = CInt(Fix(o))
+            Dim tesT3 As Integer = o Mod Integer.MaxValue
             test = [Delegate].Remove(test, value)
         End RemoveHandler
 
@@ -213,7 +213,7 @@ End Class")
 
     Private Sub Test()
         Dim test1 As Object = 5
-        Dim tesT2 As Integer = CInt(Fix(o))
+        Dim tesT2 As Integer = o Mod Integer.MaxValue
     End Sub
 
 End Module")
@@ -231,7 +231,7 @@ End Module")
 }", "Public ReadOnly Property Test As Integer
     Get
         Dim test1 As Object = 5
-        Dim tesT2 As Integer = CInt(Fix(o))
+        Dim tesT2 As Integer = o Mod Integer.MaxValue
         Return test1
     End Get
 End Property")
