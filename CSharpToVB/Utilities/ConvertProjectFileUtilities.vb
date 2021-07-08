@@ -7,8 +7,6 @@ Imports System.Xml
 
 Public Module ConvertProjectFileUtilities
 
-    Private _projectsToBeAdded As String = ""
-
     Private ReadOnly s_compileChildNodeIgnoreList As New List(Of String)(
                 {"AutoGen", "DesignTime", "DesignTimeSharedInput",
              "#whitespace"})
@@ -36,7 +34,6 @@ Public Module ConvertProjectFileUtilities
              "_OptimizedDependenciesDir",
              "AppendTargetFrameworkToOutputPath",
              "ApplyNgenOptimization",
-             "AssemblyName",
              "AssemblyVersion",
              "Authors",
              "AutoGenerateAssemblyVersion",
@@ -95,7 +92,6 @@ Public Module ConvertProjectFileUtilities
              "ProduceReferenceAssembly",
              "ProjectExtensions",
              "ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch",
-             "RootNamespace",
              "RoslynProjectType",
              "RuntimeIdentifier",
              "RuntimeIdentifiers",
@@ -140,6 +136,7 @@ Public Module ConvertProjectFileUtilities
          "VSCTCompile", "VsdConfigXmlFiles",
          "VSIXSourceItem", "#whitespace"})
 
+    Private _projectsToBeAdded As String = ""
     Private Function ChangeExtension(attributeValue As String, oldExtension As String, newExtension As String) As String
         Return If(attributeValue.EndsWith($".{oldExtension}", StringComparison.OrdinalIgnoreCase),
                Path.ChangeExtension(attributeValue, newExtension),
@@ -205,7 +202,7 @@ Public Module ConvertProjectFileUtilities
         Return pathToSaveDirectory
     End Function
 
-    Public Function ConvertProjectFile(sourceFilePath As String, projectSavePath As String) As String
+    Public Function ConvertProjectFile(sourceFilePath As String, projectSavePath As String, isProjectConversion As Boolean) As String
         If String.IsNullOrWhiteSpace(sourceFilePath) Then
             Throw New ArgumentException($"'{sourceFilePath}' cannot be null or whitespace", NameOf(sourceFilePath))
         End If
@@ -234,9 +231,9 @@ Public Module ConvertProjectFileUtilities
         Dim basePath As String = DestinationFilePath(sourceFilePath, projectSavePath)
 
         Dim nodesToBeRemoved As New List(Of (PropertyIndex As Integer, ChildIndex As Integer))
+        Dim assemblyNameIndex As Integer = -1
+        Dim rootNamespaceParentNodeIndex As Integer = -1
         If isDocument Then
-            Dim leadingXmlSpace As XmlNode = xmlDoc.CreateDocumentFragment()
-            leadingXmlSpace.InnerXml = "    "
             Dim targetFramework As String = String.Empty
             If xmlDoc.DocumentElement.HasChildNodes Then
                 For index As Integer = 0 To xmlDoc.DocumentElement.ChildNodes.Count - 1
@@ -260,14 +257,19 @@ Public Module ConvertProjectFileUtilities
                                         nodesToBeRemoved.Add((index, childIndex))
                                     Case "LangVersion"
                                         If Not (propertyGroupChildNode.InnerText.Equals("latest", StringComparison.OrdinalIgnoreCase) OrElse
-                                       propertyGroupChildNode.InnerText.Equals("default", StringComparison.OrdinalIgnoreCase) OrElse
-                                       propertyGroupChildNode.InnerText.StartsWith("$", StringComparison.OrdinalIgnoreCase)) Then
+                                                propertyGroupChildNode.InnerText.Equals("default", StringComparison.OrdinalIgnoreCase) OrElse
+                                                propertyGroupChildNode.InnerText.StartsWith("$", StringComparison.OrdinalIgnoreCase)) Then
                                             propertyGroupChildNode.InnerText = propertyGroupChildNode.InnerText.Replace(propertyGroupChildNode.InnerText, "latest", StringComparison.OrdinalIgnoreCase)
                                         End If
                                     Case "#comment"
                                         xmlDoc.DocumentElement.ChildNodes(index).ChildNodes(childIndex).InnerText = propertyGroupChildNode.InnerText.Replace(".cs", ".vb", StringComparison.OrdinalIgnoreCase)
                                     Case "TargetFramework"
                                         targetFramework = xmlDoc.DocumentElement.ChildNodes(index).ChildNodes(childIndex).InnerText
+                                    Case "AssemblyName"
+                                        rootNamespaceParentNodeIndex = index
+                                        assemblyNameIndex = childIndex
+                                    Case "RootNamespace"
+                                        rootNamespaceParentNodeIndex = -1
                                     Case Else
                                         ' propertyGroupChildNode.Name
                                         Stop
@@ -371,9 +373,6 @@ Public Module ConvertProjectFileUtilities
                 End If
             End If
         Else
-            Dim leadingXmlSpace As XmlNode = xmlDoc.CreateDocumentFragment()
-            leadingXmlSpace.InnerXml = "    "
-
             If xmlDoc.FirstChild.HasChildNodes Then
                 For index As Integer = 0 To xmlDoc.FirstChild.ChildNodes.Count - 1
                     If s_documentTopLevelIgnoreList.Contains(xmlDoc.FirstChild.ChildNodes(index).Name, StringComparer.OrdinalIgnoreCase) Then
@@ -492,6 +491,36 @@ Public Module ConvertProjectFileUtilities
                     Next
                 End If
             End If
+        End If
+        Dim leadingXmlSpace As XmlNode = xmlDoc.CreateDocumentFragment()
+        leadingXmlSpace.InnerXml = $"{vbCrLf}    "
+        If rootNamespaceParentNodeIndex >= 0 Then
+            Dim newChild As XmlNode = xmlDoc.CreateElement("RootNamespace")
+            xmlDoc.DocumentElement.ChildNodes(rootNamespaceParentNodeIndex).InsertAfter(newChild, xmlDoc.DocumentElement.ChildNodes(rootNamespaceParentNodeIndex).ChildNodes(assemblyNameIndex))
+            xmlDoc.DocumentElement.ChildNodes(rootNamespaceParentNodeIndex).InsertAfter(leadingXmlSpace, xmlDoc.DocumentElement.ChildNodes(rootNamespaceParentNodeIndex).ChildNodes(assemblyNameIndex))
+        End If
+        If isProjectConversion Then
+            Dim newChild As XmlNode
+            '<OptionCompare>Text</OptionCompare>
+            newChild = xmlDoc.CreateElement("OptionCompare")
+            newChild.AppendChild(xmlDoc.CreateTextNode("Text"))
+            xmlDoc.DocumentElement.ChildNodes(rootNamespaceParentNodeIndex).AppendChild(newChild)
+            xmlDoc.DocumentElement.ChildNodes(rootNamespaceParentNodeIndex).AppendChild(xmlDoc.DocumentElement.ChildNodes(0).CloneNode(True))
+            '<OptionExplicit>Off</OptionExplicit>
+            newChild = xmlDoc.CreateElement("OptionExplicit")
+            newChild.AppendChild(xmlDoc.CreateTextNode("Off"))
+            xmlDoc.DocumentElement.ChildNodes(rootNamespaceParentNodeIndex).AppendChild(newChild)
+            xmlDoc.DocumentElement.ChildNodes(rootNamespaceParentNodeIndex).AppendChild(xmlDoc.DocumentElement.ChildNodes(0).CloneNode(True))
+            '<OptionInfer>On</OptionInfer>
+            newChild = xmlDoc.CreateElement("OptionInfer")
+            newChild.AppendChild(xmlDoc.CreateTextNode("On"))
+            xmlDoc.DocumentElement.ChildNodes(rootNamespaceParentNodeIndex).AppendChild(newChild)
+            xmlDoc.DocumentElement.ChildNodes(rootNamespaceParentNodeIndex).AppendChild(xmlDoc.DocumentElement.ChildNodes(0).CloneNode(True))
+            '<OptionStrict>Off</OptionStrict>
+            newChild = xmlDoc.CreateElement("OptionStrict")
+            newChild.AppendChild(xmlDoc.CreateTextNode("Off"))
+            xmlDoc.DocumentElement.ChildNodes(rootNamespaceParentNodeIndex).AppendChild(newChild)
+            xmlDoc.DocumentElement.ChildNodes(rootNamespaceParentNodeIndex).AppendChild(xmlDoc.DocumentElement.ChildNodes(0).CloneNode(True))
         End If
         If Not String.IsNullOrWhiteSpace(basePath) Then
             xmlDoc.Save(Path.Combine(basePath, Path.GetFileName(sourceFilePath).Replace(".csproj", ".vbproj", StringComparison.OrdinalIgnoreCase)))

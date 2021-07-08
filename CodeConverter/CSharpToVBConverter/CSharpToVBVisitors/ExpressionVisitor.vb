@@ -1124,8 +1124,10 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                             If exprTypeStr = "char" Then
                                 cTypeExpression = Factory.ParseExpression($"ChrW({expr})").WithTrailingTrivia(newTrailingTrivia)
                             Else
+                                Dim argumentList As ArgumentListSyntax = Factory.ArgumentList(Factory.SingletonSeparatedList(Of ArgumentSyntax)(Factory.SimpleArgument(expr)))
+                                cTypeExpression = Factory.PredefinedCastExpression(CLngKeyword, Factory.InvocationExpression(fixExpr, argumentList))
                                 Dim rightExpression As ExpressionSyntax = Factory.MemberAccessExpression(VB.SyntaxKind.SimpleMemberAccessExpression, PredefinedTypeInteger, DotToken, MaxValueIdentifier)
-                                cTypeExpression = Factory.BinaryExpression(VisualBasic.SyntaxKind.ModuloExpression, expr, ModKeyword.With(SpaceTrivia, SpaceTrivia), rightExpression).WithTrailingTrivia(newTrailingTrivia)
+                                cTypeExpression = Factory.PredefinedCastExpression(CIntKeyword, Factory.BinaryExpression(VB.SyntaxKind.ModuloExpression, CType(cTypeExpression, ExpressionSyntax), ModKeyword.With(SpaceTrivia, SpaceTrivia), rightExpression).WithTrailingTrivia(newTrailingTrivia))
                             End If
                         Case SpecialType.System_UInt32
                             cTypeExpression = Factory.PredefinedCastExpression(CUIntKeyword, expr)
@@ -1217,6 +1219,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             End Function
 
             Public Overrides Function VisitConditionalAccessExpression(node As CSS.ConditionalAccessExpressionSyntax) As VB.VisualBasicSyntaxNode
+                Dim isEvent As Boolean = TypeOf _semanticModel.GetSymbolInfo(node.Expression).Symbol Is IEventSymbol
                 Dim expression As ExpressionSyntax = DirectCast(node.Expression.Accept(Me), ExpressionSyntax)
                 Dim trailingTriviaList As SyntaxTriviaList
                 If expression.ContainsEolTrivia Then
@@ -1584,7 +1587,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     Return vbInvocationExpression
                 End If
 
-                Dim vbEventExpression As ExpressionSyntax = DirectCast(node.Expression.Accept(Me), ExpressionSyntax).WithoutLeadingSystemDot
+                Dim vbEventExpression As ExpressionSyntax = DirectCast(node.Expression.Accept(Me), ExpressionSyntax).WithoutLeadingSystemDot(Me._originalRequest.IsProjectConversion)
                 Dim argList As ArgumentListSyntax = DirectCast(node.ArgumentList.Accept(Me), ArgumentListSyntax)
                 Dim invocationExpression As InvocationExpressionSyntax = Factory.InvocationExpression(vbEventExpression.AdjustExpressionTrivia(adjustLeading:=False, directiveNotAllowed:=False), argList)
                 Dim objectCreationExpression As CSS.ObjectCreationExpressionSyntax = TryCast(node.Expression.DescendantNodesAndSelf().OfType(Of CSS.MemberAccessExpressionSyntax).FirstOrDefault?.Expression, CSS.ObjectCreationExpressionSyntax)

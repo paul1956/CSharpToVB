@@ -13,7 +13,7 @@ Namespace Tests.Issues
     <TestClass()> Public Class NamespaceLevelTests
         Inherits ConverterTestBase
 
-        <Fact(Skip:="Not implemented yet")>
+        <Fact> '(Skip:="Not implemented yet")>
         Public Shared Sub CustomEventsConversionIssue76()
             TestConversionCSharpToVisualBasic("namespace Test
 {
@@ -22,50 +22,50 @@ Namespace Tests.Issues
     {
         private static event SmallBasicCallback _buttonClicked;
 
-	        /// <summary>
-	        /// Raises an event when any button control is clicked.
-	        /// </summary>
-	        public static event SmallBasicCallback ButtonClicked
-	        {
-		        add
-		        {
-			        Controls._buttonClicked = null;
-			        _buttonClicked += value;
-		        }
-		        remove
-		        {
-			        _buttonClicked -= value;
-		        }
-	        }
-        }
+            /// <summary>
+            /// Raises an event when any button control is clicked.
+            /// </summary>
+            public static event SmallBasicCallback ButtonClicked
+            {
+                add
+                {
+                    Controls._buttonClicked = null;
+                    _buttonClicked += value;
+                }
+                remove
+                {
+                    _buttonClicked -= value;
+                }
+            }
+
     }
 }", "Namespace Test
 
     Public Class C
 
-        Private Shared _buttonClicked As new EventHandlerList
+        Private Shared Event _buttonClicked As SmallBasicCallback
 
         ''' <summary>
         ''' Raises an event when any button control is clicked.
         ''' </summary>
         Public Shared Custom Event ButtonClicked As SmallBasicCallback
             AddHandler(Value As SmallBasicCallback)
-                Dim h = TryCast(_buttonClicked(""ButtonClicked""), SmallBasicCallback)
-                If h IsNot Nothing Then _buttonClicked.RemoveHandler(""ButtonClicked"", h)
-            _buttonClicked.AddHandler(""ButtonClicked"", Value)
+                RemoveHandler Controls._buttonClicked, value
+                AddHandler _buttonClicked, value
             End AddHandler
 
             RemoveHandler(Value As SmallBasicCallback)
-                _buttonClicked.RemoveHandler(""ButtonClicked"", Value)
+                RemoveHandler _buttonClicked, value
             End RemoveHandler
 
             RaiseEvent()
-                Dim h = TryCast(_buttonClicked(""ButtonClicked""), SmallBasicCallback)
-                If h IsNot Nothing Then h.Invoke()
+                RaiseEvent _buttonClicked()
             End RaiseEvent
         End Event
+
     End Class
-End Namespace")
+End Namespace
+")
         End Sub
 
         <Fact>
@@ -73,20 +73,20 @@ End Namespace")
             TestConversionCSharpToVisualBasic("namespace Test
 {
     public sealed class Timer
-	    {
-		    private static void ThreadTimerCallback(object tag)
-		    {
-			    if (Timer._tick != null)
-			    {
-				    Timer._tick();
-			    }
-		    }
+        {
+            private static void ThreadTimerCallback(object tag)
+            {
+                if (Timer._tick != null)
+                {
+                    Timer._tick();
+                }
+            }
 
-		    static Timer()
-		    {
-			    _interval = 100000000;
-			    _threadTimer = new System.Threading.Timer(ThreadTimerCallback);
-		    }
+            static Timer()
+            {
+                _interval = 100000000;
+                _threadTimer = new System.Threading.Timer(ThreadTimerCallback);
+            }
     }
 }", "Namespace Test
 
@@ -112,7 +112,7 @@ End Namespace
             TestConversionCSharpToVisualBasic("namespace Test
 {
     public sealed class C
-	    {
+        {
         private void M(object tag)
             {
                 _applicationThread = new Thread((ThreadStart)delegate

@@ -232,7 +232,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 If node.AncestorsAndSelf().OfType(Of CSS.UsingDirectiveSyntax).Any Then
                     Return Factory.QualifiedName(DirectCast(left, VBS.NameSyntax), CType(right, VBS.SimpleNameSyntax))
                 End If
-                If left.ToString = "System" Then
+                If left.ToString = "System" AndAlso Not _originalRequest.IsProjectConversion Then
                     If TypeOf right Is VBS.NameSyntax Then
                         Return Me.WrapTypedNameIfNecessary(CType(right, VBS.ExpressionSyntax), node)
                     Else

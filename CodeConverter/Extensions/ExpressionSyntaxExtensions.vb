@@ -283,9 +283,9 @@ Public Module ExpressionSyntaxExtensions
     End Function
 
     <Extension>
-    Friend Function WithoutLeadingSystemDot(expression As VBS.ExpressionSyntax) As VBS.ExpressionSyntax
+    Friend Function WithoutLeadingSystemDot(expression As VBS.ExpressionSyntax, isProjectConversion As Boolean) As VBS.ExpressionSyntax
 
-        If expression.StartsWithSystemDot Then
+        If Not isProjectConversion andalso expression.StartsWithSystemDot Then
             Return Factory.ParseExpression(expression.ToString.Substring("System.".Length)).WithTriviaFrom(expression)
         End If
         Return expression

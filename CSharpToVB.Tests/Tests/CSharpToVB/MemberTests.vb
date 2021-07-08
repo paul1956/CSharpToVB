@@ -929,7 +929,7 @@ Public NotInheritable Class [MyClass]
     Inherits MyBaseClass
 
     Public Sub New(o As Object)
-        Me.New(o)
+        MyBase.New(o)
     End Sub
 End Class")
         End Sub
@@ -959,14 +959,15 @@ class TestClass {
 
     Public Custom Event MyEvent As EventHandler
         AddHandler(Value As EventHandler)
-            Me.backingField = [Delegate].Combine(Me.backingField, value)
+            AddHandler Me.backingField, value
         End AddHandler
 
         RemoveHandler(Value As EventHandler)
-            Me.backingField = [Delegate].Remove(Me.backingField, value)
+            RemoveHandler Me.backingField, value
         End RemoveHandler
 
-        RaiseEvent(sender As Object, e As EventArgs)
+        RaiseEvent()
+            RaiseEvent _myEvent()
         End RaiseEvent
     End Event
 
@@ -993,14 +994,15 @@ class TestClass {
 
     Public Custom Event MyEvent As EventHandler
         AddHandler(Value As EventHandler)
-            _backingField = [Delegate].Combine(_backingField, value)
+            AddHandler _backingField, value
         End AddHandler
 
         RemoveHandler(Value As EventHandler)
-            _backingField = [Delegate].Remove(_backingField, value)
+            RemoveHandler _backingField, value
         End RemoveHandler
 
-        RaiseEvent(sender As Object, e As EventArgs)
+        RaiseEvent()
+            RaiseEvent _myEvent()
         End RaiseEvent
     End Event
 End Class")
@@ -1032,7 +1034,8 @@ class TestClass {
             RemoveHandler backingField, value
         End RemoveHandler
 
-        RaiseEvent(sender As Object, e As EventArgs)
+        RaiseEvent()
+            RaiseEvent _myEvent()
         End RaiseEvent
     End Event
 End Class")

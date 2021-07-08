@@ -156,7 +156,7 @@ End Class")
 
     Private Sub Test()
         Dim o As Object = 5
-        Dim i As Integer = o Mod Integer.MaxValue
+        Dim i As Integer = CInt(CLng(Fix(o)) Mod Integer.MaxValue)
     End Sub
 
 End Module

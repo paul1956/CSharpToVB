@@ -237,6 +237,7 @@ Public Module VisualBasicSyntaxFactory
     Public ReadOnly PredefinedTypeDecimal As TypeSyntax = Factory.PredefinedType(DecimalKeyword)
     Public ReadOnly PredefinedTypeDouble As TypeSyntax = Factory.PredefinedType(DoubleKeyword)
     Public ReadOnly PredefinedTypeInteger As TypeSyntax = Factory.PredefinedType(IntegerKeyword)
+    Public ReadOnly PredefinedTypeLong As TypeSyntax = Factory.PredefinedType(LongKeyword)
     Public ReadOnly PredefinedTypeObject As TypeSyntax = Factory.PredefinedType(ObjectKeyword)
     Public ReadOnly PredefinedTypeSByte As TypeSyntax = Factory.PredefinedType(SByteKeyword)
     Public ReadOnly PredefinedTypeShort As TypeSyntax = Factory.PredefinedType(ShortKeyword)

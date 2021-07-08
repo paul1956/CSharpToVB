@@ -42,14 +42,14 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Return n.Split("."c).Last().RemoveBrackets
             End Function
 
-            Private Function ConvertAccessor(node As CSS.AccessorDeclarationSyntax, localIsModule As Boolean, ByRef isIterator As Boolean) As VBS.AccessorBlockSyntax
+            Private Function ConvertAccessor(node As CSS.AccessorDeclarationSyntax, localIsModule As Boolean, isEvent As Boolean, ByRef isIterator As Boolean) As VBS.AccessorBlockSyntax
                 Dim blockKind As VB.SyntaxKind
                 Dim stmt As VBS.AccessorStatementSyntax
                 Dim statements As SyntaxList(Of VBS.StatementSyntax) = Factory.List(Of VBS.StatementSyntax)()
                 isIterator = False
                 Dim visitor As New MethodBodyVisitor(_semanticModel, Me)
                 If node.Body IsNot Nothing Then
-                    statements = node.Body.GetBodyStatements(visitor)
+                    statements = node.Body.GetBodyStatements(Me, visitor, isEvent)
                     isIterator = visitor.IsIterator
                 ElseIf node.ExpressionBody IsNot Nothing Then
                     statements = node.ExpressionBody.GetExpressionBodyStatements(False, Me)
@@ -320,11 +320,11 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Dim argumentList As VBS.ArgumentListSyntax = DirectCast(node?.ArgumentList.Accept(Me), VBS.ArgumentListSyntax)
                 Dim simpleMemberAccessExpr As VBS.MemberAccessExpressionSyntax
                 Dim parent As SyntaxNode = node.Parent.Parent
-                Dim meOrMyExpr As VBS.ExpressionSyntax = If(TypeOf parent Is CSS.StructDeclarationSyntax OrElse TypeOf parent Is CSS.ClassDeclarationSyntax,
-                                                            DirectCast(MeExpression, VBS.ExpressionSyntax),
-                                                            MyBaseExpression).WithConvertedLeadingTriviaFrom(node.ColonToken)
+                Dim meOrMyBaseExpr As VBS.ExpressionSyntax = If(TypeOf parent Is CSS.StructDeclarationSyntax,
+                                                                DirectCast(MeExpression, VBS.ExpressionSyntax),
+                                                                MyBaseExpression).WithConvertedLeadingTriviaFrom(node.ColonToken)
 
-                simpleMemberAccessExpr = Factory.SimpleMemberAccessExpression(meOrMyExpr, Factory.IdentifierName("New"))
+                simpleMemberAccessExpr = Factory.SimpleMemberAccessExpression(meOrMyBaseExpr, Factory.IdentifierName("New"))
                 Return Factory.ExpressionStatement(Factory.InvocationExpression(simpleMemberAccessExpr, argumentList)).
                                              RestructureArguments(node.ArgumentList).WithConvertedTrailingTriviaFrom(node).WithTrailingEol
             End Function
@@ -352,7 +352,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
 
                 Dim body As New SyntaxList(Of VBS.StatementSyntax)
                 If node.Body IsNot Nothing Then
-                    body = node.Body.GetBodyStatements(visitor)
+                    body = node.Body.GetBodyStatements(Me, visitor, isEvent:=False)
                 ElseIf node.ExpressionBody IsNot Nothing Then
                     body = node.ExpressionBody.GetExpressionBodyStatements(False, Me)
                 End If
@@ -369,7 +369,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Dim parameterList As VBS.ParameterListSyntax = DirectCast(node.ParameterList?.Accept(Me), VBS.ParameterListSyntax)
                 Dim body As SyntaxList(Of VBS.StatementSyntax)
                 If node.Body IsNot Nothing Then
-                    body = node.Body.GetBodyStatements(New MethodBodyVisitor(_semanticModel, Me))
+                    body = node.Body.GetBodyStatements(Me, New MethodBodyVisitor(_semanticModel, Me), isEvent:=False)
                 Else
                     body = node.ExpressionBody.GetExpressionBodyStatements(False, Me)
                 End If
@@ -387,6 +387,9 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
 
             Public Overrides Function VisitEventDeclaration(node As CSS.EventDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim declaredSymbol As ISymbol = _semanticModel.GetDeclaredSymbol(node)
+
+                Dim eventSymbol As IEventSymbol = CType(declaredSymbol, IEventSymbol)
+
                 Dim returnAttributes As SyntaxList(Of VBS.AttributeListSyntax) = Nothing
                 Dim finalTrailingDirective As New SyntaxTriviaList
                 Dim attributeLists As List(Of VBS.AttributeListSyntax) = Me.ConvertAndSplitAttributes(node.AttributeLists, returnAttributes, finalTrailingDirective)
@@ -407,15 +410,28 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Dim accessors As New List(Of VBS.AccessorBlockSyntax)
                 For Each e As IndexClass(Of CSS.AccessorDeclarationSyntax) In node.AccessorList.Accessors.WithIndex
                     If e.Value.Body IsNot Nothing OrElse e.Value.ExpressionBody IsNot Nothing Then
-                        accessors.Add(Me.ConvertAccessor(e.Value, Me.IsModule, isIterator:=False))
+                        accessors.Add(Me.ConvertAccessor(e.Value, Me.IsModule, isIterator:=False, isEvent:=True))
                     End If
                 Next
                 If accessors.Any Then
-                    Dim parameterList As VBS.ParameterListSyntax = Factory.ParseParameterList("(sender As Object, e As EventArgs)")
+                    Dim parameterList As VBS.ParameterListSyntax = Factory.ParseParameterList("()")
+                    Dim eventArgumentList As VBS.ArgumentListSyntax = Factory.ParseArgumentList("()")
+                    If eventSymbol IsNot Nothing Then
+                        Dim namedType As INamedTypeSymbol = CType(eventSymbol.Type, INamedTypeSymbol)
+                        Dim parameters As ImmutableArray(Of IParameterSymbol) = namedType.GetParameters
+                        ' ToDo correctly fill in parameter list
+                        If parameters.Length = 2 Then
+                            parameterList = Factory.ParseParameterList("(sender As Object, e As EventArgs)")
+                            eventArgumentList = Factory.ParseArgumentList("(sender, e)")
+                        End If
+                    End If
                     ' RaiseEvent(sender As Object, e As EventArgs)
+                    '    RaiseEvent _buttonClicked(sender, e)
                     ' End RaiseEvent
                     Dim accessorStatement As VBS.AccessorStatementSyntax = Factory.RaiseEventAccessorStatement(Nothing, Nothing, parameterList)
-                    accessors.Add(Factory.RaiseEventAccessorBlock(accessorStatement))
+                    Dim eventName As VBS.IdentifierNameSyntax = Factory.IdentifierName($"_{Char.ToLowerInvariant(eventNameToken.Text(0))}{eventNameToken.Text.Substring(1)}")
+                    Dim raiseEventStatement As VBS.StatementSyntax = Factory.RaiseEventStatement(eventName, eventArgumentList).WithTrailingEol()
+                    accessors.Add(Factory.RaiseEventAccessorBlock(accessorStatement, Factory.SingletonList(raiseEventStatement)))
                     Return Factory.EventBlock(stmt, Factory.List(accessors)).WithConvertedTriviaFrom(node)
                 End If
                 Return stmt.WithConvertedTriviaFrom(node)
@@ -505,7 +521,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 If node.AccessorList IsNot Nothing Then
                     For Each a As CSS.AccessorDeclarationSyntax In node.AccessorList.Accessors
                         Dim foundIterator As Boolean
-                        accessors.Add(Me.ConvertAccessor(a, Me.IsModule, foundIterator))
+                        accessors.Add(Me.ConvertAccessor(a, Me.IsModule, isEvent:=False, foundIterator))
                         isIterator = isIterator Or foundIterator
                     Next
                 End If
@@ -1179,7 +1195,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                             End If
                             For Each a As CSS.AccessorDeclarationSyntax In csAccessors
                                 Dim foundIterator As Boolean
-                                accessors.Add(Me.ConvertAccessor(a, localIsModule, foundIterator))
+                                accessors.Add(Me.ConvertAccessor(a, localIsModule, isEvent:=False, foundIterator))
                                 isIterator = isIterator Or foundIterator
                             Next
                         End If

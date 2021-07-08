@@ -415,8 +415,8 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 End If
 
                 Dim rightExpr As ExpressionSyntax
-                If TypeOf node Is CSS.AssignmentExpressionSyntax Then
-                    Dim csAssignment As CSS.AssignmentExpressionSyntax = DirectCast(node, CSS.AssignmentExpressionSyntax)
+                Dim csAssignment As CSS.AssignmentExpressionSyntax = TryCast(node, CSS.AssignmentExpressionSyntax)
+                If csAssignment IsNot Nothing Then
                     rightExpr = DirectCast(csAssignment.Right.Accept(_nodesVisitor), ExpressionSyntax)
                     If csAssignment.Left.IsKind(CS.SyntaxKind.ParenthesizedExpression) Then
                         Dim csLeft As CSS.ParenthesizedExpressionSyntax = DirectCast(csAssignment.Left, CSS.ParenthesizedExpressionSyntax)

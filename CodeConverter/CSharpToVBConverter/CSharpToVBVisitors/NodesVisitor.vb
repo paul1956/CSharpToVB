@@ -148,23 +148,26 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Next
 
                 Dim options As New SyntaxList(Of VBS.OptionStatementSyntax)
-                With _defaultVbOptions
-                    If .OptionCompareInclude Then
-                        options = options.Add(Factory.OptionStatement(CompareToken, If(.OptionCompare = "Text", TextToken, BinaryToken)).WithTrailingEol)
-                    End If
-                    If .OptionExplicitInclude Then
-                        options = options.Add(Factory.OptionStatement(ExplicitToken, If(.OptionExplicit = "On", OnToken, OffToken)).WithTrailingEol)
-                    End If
-                    If .OptionInferInclude Then
-                        options = options.Add(Factory.OptionStatement(InferToken, If(.OptionInfer = "On", OnToken, OffToken)).WithTrailingEol)
+                If Not _originalRequest.IsProjectConversion Then
 
+                    With _defaultVbOptions
+                        If .OptionCompareInclude Then
+                            options = options.Add(Factory.OptionStatement(CompareToken, If(.OptionCompare = "Text", TextToken, BinaryToken)).WithTrailingEol)
+                        End If
+                        If .OptionExplicitInclude Then
+                            options = options.Add(Factory.OptionStatement(ExplicitToken, If(.OptionExplicit = "On", OnToken, OffToken)).WithTrailingEol)
+                        End If
+                        If .OptionInferInclude Then
+                            options = options.Add(Factory.OptionStatement(InferToken, If(.OptionInfer = "On", OnToken, OffToken)).WithTrailingEol)
+
+                        End If
+                        If .OptionStrictInclude Then
+                            options = options.Add(Factory.OptionStatement(StrictToken, If(.OptionStrict = "On", OnToken, OffToken)).WithTrailingEol)
+                        End If
+                    End With
+                    If options.Any Then
+                        options = options.Replace(options(0), options(0).WithLeadingTrivia(Factory.CommentTrivia("' To configure or remove Option's included in result, go to Options/Advanced Options..."), VbEolTrivia))
                     End If
-                    If .OptionStrictInclude Then
-                        options = options.Add(Factory.OptionStatement(StrictToken, If(.OptionStrict = "On", OnToken, OffToken)).WithTrailingEol)
-                    End If
-                End With
-                If options.Any Then
-                    options = options.Replace(options(0), options(0).WithLeadingTrivia(Factory.CommentTrivia("' To configure or remove Option's included in result, go to Options/Advanced Options..."), VbEolTrivia))
                 End If
                 _membersList = New SyntaxList(Of VBS.StatementSyntax)
                 For Each m As CSS.MemberDeclarationSyntax In node.Members

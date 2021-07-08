@@ -62,6 +62,7 @@ Namespace Tests.ProjectFile
 
     <PropertyGroup>
         <AssemblyName>System.Windows.Forms</AssemblyName>
+        <RootNamespace/>
         <CLSCompliant>true</CLSCompliant>
         <Nullable>enable</Nullable>
 
@@ -111,7 +112,7 @@ Namespace Tests.ProjectFile
                 Directory.CreateDirectory(sourceDirectory)
                 Directory.CreateDirectory(destinationDirectory)
                 sourceXmlDoc.Save(originalProjectFileName)
-                Assert.False(ConvertProjectFile(originalProjectFileName, destinationDirectory).Any)
+                Assert.False(ConvertProjectFile(originalProjectFileName, destinationDirectory, isProjectConversion:=False).Any)
                 Dim resultXmlDoc As String = File.ReadAllText(destinationProjectFileName)
                 Assert.Equal(expectedProjectFile.ToString, resultXmlDoc)
             Finally
@@ -1682,7 +1683,7 @@ EndGlobal
                 Directory.CreateDirectory(sourceDirectory)
                 Directory.CreateDirectory(destinationDirectory)
                 sourceXmlDoc.Save(originalProjectFileName)
-                Assert.False(ConvertProjectFile(originalProjectFileName, destinationDirectory).Any)
+                Assert.False(ConvertProjectFile(originalProjectFileName, destinationDirectory, isProjectConversion:=False).Any)
                 Dim resultXmlDoc As String = File.ReadAllText(destinationProjectFileName)
                 Assert.Equal(expectedProjectFile.ToString, resultXmlDoc)
             Finally
@@ -1746,7 +1747,7 @@ EndGlobal
                 Directory.CreateDirectory(sourceDirectory)
                 Directory.CreateDirectory(destinationDirectory)
                 sourceXmlDoc.Save(originalProjectFileName)
-                Assert.False(ConvertProjectFile(originalProjectFileName, destinationDirectory).Any)
+                Assert.False(ConvertProjectFile(originalProjectFileName, destinationDirectory, isProjectConversion:=False).Any)
                 Dim resultXmlDoc As String = File.ReadAllText(destinationProjectFileName)
                 Assert.Equal(expectedProjectFile.ToString, resultXmlDoc)
             Finally
