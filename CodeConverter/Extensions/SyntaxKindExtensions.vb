@@ -66,8 +66,10 @@ Friend Module SyntaxKindExtensions
     ''' <param name="op"></param>
     ''' <returns></returns>
     ''' <param name="isReferenceType"></param>
+    ''' <param name="IsIntegerMathOperation"></param>
     <Extension>
-    Friend Function GetOperatorToken(op As VB.SyntaxKind, isReferenceType As Boolean) As SyntaxToken
+    Friend Function GetOperatorToken(op As VB.SyntaxKind, isReferenceType As Boolean, Optional ByRef IsIntegerMathOperation As Boolean = False) As SyntaxToken
+        IsIntegerMathOperation = False
         Select Case op
             Case VB.SyntaxKind.EqualsExpression
                 If isReferenceType Then
@@ -88,54 +90,71 @@ Friend Module SyntaxKindExtensions
             Case VB.SyntaxKind.LessThanOrEqualExpression
                 Return LessThanEqualsToken
             Case VB.SyntaxKind.OrExpression
+                IsIntegerMathOperation = True
                 Return OrKeyword
             Case VB.SyntaxKind.OrElseExpression
                 Return OrElseKeyword
             Case VB.SyntaxKind.AndExpression
+                IsIntegerMathOperation = True
                 Return AndKeyword
             Case VB.SyntaxKind.AndAlsoExpression
                 Return AndAlsoKeyword
             Case VB.SyntaxKind.AddExpression
+                IsIntegerMathOperation = True
                 Return PlusToken
             Case VB.SyntaxKind.ConcatenateExpression
                 Return AmpersandToken
             Case VB.SyntaxKind.ConcatenateAssignmentStatement
                 Return AmpersandEqualsToken
             Case VB.SyntaxKind.SubtractExpression
+                IsIntegerMathOperation = True
                 Return MinusToken
             Case VB.SyntaxKind.MultiplyExpression
+                IsIntegerMathOperation = True
                 Return AsteriskToken
             Case VB.SyntaxKind.DivideExpression
+                IsIntegerMathOperation = True
                 Return SlashToken
             Case VB.SyntaxKind.ModuloExpression
+                IsIntegerMathOperation = True
                 Return ModKeyword
             Case VB.SyntaxKind.SimpleAssignmentStatement
                 Return EqualsToken
             Case VB.SyntaxKind.LeftShiftAssignmentStatement
+                IsIntegerMathOperation = True
                 Return LessThanLessThanEqualsToken
             Case VB.SyntaxKind.RightShiftAssignmentStatement
                 Return GreaterThanGreaterThanEqualsToken
             Case VB.SyntaxKind.AddAssignmentStatement
+                IsIntegerMathOperation = True
                 Return PlusEqualsToken
             Case VB.SyntaxKind.SubtractAssignmentStatement
+                IsIntegerMathOperation = True
                 Return MinusEqualsToken
             Case VB.SyntaxKind.MultiplyAssignmentStatement
+                IsIntegerMathOperation = True
                 Return AsteriskEqualsToken
             Case VB.SyntaxKind.DivideAssignmentStatement
+                IsIntegerMathOperation = True
                 Return SlashEqualsToken
             Case VB.SyntaxKind.UnaryPlusExpression
+                IsIntegerMathOperation = True
                 Return PlusToken
             Case VB.SyntaxKind.UnaryMinusExpression
+                IsIntegerMathOperation = True
                 Return MinusToken
             Case VB.SyntaxKind.NotExpression
                 Return NotKeyword
             Case VB.SyntaxKind.RightShiftExpression
+                IsIntegerMathOperation = True
                 Return GreaterThanGreaterThanToken
             Case VB.SyntaxKind.LeftShiftExpression
+                IsIntegerMathOperation = True
                 Return LessThanLessThanToken
             Case VB.SyntaxKind.AddressOfExpression
                 Return AddressOfKeyword
             Case VB.SyntaxKind.ExclusiveOrExpression
+                IsIntegerMathOperation = True
                 Return XorKeyword
         End Select
 

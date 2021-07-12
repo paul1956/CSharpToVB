@@ -429,7 +429,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
 
                 If _commonConversions.IsEventHandlerIdentifier(invokedCsExpression) Then
                     Dim expressionSyntax As ExpressionSyntax = CType(invokedCsExpression.Accept(Me), ExpressionSyntax)
-                    Dim identifierName As IdentifierNameSyntax = Me.GetIdentifierNameFromName(expressionSyntax)
+                    Dim identifierName As IdentifierNameSyntax = GetIdentifierNameFromName(expressionSyntax)
                     Dim argumentList As ArgumentListSyntax = CType(argumentListSyntax.Accept(Me), ArgumentListSyntax)
                     visitInvocationExpression = Factory.RaiseEventStatement(identifierName, argumentList)
                     Return True
@@ -635,7 +635,17 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                             Return Factory.NamedFieldInitializer(DirectCast(CType(node.Left.Accept(Me), ExpressionSyntax), IdentifierNameSyntax).WithoutLeadingTrivia,
                                                                    objectCreationExpression).WithConvertedTrailingTriviaFrom(node)
                         End If
-                        Dim vbNode As VB.VisualBasicSyntaxNode = node.Left.Accept(Me)
+                        Dim vbNode As VB.VisualBasicSyntaxNode
+                        If TypeOf node.Left Is CSS.IdentifierNameSyntax Then
+                            Dim identifier As String = node.Left.ToString()
+                            Dim keywordKind As VB.SyntaxKind = VB.SyntaxFacts.GetKeywordKind(identifier)
+                            If VB.SyntaxFacts.IsPredefinedType(keywordKind) Then
+                                identifier = $"[{identifier}]"
+                            End If
+                            vbNode = Factory.IdentifierName(identifier).WithConvertedTriviaFrom(node.Left)
+                        Else
+                            vbNode = node.Left.Accept(Me)
+                        End If
                         If TypeOf vbNode Is IdentifierNameSyntax Then
                             If node.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
                                 GetStatementWithIssues(node).AddMarker(Factory.EmptyStatement.WithLeadingTrivia(node.GetLeadingTrivia.ConvertTriviaList()), StatementHandlingOption.PrependStatement, allowDuplicates:=True)
@@ -927,7 +937,6 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                                                    operatorToken,
                                                                    DirectCast(rightNode, ExpressionSyntax))
                         Next
-                        'Debug.WriteLine(retExp.ToFullString)
                         Return retExp
                     End If
                     Dim kind As VB.SyntaxKind = CS.CSharpExtensions.Kind(node).GetExpressionKind()
@@ -1039,7 +1048,8 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
 
                     leftExp = CType(leftNode, ExpressionSyntax).AdjustExpressionTrivia(adjustLeading:=True, directiveNotAllowed:=False)
                     Dim isReferenceType As Boolean = node.Left.IsReferenceComparison(node.Right, _semanticModel)
-                    operatorToken = kind.GetOperatorToken(isReferenceType).WithConvertedTriviaFrom(node.OperatorToken)
+                    Dim isIntegerMathOperation As Boolean = False
+                    operatorToken = kind.GetOperatorToken(isReferenceType, isIntegerMathOperation).WithConvertedTriviaFrom(node.OperatorToken)
                     If operatorToken.HasLeadingTrivia Then
                         operatorToken = operatorToken.AdjustTokenLeadingTrivia()
                     End If
@@ -1050,24 +1060,35 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
 
                     If isReferenceType AndAlso operatorToken.IsKind(VB.SyntaxKind.IsKeyword, VB.SyntaxKind.IsNotKeyword) Then
                         If operatorToken.IsKind(VB.SyntaxKind.IsKeyword) Then
-                            retExp = Factory.IsExpression(leftExp,
-                                                          operatorToken,
-                                                          rightExp
-                                                          )
-                        Else
-                            retExp = Factory.IsNotExpression(leftExp,
-                                                             operatorToken,
-                                                             rightExp
-                                                             )
+                            Return Factory.IsExpression(leftExp,
+                                                        operatorToken,
+                                                        rightExp
+                                                        )
                         End If
+                        Return Factory.IsNotExpression(leftExp,
+                                                       operatorToken,
+                                                       rightExp
+                                                       )
                     Else
-                        retExp = Factory.BinaryExpression(kind,
-                                                          leftExp,
-                                                          operatorToken,
-                                                          rightExp
-                                                          )
                     End If
-                    Return retExp
+                    Dim typeLeft As String = _semanticModel.GetTypeInfo(node.Left).Type?.ToString()
+                    Dim typeRight As String = _semanticModel.GetTypeInfo(node.Right).Type?.ToString()
+
+                    Dim leftNodeIsChar As Boolean = If(typeLeft?.Equals("char", StringComparison.Ordinal), False)
+                    Dim rightNodeIsChar As Boolean = If(typeRight?.Equals("char", StringComparison.Ordinal), False)
+                    If isIntegerMathOperation AndAlso (leftNodeIsChar OrElse rightNodeIsChar) Then
+                        Return Factory.BinaryExpression(kind,
+                                                       If(leftNodeIsChar, FactoryAscW(leftExp), leftExp),
+                                                        operatorToken,
+                                                        If(rightNodeIsChar, FactoryAscW(rightExp), rightExp)
+                                                        )
+
+                    End If
+                    Return Factory.BinaryExpression(kind,
+                                                    leftExp,
+                                                    operatorToken,
+                                                    rightExp
+                                                    )
                 Catch ex As InsufficientExecutionStackException
                     _reportException?.Invoke(ex)
                     Return Nothing
@@ -1098,7 +1119,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         Case SpecialType.System_Char
                             If node.Parent.IsKind(CS.SyntaxKind.AttributeArgument) Then
                                 cTypeExpression = expr
-                            ElseIf {"int", "UShort"}.Contains(exprTypeStr, StringComparer.OrdinalIgnoreCase) Then
+                            ElseIf {"int", "ushort"}.Contains(exprTypeStr, StringComparer.OrdinalIgnoreCase) Then
                                 cTypeExpression = Factory.ParseExpression($"ChrW({expr})")
                             Else
                                 cTypeExpression = Factory.PredefinedCastExpression(CCharKeyword, expr)
@@ -1116,7 +1137,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                             cTypeExpression = Factory.PredefinedCastExpression(CShortKeyword, Factory.InvocationExpression(fixExpr, argumentList))
                         Case SpecialType.System_UInt16
                             If exprTypeStr = "char" Then
-                                cTypeExpression = Factory.ParseExpression(text:=$"AscW({expr})")
+                                cTypeExpression = Factory.ParseExpression($"AscW({expr})")
                             Else
                                 cTypeExpression = Factory.PredefinedCastExpression(CUShortKeyword, expr)
                             End If
@@ -1165,6 +1186,8 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                     cTypeExpression = Factory.CTypeExpression(expr, DirectCast(typeOrAddressOf, TypeSyntax))
                                 ElseIf expr.IsKind(VB.SyntaxKind.ParenthesizedExpression) Then
                                     cTypeExpression = Factory.CTypeExpression(CType(expr, ParenthesizedExpressionSyntax).Expression, DirectCast(typeOrAddressOf, TypeSyntax))
+                                ElseIf TypeOf expr Is VB.Syntax.LambdaExpressionSyntax Then
+                                    cTypeExpression = Factory.CTypeExpression(expr, DirectCast(typeOrAddressOf, TypeSyntax))
                                 Else
                                     cTypeExpression = Factory.CTypeExpression(Factory.AddressOfExpression(expr), DirectCast(typeOrAddressOf, TypeSyntax))
                                 End If
@@ -1219,7 +1242,6 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             End Function
 
             Public Overrides Function VisitConditionalAccessExpression(node As CSS.ConditionalAccessExpressionSyntax) As VB.VisualBasicSyntaxNode
-                Dim isEvent As Boolean = TypeOf _semanticModel.GetSymbolInfo(node.Expression).Symbol Is IEventSymbol
                 Dim expression As ExpressionSyntax = DirectCast(node.Expression.Accept(Me), ExpressionSyntax)
                 Dim trailingTriviaList As SyntaxTriviaList
                 If expression.ContainsEolTrivia Then
@@ -1587,7 +1609,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     Return vbInvocationExpression
                 End If
 
-                Dim vbEventExpression As ExpressionSyntax = DirectCast(node.Expression.Accept(Me), ExpressionSyntax).WithoutLeadingSystemDot(Me._originalRequest.IsProjectConversion)
+                Dim vbEventExpression As ExpressionSyntax = DirectCast(node.Expression.Accept(Me), ExpressionSyntax).WithoutLeadingSystemDot(_originalRequest.IsProjectConversion)
                 Dim argList As ArgumentListSyntax = DirectCast(node.ArgumentList.Accept(Me), ArgumentListSyntax)
                 Dim invocationExpression As InvocationExpressionSyntax = Factory.InvocationExpression(vbEventExpression.AdjustExpressionTrivia(adjustLeading:=False, directiveNotAllowed:=False), argList)
                 Dim objectCreationExpression As CSS.ObjectCreationExpressionSyntax = TryCast(node.Expression.DescendantNodesAndSelf().OfType(Of CSS.MemberAccessExpressionSyntax).FirstOrDefault?.Expression, CSS.ObjectCreationExpressionSyntax)

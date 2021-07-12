@@ -121,7 +121,7 @@ Public Module StatementMarker
         Return Not s_statementDictionary.Any
     End Function
 
-    Friend Function AddFinalTriviaToField(node As CSS.FieldDeclarationSyntax) As List(Of StatementSyntax)
+    Friend Function AddFinalTriviaToField(node As CS.CSharpSyntaxNode) As List(Of StatementSyntax)
         Dim statementList As New List(Of StatementSyntax)
         If Not s_statementDictionary.ContainsKey(node) Then
             Return statementList

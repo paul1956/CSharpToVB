@@ -9,7 +9,6 @@ Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
-
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace CSharpToVBConverter.CSharpToVBVisitors
@@ -20,6 +19,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             Inherits CS.CSharpSyntaxVisitor(Of VB.VisualBasicSyntaxNode)
 
             Private ReadOnly _addedNames As New HashSet(Of String)
+            Friend ReadOnly _eventList As New Dictionary(Of String, Boolean)
 
             Private Shared Function CreateImplementsClauseSyntax(implementors As IEnumerable(Of ISymbol), id As SyntaxToken) As VBS.ImplementsClauseSyntax
                 Return Factory.ImplementsClause(implementors.Select(Function(x)
@@ -38,18 +38,31 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                                                     End Function).ToArray())
             End Function
 
+            Private Shared Function GetEventLookupExpr(eventNameToken As SyntaxToken) As VBS.InvocationExpressionSyntax
+                Dim argList As VBS.ArgumentListSyntax = Factory.ParseArgumentList($"(""{eventNameToken.Text}"")")
+                Dim eventName As VBS.IdentifierNameSyntax = Factory.IdentifierName($"_{Char.ToLowerInvariant(eventNameToken.Text(0))}{eventNameToken.Text.Substring(1)}")
+                ' _buttonClicked("ButtonClicked")
+                Return Factory.InvocationExpression(eventName, argList)
+            End Function
+
+            Private Shared Function GetEventLookupExpr(eventName As String) As VBS.InvocationExpressionSyntax
+                Dim argList As VBS.ArgumentListSyntax = Factory.ParseArgumentList($"(""{Char.ToUpperInvariant(eventName(1))}{eventName.Substring(2)}"")")
+                ' _buttonClicked("ButtonClicked")
+                Return Factory.InvocationExpression(Factory.IdentifierName(eventName), argList)
+            End Function
+
             Private Shared Function MemberNameWithoutDots(n As String) As String
                 Return n.Split("."c).Last().RemoveBrackets
             End Function
 
-            Private Function ConvertAccessor(node As CSS.AccessorDeclarationSyntax, localIsModule As Boolean, isEvent As Boolean, ByRef isIterator As Boolean) As VBS.AccessorBlockSyntax
+            Private Function ConvertAccessor(node As CSS.AccessorDeclarationSyntax, localIsModule As Boolean, ByRef isIterator As Boolean) As VBS.AccessorBlockSyntax
                 Dim blockKind As VB.SyntaxKind
                 Dim stmt As VBS.AccessorStatementSyntax
                 Dim statements As SyntaxList(Of VBS.StatementSyntax) = Factory.List(Of VBS.StatementSyntax)()
                 isIterator = False
                 Dim visitor As New MethodBodyVisitor(_semanticModel, Me)
                 If node.Body IsNot Nothing Then
-                    statements = node.Body.GetBodyStatements(Me, visitor, isEvent)
+                    statements = node.Body.GetBodyStatements(visitor)
                     isIterator = visitor.IsIterator
                 ElseIf node.ExpressionBody IsNot Nothing Then
                     statements = node.ExpressionBody.GetExpressionBodyStatements(False, Me)
@@ -67,30 +80,56 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     Case CS.SyntaxKind.SetAccessorDeclaration, CS.SyntaxKind.InitAccessorDeclaration
                         blockKind = VB.SyntaxKind.SetAccessorBlock
                         valueParam = Factory.Parameter(ValueModifiedIdentifier).
-                            WithAsClause(Factory.SimpleAsClause(DirectCast(parent.Type.Accept(Me), VBS.TypeSyntax).
-                            WithLeadingTrivia(SpaceTrivia)))
+                        WithAsClause(Factory.SimpleAsClause(DirectCast(parent.Type.Accept(Me), VBS.TypeSyntax).
+                        WithLeadingTrivia(SpaceTrivia)))
                         stmt = Factory.SetAccessorStatement(attributes, Factory.TokenList(modifiers), Factory.ParameterList(Factory.SingletonSeparatedList(valueParam)))
                         endStmt = Factory.EndSetStatement(EndKeyword.WithTrailingTrivia(SpaceTrivia), SetKeyword)
+                    Case Else
+                        Throw New NotSupportedException()
+                End Select
+                Return Factory.AccessorBlock(blockKind,
+                stmt.WithConvertedTriviaFrom(node.Body.GetBraces.Item1).WithTrailingEol,
+                Me.AdjustUsingIfNeeded(statements),
+                endStmt.WithConvertedTriviaFrom(node.Body.GetBraces.Item2)
+                ).WithConvertedTriviaFrom(node)
+            End Function
+
+            Private Function ConvertEventAccessor(node As CSS.AccessorDeclarationSyntax, localIsModule As Boolean, eventLoopupExpr As VBS.InvocationExpressionSyntax, eventType As VBS.TypeSyntax) As VBS.AccessorBlockSyntax
+                Dim blockKind As VB.SyntaxKind
+                Dim stmt As VBS.AccessorStatementSyntax
+                Dim statements As SyntaxList(Of VBS.StatementSyntax) = Factory.List(Of VBS.StatementSyntax)()
+                Dim visitor As New MethodBodyVisitor(_semanticModel, Me)
+                If node.Body IsNot Nothing Then
+                    statements = node.Body.GetEventBodyStatements(Me, visitor, eventLoopupExpr, eventType)
+                ElseIf node.ExpressionBody IsNot Nothing Then
+                    statements = node.ExpressionBody.GetExpressionBodyStatements(False, Me)
+                End If
+                Dim attributes As SyntaxList(Of VBS.AttributeListSyntax) = Factory.List(node.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))
+                Dim modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, localIsModule, TokenContext.Local).ToList
+                Dim parent As CSS.BasePropertyDeclarationSyntax = DirectCast(node.Parent.Parent, CSS.BasePropertyDeclarationSyntax)
+                Dim valueParam As VBS.ParameterSyntax
+                Dim endStmt As VBS.EndBlockStatementSyntax
+                Select Case CS.CSharpExtensions.Kind(node)
                     Case CS.SyntaxKind.AddAccessorDeclaration
                         blockKind = VB.SyntaxKind.AddHandlerAccessorBlock
                         valueParam = Factory.Parameter(ValueModifiedIdentifier).
-                            WithAsClause(Factory.SimpleAsClause(DirectCast(parent.Type.Accept(Me), VBS.TypeSyntax)))
+                        WithAsClause(Factory.SimpleAsClause(DirectCast(parent.Type.Accept(Me), VBS.TypeSyntax)))
                         stmt = Factory.AddHandlerAccessorStatement(attributes, Factory.TokenList(modifiers), Factory.ParameterList(Factory.SingletonSeparatedList(valueParam)))
                         endStmt = Factory.EndAddHandlerStatement(EndKeyword.WithTrailingTrivia(SpaceTrivia), AddHandlerKeyword)
                     Case CS.SyntaxKind.RemoveAccessorDeclaration
                         blockKind = VB.SyntaxKind.RemoveHandlerAccessorBlock
                         valueParam = Factory.Parameter(ValueModifiedIdentifier).
-                            WithAsClause(Factory.SimpleAsClause(DirectCast(parent.Type.Accept(Me), VBS.TypeSyntax)))
+                        WithAsClause(Factory.SimpleAsClause(DirectCast(parent.Type.Accept(Me), VBS.TypeSyntax)))
                         stmt = Factory.RemoveHandlerAccessorStatement(attributes, Factory.TokenList(modifiers), Factory.ParameterList(Factory.SingletonSeparatedList(valueParam)))
                         endStmt = Factory.EndRemoveHandlerStatement(EndKeyword.WithTrailingTrivia(SpaceTrivia), RemoveHandlerKeyword)
                     Case Else
                         Throw New NotSupportedException()
                 End Select
                 Return Factory.AccessorBlock(blockKind,
-                                             stmt.WithConvertedTriviaFrom(node.Body.GetBraces.Item1).WithTrailingEol,
-                                             Me.AdjustUsingIfNeeded(statements),
-                                             endStmt.WithConvertedTriviaFrom(node.Body.GetBraces.Item2)
-                                            ).WithConvertedTriviaFrom(node)
+                stmt.WithConvertedTriviaFrom(node.Body.GetBraces.Item1).WithTrailingEol,
+                Me.AdjustUsingIfNeeded(statements),
+                endStmt.WithConvertedTriviaFrom(node.Body.GetBraces.Item2)
+                ).WithConvertedTriviaFrom(node)
             End Function
 
             Private Function CreateImplementsClauseSyntaxOrNull(memberInfo As ISymbol, ByRef id As SyntaxToken) As VBS.ImplementsClauseSyntax
@@ -107,15 +146,49 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     Dim containingType As INamedTypeSymbol = memberInfo.ContainingType
                     Dim baseClassesAndInterfaces As IEnumerable(Of INamedTypeSymbol) = containingType.GetAllBaseClassesAndInterfaces(True)
                     explicitImplementors = baseClassesAndInterfaces.Except({containingType}) _
-                        .SelectMany(Function(t) t.GetMembers().Where(Function(m) memberInfo.Name.EndsWith(m.Name, StringComparison.Ordinal))) _
-                        .Where(Function(m As ISymbol) As Boolean
-                                   Dim bool? As Boolean = containingType.FindImplementationForInterfaceMember(m)?.Equals(memberInfo, SymbolEqualityComparer.Default) = True
-                                   Return bool.HasValue AndAlso CBool(bool)
-                               End Function) _
-                        .ToImmutableArray()
+                    .SelectMany(Function(t) t.GetMembers().Where(Function(m) memberInfo.Name.EndsWith(m.Name, StringComparison.Ordinal))) _
+                    .Where(Function(m As ISymbol) As Boolean
+                               Dim bool? As Boolean = containingType.FindImplementationForInterfaceMember(m)?.Equals(memberInfo, SymbolEqualityComparer.Default) = True
+                               Return bool.HasValue AndAlso CBool(bool)
+                           End Function) _
+                    .ToImmutableArray()
                 End If
-
                 Return If(Not explicitImplementors.Any(), Nothing, CreateImplementsClauseSyntax(explicitImplementors, originalId))
+            End Function
+
+            Private Function NeedEventHandlerList(node As CSS.EventFieldDeclarationSyntax) As Boolean
+                Dim result As Boolean = False
+                Dim eventDeclarations As List(Of CSS.EventDeclarationSyntax) = node.Parent.DescendantNodes().OfType(Of CSS.EventDeclarationSyntax)().ToList()
+                For Each eventDecl As CSS.EventDeclarationSyntax In eventDeclarations
+                    If eventDecl.Type.ToString() = node.Declaration.Type.ToString() Then
+                        For Each accessor As CSS.AccessorDeclarationSyntax In eventDecl.AccessorList.Accessors
+                            For Each stmt As CSS.StatementSyntax In accessor.Body.Statements
+                                Dim cssExpr As CSS.ExpressionStatementSyntax = TryCast(stmt, CSS.ExpressionStatementSyntax)
+                                If cssExpr IsNot Nothing Then
+                                    Dim assignStmt As CSS.AssignmentExpressionSyntax = TryCast(cssExpr.Expression, CSS.AssignmentExpressionSyntax)
+                                    If assignStmt IsNot Nothing Then
+                                        If assignStmt.Kind = CS.SyntaxKind.SimpleAssignmentExpression AndAlso
+                                               assignStmt.Right.Kind() = CS.SyntaxKind.NullLiteralExpression Then
+                                            Dim left As CSS.MemberAccessExpressionSyntax = TryCast(assignStmt.Left, CSS.MemberAccessExpressionSyntax)
+                                            If left IsNot Nothing Then
+                                                _eventList.TryAdd(GetEventLookupExpr(left.Name.Identifier.Text).ToString(), True)
+                                            Else
+                                                Stop
+                                            End If
+                                            result = True
+                                            Exit For
+                                        ElseIf assignStmt.Kind = CS.SyntaxKind.AddAssignmentExpression Then
+                                            Continue For
+                                        ElseIf assignStmt.Kind = CS.SyntaxKind.SubtractAssignmentExpression Then
+                                            Continue For
+                                        End If
+                                    End If
+                                End If
+                            Next
+                        Next
+                    End If
+                Next
+                Return result
             End Function
 
             Friend Function ConvertAndSplitAttributes(csAttributeLists As SyntaxList(Of CSS.AttributeListSyntax), <Out> ByRef returnAttributes As SyntaxList(Of VBS.AttributeListSyntax), ByRef finalDirectiveTrivia As SyntaxTriviaList) As List(Of VBS.AttributeListSyntax)
@@ -224,7 +297,6 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         retAttr.Add(DirectCast(attrList.Accept(Me).With({SpaceTrivia}, {SpaceTrivia}), VBS.AttributeListSyntax))
                     End If
                 Next
-
                 returnAttributes = Factory.List(retAttr)
                 Return attributeLists
             End Function
@@ -237,7 +309,6 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     Next
                     Me.NeededEndUsingCount = 0
                 End If
-
                 Return blockStatements
             End Function
 
@@ -247,11 +318,11 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Else
                     Dim nameWithTrivia As VBS.IdentifierNameSyntax = DirectCast(node.NameEquals.Name.Accept(Me), VBS.IdentifierNameSyntax)
                     Return Factory.NamedFieldInitializer(KeyKeyword,
-                                                           DotToken,
-                                                           name:=nameWithTrivia.WithoutLeadingTrivia,
-                                                           EqualsToken,
-                                                           expression:=DirectCast(node.Expression.Accept(Me), VBS.ExpressionSyntax)
-                                                           ).WithConvertedTriviaFrom(node).WithPrependedLeadingTrivia(nameWithTrivia.GetLeadingTrivia)
+                    DotToken,
+                    name:=nameWithTrivia.WithoutLeadingTrivia,
+                    EqualsToken,
+                    expression:=DirectCast(node.Expression.Accept(Me), VBS.ExpressionSyntax)
+                    ).WithConvertedTriviaFrom(node).WithPrependedLeadingTrivia(nameWithTrivia.GetLeadingTrivia)
                 End If
             End Function
 
@@ -261,7 +332,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
 
             Public Overrides Function VisitConstructorDeclaration(node As CSS.ConstructorDeclarationSyntax) As VB.VisualBasicSyntaxNode
                 Dim attrs As SyntaxList(Of VBS.AttributeListSyntax) = Factory.List(
-                        node?.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))
+                                        node?.AttributeLists.Select(Function(a As CSS.AttributeListSyntax) DirectCast(a.Accept(Me), VBS.AttributeListSyntax)))
                 Dim initializer As VBS.ExpressionStatementSyntax = Nothing
                 If node.Initializer IsNot Nothing Then
                     initializer = DirectCast(node.Initializer.Accept(Me), VBS.ExpressionStatementSyntax)
@@ -352,7 +423,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
 
                 Dim body As New SyntaxList(Of VBS.StatementSyntax)
                 If node.Body IsNot Nothing Then
-                    body = node.Body.GetBodyStatements(Me, visitor, isEvent:=False)
+                    body = node.Body.GetBodyStatements(visitor)
                 ElseIf node.ExpressionBody IsNot Nothing Then
                     body = node.ExpressionBody.GetExpressionBodyStatements(False, Me)
                 End If
@@ -369,7 +440,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Dim parameterList As VBS.ParameterListSyntax = DirectCast(node.ParameterList?.Accept(Me), VBS.ParameterListSyntax)
                 Dim body As SyntaxList(Of VBS.StatementSyntax)
                 If node.Body IsNot Nothing Then
-                    body = node.Body.GetBodyStatements(Me, New MethodBodyVisitor(_semanticModel, Me), isEvent:=False)
+                    body = node.Body.GetBodyStatements(New MethodBodyVisitor(_semanticModel, Me))
                 Else
                     body = node.ExpressionBody.GetExpressionBodyStatements(False, Me)
                 End If
@@ -386,74 +457,108 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             End Function
 
             Public Overrides Function VisitEventDeclaration(node As CSS.EventDeclarationSyntax) As VB.VisualBasicSyntaxNode
-                Dim declaredSymbol As ISymbol = _semanticModel.GetDeclaredSymbol(node)
-
-                Dim eventSymbol As IEventSymbol = CType(declaredSymbol, IEventSymbol)
-
                 Dim returnAttributes As SyntaxList(Of VBS.AttributeListSyntax) = Nothing
                 Dim finalTrailingDirective As New SyntaxTriviaList
-                Dim attributeLists As List(Of VBS.AttributeListSyntax) = Me.ConvertAndSplitAttributes(node.AttributeLists, returnAttributes, finalTrailingDirective)
                 Dim modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, Me.IsModule, TokenContext.Member).ToList
-                Dim eventNameToken As SyntaxToken = GenerateSafeVbToken(node.Identifier, node, _semanticModel, _usedIdentifiers).WithTrailingTrivia(SpaceTrivia)
-                Dim asClause As VBS.SimpleAsClauseSyntax = Factory.SimpleAsClause(attributeLists:=returnAttributes, DirectCast(node.Type.Accept(Me), VBS.TypeSyntax))
                 modifiers.Add(CustomKeyword)
+                Dim declaredSymbol As ISymbol = _semanticModel.GetDeclaredSymbol(node)
+                Dim eventNameToken As SyntaxToken = GenerateSafeVbToken(node.Identifier, node, _semanticModel, _usedIdentifiers).WithTrailingTrivia(SpaceTrivia)
+                Dim typeSyntaxNode As VBS.TypeSyntax = DirectCast(node.Type.Accept(Me), VBS.TypeSyntax)
+                Dim asClause As VBS.SimpleAsClauseSyntax = Factory.SimpleAsClause(attributeLists:=returnAttributes, typeSyntaxNode)
                 Dim implementsClauseOrNothing As VBS.ImplementsClauseSyntax = If(declaredSymbol Is Nothing, Nothing, Me.CreateImplementsClauseSyntaxOrNull(declaredSymbol, eventNameToken))
-                Dim stmt As VBS.EventStatementSyntax = Factory.EventStatement(attributeLists:=Factory.List(attributeLists),
+                Dim attributeLists As List(Of VBS.AttributeListSyntax) = Me.ConvertAndSplitAttributes(node.AttributeLists, returnAttributes, finalTrailingDirective)
+                Dim eventStmt As VBS.EventStatementSyntax = Factory.EventStatement(attributeLists:=Factory.List(attributeLists),
                                                                               Factory.TokenList(modifiers),
-                                                                              eventNameToken,
-                                                                              parameterList:=Nothing,
-                                                                              asClause,
-                                                                              implementsClauseOrNothing).WithTrailingEol
+                                                                                   eventNameToken,
+                                                                                   parameterList:=Nothing,
+                                                                                   asClause,
+                                                                                   implementsClauseOrNothing).WithTrailingEol
                 If finalTrailingDirective.Any Then
-                    stmt = stmt.WithAppendedTrailingTrivia(finalTrailingDirective)
+                    eventStmt = eventStmt.WithAppendedTrailingTrivia(finalTrailingDirective)
+                End If
+                If implementsClauseOrNothing IsNot Nothing Then
+                    Throw UnreachableException(NameOf(VisitEventDeclaration), 453)
                 End If
                 Dim accessors As New List(Of VBS.AccessorBlockSyntax)
                 For Each e As IndexClass(Of CSS.AccessorDeclarationSyntax) In node.AccessorList.Accessors.WithIndex
                     If e.Value.Body IsNot Nothing OrElse e.Value.ExpressionBody IsNot Nothing Then
-                        accessors.Add(Me.ConvertAccessor(e.Value, Me.IsModule, isIterator:=False, isEvent:=True))
+                        accessors.Add(Me.ConvertEventAccessor(e.Value, Me.IsModule, GetEventLookupExpr(eventNameToken), typeSyntaxNode))
                     End If
                 Next
-                If accessors.Any Then
-                    Dim parameterList As VBS.ParameterListSyntax = Factory.ParseParameterList("()")
-                    Dim eventArgumentList As VBS.ArgumentListSyntax = Factory.ParseArgumentList("()")
-                    If eventSymbol IsNot Nothing Then
-                        Dim namedType As INamedTypeSymbol = CType(eventSymbol.Type, INamedTypeSymbol)
-                        Dim parameters As ImmutableArray(Of IParameterSymbol) = namedType.GetParameters
-                        ' ToDo correctly fill in parameter list
-                        If parameters.Length = 2 Then
-                            parameterList = Factory.ParseParameterList("(sender As Object, e As EventArgs)")
-                            eventArgumentList = Factory.ParseArgumentList("(sender, e)")
-                        End If
-                    End If
-                    ' RaiseEvent(sender As Object, e As EventArgs)
-                    '    RaiseEvent _buttonClicked(sender, e)
-                    ' End RaiseEvent
-                    Dim accessorStatement As VBS.AccessorStatementSyntax = Factory.RaiseEventAccessorStatement(Nothing, Nothing, parameterList)
-                    Dim eventName As VBS.IdentifierNameSyntax = Factory.IdentifierName($"_{Char.ToLowerInvariant(eventNameToken.Text(0))}{eventNameToken.Text.Substring(1)}")
-                    Dim raiseEventStatement As VBS.StatementSyntax = Factory.RaiseEventStatement(eventName, eventArgumentList).WithTrailingEol()
-                    accessors.Add(Factory.RaiseEventAccessorBlock(accessorStatement, Factory.SingletonList(raiseEventStatement)))
-                    Return Factory.EventBlock(stmt, Factory.List(accessors)).WithConvertedTriviaFrom(node)
+                If Not accessors.Any Then
+                    Throw UnreachableException(NameOf(VisitEventDeclaration), 479)
                 End If
-                Return stmt.WithConvertedTriviaFrom(node)
+
+                Dim parameterList As VBS.ParameterListSyntax = Factory.ParseParameterList("()")
+                Dim eventArgumentList As VBS.ArgumentListSyntax = Factory.ParseArgumentList("()")
+                Dim eventSymbol As IEventSymbol = CType(declaredSymbol, IEventSymbol)
+                If eventSymbol IsNot Nothing Then
+                    Dim namedType As INamedTypeSymbol = CType(eventSymbol.Type, INamedTypeSymbol)
+                    Dim parameters As ImmutableArray(Of IParameterSymbol) = namedType.GetParameters
+                    ' ToDo correctly fill in parameter list
+                    If parameters.Length = 2 Then
+                        parameterList = Factory.ParseParameterList("(sender As Object, e As EventArgs)")
+                        eventArgumentList = Factory.ParseArgumentList("(sender, e)")
+                    End If
+                End If
+                Dim eventExists As Boolean = False
+                Dim statementSyntaxes As New SyntaxList(Of VBS.StatementSyntax)
+                If _eventList.TryGetValue(GetEventLookupExpr(eventNameToken).ToString(), eventExists) Then
+
+                    '    Dim tempVar As SmallBasicCallback = TryCast(_buttonClicked("ButtonClicked"), SmallBasicCallback)
+                    Dim tempVar As VBS.IdentifierNameSyntax = Factory.IdentifierName(node.GetUniqueVariableNameInScope("tempVar", _usedIdentifiers, _semanticModel))
+                    Dim tryCastExpression As VBS.EqualsValueSyntax = Factory.EqualsValue(Factory.TryCastExpression(GetEventLookupExpr(eventNameToken), typeSyntaxNode))
+                    Dim tryCastEventName As VBS.StatementSyntax = FactoryDimStatement(tempVar.ToString(), asClause, tryCastExpression).WithTrailingEol()
+                    statementSyntaxes = statementSyntaxes.Add(tryCastEventName)
+                    '    If tempVar IsNot Nothing Then tempVar2.Invoke()
+                    Dim raiseEventStatement As VBS.StatementSyntax =
+                            Factory.ExpressionStatement(
+                                Factory.InvocationExpression(Factory.SimpleMemberAccessExpression(tempVar, InvokeName),
+                                                             eventArgumentList).WithTrailingEol())
+                    Dim condition As VBS.ExpressionSyntax = Factory.IsNotExpression(tempVar, NothingExpression)
+                    Dim ifStatement As VBS.StatementSyntax = Factory.SingleLineIfStatement(condition, Factory.SingletonList(raiseEventStatement), elseClause:=Nothing)
+                    statementSyntaxes = statementSyntaxes.Add(ifStatement)
+                Else
+                    statementSyntaxes = statementSyntaxes.Add(Factory.RaiseEventStatement(Factory.IdentifierName(eventNameToken)))
+                End If
+                Dim accessorStatement As VBS.AccessorStatementSyntax = Factory.RaiseEventAccessorStatement(Nothing, Nothing, parameterList)
+                accessors.Add(Factory.RaiseEventAccessorBlock(accessorStatement, statementSyntaxes))
+                Return Factory.EventBlock(eventStmt, Factory.List(accessors)).WithConvertedTriviaFrom(node)
             End Function
 
             Public Overrides Function VisitEventFieldDeclaration(node As CSS.EventFieldDeclarationSyntax) As VB.VisualBasicSyntaxNode
+                Dim id As SyntaxToken = Factory.Identifier(MakeVbSafeName(node.Declaration.Variables.Single().Identifier.ValueText))
                 Dim decl As CSS.VariableDeclaratorSyntax = node.Declaration.Variables.Single()
                 Dim declaredSymbol As ISymbol = _semanticModel.GetDeclaredSymbol(decl)
-                Dim id As SyntaxToken = Factory.Identifier(MakeVbSafeName(node.Declaration.Variables.Single().Identifier.ValueText))
                 Dim implementsClauseOrNothing As VBS.ImplementsClauseSyntax = If(declaredSymbol Is Nothing, Nothing, Me.CreateImplementsClauseSyntaxOrNull(declaredSymbol, id))
-                Dim returnAttributes As New SyntaxList(Of VBS.AttributeListSyntax)
-                Dim finalTrailingDirective As New SyntaxTriviaList
-                Dim attributeList As List(Of VBS.AttributeListSyntax) = Me.ConvertAndSplitAttributes(node.AttributeLists, returnAttributes, finalTrailingDirective)
-                If finalTrailingDirective.Any Then
-                    Stop
+                If implementsClauseOrNothing Is Nothing AndAlso Me.NeedEventHandlerList(node) Then
+                    Dim asNewClause As VBS.AsNewClauseSyntax = Factory.AsNewClause(DirectCast(NewEventHandlerListExpression, VBS.NewExpressionSyntax))
+                    Dim modifiedIdentifier As VBS.ModifiedIdentifierSyntax = Factory.ModifiedIdentifier(id).WithTrailingTrivia(SpaceTrivia)
+                    Dim names As SeparatedSyntaxList(Of VBS.ModifiedIdentifierSyntax) = Factory.SingletonSeparatedList(modifiedIdentifier)
+                    Dim declarator As VBS.VariableDeclaratorSyntax = Factory.VariableDeclarator(names, asNewClause, initializer:=Nothing)
+                    Dim declarators As SeparatedSyntaxList(Of VBS.VariableDeclaratorSyntax) = Factory.SingletonSeparatedList(declarator)
+                    Dim fieldModifiers As New List(Of SyntaxToken) From {
+                        PrivateKeyword,
+                        SharedKeyword
+                    }
+                    Return Factory.FieldDeclaration(attributeLists:=Nothing,
+                                                    Factory.TokenList(fieldModifiers),
+                                                    declarators
+                                                   ).WithTrailingEol
+                Else
+                    Dim returnAttributes As New SyntaxList(Of VBS.AttributeListSyntax)
+                    Dim finalTrailingDirective As New SyntaxTriviaList
+                    Dim attributeList As List(Of VBS.AttributeListSyntax) = Me.ConvertAndSplitAttributes(node.AttributeLists, returnAttributes, finalTrailingDirective)
+                    If finalTrailingDirective.Any Then
+                        Stop
+                    End If
+                    Return Factory.EventStatement(Factory.List(attributeList),
+                                         Factory.TokenList(ConvertModifiers(node.Modifiers, Me.IsModule, TokenContext.Member)),
+                                                        id,
+                                                        parameterList:=Nothing,
+                                                        Factory.SimpleAsClause(attributeLists:=Nothing, DirectCast(node.Declaration.Type.Accept(Me), VBS.TypeSyntax)).WithTrailingEol,
+                                                        implementsClauseOrNothing).WithConvertedTriviaFrom(node)
                 End If
-                Return Factory.EventStatement(Factory.List(attributeList),
-                                     Factory.TokenList(ConvertModifiers(node.Modifiers, Me.IsModule, TokenContext.Member)),
-                                                    id,
-                                                    parameterList:=Nothing,
-                                                    Factory.SimpleAsClause(attributeLists:=Nothing, DirectCast(node.Declaration.Type.Accept(Me), VBS.TypeSyntax)).WithTrailingEol,
-                                                    implementsClauseOrNothing).WithConvertedTriviaFrom(node)
             End Function
 
             Public Overrides Function VisitFieldDeclaration(node As CSS.FieldDeclarationSyntax) As VB.VisualBasicSyntaxNode
@@ -521,7 +626,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 If node.AccessorList IsNot Nothing Then
                     For Each a As CSS.AccessorDeclarationSyntax In node.AccessorList.Accessors
                         Dim foundIterator As Boolean
-                        accessors.Add(Me.ConvertAccessor(a, Me.IsModule, isEvent:=False, foundIterator))
+                        accessors.Add(Me.ConvertAccessor(a, Me.IsModule, foundIterator))
                         isIterator = isIterator Or foundIterator
                     Next
                 End If
@@ -1195,7 +1300,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                             End If
                             For Each a As CSS.AccessorDeclarationSyntax In csAccessors
                                 Dim foundIterator As Boolean
-                                accessors.Add(Me.ConvertAccessor(a, localIsModule, isEvent:=False, foundIterator))
+                                accessors.Add(Me.ConvertAccessor(a, localIsModule, foundIterator))
                                 isIterator = isIterator Or foundIterator
                             Next
                         End If

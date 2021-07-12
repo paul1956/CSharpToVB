@@ -10,7 +10,7 @@ Imports Xunit
 
 Namespace Tests.Issues
 
-    <TestClass()> Public Class NamespaceLevelTests
+    <TestClass()> Public Class IssueTests
         Inherits ConverterTestBase
 
         <Fact> '(Skip:="Not implemented yet")>
@@ -43,23 +43,25 @@ Namespace Tests.Issues
 
     Public Class C
 
-        Private Shared Event _buttonClicked As SmallBasicCallback
+        Private Shared _buttonClicked As New ComponentModel.EventHandlerList
 
         ''' <summary>
         ''' Raises an event when any button control is clicked.
         ''' </summary>
         Public Shared Custom Event ButtonClicked As SmallBasicCallback
             AddHandler(Value As SmallBasicCallback)
-                RemoveHandler Controls._buttonClicked, value
-                AddHandler _buttonClicked, value
+                Dim tempVar As SmallBasicCallback = TryCast(_buttonClicked(""ButtonClicked""), SmallBasicCallback)
+                If tempVar IsNot Nothing Then _buttonClicked.RemoveHandler(""ButtonClicked"", Value)
+                _buttonClicked.AddHandler(""ButtonClicked"", Value)
             End AddHandler
 
             RemoveHandler(Value As SmallBasicCallback)
-                RemoveHandler _buttonClicked, value
+                _buttonClicked.RemoveHandler(""ButtonClicked"", Value)
             End RemoveHandler
 
             RaiseEvent()
-                RaiseEvent _buttonClicked()
+                Dim tempVar3 As SmallBasicCallback = TryCast(_buttonClicked(""ButtonClicked""), SmallBasicCallback)
+                If tempVar3 IsNot Nothing Then tempVar3.Invoke()
             End RaiseEvent
         End Event
 

@@ -87,15 +87,20 @@ Public Module VisualBasicSyntaxFactory
 
 #Region "Identifiers"
 
+    Public ReadOnly AddHandlerName As IdentifierNameSyntax = Factory.IdentifierName("AddHandler")
+    Public ReadOnly AscwName As IdentifierNameSyntax = Factory.IdentifierName("AscW")
+    Public ReadOnly CloneIdentifier As IdentifierNameSyntax = Factory.IdentifierName("Clone")
     Public ReadOnly DecrementIdentifier As IdentifierNameSyntax = Factory.IdentifierName("Decrement")
     Public ReadOnly IncrementIdentifier As IdentifierNameSyntax = Factory.IdentifierName("Increment")
-    Public ReadOnly ThreadingIdentifier As IdentifierNameSyntax = Factory.IdentifierName("Threading")
     Public ReadOnly InterlockedIdentifier As IdentifierNameSyntax = Factory.IdentifierName("Interlocked")
-    Public ReadOnly SytemInterlockedExpression As MemberAccessExpressionSyntax = Factory.SimpleMemberAccessExpression(ThreadingIdentifier, DotToken, InterlockedIdentifier)
     Public ReadOnly MathIdentifier As IdentifierNameSyntax = Factory.IdentifierName("Math")
     Public ReadOnly MaxIdentifier As IdentifierNameSyntax = Factory.IdentifierName("Max")
     Public ReadOnly MaxValueIdentifier As IdentifierNameSyntax = Factory.IdentifierName("MaxValue")
+    Public ReadOnly MemberwiseCloneIdentifier As IdentifierNameSyntax = Factory.IdentifierName("MemberwiseClone")
     Public ReadOnly MinIdentifier As IdentifierNameSyntax = Factory.IdentifierName("Min")
+    Public ReadOnly RemoveHandlerName As IdentifierNameSyntax = Factory.IdentifierName("RemoveHandler")
+    Public ReadOnly ThreadingIdentifier As IdentifierNameSyntax = Factory.IdentifierName("Threading")
+    Public ReadOnly SytemInterlockedExpression As MemberAccessExpressionSyntax = Factory.SimpleMemberAccessExpression(ThreadingIdentifier, DotToken, InterlockedIdentifier)
 
 #End Region
 
@@ -291,12 +296,12 @@ Public Module VisualBasicSyntaxFactory
 
 #Region "Expressions"
 
-    Public ReadOnly CloneIdentifier As IdentifierNameSyntax = Factory.IdentifierName("Clone")
-    Public ReadOnly MemberwiseCloneIdentifier As IdentifierNameSyntax = Factory.IdentifierName("MemberwiseClone")
     Public ReadOnly DoubleQuoteExpression As LiteralExpressionSyntax = Factory.LiteralExpression(SyntaxKind.StringLiteralExpression, Factory.Literal(""))
     Public ReadOnly IntPrtSizeExpression As ExpressionSyntax = Factory.ParseExpression("IntPrt.Size")
+    Public ReadOnly InvokeName As SimpleNameSyntax = Factory.IdentifierName("Invoke")
     Public ReadOnly MeExpression As MeExpressionSyntax = Factory.MeExpression()
     Public ReadOnly MyBaseExpression As MyBaseExpressionSyntax = Factory.MyBaseExpression()
+    Public ReadOnly NewEventHandlerListExpression As ExpressionSyntax = DirectCast(Factory.ParseExpression(" New ComponentModel.EventHandlerList "), NewExpressionSyntax)
     Public ReadOnly NothingExpression As LiteralExpressionSyntax = Factory.NothingLiteralExpression(NothingKeyword)
     Public ReadOnly OneExpression As ExpressionSyntax = Factory.LiteralExpression(SyntaxKind.NumericLiteralExpression, Factory.Literal(1))
 
@@ -321,6 +326,11 @@ Public Module VisualBasicSyntaxFactory
 #End Region
 
 #Region "Factories"
+
+    Friend Function FactoryAscW(chr As ExpressionSyntax) As ExpressionSyntax
+        Dim argumentList As ArgumentListSyntax = Factory.ArgumentList(Factory.SingletonSeparatedList(Of ArgumentSyntax)(Factory.SimpleArgument(chr)))
+        Return Factory.InvocationExpression(AscwName, argumentList)
+    End Function
 
     Friend Function FactoryDimStatement(Declarator As VariableDeclaratorSyntax) As LocalDeclarationStatementSyntax
         Dim declarators As SeparatedSyntaxList(Of VariableDeclaratorSyntax) = Factory.SingletonSeparatedList(Declarator)

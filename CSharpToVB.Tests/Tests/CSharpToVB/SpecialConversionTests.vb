@@ -195,7 +195,7 @@ End Module")
         End RemoveHandler
 
         RaiseEvent()
-            RaiseEvent _test1()
+            RaiseEvent Test1
         End RaiseEvent
     End Event
 End Class")

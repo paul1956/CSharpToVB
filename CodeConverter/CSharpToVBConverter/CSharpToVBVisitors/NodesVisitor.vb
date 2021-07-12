@@ -27,8 +27,8 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             Private ReadOnly _originalRequest As ConvertRequest
             Private ReadOnly _placeholder As Integer = 1
             Private ReadOnly _reportException As Action(Of Exception)
-            Private ReadOnly _semanticModel As SemanticModel
             Private _membersList As SyntaxList(Of VBS.StatementSyntax)
+            Friend ReadOnly _semanticModel As SemanticModel
             Friend _usedIdentifiers As Dictionary(Of String, SymbolTableEntry)
             Public ReadOnly _allImports As New List(Of VBS.ImportsStatementSyntax)()
             Public ReadOnly _discardHelperMarkers As New List(Of CSS.BaseTypeDeclarationSyntax)()
@@ -78,6 +78,22 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Return argumentList
             End Function
 
+            Private Shared Function GetIdentifierNameFromName(expression As VBS.ExpressionSyntax) As VBS.IdentifierNameSyntax
+                Select Case True
+                    Case TypeOf expression Is VBS.IdentifierNameSyntax
+                        Return DirectCast(expression, VBS.IdentifierNameSyntax)
+                    Case TypeOf expression Is VBS.MemberAccessExpressionSyntax
+                        Dim memberAccess As VBS.MemberAccessExpressionSyntax = DirectCast(expression, VBS.MemberAccessExpressionSyntax)
+                        Dim name As String = memberAccess.Name.Identifier.Text
+                        If name.StartsWith("_", StringComparison.OrdinalIgnoreCase) Then
+                            Return Factory.IdentifierName(name.Substring(1))
+                        End If
+                        Return DirectCast(memberAccess.Name, VBS.IdentifierNameSyntax)
+                    Case Else
+                        Throw New NotSupportedException($"Cannot get SimpleNameSyntax from {expression.Kind()}:" & vbCrLf & "{expressionSyntax}")
+                End Select
+            End Function
+
             Private Shared Function IsInvokeIdentifier(sns As CSS.SimpleNameSyntax) As Boolean
                 Return sns.Identifier.Value.Equals("Invoke")
             End Function
@@ -113,18 +129,6 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     [inherits]([inherits].Count - 1) = [inherits].Last.WithTrailingEol
                 End If
             End Sub
-
-            Private Function GetIdentifierNameFromName(expression As VBS.ExpressionSyntax) As VBS.IdentifierNameSyntax
-                Select Case True
-                    Case TypeOf expression Is VBS.IdentifierNameSyntax
-                        Return DirectCast(expression, VBS.IdentifierNameSyntax)
-                    Case TypeOf expression Is VBS.MemberAccessExpressionSyntax
-                        Dim memberAccess As VBS.MemberAccessExpressionSyntax = DirectCast(expression, VBS.MemberAccessExpressionSyntax)
-                        Return Me.GetIdentifierNameFromName(memberAccess.Name)
-                    Case Else
-                        Throw New NotSupportedException($"Cannot get SimpleNameSyntax from {expression.Kind()}:" & vbCrLf & "{expressionSyntax}")
-                End Select
-            End Function
 
             <ExcludeFromCodeCoverage>
             Public Overrides Function DefaultVisit(node As SyntaxNode) As VB.VisualBasicSyntaxNode
