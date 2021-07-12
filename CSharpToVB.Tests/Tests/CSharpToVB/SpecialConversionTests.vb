@@ -426,7 +426,7 @@ public class TestClass {
         End RemoveHandler
 
         RaiseEvent()
-            RaiseEvent _value1()
+            RaiseEvent Value1
         End RaiseEvent
     End Event
 End Class")

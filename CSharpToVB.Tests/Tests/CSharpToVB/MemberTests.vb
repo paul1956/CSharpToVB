@@ -1002,8 +1002,7 @@ class TestClass {
         End RemoveHandler
 
         RaiseEvent()
-                Dim tempVar As EventHandler = TryCast(_myEvent(""MyEvent""), EventHandler)
-                If tempVar IsNot Nothing Then tempVar.Invoke()
+            RaiseEvent MyEvent
         End RaiseEvent
     End Event
 End Class")
@@ -1036,8 +1035,7 @@ class TestClass {
         End RemoveHandler
 
         RaiseEvent()
-            Dim tempVar As EventHandler = TryCast(_myEvent(""MyEvent""), EventHandler)
-            If tempVar IsNot Nothing Then tempVar.Invoke()
+            RaiseEvent MyEvent
         End RaiseEvent
     End Event
 End Class")
