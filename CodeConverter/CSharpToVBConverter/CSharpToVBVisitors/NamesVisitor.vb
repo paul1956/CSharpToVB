@@ -133,6 +133,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                             End If
                         End If
                     End If
+
                     Dim argument As CSS.ArgumentSyntax = TryCast(originalNameParent, CSS.ArgumentSyntax)
                     If argument IsNot Nothing Then
                         If VB.SyntaxFacts.IsKeywordKind(VB.SyntaxFacts.GetKeywordKind(node.Identifier.ValueText)) Then
@@ -161,6 +162,20 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                             End If
                             Return Factory.SimpleMemberAccessExpression(MeExpression.WithLeadingTrivia(name.GetLeadingTrivia), name.WithoutLeadingTrivia)
                         End If
+                    End If
+                End If
+                Dim variableDeclaration As CSS.VariableDeclarationSyntax = TryCast(originalNameParent, CSS.VariableDeclarationSyntax)
+                If variableDeclaration IsNot Nothing Then
+                    If variableDeclaration.Type.ToString().Equals(node.ToString(), StringComparison.Ordinal) Then
+                        Return Me.WrapTypedNameIfNecessary(
+                            Factory.IdentifierName(GenerateSafeVbToken(node.Identifier,
+                                                                           node,
+                                                                           _semanticModel,
+                                                                           _usedIdentifiers,
+                                                                           isQualifiedName:=False,
+                                                                           isTypeName:=True)
+                                                                          ), node)
+
                     End If
                 End If
                 If TypeOf originalNameParent Is CSS.DeclarationExpressionSyntax Then

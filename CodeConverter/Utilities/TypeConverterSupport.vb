@@ -629,6 +629,10 @@ Public Module TypeConverterSupport
                 Return id.MakeIdentifierUnique(node, usedIdentifiers, model, isBracketNeeded:=True, isQualifiedNameOrTypeName:=isQualifiedName)
             End If
         End If
+        ' TODO Workaround till we get a list of special variables
+        If id.Text().Equals("RECT",StringComparison.Ordinal) Then
+            Return Factory.Identifier("RECT_Renamed")
+        End If
 
         Dim idParent As SyntaxNode = id.Parent
         If VB.SyntaxFacts.IsKeywordKind(keywordKind) OrElse id.ValueText = "Yield" Then

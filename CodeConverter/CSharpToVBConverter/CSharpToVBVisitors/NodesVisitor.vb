@@ -33,6 +33,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             Public ReadOnly _allImports As New List(Of VBS.ImportsStatementSyntax)()
             Public ReadOnly _discardHelperMarkers As New List(Of CSS.BaseTypeDeclarationSyntax)()
             Public ReadOnly _inlineAssignHelperMarkers As New List(Of CSS.BaseTypeDeclarationSyntax)()
+            Public ReadOnly _globalSymbols As New List(Of Dictionary(Of string,string))()
             Public _vbHeaderLeadingTrivia As SyntaxTriviaList
 
             Friend Sub New(originalRequest As ConvertRequest, lSemanticModel As SemanticModel, defaultVbOptions As DefaultVbOptions, reportException As Action(Of Exception))
@@ -43,6 +44,10 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 _usedIdentifiers = New Dictionary(Of String, SymbolTableEntry)(StringComparer.Ordinal)
                 _originalRequest = originalRequest
                 Me.NeededEndUsingCount = 0
+                'For Each MetadataRef As MetadataReference In lSemanticModel.Compilation.ExternalReferences()
+                '    Stop
+
+                'Next
             End Sub
 
             Friend Property NeededEndUsingCount As Integer

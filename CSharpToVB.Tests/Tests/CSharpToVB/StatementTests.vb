@@ -1237,7 +1237,7 @@ End Class")
 {
     void TestMethod(int number)
     {
-    Object o = ""demo"";
+    object o = ""demo"";
 
     switch (o)
     {
