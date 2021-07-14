@@ -289,6 +289,11 @@ End Function
                                         baseList.Add(item.WithTrailingTrivia(SpaceTrivia))
                                     End If
                                 Else
+                                    Dim constraintClauses As SyntaxList(Of CSS.TypeParameterConstraintClauseSyntax) = CType(baseType, CSS.InterfaceDeclarationSyntax).ConstraintClauses
+                                    If constraintClauses.Count > 0 AndAlso constraintClauses(0).WhereKeyword.LeadingTrivia.ContainsDirectiveTrivia Then
+                                        item=item.WithAppendedEol()
+                                        item=item.WithAppendedTrailingTrivia(constraintClauses(0).WhereKeyword.LeadingTrivia.ConvertTriviaList())
+                                    End If
                                     baseList.Add(item)
                                 End If
                             Next
@@ -347,7 +352,6 @@ End Function
                     Dim m As CSS.MemberDeclarationSyntax = e.Value
                     Dim statement As VBS.StatementSyntax = DirectCast(m.Accept(Me), VBS.StatementSyntax).RemoveExtraLeadingEol.WithTrailingEol
 
-                    Dim leadingTrivia As SyntaxTriviaList = statement.GetLeadingTrivia
                     ' Cases below are handled by RestructureAttributesAndModifiers
                     If statement.IsKind(VB.SyntaxKind.FieldDeclaration) Then
                         members.Add(statement)

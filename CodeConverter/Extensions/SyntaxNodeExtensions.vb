@@ -13,18 +13,6 @@ Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
 Public Module SyntaxNodeExtensions
 
-    <Extension>
-    Private Function AdjustWhitespace(trivia As SyntaxTrivia, nextTrivia As SyntaxTrivia, afterLineContinue As Boolean) As SyntaxTrivia
-        If trivia.Span.Length = nextTrivia.Span.Length Then
-            Return trivia
-        End If
-        Dim lineContinueOffset As Integer = If(afterLineContinue, 2, 0)
-        If trivia.Span.Length > nextTrivia.Span.Length Then
-            Return Factory.Whitespace(New String(" "c, Math.Max(trivia.FullWidth - lineContinueOffset, 1)))
-        End If
-        Return Factory.Whitespace(New String(" "c, Math.Max(nextTrivia.FullWidth - lineContinueOffset, 1)))
-    End Function
-
     ''' <summary>
     ''' Used at the end of a statement to adjust trivia from two items (like semicolon) the second
     ''' of which will be removed. Directives are allowed.
@@ -139,6 +127,18 @@ Public Module SyntaxNodeExtensions
             End Select
         Next
         Return newLeadingTrivia
+    End Function
+
+    <Extension>
+    Private Function AdjustWhitespace(trivia As SyntaxTrivia, nextTrivia As SyntaxTrivia, afterLineContinue As Boolean) As SyntaxTrivia
+        If trivia.Span.Length = nextTrivia.Span.Length Then
+            Return trivia
+        End If
+        Dim lineContinueOffset As Integer = If(afterLineContinue, 2, 0)
+        If trivia.Span.Length > nextTrivia.Span.Length Then
+            Return Factory.Whitespace(New String(" "c, Math.Max(trivia.FullWidth - lineContinueOffset, 1)))
+        End If
+        Return Factory.Whitespace(New String(" "c, Math.Max(nextTrivia.FullWidth - lineContinueOffset, 1)))
     End Function
 
     <Extension>
@@ -358,6 +358,35 @@ Public Module SyntaxNodeExtensions
     End Function
 
     ''' <summary>
+    ''' Make sure the node (usually a statement) has at most 1 EOL at end
+    ''' </summary>
+    ''' <typeparam name="T"></typeparam>
+    ''' <param name="node"></param>
+    ''' <returns></returns>
+    <Extension>
+    Friend Function WithMax1Eol(Of T As SyntaxNode)(node As T) As T
+        If node Is Nothing Then
+            Return Nothing
+        End If
+        Dim trailingTrivia As SyntaxTriviaList = node.GetTrailingTrivia
+        If Not node.GetTrailingTrivia.LastOrDefault().IsKind(VB.SyntaxKind.EndOfLineTrivia) Then
+            Return node
+        End If
+        Dim newTrailingTrivia As SyntaxTriviaList = trailingTrivia
+        For i As Integer = trailingTrivia.Count - 2 To 0 Step -1
+            Dim currentTrivia As SyntaxTrivia = trailingTrivia(i)
+            Dim nextTrivia As SyntaxTrivia = trailingTrivia.GetForwardTriviaOrDefault(i, lookaheadCount:=1)
+            If currentTrivia.IsKind(VB.SyntaxKind.EndOfLineTrivia) AndAlso currentTrivia.RawKind = nextTrivia.RawKind Then
+                newTrailingTrivia = newTrailingTrivia.RemoveAt(i)
+                Continue For
+            End If
+            Exit For
+        Next
+
+        Return node.WithTrailingTrivia(newTrailingTrivia)
+    End Function
+
+    ''' <summary>
     ''' Merge leading trivia
     ''' </summary>
     ''' <typeparam name="T"></typeparam>
@@ -494,7 +523,7 @@ Public Module SyntaxNodeExtensions
                         If trailingTrivia(1).IsKind(VB.SyntaxKind.WhitespaceTrivia) Then
                             Return node.WithTrailingTrivia(VbEolTrivia)
                         ElseIf trailingTrivia(1).IsEndOfLine Then
-                            Return node
+                            Return node.WithTrailingTrivia(VbEolTrivia)
                         ElseIf trailingTrivia(1).IsCommentOrDirectiveTrivia Then
                             Return node.WithAppendedEol
                         End If

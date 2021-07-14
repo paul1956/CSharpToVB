@@ -223,7 +223,8 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     End If
 
                     ' TypeOf block Is SyntaxList(Of CSS.StatementSyntax)
-                    statements = statements.AddRange(Factory.List(DirectCast(block, SyntaxList(Of CSS.StatementSyntax)).SelectMany(Function(s As CSS.StatementSyntax) s.Accept(New MethodBodyVisitor(_semanticModel, Me)))))
+                    Dim methodBodyVisitor As New MethodBodyVisitor(_semanticModel, Me)
+                    statements = statements.AddRange(Factory.List(DirectCast(block, SyntaxList(Of CSS.StatementSyntax)).SelectMany(Function(s As CSS.StatementSyntax) s.Accept(methodBodyVisitor))))
                     statements = Me.AdjustUsingIfNeeded(statements)
                     Dim expression As ExpressionSyntax = Nothing
                     If asClause Is Nothing AndAlso statements.Count = 1 AndAlso statements(0).TryUnpackExpression(expression) Then
@@ -1148,7 +1149,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                 Dim argumentList As ArgumentListSyntax = Factory.ArgumentList(Factory.SingletonSeparatedList(Of ArgumentSyntax)(Factory.SimpleArgument(expr)))
                                 cTypeExpression = Factory.PredefinedCastExpression(CLngKeyword, Factory.InvocationExpression(fixExpr, argumentList))
                                 Dim rightExpression As ExpressionSyntax = Factory.MemberAccessExpression(VB.SyntaxKind.SimpleMemberAccessExpression, PredefinedTypeInteger, DotToken, MaxValueIdentifier)
-                                cTypeExpression = Factory.PredefinedCastExpression(CIntKeyword, Factory.BinaryExpression(VB.SyntaxKind.ModuloExpression, CType(cTypeExpression, ExpressionSyntax), ModKeyword.With(SpaceTrivia, SpaceTrivia), rightExpression).WithTrailingTrivia(newTrailingTrivia))
+                                cTypeExpression = Factory.PredefinedCastExpression(CIntKeyword, Factory.BinaryExpression(VB.SyntaxKind.ModuloExpression, CType(cTypeExpression, ExpressionSyntax), ModKeyword.With(SpaceTrivia, SpaceTrivia), rightExpression).WithTrailingTrivia(newTrailingTrivia).WithMax1Eol())
                             End If
                         Case SpecialType.System_UInt32
                             cTypeExpression = Factory.PredefinedCastExpression(CUIntKeyword, expr)

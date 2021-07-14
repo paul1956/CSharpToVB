@@ -33,10 +33,10 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             Public ReadOnly _allImports As New List(Of VBS.ImportsStatementSyntax)()
             Public ReadOnly _discardHelperMarkers As New List(Of CSS.BaseTypeDeclarationSyntax)()
             Public ReadOnly _inlineAssignHelperMarkers As New List(Of CSS.BaseTypeDeclarationSyntax)()
-            Public ReadOnly _globalSymbols As New List(Of Dictionary(Of string,string))()
+            Public ReadOnly _globalSymbols As New List(Of Dictionary(Of String, String))()
             Public _vbHeaderLeadingTrivia As SyntaxTriviaList
 
-            Friend Sub New(originalRequest As ConvertRequest, lSemanticModel As SemanticModel, defaultVbOptions As DefaultVbOptions, reportException As Action(Of Exception))
+            Friend Sub New(originalRequest As ConvertRequest, lSemanticModel As SemanticModel, globalSymbols As List(Of Dictionary(Of String, String)), defaultVbOptions As DefaultVbOptions, reportException As Action(Of Exception))
                 _semanticModel = lSemanticModel
                 _reportException = reportException
                 _defaultVbOptions = defaultVbOptions
@@ -44,10 +44,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 _usedIdentifiers = New Dictionary(Of String, SymbolTableEntry)(StringComparer.Ordinal)
                 _originalRequest = originalRequest
                 Me.NeededEndUsingCount = 0
-                'For Each MetadataRef As MetadataReference In lSemanticModel.Compilation.ExternalReferences()
-                '    Stop
-
-                'Next
+                _globalSymbols = globalSymbols
             End Sub
 
             Friend Property NeededEndUsingCount As Integer
@@ -303,8 +300,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             End Function
 
             Public Overrides Function VisitGlobalStatement(node As CSS.GlobalStatementSyntax) As VB.VisualBasicSyntaxNode
-                Dim methodBodyVisitor As New MethodBodyVisitor(_semanticModel, Me)
-                _membersList = _membersList.AddRange(node.Statement.Accept(methodBodyVisitor))
+                _membersList = _membersList.AddRange(node.Statement.Accept(New MethodBodyVisitor(_semanticModel, Me)))
                 Return Nothing
             End Function
 

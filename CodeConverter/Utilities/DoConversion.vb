@@ -76,6 +76,7 @@ Public Module DoConversion
                                                       End Function, requestToConvert.CancelToken) Then
                 Return New ConversionResult(Array.Empty(Of Exception))
             Else
+                Dim globalSymbols As List(Of Dictionary(Of String, String)) = Nothing
                 Dim convertedNode As VB.VisualBasicSyntaxNode =
                         sourceTree.DoConversion(compilation.GetSemanticModel(tree, ignoreAccessibility:=True),
                                                 defaultVbOptions,
@@ -83,6 +84,7 @@ Public Module DoConversion
                                                 requestToConvert.IsProjectConversion,
                                                 reportException,
                                                 mProgress,
+                                                globalSymbols,
                                                 requestToConvert.CancelToken
                                                )
                 requestToConvert.UsedStacks.Clear()

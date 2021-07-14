@@ -60,10 +60,10 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Dim stmt As VBS.AccessorStatementSyntax
                 Dim statements As SyntaxList(Of VBS.StatementSyntax) = Factory.List(Of VBS.StatementSyntax)()
                 isIterator = False
-                Dim visitor As New MethodBodyVisitor(_semanticModel, Me)
                 If node.Body IsNot Nothing Then
-                    statements = node.Body.GetBodyStatements(visitor)
-                    isIterator = visitor.IsIterator
+                    Dim methodBodyVisitor As New MethodBodyVisitor(_semanticModel, Me)
+                    statements = node.Body.GetBodyStatements(methodBodyVisitor)
+                    isIterator = methodBodyVisitor.IsIterator
                 ElseIf node.ExpressionBody IsNot Nothing Then
                     statements = node.ExpressionBody.GetExpressionBodyStatements(False, Me)
                 End If
@@ -98,9 +98,8 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Dim blockKind As VB.SyntaxKind
                 Dim stmt As VBS.AccessorStatementSyntax
                 Dim statements As SyntaxList(Of VBS.StatementSyntax) = Factory.List(Of VBS.StatementSyntax)()
-                Dim visitor As New MethodBodyVisitor(_semanticModel, Me)
                 If node.Body IsNot Nothing Then
-                    statements = node.Body.GetEventBodyStatements(Me, visitor, eventLoopupExpr, eventType)
+                    statements = node.Body.GetEventBodyStatements(Me, New MethodBodyVisitor(_semanticModel, Me), eventLoopupExpr, eventType)
                 ElseIf node.ExpressionBody IsNot Nothing Then
                     statements = node.ExpressionBody.GetExpressionBodyStatements(False, Me)
                 End If
@@ -338,8 +337,9 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     initializer = DirectCast(node.Initializer.Accept(Me), VBS.ExpressionStatementSyntax)
                 End If
                 Dim vbStatements As New Dictionary(Of CSS.LocalFunctionStatementSyntax, VBS.StatementSyntax)
+                Dim methodBodyVisitor As New MethodBodyVisitor(_semanticModel, Me)
                 For Each localFunction As CSS.LocalFunctionStatementSyntax In node.DescendantNodes().OfType(Of CSS.LocalFunctionStatementSyntax).ToList()
-                    Dim replacementStatement As VBS.StatementSyntax = localFunction.Accept(New MethodBodyVisitor(_semanticModel, Me))(0)
+                    Dim replacementStatement As VBS.StatementSyntax = localFunction.Accept(methodBodyVisitor)(0)
                     If TypeOf replacementStatement IsNot VBS.EmptyStatementSyntax OrElse replacementStatement.ContainsCommentOrDirectiveTrivia Then
                         vbStatements.Add(localFunction, replacementStatement)
                     End If
@@ -363,7 +363,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         If TypeOf e.Value Is CSS.LocalFunctionStatementSyntax Then
                             statements = statements.AddRange(ReplaceOneStatementWithMarkedStatements(e.Value, Factory.EmptyStatement(), removeStatement:=True))
                         Else
-                            statements = statements.AddRange(e.Value.Accept(New MethodBodyVisitor(_semanticModel, Me)))
+                            statements = statements.AddRange(e.Value.Accept(methodBodyVisitor))
                         End If
                     Next
                     statements = Me.AdjustUsingIfNeeded(statements)
@@ -412,7 +412,6 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Dim parameterList As VBS.ParameterListSyntax = DirectCast(node.ParameterList?.Accept(Me), VBS.ParameterListSyntax).
                                                                     WithRestructuredEolTrivia
                 Dim modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, Me.IsModule, TokenContext.Member).ToList
-                Dim visitor As New MethodBodyVisitor(_semanticModel, Me)
                 modifiers.Add(If(node.ImplicitOrExplicitKeyword.ValueText = "explicit", NarrowingKeyword, WideningKeyword))
                 Dim type As VBS.TypeSyntax = DirectCast(node.Type.Accept(Me), VBS.TypeSyntax).With({SpaceTrivia}, {SpaceTrivia})
                 Dim asClause As VBS.SimpleAsClauseSyntax = Factory.SimpleAsClause(Nothing, type)
@@ -423,16 +422,18 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
 
                 Dim body As New SyntaxList(Of VBS.StatementSyntax)
                 If node.Body IsNot Nothing Then
-                    body = node.Body.GetBodyStatements(visitor)
+                    body = node.Body.GetBodyStatements(New MethodBodyVisitor(_semanticModel, Me))
                 ElseIf node.ExpressionBody IsNot Nothing Then
                     body = node.ExpressionBody.GetExpressionBodyStatements(False, Me)
                 End If
                 Return PrependStatementWithMarkedStatementTrivia(
                     node,
                     Factory.OperatorBlock(operatorStatement,
-                                          body,
-                                          FactoryEndBlockStatement(VB.SyntaxKind.EndOperatorStatement,
-                                                                   OperatorKeyword, node.Body.GetBraces.Item2.CollectConvertedTokenTrivia(getLeading:=True, getTrailing:=True))).WithConvertedTriviaFrom(node))
+                                                  body,
+                                                  FactoryEndBlockStatement(VB.SyntaxKind.EndOperatorStatement,
+                                                                          OperatorKeyword,
+                                                                          node.Body.GetBraces.Item2.CollectConvertedTokenTrivia(getLeading:=True, getTrailing:=True))
+                                                 ).WithConvertedTriviaFrom(node))
             End Function
 
             Public Overrides Function VisitDestructorDeclaration(node As CSS.DestructorDeclarationSyntax) As VB.VisualBasicSyntaxNode
@@ -735,14 +736,14 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
 
                 Dim functionStmtLeadingTrivia As SyntaxTriviaList
                 Dim vbStatements As New List(Of VBS.StatementSyntax)
-                Dim visitor As New MethodBodyVisitor(_semanticModel, Me)
                 Dim finalLeadingTrivia As New SyntaxTriviaList
                 If node.Body IsNot Nothing Then
                     finalLeadingTrivia = node.Body.CloseBraceToken.CollectConvertedTokenTrivia(getLeading:=True, getTrailing:=False)
                 End If
+                Dim methodBodyVisitor As New MethodBodyVisitor(_semanticModel, Me)
                 For Each e As IndexClass(Of CSS.LocalFunctionStatementSyntax) In node.DescendantNodes().OfType(Of CSS.LocalFunctionStatementSyntax).WithIndex
                     Dim localFunction As CSS.LocalFunctionStatementSyntax = e.Value
-                    Dim replacementStatement As VBS.StatementSyntax = localFunction.Accept(visitor)(0)
+                    Dim replacementStatement As VBS.StatementSyntax = localFunction.Accept(methodBodyVisitor)(0)
                     If e.IsLast And finalLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
                         finalLeadingTrivia = New SyntaxTriviaList
                     End If
@@ -758,7 +759,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         If e.Value.IsKind(CS.SyntaxKind.LocalFunctionStatement) Then
                             vbStatementCollection = ReplaceOneStatementWithMarkedStatements(e.Value, Factory.EmptyStatement, True)
                         Else
-                            vbStatementCollection = e.Value.Accept(visitor)
+                            vbStatementCollection = e.Value.Accept(methodBodyVisitor)
                             vbStatementCollection = ReplaceStatementsWithMarkedStatements(e.Value, vbStatementCollection)
                         End If
                         If e.IsFirst Then
@@ -805,7 +806,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Else
                     modifiers = ConvertModifiers(node.Modifiers, Me.IsModule, If(containingType?.IsInterfaceType() = True, TokenContext.Local, TokenContext.Member)).ToList
                 End If
-                If visitor.IsIterator And Not isReturnVoid Then
+                If methodBodyVisitor.IsIterator And Not isReturnVoid Then
                     modifiers.Add(IteratorKeyword)
                 End If
                 If node.ParameterList.Parameters.Any AndAlso node.ParameterList.Parameters(0).Modifiers.Any(CS.SyntaxKind.ThisKeyword) Then
@@ -1078,10 +1079,10 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Dim returnAttributes As SyntaxList(Of VBS.AttributeListSyntax) = Nothing
                 Dim finalTrailingDirective As New SyntaxTriviaList
                 Dim attributeLists As List(Of VBS.AttributeListSyntax) = Me.ConvertAndSplitAttributes(node.AttributeLists, returnAttributes, finalTrailingDirective)
-                Dim visitor As New MethodBodyVisitor(_semanticModel, Me)
                 Dim body As SyntaxList(Of VBS.StatementSyntax)
                 If node.Body IsNot Nothing Then
-                    body = Factory.List(node.Body.Statements.SelectMany(Function(s As CSS.StatementSyntax) s.Accept(visitor)))
+                    Dim methodBodyVisitor As New MethodBodyVisitor(_semanticModel, Me)
+                    body = Factory.List(node.Body.Statements.SelectMany(Function(s As CSS.StatementSyntax) s.Accept(methodBodyVisitor)))
                 ElseIf node.ExpressionBody IsNot Nothing Then
                     body = node.ExpressionBody.GetExpressionBodyStatements(False, Me)
                 Else
