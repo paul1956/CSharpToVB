@@ -5,8 +5,6 @@
 Imports System.Runtime.CompilerServices
 Imports System.Text
 Imports Microsoft.CodeAnalysis
-Imports CS = Microsoft.CodeAnalysis.CSharp
-Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
@@ -107,11 +105,6 @@ Public Module TypeConverterSupport
             elementList.Add(typePart)
         End If
         Return currentIndex
-    End Function
-
-    <Extension>
-    Private Function IsKind(kind As VB.SyntaxKind, ParamArray kinds() As VB.SyntaxKind) As Boolean
-        Return kinds.Contains(kind)
     End Function
 
     <Extension>
@@ -593,77 +586,6 @@ Public Module TypeConverterSupport
             elementList.Add(ConvertToType(typeString.ToString).ToString)
         End If
         Return elementList
-    End Function
-
-    ''' <summary>
-    ''' Returns Safe VB Name with QualifiedName and TypeName both false
-    ''' </summary>
-    ''' <param name="id"></param>
-    ''' <returns></returns>
-    ''' <param name="node"></param><param name="model"></param>
-    ''' <param name="usedIdentifiers"></param>
-    Friend Function GenerateSafeVbToken(id As SyntaxToken, node As CS.CSharpSyntaxNode, model As SemanticModel, usedIdentifiers As Dictionary(Of String, SymbolTableEntry)) As SyntaxToken
-        Return GenerateSafeVbToken(id, node, model, usedIdentifiers, isQualifiedName:=False, isTypeName:=False)
-    End Function
-
-    ''' <summary>
-    ''' Returns Safe VB Name
-    ''' </summary>
-    ''' <param name="id">Original Variable Name</param>
-    ''' <param name="node"></param>
-    ''' <param name="model"></param>
-    ''' <param name="usedIdentifiers"></param>
-    ''' <param name="isQualifiedName">True if name is part of a Qualified Name and should not be renamed</param>
-    ''' <returns></returns>
-    ''' <param name="isTypeName"></param>
-    Friend Function GenerateSafeVbToken(id As SyntaxToken, node As CS.CSharpSyntaxNode, model As SemanticModel, usedIdentifiers As Dictionary(Of String, SymbolTableEntry), isQualifiedName As Boolean, isTypeName As Boolean) As SyntaxToken
-        If node Is Nothing Then
-            Throw New ArgumentNullException(NameOf(node))
-        End If
-
-        Dim keywordKind As VB.SyntaxKind = VB.SyntaxFacts.GetKeywordKind(id.ValueText)
-        If isTypeName Then
-            isQualifiedName = True
-        Else
-            If VB.SyntaxFacts.IsPredefinedType(keywordKind) Then
-                Return id.MakeIdentifierUnique(node, usedIdentifiers, model, isBracketNeeded:=True, isQualifiedNameOrTypeName:=isQualifiedName)
-            End If
-        End If
-        ' TODO Workaround till we get a list of special variables
-        If id.Text().Equals("RECT",StringComparison.Ordinal) Then
-            Return Factory.Identifier("RECT_Renamed")
-        End If
-
-        Dim idParent As SyntaxNode = id.Parent
-        If VB.SyntaxFacts.IsKeywordKind(keywordKind) OrElse id.ValueText = "Yield" Then
-            Dim bracketNeeded As Boolean = True
-            If idParent Is Nothing OrElse
-               keywordKind.IsKind(VB.SyntaxKind.REMKeyword, VB.SyntaxKind.DelegateKeyword) OrElse
-               id.Text.Chars(0) = "@" Then
-                ' Do nothing
-            ElseIf TypeOf idParent.Parent Is CSS.MemberAccessExpressionSyntax Then
-                Dim memberAccessExpression As CSS.MemberAccessExpressionSyntax = CType(idParent?.Parent, CSS.MemberAccessExpressionSyntax)
-                If TypeOf memberAccessExpression.Expression IsNot CSS.GenericNameSyntax Then
-                    bracketNeeded = memberAccessExpression.Expression.ToString.Equals(id.ToString, StringComparison.Ordinal)
-                End If
-                ' ReSharper disable once VBUseFirstInstead
-            ElseIf idParent.AncestorsAndSelf().OfType(Of CSS.UsingDirectiveSyntax).FirstOrDefault().IsKind(CS.SyntaxKind.UsingDirective) Then
-                id = Factory.Token(keywordKind).WithTriviaFrom(id)
-                bracketNeeded = False
-            End If
-            Return id.MakeIdentifierUnique(node, usedIdentifiers, model, bracketNeeded, isQualifiedNameOrTypeName:=isQualifiedName)
-        End If
-
-        If (Not isQualifiedName) AndAlso idParent?.IsParentKind(CS.SyntaxKind.Parameter) Then
-            Dim param As CSS.ParameterSyntax = DirectCast(idParent.Parent, CSS.ParameterSyntax)
-            Dim methodDeclaration As CSS.MethodDeclarationSyntax = TryCast(param.Parent?.Parent, CSS.MethodDeclarationSyntax)
-            isQualifiedName = methodDeclaration Is Nothing OrElse
-                              String.Compare(methodDeclaration.Identifier.ValueText, id.ValueText,
-                                             ignoreCase:=True, Globalization.CultureInfo.InvariantCulture) = 0 OrElse
-                              String.Compare(param.Type.ToString, id.ValueText, ignoreCase:=False,
-                                             Globalization.CultureInfo.InvariantCulture) = 0
-        End If
-        Return id.MakeIdentifierUnique(node, usedIdentifiers, model, isBracketNeeded:=False, isQualifiedNameOrTypeName:=isQualifiedName)
     End Function
 
 End Module

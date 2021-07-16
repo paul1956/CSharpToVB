@@ -17,7 +17,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             Inherits CS.CSharpSyntaxVisitor(Of VB.VisualBasicSyntaxNode)
 
             Public Overrides Function VisitDiscardDesignation(node As CSS.DiscardDesignationSyntax) As VB.VisualBasicSyntaxNode
-                Dim discardNameToken As SyntaxToken = GenerateSafeVbToken(node.UnderscoreToken, node, _semanticModel, _usedIdentifiers)
+                Dim discardNameToken As SyntaxToken = Me.GenerateSafeVbToken(node.UnderscoreToken, node)
                 Dim identExpr As VBS.IdentifierNameSyntax = Factory.IdentifierName(discardNameToken)
                 Dim typeName As VB.VisualBasicSyntaxNode
                 Dim parentExpression As CSS.DeclarationExpressionSyntax = DirectCast(node.Parent, CSS.DeclarationExpressionSyntax)
@@ -49,7 +49,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             End Function
 
             Public Overrides Function VisitSingleVariableDesignation(node As CSS.SingleVariableDesignationSyntax) As VB.VisualBasicSyntaxNode
-                Dim identifier As SyntaxToken = GenerateSafeVbToken(node.Identifier, node, _semanticModel, _usedIdentifiers)
+                Dim identifier As SyntaxToken = Me.GenerateSafeVbToken(node.Identifier, node)
                 Dim identifierExpression As VBS.IdentifierNameSyntax = Factory.IdentifierName(identifier)
 
                 If node.Parent.IsKind(CS.SyntaxKind.DeclarationExpression) Then

@@ -4,7 +4,6 @@
 
 Imports System.Diagnostics.CodeAnalysis
 Imports System.Runtime.InteropServices
-Imports System.Runtime.Intrinsics.Arm
 Imports System.Text
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
@@ -75,9 +74,9 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 If node.Else Is Nothing Then
                     Exit Sub
                 End If
-                Dim savedNeedEndUsingCount As Integer = _nodesVisitor.NeededEndUsingCount
+                Dim savedNeedEndUsingCount As Integer = _nodesVisitor._neededEndUsingCount
                 Try
-                    _nodesVisitor.NeededEndUsingCount = 0
+                    _nodesVisitor._neededEndUsingCount = 0
                     If TypeOf node.Else.Statement Is CSS.IfStatementSyntax Then
                         Dim [elseIf] As CSS.IfStatementSyntax = DirectCast(node.Else.Statement, CSS.IfStatementSyntax)
                         Dim elseIfKeywordWithTrivia As SyntaxToken = ElseIfKeyword.WithLeadingTrivia(node.Else.Statement.GetLeadingTrivia.ConvertTriviaList()).WithPrependedLeadingTrivia(node.Else.GetLeadingTrivia.ConvertTriviaList())
@@ -110,7 +109,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         closeBraceTrailingTrivia = Nothing
                     End If
                 Finally
-                    _nodesVisitor.NeededEndUsingCount = savedNeedEndUsingCount
+                    _nodesVisitor._neededEndUsingCount = savedNeedEndUsingCount
                 End Try
             End Sub
 
@@ -138,9 +137,9 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 If csCloseBrace.TrailingTrivia.ContainsCommentOrDirectiveTrivia Then
                     closeBraceTrailingTrivia = csCloseBrace.TrailingTrivia.ConvertTriviaList()
                 End If
-                Dim savedNeedEndUsingCount As Integer = _nodesVisitor.NeededEndUsingCount
+                Dim savedNeedEndUsingCount As Integer = _nodesVisitor._neededEndUsingCount
                 Try
-                    _nodesVisitor.NeededEndUsingCount = 0
+                    _nodesVisitor._neededEndUsingCount = 0
                     Select Case True
                         Case TypeOf node Is CSS.BlockSyntax
                             Dim nodeBlock As CSS.BlockSyntax = DirectCast(node, CSS.BlockSyntax)
@@ -177,7 +176,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Catch ex As Exception
                     Throw
                 Finally
-                    _nodesVisitor.NeededEndUsingCount = savedNeedEndUsingCount
+                    _nodesVisitor._neededEndUsingCount = savedNeedEndUsingCount
                 End Try
                 If TypeOf node IsNot CSS.LocalFunctionStatementSyntax Then
                     Return node.Accept(Me)
@@ -207,7 +206,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 simpleTypeName = If(TypeOf type Is QualifiedNameSyntax, DirectCast(type, QualifiedNameSyntax).Right.ToString(), type.ToString())
                 Dim identifier As SyntaxToken = If(catchClause.Declaration.Identifier.IsKind(CS.SyntaxKind.None),
                                                         Factory.Identifier($"__unused{simpleTypeName}{index + 1}__"),
-                                                        GenerateSafeVbToken(catchClause.Declaration.Identifier, catchClause, _semanticModel, _nodesVisitor._usedIdentifiers))
+                                                        _nodesVisitor.GenerateSafeVbToken(catchClause.Declaration.Identifier, catchClause))
                 Dim whenClause As CatchFilterClauseSyntax = If(catchClause.Filter Is Nothing, Nothing, Factory.CatchFilterClause(filter:=DirectCast(catchClause.Filter.FilterExpression.Accept(_nodesVisitor), ExpressionSyntax)))
                 Dim catchStatement As CatchStatementSyntax = Factory.CatchStatement(
                                                                     Factory.IdentifierName(identifier),
@@ -290,7 +289,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     If fromValue Is Nothing Then
                         Return False
                     End If
-                    Dim forVariableToken As SyntaxToken = GenerateSafeVbToken(v.Identifier, node, _semanticModel, _nodesVisitor._usedIdentifiers)
+                    Dim forVariableToken As SyntaxToken = _nodesVisitor.GenerateSafeVbToken(v.Identifier, node)
                     Dim names As SeparatedSyntaxList(Of ModifiedIdentifierSyntax) =
                         Factory.SingletonSeparatedList(Factory.ModifiedIdentifier(forVariableToken))
                     controlVariable = Factory.VariableDeclarator(names,
@@ -392,7 +391,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 If TypeOf exprNode IsNot StatementSyntax Then
                     Select Case True
                         Case TypeOf exprNode Is ObjectCreationExpressionSyntax
-                            exprNode = FactoryDimStatement(node.GetUniqueVariableNameInScope("tempVar", _nodesVisitor._usedIdentifiers, _semanticModel),
+                            exprNode = FactoryDimStatement(_nodesVisitor.GetUniqueVariableNameInScope(node, "tempVar", _nodesVisitor._usedIdentifiers),
                                                           Factory.AsNewClause(DirectCast(exprNode, NewExpressionSyntax)),
                                                           initializer:=Nothing)
                         Case TypeOf exprNode Is InvocationExpressionSyntax
@@ -438,7 +437,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                             Dim csObjectCreationExpression As CSS.ObjectCreationExpressionSyntax = TryCast(csMemberAccessExpression.Expression, CSS.ObjectCreationExpressionSyntax)
                             If csObjectCreationExpression IsNot Nothing Then
                                 Dim newExpression As NewExpressionSyntax = DirectCast(csObjectCreationExpression.Accept(_nodesVisitor), NewExpressionSyntax)
-                                Dim nameToken As SyntaxToken = Factory.Identifier(node.GetUniqueVariableNameInScope("tempVar", _nodesVisitor._usedIdentifiers, _semanticModel))
+                                Dim nameToken As SyntaxToken = Factory.Identifier(_nodesVisitor.GetUniqueVariableNameInScope(node, "tempVar", _nodesVisitor._usedIdentifiers))
                                 statementList.Add(FactoryDimStatement(nameToken,
                                                                       Factory.AsNewClause(newExpression.WithLeadingTrivia(SpaceTrivia)),
                                                                       initializer:=Nothing
@@ -545,7 +544,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 If TypeOf oneStatement IsNot StatementSyntax Then
                     Select Case True
                         Case TypeOf oneStatement Is ObjectCreationExpressionSyntax
-                            oneStatement = FactoryDimStatement(node.GetUniqueVariableNameInScope("tempVar", _nodesVisitor._usedIdentifiers, _semanticModel),
+                            oneStatement = FactoryDimStatement(_nodesVisitor.GetUniqueVariableNameInScope(node, "tempVar", _nodesVisitor._usedIdentifiers),
                                                               Factory.AsNewClause(DirectCast(oneStatement, NewExpressionSyntax)),
                                                               initializer:=Nothing)
                         Case TypeOf oneStatement Is AwaitExpressionSyntax
@@ -589,9 +588,8 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                 Dim pattern As CSS.DeclarationPatternSyntax = DirectCast(patternLabel.Pattern, CSS.DeclarationPatternSyntax)
                                 Dim type As TypeSyntax = DirectCast(pattern.Type.Accept(_nodesVisitor), TypeSyntax)
                                 If TypeOf pattern.Designation Is CSS.SingleVariableDesignationSyntax Then
-                                    variableNameToken = GenerateSafeVbToken(DirectCast(pattern.Designation, CSS.SingleVariableDesignationSyntax).Identifier,
-                                        section,
-                                        _semanticModel, _nodesVisitor._usedIdentifiers)
+                                    variableNameToken = _nodesVisitor.GenerateSafeVbToken(DirectCast(pattern.Designation, CSS.SingleVariableDesignationSyntax).Identifier,
+                                        section)
                                 ElseIf TypeOf pattern.Designation Is CSS.DiscardDesignationSyntax Then
                                 Else
                                     Stop
@@ -619,9 +617,8 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                         caseLabelExpr = Factory.IdentifierName("Else")
                                     End If
                                 ElseIf varPattern.Designation.IsKind(CS.SyntaxKind.SingleVariableDesignation) Then
-                                    variableNameToken = GenerateSafeVbToken(DirectCast(varPattern.Designation, CSS.SingleVariableDesignationSyntax).Identifier,
-                                        section,
-                                        _semanticModel, _nodesVisitor._usedIdentifiers)
+                                    variableNameToken = _nodesVisitor.GenerateSafeVbToken(DirectCast(varPattern.Designation, CSS.SingleVariableDesignationSyntax).Identifier,
+                                        section)
                                     leadingStatements.Add(FactoryDimStatement(variableNameToken,
                                                                                 Factory.SimpleAsClause(Factory.PredefinedType(ObjectKeyword)),
                                                                                 Factory.EqualsValue(switchExpression1)).WithTrailingEol)
@@ -811,15 +808,22 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Return True
             End Function
 
+            Friend Shared Function ContainsLocalFunctionReference(syntax As SyntaxNode, localFunctionSymbol As IMethodSymbol, semanticModel As SemanticModel) As Boolean
+                Return syntax.DescendantNodes().
+                                    OfType(Of CSS.SimpleNameSyntax)().
+                                    Any(Function(name As CSS.SimpleNameSyntax) name.Identifier.ValueText = localFunctionSymbol.Name AndAlso
+                                    SymbolEqualityComparer.Default.Equals(semanticModel.GetSymbolInfo(name).Symbol, localFunctionSymbol))
+            End Function
+
             <ExcludeFromCodeCoverage>
             Public Overrides Function DefaultVisit(node As SyntaxNode) As SyntaxList(Of StatementSyntax)
                 Throw New NotImplementedException(node.GetType().ToString & " not implemented!")
             End Function
 
             Public Overrides Function VisitBlock(node As CSS.BlockSyntax) As SyntaxList(Of StatementSyntax)
-                Dim savedNeedEndUsingCount As Integer = _nodesVisitor.NeededEndUsingCount
+                Dim savedNeedEndUsingCount As Integer = _nodesVisitor._neededEndUsingCount
                 Try
-                    _nodesVisitor.NeededEndUsingCount = 0
+                    _nodesVisitor._neededEndUsingCount = 0
                     Dim stmtList As SyntaxList(Of StatementSyntax) = Factory.List(node.Statements.Where(Function(s As CSS.StatementSyntax) Not (TypeOf s Is CSS.EmptyStatementSyntax)).SelectMany(Function(s As CSS.StatementSyntax) s.Accept(Me)))
                     Dim ifStatement As IfStatementSyntax = Nothing
                     Dim isSubBlock As Boolean = node.Parent.IsKind(CS.SyntaxKind.Block)
@@ -856,7 +860,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         Return newStmtList.Add(Factory.MultiLineIfBlock(ifStatement, stmtList, Nothing, Nothing))
                     End If
                 Finally
-                    _nodesVisitor.NeededEndUsingCount = savedNeedEndUsingCount
+                    _nodesVisitor._neededEndUsingCount = savedNeedEndUsingCount
                 End Try
             End Function
 
@@ -994,7 +998,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             Public Overrides Function VisitForEachStatement(node As CSS.ForEachStatementSyntax) As SyntaxList(Of StatementSyntax)
                 Dim variableDeclarator As VariableDeclaratorSyntax
                 Dim asClause As SimpleAsClauseSyntax = Nothing
-                Dim forEachVariableToken As SyntaxToken = GenerateSafeVbToken(node.Identifier, node, _semanticModel, _nodesVisitor._usedIdentifiers)
+                Dim forEachVariableToken As SyntaxToken = _nodesVisitor.GenerateSafeVbToken(node.Identifier, node)
                 If node.Type.IsVar Then
                     Dim variableITypeSymbol As (_Error As Boolean, _ITypeSymbol As ITypeSymbol) = node.Expression.DetermineType(_semanticModel)
                     If variableITypeSymbol._Error = False Then
@@ -1019,12 +1023,10 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Else
                     Dim vbType As TypeSyntax
                     If node.Type.IsKind(CS.SyntaxKind.IdentifierName) Then
-                        vbType = Factory.IdentifierName(GenerateSafeVbToken(DirectCast(node.Type, CSS.IdentifierNameSyntax).Identifier,
-                                                                            node,
-                                                                            _semanticModel,
-                                                                            _nodesVisitor._usedIdentifiers,
-                                                                            isQualifiedName:=False,
-                                                                            isTypeName:=True)
+                        vbType = Factory.IdentifierName(_nodesVisitor.GenerateSafeVbToken(DirectCast(node.Type, CSS.IdentifierNameSyntax).Identifier,
+                            node,
+                            isQualifiedName:=False,
+                            isTypeName:=True)
                                                                            )
                     Else
                         vbType = DirectCast(node.Type.Accept(_nodesVisitor), TypeSyntax)
@@ -1050,7 +1052,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                                                            Factory.NextStatement().WithLeadingTrivia(closingBraceTrailingTrivia).WithTrailingEol())
                     Return ReplaceOneStatementWithMarkedStatements(node, block)
                 End If
-                Dim messageEnumerator As SyntaxToken = Factory.Identifier(node.GetUniqueVariableNameInScope("messageEnumerator", _nodesVisitor._usedIdentifiers, _semanticModel))
+                Dim messageEnumerator As SyntaxToken = Factory.Identifier(_nodesVisitor.GetUniqueVariableNameInScope(node, "messageEnumerator", _nodesVisitor._usedIdentifiers))
                 Dim cancelExpression As ExpressionSyntax = Factory.ParseExpression("Threading.CancellationToken.None")
                 Dim methodStatement As CSS.MethodDeclarationSyntax = node.Parent.GetAncestor(Of CSS.MethodDeclarationSyntax)
                 If methodStatement IsNot Nothing Then
@@ -1252,7 +1254,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     _blockInfo.Peek()._goToCaseExpressions.Add(labelExpression)
                     labelNameToken = Factory.Label(VB.SyntaxKind.IdentifierLabel, Me.MakeGotoSwitchLabel(labelExpression))
                 Else
-                    labelNameToken = Factory.Label(VB.SyntaxKind.IdentifierLabel, GenerateSafeVbToken(DirectCast(node.Expression, CSS.IdentifierNameSyntax).Identifier, node, _semanticModel, _nodesVisitor._usedIdentifiers))
+                    labelNameToken = Factory.Label(VB.SyntaxKind.IdentifierLabel, _nodesVisitor.GenerateSafeVbToken(DirectCast(node.Expression, CSS.IdentifierNameSyntax).Identifier, node))
                 End If
 
                 Return Factory.SingletonList(Of StatementSyntax)(Factory.GoToStatement(labelNameToken).WithConvertedTriviaFrom(node).WithTrailingEol)
@@ -1260,9 +1262,9 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
 
             Public Overrides Function VisitIfStatement(node As CSS.IfStatementSyntax) As SyntaxList(Of StatementSyntax)
                 Dim stmt As StatementSyntax = Nothing
-                Dim savedNeedEndUsingCount As Integer = _nodesVisitor.NeededEndUsingCount
+                Dim savedNeedEndUsingCount As Integer = _nodesVisitor._neededEndUsingCount
                 Try
-                    _nodesVisitor.NeededEndUsingCount = 0
+                    _nodesVisitor._neededEndUsingCount = 0
                     If node.Else Is Nothing AndAlso Me.TryConvertIfNotNullRaiseEvent(node, stmt) Then
                         Return Factory.SingletonList(stmt)
                     End If
@@ -1369,7 +1371,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Catch ex As Exception
                     Throw
                 Finally
-                    _nodesVisitor.NeededEndUsingCount = savedNeedEndUsingCount
+                    _nodesVisitor._neededEndUsingCount = savedNeedEndUsingCount
                 End Try
 
                 Return ReplaceOneStatementWithMarkedStatements(node, stmt)
@@ -1382,7 +1384,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 If openBraceLeadingTrivia.Any OrElse closingBraceTrailingTrivia.Any Then
                     Stop
                 End If
-                Return Factory.SingletonList(Of StatementSyntax)(Factory.LabelStatement(GenerateSafeVbToken(node.Identifier, node, _semanticModel, _nodesVisitor._usedIdentifiers))).AddRange(statements)
+                Return Factory.SingletonList(Of StatementSyntax)(Factory.LabelStatement(_nodesVisitor.GenerateSafeVbToken(node.Identifier, node))).AddRange(statements)
             End Function
 
             Public Overrides Function VisitLocalDeclarationStatement(node As CSS.LocalDeclarationStatementSyntax) As SyntaxList(Of StatementSyntax)
@@ -1395,7 +1397,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Dim localDeclStmt As StatementSyntax
                 If node.UsingKeyword.IsKind(CS.SyntaxKind.UsingKeyword) Then
                     localDeclStmt = Factory.UsingStatement(Nothing, declarators).WithLeadingTrivia(leadingTrivia).WithTrailingEol
-                    _nodesVisitor.NeededEndUsingCount += 1
+                    _nodesVisitor._neededEndUsingCount += 1
                 Else
                     localDeclStmt = Factory.LocalDeclarationStatement(Factory.TokenList(modifiers),
                                                                       declarators
@@ -1488,7 +1490,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     lambdaHeader = Factory.FunctionLambdaHeader(attributeLists:=Nothing, modifiers, parameterList, Factory.SimpleAsClause(returnType))
                     endBlock = Factory.EndFunctionStatement(EndKeyword.WithTrailingTrivia(SpaceTrivia), FunctionKeyword).WithConvertedTriviaFrom(csBraces.closeBrace)
                 End If
-                Dim nameToken As SyntaxToken = GenerateSafeVbToken(node.Identifier, node, _semanticModel, _nodesVisitor._usedIdentifiers)
+                Dim nameToken As SyntaxToken = _nodesVisitor.GenerateSafeVbToken(node.Identifier, node)
                 Dim body As New SyntaxList(Of StatementSyntax)
                 If node.Body IsNot Nothing Then
                     body = ReplaceStatementsWithMarkedStatements(node, node.Body.Accept(Me))

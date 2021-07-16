@@ -18,9 +18,6 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
         Partial Friend Class NodesVisitor
             Inherits CS.CSharpSyntaxVisitor(Of VB.VisualBasicSyntaxNode)
 
-            Private ReadOnly _addedNames As New HashSet(Of String)
-            Friend ReadOnly _eventList As New Dictionary(Of String, Boolean)
-
             Private Shared Function CreateImplementsClauseSyntax(implementors As IEnumerable(Of ISymbol), id As SyntaxToken) As VBS.ImplementsClauseSyntax
                 Return Factory.ImplementsClause(implementors.Select(Function(x)
                                                                         Dim fullyQualifiedName As VBS.NameSyntax = TryCast(x.ContainingSymbol, INamedTypeSymbol).GetFullyQualifiedNameSyntax()
@@ -301,12 +298,12 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             End Function
 
             Public Function AdjustUsingIfNeeded(blockStatements As SyntaxList(Of VBS.StatementSyntax)) As SyntaxList(Of VBS.StatementSyntax)
-                If Me.NeededEndUsingCount > 0 Then
+                If _neededEndUsingCount > 0 Then
                     ' ReSharper disable once RedundantAssignment
-                    For i As Integer = 1 To Me.NeededEndUsingCount
+                    For i As Integer = 1 To _neededEndUsingCount
                         blockStatements = blockStatements.Add(Factory.EndUsingStatement)
                     Next
-                    Me.NeededEndUsingCount = 0
+                    _neededEndUsingCount = 0
                 End If
                 Return blockStatements
             End Function
@@ -463,7 +460,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Dim modifiers As List(Of SyntaxToken) = ConvertModifiers(node.Modifiers, Me.IsModule, TokenContext.Member).ToList
                 modifiers.Add(CustomKeyword)
                 Dim declaredSymbol As ISymbol = _semanticModel.GetDeclaredSymbol(node)
-                Dim eventNameToken As SyntaxToken = GenerateSafeVbToken(node.Identifier, node, _semanticModel, _usedIdentifiers).WithTrailingTrivia(SpaceTrivia)
+                Dim eventNameToken As SyntaxToken = Me.GenerateSafeVbToken(node.Identifier, node).WithTrailingTrivia(SpaceTrivia)
                 Dim typeSyntaxNode As VBS.TypeSyntax = DirectCast(node.Type.Accept(Me), VBS.TypeSyntax)
                 Dim asClause As VBS.SimpleAsClauseSyntax = Factory.SimpleAsClause(attributeLists:=returnAttributes, typeSyntaxNode)
                 Dim implementsClauseOrNothing As VBS.ImplementsClauseSyntax = If(declaredSymbol Is Nothing, Nothing, Me.CreateImplementsClauseSyntaxOrNull(declaredSymbol, eventNameToken))
@@ -507,7 +504,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 If _eventList.TryGetValue(GetEventLookupExpr(eventNameToken).ToString(), eventExists) Then
 
                     '    Dim tempVar As SmallBasicCallback = TryCast(_buttonClicked("ButtonClicked"), SmallBasicCallback)
-                    Dim tempVar As VBS.IdentifierNameSyntax = Factory.IdentifierName(node.GetUniqueVariableNameInScope("tempVar", _usedIdentifiers, _semanticModel))
+                    Dim tempVar As VBS.IdentifierNameSyntax = Factory.IdentifierName(Me.GetUniqueVariableNameInScope(node, "tempVar", _usedIdentifiers))
                     Dim tryCastExpression As VBS.EqualsValueSyntax = Factory.EqualsValue(Factory.TryCastExpression(GetEventLookupExpr(eventNameToken), typeSyntaxNode))
                     Dim tryCastEventName As VBS.StatementSyntax = FactoryDimStatement(tempVar.ToString(), asClause, tryCastExpression).WithTrailingEol()
                     statementSyntaxes = statementSyntaxes.Add(tryCastEventName)
@@ -723,7 +720,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 End If
                 _originalRequest.UsedStacks.Push(_usedIdentifiers)
 
-                Dim methodNameToken As SyntaxToken = GenerateSafeVbToken(node.Identifier, node, _semanticModel, _usedIdentifiers)
+                Dim methodNameToken As SyntaxToken = Me.GenerateSafeVbToken(node.Identifier, node)
 
                 Dim methodInfo As ISymbol = _semanticModel.GetDeclaredSymbol(node)
                 Dim possibleReturnVoid As Boolean? = methodInfo?.GetReturnType()?.SpecialType = SpecialType.System_Void
@@ -1116,10 +1113,10 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             End Function
 
             Public Overrides Function VisitPropertyDeclaration(node As CSS.PropertyDeclarationSyntax) As VB.VisualBasicSyntaxNode
-                Dim savedNeedEndUsingCount As Integer = Me.NeededEndUsingCount
+                Dim savedNeedEndUsingCount As Integer = _neededEndUsingCount
                 Try
 
-                    Me.NeededEndUsingCount = 0
+                    _neededEndUsingCount = 0
                     Dim csAccessors As New List(Of CSS.AccessorDeclarationSyntax)
                     If node.AccessorList IsNot Nothing Then
                         csAccessors.AddRange(node.AccessorList.Accessors)
@@ -1168,7 +1165,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     Dim propertyNameToken As SyntaxToken
                     Dim propertyStatement As VBS.PropertyStatementSyntax
                     If node.ExplicitInterfaceSpecifier Is Nothing Then
-                        propertyNameToken = GenerateSafeVbToken(node.Identifier, node, _semanticModel, _usedIdentifiers)
+                        propertyNameToken = Me.GenerateSafeVbToken(node.Identifier, node)
                         Dim propertySymbol As IPropertySymbol = CType(_semanticModel.GetDeclaredSymbol(node), IPropertySymbol)
                         implementsClauseOrNothing = If(propertySymbol Is Nothing, Nothing, Me.CreateImplementsClauseSyntaxOrNull(propertySymbol, propertyNameToken))
                     Else
@@ -1415,7 +1412,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                         WithAppendedTrailingTrivia(typeLeadingTrivia).
                                         RestructureAttributesAndModifiers(attributes.Any, modifiers.Any).NormalizeWhitespaceEx(useDefaultCasing:=True).WithTrailingEol
                 Finally
-                    Me.NeededEndUsingCount = savedNeedEndUsingCount
+                    _neededEndUsingCount = savedNeedEndUsingCount
                 End Try
             End Function
 

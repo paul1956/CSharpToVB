@@ -31,19 +31,6 @@ Return value
 End Function
 "
 
-            '    Private Const ByRefHelperCode As String = "Private Function __VbByRefHelper(Of t)(ByRef byRefValue As t, byRefSetter As Func(Of t, t)) As t
-            '        Dim orgValue = byRefValue
-            '        byRefValue = byRefSetter(byRefValue)
-            '        Return orgValue
-            '    End Function
-
-            '    Private Function __VbByRefHelper(Of t, rt)(ByRef byRefValue As t, byRefSetter As Func(Of t, (ByRefValue As t, ReturnValue As rt))) As rt
-            '        Dim retValue = byRefSetter(byRefValue)
-            '        byRefValue = retValue.ByRefValue
-            '        Return retValue.ReturnValue
-            '    End Function
-            '"
-
             Private Shared Function FilterLeadingTrivia(initialTriviaList As SyntaxTriviaList, ByRef movedLeadingTrivia As SyntaxTriviaList) As SyntaxTriviaList
                 If Not initialTriviaList.ContainsDirectiveTrivia Then
                     Return initialTriviaList
@@ -291,8 +278,8 @@ End Function
                                 Else
                                     Dim constraintClauses As SyntaxList(Of CSS.TypeParameterConstraintClauseSyntax) = CType(baseType, CSS.InterfaceDeclarationSyntax).ConstraintClauses
                                     If constraintClauses.Count > 0 AndAlso constraintClauses(0).WhereKeyword.LeadingTrivia.ContainsDirectiveTrivia Then
-                                        item=item.WithAppendedEol()
-                                        item=item.WithAppendedTrailingTrivia(constraintClauses(0).WhereKeyword.LeadingTrivia.ConvertTriviaList())
+                                        item = item.WithAppendedEol()
+                                        item = item.WithAppendedTrailingTrivia(constraintClauses(0).WhereKeyword.LeadingTrivia.ConvertTriviaList())
                                     End If
                                     baseList.Add(item)
                                 End If
@@ -340,7 +327,7 @@ End Function
 
                 Dim finalTrailingTrivia As SyntaxTriviaList
 
-                Dim id As SyntaxToken = GenerateSafeVbToken(node.Identifier, node, _semanticModel, _usedIdentifiers).WithConvertedTriviaFrom(node.Identifier)
+                Dim id As SyntaxToken = Me.GenerateSafeVbToken(node.Identifier, node).WithConvertedTriviaFrom(node.Identifier)
                 id = id.AdjustTokenLeadingTrivia()
                 Me.ConvertBaseList(node, [inherits], [implements], finalTrailingTrivia, _originalRequest.ImplementedMembers)
                 Dim staticMethodCount As Integer = 0
@@ -559,7 +546,7 @@ End Function
             End Function
 
             Public Overrides Function VisitDelegateDeclaration(node As CSS.DelegateDeclarationSyntax) As VB.VisualBasicSyntaxNode
-                Dim identifier As SyntaxToken = GenerateSafeVbToken(node.Identifier, node, _semanticModel, _usedIdentifiers)
+                Dim identifier As SyntaxToken = Me.GenerateSafeVbToken(node.Identifier, node)
                 Dim methodInfo As INamedTypeSymbol = TryCast(_semanticModel.GetDeclaredSymbol(node), INamedTypeSymbol)
                 Dim listOfAttrLists As New List(Of VBS.AttributeListSyntax)
                 For Each e As IndexClass(Of CSS.AttributeListSyntax) In node.AttributeLists.WithIndex
@@ -670,7 +657,7 @@ End Function
                 Dim enumStatement As VBS.EnumStatementSyntax = DirectCast(Factory.EnumStatement(listOfAttributes,
                                                                                                 modifiers,
                                                                                                 EnumKeyword.WithConvertedTriviaFrom(node.EnumKeyword),
-                                                                                                identifier:=GenerateSafeVbToken(id:=node.Identifier, node:=node, model:=_semanticModel, usedIdentifiers:=_usedIdentifiers),
+                                                                                                identifier:=Me.GenerateSafeVbToken(id:=node.Identifier, node:=node),
                                                                                                 underlyingType).
                                                                                        RestructureAttributesAndModifiers(listOfAttributes.Any, modifiers.Any), VBS.EnumStatementSyntax)
 
@@ -695,7 +682,7 @@ End Function
                     End If
                     attributeLists = attributeLists.Add(attributeList)
                 Next
-                Return Factory.EnumMemberDeclaration(attributeLists, GenerateSafeVbToken(node.Identifier, node, _semanticModel, _usedIdentifiers), initializer:=If(initializer Is Nothing, Nothing, Factory.EqualsValue(initializer))).WithConvertedTriviaFrom(node)
+                Return Factory.EnumMemberDeclaration(attributeLists, Me.GenerateSafeVbToken(node.Identifier, node), initializer:=If(initializer Is Nothing, Nothing, Factory.EqualsValue(initializer))).WithConvertedTriviaFrom(node)
             End Function
 
             Public Overrides Function VisitExplicitInterfaceSpecifier(node As CSS.ExplicitInterfaceSpecifierSyntax) As VB.VisualBasicSyntaxNode
@@ -726,7 +713,7 @@ End Function
                         members.Add(DirectCast(e.Value.Accept(Me), VBS.StatementSyntax))
                     End If
                 Next
-                Dim identifier As SyntaxToken = GenerateSafeVbToken(node.Identifier, node, _semanticModel, _usedIdentifiers)
+                Dim identifier As SyntaxToken = Me.GenerateSafeVbToken(node.Identifier, node)
                 Dim typeParameterList As VBS.TypeParameterListSyntax = DirectCast(node.TypeParameterList?.Accept(Me), VBS.TypeParameterListSyntax)
                 Dim statementLeadingTrivia As SyntaxTriviaList
                 If node.Modifiers.Any AndAlso modifiers.Count = 0 Then
@@ -840,7 +827,7 @@ End Function
                 structureStmt = DirectCast(Factory.StructureStatement(listOfAttributes,
                                                                             Factory.TokenList(modifiers),
                                                                             StructureKeyword.WithConvertedTriviaFrom(node.Keyword),
-                                                                            GenerateSafeVbToken(node.Identifier, node, _semanticModel, _usedIdentifiers),
+                                                                            Me.GenerateSafeVbToken(node.Identifier, node),
                                                                             typeParameterList
                                                                             ).RestructureAttributesAndModifiers(listOfAttributes.Any, modifiers.Any), VBS.StructureStatementSyntax).WithTrailingEol
 
@@ -881,7 +868,7 @@ End Function
                 Dim identifier As SyntaxToken
                 If node.Alias IsNot Nothing Then
                     Dim aliasName As CSS.IdentifierNameSyntax = node.Alias.Name
-                    identifier = GenerateSafeVbToken(aliasName.Identifier, node, _semanticModel, _usedIdentifiers)
+                    identifier = Me.GenerateSafeVbToken(aliasName.Identifier, node)
                     [alias] = Factory.ImportAliasClause(identifier)
                 End If
                 importsName = DirectCast(node.Name.Accept(Me), VBS.NameSyntax)

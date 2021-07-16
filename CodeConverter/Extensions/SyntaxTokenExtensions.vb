@@ -5,121 +5,10 @@
 Imports System.Runtime.CompilerServices
 Imports Microsoft.CodeAnalysis
 Imports CS = Microsoft.CodeAnalysis.CSharp
-Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
 Public Module SyntaxTokenExtensions
-
-    <Extension>
-    Private Function GetNewUniqueName(convertedIdentifier As String, usedIdentifiers As Dictionary(Of String, SymbolTableEntry), isType As Boolean, node As CS.CSharpSyntaxNode, model As SemanticModel) As String
-        If isType Then
-            Return convertedIdentifier
-        End If
-
-        convertedIdentifier = convertedIdentifier.RemoveBrackets
-
-        Dim uniqueId As String = node.GetUniqueVariableNameInScope(convertedIdentifier, usedIdentifiers, model)
-        If VB.SyntaxFacts.GetKeywordKind(uniqueId) = VB.SyntaxKind.None Then
-            Return uniqueId
-        End If
-
-        Return $"[{uniqueId}]"
-    End Function
-
-    <Extension>
-    Private Function GetScopingBlock(node As CS.CSharpSyntaxNode) As CS.CSharpSyntaxNode
-        Dim blockNode As CS.CSharpSyntaxNode = node
-        While blockNode IsNot Nothing
-
-            If TypeOf blockNode Is CSS.BlockSyntax Then
-                Return CType(blockNode.Parent, CS.CSharpSyntaxNode)
-            End If
-            If TypeOf blockNode Is CSS.EventDeclarationSyntax Then
-                Return blockNode
-            End If
-
-            If TypeOf blockNode Is CSS.NamespaceDeclarationSyntax Then
-                Return blockNode
-            End If
-
-            If TypeOf blockNode Is CSS.PropertyDeclarationSyntax Then
-                Return blockNode
-            End If
-
-            If TypeOf blockNode Is CSS.MethodDeclarationSyntax Then
-                Return blockNode
-            End If
-
-            If TypeOf blockNode Is CSS.ClassDeclarationSyntax Then
-                Return blockNode
-            End If
-
-            If TypeOf blockNode Is CSS.ConversionOperatorDeclarationSyntax Then
-                Return blockNode
-            End If
-
-            If TypeOf blockNode Is CSS.ConstructorDeclarationSyntax Then
-                Return blockNode
-            End If
-
-            If TypeOf blockNode Is CSS.EnumDeclarationSyntax Then
-                Return blockNode
-            End If
-
-            If TypeOf blockNode Is CSS.StructDeclarationSyntax Then
-                Return blockNode
-            End If
-
-            If TypeOf blockNode Is CSS.UsingDirectiveSyntax Then
-                Return blockNode
-            End If
-
-            If TypeOf blockNode Is CSS.UsingStatementSyntax Then
-                Return CType(blockNode.Parent, CS.CSharpSyntaxNode)
-            End If
-            blockNode = CType(blockNode.Parent, CS.CSharpSyntaxNode)
-
-        End While
-        Return GetStatementWithIssues(node)
-    End Function
-
-    Private Function GetSymbolTableEntry(csIdentifier As SyntaxToken, baseVbIdent As String, usedIdentifiers As Dictionary(Of String, SymbolTableEntry), node As CS.CSharpSyntaxNode, model As SemanticModel, isQualifiedNameOrTypeName As Boolean, isField As Boolean) As (IdentToken As SyntaxToken, MeNeeded As Boolean)
-        ' TODO Workaround till we get a list of special variables
-        If csIdentifier.ToString().Equals("Path",StringComparison.Ordinal) Then
-            Return (Factory.Identifier("Path"), False)
-        End If
-        If usedIdentifiers.ContainsKey(baseVbIdent) Then
-            Dim symbolTableEntry As SymbolTableEntry = usedIdentifiers(baseVbIdent)
-            Return (Factory.Identifier(symbolTableEntry.Name).WithConvertedTriviaFrom(csIdentifier), symbolTableEntry.IsProperty)
-        End If
-        For Each ident As KeyValuePair(Of String, SymbolTableEntry) In usedIdentifiers
-            If String.Compare(ident.Key, baseVbIdent, ignoreCase:=False, Globalization.CultureInfo.InvariantCulture) = 0 Then
-                ' We have an exact match keep looking
-                Return (Factory.Identifier(ident.Key), ident.Value.IsProperty)
-            End If
-            If String.Compare(ident.Key, baseVbIdent, ignoreCase:=True, Globalization.CultureInfo.InvariantCulture) = 0 Then
-                ' If we are here we have seen the variable in a different case so fix it
-                Dim uniqueName As String = baseVbIdent.GetNewUniqueName(usedIdentifiers, isQualifiedNameOrTypeName, node.GetScopingBlock, model)
-                If usedIdentifiers(ident.Key).IsType Then
-                    usedIdentifiers.Add(baseVbIdent, New SymbolTableEntry(uniqueName, isType:=False, isField))
-                Else
-                    usedIdentifiers.Add(baseVbIdent, New SymbolTableEntry(uniqueName, isQualifiedNameOrTypeName, isField))
-                End If
-                Dim symbolTableEntry As SymbolTableEntry = usedIdentifiers(baseVbIdent)
-                Return (Factory.Identifier(symbolTableEntry.Name).WithConvertedTriviaFrom(csIdentifier), symbolTableEntry.IsProperty)
-            End If
-        Next
-        Dim newIdentifier As String = baseVbIdent
-
-        ' This need to be looked up using current reference
-        ' For now just include Path from System.IO
-        If baseVbIdent.Equals("path", StringComparison.Ordinal) Then
-            newIdentifier &= "1"
-        End If
-        usedIdentifiers.Add(baseVbIdent, New SymbolTableEntry(newIdentifier, isQualifiedNameOrTypeName, isField))
-        Return (Factory.Identifier(newIdentifier), False)
-    End Function
 
     <Extension>
     Private Function RestructureModifierLeadingTrivia(modifier As SyntaxToken, i As Integer, ByRef leadingTriviaNotHandled As Boolean, ByRef statementLeadingTrivia As SyntaxTriviaList, ByRef statementTrailingTrivia As SyntaxTriviaList) As SyntaxTriviaList
@@ -396,24 +285,6 @@ Public Module SyntaxTokenExtensions
     <Extension>
     Friend Function IsKind(token As SyntaxToken, ParamArray kinds() As VB.SyntaxKind) As Boolean
         Return kinds.Contains(CType(token.RawKind, VB.SyntaxKind))
-    End Function
-
-    <Extension>
-    Friend Function MakeIdentifierUnique(csIdentifier As SyntaxToken, node As CS.CSharpSyntaxNode, usedIdentifiers As Dictionary(Of String, SymbolTableEntry), model As SemanticModel, isBracketNeeded As Boolean, isQualifiedNameOrTypeName As Boolean) As SyntaxToken
-        Dim isField As Boolean = node.AncestorsAndSelf().OfType(Of CSS.FieldDeclarationSyntax).Any And Not isQualifiedNameOrTypeName
-        Dim baseIdent As String = If(isBracketNeeded, $"[{csIdentifier.ValueText}]", csIdentifier.ValueText)
-        If baseIdent = "_" Then
-            baseIdent = "__"
-        End If
-        ' Don't Change Qualified Names
-        If isQualifiedNameOrTypeName Then
-            If Not usedIdentifiers.ContainsKey(baseIdent) Then
-                usedIdentifiers.Add(baseIdent, New SymbolTableEntry(baseIdent, isType:=True, isField))
-            End If
-            Return Factory.Identifier(baseIdent).WithConvertedTriviaFrom(csIdentifier)
-        End If
-
-        Return GetSymbolTableEntry(csIdentifier, baseIdent, usedIdentifiers, node, model, isQualifiedNameOrTypeName, isField).IdentToken
     End Function
 
     ''' <summary>

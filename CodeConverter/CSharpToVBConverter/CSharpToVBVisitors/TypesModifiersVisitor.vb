@@ -155,13 +155,11 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     End If
                 End If
                 Return Factory.TypeParameter(variance,
-                                             GenerateSafeVbToken(node.Identifier,
-                                                                 node,
-                                                                 _semanticModel,
-                                                                 _usedIdentifiers,
-                                                                 isQualifiedName:=False,
-                                                                 isTypeName:=True),
-                                            typeParameterConstraintClause).WithConvertedTriviaFrom(node)
+                                             Me.GenerateSafeVbToken(node.Identifier,
+                                                 node,
+                                                 isQualifiedName:=False,
+                                                 isTypeName:=True),
+                                             typeParameterConstraintClause).WithConvertedTriviaFrom(node)
             End Function
 
             Public Overrides Function VisitTypeParameterConstraintClause(node As CSS.TypeParameterConstraintClauseSyntax) As VB.VisualBasicSyntaxNode

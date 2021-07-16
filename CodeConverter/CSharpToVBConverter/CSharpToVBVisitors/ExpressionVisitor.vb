@@ -11,6 +11,8 @@ Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
 
+Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
+
 Namespace CSharpToVBConverter.CSharpToVBVisitors
 
     Partial Public Class CSharpConverter
@@ -41,12 +43,32 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Return False
             End Function
 
+            Private Shared Function GetIdentifierNameFromName(expression As VBS.ExpressionSyntax) As VBS.IdentifierNameSyntax
+                Select Case True
+                    Case TypeOf expression Is VBS.IdentifierNameSyntax
+                        Return DirectCast(expression, VBS.IdentifierNameSyntax)
+                    Case TypeOf expression Is VBS.MemberAccessExpressionSyntax
+                        Dim memberAccess As VBS.MemberAccessExpressionSyntax = DirectCast(expression, VBS.MemberAccessExpressionSyntax)
+                        Dim name As String = memberAccess.Name.Identifier.Text
+                        If name.StartsWith("_", StringComparison.OrdinalIgnoreCase) Then
+                            Return Factory.IdentifierName(name.Substring(1))
+                        End If
+                        Return DirectCast(memberAccess.Name, VBS.IdentifierNameSyntax)
+                    Case Else
+                        Throw New NotSupportedException($"Cannot get SimpleNameSyntax from {expression.Kind()}:" & vbCrLf & "{expressionSyntax}")
+                End Select
+            End Function
+
             Private Shared Function GetTypeSyntaxFromPossibleAddressOf(vbSyntaxNode As VB.VisualBasicSyntaxNode) As TypeSyntax
                 Dim addressOfExpr As UnaryExpressionSyntax = TryCast(vbSyntaxNode, UnaryExpressionSyntax)
                 If addressOfExpr IsNot Nothing Then
                     vbSyntaxNode = addressOfExpr.Operand
                 End If
                 Return CType(vbSyntaxNode, TypeSyntax)
+            End Function
+
+            Private Shared Function IsInvokeIdentifier(sns As CSS.SimpleNameSyntax) As Boolean
+                Return sns.Identifier.Value.Equals("Invoke")
             End Function
 
             Private Shared Function MemberAccess(ParamArray nameParts() As String) As MemberAccessExpressionSyntax
@@ -87,9 +109,9 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             Private Function ConvertLambdaExpression(node As CSS.AnonymousFunctionExpressionSyntax, block As Object, parameters As SeparatedSyntaxList(Of CSS.ParameterSyntax), modifiers As SyntaxTokenList) As LambdaExpressionSyntax
                 Dim vbNodes As New List(Of ParameterSyntax)
                 Dim vbSeparators As New List(Of SyntaxToken)
-                Dim savedNeedEndUsingCount As Integer = Me.NeededEndUsingCount
+                Dim savedNeedEndUsingCount As Integer = _neededEndUsingCount
                 Try
-                    Me.NeededEndUsingCount = 0
+                    _neededEndUsingCount = 0
                     If parameters.Any Then
                         Dim csSeparators As New List(Of SyntaxToken)
                         csSeparators.AddRange(parameters.GetSeparators)
@@ -173,7 +195,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                 Select Case memberAccessExpression.Expression.Kind
                                     Case VB.SyntaxKind.ObjectCreationExpression, VB.SyntaxKind.SimpleMemberAccessExpression
                                         endBlock = Factory.EndSubStatement(EndKeyword.WithTrailingTrivia(SpaceTrivia), SubKeyword).WithTrailingEol
-                                        Dim uniqueName As String = node.GetUniqueVariableNameInScope("tempVar", _usedIdentifiers, _semanticModel)
+                                        Dim uniqueName As String = Me.GetUniqueVariableNameInScope(node, "tempVar", _usedIdentifiers)
                                         Dim nameToken As SyntaxToken = Factory.Identifier(uniqueName)
                                         Dim uniqueIdentifier As IdentifierNameSyntax = Factory.IdentifierName(nameToken)
                                         Dim dimStatement As LocalDeclarationStatementSyntax
@@ -251,7 +273,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                                                statements,
                                                                endBlock)
                 Finally
-                    Me.NeededEndUsingCount = savedNeedEndUsingCount
+                    _neededEndUsingCount = savedNeedEndUsingCount
                 End Try
 
             End Function
@@ -715,13 +737,13 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         Next
                         Dim tupleType As TupleTypeSyntax = Nothing
                         Dim simpleAs As SimpleAsClauseSyntax = Nothing
-                        Dim identifierName As String = node.GetUniqueVariableNameInScope("TempVar", _usedIdentifiers, _semanticModel)
+                        Dim identifierName As String = Me.GetUniqueVariableNameInScope(node, "TempVar", _usedIdentifiers)
                         Dim tempIdentifier As SeparatedSyntaxList(Of ModifiedIdentifierSyntax)
                         If rightTypeInfo.ConvertedType IsNot Nothing AndAlso Not rightTypeInfo.ConvertedType.IsErrorType Then
                             If TypeOf rightTypeInfo.Type Is INamedTypeSymbol Then
                                 Dim possibleTupleType As INamedTypeSymbol = DirectCast(rightTypeInfo.ConvertedType, INamedTypeSymbol)
                                 If possibleTupleType.IsTupleType Then
-                                    identifierName = node.GetUniqueVariableNameInScope("TupleTempVar", _usedIdentifiers, _semanticModel)
+                                    identifierName = Me.GetUniqueVariableNameInScope(node, "TupleTempVar", _usedIdentifiers)
                                     tempIdentifier = Factory.SingletonSeparatedList(Factory.ModifiedIdentifier(identifierName))
                                     tupleType = CType(possibleTupleType.TupleElements(0).ContainingType.ToString.ConvertCsStringToName, TupleTypeSyntax)
                                     If tupleType.Elements.All(Function(t As TupleElementSyntax) As Boolean
@@ -780,7 +802,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         Dim leftTupleNode As TupleExpressionSyntax = DirectCast(CType(node.Left.Accept(Me), ExpressionSyntax).WithConvertedTriviaFrom(node.Left), TupleExpressionSyntax)
 
                         variableNames = New List(Of String)
-                        Dim identifierName As String = node.GetUniqueVariableNameInScope("TupleTempVar", _usedIdentifiers, _semanticModel)
+                        Dim identifierName As String = Me.GetUniqueVariableNameInScope(node, "TupleTempVar", _usedIdentifiers)
                         For Each argument As ArgumentSyntax In leftTupleNode.Arguments
                             variableNames.Add(argument.ToString)
                         Next
@@ -1367,7 +1389,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     End If
                 ElseIf node.Expression.IsKind(CS.SyntaxKind.ObjectCreationExpression) Then
                     expression = DirectCast(node.Expression.Accept(Me), ExpressionSyntax)
-                    Dim uniqueName As String = node.GetUniqueVariableNameInScope("tempVar", _usedIdentifiers, _semanticModel)
+                    Dim uniqueName As String = Me.GetUniqueVariableNameInScope(node, "tempVar", _usedIdentifiers)
 
                     Dim asClause As AsClauseSyntax = Factory.AsNewClause(DirectCast(expression, NewExpressionSyntax))
                     Dim dimStatement As LocalDeclarationStatementSyntax = FactoryDimStatement(uniqueName, asClause, initializer:=Nothing)
@@ -1794,7 +1816,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                                                                         ),
                                                        node).WithConvertedTriviaFrom(node)
                 ElseIf TypeOf expression Is CollectionInitializerSyntax Then
-                    Dim uniqueName As String = node.GetUniqueVariableNameInScope("tempVar", _usedIdentifiers, _semanticModel)
+                    Dim uniqueName As String = Me.GetUniqueVariableNameInScope(node, "tempVar", _usedIdentifiers)
                     Dim uniqueIdentifier As IdentifierNameSyntax = Factory.IdentifierName(Factory.Identifier(uniqueName))
                     Dim initializer As EqualsValueSyntax = Factory.EqualsValue(expression)
                     Dim dimStatement As LocalDeclarationStatementSyntax =
@@ -1955,7 +1977,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         If node.Expression.IsKind(CS.SyntaxKind.AddExpression, CS.SyntaxKind.MultiplyExpression, CS.SyntaxKind.DivideExpression, CS.SyntaxKind.SubtractExpression) Then
                             Return Factory.ParenthesizedExpression(openParenToken.WithConvertedTriviaFrom(node.OpenParenToken), expr, CloseParenToken.WithConvertedTriviaFrom(node.CloseParenToken))
                         End If
-                        Dim uniqueName As String = node.GetUniqueVariableNameInScope("tempVar", _usedIdentifiers, _semanticModel)
+                        Dim uniqueName As String = Me.GetUniqueVariableNameInScope(node, "tempVar", _usedIdentifiers)
                         Dim uniqueIdentifier As IdentifierNameSyntax = Factory.IdentifierName(Factory.Identifier(uniqueName))
                         If TypeOf expr Is TernaryConditionalExpressionSyntax Then
                             Dim tenaryExp As TernaryConditionalExpressionSyntax = DirectCast(expr, TernaryConditionalExpressionSyntax)
@@ -2011,7 +2033,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         statementWithIssue.AddMarker(declarationToBeAdded, StatementHandlingOption.PrependStatement, allowDuplicates:=False)
                         Return uniqueIdentifier
                     ElseIf TypeOf node.Parent Is CSS.ConditionalAccessExpressionSyntax Then
-                        Dim uniqueName As String = node.GetUniqueVariableNameInScope("tempVar", _usedIdentifiers, _semanticModel)
+                        Dim uniqueName As String = Me.GetUniqueVariableNameInScope(node, "tempVar", _usedIdentifiers)
                         declarationToBeAdded = FactoryDimStatement(uniqueName, asClause:=Nothing, initializer).WithConvertedTriviaFrom(node).WithTrailingEol
                         statementWithIssue.AddMarker(declarationToBeAdded, StatementHandlingOption.PrependStatement, allowDuplicates:=False)
                         Return Factory.IdentifierName(Factory.Identifier(uniqueName))
@@ -2164,7 +2186,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         Dim typedTupleElementSyntax1 As TypedTupleElementSyntax = Factory.TypedTupleElement(DirectCast(node.Type.Accept(Me), TypeSyntax))
                         Return typedTupleElementSyntax1
                     End If
-                    Return Factory.NamedTupleElement(GenerateSafeVbToken(node.Identifier, node, _semanticModel, _usedIdentifiers).WithConvertedTriviaFrom(node.Type), Factory.SimpleAsClause(AsKeyword.WithTrailingTrivia(SpaceTrivia), attributeLists:=New SyntaxList(Of AttributeListSyntax), DirectCast(node.Type.Accept(Me).WithConvertedTriviaFrom(node.Identifier), TypeSyntax)))
+                    Return Factory.NamedTupleElement(Me.GenerateSafeVbToken(node.Identifier, node).WithConvertedTriviaFrom(node.Type), Factory.SimpleAsClause(AsKeyword.WithTrailingTrivia(SpaceTrivia), attributeLists:=New SyntaxList(Of AttributeListSyntax), DirectCast(node.Type.Accept(Me).WithConvertedTriviaFrom(node.Identifier), TypeSyntax)))
                 Catch ex As OperationCanceledException
                     Throw
                 Catch ex As Exception

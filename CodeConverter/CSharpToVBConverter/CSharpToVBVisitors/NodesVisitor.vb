@@ -17,9 +17,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
 
         Partial Friend Class NodesVisitor
             Inherits CS.CSharpSyntaxVisitor(Of VB.VisualBasicSyntaxNode)
-
-            ' This file contains all the stuff accessed by multiple Visitor functions in Class NodeVisitor and Visitors that
-            ' had no better home.
+            Private ReadOnly _addedNames As New HashSet(Of String)
 
             Private ReadOnly _commonConversions As CommonConversions
             Private ReadOnly _defaultVbOptions As DefaultVbOptions
@@ -28,26 +26,26 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             Private ReadOnly _placeholder As Integer = 1
             Private ReadOnly _reportException As Action(Of Exception)
             Private _membersList As SyntaxList(Of VBS.StatementSyntax)
+            Friend ReadOnly _eventList As New Dictionary(Of String, Boolean)
             Friend ReadOnly _semanticModel As SemanticModel
+            Friend _neededEndUsingCount As Integer
             Friend _usedIdentifiers As Dictionary(Of String, SymbolTableEntry)
             Public ReadOnly _allImports As New List(Of VBS.ImportsStatementSyntax)()
             Public ReadOnly _discardHelperMarkers As New List(Of CSS.BaseTypeDeclarationSyntax)()
+            Public ReadOnly _globalSymbols As New List(Of String)
             Public ReadOnly _inlineAssignHelperMarkers As New List(Of CSS.BaseTypeDeclarationSyntax)()
-            Public ReadOnly _globalSymbols As New List(Of Dictionary(Of String, String))()
             Public _vbHeaderLeadingTrivia As SyntaxTriviaList
 
-            Friend Sub New(originalRequest As ConvertRequest, lSemanticModel As SemanticModel, globalSymbols As List(Of Dictionary(Of String, String)), defaultVbOptions As DefaultVbOptions, reportException As Action(Of Exception))
+            Friend Sub New(globalSymbols As List(Of String), originalRequest As ConvertRequest, lSemanticModel As SemanticModel, defaultVbOptions As DefaultVbOptions, reportException As Action(Of Exception))
                 _semanticModel = lSemanticModel
                 _reportException = reportException
                 _defaultVbOptions = defaultVbOptions
                 _commonConversions = New CommonConversions(lSemanticModel)
                 _usedIdentifiers = New Dictionary(Of String, SymbolTableEntry)(StringComparer.Ordinal)
                 _originalRequest = originalRequest
-                Me.NeededEndUsingCount = 0
+                _neededEndUsingCount = 0
                 _globalSymbols = globalSymbols
             End Sub
-
-            Friend Property NeededEndUsingCount As Integer
 
             Public ReadOnly Property IsModule As Boolean
                 Get
@@ -78,26 +76,6 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     Next
                 Next
                 Return argumentList
-            End Function
-
-            Private Shared Function GetIdentifierNameFromName(expression As VBS.ExpressionSyntax) As VBS.IdentifierNameSyntax
-                Select Case True
-                    Case TypeOf expression Is VBS.IdentifierNameSyntax
-                        Return DirectCast(expression, VBS.IdentifierNameSyntax)
-                    Case TypeOf expression Is VBS.MemberAccessExpressionSyntax
-                        Dim memberAccess As VBS.MemberAccessExpressionSyntax = DirectCast(expression, VBS.MemberAccessExpressionSyntax)
-                        Dim name As String = memberAccess.Name.Identifier.Text
-                        If name.StartsWith("_", StringComparison.OrdinalIgnoreCase) Then
-                            Return Factory.IdentifierName(name.Substring(1))
-                        End If
-                        Return DirectCast(memberAccess.Name, VBS.IdentifierNameSyntax)
-                    Case Else
-                        Throw New NotSupportedException($"Cannot get SimpleNameSyntax from {expression.Kind()}:" & vbCrLf & "{expressionSyntax}")
-                End Select
-            End Function
-
-            Private Shared Function IsInvokeIdentifier(sns As CSS.SimpleNameSyntax) As Boolean
-                Return sns.Identifier.Value.Equals("Invoke")
             End Function
 
             Private Sub ConvertRecordBaseList(baseType As CSS.BaseTypeDeclarationSyntax, [inherits] As List(Of VBS.InheritsStatementSyntax), ByRef movedFinalTrivia As SyntaxTriviaList, ByRef implementedMembers As List(Of (Type As VBS.TypeSyntax, ArgumentNames As List(Of String))))
@@ -366,7 +344,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             End Function
 
             Public Overrides Function VisitRecordDeclaration(node As CSS.RecordDeclarationSyntax) As VB.VisualBasicSyntaxNode
-                Dim recordName As SyntaxToken = GenerateSafeVbToken(node.Identifier, node, _semanticModel, _usedIdentifiers)
+                Dim recordName As SyntaxToken = Me.GenerateSafeVbToken(node.Identifier, node)
                 Dim recordTypeName As VBS.TypeSyntax = Factory.ParseTypeName(recordName.ToString)
                 Dim asRecordName As VBS.SimpleAsClauseSyntax = Factory.SimpleAsClause(recordTypeName)
 
@@ -646,7 +624,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Dim statementWithIssue As CS.CSharpSyntaxNode = GetStatementWithIssues(node)
                 Dim governingExpression As VBS.ExpressionSyntax = CType(node.GoverningExpression.Accept(Me), VBS.ExpressionSyntax)
                 Dim selectCaseStatement As VBS.SelectStatementSyntax = Factory.SelectStatement(governingExpression.WithLeadingTrivia(SpaceTrivia)).WithLeadingTrivia(governingExpression.GetLeadingTrivia)
-                Dim resultNameToken As SyntaxToken = Factory.Identifier(node.GetUniqueVariableNameInScope("tempVar", _usedIdentifiers, _semanticModel))
+                Dim resultNameToken As SyntaxToken = Factory.Identifier(Me.GetUniqueVariableNameInScope(node, "tempVar", _usedIdentifiers))
                 Dim resultIdentifier As VBS.IdentifierNameSyntax = Factory.IdentifierName(resultNameToken)
                 Dim typeInf As TypeInfo = _semanticModel.GetTypeInfo(node.Arms(0).Expression)
                 Dim asClause As VBS.AsClauseSyntax = Nothing
@@ -696,7 +674,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         Dim tryCastExpr As VBS.TryCastExpressionSyntax = Factory.TryCastExpression(governingExpression, variableType.WithLeadingTrivia(SpaceTrivia))
                         If pattern.Designation.IsKind(CS.SyntaxKind.SingleVariableDesignation) Then
                             Dim designation As CSS.SingleVariableDesignationSyntax = CType(pattern.Designation, CSS.SingleVariableDesignationSyntax)
-                            Dim identifierToken As SyntaxToken = GenerateSafeVbToken(designation.Identifier, node, _semanticModel, _usedIdentifiers)
+                            Dim identifierToken As SyntaxToken = Me.GenerateSafeVbToken(designation.Identifier, node)
                             Dim initializer As VBS.EqualsValueSyntax = Factory.EqualsValue(Factory.DirectCastExpression(governingExpression, variableType))
                             statements = statements.Insert(0, FactoryDimStatement(identifierToken,
                                                                                         Factory.SimpleAsClause(variableType),
@@ -735,11 +713,11 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         Dim varPattern As CSS.VarPatternSyntax = DirectCast(arm.Pattern, CSS.VarPatternSyntax)
                         Dim identifier As SyntaxToken
                         If TypeOf varPattern.Designation Is CSS.SingleVariableDesignationSyntax Then
-                            identifier = GenerateSafeVbToken(id:=DirectCast(varPattern.Designation, CSS.SingleVariableDesignationSyntax).Identifier, node:=node, model:=_semanticModel, usedIdentifiers:=_usedIdentifiers)
+                            identifier = Me.GenerateSafeVbToken(id:=DirectCast(varPattern.Designation, CSS.SingleVariableDesignationSyntax).Identifier, node:=node)
                         ElseIf TypeOf varPattern.Designation Is CSS.ParenthesizedVariableDesignationSyntax Then
                             Dim sBuilder As New StringBuilder
                             CreateDesignationName(ProcessVariableDesignation(CType(varPattern.Designation, CSS.ParenthesizedVariableDesignationSyntax)), sBuilder)
-                            identifier = GenerateSafeVbToken(id:=CS.SyntaxFactory.Identifier(sBuilder.ToString), node:=node, model:=_semanticModel, usedIdentifiers:=_usedIdentifiers)
+                            identifier = Me.GenerateSafeVbToken(id:=CS.SyntaxFactory.Identifier(sBuilder.ToString), node:=node)
                         Else
                             _reportException?.Invoke(UnreachableException)
                         End If
@@ -794,7 +772,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             End Function
 
             Public Overrides Function VisitVariableDeclarator(node As CSS.VariableDeclaratorSyntax) As VB.VisualBasicSyntaxNode
-                Dim identifier As SyntaxToken = GenerateSafeVbToken(node.Identifier, node, _semanticModel, _usedIdentifiers)
+                Dim identifier As SyntaxToken = Me.GenerateSafeVbToken(node.Identifier, node)
                 Dim argumentList As New List(Of VBS.ArgumentSyntax)
                 If node.ArgumentList Is Nothing Then
                     Return Factory.ModifiedIdentifier(identifier).WithTrailingTrivia(SpaceTrivia)
