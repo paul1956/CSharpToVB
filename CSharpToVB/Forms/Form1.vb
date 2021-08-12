@@ -2,12 +2,15 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
+Imports System.Collections
 Imports System.ComponentModel
 Imports System.IO
+Imports System.Linq
 Imports System.Net.Http
 Imports System.Text
 Imports System.Threading
 Imports Microsoft.CodeAnalysis
+Imports Microsoft.VisualBasic
 Imports Microsoft.VisualBasic.FileIO
 
 Partial Public Class Form1
@@ -1047,34 +1050,34 @@ namespace Application
     Private Sub SetColorMode(myForm As Form, lightMode As Boolean)
 
         If lightMode Then
-            Me.mnuEditCopy.Image = CType(My.Resources.ResourceManager.GetObject("CopyLight"),Image)
-            Me.mnuEditPaste.Image = CType(My.Resources.ResourceManager.GetObject("PasteLight"),Image)
-            Me.mnuFileSaveAs.Image = CType(My.Resources.ResourceManager.GetObject("SaveAsLight"),Image)
+            Me.mnuEditCopy.Image = CType(My.Resources.ResourceManager.GetObject("CopyLight"), Image)
+            Me.mnuEditPaste.Image = CType(My.Resources.ResourceManager.GetObject("PasteLight"), Image)
+            Me.mnuFileSaveAs.Image = CType(My.Resources.ResourceManager.GetObject("SaveAsLight"), Image)
             SetLightMode(myForm.Controls, _mCapturedRenderer)
         Else
-            Me.mnuEditCopy.Image = CType(My.Resources.ResourceManager.GetObject("CopyDark"),Image)
-            Me.mnuEditPaste.Image = CType(My.Resources.ResourceManager.GetObject("PasteDark"),Image)
-            Me.mnuFileSaveAs.Image = CType(My.Resources.ResourceManager.GetObject("SaveAsDark"),Image)
+            Me.mnuEditCopy.Image = CType(My.Resources.ResourceManager.GetObject("CopyDark"), Image)
+            Me.mnuEditPaste.Image = CType(My.Resources.ResourceManager.GetObject("PasteDark"), Image)
+            Me.mnuFileSaveAs.Image = CType(My.Resources.ResourceManager.GetObject("SaveAsDark"), Image)
             SetDarkMode(myForm.Controls, _mCapturedRenderer)
         End If
     End Sub
 
     Private Sub ToggleColorMode(myForm As Form, lightMode As Boolean)
         If lightMode Then
-            Me.mnuEditCopy.Image = CType(My.Resources.ResourceManager.GetObject("CopyLight"),Image)
-            Me.mnuEditPaste.Image = CType(My.Resources.ResourceManager.GetObject("PasteLight"),Image)
+            Me.mnuEditCopy.Image = CType(My.Resources.ResourceManager.GetObject("CopyLight"), Image)
+            Me.mnuEditPaste.Image = CType(My.Resources.ResourceManager.GetObject("PasteLight"), Image)
             Me.mnuFileSaveAs.Image = CType(My.Resources.ResourceManager.GetObject("SaveAsLight"), Image)
-            Me.ContextMenuPaste.Image=CType(My.Resources.ResourceManager.GetObject("PasteLight"),Image)
-            Me.ContextMenuCopy.Image = CType(My.Resources.ResourceManager.GetObject("CopyLight"),Image)
+            Me.ContextMenuPaste.Image = CType(My.Resources.ResourceManager.GetObject("PasteLight"), Image)
+            Me.ContextMenuCopy.Image = CType(My.Resources.ResourceManager.GetObject("CopyLight"), Image)
             Me.TSThemeButton.Text = DarkModeStr
             _currentThemeDictionary = _darkModeColorDictionary
             SetDarkMode(myForm.Controls, _mCapturedRenderer)
         Else
-            Me.mnuEditCopy.Image = CType(My.Resources.ResourceManager.GetObject("CopyDark"),Image)
-            Me.mnuEditPaste.Image = CType(My.Resources.ResourceManager.GetObject("PasteDark"),Image)
-            Me.mnuFileSaveAs.Image = CType(My.Resources.ResourceManager.GetObject("SaveAsDark"),Image)
-            Me.ContextMenuPaste.Image=CType(My.Resources.ResourceManager.GetObject("PasteDark"),Image)
-            Me.ContextMenuCopy.Image = CType(My.Resources.ResourceManager.GetObject("CopyDark"),Image)
+            Me.mnuEditCopy.Image = CType(My.Resources.ResourceManager.GetObject("CopyDark"), Image)
+            Me.mnuEditPaste.Image = CType(My.Resources.ResourceManager.GetObject("PasteDark"), Image)
+            Me.mnuFileSaveAs.Image = CType(My.Resources.ResourceManager.GetObject("SaveAsDark"), Image)
+            Me.ContextMenuPaste.Image = CType(My.Resources.ResourceManager.GetObject("PasteDark"), Image)
+            Me.ContextMenuCopy.Image = CType(My.Resources.ResourceManager.GetObject("CopyDark"), Image)
             Me.TSThemeButton.Text = LightModeStr
             _currentThemeDictionary = _lightModeColorDictionary
             SetLightMode(myForm.Controls, _mCapturedRenderer)

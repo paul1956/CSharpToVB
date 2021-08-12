@@ -1,4 +1,9 @@
-﻿<CompilerServices.DesignerGenerated()> _
+﻿Imports System.Diagnostics
+Imports System.Runtime
+Imports Microsoft.VisualBasic
+
+
+<CompilerServices.DesignerGenerated()> _
 Partial Class AboutBox1
     Inherits Form
 
@@ -41,7 +46,7 @@ Partial Class AboutBox1
         Me.TextBoxDescription = New System.Windows.Forms.TextBox()
         Me.OKButton = New System.Windows.Forms.Button()
         Me.TableLayoutPanel.SuspendLayout
-        CType(Me.LogoPictureBox,System.ComponentModel.ISupportInitialize).BeginInit
+        CType(Me.LogoPictureBox, System.ComponentModel.ISupportInitialize).BeginInit
         Me.SuspendLayout
         '
         'TableLayoutPanel
@@ -73,7 +78,7 @@ Partial Class AboutBox1
         'LogoPictureBox
         '
         Me.LogoPictureBox.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.LogoPictureBox.Image = CType(resources.GetObject("LogoPictureBox.Image"),System.Drawing.Image)
+        Me.LogoPictureBox.Image = CType(resources.GetObject("LogoPictureBox.Image"), System.Drawing.Image)
         Me.LogoPictureBox.InitialImage = Nothing
         Me.LogoPictureBox.Location = New System.Drawing.Point(4, 3)
         Me.LogoPictureBox.Margin = New System.Windows.Forms.Padding(4, 3, 4, 3)
@@ -82,7 +87,7 @@ Partial Class AboutBox1
         Me.LogoPictureBox.Size = New System.Drawing.Size(144, 292)
         Me.LogoPictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage
         Me.LogoPictureBox.TabIndex = 0
-        Me.LogoPictureBox.TabStop = false
+        Me.LogoPictureBox.TabStop = False
         '
         'LabelProductName
         '
@@ -137,18 +142,18 @@ Partial Class AboutBox1
         Me.TextBoxDescription.Dock = System.Windows.Forms.DockStyle.Fill
         Me.TextBoxDescription.Location = New System.Drawing.Point(159, 119)
         Me.TextBoxDescription.Margin = New System.Windows.Forms.Padding(7, 3, 4, 3)
-        Me.TextBoxDescription.Multiline = true
+        Me.TextBoxDescription.Multiline = True
         Me.TextBoxDescription.Name = "TextBoxDescription"
-        Me.TextBoxDescription.ReadOnly = true
+        Me.TextBoxDescription.ReadOnly = True
         Me.TextBoxDescription.ScrollBars = System.Windows.Forms.ScrollBars.Both
         Me.TextBoxDescription.Size = New System.Drawing.Size(300, 143)
         Me.TextBoxDescription.TabIndex = 0
-        Me.TextBoxDescription.TabStop = false
+        Me.TextBoxDescription.TabStop = False
         Me.TextBoxDescription.Text = resources.GetString("TextBoxDescription.Text")
         '
         'OKButton
         '
-        Me.OKButton.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right),System.Windows.Forms.AnchorStyles)
+        Me.OKButton.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.OKButton.DialogResult = System.Windows.Forms.DialogResult.Cancel
         Me.OKButton.Location = New System.Drawing.Point(371, 269)
         Me.OKButton.Margin = New System.Windows.Forms.Padding(4, 3, 4, 3)
@@ -166,18 +171,18 @@ Partial Class AboutBox1
         Me.Controls.Add(Me.TableLayoutPanel)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog
         Me.Margin = New System.Windows.Forms.Padding(4, 3, 4, 3)
-        Me.MaximizeBox = false
-        Me.MinimizeBox = false
+        Me.MaximizeBox = False
+        Me.MinimizeBox = False
         Me.Name = "AboutBox1"
         Me.Padding = New System.Windows.Forms.Padding(10)
-        Me.ShowInTaskbar = false
+        Me.ShowInTaskbar = False
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent
         Me.Text = "AboutBox1"
-        Me.TableLayoutPanel.ResumeLayout(false)
+        Me.TableLayoutPanel.ResumeLayout(False)
         Me.TableLayoutPanel.PerformLayout
-        CType(Me.LogoPictureBox,System.ComponentModel.ISupportInitialize).EndInit
-        Me.ResumeLayout(false)
+        CType(Me.LogoPictureBox, System.ComponentModel.ISupportInitialize).EndInit
+        Me.ResumeLayout(False)
 
-End Sub
+    End Sub
 
 End Class

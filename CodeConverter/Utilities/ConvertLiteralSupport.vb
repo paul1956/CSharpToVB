@@ -174,7 +174,7 @@ Public Module ConvertLiteralSupport
             Case CS.SyntaxKind.StringLiteralToken
                 Dim strValue As String = TryCast(value, String)
                 If strValue IsNot Nothing Then
-                    If strValue.Contains("\", StringComparison.Ordinal) Then
+                    If strValue.Contains("\"c, StringComparison.Ordinal) Then
                         strValue = ConvertCSharpEscapes(strValue)
                     End If
                     If strValue.Contains(UnicodeOpenQuote, StringComparison.Ordinal) Then

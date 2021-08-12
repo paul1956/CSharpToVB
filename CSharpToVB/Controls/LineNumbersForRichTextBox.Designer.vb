@@ -1,4 +1,7 @@
-﻿<CompilerServices.DesignerGenerated()>
+﻿Imports System.Diagnostics
+Imports Microsoft.VisualBasic
+
+<CompilerServices.DesignerGenerated()>
 Partial Class LineNumbersForRichTextBox
     Inherits Control
 

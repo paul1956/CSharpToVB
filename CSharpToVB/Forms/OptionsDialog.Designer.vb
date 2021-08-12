@@ -1,9 +1,10 @@
-﻿<CompilerServices.DesignerGenerated()>
+﻿Imports Microsoft.VisualBasic
+<CompilerServices.DesignerGenerated()>
 Partial Class OptionsDialog
     Inherits Form
 
     'Form overrides dispose to clean up the component list.
-    <DebuggerNonUserCode()>
+    <Diagnostics.DebuggerNonUserCode()>
     Protected Overrides Sub Dispose(disposing As Boolean)
         Try
             If disposing AndAlso components IsNot Nothing Then
@@ -20,7 +21,7 @@ Partial Class OptionsDialog
     'NOTE: The following procedure is required by the Windows Form Designer
     'It can be modified using the Windows Form Designer.  
     'Do not modify it using the code editor.
-    <DebuggerStepThrough()>
+    <Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
         Me.TableLayoutPanel1 = New TableLayoutPanel()
         Me.OK_Button = New Button()

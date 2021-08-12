@@ -7,6 +7,8 @@
 '     the code is regenerated.
 ' </auto-generated>
 '------------------------------------------------------------------------------
+Imports System.Diagnostics
+Imports Microsoft.VisualBasic
 
 Namespace My.Resources
     

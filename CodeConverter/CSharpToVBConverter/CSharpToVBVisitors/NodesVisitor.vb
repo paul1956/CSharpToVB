@@ -120,9 +120,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     _vbHeaderLeadingTrivia = node.GetLeadingTrivia.GetDocumentBanner
                 End If
                 For Each [using] As CSS.UsingDirectiveSyntax In node.Usings
-                    If _originalRequest.CancelToken.IsCancellationRequested Then
-                        Throw New OperationCanceledException
-                    End If
+                    _originalRequest.CancelToken.ThrowIfCancellationRequested()
                     [using].Accept(Me)
                 Next
                 Dim externList As New List(Of VB.VisualBasicSyntaxNode)
@@ -155,9 +153,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 End If
                 _membersList = New SyntaxList(Of VBS.StatementSyntax)
                 For Each m As CSS.MemberDeclarationSyntax In node.Members
-                    If _originalRequest.CancelToken.IsCancellationRequested Then
-                        Throw New OperationCanceledException
-                    End If
+                    _originalRequest.CancelToken.ThrowIfCancellationRequested()
                     Dim statement As VBS.StatementSyntax = DirectCast(m.Accept(Me), VBS.StatementSyntax)
                     If statement Is Nothing Then
                         options = New SyntaxList(Of VBS.OptionStatementSyntax)

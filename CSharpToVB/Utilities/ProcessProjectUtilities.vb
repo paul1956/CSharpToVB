@@ -2,13 +2,17 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
+Imports System.Diagnostics
 Imports System.Globalization
 Imports System.IO
+Imports System.Linq
 Imports System.Runtime.CompilerServices
 Imports System.Threading
+Imports System.Threading.Tasks
 Imports Buildalyzer
 Imports Buildalyzer.Workspaces
 Imports Microsoft.CodeAnalysis
+Imports Microsoft.VisualBasic
 
 Public Module ProcessProjectUtilities
 
@@ -314,9 +318,7 @@ Public Module ProcessProjectUtilities
                 Dim conversionComplete As Boolean = prompt.Length = 0
 
                 If conversionComplete Then
-#Disable Warning CA1308 ' Normalize strings to uppercase
                     prompt = $"{If(mainForm._cancellationTokenSource.Token.IsCancellationRequested, "Conversion canceled", "Conversion completed")}, {mainForm.StatusStripConversionFileProgressLabel.Text.ToLower(CultureInfo.InvariantCulture)} completed successfully."
-#Enable Warning CA1308 ' Normalize strings to uppercase
                 End If
                 MsgBox(prompt,
                        MsgBoxStyle.OkOnly Or If(prompt.Contains("terminated", StringComparison.OrdinalIgnoreCase), MsgBoxStyle.Critical, MsgBoxStyle.Information) Or MsgBoxStyle.MsgBoxSetForeground,

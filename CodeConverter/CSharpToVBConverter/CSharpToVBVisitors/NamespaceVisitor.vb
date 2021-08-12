@@ -333,9 +333,7 @@ End Function
                 Dim staticMethodCount As Integer = 0
                 Dim methodCount As Integer = 0
                 For Each e As IndexClass(Of CSS.MemberDeclarationSyntax) In node.Members.WithIndex
-                    If _originalRequest.CancelToken.IsCancellationRequested Then
-                        Throw New OperationCanceledException
-                    End If
+                    _originalRequest.CancelToken.ThrowIfCancellationRequested()
                     Dim m As CSS.MemberDeclarationSyntax = e.Value
                     Dim statement As VBS.StatementSyntax = DirectCast(m.Accept(Me), VBS.StatementSyntax).RemoveExtraLeadingEol.WithTrailingEol
 
@@ -768,9 +766,7 @@ End Function
                 Dim members As New List(Of VBS.StatementSyntax)
 
                 For Each e As IndexClass(Of CSS.MemberDeclarationSyntax) In node.Members.WithIndex
-                    If _originalRequest.CancelToken.IsCancellationRequested Then
-                        Throw New OperationCanceledException
-                    End If
+                    _originalRequest.CancelToken.ThrowIfCancellationRequested()
                     Dim item As VBS.StatementSyntax = DirectCast(e.Value.Accept(Me), VBS.StatementSyntax)
                     If e.IsFirst AndAlso newOpenBraceTrivia.Any AndAlso newOpenBraceTrivia.ContainsCommentOrDirectiveTrivia Then
                         item = item.WithPrependedLeadingTrivia(newOpenBraceTrivia)

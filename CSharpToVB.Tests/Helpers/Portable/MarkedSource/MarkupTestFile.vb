@@ -76,7 +76,7 @@ Namespace Helpers.Portable.MarkedSource
             End If
 
             ' Append the remainder of the string.
-            outputBuilder.Append(input.Substring(currentIndexInInput))
+            outputBuilder.Append(input.AsSpan(currentIndexInInput))
             output = outputBuilder.ToString()
             spans = tempSpans.ToDictionary(Function(kvp As KeyValuePair(Of String, List(Of TextSpan)))
                                                Return kvp.Key

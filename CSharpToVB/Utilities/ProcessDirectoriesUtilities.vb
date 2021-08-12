@@ -5,6 +5,7 @@
 Imports System.IO
 Imports System.Reflection
 Imports System.Threading
+Imports System.Threading.Tasks
 Imports Microsoft.CodeAnalysis
 
 Public Module ProcessDirectoriesUtilities
@@ -47,7 +48,7 @@ Public Module ProcessDirectoriesUtilities
     ''' <returns>
     ''' False if error and user wants to stop, True if success or user wants to ignore error
     ''' </returns>
-    Public Async Function ProcessDirectoryAsync(mainForm As Form1, sourceDirectory As String, targetDirectory As String, stopButton As Button, listBoxFileList As ListBox, sourceLanguageExtension As String, stats As ProcessingStats, processFileAsync As Func(Of Form1, String, String, String, List(Of String), List(Of KeyValuePair(Of String, Object)), MetadataReference(), Boolean, Boolean,CancellationToken, Task(Of Boolean)), cancelToken As CancellationToken) As Task(Of Boolean)
+    Public Async Function ProcessDirectoryAsync(mainForm As Form1, sourceDirectory As String, targetDirectory As String, stopButton As Button, listBoxFileList As ListBox, sourceLanguageExtension As String, stats As ProcessingStats, processFileAsync As Func(Of Form1, String, String, String, List(Of String), List(Of KeyValuePair(Of String, Object)), MetadataReference(), Boolean, Boolean, CancellationToken, Task(Of Boolean)), cancelToken As CancellationToken) As Task(Of Boolean)
         If processFileAsync Is Nothing Then
             Throw New ArgumentNullException(NameOf(processFileAsync))
         End If

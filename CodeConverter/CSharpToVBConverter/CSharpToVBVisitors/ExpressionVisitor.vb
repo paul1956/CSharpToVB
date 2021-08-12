@@ -148,7 +148,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     Dim csBraces As (LeftBrace As SyntaxToken, RightBrace As SyntaxToken) = node.Body.GetBraces
                     Dim asClause As AsClauseSyntax = Nothing
                     If isFunction Then
-                        Dim doNotAddAsClause As Boolean = isErrorType OrElse symbol.ReturnType.ToString.Contains("?", StringComparison.Ordinal) OrElse symbol.ReturnType.ToString.StartsWith("<anonymous type: ", StringComparison.Ordinal)
+                        Dim doNotAddAsClause As Boolean = isErrorType OrElse symbol.ReturnType.ToString.Contains("?"c, StringComparison.Ordinal) OrElse symbol.ReturnType.ToString.StartsWith("<anonymous type: ", StringComparison.Ordinal)
                         asClause = If(doNotAddAsClause,
                                     Nothing,
                                     Factory.SimpleAsClause(AsKeyword.With(SpaceTrivia, SpaceTrivia), New SyntaxList(Of AttributeListSyntax), symbol.ReturnType.ConvertToType)
@@ -1791,7 +1791,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         Return GetLiteralExpression(node.Token.Value, node.Token, Me).WithConvertedTriviaFrom(node.Token)
                     End If
                 End If
-                If node.Token.ValueText.Contains("\", StringComparison.Ordinal) Then
+                If node.Token.ValueText.Contains("\"c, StringComparison.Ordinal) Then
                     Stop
                 End If
 

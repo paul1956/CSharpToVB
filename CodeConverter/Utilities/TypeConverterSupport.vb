@@ -343,7 +343,7 @@ Public Module TypeConverterSupport
                 typeString = typeString.Substring(0, indexOfBracket)
             End If
 
-            If typeString.Contains("<", StringComparison.Ordinal) Then
+            If typeString.Contains("<"c, StringComparison.Ordinal) Then
                 typeString = typeString.Replace("<", "(Of ", StringComparison.OrdinalIgnoreCase).
                                         Replace(">", ")", StringComparison.OrdinalIgnoreCase)
             End If

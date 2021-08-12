@@ -3,6 +3,9 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.ComponentModel
+Imports System.Diagnostics
+Imports Microsoft.VisualBasic
+
 
 <DefaultProperty("ParentRichTextBox")>
 Partial Public Class LineNumbersForRichTextBox : Inherits Control

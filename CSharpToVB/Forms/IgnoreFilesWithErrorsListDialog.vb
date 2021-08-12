@@ -3,6 +3,8 @@
 ' See the LICENSE file in the project root for more information.
 
 ' ReSharper disable once UnusedMemberInSuper.Global
+Imports System.Linq
+
 Public Class IgnoreFilesWithErrorsListDialog
     Private ReadOnly _listString As New List(Of String)()
     Private _fileToLoad As String = ""

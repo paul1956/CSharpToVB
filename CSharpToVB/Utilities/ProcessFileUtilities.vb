@@ -5,12 +5,15 @@
 Imports System.Diagnostics.CodeAnalysis
 Imports System.Globalization
 Imports System.IO
+Imports System.Linq
 Imports System.Reflection
 Imports System.Runtime.CompilerServices
 Imports System.Text
 Imports System.Threading
+Imports System.Threading.Tasks
 Imports ConversionResult
 Imports Microsoft.CodeAnalysis
+Imports Microsoft.VisualBasic
 Imports ProgressReportLibrary
 
 Friend Module ProcessFileUtilities

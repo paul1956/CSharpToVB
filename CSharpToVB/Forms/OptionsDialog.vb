@@ -3,6 +3,7 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.IO
+Imports Microsoft.VisualBasic
 
 Public Class OptionsDialog
     Private _selectedColor As ColorDescriptor

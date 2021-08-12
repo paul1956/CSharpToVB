@@ -4,6 +4,7 @@
 
 Imports System.IO
 Imports System.Text
+Imports Microsoft.VisualBasic
 
 Public Module ConvertSolutionFileUtilities
 
