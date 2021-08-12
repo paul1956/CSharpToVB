@@ -171,7 +171,7 @@ Option Strict Off
                                                                                 isProjectConversion:=False,
                                                                                 reportException:=Nothing,
                                                                                 progress:=Nothing,
-                                                                                globalSymbols := Nothing,
+                                                                                globalSymbols:=Nothing,
                                                                                 CancellationToken.None)
 
             Dim actualResult As String = outputDocument.WithSyntaxRoot(

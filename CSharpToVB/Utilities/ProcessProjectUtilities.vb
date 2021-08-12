@@ -318,7 +318,7 @@ Public Module ProcessProjectUtilities
                 Dim conversionComplete As Boolean = prompt.Length = 0
 
                 If conversionComplete Then
-                    prompt = $"{If(mainForm._cancellationTokenSource.Token.IsCancellationRequested, "Conversion canceled", "Conversion completed")}, {mainForm.StatusStripConversionFileProgressLabel.Text.ToLower(CultureInfo.InvariantCulture)} completed successfully."
+                    prompt = $"{If(mainForm._cancellationTokenSource.Token.IsCancellationRequested, "Conversion canceled", "Conversion completed")}, {mainForm.StatusStripConversionFileProgressLabel.Text.ToLower(CultureInfo.CurrentCulture)} completed successfully."
                 End If
                 MsgBox(prompt,
                        MsgBoxStyle.OkOnly Or If(prompt.Contains("terminated", StringComparison.OrdinalIgnoreCase), MsgBoxStyle.Critical, MsgBoxStyle.Information) Or MsgBoxStyle.MsgBoxSetForeground,

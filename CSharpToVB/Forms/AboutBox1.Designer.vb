@@ -2,7 +2,6 @@
 Imports System.Runtime
 Imports Microsoft.VisualBasic
 
-
 <CompilerServices.DesignerGenerated()> _
 Partial Class AboutBox1
     Inherits Form
