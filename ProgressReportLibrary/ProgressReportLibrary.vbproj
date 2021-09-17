@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <RootNamespace>ProgressReportLibrary</RootNamespace>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <Authors>Paul M Cohen</Authors>
     <Company>Travel by Paul</Company>
     <Copyright>Copyright (c) .NET Foundation and Contributors</Copyright>
