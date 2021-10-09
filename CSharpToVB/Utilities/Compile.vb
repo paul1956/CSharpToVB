@@ -60,9 +60,7 @@ Public Module Compile
     ''' <param name="resultOfConversion"></param>
     ''' <returns>Tuple(CompileSuccess, EmitResult)CompileSuccess is true unless compiler crashes</returns>
     Public Function CompileVisualBasicString(stringToBeCompiled As String, vbPreprocessorSymbols As List(Of KeyValuePair(Of String, Object)), severityToReport As DiagnosticSeverity, ByRef resultOfConversion As ConversionResult) As (CompileSuccess As Boolean, EmitResult)
-        If resultOfConversion Is Nothing Then
-            Throw New ArgumentNullException(NameOf(resultOfConversion))
-        End If
+        ArgumentNullException.ThrowIfNull(resultOfConversion,NameOf(resultOfConversion))
 
         If String.IsNullOrWhiteSpace(stringToBeCompiled) Then
             resultOfConversion.SetFilteredListOfFailures(New List(Of Diagnostic))

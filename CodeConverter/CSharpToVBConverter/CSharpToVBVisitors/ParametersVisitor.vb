@@ -30,9 +30,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             End Function
 
             Public Overrides Function VisitBracketedParameterList(node As CSS.BracketedParameterListSyntax) As VB.VisualBasicSyntaxNode
-                If node Is Nothing Then
-                    Throw New ArgumentNullException(NameOf(node))
-                End If
+                ArgumentNullException.ThrowIfNull(node,NameOf(node))
 
                 Dim csSeparators As IEnumerable(Of SyntaxToken) = node.Parameters.GetSeparators
                 Dim openParenTokenWithTrivia As SyntaxToken = openParenToken.WithConvertedTriviaFrom(node.OpenBracketToken)
@@ -58,9 +56,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             End Function
 
             Public Overrides Function VisitParameter(node As CSS.ParameterSyntax) As VB.VisualBasicSyntaxNode
-                If node Is Nothing Then
-                    Throw New ArgumentNullException(NameOf(node))
-                End If
+                ArgumentNullException.ThrowIfNull(node,NameOf(node))
 
                 Dim returnType As VBS.TypeSyntax = DirectCast(node.Type?.Accept(Me), VBS.TypeSyntax)
                 Dim equalsLeadingTrivia As New SyntaxTriviaList
@@ -312,9 +308,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             End Function
 
             Public Overrides Function VisitParameterList(node As CSS.ParameterListSyntax) As VB.VisualBasicSyntaxNode
-                If node Is Nothing Then
-                    Throw New ArgumentNullException(NameOf(node))
-                End If
+                ArgumentNullException.ThrowIfNull(node,NameOf(node))
 
                 Dim csSeparators As IEnumerable(Of SyntaxToken) = node.Parameters.GetSeparators
                 Dim openParenTokenWithTrivia As SyntaxToken = openParenToken.WithConvertedTriviaFrom(node.OpenParenToken)
