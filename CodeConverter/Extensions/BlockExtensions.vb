@@ -5,7 +5,6 @@
 Imports System.Runtime.CompilerServices
 Imports CSharpToVBConverter.CSharpToVBVisitors.CSharpConverter
 Imports Microsoft.CodeAnalysis
-
 Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory

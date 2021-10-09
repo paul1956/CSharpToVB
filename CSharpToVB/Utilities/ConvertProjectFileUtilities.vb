@@ -3,10 +3,7 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.IO
-Imports System.Linq
 Imports System.Xml
-Imports System.Xml.Linq
-Imports Microsoft.VisualBasic
 
 Public Module ConvertProjectFileUtilities
 
