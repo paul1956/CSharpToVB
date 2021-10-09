@@ -2,15 +2,12 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
-Imports System.Collections
 Imports System.ComponentModel
 Imports System.IO
-Imports System.Linq
 Imports System.Net.Http
 Imports System.Text
 Imports System.Threading
 Imports Microsoft.CodeAnalysis
-Imports Microsoft.VisualBasic
 Imports Microsoft.VisualBasic.FileIO
 
 Partial Public Class Form1

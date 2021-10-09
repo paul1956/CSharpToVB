@@ -3,9 +3,7 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.IO
-Imports System.Linq
 Imports Microsoft.CodeAnalysis
-Imports Microsoft.VisualBasic
 
 Friend Module LoadBufferSupport
 
