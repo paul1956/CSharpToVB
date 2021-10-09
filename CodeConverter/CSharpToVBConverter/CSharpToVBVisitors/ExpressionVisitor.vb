@@ -596,7 +596,8 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 End If
 
                 If TypeOf node.Parent Is CSS.InitializerExpressionSyntax Then
-                    If TypeOf node.Left Is CSS.ImplicitElementAccessSyntax Then
+                    Dim nodeLeft As CSS.ImplicitElementAccessSyntax = TryCast(node.Left, CSS.ImplicitElementAccessSyntax)
+                    If nodeLeft IsNot Nothing then
                         Dim nodeRight As VB.VisualBasicSyntaxNode = node.Right.Accept(Me)
                         Dim objectMemberInitializerSyntax As ObjectMemberInitializerSyntax = TryCast(nodeRight, ObjectMemberInitializerSyntax)
                         If objectMemberInitializerSyntax IsNot Nothing Then
@@ -606,7 +607,6 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                             Next
                             nodeRight = Factory.CollectionInitializer(initializers)
                         End If
-                        Dim nodeLeft As CSS.ImplicitElementAccessSyntax = CType(node.Left, CSS.ImplicitElementAccessSyntax)
                         Dim leftNode As ExpressionSyntax
                         If nodeLeft.ArgumentList.Arguments.Count > 1 Then
                             Dim arguments As SeparatedSyntaxList(Of SimpleArgumentSyntax)
@@ -620,7 +620,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         End If
                         Dim rightNode As ExpressionSyntax = CType(nodeRight, ExpressionSyntax)
                         Return Factory.CollectionInitializer(Factory.SeparatedList({leftNode,
-                                                                                   rightNode})).WithConvertedTriviaFrom(node)
+                                                                                    rightNode})).WithConvertedTriviaFrom(node)
                     End If
                     If node.Parent.IsKind(CS.SyntaxKind.ObjectInitializerExpression) Then
                         Dim nodeRight As VB.VisualBasicSyntaxNode = node.Right.Accept(Me)
