@@ -65,10 +65,17 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         End If
                     ElseIf csExpression.IsKind(CS.SyntaxKind.IndexExpression) Then
                         Try
-                            Dim elementAccessExpression As CSS.ElementAccessExpressionSyntax = CType(node.Parent.Parent, CSS.ElementAccessExpressionSyntax)
                             Dim offsetFromLength As VBS.ExpressionSyntax = CType(CType(csExpression, CSS.PrefixUnaryExpressionSyntax).Operand.Accept(Me), VBS.ExpressionSyntax)
-                            Dim identName As VBS.IdentifierNameSyntax = Factory.IdentifierName(MakeVbSafeName(elementAccessExpression.Expression.ToString))
-                            argumentWithTrivia = Factory.BinaryExpression(VB.SyntaxKind.SubtractExpression, identName, MinusToken, right:=offsetFromLength)
+                            Dim elementAccessExpression As CSS.ElementAccessExpressionSyntax = TryCast(node.Parent.Parent, CSS.ElementAccessExpressionSyntax)
+                            Dim identName As VBS.IdentifierNameSyntax
+                            If elementAccessExpression IsNot Nothing Then
+                                identName = Factory.IdentifierName(MakeVbSafeName(elementAccessExpression.Expression.ToString))
+                                argumentWithTrivia = Factory.BinaryExpression(VB.SyntaxKind.SubtractExpression, identName, MinusToken, right:=offsetFromLength)
+                            Else
+                                Dim invocationExpression As CSS.InvocationExpressionSyntax = TryCast(node.Parent.Parent, CSS.InvocationExpressionSyntax)
+                                identName = Factory.IdentifierName(MakeVbSafeName(CType(invocationExpression.Expression, CSS.MemberAccessExpressionSyntax).Expression.ToString))
+                                argumentWithTrivia = Factory.BinaryExpression(VB.SyntaxKind.SubtractExpression,Factory.QualifiedName( identName,Factory.IdentifierName("Length")), MinusToken, right:=offsetFromLength)
+                            End If
                         Catch ex As Exception
                             Throw UnexpectedValue(node.Parent.Parent, NameOf(node.Parent.Parent))
                         End Try

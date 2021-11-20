@@ -143,6 +143,32 @@ End Namespace
 ")
         End Sub
 
+        <Fact>
+        Public Shared Sub MissingAddressOfIssue79()
+            TestConversionCSharpToVisualBasic("namespace Test
+{
+    public sealed class C
+        {
+        private void M(object tag)
+            {
+            // 6 element indexed from 0 to 5
+            var arr = new [] {0, 1, 2, 3, 4, 5};
+            Assert.IsTrue(arr.ElementAt(^2) == 4); // Take the second element from the end            }
+            }
+}", "Namespace Test
+
+    Public NotInheritable Class C
+
+        Private Sub M(tag As Object)
+            ' 6 element indexed from 0 to 5
+            Dim arr = {0, 1, 2, 3, 4, 5}
+            Assert.IsTrue(arr.ElementAt(arr.Length - 2) = 4) ' Take the second element from the end            }
+        End Sub
+    End Class
+End Namespace
+")
+        End Sub
+
     End Class
 
 End Namespace
