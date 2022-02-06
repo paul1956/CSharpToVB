@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <RootNamespace></RootNamespace>
-    <TargetFramework>net5.0-windows7.0</TargetFramework>
+    <TargetFramework>net6.0-windows7.0</TargetFramework>
     <OptionCompare>Text</OptionCompare>
     <OptionExplicit>On</OptionExplicit>
     <OptionInfer>On</OptionInfer>
@@ -17,9 +17,9 @@
     <Product>VB Core Code Converter</Product>
     <RepositoryUrl>https://github.com/paul1956/CSharpToVB</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <AssemblyVersion>5.0.2.3</AssemblyVersion>
-    <FileVersion>5.0.2.3</FileVersion>
-    <Version>5.0.2.3</Version>
+    <AssemblyVersion>5.0.2.4</AssemblyVersion>
+    <FileVersion>5.0.2.4</FileVersion>
+    <Version>5.0.2.4</Version>
     <Copyright>Copyright (c) .NET Foundation and Contributors</Copyright>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
   </PropertyGroup>

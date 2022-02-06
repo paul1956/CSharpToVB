@@ -163,6 +163,20 @@ End Function
                 Return replacementTrailingTrivia
             End Function
 
+            Private Shared Function RemovePrivateModifier(stmt As VBS.EventStatementSyntax) As VBS.StatementSyntax
+                Dim returnTokenList As New SyntaxTokenList
+                If stmt.Modifiers.Any Then
+                    For Each token As SyntaxToken In stmt.Modifiers
+                        If token.IsKind(VB.SyntaxKind.PrivateKeyword) Then
+                            stmt=stmt.WithLeadingTrivia(token.LeadingTrivia)
+                            Continue For
+                        End If
+                        returnTokenList = returnTokenList.Add(token)
+                    Next
+                End If
+                Return stmt.WithModifiers(returnTokenList)
+            End Function
+
             Private Shared Function TrimStart(name As VBS.NameSyntax, trimString As String) As String
                 Dim input As String = name.ToString
                 If Not input.StartsWith(trimString, StringComparison.OrdinalIgnoreCase) Then
@@ -705,10 +719,15 @@ End Function
                 End If
                 Dim members As New List(Of VBS.StatementSyntax)
                 For Each e As IndexClass(Of CSS.MemberDeclarationSyntax) In node.Members.WithIndex
+                    Dim statementNode As VBS.StatementSyntax = DirectCast(e.Value.Accept(Me), VBS.StatementSyntax)
+                    Dim eventStatement As VBS.EventStatementSyntax = TryCast(statementNode, VBS.EventStatementSyntax)
+                    If eventStatement IsNot Nothing Then
+                        statementNode = RemovePrivateModifier(eventStatement)
+                    End If
                     If e.IsFirst AndAlso node.OpenBraceToken.LeadingTrivia.ContainsCommentOrDirectiveTrivia Then
-                        members.Add(DirectCast(e.Value.Accept(Me), VBS.StatementSyntax).WithPrependedLeadingTrivia(node.OpenBraceToken.LeadingTrivia.ConvertTriviaList()))
+                        members.Add(statementNode.WithPrependedLeadingTrivia(node.OpenBraceToken.LeadingTrivia.ConvertTriviaList()))
                     Else
-                        members.Add(DirectCast(e.Value.Accept(Me), VBS.StatementSyntax))
+                        members.Add(statementNode)
                     End If
                 Next
                 Dim identifier As SyntaxToken = Me.GenerateSafeVbToken(node.Identifier, node)
