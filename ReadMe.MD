@@ -28,7 +28,7 @@ description: "C# to VB Converter"
 - Code Converter
 
 ## Updated
-- 7/6/2021
+- 2/6/2022
 
 ## Description
 This application will convert C# to VB while trying to preserve comments, formatting and as many Directives
@@ -42,7 +42,8 @@ GetRoslynRootDirectory to find it. Results of folder conversion are stored in wi
 structure with the root directory renamed to _VB. The original directories are unchanged.
 
 This version required at least Visual Studio 2019 version 16.3.0 to compile the code it produces because it uses the new Visual Basic feature _ ' Comment to preserve
-most comments and formatting. To build the converter application, Visual Studio 16.8.0 and .Net Core 5.0
+most comments and formatting. To build the converter application, Visual Studio 2019 Version 16.11.9 or Visual Studio 2022 and
+.Net Core 6.0
 
 Opening the resulting Visual Basic files in Visual Studio will further improve the formatting.
 
@@ -65,6 +66,9 @@ Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpec
 Any changes to CSharpToVB application needs to change the version information in the project file **AND** in MyProject/AssemblyInfo.vb until Visual Studio is able to general file automatically for a WinForms application.
 
 ## What's New in this release
+  New in 5.0.6.1/5.0.2.4
+  Fix search dropdown to not use Simple to prevent toolstrip from growing
+
   New in 5.0.6.0/5.0.2.4
   Update to use .Net 6.0
   Fix Issue #81

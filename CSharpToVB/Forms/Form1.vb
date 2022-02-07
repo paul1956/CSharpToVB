@@ -331,7 +331,7 @@ Partial Public Class Form1
         Me.ProjectConversionInitProgressLabel.Top = Me.ProjectConversionInitProgressBar.Top - (Me.ProjectConversionInitProgressLabel.Height * 2)
         Me.ToolTipErrorList.SetToolTip(Me.ErrorListListBox, "Double-Click to scroll to VB error")
         Me.ToolTipFileList.SetToolTip(Me.FileListListBox, "Double-Click to open C# and corresponding VB file if available")
-        Me.TSFindLookInComboBox.DropDownStyle = ComboBoxStyle.Simple
+        Me.TSFindLookInComboBox.DropDownStyle = ComboBoxStyle.DropDownList
         Me.TSFindLookInComboBox.SelectedIndex = 0
         Me.TSFindMatchCaseCheckBox.Checked = My.Settings.TSFindMatchCase
         Me.TSFindMatchWholeWordCheckBox.Checked = My.Settings.TSFindMatchWholeWord

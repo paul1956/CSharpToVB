@@ -107,16 +107,17 @@ Public Module TsToolBaseSupport
         Dim selectedIndex As Integer = mainForm.TSFindLookInComboBox.SelectedIndex
         If mainForm.TSFindLookInComboBox.Items.Count > 0 AndAlso mainForm.mnuConvert.Enabled Then
             If inputBufferInUse AndAlso outputBufferInUse Then
-                mainForm.TSFindLookInComboBox.DropDownStyle = ComboBoxStyle.DropDown
                 mainForm.TSFindLookInComboBox.SelectedIndex = selectedIndex
+                mainForm.TSFindLookInComboBox.Enabled = True
             ElseIf inputBufferInUse Then
-                mainForm.TSFindLookInComboBox.DropDownStyle = ComboBoxStyle.Simple
-            ElseIf outputBufferInUse Then
-                mainForm.TSFindLookInComboBox.DropDownStyle = ComboBoxStyle.Simple
-                mainForm.TSFindLookInComboBox.SelectedIndex = 1
-            Else
-                mainForm.TSFindLookInComboBox.DropDownStyle = ComboBoxStyle.Simple
                 mainForm.TSFindLookInComboBox.SelectedIndex = 0
+                mainForm.TSFindLookInComboBox.Enabled = False
+            ElseIf outputBufferInUse Then
+                mainForm.TSFindLookInComboBox.SelectedIndex = 1
+                mainForm.TSFindLookInComboBox.Enabled = False
+            Else
+                mainForm.TSFindLookInComboBox.SelectedIndex = 0
+                mainForm.TSFindLookInComboBox.Enabled = False
             End If
             mainForm.TSFindMatchCaseCheckBox.Enabled = enableFind
             mainForm.TSFindMatchWholeWordCheckBox.Enabled = enableFind
