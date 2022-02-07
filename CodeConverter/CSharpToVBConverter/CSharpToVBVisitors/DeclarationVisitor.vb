@@ -471,12 +471,9 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                                                                    eventNameToken,
                                                                                    parameterList:=Nothing,
                                                                                    asClause,
-                                                                                   implementsClauseOrNothing).WithTrailingEol
+                                                                                   implementsClauseOrNothing).WithConvertedLeadingTriviaFrom(node).WithTrailingEol
                 If finalTrailingDirective.Any Then
                     eventStmt = eventStmt.WithAppendedTrailingTrivia(finalTrailingDirective)
-                End If
-                If implementsClauseOrNothing IsNot Nothing Then
-                    Throw UnreachableException(NameOf(VisitEventDeclaration), 453)
                 End If
                 Dim accessors As New List(Of VBS.AccessorBlockSyntax)
                 For Each e As IndexClass(Of CSS.AccessorDeclarationSyntax) In node.AccessorList.Accessors.WithIndex
@@ -485,7 +482,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     End If
                 Next
                 If Not accessors.Any Then
-                    Throw UnreachableException(NameOf(VisitEventDeclaration), 479)
+                    Throw UnreachableException(NameOf(VisitEventDeclaration), 488)
                 End If
 
                 Dim parameterList As VBS.ParameterListSyntax = Factory.ParseParameterList("()")
@@ -556,7 +553,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                                         id,
                                                         parameterList:=Nothing,
                                                         Factory.SimpleAsClause(attributeLists:=Nothing, DirectCast(node.Declaration.Type.Accept(Me), VBS.TypeSyntax)).WithTrailingEol,
-                                                        implementsClauseOrNothing).WithConvertedTriviaFrom(node)
+                                                        implementsClauseOrNothing).WithConvertedTriviaFrom(node).WithTrailingEol
                 End If
             End Function
 
@@ -1166,7 +1163,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     Dim propertyNameToken As SyntaxToken
                     Dim propertyStatement As VBS.PropertyStatementSyntax
                     If node.ExplicitInterfaceSpecifier Is Nothing Then
-                        propertyNameToken = Me.GenerateSafeVbToken(node.Identifier, node,False,True)
+                        propertyNameToken = Me.GenerateSafeVbToken(node.Identifier, node, False, True)
                         Dim propertySymbol As IPropertySymbol = CType(_semanticModel.GetDeclaredSymbol(node), IPropertySymbol)
                         implementsClauseOrNothing = If(propertySymbol Is Nothing, Nothing, Me.CreateImplementsClauseSyntaxOrNull(propertySymbol, propertyNameToken))
                     Else
