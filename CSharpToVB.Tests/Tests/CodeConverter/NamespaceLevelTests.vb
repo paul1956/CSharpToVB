@@ -91,7 +91,7 @@ public interface iDisplay {
     Throw New NotImplementedException
     End Get
 
-    Set(Value As Object)
+    Set(value As Object)
     Throw New NotImplementedException
     End Set
     End Property

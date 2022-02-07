@@ -343,7 +343,7 @@ End Class")
     void TestMethod()
     {
 the_beginning:
-        int value = 1;
+        int value1 = 1;
         const double myPIe = Math.PI;
         var text = ""This is my text!"";
         goto the_beginning;
@@ -352,7 +352,7 @@ the_beginning:
 
     Private Sub TestMethod()
 the_beginning:
-        Dim value As Integer = 1
+        Dim value1 As Integer = 1
         Const myPIe As Double = Math.PI
         Dim text As String = ""This is my text!""
         GoTo the_beginning

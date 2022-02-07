@@ -107,13 +107,13 @@ End Module")
             TestConversionCSharpToVisualBasic("class TestClass
 {
     const int answer = 42;
-    int value = 10;
+    int value1 = 10;
     readonly int v = 15;
 }", "Class TestClass
 
     Const answer As Integer = 42
 
-    Private value As Integer = 10
+    Private value1 As Integer = 10
 
     ReadOnly v As Integer = 15
 End Class")
@@ -149,7 +149,7 @@ End Class")
             Return Me.m_test3
         End Get
 
-        Set(Value As Integer)
+        Set(value As Integer)
             Me.m_test3 = value
         End Set
     End Property
@@ -249,7 +249,7 @@ End Class")
             Return Me.m_test3
         End Get
 
-        Set(Value As Integer)
+        Set(value As Integer)
             Me.m_test3 = value
         End Set
     End Property
@@ -379,141 +379,12 @@ End Class")
 
     Private test As Integer
 
-    Public Property Test1 As Integer
+    Public Property Test As Integer
         Get
-            Return test
+            Return Me.test
         End Get
 
-        Set(Value As Integer)
-            test = value
-        End Set
-    End Property
-End Class")
-        End Sub
-
-        <Fact>
-        Public Shared Sub CSharpToVbCaseConflictArgumentPropertyAndField()
-            TestConversionCSharpToVisualBasic(
-"public class HasConflictingPropertyAndField {
-    int test;
-    public int Test {
-        get { return test; }
-        set { test = value; }
-    }
-    public int HasConflictingParam(int test) {
-        Test = test;
-        return test;
-    }
-}", "Public Class HasConflictingPropertyAndField
-
-    Private test As Integer
-
-    Public Property Test1 As Integer
-        Get
-            Return test
-        End Get
-
-        Set(Value As Integer)
-            test = value
-        End Set
-    End Property
-
-    Public Function HasConflictingParam(test As Integer) As Integer
-        Test1 = test
-        Return test
-    End Function
-End Class")
-        End Sub
-
-        <Fact>
-        Public Shared Sub CSharpToVbCaseConflictPartialClassArgumentFieldPropertyAndLocalInBothParts()
-            TestConversionCSharpToVisualBasic(
-"public partial class HasConflictingPropertyAndField {
-    public int HasConflictingParam(int test) {
-        int TEST = 0;
-        this.test = test + TEST;
-        return test;
-    }
-}
-
-public partial class HasConflictingPropertyAndField {
-    int test;
-    public int Test {
-        get
-        {
-            int TEST = 0;
-            return test + TEST;
-        }
-        set { test = value; }
-    }
-}", "Public Partial Class HasConflictingPropertyAndField
-
-    Public Function HasConflictingParam(test As Integer) As Integer
-        Dim TEST1 As Integer = 0
-        Me.test = test + TEST1
-        Return test
-    End Function
-End Class
-
-Public Partial Class HasConflictingPropertyAndField
-
-    Private test As Integer
-
-    Public Property Test1 As Integer
-        Get
-            Dim TEST2 As Integer = 0
-            Return test + TEST2
-        End Get
-
-        Set(Value As Integer)
-            test = value
-        End Set
-    End Property
-End Class")
-        End Sub
-
-        <Fact>
-        Public Shared Sub CSharpToVbCaseConflictPropertyAndFieldEnsureOtherClassNotAffected()
-            TestConversionCSharpToVisualBasic(
-"public class HasConflictingPropertyAndField {
-    int test;
-    public int Test {
-        get { return test; }
-        set { test = value; }
-    }
-}
-public class ShouldNotChange {
-    int test;
-    public int Test1 {
-        get { return test; }
-        set { test = value; }
-    }
-}
-", "Public Class HasConflictingPropertyAndField
-
-    Private test As Integer
-
-    Public Property Test1 As Integer
-        Get
-            Return test
-        End Get
-
-        Set(Value As Integer)
-            test = value
-        End Set
-    End Property
-End Class
-
-Public Class ShouldNotChange
-
-    Private test As Integer
-
-    Public Property Test1 As Integer
-        Get
-            Return test
-        End Get
-
-        Set(Value As Integer)
+        Set(value As Integer)
             test = value
         End Set
     End Property
@@ -546,7 +417,7 @@ End Class")
         Get
         End Get
 
-        Set(Value As Object)
+        Set(value As Object)
         End Set
     End Property
 End Class")
@@ -574,7 +445,7 @@ Class TestClass
     Return index
     End Get
 
-    Set(Value As Object)
+    Set(value As Object)
     End Set
     End Property
 End Class")
@@ -852,12 +723,12 @@ Class TestClass
 
     Private owner As OwnerClass
 
-    Public Property Owner1 As OwnerClass
+    Public Property Owner As OwnerClass
         Get
-            Return owner
+            Return Me.owner
         End Get
 
-        Set(Value As OwnerClass)
+        Set(value As OwnerClass)
             owner = value
             AddHandler CType(owner, INotifyPropertyChanged).PropertyChanged, AddressOf OnOwnerChanged
         End Set
@@ -958,11 +829,11 @@ class TestClass {
     Private backingField As EventHandler
 
     Public Custom Event MyEvent As EventHandler
-        AddHandler(Value As EventHandler)
+        AddHandler(value As EventHandler)
             AddHandler Me.backingField, value
         End AddHandler
 
-        RemoveHandler(Value As EventHandler)
+        RemoveHandler(value As EventHandler)
             RemoveHandler Me.backingField, value
         End RemoveHandler
 
@@ -993,11 +864,11 @@ class TestClass {
     Private _backingField As EventHandler
 
     Public Custom Event MyEvent As EventHandler
-        AddHandler(Value As EventHandler)
+        AddHandler(value As EventHandler)
             AddHandler _backingField, value
         End AddHandler
 
-        RemoveHandler(Value As EventHandler)
+        RemoveHandler(value As EventHandler)
             RemoveHandler _backingField, value
         End RemoveHandler
 
@@ -1026,11 +897,11 @@ class TestClass {
     Private Event backingField As EventHandler
 
     Public Custom Event MyEvent As EventHandler
-        AddHandler(Value As EventHandler)
+        AddHandler(value As EventHandler)
             AddHandler backingField, value
         End AddHandler
 
-        RemoveHandler(Value As EventHandler)
+        RemoveHandler(value As EventHandler)
             RemoveHandler backingField, value
         End RemoveHandler
 
@@ -1140,13 +1011,13 @@ End Module")
                 "class TestClass
 {
     const int answer = 42;
-    int value = 10;
+    int _value = 10;
     readonly int v = 15;
 }", "Class TestClass
 
     Const answer As Integer = 42
 
-    Private value As Integer = 10
+    Private _value As Integer = 10
 
     ReadOnly v As Integer = 15
 End Class")
@@ -1201,7 +1072,7 @@ End Class")
             Return _Items(index)
         End Get
 
-        Set(Value As Integer)
+        Set(value As Integer)
             _Items(index) = value
         End Set
     End Property
@@ -1219,7 +1090,7 @@ End Class")
             Return Me.m_test3
         End Get
 
-        Set(Value As Integer)
+        Set(value As Integer)
             Me.m_test3 = value
         End Set
     End Property
@@ -1245,8 +1116,8 @@ End Class")
                 Return _text
             End Get
 
-            Private Set(Value As String)
-                _text = Value
+            Private Set(value As String)
+                _text = value
             End Set
         End Property
     End Class
@@ -1390,7 +1261,7 @@ End Class")
             Return Me.m_test3
         End Get
 
-        Set(Value As Integer)
+        Set(value As Integer)
             Me.m_test3 = value
         End Set
     End Property
@@ -1412,8 +1283,8 @@ End Class")
             Return _text
         End Get
 
-        Private Set(Value As String)
-            _text = Value
+        Private Set(value As String)
+            _text = value
         End Set
     End Property
 
@@ -1424,8 +1295,8 @@ End Class")
             Return _count
         End Get
 
-        Private Set(Value As Integer)
-            _count = Value
+        Private Set(value As Integer)
+            _count = value
         End Set
     End Property
 End Class")
@@ -1444,8 +1315,8 @@ End Class")
             Return _text
         End Get
 
-        Private Set(Value As String)
-            _text = Value
+        Private Set(value As String)
+            _text = value
         End Set
     End Property
 
@@ -1486,7 +1357,7 @@ End Class")
             Return _sourcePathOrNull
         End Get
 
-        Set(Value As String)
+        Set(value As String)
             _sourcePathOrNull = If(String.IsNullOrWhiteSpace(value), Nothing, value)
         End Set
     End Property
@@ -1514,13 +1385,13 @@ public class ConversionResult
     Private _num As Integer
 
     Public WriteOnly Property Num As String
-        Set(Value As String)
+        Set(value As String)
             Call Math.Min(Threading.Interlocked.Increment(_num), _num - 1)
         End Set
     End Property
 
     Public WriteOnly Property Blanket As String
-        Set(Value As String)
+        Set(value As String)
             Throw New Exception
         End Set
     End Property
@@ -1541,8 +1412,8 @@ End Class")
             Return _text
         End Get
 
-        Private Set(Value As String)
-            _text = Value
+        Private Set(value As String)
+            _text = value
         End Set
     End Property
 End Class")

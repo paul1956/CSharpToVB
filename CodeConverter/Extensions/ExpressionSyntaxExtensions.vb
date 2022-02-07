@@ -241,8 +241,15 @@ Public Module ExpressionSyntaxExtensions
                 statement = Factory.ExpressionStatement(CType(expressionBody, VBS.ExpressionSyntax)).WithPrependedLeadingTrivia(leadingComments)
             End If
         Else
-            statement = Factory.ReturnStatement(DirectCast(expressionBody.WithLeadingTrivia(SpaceTrivia), VBS.ExpressionSyntax)) _
-                                    .WithLeadingTrivia(leadingComments)
+            Dim propertyDecl As CSS.PropertyDeclarationSyntax = TryCast(arrowExpressionClause?.Parent?.Parent?.Parent, CSS.PropertyDeclarationSyntax)
+            Dim exprBody As VBS.SimpleNameSyntax = TryCast(expressionBody, VBS.SimpleNameSyntax)
+            If propertyDecl IsNot Nothing AndAlso exprBody IsNot Nothing AndAlso propertyDecl.Identifier.ValueText.Equals(exprBody.Identifier.ValueText, StringComparison.InvariantCultureIgnoreCase) Then
+                statement = Factory.ReturnStatement(Factory.SimpleMemberAccessExpression(MeExpression, exprBody).WithLeadingTrivia(SpaceTrivia)) _
+                                                       .WithLeadingTrivia(leadingComments)
+            Else
+                statement = Factory.ReturnStatement(DirectCast(expressionBody.WithLeadingTrivia(SpaceTrivia), VBS.ExpressionSyntax)) _
+                                        .WithLeadingTrivia(leadingComments)
+            End If
         End If
         Return ReplaceOneStatementWithMarkedStatements(arrowExpressionClause, statement.WithTrailingEol)
     End Function
@@ -285,7 +292,7 @@ Public Module ExpressionSyntaxExtensions
     <Extension>
     Friend Function WithoutLeadingSystemDot(expression As VBS.ExpressionSyntax, isProjectConversion As Boolean) As VBS.ExpressionSyntax
 
-        If Not isProjectConversion andalso expression.StartsWithSystemDot Then
+        If Not isProjectConversion AndAlso expression.StartsWithSystemDot Then
             Return Factory.ParseExpression(expression.ToString.Substring("System.".Length)).WithTriviaFrom(expression)
         End If
         Return expression

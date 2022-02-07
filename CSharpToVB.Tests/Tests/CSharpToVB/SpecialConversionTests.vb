@@ -88,10 +88,10 @@ Public Class TestClass
 
     Property IInterface_Prop As Integer Implements IInterface.Prop
         Get
-            Return prop
+            Return Me.prop
         End Get
 
-        Set(Value As Integer)
+        Set(value As Integer)
             prop = value
         End Set
     End Property
@@ -112,9 +112,9 @@ End Class")
 
         Private test As Integer
 
-        Public ReadOnly Property Test1 As Integer
+        Public ReadOnly Property Test As Integer
             Get
-                Return test
+                Return Me.test
             End Get
         End Property
     End Class
@@ -182,13 +182,13 @@ End Module")
     Private test As EventHandler
 
     Public Custom Event Test1 As EventHandler
-        AddHandler(Value As EventHandler)
+        AddHandler(value As EventHandler)
             Dim teSt2 As Object = 5
             Dim tesT3 As Integer = CInt(CLng(Fix(teSt2)) Mod Integer.MaxValue)
             AddHandler test, value
         End AddHandler
 
-        RemoveHandler(Value As EventHandler)
+        RemoveHandler(value As EventHandler)
             Dim teSt2 As Object = 5
             Dim tesT3 As Integer = CInt(CLng(Fix(teSt2)) Mod Integer.MaxValue)
             RemoveHandler test, value
@@ -417,11 +417,11 @@ public class TestClass {
     Private value As EventHandler
 
     Public Custom Event Value1 As EventHandler
-        AddHandler(Value As EventHandler)
+        AddHandler(value As EventHandler)
             AddHandler Me.value, value
         End AddHandler
 
-        RemoveHandler(Value As EventHandler)
+        RemoveHandler(value As EventHandler)
             RemoveHandler Me.value, value
         End RemoveHandler
 

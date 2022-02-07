@@ -782,14 +782,14 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                             Dim identName As VBS.IdentifierNameSyntax = CType(vbExpression, VBS.IdentifierNameSyntax)
                             argumentList.Add(Factory.SimpleArgument(Factory.BinaryExpression(VB.SyntaxKind.SubtractExpression, identName, MinusToken, OneExpression)).WithConvertedLeadingTriviaFrom(e.Value.Expression))
                         ElseIf TypeOf vbExpression Is VBS.BinaryExpressionSyntax Then
-                            Dim value As VBS.BinaryExpressionSyntax = CType(vbExpression, VBS.BinaryExpressionSyntax)
+                            Dim binaryExpr As VBS.BinaryExpressionSyntax = CType(vbExpression, VBS.BinaryExpressionSyntax)
                             If vbExpression.IsKind(VB.SyntaxKind.AddExpression) Then
-                                If value.Right.IsKind(VB.SyntaxKind.NumericLiteralExpression) AndAlso CType(value.Right, VBS.LiteralExpressionSyntax).Token.ValueText = "1" Then
-                                    argumentList.Add(Factory.SimpleArgument(value.Left.WithConvertedLeadingTriviaFrom(e.Value.Expression)))
+                                If binaryExpr.Right.IsKind(VB.SyntaxKind.NumericLiteralExpression) AndAlso CType(binaryExpr.Right, VBS.LiteralExpressionSyntax).Token.ValueText = "1" Then
+                                    argumentList.Add(Factory.SimpleArgument(binaryExpr.Left.WithConvertedLeadingTriviaFrom(e.Value.Expression)))
                                     Continue For
                                 End If
                             End If
-                            argumentList.Add(Factory.SimpleArgument(Factory.BinaryExpression(VB.SyntaxKind.SubtractExpression, value, MinusToken, OneExpression)).WithConvertedLeadingTriviaFrom(e.Value.Expression))
+                            argumentList.Add(Factory.SimpleArgument(Factory.BinaryExpression(VB.SyntaxKind.SubtractExpression, binaryExpr, MinusToken, OneExpression)).WithConvertedLeadingTriviaFrom(e.Value.Expression))
                         Else
                             Stop
                         End If
@@ -806,12 +806,6 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             End Function
 
             Public Overrides Function VisitWithExpression(node As CSS.WithExpressionSyntax) As VB.VisualBasicSyntaxNode
-
-                '' Write the value 4.
-                'Console.WriteLine(CType(Function(x)
-                '                            Return x + 2
-                '                        End Function, Func(Of Integer, Integer))(2))
-
                 Dim attributeLists As New SyntaxList(Of VBS.AttributeListSyntax)
                 Dim modifiers As New SyntaxTokenList
                 Dim statements As New SyntaxList(Of VBS.StatementSyntax)
@@ -833,11 +827,11 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Dim parameterList As VBS.ParameterListSyntax = Factory.ParameterList(parameters)
                 Dim subOrFunctionHeader As VBS.LambdaHeaderSyntax = Factory.FunctionLambdaHeader(attributeLists, modifiers, parameterList, asClause)
 
-                Dim p1 As VBS.SimpleNameSyntax = Factory.IdentifierName("_p1")
-                Dim temp As SyntaxToken = Factory.Identifier("temp")
-                Dim value As VBS.ExpressionSyntax = Factory.MemberAccessExpression(VB.SyntaxKind.SimpleMemberAccessExpression, p1, DotToken, CloneIdentifier)
-                Dim initializer As VBS.EqualsValueSyntax = Factory.EqualsValue(value)
-                statements = statements.Add(FactoryDimStatement(temp, asClause, initializer))
+                Dim p1Identifier As VBS.SimpleNameSyntax = Factory.IdentifierName("_p1")
+                Dim tempIdToken As SyntaxToken = Factory.Identifier("temp")
+                Dim expr As VBS.ExpressionSyntax = Factory.MemberAccessExpression(VB.SyntaxKind.SimpleMemberAccessExpression, p1Identifier, DotToken, CloneIdentifier)
+                Dim initializer As VBS.EqualsValueSyntax = Factory.EqualsValue(expr)
+                statements = statements.Add(FactoryDimStatement(tempIdToken, asClause, initializer))
                 Dim withBlock As New SyntaxList(Of VBS.StatementSyntax)
                 For Each expression As CSS.ExpressionSyntax In node.Initializer.Expressions
                     If TypeOf expression Is CSS.AssignmentExpressionSyntax Then
@@ -859,9 +853,9 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     End If
                 Next
 
-                Dim withStatement As VBS.WithStatementSyntax = Factory.WithStatement(Factory.IdentifierName(temp))
+                Dim withStatement As VBS.WithStatementSyntax = Factory.WithStatement(Factory.IdentifierName(tempIdToken))
                 statements = statements.Add(Factory.WithBlock(withStatement, withBlock))
-                statements = statements.Add(Factory.ReturnStatement(Factory.IdentifierName(temp)))
+                statements = statements.Add(Factory.ReturnStatement(Factory.IdentifierName(tempIdToken)))
 
                 Dim endSubOrFunctionStatement As VBS.EndBlockStatementSyntax = Factory.EndFunctionStatement(EndKeyword.WithTrailingTrivia(SpaceTrivia), FunctionKeyword).WithConvertedTriviaFrom(node)
 

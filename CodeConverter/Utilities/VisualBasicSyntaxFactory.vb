@@ -372,7 +372,7 @@ Public Module VisualBasicSyntaxFactory
 
 #End Region
 
-    Public ReadOnly ValueModifiedIdentifier As ModifiedIdentifierSyntax = Factory.ModifiedIdentifier("Value")
+    Public ReadOnly ValueModifiedIdentifier As ModifiedIdentifierSyntax = Factory.ModifiedIdentifier("value")
 
     Public ReadOnly AsObject As SimpleAsClauseSyntax = Factory.SimpleAsClause(PredefinedTypeObject)
 

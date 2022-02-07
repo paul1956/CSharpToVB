@@ -76,6 +76,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         endStmt = Factory.EndGetStatement(EndKeyword.WithTrailingTrivia(SpaceTrivia), GetKeyword)
                     Case CS.SyntaxKind.SetAccessorDeclaration, CS.SyntaxKind.InitAccessorDeclaration
                         blockKind = VB.SyntaxKind.SetAccessorBlock
+
                         valueParam = Factory.Parameter(ValueModifiedIdentifier).
                         WithAsClause(Factory.SimpleAsClause(DirectCast(parent.Type.Accept(Me), VBS.TypeSyntax).
                         WithLeadingTrivia(SpaceTrivia)))
@@ -1108,7 +1109,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                         If finalTrailingDirective.Any Then
                             stmt = stmt.WithAppendedTrailingTrivia(finalTrailingDirective)
                         End If
-                        Return Factory.OperatorBlock(stmt, body).WithConvertedTriviaFrom(node)
+                        Return Factory.OperatorBlock(stmt.WithTrailingEol(), body).WithConvertedTriviaFrom(node)
                 End Select
             End Function
 
@@ -1165,7 +1166,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     Dim propertyNameToken As SyntaxToken
                     Dim propertyStatement As VBS.PropertyStatementSyntax
                     If node.ExplicitInterfaceSpecifier Is Nothing Then
-                        propertyNameToken = Me.GenerateSafeVbToken(node.Identifier, node)
+                        propertyNameToken = Me.GenerateSafeVbToken(node.Identifier, node,False,True)
                         Dim propertySymbol As IPropertySymbol = CType(_semanticModel.GetDeclaredSymbol(node), IPropertySymbol)
                         implementsClauseOrNothing = If(propertySymbol Is Nothing, Nothing, Me.CreateImplementsClauseSyntaxOrNull(propertySymbol, propertyNameToken))
                     Else

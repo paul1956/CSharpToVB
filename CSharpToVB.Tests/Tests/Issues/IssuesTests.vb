@@ -49,13 +49,13 @@ Namespace Tests.Issues
         ''' Raises an event when any button control is clicked.
         ''' </summary>
         Public Shared Custom Event ButtonClicked As SmallBasicCallback
-            AddHandler(Value As SmallBasicCallback)
+            AddHandler(value As SmallBasicCallback)
                 Dim tempVar As SmallBasicCallback = TryCast(_buttonClicked(""ButtonClicked""), SmallBasicCallback)
                 If tempVar IsNot Nothing Then _buttonClicked.RemoveHandler(""ButtonClicked"", Value)
                 _buttonClicked.AddHandler(""ButtonClicked"", Value)
             End AddHandler
 
-            RemoveHandler(Value As SmallBasicCallback)
+            RemoveHandler(value As SmallBasicCallback)
                 _buttonClicked.RemoveHandler(""ButtonClicked"", Value)
             End RemoveHandler
 

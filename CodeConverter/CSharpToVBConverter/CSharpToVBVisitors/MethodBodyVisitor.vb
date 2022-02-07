@@ -11,6 +11,7 @@ Imports CS = Microsoft.CodeAnalysis.CSharp
 Imports CSS = Microsoft.CodeAnalysis.CSharp.Syntax
 Imports Factory = Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
 Imports VB = Microsoft.CodeAnalysis.VisualBasic
+Imports VBS = Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace CSharpToVBConverter.CSharpToVBVisitors
 
@@ -1164,8 +1165,8 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                             Dim typeName As TypeSyntax = CType(declarationExpression.Type.Accept(_nodesVisitor), TypeSyntax)
                             identifier = CType(declarationExpression.Designation.Accept(_nodesVisitor), IdentifierNameSyntax)
                             nodes.Add(Factory.NamedTupleElement(identifier.Identifier, Factory.SimpleAsClause(typeName)))
-                            Dim value As ExpressionSyntax = Factory.SimpleMemberAccessExpression(variableIdentifier, DotToken, identifier)
-                            Dim initializer As EqualsValueSyntax = Factory.EqualsValue(value)
+                            Dim expr As ExpressionSyntax = Factory.SimpleMemberAccessExpression(variableIdentifier, DotToken, identifier)
+                            Dim initializer As EqualsValueSyntax = Factory.EqualsValue(expr)
                             Dim elementDeclarator As VariableDeclaratorSyntax = Factory.VariableDeclarator(Factory.SingletonSeparatedList(Factory.ModifiedIdentifier(identifier.Identifier)),
                                                                                                            Factory.SimpleAsClause(typeName),
                                                                                                            initializer)
@@ -1579,12 +1580,18 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     ' TODO Handle ref expressions
                     If expression IsNot Nothing Then
                         movedLeadingTrivia = movedLeadingTrivia.AddRange(node.GetLeadingTrivia.ConvertTriviaList())
-                        If expression.HasLeadingTrivia AndAlso Not expression.GetLeadingTrivia.ContainsEndIfTrivia Then
-                            movedLeadingTrivia = movedLeadingTrivia.AddRange(expression.GetLeadingTrivia)
-                        Else
-                            node.AddMarker(Factory.EmptyStatement.WithLeadingTrivia(expression.GetLeadingTrivia), StatementHandlingOption.AppendEmptyStatement, allowDuplicates:=False)
+                        Dim properyDecl As CSS.PropertyDeclarationSyntax = TryCast(node.Parent?.Parent?.Parent?.Parent, CSS.PropertyDeclarationSyntax)
+                        Dim exprBody As VBS.SimpleNameSyntax = TryCast(expression, VBS.SimpleNameSyntax)
+                        If properyDecl IsNot Nothing AndAlso exprBody IsNot Nothing AndAlso properyDecl.Identifier.ValueText.Equals(exprBody.Identifier.ValueText, StringComparison.InvariantCultureIgnoreCase) Then
+                           If expression.HasLeadingTrivia AndAlso Not expression.GetLeadingTrivia.ContainsEndIfTrivia Then
+                                movedLeadingTrivia = movedLeadingTrivia.AddRange(expression.GetLeadingTrivia)
+                            Else
+                                node.AddMarker(Factory.EmptyStatement.WithLeadingTrivia(expression.GetLeadingTrivia), StatementHandlingOption.AppendEmptyStatement, allowDuplicates:=False)
+                            End If
+                            expression = Factory.SimpleMemberAccessExpression(MeExpression, exprBody.WithLeadingTrivia()).WithLeadingTrivia(SpaceTrivia)
+                            movedLeadingTrivia = movedLeadingTrivia.AddRange(node.GetLeadingTrivia.ConvertTriviaList())
+                             expression = expression?.WithLeadingTrivia(SpaceTrivia)
                         End If
-                        expression = expression?.WithLeadingTrivia(SpaceTrivia)
                     End If
                     stmt = Factory.ReturnStatement(expression?.WithLeadingTrivia(SpaceTrivia)).
                                             WithLeadingTrivia(movedLeadingTrivia).
@@ -1783,14 +1790,14 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                                                                      ).WithTrailingTrivia(collectedCommentTrivia))
                         Continue For
                     Else
-                        Dim value As ExpressionSyntax = DirectCast(v.Initializer.Value.Accept(_nodesVisitor), ExpressionSyntax)
-                        If value Is Nothing Then
-                            value = Factory.IdentifierName("HandleRefExpression").WithConvertedTriviaFrom(v.Initializer.Value)
+                        Dim expr As ExpressionSyntax = DirectCast(v.Initializer.Value.Accept(_nodesVisitor), ExpressionSyntax)
+                        If expr Is Nothing Then
+                            expr = Factory.IdentifierName("HandleRefExpression").WithConvertedTriviaFrom(v.Initializer.Value)
                         End If
-                        If value.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
-                            leadingTrivia = leadingTrivia.AddRange(value.GetLeadingTrivia)
+                        If expr.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
+                            leadingTrivia = leadingTrivia.AddRange(expr.GetLeadingTrivia)
                         End If
-                        Dim initializer As EqualsValueSyntax = Factory.EqualsValue(value.WithLeadingTrivia(SpaceTrivia))
+                        Dim initializer As EqualsValueSyntax = Factory.EqualsValue(expr.WithLeadingTrivia(SpaceTrivia))
                         Dim names As SeparatedSyntaxList(Of ModifiedIdentifierSyntax) = Factory.SingletonSeparatedList(CType(v.Accept(_nodesVisitor), ModifiedIdentifierSyntax))
                         Dim declarator As VariableDeclaratorSyntax = Factory.VariableDeclarator(names,
                                                                                               asClause,

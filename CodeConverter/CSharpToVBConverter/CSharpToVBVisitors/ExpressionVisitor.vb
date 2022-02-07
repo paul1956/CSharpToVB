@@ -1686,7 +1686,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                                         Replace(UnicodeOpenQuote, UnicodeDoubleOpenQuote, StringComparison.Ordinal).
                                                         Replace(UnicodeCloseQuote, UnicodeDoubleCloseQuote, StringComparison.Ordinal).
                                                         NormalizeLineEndings,
-                                                        value:=node.Token.ValueText.
+                                                    value:=node.Token.ValueText.
                                                         Replace(Quote, DoubleQuote, StringComparison.Ordinal).
                                                         Replace(UnicodeOpenQuote, UnicodeDoubleOpenQuote, StringComparison.Ordinal).
                                                         Replace(UnicodeCloseQuote, UnicodeDoubleCloseQuote, StringComparison.Ordinal).NormalizeLineEndings)

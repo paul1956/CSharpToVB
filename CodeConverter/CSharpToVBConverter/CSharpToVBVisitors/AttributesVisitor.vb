@@ -34,8 +34,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     name = Factory.NameColonEquals(DirectCast(node.NameEquals.Name.Accept(Me), VBS.IdentifierNameSyntax))
                 End If
 
-                Dim value As VBS.ExpressionSyntax = DirectCast(node.Expression.Accept(Me), VBS.ExpressionSyntax)
-                Return Factory.SimpleArgument(name, value).WithConvertedTriviaFrom(node)
+                Return Factory.SimpleArgument(name, DirectCast(node.Expression.Accept(Me), VBS.ExpressionSyntax)).WithConvertedTriviaFrom(node)
             End Function
 
             Public Overrides Function VisitAttributeArgumentList(node As CSS.AttributeArgumentListSyntax) As VB.VisualBasicSyntaxNode

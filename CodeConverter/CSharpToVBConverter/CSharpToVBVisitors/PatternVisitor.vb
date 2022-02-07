@@ -34,7 +34,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Dim leadingTrivia As SyntaxTriviaList = statementWithIssue.CheckCorrectnessLeadingTrivia(attemptToPortMade:=True, "VB has no direct equivalent To C# pattern variables 'is' expressions")
                 Dim designation As CSS.SingleVariableDesignationSyntax = DirectCast(node.Designation, CSS.SingleVariableDesignationSyntax)
 
-                Dim value As VBS.ExpressionSyntax = Factory.ParseExpression($"TryCast({node.Designation.Accept(Me).NormalizeWhitespace.ToFullString}, {node.Type.Accept(Me).NormalizeWhitespace.ToFullString})")
+                Dim expr As VBS.ExpressionSyntax = Factory.ParseExpression($"TryCast({node.Designation.Accept(Me).NormalizeWhitespace.ToFullString}, {node.Type.Accept(Me).NormalizeWhitespace.ToFullString})")
 
                 Dim variableType As VBS.TypeSyntax = DirectCast(node.Type.Accept(Me), VBS.TypeSyntax)
 
@@ -45,7 +45,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                                   ).WithLeadingTrivia(leadingTrivia)
 
                 statementWithIssue.AddMarker(declarationToBeAdded, StatementHandlingOption.PrependStatement, allowDuplicates:=True)
-                Return value
+                Return expr
             End Function
 
             Public Overrides Function VisitIsPatternExpression(node As CSS.IsPatternExpressionSyntax) As VB.VisualBasicSyntaxNode
@@ -68,13 +68,13 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     End If
 
                     Dim varType As VBS.TypeSyntax = CType(declarationPattern.Type.Accept(Me), VBS.TypeSyntax)
-                    Dim value As VBS.ExpressionSyntax = Factory.TypeOfIsExpression(vbExpr, varType)
+                    Dim expr As VBS.ExpressionSyntax = Factory.TypeOfIsExpression(vbExpr, varType)
                     Dim uniqueIdToken As SyntaxToken = Factory.Identifier(Me.GetUniqueVariableNameInScope(node, "TempVar", _usedIdentifiers))
 
                     Dim dimToBeAdded As VBS.LocalDeclarationStatementSyntax =
                         FactoryDimStatement(uniqueIdToken,
                                        Factory.SimpleAsClause(Factory.PredefinedType(BooleanKeyword)),
-                                       Factory.EqualsValue(value)).WithTrailingTrivia(VbEolTrivia)
+                                       Factory.EqualsValue(expr)).WithTrailingTrivia(VbEolTrivia)
                     If statementWithIssue.GetLeadingTrivia.ContainsCommentOrDirectiveTrivia Then
                         dimToBeAdded = dimToBeAdded.WithPrependedLeadingTrivia(statementWithIssue.GetLeadingTrivia.ConvertTriviaList())
                     End If

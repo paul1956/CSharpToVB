@@ -88,8 +88,8 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Return GetStatementWithIssues(node)
             End Function
 
-            Private Shared Function IsKind(value As VB.SyntaxKind, ParamArray kinds() As VB.SyntaxKind) As Boolean
-                Return kinds.Contains(value)
+            Private Shared Function IsKind(kind As VB.SyntaxKind, ParamArray kinds() As VB.SyntaxKind) As Boolean
+                Return kinds.Contains(kind)
             End Function
 
             Private Function GetFormalParameterTypeOrNull(originalName As CSS.ExpressionSyntax) As VBS.TypeSyntax
@@ -118,6 +118,11 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 If _usedIdentifiers.ContainsKey(baseVbIdent) Then
                     Dim symbolTableEntry As SymbolTableEntry = _usedIdentifiers(baseVbIdent)
                     Return (Factory.Identifier(symbolTableEntry.Name).WithConvertedTriviaFrom(csIdentifier), symbolTableEntry.IsProperty)
+                End If
+
+                If isField AndAlso baseVbIdent.Equals("value", StringComparison.InvariantCulture) Then
+                    _usedIdentifiers.Add(baseVbIdent, New SymbolTableEntry("value", isQualifiedNameOrTypeName, True))
+                    Return (Factory.Identifier("value"), False)
                 End If
 
                 If _globalSymbols.Contains(baseVbIdent, compareTypeOnly:=True, StringComparison.OrdinalIgnoreCase) Then
@@ -150,6 +155,9 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 Dim newIdentifier As String = baseVbIdent
                 If _globalSymbols.Contains(baseVbIdent, compareTypeOnly:=True, StringComparison.Ordinal) Then
                     newIdentifier &= "1"
+                End If
+                If baseVbIdent.Equals("value", StringComparison.InvariantCulture) Then
+                    newIdentifier = "_" & newIdentifier
                 End If
                 _usedIdentifiers.Add(baseVbIdent, New SymbolTableEntry(newIdentifier, isQualifiedNameOrTypeName, isField))
                 Return (Factory.Identifier(newIdentifier), False)
@@ -200,7 +208,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             '    Return (Factory.Identifier(newIdentifier), False)
             'End Function
             Friend Function MakeIdentifierUnique(csIdentifier As SyntaxToken, node As CS.CSharpSyntaxNode, isBracketNeeded As Boolean, isQualifiedNameOrTypeName As Boolean) As SyntaxToken
-                Dim isField As Boolean = node.AncestorsAndSelf().OfType(Of CSS.FieldDeclarationSyntax).Any And Not isQualifiedNameOrTypeName
+                Dim isField As Boolean = node.AncestorsAndSelf().OfType(Of CSS.FieldDeclarationSyntax).Any And Not isQualifiedNameOrTypeName OrElse (node.AncestorsAndSelf().OfType(Of CSS.AccessorDeclarationSyntax).Any AndAlso csIdentifier.ValueText.Equals("value", StringComparison.InvariantCulture))
                 Dim baseIdent As String = If(isBracketNeeded, $"[{csIdentifier.ValueText}]", csIdentifier.ValueText)
                 If baseIdent = "_" Then
                     baseIdent = "__"
