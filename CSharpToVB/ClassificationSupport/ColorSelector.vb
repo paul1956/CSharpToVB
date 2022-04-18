@@ -44,11 +44,11 @@ Partial Public Module ColorSelector
             Return DefaultColor
         End If
         Dim returnValue As ColorDescriptor = Nothing
-        If My.Forms.Form1._currentThemeDictionary.TryGetValue(name, returnValue) Then
+        If My.Forms.Form1.CurrentThemeDictionary.TryGetValue(name, returnValue) Then
             Return returnValue
         End If
         Debug.Print($"GetColorFromName missing({name})")
-        Return My.Forms.Form1._currentThemeDictionary("error")
+        Return My.Forms.Form1.CurrentThemeDictionary("error")
     End Function
 
     <Extension>
@@ -57,7 +57,7 @@ Partial Public Module ColorSelector
     End Function
 
     Public Function GetColorNameList() As Dictionary(Of String, ColorDescriptor).KeyCollection
-        Return My.Forms.Form1._currentThemeDictionary.Keys
+        Return My.Forms.Form1.CurrentThemeDictionary.Keys
     End Function
 
     Public Sub LoadColorDictionaryFromFile(fPath As String, themeDictionary As Dictionary(Of String, ColorDescriptor))
@@ -108,7 +108,7 @@ Partial Public Module ColorSelector
         Dim saveFilePath As String = Path.Combine(FileIO.SpecialDirectories.MyDocuments,
                                             $"{If(My.Forms.Form1.TSThemeButton.Text.IsLightMode(), "LightMode", "DarkMode")}ColorDictionary.csv")
         If File.Exists(saveFilePath) Then
-            WriteColorDictionaryToFile(saveFilePath, My.Forms.Form1._currentThemeDictionary)
+            WriteColorDictionaryToFile(saveFilePath, My.Forms.Form1.CurrentThemeDictionary)
         End If
     End Sub
 

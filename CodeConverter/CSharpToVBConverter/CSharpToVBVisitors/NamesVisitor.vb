@@ -208,7 +208,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
             '    Return (Factory.Identifier(newIdentifier), False)
             'End Function
             Friend Function MakeIdentifierUnique(csIdentifier As SyntaxToken, node As CS.CSharpSyntaxNode, isBracketNeeded As Boolean, isQualifiedNameOrTypeName As Boolean) As SyntaxToken
-                Dim isField As Boolean = node.AncestorsAndSelf().OfType(Of CSS.FieldDeclarationSyntax).Any And Not isQualifiedNameOrTypeName OrElse (node.AncestorsAndSelf().OfType(Of CSS.AccessorDeclarationSyntax).Any AndAlso csIdentifier.ValueText.Equals("value", StringComparison.InvariantCulture))
+                Dim isField As Boolean = (node.AncestorsAndSelf().OfType(Of CSS.FieldDeclarationSyntax).Any And Not isQualifiedNameOrTypeName) OrElse (node.AncestorsAndSelf().OfType(Of CSS.AccessorDeclarationSyntax).Any AndAlso csIdentifier.ValueText.Equals("value", StringComparison.InvariantCulture))
                 Dim baseIdent As String = If(isBracketNeeded, $"[{csIdentifier.ValueText}]", csIdentifier.ValueText)
                 If baseIdent = "_" Then
                     baseIdent = "__"

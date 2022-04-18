@@ -18,7 +18,7 @@ Public Module TsToolBaseSupport
             Exit Sub
         End If
         mainForm._inColorize = True
-        My.Settings.TSFindWhatMRU_Data.MnuAddToMru(mainForm.TSFindFindWhatComboBox.Text)
+        My.Settings.TSFindWhatMRU_Data.MenuAddToMru(mainForm.TSFindFindWhatComboBox.Text)
         My.Settings.Save()
         mainForm.TSFindFindWhatComboBox.TsFindWhatMruUpdateUi()
         Dim prompt As String = ""
@@ -95,8 +95,8 @@ Public Module TsToolBaseSupport
         Dim inputBufferInUse As Boolean
         Dim outputBufferInUse As Boolean
         inputBufferInUse = mainForm.ConversionInput.Text.Any
-        mainForm.mnuConvertConvertSnippet.Enabled = inputBufferInUse
-        mainForm.mnuConvertConvertTopLevelStmts.Enabled = inputBufferInUse
+        mainForm.MenuConvertConvertSnippet.Enabled = inputBufferInUse
+        mainForm.MenuConvertConvertTopLevelStmts.Enabled = inputBufferInUse
         outputBufferInUse = mainForm.ConversionOutput.Text.Any
         Dim enableFind As Boolean = (inputBufferInUse Or outputBufferInUse) And mainForm.TSFindFindWhatComboBox.Text.Any
         mainForm.TSFindClearHighlightsButton.Enabled = enableFind
@@ -105,7 +105,7 @@ Public Module TsToolBaseSupport
         mainForm.TSFindMatchCaseCheckBox.Enabled = enableFind
         mainForm.TSFindMatchWholeWordCheckBox.Enabled = enableFind
         Dim selectedIndex As Integer = mainForm.TSFindLookInComboBox.SelectedIndex
-        If mainForm.TSFindLookInComboBox.Items.Count > 0 AndAlso mainForm.mnuConvert.Enabled Then
+        If mainForm.TSFindLookInComboBox.Items.Count > 0 AndAlso mainForm.MenuConvert.Enabled Then
             If inputBufferInUse AndAlso outputBufferInUse Then
                 mainForm.TSFindLookInComboBox.SelectedIndex = selectedIndex
                 mainForm.TSFindLookInComboBox.Enabled = True

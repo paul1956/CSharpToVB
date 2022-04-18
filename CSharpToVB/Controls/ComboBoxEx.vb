@@ -36,6 +36,15 @@ Public Class ComboBoxEx
         End Set
     End Property
 
+    Public Property BorderDrawArea As Rectangle
+        Get
+            Return _borderDrawArea
+        End Get
+        Set(value As Rectangle)
+            _borderDrawArea = value
+        End Set
+    End Property
+
     <Browsable(True), DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)>
     <EditorBrowsable(EditorBrowsableState.Always), Category("Appearance")>
     <Description("Determines how the colored border is drawn.
@@ -51,6 +60,15 @@ Internal: the internal section of the control, excluding the DropDown Button.")>
         End Set
     End Property
 
+    Public Property FadedBorderColor As Color
+        Get
+            Return _fadedBorderColor
+        End Get
+        Set(value As Color)
+            _fadedBorderColor = value
+        End Set
+    End Property
+
     Private Sub InitializeComponent()
         Me.SetStyle(ControlStyles.ResizeRedraw Or
              ControlStyles.SupportsTransparentBackColor, True)
@@ -61,14 +79,14 @@ Internal: the internal section of the control, excluding the DropDown Button.")>
     Private Sub SetBorderArea()
         Select Case _borderDrawMode
             Case ControlBorderDrawMode.Full
-                _borderDrawArea = New Rectangle(Point.Empty,
+                Me.BorderDrawArea = New Rectangle(Point.Empty,
                                                  New Size(Me.ClientRectangle.Width - 1, Me.ClientRectangle.Height - 1))
             Case ControlBorderDrawMode.Internal
-                _borderDrawArea = New Rectangle(Point.Empty,
+                Me.BorderDrawArea = New Rectangle(Point.Empty,
                                                  New Size(Me.ClientRectangle.Width - _buttonWidth, Me.ClientRectangle.Height - 1))
             Case ControlBorderDrawMode.InternalFaded
-                _fadedBorderColor = Color.FromArgb(96, _borderColor)
-                _borderDrawArea = New Rectangle(New Point(0, 0),
+                Me.FadedBorderColor = Color.FromArgb(96, _borderColor)
+                Me.BorderDrawArea = New Rectangle(New Point(0, 0),
                                                  New Size(Me.ClientRectangle.Width - _buttonWidth - 2, Me.ClientRectangle.Height - 2))
         End Select
     End Sub

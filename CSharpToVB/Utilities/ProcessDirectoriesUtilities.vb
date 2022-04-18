@@ -139,8 +139,8 @@ Public Module ProcessDirectoriesUtilities
         End If
         Dim enableControl As Boolean = Not stopButtonVisible
         mainForm.ConversionInput.ReadOnly = Not enableControl
-        mainForm.mnuFile.Enabled = enableControl
-        mainForm.mnuConvert.Enabled = enableControl
+        mainForm.MenuFile.Enabled = enableControl
+        mainForm.MenuConvert.Enabled = enableControl
         LocalUseWaitCursor(mainForm:=mainForm, waitCursorEnable:=stopButtonVisible)
     End Sub
 

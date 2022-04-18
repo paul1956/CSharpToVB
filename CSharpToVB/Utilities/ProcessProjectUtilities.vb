@@ -237,9 +237,9 @@ Public Module ProcessProjectUtilities
 
             Dim prompt As String = "Conversion stopped."
             If fileName.EndsWith(".sln", StringComparison.OrdinalIgnoreCase) Then
-                mainForm.mnuFileLastSolution.Enabled = True
+                mainForm.MenuFileLastSolution.Enabled = True
                 My.Settings.LastSolution = fileName
-                mainForm.mnuFileLastSolution.Text = $"Last Solution - {fileName}"
+                mainForm.MenuFileLastSolution.Text = $"Last Solution - {fileName}"
                 My.Settings.Save()
                 Dim totalProjects As Integer = solutionAnalyzerManager.Projects.Count
                 Dim processedProjects As Integer = 0
@@ -260,8 +260,8 @@ Public Module ProcessProjectUtilities
                             skipProjects = False
                         End If
                     End If
-                    mainForm.mnuFileLastProject.Text = $"Last Project - {projectFile}"
-                    mainForm.mnuFileLastProject.Enabled = True
+                    mainForm.MenuFileLastProject.Text = $"Last Project - {projectFile}"
+                    mainForm.MenuFileLastProject.Enabled = True
                     My.Settings.LastProject = projectFile
                     My.Settings.Save()
                     Application.DoEvents()
@@ -301,8 +301,8 @@ Public Module ProcessProjectUtilities
                     Await Task.Delay(100).ConfigureAwait(True)
                 End While
                 mainForm.UpdateProgressLabels("")
-                mainForm.mnuFileLastProject.Text = $"Last Project - {fileName}"
-                mainForm.mnuFileLastProject.Enabled = True
+                mainForm.MenuFileLastProject.Text = $"Last Project - {fileName}"
+                mainForm.MenuFileLastProject.Enabled = True
                 My.Settings.LastProject = fileName
                 My.Settings.Save()
                 prompt = (Await ProcessProjectAsync(mainForm, taskProjectAnalyzer.Result,

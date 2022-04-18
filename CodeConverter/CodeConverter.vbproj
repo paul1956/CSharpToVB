@@ -17,11 +17,12 @@
     <Product>VB Core Code Converter</Product>
     <RepositoryUrl>https://github.com/paul1956/CSharpToVB</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <AssemblyVersion>5.0.2.7</AssemblyVersion>
-    <FileVersion>5.0.2.7</FileVersion>
-    <Version>5.0.2.7</Version>
+    <AssemblyVersion>5.0.2.8</AssemblyVersion>
+    <FileVersion>5.0.2.8</FileVersion>
+    <Version>5.0.2.8</Version>
     <Copyright>Copyright (c) .NET Foundation and Contributors</Copyright>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <PackageLicenseFile>License.txt</PackageLicenseFile>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis" Version="3.10.0" />
@@ -39,5 +40,11 @@
   <ItemGroup>
     <ProjectReference Include="..\ObjectPoolLibrary\ObjectPoolLibrary.csproj" />
     <ProjectReference Include="..\ProgressReportLibrary\ProgressReportLibrary.vbproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\License.txt">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 </Project>

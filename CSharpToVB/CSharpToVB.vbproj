@@ -27,10 +27,14 @@
     <Product>CSharp To VB Converter</Product>
     <Copyright>Copyright (c) .NET Foundation and Contributors</Copyright>
     <PackageId>CSharp To VB Converter</PackageId>
-    <AssemblyVersion>5.0.6.2</AssemblyVersion>
-    <FileVersion>5.0.6.2</FileVersion>
-    <Version>5.0.6.2</Version>
+    <AssemblyVersion>5.0.6.3</AssemblyVersion>
+    <FileVersion>5.0.6.3</FileVersion>
+    <Version>5.0.6.3</Version>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <PackageLicenseFile>License.txt</PackageLicenseFile>
+    <PackageIcon>CStoVB.ico</PackageIcon>
+    <PackageIconUrl />
+    <PackageTags>C# Visual Basic VB</PackageTags>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <NoWarn />
@@ -134,6 +138,14 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
       <CustomToolNamespace>My</CustomToolNamespace>
+    </None>
+    <None Include="..\License.txt">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+    <None Include="Icons\CStoVB.ico">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
     </None>
   </ItemGroup>
 </Project>

@@ -57,7 +57,7 @@ Friend Module MenuExtensions
     End Function
 
     <Extension>
-    Friend Sub MnuAddToMru(mruData As Specialized.StringCollection, text As String)
+    Friend Sub MenuAddToMru(mruData As Specialized.StringCollection, text As String)
         ' remove the item from the collection if exists so that we can
         ' re-add it to the beginning...
         If mruData.Contains(text) Then
@@ -96,14 +96,14 @@ Friend Module MenuExtensions
 
         ' show separator...
         If My.Settings.MRU_Data.Count > 0 Then
-            mainForm.mnuFileLastFolder.Text = Path.GetDirectoryName(My.Settings.MRU_Data.Last)
-            mainForm.mnuFileLastFolder.Visible = True
-            mainForm.mnuFileSep1.Visible = True
-            mainForm.mnuFileSep2.Visible = True
+            mainForm.MenuFileLastFolder.Text = Path.GetDirectoryName(My.Settings.MRU_Data.Last)
+            mainForm.MenuFileLastFolder.Visible = True
+            mainForm.MenuFileSep1.Visible = True
+            mainForm.MenuFileSep2.Visible = True
         Else
-            mainForm.mnuFileLastFolder.Visible = False
-            mainForm.mnuFileSep1.Visible = False
-            mainForm.mnuFileSep2.Visible = False
+            mainForm.MenuFileLastFolder.Visible = False
+            mainForm.MenuFileSep1.Visible = False
+            mainForm.MenuFileSep2.Visible = False
         End If
     End Sub
 

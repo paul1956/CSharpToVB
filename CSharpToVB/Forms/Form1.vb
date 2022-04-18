@@ -23,18 +23,17 @@ Partial Public Class Form1
     Friend _inColorize As Boolean
     Friend _requestToConvert As ConvertRequest
     Friend _resultOfConversion As ConversionResult
-    Public Const ProjectGitHubUrl As String = "https://github.com/paul1956/CSharpToVB/"
     Public Const ProjectGitHubReadMe As String = "https://raw.githubusercontent.com/paul1956/CSharpToVB/master/ReadMe.MD"
-    Public _currentThemeDictionary As Dictionary(Of String, ColorDescriptor)
+    Public Const ProjectGitHubUrl As String = "https://github.com/paul1956/CSharpToVB/"
+    Public CurrentThemeDictionary As Dictionary(Of String, ColorDescriptor)
 
     Public Sub New()
         Me.InitializeComponent()
     End Sub
 
+    Private Property CurrentBuffer As RichTextBox = Nothing
     Friend Property LanguageBuffersToSearch As LanguageBufferToSearch = LanguageBufferToSearch.Csharp
     Friend Property ResourceManager As ComponentResourceManager = New ComponentResourceManager(GetType(Form1))
-    Private Property CurrentBuffer As RichTextBox = Nothing
-
     Private Sub ButtonStopConversion_Click(sender As Object, e As EventArgs) Handles ButtonStopConversion.Click
         SetButtonStopCursorAndCancelToken(Me, stopButtonVisible:=False)
         _cancellationTokenSource.Cancel()
@@ -108,10 +107,10 @@ Partial Public Class Form1
             SetButtonStopCursorAndCancelToken(Me, stopButtonVisible:=True)
             sourceControl.SelectedText = Clipboard.GetText(TextDataFormat.Text)
             _inColorize = False
-            If Me.mnuOptionsColorizeSource.Checked AndAlso Me.CurrentBuffer.Equals(Me.ConversionInput) Then
+            If Me.MenuOptionsColorizeSource.Checked AndAlso Me.CurrentBuffer.Equals(Me.ConversionInput) Then
                 Colorize(Me, GetClassifiedRanges(sourceControl.Text, LanguageNames.CSharp).ToList(), sourceControl, sourceControl.Lines.Length, New List(Of Diagnostic))
             Else
-                If Me.mnuOptionsColorizeResult.Checked AndAlso Me.CurrentBuffer.Equals(Me.ConversionOutput) Then
+                If Me.MenuOptionsColorizeResult.Checked AndAlso Me.CurrentBuffer.Equals(Me.ConversionOutput) Then
                     Colorize(Me, GetClassifiedRanges(sourceControl.Text, LanguageNames.VisualBasic).ToList(), sourceControl, sourceControl.Lines.Length, New List(Of Diagnostic))
                 End If
             End If
@@ -189,9 +188,9 @@ Partial Public Class Form1
 
     Private Sub ConversionInput_TextChanged(sender As Object, e As EventArgs) Handles ConversionInput.TextChanged
         Dim inputBufferInUse As Boolean = Me.SetSearchControls(True)
-        Me.mnuViewShowSourceLineNumbers.Checked = inputBufferInUse And My.Settings.ShowSourceLineNumbers
-        Me.mnuFileSaveSnippet.Enabled = inputBufferInUse
-        If Me.mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
+        Me.MenuViewShowSourceLineNumbers.Checked = inputBufferInUse And My.Settings.ShowSourceLineNumbers
+        Me.MenuFileSaveSnippet.Enabled = inputBufferInUse
+        If Me.MenuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
             Colorize1Range(Me.ConversionInput, LanguageNames.CSharp)
         End If
         If Me.ConversionInput.Text.Any() Then
@@ -222,9 +221,9 @@ Partial Public Class Form1
 
     Private Sub ConversionOutput_TextChanged(sender As Object, e As EventArgs) Handles ConversionOutput.TextChanged
         Dim outputBufferInUse As Boolean = CType(sender, RichTextBox).TextLength > 0
-        Me.mnuViewShowDestinationLineNumbers.Checked = outputBufferInUse And My.Settings.ShowDestinationLineNumbers
-        Me.mnuCompile.Enabled = outputBufferInUse
-        If Me.mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
+        Me.MenuViewShowDestinationLineNumbers.Checked = outputBufferInUse And My.Settings.ShowDestinationLineNumbers
+        Me.MenuCompile.Enabled = outputBufferInUse
+        If Me.MenuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
             Colorize1Range(Me.ConversionOutput, LanguageNames.VisualBasic)
         End If
         Me.SetSearchControls()
@@ -247,29 +246,29 @@ Partial Public Class Form1
         Me.TSFindFindWhatComboBox.TsFindWhatMruUpdateUi()
 
         ' display MRU if there are any items to display...
-        Me.mnuFile.DropDownItems.FileMenuMruUpdateUi(AddressOf Me.mnu_MRUList_Click)
+        Me.MenuFile.DropDownItems.FileMenuMruUpdateUi(AddressOf Me.Menu_MRUList_Click)
 
-        Me.mnuOptionsColorizeSource.Checked = My.Settings.ColorizeInput
-        Me.mnuOptionsColorizeResult.Checked = My.Settings.ColorizeOutput
+        Me.MenuOptionsColorizeSource.Checked = My.Settings.ColorizeInput
+        Me.MenuOptionsColorizeResult.Checked = My.Settings.ColorizeOutput
 
         Select Case My.Settings.ConversionDelay
             Case 0
-                Me.mnuOptionsDelayBetweenConversions.SelectedIndex = 0
+                Me.MenuOptionsDelayBetweenConversions.SelectedIndex = 0
             Case 5
-                Me.mnuOptionsDelayBetweenConversions.SelectedIndex = 1
+                Me.MenuOptionsDelayBetweenConversions.SelectedIndex = 1
             Case 10
-                Me.mnuOptionsDelayBetweenConversions.SelectedIndex = 2
+                Me.MenuOptionsDelayBetweenConversions.SelectedIndex = 2
             Case Else
-                Me.mnuOptionsDelayBetweenConversions.SelectedIndex = 0
+                Me.MenuOptionsDelayBetweenConversions.SelectedIndex = 0
         End Select
 
-        Me.mnuFileLoadLastSnippet.Enabled = File.Exists(s_snippetFileWithPath)
-        Me.mnuOptionsPauseConvertOnSuccess.Checked = My.Settings.PauseConvertOnSuccess
-        Me.mnuOptionsFolderConversionsOptionsSkipAutoGenerated.Checked = My.Settings.SkipAutoGenerated
-        Me.mnuOptionsFolderConversionsOptionsSkipBinAndObjFolders.Checked = My.Settings.SkipBinAndObjFolders
-        Me.mnuOptionsFolderConversionsOptionsSkipTestResourceFiles.Checked = My.Settings.SkipTestResourceFiles
+        Me.MenuFileLoadLastSnippet.Enabled = File.Exists(s_snippetFileWithPath)
+        Me.MenuOptionsPauseConvertOnSuccess.Checked = My.Settings.PauseConvertOnSuccess
+        Me.MenuOptionsFolderConversionsOptionsSkipAutoGenerated.Checked = My.Settings.SkipAutoGenerated
+        Me.MenuOptionsFolderConversionsOptionsSkipBinAndObjFolders.Checked = My.Settings.SkipBinAndObjFolders
+        Me.MenuOptionsFolderConversionsOptionsSkipTestResourceFiles.Checked = My.Settings.SkipTestResourceFiles
 
-        Me.mnuConvertStartFolderConvertFromLastFile.Checked = My.Settings.StartFolderConvertFromLastFile
+        Me.MenuConvertStartFolderConvertFromLastFile.Checked = My.Settings.StartFolderConvertFromLastFile
 
         If String.IsNullOrWhiteSpace(My.Settings.DefaultProjectDirectory) Then
             My.Settings.DefaultProjectDirectory = GetLatestVisualStudioProjectPath()
@@ -289,7 +288,7 @@ Partial Public Class Form1
         Me.FileListListBox.Height = Me.SplitContainer1.Panel2.ClientSize.Height
         Me.ErrorListListBox.Height = Me.SplitContainer1.Panel2.ClientSize.Height
 
-        For Each frameworkType As ToolStripMenuItem In Me.mnuOptionsDefaultFramework.DropDownItems
+        For Each frameworkType As ToolStripMenuItem In Me.MenuOptionsDefaultFramework.DropDownItems
             If frameworkType.Text = $".Net Full Framework" Then
                 For Each f As String In GetAllFrameworkVersions()
                     frameworkType.DropDownItems.AddDropDownMenuItem(f)
@@ -300,7 +299,7 @@ Partial Public Class Form1
                 Next
             End If
         Next
-        For Each frameworkType As ToolStripMenuItem In Me.mnuOptionsDefaultFramework.DropDownItems
+        For Each frameworkType As ToolStripMenuItem In Me.MenuOptionsDefaultFramework.DropDownItems
             _frameworkTypeList.Add(frameworkType)
             For Each frameworkVersion As ToolStripMenuItem In frameworkType.DropDownItems
                 If frameworkVersion.Text = My.Settings.Framework Then
@@ -312,17 +311,17 @@ Partial Public Class Form1
                     frameworkVersion.Checked = False
                     frameworkVersion.Enabled = True
                 End If
-                AddHandler frameworkVersion.CheckedChanged, AddressOf Me.mnuOptionDefaultFramework_CheckedChanged
+                AddHandler frameworkVersion.CheckedChanged, AddressOf Me.MenuOptionDefaultFramework_CheckedChanged
                 _frameworkVersionList.Add(frameworkVersion.Text, (frameworkVersion, frameworkType))
             Next
         Next
         If My.Settings.LastProject.Length > 0 Then
-            Me.mnuFileLastProject.Text = $"Last Project - {My.Settings.LastProject}"
-            Me.mnuFileLastProject.Enabled = True
+            Me.MenuFileLastProject.Text = $"Last Project - {My.Settings.LastProject}"
+            Me.MenuFileLastProject.Enabled = True
         End If
         If My.Settings.LastSolution.Length > 0 Then
-            Me.mnuFileLastSolution.Text = $"Last Solution - {My.Settings.LastSolution}"
-            Me.mnuFileLastSolution.Enabled = True
+            Me.MenuFileLastSolution.Text = $"Last Solution - {My.Settings.LastSolution}"
+            Me.MenuFileLastSolution.Enabled = True
         End If
         Me.ProjectConversionInitProgressBar.Visible = False
         Me.CenterToScreen()
@@ -343,7 +342,7 @@ Partial Public Class Form1
         CheckForUpdatesAsync(Me, reportResults:=False)
         Me.SplitContainer1.SplitterIncrement = Me.FileListListBox.ItemHeight + 2
         Me.ResizeRichTextBuffers()
-        DefaultColor = _currentThemeDictionary(ThemeDefaultColor)
+        DefaultColor = CurrentThemeDictionary(ThemeDefaultColor)
     End Sub
 
     Private Sub Form1_Resize(sender As Object, e As EventArgs) Handles Me.Resize
@@ -422,7 +421,7 @@ Partial Public Class Form1
         Me.FileListListBox.Enabled = Me.FileListListBox.Items.Count > 0
     End Sub
 
-    Private Sub mnuCompile_Click(sender As Object, e As EventArgs) Handles mnuCompile.Click
+    Private Sub MenuCompile_Click(sender As Object, e As EventArgs) Handles MenuCompile.Click
         Me.LineNumbersForConversionInput.Visible = False
         Me.LineNumbersForConversionOutput.Visible = False
         Me.ErrorListListBox.Items.Clear()
@@ -437,27 +436,27 @@ Partial Public Class Form1
         Compile_Colorize(Me, Me.ConversionOutput.Text, preprocessorSymbols)
     End Sub
 
-    Private Sub mnuConvert_DropDownOpening(sender As Object, e As EventArgs) Handles mnuConvert.DropDownOpening
+    Private Sub MenuConvert_DropDownOpening(sender As Object, e As EventArgs) Handles MenuConvert.DropDownOpening
         If Me.ConversionInput.Text.Any Then
-            Me.mnuConvertConvertSnippet.Enabled = True ' For now always enable, Not _topLevelStatementConversionEnable
-            Me.mnuConvertConvertTopLevelStmts.Enabled = _topLevelStatementConversionEnable
+            Me.MenuConvertConvertSnippet.Enabled = True ' For now always enable, Not _topLevelStatementConversionEnable
+            Me.MenuConvertConvertTopLevelStmts.Enabled = _topLevelStatementConversionEnable
         Else
-            Me.mnuConvertConvertSnippet.Enabled = False
-            Me.mnuConvertConvertTopLevelStmts.Enabled = False
+            Me.MenuConvertConvertSnippet.Enabled = False
+            Me.MenuConvertConvertTopLevelStmts.Enabled = False
         End If
     End Sub
 
-    Private Sub mnuConvert_EnabledChanged(sender As Object, e As EventArgs) Handles mnuConvert.EnabledChanged
+    Private Sub MenuConvert_EnabledChanged(sender As Object, e As EventArgs) Handles MenuConvert.EnabledChanged
         Me.SetSearchControls()
     End Sub
 
-    Private Async Sub mnuConvertConvertSnippet_Click(sender As Object, e As EventArgs) Handles mnuConvertConvertSnippet.Click
+    Private Async Sub MenuConvertConvertSnippet_Click(sender As Object, e As EventArgs) Handles MenuConvertConvertSnippet.Click
         SetButtonStopCursorAndCancelToken(Me, stopButtonVisible:=True)
         Await Me.ConvertSnippetOfTopLevelStmt(Me.ConversionInput.Text)
         SetButtonStopCursorAndCancelToken(Me, stopButtonVisible:=False)
     End Sub
 
-    Private Async Sub mnuConvertConvertTopLevelStmts_Click(sender As Object, e As EventArgs) Handles mnuConvertConvertTopLevelStmts.Click
+    Private Async Sub MenuConvertConvertTopLevelStmts_Click(sender As Object, e As EventArgs) Handles MenuConvertConvertTopLevelStmts.Click
         SetButtonStopCursorAndCancelToken(Me, stopButtonVisible:=True)
         Dim usingSb As New StringBuilder
         Dim stmts As New StringBuilder
@@ -489,8 +488,8 @@ namespace Application
         SetButtonStopCursorAndCancelToken(Me, stopButtonVisible:=False)
     End Sub
 
-    Private Async Sub mnuConvertFolder_Click(sender As Object, e As EventArgs) Handles mnuConvertConvertFolder.Click
-        Me.mnuConvertConvertFolder.Enabled = False
+    Private Async Sub MenuConvertFolder_Click(sender As Object, e As EventArgs) Handles MenuConvertConvertFolder.Click
+        Me.MenuConvertConvertFolder.Enabled = False
         Me.LineNumbersForConversionInput.Visible = False
         Me.LineNumbersForConversionOutput.Visible = False
         Me.StatusStripCurrentFileName.Text = ""
@@ -502,7 +501,7 @@ namespace Application
                 .SelectedPath = My.Settings.DefaultProjectDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) & Path.DirectorySeparatorChar
                 .ShowNewFolderButton = False
                 If .ShowDialog(Me) <> DialogResult.OK Then
-                    Me.mnuConvertConvertFolder.Enabled = True
+                    Me.MenuConvertConvertFolder.Enabled = True
                     Exit Sub
                 End If
                 sourceFolderName = .SelectedPath
@@ -514,14 +513,14 @@ namespace Application
             MsgBox($"{sourceFolderName} is not a directory.",
                    MsgBoxStyle.OkOnly Or MsgBoxStyle.Exclamation Or MsgBoxStyle.MsgBoxSetForeground,
                    Title:="Convert C# to Visual Basic")
-            Me.mnuConvertConvertFolder.Enabled = True
+            Me.MenuConvertConvertFolder.Enabled = True
             Exit Sub
         End If
         If String.IsNullOrWhiteSpace(solutionSavePath) Then
             MsgBox($"Conversion aborted.",
                    MsgBoxStyle.OkOnly Or MsgBoxStyle.Exclamation Or MsgBoxStyle.MsgBoxSetForeground,
                    Title:="Convert C# to Visual Basic")
-            Me.mnuConvertConvertFolder.Enabled = True
+            Me.MenuConvertConvertFolder.Enabled = True
             Exit Sub
         End If
         Dim lastFileNameWithPath As String = If(My.Settings.StartFolderConvertFromLastFile, My.Settings.MRU_Data.Last, "")
@@ -543,7 +542,7 @@ namespace Application
                 prompt = $"Conversion canceled, {stats.FilesProcessed} files completed successfully."
             Else
                 prompt = $"Conversion completed, {stats.FilesProcessed} files completed, with {My.Settings.IgnoreFileList.Count} files ignored."
-                Me.mnuConvertStartFolderConvertFromLastFile.Checked = False
+                Me.MenuConvertStartFolderConvertFromLastFile.Checked = False
                 My.Settings.StartFolderConvertFromLastFile = False
                 My.Settings.Save()
                 Application.DoEvents()
@@ -557,63 +556,63 @@ namespace Application
                Title:="Convert C# To Visual Basic")
         Dim elapsed As TimeSpan = stats._elapsedTimer.Elapsed
         Me.StatusStripElapasedTimeLabel.Text = $"Elapsed Time - {elapsed.Hours}: {elapsed.Minutes}:{elapsed.Seconds}.{elapsed.Milliseconds}"
-        Me.mnuConvertConvertFolder.Enabled = True
+        Me.MenuConvertConvertFolder.Enabled = True
         SetButtonStopCursorAndCancelToken(Me, stopButtonVisible:=False)
     End Sub
 
-    Private Sub mnuConvertStartFolderConvertFromLastFile_Click(sender As Object, e As EventArgs) Handles mnuConvertStartFolderConvertFromLastFile.Click
+    Private Sub MenuConvertStartFolderConvertFromLastFile_Click(sender As Object, e As EventArgs) Handles MenuConvertStartFolderConvertFromLastFile.Click
         My.Settings.StartFolderConvertFromLastFile = CType(sender, ToolStripMenuItem).Checked
         My.Settings.Save()
         Application.DoEvents()
     End Sub
 
-    Private Sub mnuEdit_DropDownOpening(sender As Object, e As EventArgs) Handles mnuEdit.DropDownOpening
+    Private Sub MenuEdit_DropDownOpening(sender As Object, e As EventArgs) Handles MenuEdit.DropDownOpening
         If Me.TSFindToolStrip.Visible Then
-            Me.mnuEditFind.Text = $"Hide &Find Toolbar"
+            Me.MenuEditFind.Text = $"Hide &Find Toolbar"
         Else
-            Me.mnuEditFind.Text = $"Show &Find Toolbar"
+            Me.MenuEditFind.Text = $"Show &Find Toolbar"
         End If
         If TypeOf Me.CurrentBuffer Is RichTextBox Then
             Dim sourceBuffer As RichTextBox = Me.CurrentBuffer
-            Me.mnuEditCopy.Enabled = sourceBuffer.TextLength > 0 AndAlso sourceBuffer.SelectedText.Length > 0
-            Me.mnuEditCut.Enabled = sourceBuffer.TextLength > 0 AndAlso sourceBuffer.SelectedText.Length > 0
-            Me.mnuEditPaste.Enabled = sourceBuffer.CanPaste(DataFormats.GetFormat(DataFormats.Rtf)) OrElse sourceBuffer.CanPaste(DataFormats.GetFormat(DataFormats.Text))
-            Me.mnuEditUndo.Enabled = sourceBuffer.CanUndo
-            Me.mnuEditRedo.Enabled = sourceBuffer.CanRedo
+            Me.MenuEditCopy.Enabled = sourceBuffer.TextLength > 0 AndAlso sourceBuffer.SelectedText.Length > 0
+            Me.MenuEditCut.Enabled = sourceBuffer.TextLength > 0 AndAlso sourceBuffer.SelectedText.Length > 0
+            Me.MenuEditPaste.Enabled = sourceBuffer.CanPaste(DataFormats.GetFormat(DataFormats.Rtf)) OrElse sourceBuffer.CanPaste(DataFormats.GetFormat(DataFormats.Text))
+            Me.MenuEditUndo.Enabled = sourceBuffer.CanUndo
+            Me.MenuEditRedo.Enabled = sourceBuffer.CanRedo
         Else
-            Me.mnuEditCut.Enabled = False
-            Me.mnuEditPaste.Enabled = False
-            Me.mnuEditUndo.Enabled = False
-            Me.mnuEditRedo.Enabled = False
+            Me.MenuEditCut.Enabled = False
+            Me.MenuEditPaste.Enabled = False
+            Me.MenuEditUndo.Enabled = False
+            Me.MenuEditRedo.Enabled = False
         End If
     End Sub
 
-    Private Sub mnuEditCopy_Click(sender As Object, e As EventArgs) Handles mnuEditCopy.Click
+    Private Sub MenuEditCopy_Click(sender As Object, e As EventArgs) Handles MenuEditCopy.Click
         If Me.CurrentBuffer IsNot Nothing Then
             Me.CurrentBuffer.Copy()
         End If
     End Sub
 
-    Private Sub mnuEditCut_Click(sender As Object, e As EventArgs) Handles mnuEditCut.Click
+    Private Sub MenuEditCut_Click(sender As Object, e As EventArgs) Handles MenuEditCut.Click
         If Me.CurrentBuffer IsNot Nothing Then
             Me.CurrentBuffer.Cut()
         End If
     End Sub
 
-    Private Sub mnuEditFind_Click(sender As Object, e As EventArgs) Handles mnuEditFind.Click
+    Private Sub MenuEditFind_Click(sender As Object, e As EventArgs) Handles MenuEditFind.Click
         Me.TSFindToolStrip.Visible = Not Me.TSFindToolStrip.Visible
     End Sub
 
-    Private Sub mnuEditPaste_Click(sender As Object, e As EventArgs) Handles mnuEditPaste.Click
+    Private Sub MenuEditPaste_Click(sender As Object, e As EventArgs) Handles MenuEditPaste.Click
         If Me.CurrentBuffer IsNot Nothing Then
             _inColorize = True
             Me.CurrentBuffer.SelectedText = Clipboard.GetText(TextDataFormat.Text)
             _inColorize = False
             SetButtonStopCursorAndCancelToken(Me, stopButtonVisible:=True)
-            If Me.mnuOptionsColorizeSource.Checked AndAlso Me.CurrentBuffer.Equals(Me.ConversionInput) Then
+            If Me.MenuOptionsColorizeSource.Checked AndAlso Me.CurrentBuffer.Equals(Me.ConversionInput) Then
                 Colorize(Me, GetClassifiedRanges(Me.CurrentBuffer.Text, LanguageNames.CSharp).ToList(), Me.CurrentBuffer, Me.CurrentBuffer.Lines.Length, New List(Of Diagnostic))
             Else
-                If Me.mnuOptionsColorizeResult.Checked AndAlso Me.CurrentBuffer.Equals(Me.ConversionOutput) Then
+                If Me.MenuOptionsColorizeResult.Checked AndAlso Me.CurrentBuffer.Equals(Me.ConversionOutput) Then
                     Colorize(Me, GetClassifiedRanges(Me.CurrentBuffer.Text, LanguageNames.VisualBasic).ToList(), Me.CurrentBuffer, Me.CurrentBuffer.Lines.Length, New List(Of Diagnostic))
                 End If
             End If
@@ -622,7 +621,7 @@ namespace Application
         End If
     End Sub
 
-    Private Sub mnuEditRedo_Click(sender As Object, e As EventArgs) Handles mnuEditRedo.Click
+    Private Sub MenuEditRedo_Click(sender As Object, e As EventArgs) Handles MenuEditRedo.Click
         Dim sourceControl As RichTextBox = Me.CurrentBuffer
         If sourceControl IsNot Nothing AndAlso sourceControl.CanRedo Then
             sourceControl.Focus()
@@ -631,7 +630,7 @@ namespace Application
 
     End Sub
 
-    Private Sub mnuEditSelectAll_Click(sender As Object, e As EventArgs) Handles mnuEditSelectAll.Click
+    Private Sub MenuEditSelectAll_Click(sender As Object, e As EventArgs) Handles MenuEditSelectAll.Click
         Dim sourceControl As RichTextBox = Me.CurrentBuffer
         If sourceControl IsNot Nothing Then
             sourceControl.Focus()
@@ -639,24 +638,24 @@ namespace Application
         End If
     End Sub
 
-    Private Sub mnuEditUndo_Click(sender As Object, e As EventArgs) Handles mnuEditUndo.Click
+    Private Sub MenuEditUndo_Click(sender As Object, e As EventArgs) Handles MenuEditUndo.Click
         Dim sourceControl As RichTextBox = Me.CurrentBuffer
         If sourceControl IsNot Nothing AndAlso sourceControl.CanUndo Then
             sourceControl.Undo()
         End If
     End Sub
 
-    Private Sub mnuFile_DropDownOpening(sender As Object, e As EventArgs) Handles mnuFile.DropDownOpening
-        Me.mnuFileLoadLastSnippet.Enabled = File.Exists(s_snippetFileWithPath)
-        Me.mnuFileSaveSnippet.Enabled = Me.ConversionInput.TextLength > 0
+    Private Sub MenuFile_DropDownOpening(sender As Object, e As EventArgs) Handles MenuFile.DropDownOpening
+        Me.MenuFileLoadLastSnippet.Enabled = File.Exists(s_snippetFileWithPath)
+        Me.MenuFileSaveSnippet.Enabled = Me.ConversionInput.TextLength > 0
     End Sub
 
-    Private Sub mnuFileExit_Click(sender As Object, e As EventArgs) Handles mnuFileExit.Click
+    Private Sub MenuFileExit_Click(sender As Object, e As EventArgs) Handles MenuFileExit.Click
         Me.Close()
         End
     End Sub
 
-    Private Async Sub mnuFileLastFolder_Click(sender As Object, e As EventArgs) Handles mnuFileLastFolder.Click
+    Private Async Sub MenuFileLastFolder_Click(sender As Object, e As EventArgs) Handles MenuFileLastFolder.Click
         Dim folderName As String = CType(sender, ToolStripMenuItem).Text
         If Directory.Exists(folderName) Then
             Dim fullFolderPath As (SolutionRoot As String, ProjectRelativePath As String) = Me.GetSavePath(folderName, promptIfDirExists:=True)
@@ -679,28 +678,28 @@ namespace Application
         End If
     End Sub
 
-    Private Sub mnuFileLastProject_Click(sender As Object, e As EventArgs) Handles mnuFileLastProject.Click
+    Private Sub MenuFileLastProject_Click(sender As Object, e As EventArgs) Handles MenuFileLastProject.Click
         Dim projectFileName As String = My.Settings.LastProject
         ProcessProjectOrSolutionAsync(Me, projectFileName)
     End Sub
 
-    Private Sub mnuFileLastSolution_Click(sender As Object, e As EventArgs) Handles mnuFileLastSolution.Click
+    Private Sub MenuFileLastSolution_Click(sender As Object, e As EventArgs) Handles MenuFileLastSolution.Click
         Dim solutionFileName As String = My.Settings.LastSolution
         ProcessProjectOrSolutionAsync(Me, solutionFileName)
     End Sub
 
-    Private Sub mnuFileLoadLastSnippet_Click(sender As Object, e As EventArgs) Handles mnuFileLoadLastSnippet.Click
+    Private Sub MenuFileLoadLastSnippet_Click(sender As Object, e As EventArgs) Handles MenuFileLoadLastSnippet.Click
         If My.Settings.ColorizeInput Then
             SetButtonStopCursorAndCancelToken(Me, True)
-            Me.mnuConvertConvertSnippet.Enabled = 0 <> LoadInputBufferFromStream(Me, s_snippetFileWithPath)
+            Me.MenuConvertConvertSnippet.Enabled = 0 <> LoadInputBufferFromStream(Me, s_snippetFileWithPath)
             SetButtonStopCursorAndCancelToken(Me, False)
         Else
             Me.ConversionInput.LoadFile(s_snippetFileWithPath, RichTextBoxStreamType.PlainText)
         End If
-        Me.mnuCompile.Enabled = True
+        Me.MenuCompile.Enabled = True
     End Sub
 
-    Private Sub mnuFileOpen_Click(sender As Object, e As EventArgs) Handles mnuFileOpen.Click
+    Private Sub MenuFileOpen_Click(sender As Object, e As EventArgs) Handles MenuFileOpen.Click
         With Me.OpenFileDialog1
             .AddExtension = True
             .DefaultExt = "cs"
@@ -718,7 +717,7 @@ namespace Application
         End With
     End Sub
 
-    Private Sub mnuFileOpenProject_Click(sender As Object, e As EventArgs) Handles mnuFileConvertProject.Click
+    Private Sub MenuFileOpenProject_Click(sender As Object, e As EventArgs) Handles MenuFileConvertProject.Click
         With Me.OpenFileDialog1
             .AddExtension = True
             .CheckFileExists = True
@@ -740,7 +739,7 @@ namespace Application
         End With
     End Sub
 
-    Private Sub mnuFileSaveAs_Click(sender As Object, e As EventArgs) Handles mnuFileSaveAs.Click
+    Private Sub MenuFileSaveAs_Click(sender As Object, e As EventArgs) Handles MenuFileSaveAs.Click
 
         Me.SaveFileDialog1.AddExtension = True
         Me.SaveFileDialog1.CreatePrompt = False
@@ -758,14 +757,14 @@ namespace Application
         End If
     End Sub
 
-    Private Sub mnuFileSaveSnippet_Click(sender As Object, e As EventArgs) Handles mnuFileSaveSnippet.Click
+    Private Sub MenuFileSaveSnippet_Click(sender As Object, e As EventArgs) Handles MenuFileSaveSnippet.Click
         If Me.ConversionInput.TextLength = 0 Then
             Exit Sub
         End If
         Me.ConversionInput.SaveFile(s_snippetFileWithPath, RichTextBoxStreamType.PlainText)
     End Sub
 
-    Private Sub mnuHelpAboutMenuItem_Click(sender As Object, e As EventArgs) Handles mnuHelpAboutMenuItem.Click
+    Private Sub MenuHelpAboutMenuItem_Click(sender As Object, e As EventArgs) Handles MenuHelpAboutMenuItem.Click
         Dim lightMode As Boolean = Me.TSThemeButton.Text.IsLightMode
         Using about As New AboutBox1(lightMode)
             DarkMode.ToggleImmersiveDarkMode(about.Handle, Not lightMode)
@@ -774,15 +773,15 @@ namespace Application
         End Using
     End Sub
 
-    Private Sub mnuHelpCheckForUpdatesMenuItem_Click(sender As Object, e As EventArgs) Handles mnuHelpCheckForUpdatesMenuItem.Click
+    Private Sub MenuHelpCheckForUpdatesMenuItem_Click(sender As Object, e As EventArgs) Handles MenuHelpCheckForUpdatesMenuItem.Click
         CheckForUpdatesAsync(Me, reportResults:=True)
     End Sub
 
-    Private Sub mnuHelpReportIssueMenuItem_Click(sender As Object, e As EventArgs) Handles mnuHelpReportIssueMenuItem.Click
+    Private Sub MenuHelpReportIssueMenuItem_Click(sender As Object, e As EventArgs) Handles MenuHelpReportIssueMenuItem.Click
         OpenUrlInBrowser($"{ProjectGitHubUrl}issues")
     End Sub
 
-    Private Sub mnuOptionDefaultFramework_CheckedChanged(sender As Object, e As EventArgs) Handles mnuOptionsDefaultFramework.CheckedChanged
+    Private Sub MenuOptionDefaultFramework_CheckedChanged(sender As Object, e As EventArgs) Handles MenuOptionsDefaultFramework.CheckedChanged
         Dim menuItem As ToolStripMenuItem = CType(sender, ToolStripMenuItem)
         If Not menuItem.Checked Then
             Exit Sub
@@ -805,7 +804,7 @@ namespace Application
         Next
     End Sub
 
-    Private Sub mnuOptionsAddFilesToIgnoreFilesEithErrorsList_Click(sender As Object, e As EventArgs) Handles mnuOptionsAddFilesToIgnoreFilesEithErrorsList.Click
+    Private Sub MenuOptionsAddFilesToIgnoreFilesEithErrorsList_Click(sender As Object, e As EventArgs) Handles MenuOptionsAddFilesToIgnoreFilesEithErrorsList.Click
         If My.Settings.IgnoreFileList Is Nothing Then
             My.Settings.IgnoreFileList = New Specialized.StringCollection
         End If
@@ -817,7 +816,7 @@ namespace Application
         End If
     End Sub
 
-    Private Sub mnuOptionsAdvanced_Click(sender As Object, e As EventArgs) Handles mnuOptionsAdvanced.Click
+    Private Sub MenuOptionsAdvanced_Click(sender As Object, e As EventArgs) Handles MenuOptionsAdvanced.Click
         Dim isLightMode As Boolean = Me.TSThemeButton.Text.IsLightMode
         Using o As New OptionsDialog()
             o.MainForm = Me
@@ -827,20 +826,20 @@ namespace Application
         End Using
     End Sub
 
-    Private Sub mnuOptionsColorizeResult_Click(sender As Object, e As EventArgs) Handles mnuOptionsColorizeResult.Click
-        My.Settings.ColorizeOutput = Me.mnuOptionsColorizeResult.Checked
+    Private Sub MenuOptionsColorizeResult_Click(sender As Object, e As EventArgs) Handles MenuOptionsColorizeResult.Click
+        My.Settings.ColorizeOutput = Me.MenuOptionsColorizeResult.Checked
         My.Settings.Save()
         Application.DoEvents()
     End Sub
 
-    Private Sub mnuOptionsColorizeSource_Click(sender As Object, e As EventArgs) Handles mnuOptionsColorizeSource.Click
-        My.Settings.ColorizeInput = Me.mnuOptionsColorizeSource.Checked
+    Private Sub MenuOptionsColorizeSource_Click(sender As Object, e As EventArgs) Handles MenuOptionsColorizeSource.Click
+        My.Settings.ColorizeInput = Me.MenuOptionsColorizeSource.Checked
         My.Settings.Save()
         Application.DoEvents()
     End Sub
 
-    Private Sub mnuOptionsDelayBetweenConversions_SelectedIndexChanged(sender As Object, e As EventArgs) Handles mnuOptionsDelayBetweenConversions.SelectedIndexChanged
-        Select Case Me.mnuOptionsDelayBetweenConversions.Text.Substring("Delay Between Conversions = ".Length)
+    Private Sub MenuOptionsDelayBetweenConversions_SelectedIndexChanged(sender As Object, e As EventArgs) Handles MenuOptionsDelayBetweenConversions.SelectedIndexChanged
+        Select Case Me.MenuOptionsDelayBetweenConversions.Text.Substring("Delay Between Conversions = ".Length)
             Case "None"
                 If My.Settings.ConversionDelay <> 0 Then
                     My.Settings.ConversionDelay = 0
@@ -860,7 +859,7 @@ namespace Application
         Application.DoEvents()
     End Sub
 
-    Private Sub mnuOptionsEditIgnoreFilesWithErrorsList_Click(sender As Object, e As EventArgs) Handles mnuOptionsEditIgnoreFilesWithErrorsList.Click
+    Private Sub MenuOptionsEditIgnoreFilesWithErrorsList_Click(sender As Object, e As EventArgs) Handles MenuOptionsEditIgnoreFilesWithErrorsList.Click
         Dim lightMode As Boolean = Me.TSThemeButton.Text.IsLightMode
         Using ignoreFilesDialog As New IgnoreFilesWithErrorsListDialog
             DarkMode.ToggleImmersiveDarkMode(ignoreFilesDialog.Handle, Not lightMode)
@@ -873,47 +872,47 @@ namespace Application
         End Using
     End Sub
 
-    Private Sub mnuOptionsFolderConversionsOptionsSkipAutoGenerated_Click(sender As Object, e As EventArgs) Handles mnuOptionsFolderConversionsOptionsSkipAutoGenerated.Click
+    Private Sub MenuOptionsFolderConversionsOptionsSkipAutoGenerated_Click(sender As Object, e As EventArgs) Handles MenuOptionsFolderConversionsOptionsSkipAutoGenerated.Click
         My.Settings.SkipAutoGenerated = CType(sender, ToolStripMenuItem).Checked
         My.Settings.Save()
         Application.DoEvents()
     End Sub
 
-    Private Sub mnuOptionsFolderConversionsOptionsSkipBinAndObjFolders_Click(sender As Object, e As EventArgs) Handles mnuOptionsFolderConversionsOptionsSkipBinAndObjFolders.Click
+    Private Sub MenuOptionsFolderConversionsOptionsSkipBinAndObjFolders_Click(sender As Object, e As EventArgs) Handles MenuOptionsFolderConversionsOptionsSkipBinAndObjFolders.Click
         My.Settings.SkipBinAndObjFolders = CType(sender, ToolStripMenuItem).Checked
         My.Settings.Save()
         Application.DoEvents()
     End Sub
 
-    Private Sub mnuOptionsFolderConversionsOptionsSkipTestResourceFiles_Click(sender As Object, e As EventArgs) Handles mnuOptionsFolderConversionsOptionsSkipTestResourceFiles.Click
+    Private Sub MenuOptionsFolderConversionsOptionsSkipTestResourceFiles_Click(sender As Object, e As EventArgs) Handles MenuOptionsFolderConversionsOptionsSkipTestResourceFiles.Click
         My.Settings.SkipTestResourceFiles = CType(sender, ToolStripMenuItem).Checked
         My.Settings.Save()
         Application.DoEvents()
     End Sub
 
-    Private Sub mnuOptionsPauseConvertOnSuccess_Click(sender As Object, e As EventArgs) Handles mnuOptionsPauseConvertOnSuccess.Click
-        My.Settings.PauseConvertOnSuccess = Me.mnuOptionsPauseConvertOnSuccess.Checked
+    Private Sub MenuOptionsPauseConvertOnSuccess_Click(sender As Object, e As EventArgs) Handles MenuOptionsPauseConvertOnSuccess.Click
+        My.Settings.PauseConvertOnSuccess = Me.MenuOptionsPauseConvertOnSuccess.Checked
         My.Settings.Save()
         Application.DoEvents()
     End Sub
 
-    Private Sub mnuView_DropDownOpening(sender As Object, e As EventArgs) Handles mnuView.DropDownOpening
-        Me.mnuViewShowDestinationLineNumbers.Enabled = Me.ConversionOutput.TextLength > 0
-        Me.mnuViewShowSourceLineNumbers.Enabled = Me.ConversionInput.TextLength > 0
+    Private Sub MenuView_DropDownOpening(sender As Object, e As EventArgs) Handles MenuView.DropDownOpening
+        Me.MenuViewShowDestinationLineNumbers.Enabled = Me.ConversionOutput.TextLength > 0
+        Me.MenuViewShowSourceLineNumbers.Enabled = Me.ConversionInput.TextLength > 0
     End Sub
 
-    Private Sub mnuViewShowDestinationLineNumbers_Click(sender As Object, e As EventArgs) Handles mnuViewShowDestinationLineNumbers.Click
+    Private Sub MenuViewShowDestinationLineNumbers_Click(sender As Object, e As EventArgs) Handles MenuViewShowDestinationLineNumbers.Click
         Dim checked As Boolean = CType(sender, ToolStripMenuItem).Checked
         Me.LineNumbersForConversionOutput.Visible = checked
         My.Settings.ShowDestinationLineNumbers = checked
         My.Settings.Save()
     End Sub
 
-    Private Sub mnuViewShowSourceLineNumbers_CheckStateChanged(sender As Object, e As EventArgs) Handles mnuViewShowSourceLineNumbers.CheckStateChanged
+    Private Sub MenuViewShowSourceLineNumbers_CheckStateChanged(sender As Object, e As EventArgs) Handles MenuViewShowSourceLineNumbers.CheckStateChanged
         Me.LineNumbersForConversionInput.Visible = CType(sender, ToolStripMenuItem).Checked
     End Sub
 
-    Private Sub mnuViewShowSourceLineNumbers_Click(sender As Object, e As EventArgs) Handles mnuViewShowSourceLineNumbers.Click
+    Private Sub MenuViewShowSourceLineNumbers_Click(sender As Object, e As EventArgs) Handles MenuViewShowSourceLineNumbers.Click
         My.Settings.ShowSourceLineNumbers = CType(sender, ToolStripMenuItem).Checked
         My.Settings.Save()
     End Sub
@@ -1023,14 +1022,14 @@ namespace Application
         Me.ToggleColorMode(Me, Me.TSThemeButton.Text.IsLightMode)
         DefaultColor = GetColorFromName(ThemeDefaultColor)
         If Me.ConversionInput.Text.Any Then
-            If Me.mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
+            If Me.MenuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
                 Colorize(Me, GetClassifiedRanges(sourceCode:=Me.ConversionInput.Text, LanguageNames.CSharp).ToList(), Me.ConversionInput, Me.ConversionInput.Lines.Length)
                 Me.ConversionInput.Select(0, 0)
             End If
 
         End If
         If Me.ConversionOutput.Text.Any Then
-            If Me.mnuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
+            If Me.MenuOptionsColorizeSource.Checked AndAlso Not _inColorize Then
                 Colorize(Me, GetClassifiedRanges(sourceCode:=Me.ConversionOutput.Text, LanguageNames.VisualBasic).ToList(), Me.ConversionOutput, Me.ConversionOutput.Lines.Length)
                 Me.ConversionOutput.Select(0, 0)
             End If
@@ -1046,46 +1045,46 @@ namespace Application
     Private Sub SetColorMode(myForm As Form, lightMode As Boolean)
 
         If lightMode Then
-            Me.mnuEditCopy.Image = CType(My.Resources.ResourceManager.GetObject("CopyLight"), Image)
-            Me.mnuEditPaste.Image = CType(My.Resources.ResourceManager.GetObject("PasteLight"), Image)
-            Me.mnuFileSaveAs.Image = CType(My.Resources.ResourceManager.GetObject("SaveAsLight"), Image)
+            Me.MenuEditCopy.Image = CType(My.Resources.ResourceManager.GetObject("CopyLight"), Image)
+            Me.MenuEditPaste.Image = CType(My.Resources.ResourceManager.GetObject("PasteLight"), Image)
+            Me.MenuFileSaveAs.Image = CType(My.Resources.ResourceManager.GetObject("SaveAsLight"), Image)
             SetLightMode(myForm.Controls, _mCapturedRenderer)
         Else
-            Me.mnuEditCopy.Image = CType(My.Resources.ResourceManager.GetObject("CopyDark"), Image)
-            Me.mnuEditPaste.Image = CType(My.Resources.ResourceManager.GetObject("PasteDark"), Image)
-            Me.mnuFileSaveAs.Image = CType(My.Resources.ResourceManager.GetObject("SaveAsDark"), Image)
+            Me.MenuEditCopy.Image = CType(My.Resources.ResourceManager.GetObject("CopyDark"), Image)
+            Me.MenuEditPaste.Image = CType(My.Resources.ResourceManager.GetObject("PasteDark"), Image)
+            Me.MenuFileSaveAs.Image = CType(My.Resources.ResourceManager.GetObject("SaveAsDark"), Image)
             SetDarkMode(myForm.Controls, _mCapturedRenderer)
         End If
     End Sub
 
     Private Sub ToggleColorMode(myForm As Form, lightMode As Boolean)
         If lightMode Then
-            Me.mnuEditCopy.Image = CType(My.Resources.ResourceManager.GetObject("CopyLight"), Image)
-            Me.mnuEditPaste.Image = CType(My.Resources.ResourceManager.GetObject("PasteLight"), Image)
-            Me.mnuFileSaveAs.Image = CType(My.Resources.ResourceManager.GetObject("SaveAsLight"), Image)
+            Me.MenuEditCopy.Image = CType(My.Resources.ResourceManager.GetObject("CopyLight"), Image)
+            Me.MenuEditPaste.Image = CType(My.Resources.ResourceManager.GetObject("PasteLight"), Image)
+            Me.MenuFileSaveAs.Image = CType(My.Resources.ResourceManager.GetObject("SaveAsLight"), Image)
             Me.ContextMenuPaste.Image = CType(My.Resources.ResourceManager.GetObject("PasteLight"), Image)
             Me.ContextMenuCopy.Image = CType(My.Resources.ResourceManager.GetObject("CopyLight"), Image)
             Me.TSThemeButton.Text = DarkModeStr
-            _currentThemeDictionary = _darkModeColorDictionary
+            CurrentThemeDictionary = _darkModeColorDictionary
             SetDarkMode(myForm.Controls, _mCapturedRenderer)
         Else
-            Me.mnuEditCopy.Image = CType(My.Resources.ResourceManager.GetObject("CopyDark"), Image)
-            Me.mnuEditPaste.Image = CType(My.Resources.ResourceManager.GetObject("PasteDark"), Image)
-            Me.mnuFileSaveAs.Image = CType(My.Resources.ResourceManager.GetObject("SaveAsDark"), Image)
+            Me.MenuEditCopy.Image = CType(My.Resources.ResourceManager.GetObject("CopyDark"), Image)
+            Me.MenuEditPaste.Image = CType(My.Resources.ResourceManager.GetObject("PasteDark"), Image)
+            Me.MenuFileSaveAs.Image = CType(My.Resources.ResourceManager.GetObject("SaveAsDark"), Image)
             Me.ContextMenuPaste.Image = CType(My.Resources.ResourceManager.GetObject("PasteDark"), Image)
             Me.ContextMenuCopy.Image = CType(My.Resources.ResourceManager.GetObject("CopyDark"), Image)
             Me.TSThemeButton.Text = LightModeStr
-            _currentThemeDictionary = _lightModeColorDictionary
+            CurrentThemeDictionary = _lightModeColorDictionary
             SetLightMode(myForm.Controls, _mCapturedRenderer)
         End If
     End Sub
 
     ''' <summary>
-    ''' This will be used at runtime to add this Event to all items on mnuFileMRU list
+    ''' This will be used at runtime to add this Event to all items on MenuFileMRU list
     ''' </summary>
     ''' <param name="sender"></param>
     ''' <param name="e"></param>
-    Friend Sub mnu_MRUList_Click(sender As Object, e As EventArgs)
+    Friend Sub Menu_MRUList_Click(sender As Object, e As EventArgs)
         SetButtonStopCursorAndCancelToken(Me, stopButtonVisible:=True)
         ' open the file...
         OpenSourceFile(Me, DirectCast(sender, ToolStripItem).Tag.ToString().Substring(startIndex:=4))

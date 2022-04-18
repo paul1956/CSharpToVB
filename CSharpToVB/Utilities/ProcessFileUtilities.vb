@@ -57,10 +57,10 @@ Friend Module ProcessFileUtilities
                                                                                     ).ConfigureAwait(True)
 
         If mainForm._resultOfConversion Is Nothing Then
-            mainForm.mnuFileSaveAs.Enabled = False
+            mainForm.MenuFileSaveAs.Enabled = False
             Return False
         Else
-            mainForm.mnuFileSaveAs.Enabled = mainForm._resultOfConversion.ResultStatus = ResultTriState.Success
+            mainForm.MenuFileSaveAs.Enabled = mainForm._resultOfConversion.ResultStatus = ResultTriState.Success
         End If
         Select Case mainForm._resultOfConversion.ResultStatus
             Case ResultTriState.Success
@@ -146,9 +146,9 @@ Friend Module ProcessFileUtilities
         End If
         With mainForm
             .ConversionOutput.Text = ""
-            My.Settings.MRU_Data.MnuAddToMru(sourceFileNameWithPath)
+            My.Settings.MRU_Data.MenuAddToMru(sourceFileNameWithPath)
             .UpdateLastFileMenu()
-            .mnuFile.DropDownItems.FileMenuMruUpdateUi(AddressOf .mnu_MRUList_Click)
+            .MenuFile.DropDownItems.FileMenuMruUpdateUi(AddressOf .Menu_MRUList_Click)
             mainForm.ProjectConversionInitProgressBar.Visible = True
             Application.DoEvents()
             Dim lines As Integer = LoadInputBufferFromStream(mainForm, sourceFileNameWithPath)
