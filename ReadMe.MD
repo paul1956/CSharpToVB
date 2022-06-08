@@ -66,7 +66,7 @@ Microsoft.Dotnet.XUnitExtensions which provides ConditionalFact and PlatformSpec
 Any changes to CSharpToVB application needs to change the version information in the project file **AND** in MyProject/AssemblyInfo.vb until Visual Studio is able to general file automatically for a WinForms application.
 
 ## What's New in this release
-  New in 5.0.6.2/5.0.2.7
+  New in 5.0.6.3/5.0.2.8
   Fix Cy.yml file to use .Net 6.0
   Fix Form1.Designer to set Me.TSFindLookInComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
   and remove setting in Form1
