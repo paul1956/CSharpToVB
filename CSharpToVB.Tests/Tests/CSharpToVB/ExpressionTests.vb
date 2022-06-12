@@ -263,21 +263,21 @@ Friend Module CanonicalError
 
     ' Defines the main pattern for matching messages.
     Private ReadOnly s_originCategoryCodeTextExpression As New Regex( _
- _ ' Beginning of line and any amount of whitespace.
+                                                                      _ ' Beginning of line and any amount of whitespace.
         ""^\s*"" _
- _ ' Match a [optional project number prefix 'ddd>'], single letter + colon + remaining filename, or
- _ ' string with no colon followed by a colon.
+               _ ' Match a [optional project number prefix 'ddd>'], single letter + colon + remaining filename, or
+               _ ' string with no colon followed by a colon.
     & ""(((?<ORIGIN>(((\d+>)?[a-zA-Z]?:[^:]*)|([^:]*))):)"" _
- _ ' Origin may also be empty. In this case there's no trailing colon.
+                                                          _ ' Origin may also be empty. In this case there's no trailing colon.
     & ""|())"" _
- _ ' Match the empty string or a string without a colon that ends with a space
+             _ ' Match the empty string or a string without a colon that ends with a space
     & ""(?<SUBCATEGORY>(()|([^:]*? )))"" _
- _ ' Match 'error' or 'warning'.
+                                       _ ' Match 'error' or 'warning'.
     & ""(?<CATEGORY>(error|warning))"" _
- _ ' Match anything starting with a space that's not a colon/space, followed by a colon.
- _ ' Error code is optional in which case ""error""/""warning"" can be followed immediately by a colon.
+                                     _ ' Match anything starting with a space that's not a colon/space, followed by a colon.
+                                     _ ' Error code is optional in which case ""error""/""warning"" can be followed immediately by a colon.
     & ""( \s*(?<CODE>[^: ]*))?\s*:"" _
- _ ' Whatever's left on this line, including colons.
+                                   _ ' Whatever's left on this line, including colons.
     & ""(?<TEXT>.*)$"",
         RegexOptions.IgnoreCase _
     )
@@ -322,19 +322,19 @@ Friend Module CanonicalError
     ' Defines the main pattern for matching messages.
     Private ReadOnly s_originCategoryCodeTextExpression As New Regex( _
         ""^\s*"" _
- _ ' Match a [optional project number prefix 'ddd>'], single letter + colon + remaining filename, or
- _ ' string with no colon followed by a colon.
+               _ ' Match a [optional project number prefix 'ddd>'], single letter + colon + remaining filename, or
+               _ ' string with no colon followed by a colon.
     & ""(((?<ORIGIN>(((\d+>)?[a-zA-Z]?:[^:]*)|([^:]*))):)"" _
- _ ' Origin may also be empty. In this case there's no trailing colon.
+                                                          _ ' Origin may also be empty. In this case there's no trailing colon.
     & ""|())"" _
- _ ' Match the empty string or a string without a colon that ends with a space
+             _ ' Match the empty string or a string without a colon that ends with a space
     & ""(?<SUBCATEGORY>(()|([^:]*? )))"" _
- _ ' Match 'error' or 'warning'.
+                                       _ ' Match 'error' or 'warning'.
     & ""(?<CATEGORY>(error|warning))"" _
- _ ' Match anything starting with a space that's not a colon/space, followed by a colon.
- _ ' Error code is optional in which case ""error""/""warning"" can be followed immediately by a colon.
+                                     _ ' Match anything starting with a space that's not a colon/space, followed by a colon.
+                                     _ ' Error code is optional in which case ""error""/""warning"" can be followed immediately by a colon.
     & ""( \s*(?<CODE>[^: ]*))?\s*:"" _
- _ ' Whatever's left on this line, including colons.
+                                   _ ' Whatever's left on this line, including colons.
     & ""(?<TEXT>.*)$"",
         RegexOptions.IgnoreCase _
     )
@@ -444,7 +444,7 @@ End Class")
                                                     Return a * 2
                                                 End Function
 
-        test(3)
+        test(3)()
     End Sub
 End Class")
         End Sub
@@ -472,7 +472,7 @@ End Class")
                                                     Return a * 2
                                                 End Function
 
-        test(3)
+        test(3)()
     End Sub
 End Class")
         End Sub
@@ -690,13 +690,13 @@ End Class")
 
     Private Sub TestMethod()
         Dim test As Func(Of Object, Object) = Function(a) a * 2
-        Dim test2 As Func(Of Object, Object, Integer) = Function(a, b) As Integer
-                                                            If b > 0 Then
-                                                                Return a / b
-                                                            End If
+        Dim test2 As Func(Of Object, Object, Object) = Function(a, b)
+                                                           If b > 0 Then
+                                                               Return a / b
+                                                           End If
 
-                                                            Return 0
-                                                        End Function
+                                                           Return 0
+                                                       End Function
         Dim test3 As Func(Of Object, Object, Object) = Function(a, b) a Mod b
 
         test(3)
