@@ -27,9 +27,9 @@
     <Product>CSharp To VB Converter</Product>
     <Copyright>Copyright (c) .NET Foundation and Contributors</Copyright>
     <PackageId>CSharp To VB Converter</PackageId>
-    <AssemblyVersion>5.0.6.3</AssemblyVersion>
-    <FileVersion>5.0.6.3</FileVersion>
-    <Version>5.0.6.3</Version>
+    <AssemblyVersion>5.0.6.4</AssemblyVersion>
+    <FileVersion>5.0.6.4</FileVersion>
+    <Version>5.0.6.4</Version>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <PackageLicenseFile>License.txt</PackageLicenseFile>
     <PackageIcon>CStoVB.ico</PackageIcon>
@@ -53,24 +53,24 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Buildalyzer" Version="3.2.2" />
-    <PackageReference Include="Buildalyzer.Workspaces" Version="3.2.2" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.2">
+    <PackageReference Include="Buildalyzer" Version="4.1.4" />
+    <PackageReference Include="Buildalyzer.Workspaces" Version="4.1.4" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.10.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="3.10.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.CodeStyle" Version="3.10.0">
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.2.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="4.2.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.CodeStyle" Version="4.2.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="3.10.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="4.2.0" />
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
-    <PackageReference Include="NuGet.Frameworks" Version="5.10.0" />
+    <PackageReference Include="NuGet.Frameworks" Version="6.2.0" />
     <PackageReference Include="PInvoke.Windows.Core" Version="0.7.104" />
-    <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
-    <PackageReference Include="System.Reflection.Metadata" Version="5.0.0" />
+    <PackageReference Include="System.Collections.Immutable" Version="6.0.0" />
+    <PackageReference Include="System.Reflection.Metadata" Version="6.0.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CodeConverter\CodeConverter.vbproj" />

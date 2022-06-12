@@ -348,7 +348,7 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                 If addressOfExpr IsNot Nothing Then
                     leftNode = addressOfExpr.Operand
                 End If
-                If CS.CSharpExtensions.Kind(node) = CS.SyntaxKind.CoalesceAssignmentExpression Then
+                If node.IsKind(CS.SyntaxKind.CoalesceAssignmentExpression) Then
                     Dim possibleNullNode As ExpressionSyntax = DirectCast(node.Right.Accept(Me).WithLeadingTrivia(SpaceTrivia), ExpressionSyntax)
                     Dim rightBinaryExpression As BinaryConditionalExpressionSyntax = Factory.BinaryConditionalExpression(leftNode.WithoutTrivia, possibleNullNode)
                     Dim assignmentStmt As AssignmentStatementSyntax = Factory.SimpleAssignmentStatement(leftNode, rightBinaryExpression)

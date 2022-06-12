@@ -197,19 +197,19 @@ Friend Class SyntaxNormalizer
             Return False
         End If
 
-        If nextToken.Parent.Kind = SyntaxKind.SingleLineFunctionLambdaExpression Then
+        If nextToken.Parent.IsKind(SyntaxKind.SingleLineFunctionLambdaExpression) Then
             Return True
         End If
 
-        If nextToken.Kind = SyntaxKind.EndOfFileToken Then
+        If nextToken.IsKind(SyntaxKind.EndOfFileToken) Then
             Return False
         End If
 
         ' +1 instead of + 1
         ' but not a instead of nota ...
         If TypeOf token.Parent Is UnaryExpressionSyntax AndAlso
-            token.Kind <> SyntaxKind.NotKeyword AndAlso
-            token.Kind <> SyntaxKind.AddressOfKeyword Then
+            Not token.IsKind(SyntaxKind.NotKeyword) AndAlso
+            Not token.IsKind(SyntaxKind.AddressOfKeyword) Then
             Return False
         End If
 
@@ -220,17 +220,17 @@ Friend Class SyntaxNormalizer
         End If
 
         ' (a instead of ( a
-        If token.Kind = SyntaxKind.OpenParenToken Then
+        If token.IsKind(SyntaxKind.OpenParenToken) Then
             Return False
         End If
 
         ' a) instead of a )
-        If nextToken.Kind = SyntaxKind.CloseParenToken Then
+        If nextToken.IsKind(SyntaxKind.CloseParenToken) Then
             Return False
         End If
 
         ' = ( instead of =(
-        If token.Kind = SyntaxKind.EqualsToken AndAlso nextToken.Kind = SyntaxKind.OpenParenToken Then
+        If token.IsKind(SyntaxKind.EqualsToken) AndAlso nextToken.IsKind(SyntaxKind.OpenParenToken) Then
             Return True
         End If
 
@@ -249,7 +249,7 @@ Friend Class SyntaxNormalizer
         ' a.b and .b instead of a . b, but keep with {key .field}
         If token.IsKind(SyntaxKind.DotToken) Then
             Return False
-        ElseIf nextToken.IsKind(SyntaxKind.DotToken) AndAlso nextToken.Parent.Kind <> SyntaxKind.NamedFieldInitializer Then
+        ElseIf nextToken.IsKind(SyntaxKind.DotToken) AndAlso Not nextToken.Parent.IsKind(SyntaxKind.NamedFieldInitializer) Then
             Return False
         End If
 
@@ -832,7 +832,7 @@ Friend Class SyntaxNormalizer
     Public Overrides Function VisitAttributeList(node As AttributeListSyntax) As SyntaxNode
         ' do not add line breaks for attributes of parameters or return types
         If node.Parent Is Nothing OrElse
-            (node.Parent.Kind <> SyntaxKind.Parameter AndAlso node.Parent.Kind <> SyntaxKind.SimpleAsClause) Then
+            (Not node.Parent.IsKind(SyntaxKind.Parameter) AndAlso Not node.Parent.IsKind(SyntaxKind.SimpleAsClause)) Then
 
             Me.AddLineBreaksAfterTokenIfNeeded(node.GetLastToken(), 1)
         End If

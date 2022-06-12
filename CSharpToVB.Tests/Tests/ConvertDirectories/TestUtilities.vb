@@ -24,7 +24,7 @@ Namespace Tests.ConvertDirectories
             If node.IsToken Then
                 Dim tk As SyntaxNodeOrToken = node
                 For Each leadingTrivia As SyntaxTrivia In tk.GetLeadingTrivia()
-                    If leadingTrivia.Kind = kind Then
+                    If leadingTrivia.IsKind(kind) Then
                         actualCount += 1
                     End If
                     If leadingTrivia.HasStructure Then
@@ -33,7 +33,7 @@ Namespace Tests.ConvertDirectories
                     End If
                 Next
                 For Each trailingTrivia As SyntaxTrivia In tk.GetTrailingTrivia()
-                    If trailingTrivia.Kind = kind Then
+                    If trailingTrivia.IsKind(kind) Then
                         actualCount += 1
                     End If
                     If trailingTrivia.HasStructure Then
