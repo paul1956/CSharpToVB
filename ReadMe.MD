@@ -69,13 +69,14 @@ Any changes to CSharpToVB application needs to change the version information in
   New in 5.0.6.5/5.0.2.10
   Fix crash in project conversion
   Update Icons
+  
   New in 5.0.6.4/5.0.2.9
   Update NuGet Packages and use IsKind instead of Kind
+  
   New in 5.0.6.3/5.0.2.8
   Fix Cy.yml file to use .Net 6.0
   Fix Form1.Designer to set Me.TSFindLookInComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
   and remove setting in Form1
-
 
   New in 5.0.6.1/5.0.2.7
   Fix Crash in VisitEventDeclaration also preserve comments in Event Handlers
@@ -105,7 +106,6 @@ Any changes to CSharpToVB application needs to change the version information in
   - Fix issue #76
   - Major improvement is project and solution conversion
   - Major improvement in custom event and invoke event handling
-
 
   New in 5.0.3.5/5.0.1.21
   - Fixed issue #77
@@ -279,7 +279,6 @@ Any changes to CSharpToVB application needs to change the version information in
 
   New in 5.0.0.25/5.0.0.18
   - Fix removing ? from Nullable Strings and Objects
-  - 
 
   New in 5.0.0.24/5.0.0.17
   - Improve support C# 9.0 WithExpressions, including inherited Records
