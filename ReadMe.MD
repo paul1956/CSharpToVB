@@ -13,9 +13,8 @@ description: "C# to VB Converter"
 # C# to VB.Net Converter
 
 ## Requires
-- Visual Studio 2019 Version 16.9 Preview 4 to support Visual Basic Code Generation
-- Visual Studio 2019 Version 16.8 support can be found in branch "Support16.8"
-- .NET Core 5.0 to use the converter
+- Visual Studio 2022 Version 17.3 or later
+- .NET Core 6.0 to use the converter
 
 ## License
 - MIT
@@ -69,13 +68,14 @@ Any changes to CSharpToVB application needs to change the version information in
   New in 5.0.6.5/5.0.2.10
   Fix crash in project conversion
   Update Icons
+  
   New in 5.0.6.4/5.0.2.9
   Update NuGet Packages and use IsKind instead of Kind
+  
   New in 5.0.6.3/5.0.2.8
   Fix Cy.yml file to use .Net 6.0
   Fix Form1.Designer to set Me.TSFindLookInComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
   and remove setting in Form1
-
 
   New in 5.0.6.1/5.0.2.7
   Fix Crash in VisitEventDeclaration also preserve comments in Event Handlers
@@ -105,7 +105,6 @@ Any changes to CSharpToVB application needs to change the version information in
   - Fix issue #76
   - Major improvement is project and solution conversion
   - Major improvement in custom event and invoke event handling
-
 
   New in 5.0.3.5/5.0.1.21
   - Fixed issue #77
@@ -279,7 +278,6 @@ Any changes to CSharpToVB application needs to change the version information in
 
   New in 5.0.0.25/5.0.0.18
   - Fix removing ? from Nullable Strings and Objects
-  - 
 
   New in 5.0.0.24/5.0.0.17
   - Improve support C# 9.0 WithExpressions, including inherited Records
