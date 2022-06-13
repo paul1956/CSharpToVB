@@ -1045,34 +1045,18 @@ namespace Application
     Private Sub SetColorMode(myForm As Form, lightMode As Boolean)
 
         If lightMode Then
-            Me.MenuEditCopy.Image = CType(My.Resources.ResourceManager.GetObject("CopyLight"), Image)
-            Me.MenuEditPaste.Image = CType(My.Resources.ResourceManager.GetObject("PasteLight"), Image)
-            Me.MenuFileSaveAs.Image = CType(My.Resources.ResourceManager.GetObject("SaveAsLight"), Image)
             SetLightMode(myForm.Controls, _mCapturedRenderer)
         Else
-            Me.MenuEditCopy.Image = CType(My.Resources.ResourceManager.GetObject("CopyDark"), Image)
-            Me.MenuEditPaste.Image = CType(My.Resources.ResourceManager.GetObject("PasteDark"), Image)
-            Me.MenuFileSaveAs.Image = CType(My.Resources.ResourceManager.GetObject("SaveAsDark"), Image)
             SetDarkMode(myForm.Controls, _mCapturedRenderer)
         End If
     End Sub
 
     Private Sub ToggleColorMode(myForm As Form, lightMode As Boolean)
         If lightMode Then
-            Me.MenuEditCopy.Image = CType(My.Resources.ResourceManager.GetObject("CopyLight"), Image)
-            Me.MenuEditPaste.Image = CType(My.Resources.ResourceManager.GetObject("PasteLight"), Image)
-            Me.MenuFileSaveAs.Image = CType(My.Resources.ResourceManager.GetObject("SaveAsLight"), Image)
-            Me.ContextMenuPaste.Image = CType(My.Resources.ResourceManager.GetObject("PasteLight"), Image)
-            Me.ContextMenuCopy.Image = CType(My.Resources.ResourceManager.GetObject("CopyLight"), Image)
             Me.TSThemeButton.Text = DarkModeStr
             CurrentThemeDictionary = _darkModeColorDictionary
             SetDarkMode(myForm.Controls, _mCapturedRenderer)
         Else
-            Me.MenuEditCopy.Image = CType(My.Resources.ResourceManager.GetObject("CopyDark"), Image)
-            Me.MenuEditPaste.Image = CType(My.Resources.ResourceManager.GetObject("PasteDark"), Image)
-            Me.MenuFileSaveAs.Image = CType(My.Resources.ResourceManager.GetObject("SaveAsDark"), Image)
-            Me.ContextMenuPaste.Image = CType(My.Resources.ResourceManager.GetObject("PasteDark"), Image)
-            Me.ContextMenuCopy.Image = CType(My.Resources.ResourceManager.GetObject("CopyDark"), Image)
             Me.TSThemeButton.Text = LightModeStr
             CurrentThemeDictionary = _lightModeColorDictionary
             SetLightMode(myForm.Controls, _mCapturedRenderer)
