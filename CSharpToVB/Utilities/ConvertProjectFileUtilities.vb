@@ -269,7 +269,7 @@ Public Module ConvertProjectFileUtilities
                                         rootNamespaceParentNodeIndex = index
                                         assemblyNameIndex = childIndex
                                     Case "RootNamespace"
-                                        rootNamespaceParentNodeIndex = -1
+                                        'rootNamespaceParentNodeIndex = -1
                                     Case Else
                                         ' propertyGroupChildNode.Name
                                         Stop
