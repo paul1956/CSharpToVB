@@ -157,4 +157,49 @@
   <data name="AboutBox" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\AboutBox.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="AboutBoxDark" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\AboutBoxDark.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="AdvancedViewDark" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\AdvancedViewDark.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CopyDark" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\CopyDark.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CutDark" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\CutDark.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ExitDark" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\ExitDark.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="FeedbackSmile_16x" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\FeedbackSmile_16x.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="FeedbackSmile_16xDark" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\FeedbackSmile_16xDark.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="FindNextDark" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\FindNextDark.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="OpenFileDark" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\OpenFileDark.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="OpenProjectFolderDark" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\OpenProjectFolderDark.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PasteDark" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\PasteDark.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="RedoDark" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\RedoDark.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SelectAllDark" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\SelectAllDark.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SnippetDark" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\SnippetDark.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="UndoDark" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\UndoDark.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
 </root>

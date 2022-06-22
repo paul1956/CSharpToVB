@@ -1053,10 +1053,38 @@ namespace Application
 
     Private Sub ToggleColorMode(myForm As Form, lightMode As Boolean)
         If lightMode Then
+            Me.MenuEditCopy.Image = Global.CSharpToVBApp.My.Resources.Resources.CopyDark
+            Me.MenuEditCut.Image = Global.CSharpToVBApp.My.Resources.Resources.CutDark
+            Me.MenuEditFind.Image = Global.CSharpToVBApp.My.Resources.Resources.FindNextDark
+            Me.MenuEditPaste.Image = Global.CSharpToVBApp.My.Resources.Resources.PasteDark
+            Me.MenuEditRedo.Image = Global.CSharpToVBApp.My.Resources.Resources.RedoDark
+            Me.MenuEditSelectAll.Image = Global.CSharpToVBApp.My.Resources.Resources.SelectAllDark
+            Me.MenuEditUndo.Image = Global.CSharpToVBApp.My.Resources.Resources.UndoDark
+            Me.MenuFileConvertProject.Image = Global.CSharpToVBApp.My.Resources.Resources.OpenProjectFolderDark
+            Me.MenuFileExit.Image = Global.CSharpToVBApp.My.Resources.Resources.ExitDark
+            Me.MenuFileLoadLastSnippet.Image = Global.CSharpToVBApp.My.Resources.Resources.SnippetDark
+            Me.MenuFileOpen.Image = Global.CSharpToVBApp.My.Resources.Resources.OpenFileDark
+            Me.MenuHelpAboutMenuItem.Image = Global.CSharpToVBApp.My.Resources.Resources.AboutBoxDark
+            Me.MenuHelpReportIssueMenuItem.Image = Global.CSharpToVBApp.My.Resources.Resources.FeedbackSmile_16xDark
+            Me.MenuOptionsAdvanced.Image = Global.CSharpToVBApp.My.Resources.Resources.AdvancedViewDark
             Me.TSThemeButton.Text = DarkModeStr
             CurrentThemeDictionary = _darkModeColorDictionary
             SetDarkMode(myForm.Controls, _mCapturedRenderer)
         Else
+            Me.MenuEditCopy.Image = Global.CSharpToVBApp.My.Resources.Resources.Copy
+            Me.MenuEditCut.Image = Global.CSharpToVBApp.My.Resources.Resources.Cut
+            Me.MenuEditFind.Image = Global.CSharpToVBApp.My.Resources.Resources.FindNext
+            Me.MenuEditPaste.Image = Global.CSharpToVBApp.My.Resources.Resources.Paste
+            Me.MenuEditRedo.Image = Global.CSharpToVBApp.My.Resources.Resources.Redo
+            Me.MenuEditSelectAll.Image = Global.CSharpToVBApp.My.Resources.Resources.SelectAll
+            Me.MenuEditUndo.Image = Global.CSharpToVBApp.My.Resources.Resources.Undo
+            Me.MenuFileConvertProject.Image = Global.CSharpToVBApp.My.Resources.Resources.OpenProjectFolder
+            Me.MenuFileExit.Image = Global.CSharpToVBApp.My.Resources.Resources._Exit
+            Me.MenuFileLoadLastSnippet.Image = Global.CSharpToVBApp.My.Resources.Resources.Snippet
+            Me.MenuFileOpen.Image = Global.CSharpToVBApp.My.Resources.Resources.OpenFile
+            Me.MenuHelpAboutMenuItem.Image = Global.CSharpToVBApp.My.Resources.Resources.AboutBox
+            Me.MenuHelpReportIssueMenuItem.Image = Global.CSharpToVBApp.My.Resources.Resources.FeedbackSmile_16x
+            Me.MenuOptionsAdvanced.Image = Global.CSharpToVBApp.My.Resources.Resources.AdvancedView
             Me.TSThemeButton.Text = LightModeStr
             CurrentThemeDictionary = _lightModeColorDictionary
             SetLightMode(myForm.Controls, _mCapturedRenderer)
