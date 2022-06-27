@@ -617,10 +617,8 @@ End Module")
 }", "Class TestClass
 
     Private Shared Function GetLength(node As Object) As Integer
-        Dim TempVar As Boolean = TypeOf node Is String
         Dim s As String
-        String.TryParse(node.ToString, s)
-        If TempVar Then
+        If TryCast(node, String) IsNot Nothing Then
             Return s.Length
         End If
 

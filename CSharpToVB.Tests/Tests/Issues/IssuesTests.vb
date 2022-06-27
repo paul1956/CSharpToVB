@@ -169,6 +169,85 @@ End Namespace
 ")
         End Sub
 
+        <Fact>
+        Public Shared Sub PatternMatchingIssue83()
+            TestConversionCSharpToVisualBasic("namespace Test
+{
+    public class Test
+        {
+            public override bool Equals(object obj)
+		    {
+			    if (obj is Span span)
+			    {
+				    if (span.start == start)
+				    {
+					    return span.length == length;
+				    }
+				    return false;
+			    }
+			    return false;
+		    }
+        }
+}", "Namespace Test
+
+    Public Class Test
+
+        Public Overrides Function Equals(obj As Object) As Boolean
+            Dim span As Span
+            If TryCast(obj, Span) IsNot Nothing Then
+                If span.start = start Then
+                    Return span.length = length
+                End If
+
+                Return False
+            End If
+
+            Return False
+        End Function
+    End Class
+End Namespace
+")
+        End Sub
+        <Fact>
+        Public Shared Sub PatternMatchingIssue83A()
+            TestConversionCSharpToVisualBasic("namespace Test
+{
+    public class Test
+        {
+            public override bool Equals(object obj)
+		    {
+			    if (obj is not Span span)
+			    {
+				    if (span.start == start)
+				    {
+					    return span.length == length;
+				    }
+				    return false;
+			    }
+			    return false;
+		    }
+        }
+}", "Namespace Test
+
+    Public Class Test
+
+        Public Overrides Function Equals(obj As Object) As Boolean
+            Dim span As Span = Nothing
+            If TryCast(obj, Span) Is Nothing Then
+                If span.start = start Then
+                    Return span.length = length
+                End If
+
+                Return False
+            End If
+
+            Return False
+        End Function
+    End Class
+End Namespace
+")
+        End Sub
+
     End Class
 
 End Namespace

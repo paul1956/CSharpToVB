@@ -382,6 +382,10 @@ Namespace CSharpToVBConverter.CSharpToVBVisitors
                     End If
                     Return Me.WrapTypedNameIfNecessary(Factory.IdentifierName(Me.GenerateSafeVbToken(node.Identifier, node, isQualifiedName:=True, isTypeName:=False)), node)
                 End If
+                Dim declarationPattern As CSS.DeclarationPatternSyntax = TryCast(originalNameParent, CSS.DeclarationPatternSyntax)
+                If declarationPattern IsNot Nothing Then
+                    Return Me.WrapTypedNameIfNecessary(Factory.IdentifierName(Me.GenerateSafeVbToken(node.Identifier, node, isQualifiedName:=True, isTypeName:=declarationPattern.Type.ToString.Equals(node.Identifier.ToString, StringComparison.Ordinal))), node)
+                End If
                 If originalNameParent.IsKind(CS.SyntaxKind.SimpleAssignmentExpression) Then
                     Dim assignmentStmt As CSS.AssignmentExpressionSyntax = CType(originalNameParent, CSS.AssignmentExpressionSyntax)
                     If node.ToString.Equals(assignmentStmt.Left.ToString, StringComparison.Ordinal) AndAlso assignmentStmt.Left.ToString.Equals(assignmentStmt.Right.ToString, StringComparison.OrdinalIgnoreCase) Then
