@@ -26,8 +26,11 @@ description: "C# to VB Converter"
 ## Topics
 - Code Converter
 
+## Release Download
+https://github.com/paul1956/CSharpToVB/releases/C#ToVB5.0.7.0.zip
+
 ## Updated
-- 6/21/2022
+- 6/27/2022
 
 ## Description
 This application will convert C# to VB while trying to preserve comments, formatting and as many Directives
